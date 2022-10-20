@@ -19,6 +19,8 @@ def execute(filters: Filters = None) -> Tuple:
 	columns = get_columns(filters)
 
 	item_details = FIFOSlots(filters).generate()
+	print("here")
+	print(item_details)
 	data = format_report_data(filters, item_details, to_date)
 
 	chart_data = get_chart_data(data, filters)
@@ -32,14 +34,16 @@ def format_report_data(filters: Filters, item_details: Dict, to_date: str) -> Li
 	data = []
 
 	precision = cint(frappe.db.get_single_value("System Settings", "float_precision", cache=True))
-
+	print("formatData")
+	print(item_details.items())
 	for item, item_dict in item_details.items():
 		if not flt(item_dict.get("total_qty"), precision):
 			continue
 
 		earliest_age, latest_age = 0, 0
 		details = item_dict["details"]
-
+		print("detail")
+		print(details)
 		fifo_queue = sorted(filter(_func, item_dict["fifo_queue"]), key=_func)
 
 		if not fifo_queue:
@@ -50,7 +54,7 @@ def format_report_data(filters: Filters, item_details: Dict, to_date: str) -> Li
 		latest_age = date_diff(to_date, fifo_queue[-1][1])
 		range1, range2, range3, above_range3 = get_range_age(filters, fifo_queue, to_date, item_dict)
 
-		row = [details.name, details.item_name, details.description, details.item_group, details.brand]
+		row = [details.name, details.item_name, details.description, details.item_group, details.brand,flt(item_dict.get("stock_value"), precision)]
 
 		if filters.get("show_warehouse_wise_stock"):
 			row.append(details.warehouse)
@@ -138,6 +142,7 @@ def get_columns(filters: Filters) -> List[Dict]:
 			"options": "Brand",
 			"width": 100,
 		},
+		{"label": _("Stock Value"), "fieldname": "stock_value", "fieldtype": "Currency", "width": 100},
 	]
 
 	if filters.get("show_warehouse_wise_stock"):
@@ -154,6 +159,7 @@ def get_columns(filters: Filters) -> List[Dict]:
 	columns.extend(
 		[
 			{"label": _("Available Qty"), "fieldname": "qty", "fieldtype": "Float", "width": 100},
+			
 			{"label": _("Average Age"), "fieldname": "average_age", "fieldtype": "Float", "width": 100},
 		]
 	)
@@ -236,7 +242,7 @@ class FIFOSlots:
 
 		for d in self.sle:
 			key, fifo_queue, transferred_item_key = self.__init_key_stores(d)
-
+		
 			if d.voucher_type == "Stock Reconciliation":
 				# get difference in qty shift as actual qty
 				prev_balance_qty = self.item_details[key].get("qty_after_transaction", 0)
@@ -362,6 +368,14 @@ class FIFOSlots:
 
 		self.item_details[key]["has_serial_no"] = row.has_serial_no
 
+		if "stock_value" not in self.item_details[key]:
+			self.item_details[key]["stock_value"] = row.stock_value_difference
+		else:
+			self.item_details[key]["stock_value"] += row.stock_value_difference
+
+		 
+		
+
 	def __aggregate_details_by_item(self, wh_wise_data: Dict) -> Dict:
 		"Aggregate Item-Wh wise data into single Item entry."
 		item_aggregated_data = {}
@@ -370,7 +384,7 @@ class FIFOSlots:
 			if not item_aggregated_data.get(item):
 				item_aggregated_data.setdefault(
 					item,
-					{"details": frappe._dict(), "fifo_queue": [], "qty_after_transaction": 0.0, "total_qty": 0.0},
+					{"details": frappe._dict(), "fifo_queue": [], "qty_after_transaction": 0.0, "total_qty": 0.0, "stock_value": 0.0},
 				)
 			item_row = item_aggregated_data.get(item)
 			item_row["details"].update(row["details"])
@@ -378,7 +392,9 @@ class FIFOSlots:
 			item_row["qty_after_transaction"] += flt(row["qty_after_transaction"])
 			item_row["total_qty"] += flt(row["total_qty"])
 			item_row["has_serial_no"] = row["has_serial_no"]
-
+			item_row["stock_value"] += flt(row["stock_value"])
+			print("Aggregated")
+			print(item_aggregated_data)
 		return item_aggregated_data
 
 	def __get_stock_ledger_entries(self) -> List[Dict]:
@@ -404,6 +420,7 @@ class FIFOSlots:
 				sle.batch_no,
 				sle.qty_after_transaction,
 				sle.warehouse,
+				sle.stock_value_difference,
 			)
 			.where(
 				(sle.item_code == item.name)
@@ -417,6 +434,8 @@ class FIFOSlots:
 			sle_query = self.__get_warehouse_conditions(sle, sle_query)
 
 		sle_query = sle_query.orderby(sle.posting_date, sle.posting_time, sle.creation, sle.actual_qty)
+
+		print(sle_query)
 
 		return sle_query.run(as_dict=True)
 
