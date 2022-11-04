@@ -19,8 +19,6 @@ def execute(filters: Filters = None) -> Tuple:
 	columns = get_columns(filters)
 
 	item_details = FIFOSlots(filters).generate()
-	print("here")
-	print(item_details)
 	data = format_report_data(filters, item_details, to_date)
 
 	chart_data = get_chart_data(data, filters)
@@ -42,8 +40,6 @@ def format_report_data(filters: Filters, item_details: Dict, to_date: str) -> Li
 
 		earliest_age, latest_age = 0, 0
 		details = item_dict["details"]
-		print("detail")
-		print(details)
 		fifo_queue = sorted(filter(_func, item_dict["fifo_queue"]), key=_func)
 
 		if not fifo_queue:
