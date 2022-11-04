@@ -167,7 +167,7 @@ class VATAuditReport(object):
 					item_wise_tax_detail = json.loads(item_wise_tax_detail)
 					for item_code, taxes in item_wise_tax_detail.items():
 						is_zero_rated = 0# self.invoice_items.get(parent).get(item_code).get("is_zero_rated")
-						# to skip items with non-zero tax rate in multiple rows
+						# to skip items with non-zero tax rate in multiple rows gf
 						#if taxes[0] == 0 and not is_zero_rated:
 							#continue
 						tax_rate = self.get_item_amount_map(parent, item_code, taxes)
