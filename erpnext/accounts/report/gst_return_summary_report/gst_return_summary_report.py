@@ -235,6 +235,7 @@ class VATAuditReport(object):
 				total_gross += row["gross_amount"]
 				total_tax += row["tax_amount"]
 				total_net += row["net_amount"]
+			totalstr = ""
 			totalstr = _("TOTAL VALUE OF TAXABLE PURCHASES ") if doctype == "Purchase Invoice" else _("TOTAL VALUE OF TAXABLE SALES ")
 			total = {
 				"posting_date": frappe.bold(totalstr + str(rate) + "%"),
