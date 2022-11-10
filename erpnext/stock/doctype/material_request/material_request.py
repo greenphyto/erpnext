@@ -17,6 +17,7 @@ from erpnext.controllers.buying_controller import BuyingController
 from erpnext.manufacturing.doctype.work_order.work_order import get_item_details
 from erpnext.stock.doctype.item.item import get_item_defaults
 from erpnext.stock.stock_balance import get_indented_qty, update_bin_qty
+from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 
 form_grid_templates = {"items": "templates/form_grid/material_request_grid.html"}
 
@@ -66,6 +67,7 @@ class MaterialRequest(BuyingController):
 					)
 
 	def validate(self):
+		print(self)
 		super(MaterialRequest, self).validate()
 
 		self.validate_schedule_date()
@@ -363,7 +365,23 @@ def make_purchase_order(source_name, target_doc=None, args=None):
 		child_filter = d.name in filtered_items if filtered_items else True
 
 		return d.ordered_qty < d.stock_qty and child_filter
-
+	def update_item(obj, target_doc, source_parent):
+		target_doc.amount = flt(obj.amount) - flt(obj.billed_amt)
+		target_doc.base_amount = target_doc.amount * flt(source_parent.conversion_rate)
+		target_doc.qty = (
+			target_doc.amount / flt(obj.rate) if (flt(obj.rate) and flt(obj.billed_amt)) else flt(obj.qty)
+		)
+		item = get_item_defaults(target_doc.item_code, source_parent.company)
+		
+		item_group = get_item_group_defaults(target_doc.item_code, source_parent.company)
+		target_doc.cost_center = (
+			obj.cost_center
+			or frappe.db.get_value("Project", obj.project, "cost_center")
+			or item.get("buying_cost_center")
+			or item_group.get("buying_cost_center")
+		)
+		
+	print("here")
 	doclist = get_mapped_doc(
 		"Material Request",
 		source_name,
@@ -389,7 +407,7 @@ def make_purchase_order(source_name, target_doc=None, args=None):
 		target_doc,
 		postprocess,
 	)
-
+	print(doclist)
 	return doclist
 
 
@@ -436,7 +454,6 @@ def make_purchase_order_based_on_supplier(source_name, target_doc=None, args=Non
 		)
 
 		set_missing_values(source, target_doc)
-
 	target_doc = get_mapped_doc(
 		"Material Request",
 		mr,
@@ -459,7 +476,7 @@ def make_purchase_order_based_on_supplier(source_name, target_doc=None, args=Non
 		target_doc,
 		postprocess,
 	)
-
+	print(target_doc)
 	return target_doc
 
 
@@ -538,7 +555,7 @@ def get_default_supplier_query(doctype, txt, searchfield, start, page_len, filte
 def make_supplier_quotation(source_name, target_doc=None):
 	def postprocess(source, target_doc):
 		set_missing_values(source, target_doc)
-
+	
 	doclist = get_mapped_doc(
 		"Material Request",
 		source_name,

@@ -2,6 +2,7 @@
 // License: GNU General Public License v3. See license.txt
 
 // eslint-disable-next-line
+frappe.provide("erpnext.buying");
 frappe.provide("erpnext.accounts.dimensions");
 {% include 'erpnext/public/js/controllers/buying.js' %};
 
@@ -205,12 +206,14 @@ frappe.ui.form.on('Material Request', {
 					warehouse: item.warehouse,
 					doctype: frm.doc.doctype,
 					buying_price_list: frappe.defaults.get_default('buying_price_list'),
-					currency: frappe.defaults.get_default('Currency'),
+					supplier: me.frm.doc.supplier,
+					currency: me.frm.doc.currency,
+					//currency:  frappe.defaults.get_default('Currency'),
 					name: frm.doc.name,
 					qty: item.qty || 1,
 					stock_qty: item.stock_qty,
 					company: frm.doc.company,
-					conversion_rate: 1,
+					conversion_rate: me.frm.doc.conversion_rate,
 					material_request_type: frm.doc.material_request_type,
 					plc_conversion_rate: 1,
 					rate: item.rate,
@@ -415,17 +418,17 @@ erpnext.buying.MaterialRequestController = class MaterialRequestController exten
 		this.get_terms();
 	}
 
-	item_code() {
+	//item_code() {
 		// to override item code trigger from transaction.js
-	}
+	//}
 
 	validate_company_and_party() {
 		return true;
 	}
 
-	calculate_taxes_and_totals() {
-		return;
-	}
+	//calculate_taxes_and_totals() {
+		//return;
+	//}
 
 	validate() {
 		set_schedule_date(this.frm);

@@ -31,6 +31,7 @@ form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
 class PurchaseOrder(BuyingController):
 	def __init__(self, *args, **kwargs):
+		print("Here PO init")
 		super(PurchaseOrder, self).__init__(*args, **kwargs)
 		self.status_updater = [
 			{
@@ -48,9 +49,11 @@ class PurchaseOrder(BuyingController):
 
 	def onload(self):
 		supplier_tds = frappe.db.get_value("Supplier", self.supplier, "tax_withholding_category")
+		print("PO here")
 		self.set_onload("supplier_tds", supplier_tds)
 
 	def validate(self):
+		print("Here PO validate")
 		super(PurchaseOrder, self).validate()
 
 		self.set_status()
@@ -245,6 +248,7 @@ class PurchaseOrder(BuyingController):
 		"""get last purchase rates for all items"""
 
 		conversion_rate = flt(self.get("conversion_rate")) or 1.0
+		
 		for d in self.get("items"):
 			if d.item_code:
 				last_purchase_details = get_last_purchase_details(d.item_code, self.name)
