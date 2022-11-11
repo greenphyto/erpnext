@@ -18,6 +18,13 @@
   "supplier_section",
   "supplier",
   "supplier_name",
+  "section_addresses",
+  "supplier_address",
+  "contact_person",
+  "address_display",
+  "contact_display",
+  "contact_mobile",
+  "contact_email",
   "customer",
   "company",
   "warehouse_section",
@@ -94,14 +101,8 @@
   "column_break_35",
   "work_order",
   "connections_tab",
-  "get_items_from_open_material_requests",
-  "section_addresses",
-  "supplier_address",
-  "contact_person",
-  "address_display",
-  "contact_display",
-  "contact_mobile",
-  "contact_email"
+  "get_items_from_open_material_requests"
+ 
  ],
  "fields": [
   {
@@ -148,7 +149,7 @@
   
   {
    "bold": 1,
-   "fieldname": "supplier1",
+   "fieldname": "supplier",
    "fieldtype": "Link",
    "in_global_search": 1,
    "in_standard_filter": 1,
@@ -317,7 +318,7 @@
    "read_only": 1
   },
   {
-   "fieldname": "plc_conversion_rate1",
+   "fieldname": "plc_conversion_rate",
    "fieldtype": "Float",
    "label": "Price List Exchange Rate",
    "precision": "9",
