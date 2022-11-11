@@ -145,16 +145,7 @@
    "fieldtype": "Section Break",
    "options": "fa fa-user"
   },
-  {
-   "allow_on_submit": 1,
-   "default": "{material_request_type}",
-   "fieldname": "title",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Title",
-   "no_copy": 1,
-   "print_hide": 1
-  },
+  
   {
    "bold": 1,
    "fieldname": "supplier",
