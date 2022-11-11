@@ -148,7 +148,7 @@
   
   {
    "bold": 1,
-   "fieldname": "supplier",
+   "fieldname": "supplier1",
    "fieldtype": "Link",
    "in_global_search": 1,
    "in_standard_filter": 1,
@@ -317,7 +317,7 @@
    "read_only": 1
   },
   {
-   "fieldname": "plc_conversion_rate",
+   "fieldname": "plc_conversion_rate1",
    "fieldtype": "Float",
    "label": "Price List Exchange Rate",
    "precision": "9",
