@@ -74,6 +74,7 @@ class GLEntry(Document):
 					)
 
 	def check_mandatory(self):
+	 
 		mandatory = ["account", "voucher_type", "voucher_no", "company"]
 		for k in mandatory:
 			if not self.get(k):
@@ -83,13 +84,13 @@ class GLEntry(Document):
 			account_type = frappe.get_cached_value("Account", self.account, "account_type")
 			if account_type == "Receivable":
 				frappe.throw(
-					_("{0} {1}: Customer is required against Receivable account {2}").format(
+					_("{0} {1}: Customer is required against Receivable account {2} When making GL Entry.").format(
 						self.voucher_type, self.voucher_no, self.account
 					)
 				)
 			elif account_type == "Payable":
 				frappe.throw(
-					_("{0} {1}: Supplier is required against Payable account {2}").format(
+					_("{0} {1}: Supplier is required against Payable account {2} When making GL Entry.").format(
 						self.voucher_type, self.voucher_no, self.account
 					)
 				)
