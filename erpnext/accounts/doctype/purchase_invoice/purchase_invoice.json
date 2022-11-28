@@ -13,6 +13,8 @@
   "supplier_name",
   "tax_id",
   "company",
+  "bill_no",
+  "bill_date",
   "column_break_6",
   "posting_date",
   "posting_time",
@@ -57,8 +59,6 @@
   "column_break_28",
   "total",
   "net_total",
-  "tax_withholding_net_total",
-  "base_tax_withholding_net_total",
   "taxes_section",
   "taxes_and_charges",
   "column_break_58",
@@ -152,9 +152,7 @@
   "column_break_177",
   "per_received",
   "supplier_invoice_details",
-  "bill_no",
   "column_break_15",
-  "bill_date",
   "accounting_details_section",
   "credit_to",
   "party_account_currency",
@@ -370,7 +368,8 @@
    "collapsible_depends_on": "bill_no",
    "fieldname": "supplier_invoice_details",
    "fieldtype": "Section Break",
-   "label": "Supplier Invoice"
+   "label": "Supplier Invoice",
+   "print_hide": 1
   },
   {
    "fieldname": "bill_no",
@@ -1423,26 +1422,6 @@
    "read_only": 1
   },
   {
-   "default": "0",
-   "fieldname": "tax_withholding_net_total",
-   "fieldtype": "Currency",
-   "hidden": 1,
-   "label": "Tax Withholding Net Total",
-   "no_copy": 1,
-   "options": "currency",
-   "read_only": 1
-  },
-  {
-   "fieldname": "base_tax_withholding_net_total",
-   "fieldtype": "Currency",
-   "hidden": 1,
-   "label": "Base Tax Withholding Net Total",
-   "no_copy": 1,
-   "options": "currency",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
    "collapsible_depends_on": "tax_withheld_vouchers",
    "fieldname": "tax_withheld_vouchers_section",
    "fieldtype": "Section Break",
@@ -1540,7 +1519,7 @@
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-11-04 01:02:44.544878",
+ "modified": "2022-11-28 14:42:51.952941",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",

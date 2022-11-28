@@ -11,6 +11,8 @@
   "naming_series",
   "customer",
   "customer_name",
+  "po_no",
+  "po_date",
   "tax_id",
   "company",
   "company_tax_id",
@@ -168,9 +170,7 @@
   "terms",
   "more_info_tab",
   "customer_po_details",
-  "po_no",
   "column_break_23",
-  "po_date",
   "more_info",
   "debit_to",
   "party_account_currency",
@@ -2090,7 +2090,7 @@
   {
    "collapsible": 1,
    "collapsible_depends_on": "write_off_amount",
-   "depends_on": "is_pos",
+   "depends_on": "grand_total",
    "fieldname": "write_off_section",
    "fieldtype": "Section Break",
    "hide_days": 1,
@@ -2109,7 +2109,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2022-11-15 09:33:47.870616",
+ "modified": "2022-11-28 14:30:14.343290",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",
