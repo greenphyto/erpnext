@@ -16,7 +16,7 @@
   "schedule_date",
   "amended_from",
   "supplier_section",
-  "supplier1",
+  "supplier",
   "supplier_name",
   "section_addresses",
   "supplier_address",
@@ -39,7 +39,7 @@
   "cb_price_list",
   "buying_price_list",
   "price_list_currency",
-  "plc_conversion_rate1",
+  "plc_conversion_rate",
   "items_section",
   "items",
   "taxes_section",
@@ -149,7 +149,7 @@
   
   {
    "bold": 1,
-   "fieldname": "supplier1",
+   "fieldname": "supplier",
    "fieldtype": "Link",
    "in_global_search": 1,
    "in_standard_filter": 1,
@@ -318,7 +318,7 @@
    "read_only": 1
   },
   {
-   "fieldname": "plc_conversion_rate1",
+   "fieldname": "plc_conversion_rate",
    "fieldtype": "Float",
    "label": "Price List Exchange Rate",
    "precision": "9",
