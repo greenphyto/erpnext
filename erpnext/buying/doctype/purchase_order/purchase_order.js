@@ -152,7 +152,37 @@ erpnext.buying.PurchaseOrderController = class PurchaseOrderController extends e
 
 		super.setup();
 	}
+	
+	supplier() {
+		var me = this;
 
+		// Do not update if inter company reference is there as the details will already be updated
+		if(this.frm.updating_party_details || this.frm.doc.inter_company_invoice_reference)
+			return;
+
+		if (this.frm.doc.__onload && this.frm.doc.__onload.load_after_mapping) return;
+
+		if (this.frm.doc.in_apply_price_list) return;
+
+		erpnext.utils.get_party_details(this.frm, "erpnext.accounts.party.get_party_details",
+			{
+				posting_date: this.frm.doc.posting_date,
+				bill_date: this.frm.doc.bill_date,
+				party: this.frm.doc.supplier,
+				party_type: "Supplier",
+				account: this.frm.doc.credit_to,
+				price_list: this.frm.doc.buying_price_list,
+			 
+				fetch_payment_terms_template: cint(!this.frm.doc.ignore_default_payment_terms_template)
+			}, function() {
+				me.frm.doc.in_apply_price_list = true;
+				me.apply_pricing_rule();
+				me.frm.doc.apply_tds = me.frm.supplier_tds ? 1 : 0;
+				me.frm.doc.tax_withholding_category = me.frm.supplier_tds;
+				me.frm.set_df_property("apply_tds", "read_only", me.frm.supplier_tds ? 0 : 1);
+				me.frm.set_df_property("tax_withholding_category", "hidden", me.frm.supplier_tds ? 0 : 1);
+			})
+	}
 	refresh(doc, cdt, cdn) {
 		var me = this;
 		super.refresh();
@@ -528,6 +558,7 @@ erpnext.buying.PurchaseOrderController = class PurchaseOrderController extends e
 	schedule_date() {
 		set_schedule_date(this.frm);
 	}
+	
 };
 
 // for backward compatibility: combine new and previous states

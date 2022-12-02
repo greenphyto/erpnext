@@ -1600,6 +1600,18 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		}
 
 		var me = this;
+		var flag = false;
+		for (var i in this.frm.doc.items) {
+			var item = this.frm.doc.items[i];
+			if(item.material_request)
+			{
+				flag = true;
+				return;
+			}
+		}
+		if (flag) return;
+
+
 		var args = this._get_args(item);
 		if (!((args.items && args.items.length) || args.price_list)) {
 			return;
