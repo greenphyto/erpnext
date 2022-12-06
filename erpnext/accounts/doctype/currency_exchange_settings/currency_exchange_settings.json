@@ -75,7 +75,7 @@
    "fieldname": "service_provider",
    "fieldtype": "Select",
    "label": "Service Provider",
-   "options": "frankfurter.app\nexchangerate.host\nCustom",
+   "options": "frankfurter.app\nexchangerate.host\nmas.gov.sg\nCustom",
    "reqd": 1
   }
  ],

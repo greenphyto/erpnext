@@ -52,9 +52,16 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 		return
 	if from_currency == to_currency:
 		return 1
-
+	settingscheck = frappe.get_cached_doc("Currency Exchange Settings")
+	if settingscheck.api_endpoint.find("mas.gov.sg") > -1:
+		from_currency = from_currency.lower()
+		to_currency = to_currency.lower()
+		listofcurrency = ["cny", "hkd","inr","idr","jpy","krw","myr","twd","php","qar","sar","thb","aed","ynd"]
+		if from_currency in listofcurrency:
+			to_currency = to_currency +"_100"
 	if not transaction_date:
 		transaction_date = nowdate()
+	
 	currency_settings = frappe.get_doc("Accounts Settings").as_dict()
 	allow_stale_rates = currency_settings.get("allow_stale")
 
@@ -90,6 +97,9 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 			import requests
 
 			settings = frappe.get_cached_doc("Currency Exchange Settings")
+			if settings.api_endpoint.find("mas.gov.sg") > -1:
+				transaction_date=add_days(transaction_date, -1)
+
 			req_params = {
 				"transaction_date": transaction_date,
 				"from_currency": from_currency,
@@ -98,12 +108,27 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 			params = {}
 			for row in settings.req_params:
 				params[row.key] = format_ces_api(row.value, req_params)
+			print(settings.api_endpoint)
+			print(req_params)
+			print(params)
 			response = requests.get(format_ces_api(settings.api_endpoint, req_params), params=params)
+			print(response)
 			# expire in 6 hours
 			response.raise_for_status()
 			value = response.json()
+			print(value)
 			for res_key in settings.result_key:
-				value = value[format_ces_api(str(res_key.key), req_params)]
+				print(res_key.key)
+				print(req_params)
+				if  isinstance(value,dict):
+					value = value[format_ces_api(str(res_key.key), req_params)]
+				elif  isinstance(value,list):
+					value = value[0][format_ces_api(str(res_key.key.lower()), req_params)]
+				print(value)
+			if settingscheck.api_endpoint.find("mas.gov.sg") > -1:
+					listofcurrency = ["cny", "hkd","inr","idr","jpy","krw","myr","twd","php","qar","sar","thb","aed","ynd"]
+					if from_currency in listofcurrency:	
+						value = value/100	
 			cache.setex(name=key, time=21600, value=flt(value))
 		return flt(value)
 	except Exception:

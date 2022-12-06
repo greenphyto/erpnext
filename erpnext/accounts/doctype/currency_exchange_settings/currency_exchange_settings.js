@@ -18,7 +18,17 @@ frappe.ui.form.on('Currency Exchange Settings', {
 				symbols: '{to_currency}'
 			};
 			add_param(frm, "https://frankfurter.app/{transaction_date}", params, result);
+		} else if (frm.doc.service_provider =="mas.gov.sg")
+		{
+			let result = ['result','records','{from_currency}_{to_currency}'];
+			let params = {
+				resource_id: '95932927-c8bc-4e7a-b484-68a66a24edfe',
+				filters[end_of_day]: '{transaction_date}',
+				fields:'{from_currency}_{to_currency}'
+			};
+			add_param(frm, "https://eservices.mas.gov.sg/api/action/datastore/search.json", params, result);
 		}
+
 	}
 });
 
