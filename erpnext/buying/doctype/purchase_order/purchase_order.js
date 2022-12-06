@@ -166,7 +166,7 @@ erpnext.buying.PurchaseOrderController = class PurchaseOrderController extends e
 
 		erpnext.utils.get_party_details(this.frm, "erpnext.accounts.party.get_party_details",
 			{
-				posting_date: this.frm.doc.posting_date,
+				posting_date: this.frm.doc.transaction_date,
 				bill_date: this.frm.doc.bill_date,
 				party: this.frm.doc.supplier,
 				party_type: "Supplier",

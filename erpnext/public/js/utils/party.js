@@ -75,7 +75,7 @@ erpnext.utils.get_party_details = function(frm, method, args, callback) {
 
 	if (frappe.meta.get_docfield(frm.doc.doctype, "taxes")) {
 		if (!erpnext.utils.validate_mandatory(frm, "Posting / Transaction Date",
-			args.posting_date|| frm.doc.transaction_date, args.party_type=="Customer" ? "customer": "supplier")) return;
+			args.posting_date, args.party_type=="Customer" ? "customer": "supplier")) return;
 	}
 
 	if (!erpnext.utils.validate_mandatory(frm, "Company", frm.doc.company, args.party_type=="Customer" ? "customer": "supplier")) {

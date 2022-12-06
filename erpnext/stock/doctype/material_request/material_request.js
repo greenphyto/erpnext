@@ -492,6 +492,7 @@ erpnext.buying.MaterialRequestController = class MaterialRequestController exten
 				party_type: "Supplier",
 				account: this.frm.doc.credit_to,
 				price_list: this.frm.doc.buying_price_list,
+				posting_date:this.frm.doc.transaction_date,
 				fetch_payment_terms_template: cint(!this.frm.doc.ignore_default_payment_terms_template)
 			}, function() {
 				me.apply_pricing_rule();
