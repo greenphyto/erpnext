@@ -128,7 +128,7 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 			if settingscheck.api_endpoint.find("mas.gov.sg") > -1:
 					listofcurrency = ["cny", "hkd","inr","idr","jpy","krw","myr","twd","php","qar","sar","thb","aed","ynd"]
 					if from_currency in listofcurrency:	
-						value = value/100	
+						value = flt(value) / 100	
 			cache.setex(name=key, time=21600, value=flt(value))
 		return flt(value)
 	except Exception:
