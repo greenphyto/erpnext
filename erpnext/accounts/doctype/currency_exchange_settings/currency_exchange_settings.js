@@ -23,7 +23,7 @@ frappe.ui.form.on('Currency Exchange Settings', {
 			let result = ['result','records','{from_currency}_{to_currency}'];
 			let params = {
 				resource_id: '95932927-c8bc-4e7a-b484-68a66a24edfe',
-				filters[end_of_day]: '{transaction_date}',
+				'filters[end_of_day]': '{transaction_date}',
 				fields:'{from_currency}_{to_currency}'
 			};
 			add_param(frm, "https://eservices.mas.gov.sg/api/action/datastore/search.json", params, result);
