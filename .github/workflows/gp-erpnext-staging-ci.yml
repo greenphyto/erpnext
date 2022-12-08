@@ -15,9 +15,6 @@ jobs:
         working-directory: .
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      
     - name: executing remote ssh commands using ssh key
       uses: appleboy/ssh-action@v0.1.4
       with:
@@ -57,5 +54,5 @@ jobs:
         # Optional whether this connection use TLS (default is true if server_port is 465)
         secure: true
         # Optional plain body:
-        body: ERPNext staging deployment done! URL-https://erp-staging.greenphyto.com
+        body: ERPNext staging deployment done! Branch - gpstaging.v14.3.1, Commit Description - ${{github.event.head_commit.message}} URL-https://erp-staging.greenphyto.com
        
