@@ -79,7 +79,7 @@ def get_report_pdf(doc, consolidated=True):
 			or doc.currency
 			or get_company_currency(doc.company)
 		)
-		lastdayofmonth= get_last_day(add_to_date(today, months=-1))
+		lastdayofmonth= get_last_day(add_to_date(today(), months=-1))
 		if doc.letter_head:
 			from frappe.www.printview import get_letter_head
 
