@@ -7,7 +7,7 @@ import copy
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import add_days, add_months, format_date, getdate, today
+from frappe.utils import add_days, add_months, format_date, getdate, today,get_last_day,add_to_date
 from frappe.utils.jinja import validate_template
 from frappe.utils.pdf import get_pdf
 from frappe.www.printview import get_print_style
@@ -43,10 +43,17 @@ def get_report_pdf(doc, consolidated=True):
 	statement_dict = {}
 	ageing = ""
 	base_template_path = "frappe/www/printview.html"
+	objcompany = frappe.get_doc("Company", doc.company)
+	lstAddress = frappe.db.get_list('Address', filters=[[
+    "Dynamic Link","link_name","=",doc.company
+		]],fields=['address_line1','city','pincode'])
+	 
+	print(lstAddress)
 	template_path = (
 		"erpnext/accounts/doctype/process_statement_of_accounts/process_statement_of_accounts.html"
 	)
-
+	print(doc.company)
+	
 	for entry in doc.customers:
 		if doc.include_ageing:
 			ageing_filters = frappe._dict(
@@ -65,18 +72,18 @@ def get_report_pdf(doc, consolidated=True):
 
 			if ageing:
 				ageing[0]["ageing_based_on"] = doc.ageing_based_on
-
-		tax_id = frappe.get_doc("Customer", entry.customer).tax_id
+		cust = frappe.get_doc("Customer", entry.customer)
+		tax_id = cust.tax_id
 		presentation_currency = (
 			get_party_account_currency("Customer", entry.customer, doc.company)
 			or doc.currency
 			or get_company_currency(doc.company)
 		)
+		lastdayofmonth= get_last_day(add_to_date(today(), months=-1))
 		if doc.letter_head:
 			from frappe.www.printview import get_letter_head
 
 			letter_head = get_letter_head(doc, 0)
-
 		filters = frappe._dict(
 			{
 				"from_date": doc.from_date,
@@ -94,6 +101,15 @@ def get_report_pdf(doc, consolidated=True):
 				"show_opening_entries": 0,
 				"include_default_book_entries": 0,
 				"tax_id": tax_id if tax_id else None,
+				"StatementDate": today(),
+				"LastDay": lastdayofmonth,
+				"phone": objcompany.phone_no,
+				"email": objcompany.email,
+				"fax": objcompany.fax,
+				"address": lstAddress[0].address_line1,
+				"zipcode":  lstAddress[0].pincode,
+				"city": lstAddress[0].city,
+				"custAddress": cust.primary_address,
 			}
 		)
 		col, res = get_soa(filters)
