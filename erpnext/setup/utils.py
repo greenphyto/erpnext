@@ -6,7 +6,8 @@ from frappe import _
 from frappe.utils import add_days, flt, get_datetime_str, nowdate
 from frappe.utils.data import now_datetime
 from frappe.utils.nestedset import get_ancestors_of, get_root_of  # noqa
-
+import datetime
+import calendar
 from erpnext import get_default_company
 
 
@@ -43,6 +44,7 @@ def before_tests():
 	set_defaults_for_tests()
 
 	frappe.db.commit()
+
 
 
 @frappe.whitelist()
@@ -98,7 +100,15 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 
 			settings = frappe.get_cached_doc("Currency Exchange Settings")
 			if settings.api_endpoint.find("mas.gov.sg") > -1:
-				transaction_date=add_days(transaction_date, -1)
+				print(transaction_date)
+				weekday = findDay(transaction_date)
+				print(weekday)
+				if (weekday=="Monday"):
+					transaction_date=add_days(transaction_date, -3)
+				elif  (weekday=="Sunday") :
+					transaction_date=add_days(transaction_date, -2)
+				else:
+					transaction_date=add_days(transaction_date, -1)
 
 			req_params = {
 				"transaction_date": transaction_date,
@@ -133,6 +143,7 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 		return flt(value)
 	except Exception:
 		frappe.log_error("Unable to fetch exchange rate")
+		frappe.log_error(Exception)
 		frappe.msgprint(
 			_(
 				"Unable to find exchange rate for {0} to {1} for key date {2}. Please create a Currency Exchange record manually"
@@ -140,6 +151,12 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 		)
 		return 0.0
 
+def findDay(date):
+    year,month,day = (int(i) for i in date.split('-'))   
+    dayNumber = calendar.weekday(year, month, day)
+    days =["Monday", "Tuesday", "Wednesday", "Thursday",
+                         "Friday", "Saturday", "Sunday"]
+    return (days[dayNumber])
 
 def format_ces_api(data, param):
 	return data.format(
