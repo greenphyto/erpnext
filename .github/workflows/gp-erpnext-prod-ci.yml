@@ -19,7 +19,7 @@ jobs:
       with:
         host: ${{ secrets.PROD_HOST }}
         username: ${{ secrets.PROD_USERNAME }}
-        key: ${{ secrets.KEY }}
+        key: ${{ secrets.PROD_KEY }}
         port: ${{ secrets.PORT }}
         command_timeout: 30m
         script_stop: true
