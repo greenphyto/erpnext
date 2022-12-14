@@ -390,6 +390,7 @@ erpnext.buying.PurchaseOrderController = class PurchaseOrderController extends e
 						material_request_type: "Purchase",
 						docstatus: 1,
 						status: ["!=", "Stopped"],
+						workflow_state:  "Approved",
 						per_ordered: ["<", 100],
 						company: me.frm.doc.company
 					},
