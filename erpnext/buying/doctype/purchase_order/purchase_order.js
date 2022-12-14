@@ -390,10 +390,11 @@ erpnext.buying.PurchaseOrderController = class PurchaseOrderController extends e
 						material_request_type: "Purchase",
 						docstatus: 1,
 						status: ["!=", "Stopped"],
+						workflow_state:  "Approved",
 						per_ordered: ["<", 100],
 						company: me.frm.doc.company
 					},
-					allow_child_item_selection: false,
+					allow_child_item_selection: true,
 					child_fieldname: "items",
 					child_columns: ["item_code", "qty"]
 				})
