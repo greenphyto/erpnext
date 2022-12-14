@@ -393,7 +393,7 @@ erpnext.buying.PurchaseOrderController = class PurchaseOrderController extends e
 						per_ordered: ["<", 100],
 						company: me.frm.doc.company
 					},
-					allow_child_item_selection: true,
+					allow_child_item_selection: false,
 					child_fieldname: "items",
 					child_columns: ["item_code", "qty"]
 				})
