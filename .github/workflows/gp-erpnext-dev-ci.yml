@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - gp.v14.3.1
+      - gp.v14.3.1_demo
 
 name: Deploy to ERPNext Dev Env
 
@@ -50,7 +50,7 @@ jobs:
         # Required mail server password:
         password: ${{secrets.MAIL_PASSWORD}}
         # Required mail subject:
-        subject: ERPNext Production Deployment Done
+        subject: ERPNext Development Deployment Done
         # Required recipients' addresses:
         to: weiquan@greenphyto.com,myo@greenphyto.com,aunt.maung@greenphyto.com
         # Required sender full name (address can be skipped):
