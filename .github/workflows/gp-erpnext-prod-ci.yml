@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - gpprod.v14.3.1__demo
+      - gpprod.v14.3.1
 
 name: Deploy to ERPNext Production Env
 
@@ -15,11 +15,11 @@ jobs:
 
     steps:
     - name: executing remote ssh commands using ssh key
-      uses: appleboy/ssh-action@v0.1.4
+      uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.PROD_HOST }}
         username: ${{ secrets.PROD_USERNAME }}
-        key: ${{ secrets.KEY }}
+        key: ${{ secrets.PROD_KEY }}
         port: ${{ secrets.PORT }}
         command_timeout: 30m
         script_stop: true
