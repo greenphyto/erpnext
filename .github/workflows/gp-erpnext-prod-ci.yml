@@ -3,7 +3,7 @@ on:
     branches:
       - gpprod.v14.3.1
 
-name: Deploy to ERPNext Production Env
+name: Deploy to ERPNext Production Environment
 
 jobs:
   deploy:
