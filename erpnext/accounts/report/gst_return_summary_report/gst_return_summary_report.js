@@ -78,14 +78,17 @@ frappe.query_reports["GST Return Summary Report"] = {
 			column.link_onclick =
 				"open_general_ledger(" + JSON.stringify(data) + ")";
 			column.is_tree = true;
+			
 		}
 
 		value = default_formatter(value, row, column, data);
 
 		if (data && !data.parent_account) {
 			value = $(`<span>${value}</span>`);
-
-			var $value = $(value).css("font-weight", "normal");
+			var $value = $(value).css("color", "black");
+			if(column.link_onclick && column.link_onclick.includes("voucher_type")){
+				  $value = $(value).css("color", "blue");
+			}
 			if (data.warn_if_negative && data[column.fieldname] < 0) {
 				$value.addClass("text-danger");
 			}
