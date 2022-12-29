@@ -244,6 +244,7 @@ class VATAuditReport(object):
 				"tax_amount": total_tax,
 				"net_amount": total_net,
 				"bold": 1,
+				#"voucher_type":"noclick",
 			}
 			
 			self.data.append(total)
@@ -257,6 +258,7 @@ class VATAuditReport(object):
 				"tax_amount": gtotal_tax,
 				"net_amount": gtotal_net,
 				"bold": 1,
+				"voucher_type":doctype,
 			}
 		self.data.append(gtotal)
 		self.data.append({}) #if doctype == "Purchase Invoice" else _void
@@ -287,7 +289,7 @@ class VATAuditReport(object):
 
 	def get_columns(self):
 		self.columns = [
-			{"fieldname": "posting_date", "label": " ", "fieldtype": "Data", "width": 300},
+			{"fieldname": "posting_date", "label": " ", "fieldtype": "Link","options": "Account", "width": 300},
 			{
 				"fieldname": "account",
 				"label": "Account",

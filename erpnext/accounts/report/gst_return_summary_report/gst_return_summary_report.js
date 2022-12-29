@@ -70,8 +70,76 @@ frappe.query_reports["GST Return Summary Report"] = {
 				 
 			}
 		}
-	]
+	],
+	"formatter": function(value, row, column, data, default_formatter) {
+		if (data && column.fieldname=="posting_date" ) {
+			value = data.account_name || value;
+
+			column.link_onclick =
+				"open_general_ledger(" + JSON.stringify(data) + ")";
+			column.is_tree = true;
+		}
+
+		value = default_formatter(value, row, column, data);
+
+		if (data && !data.parent_account) {
+			value = $(`<span>${value}</span>`);
+
+			var $value = $(value).css("font-weight", "normal");
+			if (data.warn_if_negative && data[column.fieldname] < 0) {
+				$value.addClass("text-danger");
+			}
+
+			value = $value.wrap("<p></p>").parent().html();
+		}
+
+		return value;
+	},
+	"open_general_ledger": function(data) {
+		if (!data.account) return;
+		let project = $.grep(frappe.query_report.filters, function(e){ return e.df.fieldname == 'project'; });
+
+		frappe.route_options = {
+			"account": data.account,
+			"company": frappe.query_report.get_filter_value('company'),
+			"from_date": data.from_date || data.year_start_date,
+			"to_date": data.to_date || data.year_end_date,
+			"project": (project && project.length > 0) ? project[0].$input.val() : ""
+		};
+
+		let report = "General Ledger";
+
+		if (["Payable", "Receivable"].includes(data.account_type)) {
+			report = data.account_type == "Payable" ? "Accounts Payable" : "Accounts Receivable";
+			frappe.route_options["party_account"] = data.account;
+			frappe.route_options["report_date"] = data.year_end_date;
+		}
+
+		frappe.set_route("query-report", report);
+	},
 };
 function daysInMonth (month, year) {
 	return new Date(year, month, 0).getDate();
+}
+function open_general_ledger(data,query_report) {
+	if (!data.voucher_type) return;
+	let project = $.grep(frappe.query_report.filters, function(e){ return e.df.fieldname == 'project'; });
+
+	frappe.route_options = {
+		"account": data.account,
+		"company": frappe.query_report.get_filter_value('company'),
+		"from_date": frappe.query_report.get_values().from_date || data.year_start_date,
+		"to_date": frappe.query_report.get_values().to_date || data.year_end_date,
+		"project": (project && project.length > 0) ? project[0].$input.val() : ""
+	};
+
+	let report = "General Ledger";
+
+	if (["Sales Invoice", "Purchase Invoice"].includes(data.voucher_type)) {
+		report = data.voucher_type == "Sales Invoice" ? "Sales Taxes" : "Purchase Taxes";
+		frappe.route_options["party_account"] = data.account;
+		frappe.route_options["report_date"] = data.year_end_date;
+	}
+
+	frappe.set_route("query-report", report);
 }
