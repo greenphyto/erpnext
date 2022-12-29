@@ -220,13 +220,13 @@ def get_columns(invoice_list, additional_table_columns):
 			% ", ".join(["%s"] * len(invoice_list)),
 			tuple(inv.name for inv in invoice_list),
 		)
-
-	expense_columns = [(account + ":Currency/currency:120") for account in expense_accounts]
+	#(account + ":Currency/currency:120")
+	expense_columns = [({"fieldname": account, "label": _(account), "fieldtype": "currency","options": "currency", "width": 80, "hidden":1}) for account in expense_accounts]
 	unrealized_profit_loss_account_columns = [
-		(account + ":Currency/currency:120") for account in unrealized_profit_loss_accounts
+		({"fieldname": account, "label": _(account), "fieldtype": "currency","options": "currency", "width": 80, "hidden":1}) for account in unrealized_profit_loss_accounts
 	]
 	tax_columns = [
-		(account + ":Currency/currency:120")
+		({"fieldname": account, "label": _(account), "fieldtype": "currency","options": "currency", "width": 80, "hidden":1})
 		for account in tax_accounts
 		if account not in expense_accounts
 	]
