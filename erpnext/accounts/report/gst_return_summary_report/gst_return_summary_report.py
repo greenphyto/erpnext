@@ -26,12 +26,13 @@ class VATAuditReport(object):
 		#self.get_sa_vat_accounts()
 		self.get_columns()
 		gftotal_net = gstotal_net = gptotal_net = 0
-		totalsstr = "OUTPUT TAX DUE"
-		totalpstr = "LESS:INPUT TAX AND REFUNDS CLAIMED"
-		totalfstr = "EQUALS: NET GST TO BE PAID BY YOU OR <br>NET GST TO BE CLAIMED BY YOU"
+		totalsstr = "Output Tax Due"
+		totalpstr = "Less:Input Tax and Redunds claimed"
+		totalfstr = "Equals: Net GST to be paid by you or <br>Net GST to be claimed by you"
 		for doctype in self.doctypes:
 			self.select_columns = """
 			name as voucher_no,
+			taxes_and_charges,
 			posting_date, remarks"""
 			columns = (
 				", supplier as party, credit_to as account"
@@ -47,31 +48,32 @@ class VATAuditReport(object):
 				self.get_items_based_on_tax_rate(doctype)
 				self.get_data(doctype)
 				taxdata = self.data
+			
 				if doctype == "Purchase Invoice" :
 					gptotal_net = taxdata[-2]["tax_amount"]
 				if doctype == "Sales Invoice" :
 					gstotal_net = taxdata[-2]["tax_amount"]
 				#print(test[-2]["tax_amount"])
 		gstotal = {
-				"posting_date": frappe.bold(totalsstr),
+				"posting_date":  totalsstr,
 				"gross_amount": '',
 				"tax_amount": '',
 				"tax_amount": gstotal_net,
-				"bold": 1,
+				"bold": 0,
 			}
 		gptotal = {
-				"posting_date": frappe.bold(totalpstr),
+				"posting_date": totalpstr,
 				"gross_amount": '',
 				"tax_amount": '',
 				"tax_amount": gptotal_net,
-				"bold": 1,
+				"bold": 0,
 			}
 		gftotal = {
-				"posting_date": frappe.bold(totalfstr),
+				"posting_date": totalfstr,
 				"gross_amount": '',
 				"tax_amount": '',
 				"tax_amount":  gstotal_net - gptotal_net,
-				"bold": 1,
+				"bold": 0,
 			}
 		self.data.append(gstotal)
 		self.data.append(gptotal)
@@ -133,6 +135,27 @@ class VATAuditReport(object):
 			self.invoice_items.setdefault(d.parent, {}).setdefault(d.item_code, {"net_amount": 0.0})
 			self.invoice_items[d.parent][d.item_code]["net_amount"] += d.get("base_net_amount", 0)
 		##	self.invoice_items[d.parent][d.item_code]["is_zero_rated"] = d.is_zero_rated
+	def get_tax_types(self, doctype):
+		tax_type = frappe._dict()
+		tax_doctype = (
+			"Purchase Taxes and Charges" if doctype == "Purchase Invoice" else "Sales Taxes and Charges"
+		)
+#, is_zero_rated
+		items = frappe.db.sql(
+			"""
+			SELECT
+				rate, parent
+			FROM
+				`tab{doc_type}`
+			WHERE
+				parenttype = "{doc_type} Template"
+			""".format(
+				  doc_type=tax_doctype
+			),
+			as_dict=1,
+		)
+	 
+		return items	
 
 	def get_items_based_on_tax_rate(self, doctype):
 		self.items_based_on_tax_rate = frappe._dict()
@@ -165,6 +188,7 @@ class VATAuditReport(object):
 					# else:
 					# 	continue
 					item_wise_tax_detail = json.loads(item_wise_tax_detail)
+					#print(item_wise_tax_detail)
 					for item_code, taxes in item_wise_tax_detail.items():
 						is_zero_rated = 0# self.invoice_items.get(parent).get(item_code).get("is_zero_rated")
 						# to skip items with non-zero tax rate in multiple rows gf
@@ -187,6 +211,7 @@ class VATAuditReport(object):
 		tax_amount = taxes[1]
 		gross_amount = net_amount + tax_amount
 
+
 		self.item_tax_rate.setdefault(parent, {}).setdefault(
 			item_code,
 			{
@@ -194,13 +219,14 @@ class VATAuditReport(object):
 				"gross_amount": 0.0,
 				"tax_amount": 0.0,
 				"net_amount": 0.0,
+				"parent":parent,
 			},
 		)
 
 		self.item_tax_rate[parent][item_code]["net_amount"] += net_amount
 		self.item_tax_rate[parent][item_code]["tax_amount"] += tax_amount
 		self.item_tax_rate[parent][item_code]["gross_amount"] += gross_amount
-
+		#print(tax_rate)
 		return tax_rate
 
 	def get_conditions(self):
@@ -218,32 +244,33 @@ class VATAuditReport(object):
 	def get_data(self, doctype):
 		consolidated_data = self.get_consolidated_data(doctype)
 		isloop = False
-		section_name = _("INPUT TAX/ PURCHASE TAX") if doctype == "Purchase Invoice" else _("OUTPUT TAX/ SALES TAX")
+		section_name = _("Input tax/ Purchase tax") if doctype == "Purchase Invoice" else _("Output tax/ Sales tax")
 
 		 
 		gtotal_gross = gtotal_tax = gtotal_net = 0
 		totalstr = " "
-		for rate, section in consolidated_data.items():
-			rate = int(rate)
-			print(rate)
+		for taxType, section in consolidated_data.items():
+			#rate = int(rate)
 			label = frappe.bold(section_name )
 			section_head = {"posting_date": label}
 			total_gross = total_tax = total_net = 0
 			self.data.append(section_head) if isloop == False else  _void
 			isloop = True
 			for row in section.get("data"):
-				#self.data.append(row)
-				total_gross += row["gross_amount"]
-				total_tax += row["tax_amount"]
-				total_net += row["net_amount"]
+				if (self.filters.show_details):
+					self.data.append(row)
+				total_gross += 0 if  row["gross_amount"]=="" else row["gross_amount"]
+				total_tax += 0 if  row["tax_amount"] =="" else  row["tax_amount"] 
+				total_net += 0 if row["net_amount"] =="" else row["net_amount"] 
 			
-			totalstr = _("TOTAL VALUE OF TAXABLE PURCHASES ") if doctype == "Purchase Invoice" else _("TOTAL VALUE OF TAXABLE SALES ")
+			totalstr = _("Total value of taxable ") if doctype == "Purchase Invoice" else _("Total value of taxable ")
+			doctypestr = _("Purchases") if doctype == "Purchase Invoice" else _("Sales")
 			total = {
-				"posting_date": frappe.bold(totalstr + str(rate) + "%"),
+				"posting_date": totalstr + taxType,
 				"gross_amount": total_gross,
 				"tax_amount": total_tax,
 				"net_amount": total_net,
-				"bold": 1,
+				"bold": 0,
 				#"voucher_type":"noclick",
 			}
 			
@@ -253,11 +280,11 @@ class VATAuditReport(object):
 			gtotal_net += total["net_amount"]
 			
 		gtotal = {
-				"posting_date": frappe.bold(totalstr),
+				"posting_date": totalstr + doctypestr,
 				"gross_amount": gtotal_gross,
 				"tax_amount": gtotal_tax,
 				"net_amount": gtotal_net,
-				"bold": 1,
+				"bold": 0,
 				"voucher_type":doctype,
 			}
 		self.data.append(gtotal)
@@ -268,13 +295,14 @@ class VATAuditReport(object):
 			if self.items_based_on_tax_rate.get(inv):
 				for rate, items in self.items_based_on_tax_rate.get(inv).items():
 					row = {"tax_amount": 0.0, "gross_amount": 0.0, "net_amount": 0.0}
-
-					consolidated_data_map.setdefault(rate, {"data": []})
+					docprefix = _("purchases ") if doctype == "Purchase Invoice" else _("sales ")
+					taxType = docprefix + inv_data.get("taxes_and_charges")
+					consolidated_data_map.setdefault(taxType, {"data": []})
 					for item in items:
 						item_details = self.item_tax_rate.get(inv).get(item)
 						row["account"] = inv_data.get("account")
-						row["posting_date"] = formatdate(inv_data.get("posting_date"), "dd-mm-yyyy")
-						row["voucher_type"] = doctype
+						row["posting_date"] = inv#formatdate(inv_data.get("posting_date"), "dd-mm-yyyy")
+						#row["voucher_type"] = ""
 						row["voucher_no"] = inv
 						row["party_type"] = "Customer" if doctype == "Sales Invoice" else "Supplier"
 						row["party"] = inv_data.get("party")
@@ -282,20 +310,45 @@ class VATAuditReport(object):
 						row["gross_amount"] += item_details.get("gross_amount")
 						row["tax_amount"] += item_details.get("tax_amount")
 						row["net_amount"] += item_details.get("net_amount")
-
-					consolidated_data_map[rate]["data"].append(row)
-
+						row["tax_charge"] = inv_data.get("taxes_and_charges")
+				 
+					consolidated_data_map[taxType]["data"].append(row)
+		get_tax_type = self.get_tax_types(doctype)
+		
+		for tax_type in get_tax_type:
+			docprefix = _("purchases ") if doctype == "Purchase Invoice" else _("sales ")
+			taxtype =docprefix +  tax_type.get("parent")
+			print(taxtype)
+			print(consolidated_data_map)
+			if (taxtype in consolidated_data_map):
+				continue
+			else:
+				row = {"tax_amount": 0.0, "gross_amount": 0.0, "net_amount": 0.0}	 
+				consolidated_data_map.setdefault(taxtype, {"data": []})
+				row["account"] = ""
+				row["posting_date"] =""
+				row["voucher_type"] = ""
+				row["voucher_no"] = ""
+				row["party_type"] = "Customer" if doctype == "Sales Invoice" else "Supplier"
+				row["party"] = ""
+				row["remarks"] = ""
+				row["gross_amount"] = ""
+				row["tax_amount"] = ""
+				row["net_amount"] = ""
+				row["tax_charge"] = tax_type.get("parent")
+				consolidated_data_map[taxtype]["data"].append(row)
+		 
 		return consolidated_data_map
 
 	def get_columns(self):
 		self.columns = [
-			{"fieldname": "posting_date", "label": " ", "fieldtype": "Link","options": "Account", "width": 300},
+			{"fieldname": "posting_date", "label": " ", "fieldtype": "Link","options": "Account", "width": 350},
 			{
 				"fieldname": "account",
 				"label": "Account",
 				"fieldtype": "Link",
 				"options": "Account",
-				"width": 150,
+				"width": 180,
 				"hidden": 1
 			},
 			{
@@ -330,7 +383,7 @@ class VATAuditReport(object):
 				"hidden": 1
 			},
 			{"fieldname": "remarks", "label": "Details", "fieldtype": "Data", "width": 150,"hidden": 1},
-			{"fieldname": "net_amount", "label": "TAXABLE AMOUNT<br> Total", "fieldtype": "Currency", "width": 130},
-			{"fieldname": "tax_amount", "label": "GST AMOUNT <br>Total", "fieldtype": "Currency", "width": 130},
-			{"fieldname": "tax_amount", "label": "TOTAL", "fieldtype": "Currency", "width": 130},
+			{"fieldname": "net_amount", "label": "Taxable Amount", "fieldtype": "Currency", "width": 150},
+			{"fieldname": "tax_amount", "label": "GST Amount", "fieldtype": "Currency", "width": 150},
+			{"fieldname": "tax_amount", "label": "Total", "fieldtype": "Currency", "width": 150},
 		]

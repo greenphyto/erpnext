@@ -1,5 +1,5 @@
 {
- "add_total_row": 1,
+ "add_total_row": 0,
  "columns": [],
  "creation": "2022-12-28 15:19:08.144917",
  "disable_prepared_report": 0,
@@ -9,7 +9,7 @@
  "filters": [],
  "idx": 0,
  "is_standard": "Yes",
- "modified": "2022-12-28 15:19:08.144917",
+ "modified": "2023-01-05 14:55:15.290361",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Taxes",

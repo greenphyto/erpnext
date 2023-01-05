@@ -69,7 +69,12 @@ frappe.query_reports["GST Return Summary Report"] = {
 					});
 				 
 			}
-		}
+		},
+		{
+			"fieldname": "show_details",
+			"label": __("Show Details"),
+			"fieldtype": "Check",
+		},
 	],
 	"formatter": function(value, row, column, data, default_formatter) {
 		if (data && column.fieldname=="posting_date" ) {
