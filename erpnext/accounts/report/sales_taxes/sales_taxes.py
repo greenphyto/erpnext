@@ -5,6 +5,7 @@ import frappe
 from frappe import _, msgprint
 from frappe.model.meta import get_field_precision
 from frappe.utils import flt
+from frappe.utils import fmt_money
 
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 	get_accounting_dimensions,
@@ -73,7 +74,7 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 				"delivery_note": ", ".join(delivery_note),
 				"cost_center": ", ".join(cost_center),
 				"warehouse": ", ".join(warehouse),
-				"currency": company_currency,
+				"currency": inv.currency,
 			}
 		)
 
@@ -94,8 +95,10 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 				{frappe.scrub(account + "_unrealized"): flt(internal_invoice_map.get((inv.name, account)))}
 			)
 
-		# net total
-		row.update({"net_total": base_net_total or inv.base_net_total})
+		# base net total
+		row.update({"base_net_total": base_net_total or inv.base_net_total})
+			# base net total
+		row.update({"net_total": inv.net_total})
 
 		# tax account
 		total_tax = 0
@@ -115,13 +118,15 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 
 		row.update(
 			{
-				"tax_total": total_tax,
-				"grand_total": inv.base_grand_total,
+				"tax_total":   inv.total_taxes_and_charges,
+				"base_tax_total": total_tax,
+				"grand_total": inv.grand_total,
+				"base_grand_total": inv.base_grand_total,
 				"rounded_total": inv.base_rounded_total,
 				"outstanding_amount": inv.outstanding_amount,
 			}
 		)
-
+		print(row)
 		data.append(row)
 
 	return columns, data
@@ -301,30 +306,52 @@ def get_columns(invoice_list, additional_table_columns):
 				"hidden":1
 			}
 		)
-
 	net_total_column = [
 		{
-			"label": _("Net Total"),
+			"label": _("Net Total(Original Currency)"),
 			"fieldname": "net_total",
 			"fieldtype": "Currency",
 			"options": "currency",
 			"width": 120,
 		}
 	]
+	base_net_total_column = [
+		{
+			"label": _("Net Total(Book Currency)"),
+			"fieldname": "base_net_total",
+			"fieldtype": "Currency",
+			"options": "Company:company:default_currency",
+			"width": 120,
+		}
+	]
 
 	total_columns = [
 		{
-			"label": _("Tax Total"),
+			"label": _("Tax Total(Original Currency)"),
 			"fieldname": "tax_total",
 			"fieldtype": "Currency",
 			"options": "currency",
 			"width": 120,
 		},
 		{
-			"label": _("Grand Total"),
+			"label": _("Tax Total(Book Currency)"),
+			"fieldname": "base_tax_total",
+			"fieldtype": "Currency",
+			"options": "Company:company:default_currency",
+			"width": 120,
+		},
+		{
+			"label": _("Grand Total(Original Currency)"),
 			"fieldname": "grand_total",
 			"fieldtype": "Currency",
 			"options": "currency",
+			"width": 120,
+		},
+		{
+			"label": _("Grand Total(Book Currency)"),
+			"fieldname": "base_grand_total",
+			"fieldtype": "Currency",
+			"options": "Company:company:default_currency",
 			"width": 120,
 		},
 		{
@@ -350,6 +377,7 @@ def get_columns(invoice_list, additional_table_columns):
 		+ income_columns
 		+ unrealized_profit_loss_account_columns
 		+ net_total_column
+		+ base_net_total_column
 		+ tax_columns
 		+ total_columns
 	)
@@ -424,7 +452,8 @@ def get_invoices(filters, additional_query_columns):
 		"""
 		select name, posting_date, debit_to, project, customer,
 		customer_name, owner, remarks, territory, tax_id, customer_group,
-		base_net_total, base_grand_total, base_rounded_total, outstanding_amount,
+		base_net_total,net_total, base_grand_total,grand_total, base_rounded_total, outstanding_amount,
+		total_taxes_and_charges,currency,
 		is_internal_customer, represents_company, company {0}
 		from `tabSales Invoice`
 		where docstatus = 1 %s order by posting_date desc, name desc""".format(

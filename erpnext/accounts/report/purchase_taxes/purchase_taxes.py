@@ -67,7 +67,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 			inv.remarks,
 			", ".join(purchase_order),
 			", ".join(purchase_receipt),
-			company_currency,
+			inv.currency,
 		]
 
 		# map expense values
@@ -85,6 +85,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 			row.append(flt(internal_invoice_map.get((inv.name, account))))
 
 		# net total
+		row.append(inv.net_total)
 		row.append(base_net_total or inv.base_net_total)
 
 		# tax account
@@ -96,7 +97,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 				row.append(tax_amount)
 
 		# total tax, grand total, rounded total & outstanding amount
-		row += [total_tax, inv.base_grand_total, flt(inv.base_grand_total, 0), inv.outstanding_amount]
+		row += [inv.total_taxes_and_charges,total_tax,inv.grand_total, inv.base_grand_total, flt(inv.base_grand_total, 0), inv.outstanding_amount]
 		data.append(row)
 
 	return columns, data
@@ -235,11 +236,14 @@ def get_columns(invoice_list, additional_table_columns):
 		columns
 		+ expense_columns
 		+ unrealized_profit_loss_account_columns
-		+ [_("Net Total") + ":Currency/currency:120"]
+		+ [_("Net Total(Original Currency)") + ":Currency/currency:120"]
+		+ [_("Net Total(Book Currency)") + ":Currency/Company:company:default_currency:120"]
 		+ tax_columns
 		+ [
-			_("Total Tax") + ":Currency/currency:120",
-			_("Grand Total") + ":Currency/currency:120",
+			_("Total Tax(Original Currency)") + ":Currency/currency:120",
+			_("Total Tax(Book Currency)") + ":Currency/Company:company:default_currency:120",
+			_("Grand Total(Original Currency)") + ":Currency/currency:120",
+			_("Grand Total(Book Currency)") + ":Currency/Company:company:default_currency:120",
 			#_("Rounded Total") + ":Currency/currency:120",
 			{"fieldname": "rounded_total", "label": _("Rounded Total"), "fieldtype": "currency","options": "currency", "width": 80, "hidden":1},
 			#_("Outstanding Amount") + ":Currency/currency:120",
@@ -317,7 +321,8 @@ def get_invoices(filters, additional_query_columns):
 		"""
 		select
 			name, posting_date, credit_to, supplier, supplier_name, tax_id, bill_no, bill_date,
-			remarks, base_net_total, base_grand_total, outstanding_amount,
+			remarks,net_total, base_net_total,grand_total, base_grand_total, outstanding_amount,
+			currency,total_taxes_and_charges,
 			mode_of_payment {0}
 		from `tabPurchase Invoice`
 		where docstatus = 1 %s
