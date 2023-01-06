@@ -296,7 +296,8 @@ class VATAuditReport(object):
 				for rate, items in self.items_based_on_tax_rate.get(inv).items():
 					row = {"tax_amount": 0.0, "gross_amount": 0.0, "net_amount": 0.0}
 					docprefix = _("purchases ") if doctype == "Purchase Invoice" else _("sales ")
-					taxType = docprefix + inv_data.get("taxes_and_charges")
+					taxdata ="" if  inv_data.get("taxes_and_charges") is None else inv_data.get("taxes_and_charges")
+					taxType = docprefix + taxdata
 					consolidated_data_map.setdefault(taxType, {"data": []})
 					for item in items:
 						item_details = self.item_tax_rate.get(inv).get(item)
