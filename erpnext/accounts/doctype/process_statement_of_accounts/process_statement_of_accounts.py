@@ -106,16 +106,17 @@ def get_report_pdf(doc, consolidated=True):
 				"phone": objcompany.phone_no,
 				"email": objcompany.email,
 				"fax": objcompany.fax,
-				"address": lstAddress[0].address_line1,
-				"zipcode":  lstAddress[0].pincode,
-				"city": lstAddress[0].city,
+				"address": lstAddress[0].address_line1 if lstAddress else None,
+				"zipcode":  lstAddress[0].pincode if lstAddress else None ,
+				"city": lstAddress[0].city if lstAddress else None ,
 				"custAddress": cust.primary_address,
 			}
 		)
 		col, res = get_soa(filters)
-
+		 
 		for x in [0, -2, -1]:
 			res[x]["account"] = res[x]["account"].replace("'", "")
+			 
 
 		if len(res) == 3:
 			continue
