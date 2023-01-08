@@ -330,6 +330,9 @@
 		</tr>
 		{% endif %}
 		{% endfor %}
+		<tr>
+			<td colspan="6" style="text-align: right"> {{ frappe.utils.money_in_words(data[-1].balance) }}</td>
+		</tr>
 	  </tbody>
 	</table>
 	<br>
