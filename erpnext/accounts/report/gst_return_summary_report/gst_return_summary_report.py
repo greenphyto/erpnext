@@ -386,5 +386,5 @@ class VATAuditReport(object):
 			{"fieldname": "remarks", "label": "Details", "fieldtype": "Data", "width": 150,"hidden": 1},
 			{"fieldname": "net_amount", "label": "Taxable Amount", "fieldtype": "Currency", "width": 150},
 			{"fieldname": "tax_amount", "label": "GST Amount", "fieldtype": "Currency", "width": 150},
-			{"fieldname": "tax_amount", "label": "Total", "fieldtype": "Currency", "width": 150},
+			{"fieldname": "gross_amount", "label": "Total", "fieldtype": "Currency", "width": 150},
 		]
