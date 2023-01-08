@@ -330,6 +330,9 @@
 		</tr>
 		{% endif %}
 		{% endfor %}
+		<tr>
+			<td> {{ {{ frappe.utils.money_in_words(row.balance, currency=filters.presentation_currency) }} }}</td>
+		</tr>
 	  </tbody>
 	</table>
 	<br>
