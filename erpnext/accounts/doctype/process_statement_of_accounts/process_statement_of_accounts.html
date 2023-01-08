@@ -331,7 +331,7 @@
 		{% endif %}
 		{% endfor %}
 		<tr>
-			<td> {{ {{ frappe.utils.money_in_words(row.balance, currency=filters.presentation_currency) }} }}</td>
+			<td colspan="6" style="text-align: right"> {{ frappe.utils.money_in_words(data[-1].balance) }}</td>
 		</tr>
 	  </tbody>
 	</table>
