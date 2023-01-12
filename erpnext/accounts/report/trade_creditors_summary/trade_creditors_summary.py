@@ -139,7 +139,7 @@ class TradeCreditorsSummary(DebtorCreditorReport):
 		credit_debit_label = "Credit Note" if self.party_type == "Customer" else "Debit Note"
 
 		self.add_column(_("Advance Amount"), fieldname="advance")
-		self.add_column(label=_("Invoiced Amount(Original Currency)"),fieldtype="Currency",fieldname="invoiced_in_account_currency",options="currency")
+		self.add_column(label=_("Invoiced Amount(Original Currency)"),fieldtype="currency",fieldname="invoiced_in_account_currency",options="currency")
 		self.add_column(_("Invoiced Amount"), fieldname="invoiced")
 		self.add_column(_("Paid Amount"), fieldname="paid")
 		self.add_column(_(credit_debit_label), fieldname="credit_note")
