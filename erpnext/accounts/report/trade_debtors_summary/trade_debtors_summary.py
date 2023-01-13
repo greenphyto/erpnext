@@ -140,16 +140,16 @@ class TradeDebtorsSummary(DebtorCreditorReport):
 
 		credit_debit_label = "Credit Note" if self.party_type == "Customer" else "Debit Note"
 
-		self.add_column(_("Advance Amount"), fieldname="advance",fieldtype="currency")
-		self.add_column(label=_("Invoiced Amount(Original Currency)"),fieldtype="currency",fieldname="invoiced_in_account_currency",options="currency")
-		self.add_column(_("Invoiced Amount"), fieldname="invoiced",fieldtype="currency")
-		self.add_column(_("Paid Amount"), fieldname="paid",fieldtype="currency")
-		self.add_column(_(credit_debit_label), fieldname="credit_note",fieldtype="currency")
-		self.add_column(_("Outstanding Amount"), fieldname="outstanding",fieldtype="currency")
+		self.add_column(_("Advance Amount"), fieldname="advance",fieldtype="Currency")
+		self.add_column(label=_("Invoiced Amount(Original Currency)"),fieldtype="Currency",fieldname="invoiced_in_account_currency",options="currency")
+		self.add_column(_("Invoiced Amount"), fieldname="invoiced",fieldtype="Currency")
+		self.add_column(_("Paid Amount"), fieldname="paid",fieldtype="Currency")
+		self.add_column(_(credit_debit_label), fieldname="credit_note",fieldtype="Currency")
+		self.add_column(_("Outstanding Amount"), fieldname="outstanding",fieldtype="Currency")
 
 		if self.filters.show_gl_balance:
-			self.add_column(_("GL Balance"), fieldname="gl_balance",fieldtype="currency")
-			self.add_column(_("Difference"), fieldname="diff",fieldtype="currency")
+			self.add_column(_("GL Balance"), fieldname="gl_balance",fieldtype="Currency")
+			self.add_column(_("Difference"), fieldname="diff",fieldtype="Currency")
 
 		self.setup_ageing_columns()
 
@@ -193,10 +193,10 @@ class TradeDebtorsSummary(DebtorCreditorReport):
 				"{range4}-{above}".format(range4=cint(self.filters["range4"]) + 1, above=_("Above")),
 			]
 		):
-			self.add_column(label=label, fieldname="range" + str(i + 1),fieldtype="currency")
+			self.add_column(label=label, fieldname="range" + str(i + 1),fieldtype="Currency")
 
 		# Add column for total due amount
-		self.add_column(label="Total Amount Due", fieldname="total_due")
+		self.add_column(label="Total Amount Due", fieldname="total_due",fieldtype="Currency")
 
 
 def get_gl_balance(report_date):
