@@ -4,7 +4,7 @@
 # import frappe
 
 from erpnext.accounts.report.trade_debtors_summary.trade_debtors_summary import (
-	TradeCreditorsSummary,
+	TradeDebtorsSummary,
 )
 def execute(filters=None):
 	args = {
@@ -13,7 +13,7 @@ def execute(filters=None):
 	}
 	 
 
-	return TradeCreditorsSummary(filters).run(args)
+	return TradeDebtorsSummary(filters).run(args)
 
 
  
