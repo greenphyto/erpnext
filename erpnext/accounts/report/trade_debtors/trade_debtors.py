@@ -917,15 +917,15 @@ class DebtorCreditorReport(object):
 		if self.filters.based_on_payment_terms:
 			self.add_column(label=_("Payment Term"), fieldname="payment_term", fieldtype="Data")
 			self.add_column(label=_("Invoice Grand Total"), fieldname="invoice_grand_total")
-		self.add_column(label=_("Invoiced Amount(Original Currency)"),fieldtype="currency",fieldname="invoiced_in_account_currency",options="currency")
-		self.add_column(label=_("Invoiced Amount"), fieldname="invoiced",fieldtype="currency",options="Company:company:default_currency")
-		self.add_column(label=_("Paid Amount"), fieldname="paid",fieldtype="currency",options="Company:company:default_currency")
+		self.add_column(label=_("Invoiced Amount(Original Currency)"),fieldtype="Currency",fieldname="invoiced_in_account_currency",options="currency")
+		self.add_column(label=_("Invoiced Amount"), fieldname="invoiced",fieldtype="Currency",options="Company:company:default_currency")
+		self.add_column(label=_("Paid Amount"), fieldname="paid",fieldtype="Currency",options="Company:company:default_currency")
 		if self.party_type == "Customer":
-			self.add_column(_("Credit Note"), fieldname="credit_note",fieldtype="currency",options="Company:company:default_currency")
+			self.add_column(_("Credit Note"), fieldname="credit_note",fieldtype="Currency",options="Company:company:default_currency")
 		else:
 			# note: fieldname is still `credit_note`
-			self.add_column(_("Debit Note"), fieldname="credit_note",fieldtype="currency",options="Company:company:default_currency")
-		self.add_column(_("Outstanding Amount"), fieldname="outstanding",fieldtype="currency",options="Company:company:default_currency")
+			self.add_column(_("Debit Note"), fieldname="credit_note",fieldtype="Currency",options="Company:company:default_currency")
+		self.add_column(_("Outstanding Amount"), fieldname="outstanding",fieldtype="Currency",options="Company:company:default_currency")
 
 		self.setup_ageing_columns()
 
@@ -1002,7 +1002,7 @@ class DebtorCreditorReport(object):
 				_("{range4}-Above").format(range4=cint(self.filters["range4"]) + 1),
 			]
 		):
-			self.add_column(label=label, fieldname="range" + str(i + 1), fieldtype="currency", options="Company:company:default_currency")
+			self.add_column(label=label, fieldname="range" + str(i + 1), fieldtype="Currency", options="Company:company:default_currency")
 			self.ageing_column_labels.append(label)
 
 	def get_chart_data(self):
