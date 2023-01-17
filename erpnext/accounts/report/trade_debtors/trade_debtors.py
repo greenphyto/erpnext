@@ -44,7 +44,8 @@ class DebtorCreditorReport(object):
 		self.get_columns()
 		self.get_data()
 		self.get_chart_data()
-		print(self.columns)
+	
+		 
 		return self.columns, self.data, None, self.chart, None, self.skip_total_row
 
 	def set_defaults(self):
@@ -112,6 +113,7 @@ class DebtorCreditorReport(object):
 					paid_in_account_currency=0.0,
 					credit_note_in_account_currency=0.0,
 					outstanding_in_account_currency=0.0,
+					invoice_grand_total_in_account_currency=0.0,
 				)
 			self.get_invoices(ple)
 
@@ -140,6 +142,7 @@ class DebtorCreditorReport(object):
 
 	def get_currency_fields(self):
 		return [
+			"invoiced_in_account_currency",
 			"invoiced",
 			"paid",
 			"credit_note",
@@ -233,6 +236,7 @@ class DebtorCreditorReport(object):
 			)
 
 			row.invoice_grand_total = row.invoiced
+			row.invoice_grand_total_in_account_currency= row.invoiced_in_account_currency
 
 			if (abs(row.outstanding) > 1.0 / 10**self.currency_precision) and (
 				abs(row.outstanding_in_account_currency) > 1.0 / 10**self.currency_precision
@@ -394,7 +398,11 @@ class DebtorCreditorReport(object):
 		if self.filters.get(scrub(self.filters.party_type)):
 			row.currency = row.account_currency
 		else:
-			row.currency = self.company_currency
+			 
+			if self.filters.show_original_currency:
+				row.currency = row.account_currency
+			else:
+				row.currency =self.company_currency
 
 	def allocate_outstanding_based_on_payment_terms(self, row):
 		self.get_payment_terms(row)
@@ -454,6 +462,7 @@ class DebtorCreditorReport(object):
 					"due_date": d.due_date,
 					"invoiced": invoiced,
 					"invoice_grand_total": row.invoiced,
+					
 					"payment_term": d.description or d.payment_term,
 					"paid": d.paid_amount + d.discounted_amount,
 					"credit_note": 0.0,
@@ -645,7 +654,10 @@ class DebtorCreditorReport(object):
 
 		if index is None:
 			index = 4
-		row["range" + str(index + 1)] = row.outstanding
+		if self.filters.show_original_currency:
+			row["range" + str(index + 1)] = row.outstanding_in_account_currency
+		else:
+			row["range" + str(index + 1)] = row.outstanding
 
 	def get_ple_entries(self):
 		# get all the GL entries filtered by the given filters
@@ -916,16 +928,37 @@ class DebtorCreditorReport(object):
 
 		if self.filters.based_on_payment_terms:
 			self.add_column(label=_("Payment Term"), fieldname="payment_term", fieldtype="Data")
-			self.add_column(label=_("Invoice Grand Total"), fieldname="invoice_grand_total")
-		self.add_column(label=_("Invoiced Amount(Original Currency)"),fieldtype="Currency",fieldname="invoiced_in_account_currency",options="currency")
-		self.add_column(label=_("Invoiced Amount"), fieldname="invoiced",fieldtype="Currency",options="Company:company:default_currency")
-		self.add_column(label=_("Paid Amount"), fieldname="paid",fieldtype="Currency",options="Company:company:default_currency")
-		if self.party_type == "Customer":
-			self.add_column(_("Credit Note"), fieldname="credit_note",fieldtype="Currency",options="Company:company:default_currency")
+			if self.filters.show_original_currency:
+				self.add_column(label=_("Invoice Grand Total(Original Currency)"), fieldname="invoice_grand_total_in_account_currency",options="currency")
+			else:
+				self.add_column(label=_("Invoice Grand Total"), fieldname="invoice_grand_total",options="Company:company:default_currency")
+		if self.filters.show_original_currency:
+			self.add_column(label=_("Invoiced Amount(Original Currency)"),fieldtype="Currency",fieldname="invoiced_in_account_currency",options="currency")
 		else:
+			self.add_column(label=_("Invoiced Amount"), fieldname="invoiced",fieldtype="Currency",options="Company:company:default_currency")
+		if self.filters.show_original_currency:
+			self.add_column(label=_("Paid Amount(Original Currency)"), fieldname="paid_in_account_currency",fieldtype="Currency",options="currency")
+		else:
+			self.add_column(label=_("Paid Amount"), fieldname="paid",fieldtype="Currency",options="Company:company:default_currency")
+		
+		if self.filters.show_original_currency:
+				if self.party_type == "Customer":
+					self.add_column(_("Credit Note(Original Currency)"), fieldname="credit_note_in_account_currency",fieldtype="Currency",options="currency")
+				else:
+				# note: fieldname is still `credit_note`
+					self.add_column(_("Debit Note(Original Currency)"), fieldname="credit_note_in_account_currency",fieldtype="Currency",options="currency")
+		else:
+	
+			if self.party_type == "Customer":
+				self.add_column(_("Credit Note"), fieldname="credit_note",fieldtype="Currency",options="Company:company:default_currency")
+			else:
 			# note: fieldname is still `credit_note`
-			self.add_column(_("Debit Note"), fieldname="credit_note",fieldtype="Currency",options="Company:company:default_currency")
-		self.add_column(_("Outstanding Amount"), fieldname="outstanding",fieldtype="Currency",options="Company:company:default_currency")
+				self.add_column(_("Debit Note"), fieldname="credit_note",fieldtype="Currency",options="Company:company:default_currency")
+
+		if self.filters.show_original_currency:
+			self.add_column(_("Outstanding Amount(Original Currency)"), fieldname="outstanding_in_account_currency",fieldtype="Currency",options="currency")
+		else:
+			self.add_column(_("Outstanding Amount"), fieldname="outstanding",fieldtype="Currency",options="Company:company:default_currency")
 
 		self.setup_ageing_columns()
 
@@ -972,9 +1005,8 @@ class DebtorCreditorReport(object):
 			fieldname = scrub(label)
 		if fieldtype == "Currency":
 			if not options:
-				
 				options = "Company:company:default_currency"
-			print(options)
+		 
 		if fieldtype == "Date":
 			width = 90
 		
@@ -1002,8 +1034,12 @@ class DebtorCreditorReport(object):
 				_("{range4}-Above").format(range4=cint(self.filters["range4"]) + 1),
 			]
 		):
-			self.add_column(label=label, fieldname="range" + str(i + 1), fieldtype="Currency", options="Company:company:default_currency")
-			self.ageing_column_labels.append(label)
+			if self.filters.show_original_currency:
+				self.add_column(label=label, fieldname="range" + str(i + 1), fieldtype="Currency", options="currency")
+				self.ageing_column_labels.append(label)
+			else:
+				self.add_column(label=label, fieldname="range" + str(i + 1), fieldtype="Currency", options="Company:company:default_currency")
+				self.ageing_column_labels.append(label)
 
 	def get_chart_data(self):
 		rows = []

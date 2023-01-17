@@ -128,7 +128,13 @@ frappe.query_reports["Trade Creditors Summary"] = {
 			"fieldname":"show_gl_balance",
 			"label": __("Show GL Balance"),
 			"fieldtype": "Check",
-		},
+		}
+		,
+		{
+			"fieldname": "show_original_currency",
+			"label": __("Show Original Currency"),
+			"fieldtype": "Check",
+		}
 	],
 
 	onload: function(report) {
