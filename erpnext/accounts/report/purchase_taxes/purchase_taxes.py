@@ -245,12 +245,12 @@ def get_columns(invoice_list, additional_table_columns):
 			_("Grand Total(Original Currency)") + ":Currency/currency:120",
 			_("Grand Total(Book Currency)") + ":Currency/Company:company:default_currency:120",
 			#_("Rounded Total") + ":Currency/currency:120",
-			{"fieldname": "rounded_total", "label": _("Rounded Total"), "fieldtype": "currency","options": "currency", "width": 80, "hidden":1},
+			{"fieldname": "rounded_total", "label": _("Rounded Total"), "fieldtype": "Currency","options": "currency", "width": 80, "hidden":1},
 			#_("Outstanding Amount") + ":Currency/currency:120",
-			{"fieldname": "outstanding_total", "label": _("Outstanding Total"), "fieldtype": "currency","options": "currency", "width": 80, "hidden":1},
+			{"fieldname": "outstanding_total", "label": _("Outstanding Total"), "fieldtype": "Currency","options": "currency", "width": 80, "hidden":1},
 		]
 	)
-
+	
 	return columns, expense_accounts, tax_accounts, unrealized_profit_loss_accounts
 
 

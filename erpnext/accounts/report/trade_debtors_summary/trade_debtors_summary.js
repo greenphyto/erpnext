@@ -100,6 +100,11 @@ frappe.query_reports["Trade Debtors Summary"] = {
 			"fieldname":"based_on_payment_terms",
 			"label": __("Based On Payment Terms"),
 			"fieldtype": "Check",
+		},
+		{
+			"fieldname": "show_original_currency",
+			"label": __("Show Original Currency"),
+			"fieldtype": "Check",
 		}
 	],
 

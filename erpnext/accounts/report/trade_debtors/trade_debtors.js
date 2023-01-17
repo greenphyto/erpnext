@@ -191,6 +191,11 @@ frappe.query_reports["Trade Debtors"] =  {
 			"fieldtype": "Check",
 		},
 		{
+			"fieldname": "show_original_currency",
+			"label": __("Show Original Currency"),
+			"fieldtype": "Check",
+		},
+		{
 			"fieldname": "customer_name",
 			"label": __("Customer Name"),
 			"fieldtype": "Data",

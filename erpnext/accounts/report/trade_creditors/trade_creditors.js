@@ -150,6 +150,11 @@ frappe.query_reports["Trade Creditors"] = {
 			"fieldname": "show_future_payments",
 			"label": __("Show Future Payments"),
 			"fieldtype": "Check",
+		},
+		{
+			"fieldname": "show_original_currency",
+			"label": __("Show Original Currency"),
+			"fieldtype": "Check",
 		}
 	],
 

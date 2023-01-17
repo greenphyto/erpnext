@@ -104,6 +104,9 @@ class TradeDebtorsSummary(DebtorCreditorReport):
 					"paid": 0.0,
 					"credit_note": 0.0,
 					"outstanding": 0.0,
+					"paid_in_account_currency":0.0,
+					"credit_note_in_account_currency":0.0,
+					"outstanding_in_account_currency":0.0,
 					"range1": 0.0,
 					"range2": 0.0,
 					"range3": 0.0,
@@ -139,13 +142,30 @@ class TradeDebtorsSummary(DebtorCreditorReport):
 			self.add_column(_("{0} Name").format(self.party_type), fieldname="party_name", fieldtype="Data")
 
 		credit_debit_label = "Credit Note" if self.party_type == "Customer" else "Debit Note"
+		if self.filters.show_original_currency:
+			self.add_column(_("Advance Amount"), fieldname="advance",fieldtype="Currency", options="currency")
+		else:
+			self.add_column(_("Advance Amount"), fieldname="advance",fieldtype="Currency", options="Company:company:default_currency")
 
-		self.add_column(_("Advance Amount"), fieldname="advance",fieldtype="Currency")
-		self.add_column(label=_("Invoiced Amount(Original Currency)"),fieldtype="Currency",fieldname="invoiced_in_account_currency",options="currency")
-		self.add_column(_("Invoiced Amount"), fieldname="invoiced",fieldtype="Currency")
-		self.add_column(_("Paid Amount"), fieldname="paid",fieldtype="Currency")
-		self.add_column(_(credit_debit_label), fieldname="credit_note",fieldtype="Currency")
-		self.add_column(_("Outstanding Amount"), fieldname="outstanding",fieldtype="Currency")
+		if self.filters.show_original_currency:
+			self.add_column(label=_("Invoiced Amount(Original Currency)"),fieldtype="Currency",fieldname="invoiced_in_account_currency",options="currency")
+		else:
+			self.add_column(_("Invoiced Amount"), fieldname="invoiced",fieldtype="Currency",options="Company:company:default_currency")
+		
+		if self.filters.show_original_currency:
+			self.add_column(label=_("Paid Amount(Original Currency)"), fieldname="paid_in_account_currency",fieldtype="Currency",options="currency")
+		else:
+			self.add_column(label=_("Paid Amount"), fieldname="paid",fieldtype="Currency",options="Company:company:default_currency")
+		
+		if self.filters.show_original_currency:
+			self.add_column(_(credit_debit_label), fieldname="credit_note_in_account_currency",fieldtype="Currency",options="currency")
+		else:
+			self.add_column(_(credit_debit_label), fieldname="credit_note",fieldtype="Currency",options="Company:company:default_currency")
+		
+		if self.filters.show_original_currency:
+			self.add_column(_("Outstanding Amount(Original Currency)"), fieldname="outstanding_in_account_currency",fieldtype="Currency",options="currency")
+		else:
+			self.add_column(_("Outstanding Amount"), fieldname="outstanding",fieldtype="Currency",options="Company:company:default_currency")
 
 		if self.filters.show_gl_balance:
 			self.add_column(_("GL Balance"), fieldname="gl_balance",fieldtype="Currency")
@@ -193,10 +213,16 @@ class TradeDebtorsSummary(DebtorCreditorReport):
 				"{range4}-{above}".format(range4=cint(self.filters["range4"]) + 1, above=_("Above")),
 			]
 		):
-			self.add_column(label=label, fieldname="range" + str(i + 1),fieldtype="Currency")
+			if self.filters.show_original_currency:
+				self.add_column(label=label, fieldname="range" + str(i + 1),fieldtype="Currency", options="currency")
+			else:
+				self.add_column(label=label, fieldname="range" + str(i + 1),fieldtype="Currency", options="Company:company:default_currency")
 
 		# Add column for total due amount
-		self.add_column(label="Total Amount Due", fieldname="total_due",fieldtype="Currency")
+		if self.filters.show_original_currency:
+			self.add_column(label="Total Amount Due", fieldname="total_due",fieldtype="Currency", options="currency")
+		else:
+			self.add_column(label="Total Amount Due", fieldname="total_due",fieldtype="Currency", options="Company:company:default_currency")
 
 
 def get_gl_balance(report_date):
