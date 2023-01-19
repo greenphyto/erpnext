@@ -65,6 +65,8 @@ class DebtorCreditorReport(object):
 			self.previous_party = ""
 			self.total_row_map = {}
 			self.skip_total_row = 1
+		if self.filters.get("show_original_currency"):
+			self.skip_total_row = 1
 
 	def get_data(self):
 		self.get_ple_entries()
@@ -144,9 +146,12 @@ class DebtorCreditorReport(object):
 		return [
 			"invoiced_in_account_currency",
 			"invoiced",
+			"paid_in_account_currency",
 			"paid",
 			"credit_note",
+			"credit_note_in_account_currency",
 			"outstanding",
+			"outstanding_in_account_currency",
 			"range1",
 			"range2",
 			"range3",
@@ -211,7 +216,7 @@ class DebtorCreditorReport(object):
 
 	def update_sub_total_row(self, row, party):
 		total_row = self.total_row_map.get(party)
-
+		total_row["currency"]=row.get("currency")
 		for field in self.get_currency_fields():
 			total_row[field] += row.get(field, 0.0)
 
@@ -265,7 +270,10 @@ class DebtorCreditorReport(object):
 		if self.filters.get("group_by_party"):
 			self.append_subtotal_row(self.previous_party)
 			if self.data:
-				self.data.append(self.total_row_map.get("Total"))
+				if self.filters.get("show_original_currency"):
+					print("here")
+				else:
+					self.data.append(self.total_row_map.get("Total"))
 
 	def append_row(self, row):
 		self.allocate_future_payments(row)

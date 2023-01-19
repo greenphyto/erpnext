@@ -157,7 +157,8 @@ frappe.query_reports["Trade Debtors"] =  {
 		{
 			"fieldname": "group_by_party",
 			"label": __("Group By Customer"),
-			"fieldtype": "Check"
+			"fieldtype": "Check",
+			"default": "1",
 		},
 		{
 			"fieldname": "based_on_payment_terms",

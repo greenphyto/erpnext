@@ -28,9 +28,14 @@ class TradeDebtorsSummary(DebtorCreditorReport):
 		self.party_naming_by = frappe.db.get_value(
 			args.get("naming_by")[0], None, args.get("naming_by")[1]
 		)
+		if self.filters.get("show_original_currency"):
+			print("here")
+			self.skip_total_row = 1
+		else:
+			self.skip_total_row = 0
 		self.get_columns()
 		self.get_data(args)
-		return self.columns, self.data
+		return self.columns, self.data,None, None, None, self.skip_total_row
 
 	def get_data(self, args):
 		self.data = []
