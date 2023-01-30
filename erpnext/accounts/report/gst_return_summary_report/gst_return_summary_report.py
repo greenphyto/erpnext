@@ -12,6 +12,7 @@ from frappe.utils import formatdate, get_link_to_form
 
 
 def execute(filters=None):
+
 	return VATAuditReport(filters).run()
 
 
@@ -35,9 +36,9 @@ class VATAuditReport(object):
 			taxes_and_charges,
 			posting_date, remarks"""
 			columns = (
-				", supplier as party, credit_to as account"
+				", supplier as party, credit_to as account, bill_no as Invoice_No"
 				if doctype == "Purchase Invoice"
-				else ", customer as party, debit_to as account"
+				else ", customer as party, debit_to as account, name as Invoice_No"
 			)
 			self.select_columns += columns
 
@@ -78,6 +79,7 @@ class VATAuditReport(object):
 		self.data.append(gstotal)
 		self.data.append(gptotal)
 		self.data.append(gftotal)
+		
 		return self.columns, self.data
 
 	# def get_sa_vat_accounts(self):
@@ -302,7 +304,9 @@ class VATAuditReport(object):
 					for item in items:
 						item_details = self.item_tax_rate.get(inv).get(item)
 						row["account"] = inv_data.get("account")
+						row["Invoice_No"]= inv_data.get("Invoice_No")
 						row["posting_date"] = inv#formatdate(inv_data.get("posting_date"), "dd-mm-yyyy")
+						row["Date"] = formatdate(inv_data.get("posting_date"), "dd-mm-yyyy")
 						#row["voucher_type"] = ""
 						row["voucher_no"] = inv
 						row["party_type"] = "Customer" if doctype == "Sales Invoice" else "Supplier"
@@ -319,8 +323,7 @@ class VATAuditReport(object):
 		for tax_type in get_tax_type:
 			docprefix = _("purchases ") if doctype == "Purchase Invoice" else _("sales ")
 			taxtype =docprefix +  tax_type.get("parent")
-			print(taxtype)
-			print(consolidated_data_map)
+			 
 			if (taxtype in consolidated_data_map):
 				continue
 			else:
@@ -342,7 +345,24 @@ class VATAuditReport(object):
 		return consolidated_data_map
 
 	def get_columns(self):
-		self.columns = [
+		if (self.filters.show_details):
+						self.columns +=[ 	{"fieldname": "party",
+								"label": "Company",
+								"fieldtype": "Data",
+								"width": 140}]
+		if (self.filters.show_details):
+							self.columns +=[ {"fieldname": "Invoice_No",
+							"label": "Invoice",
+							"fieldtype": "Data",
+							"width": 140}]
+		if (self.filters.show_details):	
+							self.columns +=[ {"fieldname": "Date",
+							"label": "Date",
+							"fieldtype": "Data",
+							"width": 140}]
+		self.columns += [
+						
+
 			{"fieldname": "posting_date", "label": " ", "fieldtype": "Link","options": "Account", "width": 350},
 			{
 				"fieldname": "account",
