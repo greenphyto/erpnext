@@ -8,7 +8,7 @@ import json
 import frappe
 from frappe import _
 from frappe.contacts.report.addresses_and_contacts import test_addresses_and_contacts
-from frappe.utils import formatdate, get_link_to_form
+from frappe.utils import formatdate, get_link_to_form, flt,fmt_money
 
 
 def execute(filters=None):
@@ -55,25 +55,26 @@ class VATAuditReport(object):
 				if doctype == "Sales Invoice" :
 					gstotal_net = taxdata[-2]["tax_amount"]
 				#print(test[-2]["tax_amount"])
+		gftotal_net=( 0.0 if flt(gstotal_net) =="" else flt(gstotal_net)  )- ( 0.0 if flt(gptotal_net) =="" else flt(gptotal_net)  )  
 		gstotal = {
 				"posting_date":  totalsstr,
 				"gross_amount": '',
 				"tax_amount": '',
-				"tax_amount": gstotal_net,
+				"tax_amount": fmt_money(gstotal_net),
 				"bold": 0,
 			}
 		gptotal = {
 				"posting_date": totalpstr,
 				"gross_amount": '',
 				"tax_amount": '',
-				"tax_amount": gptotal_net,
+				"tax_amount": fmt_money(gptotal_net),
 				"bold": 0,
 			}
 		gftotal = {
 				"posting_date": totalfstr,
 				"gross_amount": '',
 				"tax_amount": '',
-				"tax_amount":  gstotal_net - gptotal_net,
+				"tax_amount": fmt_money(gftotal_net ),
 				"bold": 0,
 			}
 		self.data.append(gstotal)
@@ -208,7 +209,7 @@ class VATAuditReport(object):
 					continue
 
 	def get_item_amount_map(self, parent, item_code, taxes):
-		net_amount = self.invoice_items.get(parent).get(item_code).get("net_amount")
+		net_amount =self.invoice_items.get(parent).get(item_code).get("net_amount")
 		tax_rate = taxes[0]
 		tax_amount = taxes[1]
 		gross_amount = net_amount + tax_amount
@@ -249,43 +250,44 @@ class VATAuditReport(object):
 		section_name = _("Input tax/ Purchase tax") if doctype == "Purchase Invoice" else _("Output tax/ Sales tax")
 
 		 
-		gtotal_gross = gtotal_tax = gtotal_net = 0
+		gtotal_gross = gtotal_tax = gtotal_net = 0.0
 		totalstr = " "
 		for taxType, section in consolidated_data.items():
 			#rate = int(rate)
 			label = frappe.bold(section_name )
 			section_head = {"posting_date": label}
-			total_gross = total_tax = total_net = 0
+			total_gross = total_tax = total_net = 0.0
 			self.data.append(section_head) if isloop == False else  _void
 			isloop = True
 			for row in section.get("data"):
 				if (self.filters.show_details):
 					self.data.append(row)
-				total_gross += 0 if  row["gross_amount"]=="" else row["gross_amount"]
-				total_tax += 0 if  row["tax_amount"] =="" else  row["tax_amount"] 
-				total_net += 0 if row["net_amount"] =="" else row["net_amount"] 
+				total_gross += 0 if  row["gross_amount"]=="" else flt(row["gross_amount"])
+				total_tax += 0 if  row["tax_amount"] =="" else  flt(row["tax_amount"])
+				total_net += 0 if row["net_amount"] =="" else flt(row["net_amount"])
 			
 			totalstr = _("Total value of taxable ") if doctype == "Purchase Invoice" else _("Total value of taxable ")
 			doctypestr = _("Purchases") if doctype == "Purchase Invoice" else _("Sales")
 			total = {
 				"posting_date": totalstr + taxType,
-				"gross_amount": total_gross,
-				"tax_amount": total_tax,
-				"net_amount": total_net,
+				"gross_amount": fmt_money(total_gross),
+				"tax_amount": fmt_money(total_tax),
+				"net_amount": fmt_money(total_net),
 				"bold": 0,
 				#"voucher_type":"noclick",
 			}
 			
 			self.data.append(total)
-			gtotal_gross += total["gross_amount"]
-			gtotal_tax += total["tax_amount"]
-			gtotal_net += total["net_amount"]
+			gross_amount= 0.0 if  row["gross_amount"] =="" else flt(total["gross_amount"])
+			gtotal_gross += gross_amount
+			gtotal_tax +=  0.0 if  row["tax_amount"] =="" else flt(total["tax_amount"])
+			gtotal_net +=  0.0 if  row["net_amount"] =="" else flt(total["net_amount"])
 			
 		gtotal = {
 				"posting_date": totalstr + doctypestr,
-				"gross_amount": gtotal_gross,
-				"tax_amount": gtotal_tax,
-				"net_amount": gtotal_net,
+				"gross_amount": fmt_money(gtotal_gross),
+				"tax_amount": fmt_money(gtotal_tax),
+				"net_amount": fmt_money(gtotal_net),
 				"bold": 0,
 				"voucher_type":doctype,
 			}
@@ -312,9 +314,15 @@ class VATAuditReport(object):
 						row["party_type"] = "Customer" if doctype == "Sales Invoice" else "Supplier"
 						row["party"] = inv_data.get("party")
 						row["remarks"] = inv_data.get("remarks")
-						row["gross_amount"] += item_details.get("gross_amount")
-						row["tax_amount"] += item_details.get("tax_amount")
+					 
+						rowgross_amount = flt(item_details.get("gross_amount"))
+						row["gross_amount"] +=(rowgross_amount)
+						row["gross_amount"] = fmt_money(row["gross_amount"] )
+						row["tax_amount"] +=  item_details.get("tax_amount")
+						row["tax_amount"] = fmt_money(row["tax_amount"] )
 						row["net_amount"] += item_details.get("net_amount")
+						row["net_amount"] = fmt_money(row["net_amount"] )
+
 						row["tax_charge"] = inv_data.get("taxes_and_charges")
 				 
 					consolidated_data_map[taxType]["data"].append(row)
@@ -404,7 +412,7 @@ class VATAuditReport(object):
 				"hidden": 1
 			},
 			{"fieldname": "remarks", "label": "Details", "fieldtype": "Data", "width": 150,"hidden": 1},
-			{"fieldname": "net_amount", "label": "Taxable Amount", "fieldtype": "Currency", "width": 150},
-			{"fieldname": "tax_amount", "label": "GST Amount", "fieldtype": "Currency", "width": 150},
-			{"fieldname": "gross_amount", "label": "Total", "fieldtype": "Currency", "width": 150},
+			{"fieldname": "net_amount", "label": "Taxable Amount", "fieldtype": "Currency","options":"Company:company:default_currency", "width": 150},
+			{"fieldname": "tax_amount", "label": "GST Amount", "fieldtype": "Currency","options":"Company:company:default_currency", "width": 150},
+			{"fieldname": "gross_amount", "label": "Total", "fieldtype": "Currency","options":"Company:company:default_currency", "width": 150},
 		]
