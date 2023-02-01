@@ -315,16 +315,20 @@ class VATAuditReport(object):
 						row["party"] = inv_data.get("party")
 						row["remarks"] = inv_data.get("remarks")
 					 
-						rowgross_amount = flt(item_details.get("gross_amount"))
-						row["gross_amount"] +=(rowgross_amount)
-						row["gross_amount"] = fmt_money(row["gross_amount"] )
+						rowgross_amount = 0.0 if item_details.get("gross_amount") =="" else item_details.get("gross_amount")
+						print(rowgross_amount)
+						print(row["gross_amount"])
+						print(type(item_details.get("gross_amount")))
+						print(type(row["gross_amount"]))
+						row["gross_amount"] += item_details.get("gross_amount")
 						row["tax_amount"] +=  item_details.get("tax_amount")
-						row["tax_amount"] = fmt_money(row["tax_amount"] )
 						row["net_amount"] += item_details.get("net_amount")
-						row["net_amount"] = fmt_money(row["net_amount"] )
-
 						row["tax_charge"] = inv_data.get("taxes_and_charges")
-				 
+      
+				 	
+					row["tax_amount"] = fmt_money(row["tax_amount"] )
+					row["net_amount"] = fmt_money(row["net_amount"] )
+					row["gross_amount"] = fmt_money(row["gross_amount"] )
 					consolidated_data_map[taxType]["data"].append(row)
 		get_tax_type = self.get_tax_types(doctype)
 		
