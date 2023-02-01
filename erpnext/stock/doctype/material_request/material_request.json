@@ -101,8 +101,8 @@
   "column_break_35",
   "work_order",
   "connections_tab",
-  "get_items_from_open_material_requests"
- 
+  "get_items_from_open_material_requests",
+  "department"
  ],
  "fields": [
   {
@@ -146,7 +146,6 @@
    "fieldtype": "Section Break",
    "options": "fa fa-user"
   },
-  
   {
    "bold": 1,
    "fieldname": "supplier",
@@ -850,13 +849,19 @@
   {
    "fieldname": "section_breake_53",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department"
   }
  ],
  "icon": "fa fa-ticket",
  "idx": 70,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-11-10 11:32:59.506346",
+ "modified": "2023-01-19 16:08:33.387315",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request",
