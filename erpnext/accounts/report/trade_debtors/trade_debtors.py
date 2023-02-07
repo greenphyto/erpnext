@@ -705,6 +705,7 @@ class DebtorCreditorReport(object):
 				ple.remarks,
 			)
 			.where(ple.delinked == 0)
+			#.where(ple.voucher_type in ["Purchase Invoice", "Payment Entry", "Sales Invoice"] )
 			.where(Criterion.all(self.qb_selection_filter))
 		)
 
@@ -778,12 +779,21 @@ class DebtorCreditorReport(object):
 		else:
 			# get GL with "receivable" or "payable" account_type
 			account_type = "Receivable" if self.party_type == "Customer" else "Payable"
-			accounts = [
+			root_type = "Asset" if self.party_type == "Customer" else "Liability"
+			gpaccounts = [
 				d.name
 				for d in frappe.get_all(
-					"Account", filters={"account_type": account_type, "company": self.filters.company}
+					"Account", filters={"is_trade_related":1,"root_type":root_type, "company": self.filters.company}
 				)
 			]
+			if gpaccounts:
+				print(gpaccounts[0])
+				accounts = [
+				d.name
+				for d in frappe.get_all(
+					"Account", filters={"parent_account":gpaccounts[0],"account_type": account_type, "company": self.filters.company}
+				)
+				]
 
 			if accounts:
 				self.qb_selection_filter.append(self.ple.account.isin(accounts))
