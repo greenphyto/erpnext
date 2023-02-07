@@ -67,7 +67,8 @@ frappe.query_reports["Trade Creditors"] = {
 					filters: {
 						'company': company,
 						'account_type': 'Payable',
-						'is_group': 0
+						'is_group': 0,
+						"is_trade_related":1
 					}
 				};
 			}

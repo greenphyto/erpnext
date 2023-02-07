@@ -78,6 +78,7 @@ frappe.query_reports["Trade Debtors"] =  {
 					filters: {
 						'company': company,
 						'account_type': 'Receivable',
+						"is_trade_related":1,
 						'is_group': 0
 					}
 				};
