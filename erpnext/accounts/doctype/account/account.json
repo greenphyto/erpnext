@@ -199,6 +199,7 @@
    "default": "0",
    "fieldname": "is_trade_related",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Is Trade Related?"
   }
  ],
@@ -206,7 +207,7 @@
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2023-02-07 09:32:13.968900",
+ "modified": "2023-02-07 13:47:23.244724",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Account",

@@ -73,12 +73,14 @@ frappe.query_reports["Trade Debtors"] =  {
 			"fieldtype": "Link",
 			"options": "Account",
 			get_query: () => {
+				var accname= fetch_AccountPayable();
 				var company = frappe.query_report.get_filter_value('company');
 				return {
 					filters: {
 						'company': company,
 						'account_type': 'Receivable',
-						"is_trade_related":1,
+						//"is_trade_related":1,
+						'parent_account': accname,
 						'is_group': 0
 					}
 				};
@@ -235,3 +237,27 @@ frappe.query_reports["Trade Debtors"] =  {
 }
 
 erpnext.utils.add_dimensions('Accounts Receivable', 9);
+
+function fetch_AccountPayable(){
+	console.log('entered into function');
+	var wfl_department=''
+	frappe.call({
+	method: "frappe.client.get_value",
+	args: {
+	"doctype": "Account",
+	"fieldname": "name",
+	"filters": {
+	is_trade_related:1,
+	root_type:'Asset'
+	}
+	},
+	async: false,
+	callback: function(r){
+					if (r.message) {
+						wfl_department=r.message.name;
+					console.log('readings-----------' + JSON.stringify(r.message));
+							}
+				}
+			});
+	return wfl_department
+	}

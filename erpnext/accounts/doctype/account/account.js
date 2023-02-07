@@ -55,7 +55,7 @@ frappe.ui.form.on('Account', {
 	account_type: function (frm) {
 		if (frm.doc.is_group == 0) {
 			frm.toggle_display(['tax_rate'], frm.doc.account_type == 'Tax');
-			frm.toggle_display(['is_trade_related'], frm.doc.account_type == 'Payable' ||  frm.doc.account_type == 'Receivable');
+			//frm.toggle_display(['is_trade_related'], frm.doc.account_type == 'Payable' ||  frm.doc.account_type == 'Receivable');
 			frm.toggle_display('warehouse', frm.doc.account_type == 'Stock');
 		}
 	},
