@@ -435,6 +435,7 @@ erpnext.buying.MaterialRequestController = class MaterialRequestController exten
 	}
 
 	onload(doc, cdt, cdn) {
+		debugger;
 		this.frm.set_query("item_code", "items", function() {
 			if (doc.material_request_type == "Customer Provided") {
 				return{
@@ -446,8 +447,13 @@ erpnext.buying.MaterialRequestController = class MaterialRequestController exten
 				}
 			} else if (doc.material_request_type == "Purchase") {
 				return{
+				
 					query: "erpnext.controllers.queries.item_query",
-					filters: {'is_purchase_item': 1}
+					filters: {
+						'is_purchase_item': 1,
+						'department':me.frm.doc.department
+
+					}
 				}
 			} else {
 				return{
