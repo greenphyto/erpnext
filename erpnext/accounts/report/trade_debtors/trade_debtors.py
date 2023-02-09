@@ -704,11 +704,11 @@ class DebtorCreditorReport(object):
 				ple.amount_in_account_currency,
 				ple.remarks,
 			)
-			.where(ple.delinked == 0)
+			.where(ple.delinked == 0 and (ple.voucher_type != "Journal Entry" ))
 			#.where(ple.voucher_type in ["Purchase Invoice", "Payment Entry", "Sales Invoice"] )
 			.where(Criterion.all(self.qb_selection_filter))
 		)
-
+		print(query)
 		if self.filters.get("group_by_party"):
 			query = query.orderby(self.ple.party, self.ple.posting_date)
 		else:

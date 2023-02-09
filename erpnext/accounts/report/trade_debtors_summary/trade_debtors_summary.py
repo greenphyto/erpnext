@@ -49,10 +49,11 @@ class TradeDebtorsSummary(DebtorCreditorReport):
 				self.party_type,
 				self.filters.report_date,
 				self.filters.show_future_payments,
-				self.filters.company,
+				self.filters.company,"Trade"
 			)
 			or {}
 		)
+		print(party_advance_amount)
 
 		if self.filters.show_gl_balance:
 			gl_balance_map = get_gl_balance(self.filters.report_date)
