@@ -73,16 +73,10 @@ frappe.query_reports["Trade Creditors Summary"] = {
 			}
 		},
 		{
-			"fieldname":"customer",
-			"label": __("Customer"),
+			"fieldname":"supplier",
+			"label": __("Supplier"),
 			"fieldtype": "Link",
-			"options": "Customer"
-		},
-		{
-			"fieldname":"customer_group",
-			"label": __("Customer Group"),
-			"fieldtype": "Link",
-			"options": "Customer Group"
+			"options": "Supplier"
 		},
 		{
 			"fieldname":"payment_terms_template",
@@ -91,45 +85,16 @@ frappe.query_reports["Trade Creditors Summary"] = {
 			"options": "Payment Terms Template"
 		},
 		{
-			"fieldname":"territory",
-			"label": __("Territory"),
+			"fieldname":"supplier_group",
+			"label": __("Supplier Group"),
 			"fieldtype": "Link",
-			"options": "Territory"
-		},
-		{
-			"fieldname":"sales_partner",
-			"label": __("Sales Partner"),
-			"fieldtype": "Link",
-			"options": "Sales Partner"
-		},
-		{
-			"fieldname":"sales_person",
-			"label": __("Sales Person"),
-			"fieldtype": "Link",
-			"options": "Sales Person"
-		},
-		{
-			"fieldname": "currency",
-			"label": __("Currency"),
-			"fieldtype": "Link",
-			"options": "Currency"
+			"options": "Supplier Group"
 		},
 		{
 			"fieldname":"based_on_payment_terms",
 			"label": __("Based On Payment Terms"),
 			"fieldtype": "Check",
 		},
-		{
-			"fieldname":"show_future_payments",
-			"label": __("Show Future Payments"),
-			"fieldtype": "Check",
-		},
-		{
-			"fieldname":"show_gl_balance",
-			"label": __("Show GL Balance"),
-			"fieldtype": "Check",
-		}
-		,
 		{
 			"fieldname": "show_original_currency",
 			"label": __("Show Original Currency"),
