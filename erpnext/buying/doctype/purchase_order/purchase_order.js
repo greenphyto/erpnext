@@ -1,5 +1,5 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
-// License: GNU General Public License v3. See license.txt greenphyto u
+// License: GNU General Public License v3. See license.txt
 
 frappe.provide("erpnext.buying");
 frappe.provide("erpnext.accounts.dimensions");

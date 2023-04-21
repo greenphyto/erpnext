@@ -847,7 +847,6 @@
    "fieldtype": "Section Break"
   },
   {
-   "default": "All Departments",
    "fieldname": "department",
    "fieldtype": "Link",
    "label": "Department",
@@ -867,7 +866,7 @@
  "idx": 70,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-02-21 13:26:03.022575",
+ "modified": "2023-02-16 11:24:02.346565",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request",
