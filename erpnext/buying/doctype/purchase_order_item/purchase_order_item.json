@@ -133,11 +133,12 @@
   },
   {
    "fieldname": "item_name",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_global_search": 1,
    "label": "Item Name",
    "oldfieldname": "item_name",
    "oldfieldtype": "Data",
+   "options": "Item",
    "print_hide": 1,
    "reqd": 1
   },
@@ -895,7 +896,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-10-26 16:47:41.364387",
+ "modified": "2023-04-20 14:36:49.294071",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order Item",
