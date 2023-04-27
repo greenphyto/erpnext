@@ -17,7 +17,7 @@ frappe.query_reports["GST Return Summary Report"] = {
 			"label": __("From Date"),
 			"fieldtype": "Date",
 			"reqd": 1,
-			"default": frappe.datetime.add_months(frappe.datetime.get_today(), -2),
+			"default": new Date(new Date().getFullYear(), Math.floor(new Date().getMonth() / 3) * 3, 1),//frappe.datetime.add_months(frappe.datetime.get_today(), -2),
 			"width": "80"
 		},
 		{
@@ -25,7 +25,7 @@ frappe.query_reports["GST Return Summary Report"] = {
 			"label": __("To Date"),
 			"fieldtype": "Date",
 			"reqd": 1,
-			"default": frappe.datetime.get_today()
+			"default": new Date(new Date().getFullYear(), Math.floor(new Date().getMonth() / 3) * 3 + 3, 0)//frappe.datetime.get_today()
 		},
 		{
 			"fieldname": "frequency",
@@ -37,6 +37,7 @@ frappe.query_reports["GST Return Summary Report"] = {
 				{ "label": __("Quarterly"), value: "Quarterly" },
 				{ "label": __("Yearly"), value: "Yearly" },
 			],
+			"default": "Quarterly",
 			"on_change": function(query_report) {
 					var frequency  = query_report.get_values().frequency;
 					if (frequency == 'Monthly')
