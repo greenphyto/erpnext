@@ -37,7 +37,7 @@ jobs:
           cd greenphyto_docker/frappe_docker/
           docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto.yaml -f custom_app/compose.override.yaml up -d
           docker ps
-          echo 'finished deployment'
+          echo 'ci v2 finished deployment'
     - name: Send mail
       uses: dawidd6/action-send-mail@v3
       with:
