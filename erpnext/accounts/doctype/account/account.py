@@ -2,6 +2,8 @@
 # License: GNU General Public License v3. See license.txt
 #changed from myo in erpnext
 
+#another comment
+
 import frappe
 from frappe import _, throw
 from frappe.utils import cint, cstr
