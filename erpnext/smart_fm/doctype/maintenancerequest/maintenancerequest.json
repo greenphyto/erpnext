@@ -1,0 +1,89 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-05-10 13:37:21.239374",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "personalinformation",
+  "requestorname",
+  "unitnumberofficenumber",
+  "phonenumber",
+  "emailaddress",
+  "maintenanceissuedetails",
+  "issuetype",
+  "otherissuetype"
+ ],
+ "fields": [
+  {
+   "fieldname": "personalinformation",
+   "fieldtype": "Section Break",
+   "label": "Personal Information"
+  },
+  {
+   "fieldname": "unitnumberofficenumber",
+   "fieldtype": "Data",
+   "label": "Unit Number / Office Number"
+  },
+  {
+   "fieldname": "phonenumber",
+   "fieldtype": "Phone",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "emailaddress",
+   "fieldtype": "Data",
+   "label": "Email Address"
+  },
+  {
+   "fieldname": "maintenanceissuedetails",
+   "fieldtype": "Section Break",
+   "label": "Maintenance Issue Details"
+  },
+  {
+   "default": "Plumbing",
+   "fieldname": "issuetype",
+   "fieldtype": "Select",
+   "label": "Issue Type (please check one)",
+   "options": "Plumbing\nElectrical\nOther"
+  },
+  {
+   "fieldname": "requestorname",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "depends_on": "eval:doc.issuetype == 'Other';",
+   "fieldname": "otherissuetype",
+   "fieldtype": "Data",
+   "label": "Other (please specify)"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-05-10 13:53:28.213861",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "MaintenanceRequest",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
