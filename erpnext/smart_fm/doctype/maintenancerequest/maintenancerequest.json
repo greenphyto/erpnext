@@ -14,7 +14,8 @@
   "emailaddress",
   "maintenanceissuedetails",
   "issuetype",
-  "otherissuetype"
+  "otherissuetype",
+  "newsection"
  ],
  "fields": [
   {
@@ -59,11 +60,16 @@
    "fieldname": "otherissuetype",
    "fieldtype": "Data",
    "label": "Other (please specify)"
+  },
+  {
+   "fieldname": "newsection",
+   "fieldtype": "Section Break",
+   "label": "New Section"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-05-10 13:53:28.213861",
+ "modified": "2023-05-11 17:01:27.860343",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "MaintenanceRequest",
