@@ -1,0 +1,326 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-05-15 13:55:44.455686",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "personal_information_section",
+  "company_name",
+  "address",
+  "company_website",
+  "column_break_abbf3",
+  "phone_number",
+  "email_address",
+  "contact_information_section",
+  "primary_contact_name",
+  "titleposition",
+  "column_break_rsmpv",
+  "contact_phone",
+  "contact_email",
+  "section_break_dbcto",
+  "cleaning",
+  "security",
+  "landscaping",
+  "maintenance_repair",
+  "pest_control",
+  "waste_management",
+  "telecommunicationsinternet",
+  "other",
+  "description",
+  "years_of_experience_in_the_industry",
+  "list_of_relevant_certifications_or_licenses_if_applicable",
+  "section_break_p5xt9",
+  "reference_1_name",
+  "reference_1_company",
+  "column_break_vvqhp",
+  "reference_1_number",
+  "reference_1_email",
+  "section_break_rpu1z",
+  "reference_2_name",
+  "reference_2_company",
+  "column_break_2asdy",
+  "reference_2_phone",
+  "reference_2_email",
+  "section_break_g29dr",
+  "reference_3_name",
+  "reference_3_company",
+  "column_break_2nzbs",
+  "reference_3_phone",
+  "reference_3_email",
+  "section_break_psexz",
+  "signature",
+  "column_break_bwddv",
+  "date"
+ ],
+ "fields": [
+  {
+   "fieldname": "personal_information_section",
+   "fieldtype": "Section Break",
+   "label": "Company Information"
+  },
+  {
+   "fieldname": "company_name",
+   "fieldtype": "Data",
+   "label": "Company Name"
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Data",
+   "label": "Address"
+  },
+  {
+   "fieldname": "company_website",
+   "fieldtype": "Data",
+   "label": "Company Website"
+  },
+  {
+   "fieldname": "column_break_abbf3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Phone",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "email_address",
+   "fieldtype": "Data",
+   "label": "Email Address"
+  },
+  {
+   "fieldname": "contact_information_section",
+   "fieldtype": "Section Break",
+   "label": "Contact Information"
+  },
+  {
+   "fieldname": "primary_contact_name",
+   "fieldtype": "Data",
+   "label": "Primary Contact Name"
+  },
+  {
+   "fieldname": "titleposition",
+   "fieldtype": "Data",
+   "label": "Title/Position"
+  },
+  {
+   "fieldname": "column_break_rsmpv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "contact_phone",
+   "fieldtype": "Phone",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "contact_email",
+   "fieldtype": "Data",
+   "label": "Email Address"
+  },
+  {
+   "description": "Type of Services Provided (please check all that apply)",
+   "fieldname": "section_break_dbcto",
+   "fieldtype": "Section Break",
+   "label": "Services Offered"
+  },
+  {
+   "fieldname": "other",
+   "fieldtype": "Data",
+   "label": "Other (please specify)"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Detailed Description of Services Offered"
+  },
+  {
+   "description": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and understand that submitting this form does not guarantee my company will be selected for future business opportunities.",
+   "fieldname": "section_break_psexz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "signature",
+   "fieldtype": "Signature",
+   "label": "Signature"
+  },
+  {
+   "fieldname": "column_break_bwddv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "default": "Plumbing",
+   "fieldname": "cleaning",
+   "fieldtype": "Check",
+   "label": "Cleaning"
+  },
+  {
+   "default": "0",
+   "fieldname": "security",
+   "fieldtype": "Check",
+   "label": "Security"
+  },
+  {
+   "default": "0",
+   "fieldname": "landscaping",
+   "fieldtype": "Check",
+   "label": "Landscaping"
+  },
+  {
+   "default": "0",
+   "fieldname": "maintenance_repair",
+   "fieldtype": "Check",
+   "label": "Maintenance/Repair (HVAC, Plumbing, Electrical, etc)"
+  },
+  {
+   "default": "0",
+   "fieldname": "pest_control",
+   "fieldtype": "Check",
+   "label": "Pest Control"
+  },
+  {
+   "default": "0",
+   "fieldname": "waste_management",
+   "fieldtype": "Check",
+   "label": "Waste Management"
+  },
+  {
+   "default": "0",
+   "fieldname": "telecommunicationsinternet",
+   "fieldtype": "Check",
+   "label": "Telecommunications/Internet"
+  },
+  {
+   "fieldname": "years_of_experience_in_the_industry",
+   "fieldtype": "Float",
+   "label": "Years of Experience in the Industry"
+  },
+  {
+   "fieldname": "list_of_relevant_certifications_or_licenses_if_applicable",
+   "fieldtype": "Text",
+   "label": "List of Relevant Certifications or Licenses (if applicable)"
+  },
+  {
+   "description": "Please provide at least three (3) professional references from clients you have worked with in the past.<br><br>\nReference 1",
+   "fieldname": "section_break_p5xt9",
+   "fieldtype": "Section Break",
+   "label": "References"
+  },
+  {
+   "fieldname": "column_break_vvqhp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.witness != 'No';",
+   "fieldname": "reference_1_number",
+   "fieldtype": "Phone",
+   "label": "Phone Number"
+  },
+  {
+   "depends_on": "eval:doc.witness != 'No';",
+   "fieldname": "reference_1_email",
+   "fieldtype": "Data",
+   "label": "Email Address"
+  },
+  {
+   "fieldname": "reference_1_name",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "depends_on": "eval:doc.witness != 'No';",
+   "fieldname": "reference_1_company",
+   "fieldtype": "Data",
+   "label": "Company"
+  },
+  {
+   "description": "Reference 2",
+   "fieldname": "section_break_rpu1z",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "reference_2_name",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "reference_2_company",
+   "fieldtype": "Data",
+   "label": "Company"
+  },
+  {
+   "fieldname": "column_break_2asdy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reference_2_phone",
+   "fieldtype": "Phone",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "reference_2_email",
+   "fieldtype": "Data",
+   "label": "Email Address"
+  },
+  {
+   "description": "Reference 3",
+   "fieldname": "section_break_g29dr",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "reference_3_name",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "reference_3_company",
+   "fieldtype": "Data",
+   "label": "Company"
+  },
+  {
+   "fieldname": "column_break_2nzbs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reference_3_phone",
+   "fieldtype": "Phone",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "reference_3_email",
+   "fieldtype": "Data",
+   "label": "Email Addresss"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-05-15 14:45:15.513284",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Vendor Registration",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

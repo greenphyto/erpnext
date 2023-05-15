@@ -1,0 +1,167 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-05-15 16:12:56.870994",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "general_information_section",
+  "requesters_name",
+  "email_address",
+  "column_break_abbf3",
+  "phone_number",
+  "unit_number",
+  "building_services_section",
+  "maintenance__repair_services",
+  "cleanliness__common_areas",
+  "security__access_control",
+  "column_break_cvx9e",
+  "parking__transportation",
+  "communication__responsiveness",
+  "overall_satisfaction",
+  "additional_feedback_section",
+  "like_most",
+  "suggestions",
+  "comments",
+  "section_break_psexz",
+  "null",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "general_information_section",
+   "fieldtype": "Section Break",
+   "label": "Tenant Information"
+  },
+  {
+   "fieldname": "requesters_name",
+   "fieldtype": "Data",
+   "label": "Tenant's Name"
+  },
+  {
+   "fieldname": "email_address",
+   "fieldtype": "Data",
+   "label": "Tenant's Email Address"
+  },
+  {
+   "fieldname": "column_break_abbf3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Phone",
+   "label": "Tenant's Phone Number"
+  },
+  {
+   "fieldname": "unit_number",
+   "fieldtype": "Date",
+   "label": "Unit Number / Suite"
+  },
+  {
+   "description": "Please rate the following aspects of our building services on a scale of 1 (very poor) to 5 (excellent).",
+   "fieldname": "building_services_section",
+   "fieldtype": "Section Break",
+   "label": "Building Services"
+  },
+  {
+   "fieldname": "maintenance__repair_services",
+   "fieldtype": "Rating",
+   "label": "Maintenance / Repair Services"
+  },
+  {
+   "fieldname": "cleanliness__common_areas",
+   "fieldtype": "Rating",
+   "label": "Cleanliness / Common Areas"
+  },
+  {
+   "fieldname": "security__access_control",
+   "fieldtype": "Rating",
+   "label": "Security / Access Control"
+  },
+  {
+   "fieldname": "parking__transportation",
+   "fieldtype": "Rating",
+   "label": "Parking / Transportation"
+  },
+  {
+   "fieldname": "communication__responsiveness",
+   "fieldtype": "Rating",
+   "label": "Communication / Responsiveness"
+  },
+  {
+   "fieldname": "overall_satisfaction",
+   "fieldtype": "Rating",
+   "label": "Overall Satisfaction"
+  },
+  {
+   "fieldname": "additional_feedback_section",
+   "fieldtype": "Section Break",
+   "label": "Additional Feedback"
+  },
+  {
+   "fieldname": "like_most",
+   "fieldtype": "Text",
+   "label": "What do you like most about living / working in our building?"
+  },
+  {
+   "fieldname": "suggestions",
+   "fieldtype": "Text",
+   "label": "What areas do you think need improvement, and what suggestions do you have for addressing these issues?"
+  },
+  {
+   "fieldname": "comments",
+   "fieldtype": "Text",
+   "label": "Any other comments or suggestions"
+  },
+  {
+   "description": "Thank you for your valuable feedback! Your input helps us better understand the needs of our tenants and make improvements to enhance the living/working environment in our building.<br><br>\nPlease submit the completed form to Building Management.",
+   "fieldname": "section_break_psexz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_cvx9e",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "null",
+   "fieldtype": "HTML"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Tenant Feedback",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2023-05-15 16:21:43.440833",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Tenant Feedback",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

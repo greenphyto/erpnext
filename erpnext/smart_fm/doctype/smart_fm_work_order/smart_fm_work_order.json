@@ -1,0 +1,200 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-05-15 15:57:52.267438",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "general_information_section",
+  "requesters_name",
+  "email_address",
+  "column_break_abbf3",
+  "phone_number",
+  "date_of_request",
+  "issue_details_section",
+  "type_of_issue",
+  "column_break_rsmpv",
+  "category",
+  "other",
+  "section_break_dbcto",
+  "location",
+  "description",
+  "section_break_l9u7x",
+  "attachment",
+  "priority_level",
+  "section_break_psexz",
+  "signature",
+  "column_break_bwddv",
+  "date",
+  "section_break_uas3n",
+  "ticket_number",
+  "assigned_to",
+  "column_break_68vfs",
+  "date_assigned",
+  "date_completed"
+ ],
+ "fields": [
+  {
+   "fieldname": "general_information_section",
+   "fieldtype": "Section Break",
+   "label": "General Information"
+  },
+  {
+   "fieldname": "requesters_name",
+   "fieldtype": "Data",
+   "label": "Requester's Name"
+  },
+  {
+   "fieldname": "email_address",
+   "fieldtype": "Data",
+   "label": "Requester's Email Address"
+  },
+  {
+   "fieldname": "column_break_abbf3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Phone",
+   "label": "Requester's Phone Number"
+  },
+  {
+   "fieldname": "date_of_request",
+   "fieldtype": "Date",
+   "label": "Date of Request"
+  },
+  {
+   "fieldname": "issue_details_section",
+   "fieldtype": "Section Break",
+   "label": "Issue Details"
+  },
+  {
+   "fieldname": "type_of_issue",
+   "fieldtype": "Select",
+   "label": "Type of Issue",
+   "options": "Maintenance Request\nIncident Report"
+  },
+  {
+   "fieldname": "column_break_rsmpv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "label": "Category",
+   "options": "Air Conditioning / Heating\nPlumbing / Water Leak\nElectrical / Lighting\nSecurity / Access Control\nCleaning / Janitorial\nBuilding Exterior / Grounds\nOther"
+  },
+  {
+   "depends_on": "eval:doc.category == 'Other';",
+   "fieldname": "other",
+   "fieldtype": "Data",
+   "label": "Other (please specify)"
+  },
+  {
+   "fieldname": "section_break_dbcto",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Text",
+   "label": "Location of Issue (be specific)"
+  },
+  {
+   "description": "(include any relevant details, such as when the issue was first noticed, any potential causes, and any actions taken thus far)",
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description of Issue"
+  },
+  {
+   "fieldname": "section_break_l9u7x",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attach any supporting photos or documents (optional)"
+  },
+  {
+   "fieldname": "priority_level",
+   "fieldtype": "Select",
+   "label": "Priority Level",
+   "options": "Low (routine maintenance)\nMedium (issue causing minor disruption)\nHigh (issue causing significant disruption or safety concern)"
+  },
+  {
+   "description": "By submitting this form, you are confirming that the information provided is accurate and complete to the best of your knowledge. Our maintenance team will review your request and respond as soon as possible.",
+   "fieldname": "section_break_psexz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "signature",
+   "fieldtype": "Signature",
+   "label": "Signature"
+  },
+  {
+   "fieldname": "column_break_bwddv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "description": "Please submit the completed form to Building Management for processing. You will receive a ticket number and updates on the status of your request. Thank you for helping to maintain a safe and functional environment for all building occupants.",
+   "fieldname": "section_break_uas3n",
+   "fieldtype": "Section Break",
+   "label": "For Office Use Only"
+  },
+  {
+   "fieldname": "ticket_number",
+   "fieldtype": "Data",
+   "label": "Ticket Number"
+  },
+  {
+   "fieldname": "assigned_to",
+   "fieldtype": "Data",
+   "label": "Assigned To"
+  },
+  {
+   "fieldname": "column_break_68vfs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date_assigned",
+   "fieldtype": "Date",
+   "label": "Date Assigned"
+  },
+  {
+   "fieldname": "date_completed",
+   "fieldtype": "Date",
+   "label": "Date Completed"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-05-15 16:00:52.141851",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Smart FM Work Order",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

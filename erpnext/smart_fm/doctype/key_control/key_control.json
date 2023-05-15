@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2023-05-10 13:37:21.239374",
+ "creation": "2023-05-15 14:51:17.327974",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -13,14 +13,10 @@
   "column_break_abbf3",
   "phone_number",
   "email_address",
-  "maintenance_issue_details_section",
-  "issue_type",
-  "other",
-  "description",
-  "location",
+  "key_or_access_card_request_details_section",
+  "request_access",
+  "reason",
   "datetime",
-  "safety",
-  "attachment",
   "section_break_psexz",
   "signature",
   "column_break_bwddv",
@@ -57,44 +53,27 @@
    "label": "Email Address"
   },
   {
-   "fieldname": "maintenance_issue_details_section",
+   "fieldname": "key_or_access_card_request_details_section",
    "fieldtype": "Section Break",
-   "label": "Maintenance Issue Details"
+   "label": "Key or Access Card Request Details"
   },
   {
-   "depends_on": "eval:doc.issue_type == 'Other';",
-   "fieldname": "other",
-   "fieldtype": "Data",
-   "label": "Other (please specify)"
-  },
-  {
-   "fieldname": "description",
+   "fieldname": "request_access",
    "fieldtype": "Text",
-   "label": "Detailed Description of the Issue"
+   "label": "Area/Door/Resource Requesting Access To (please be specific)"
   },
   {
-   "fieldname": "location",
+   "fieldname": "reason",
    "fieldtype": "Text",
-   "label": "Location of the Issue (e.g., room number, floor, common area)"
+   "label": "Reason for Requesting Key or Access Card"
   },
   {
    "fieldname": "datetime",
    "fieldtype": "Datetime",
-   "label": "Preferred Date and Time for Maintenance Visit (if applicable)"
+   "label": "Preferred Date and Time for Key or Access Card Pickup"
   },
   {
-   "fieldname": "safety",
-   "fieldtype": "Select",
-   "label": "Is the maintenance issue causing any immediate safety concerns?",
-   "options": "Yes\nNo"
-  },
-  {
-   "fieldname": "attachment",
-   "fieldtype": "Attach",
-   "label": "Please attach any relevant photos or documents to help illustrate the issue (optional)"
-  },
-  {
-   "description": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and understand that maintenance staff may need access to my unit/office to address the issue.",
+   "description": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and agree to follow all building policies and regulations related to key and access card usage. I understand that I am responsible for the security of the key or access card issued to me and agree to return it upon termination of my access rights or upon request by Building Management.",
    "fieldname": "section_break_psexz",
    "fieldtype": "Section Break"
   },
@@ -111,21 +90,14 @@
    "fieldname": "date",
    "fieldtype": "Date",
    "label": "Date"
-  },
-  {
-   "default": "Plumbing",
-   "fieldname": "issue_type",
-   "fieldtype": "Select",
-   "label": "Issue Type (please check one)",
-   "options": "Plumbing\nElectrical\nHVAC (Heating, Ventilation, and Air Conditioning)\nLighting\nCarpentry\nPest Control\nSecurity\nOther"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-05-15 16:37:21.838408",
+ "modified": "2023-05-15 14:53:16.739159",
  "modified_by": "Administrator",
  "module": "Smart FM",
- "name": "Maintenance Request",
+ "name": "Key Control",
  "owner": "Administrator",
  "permissions": [
   {
