@@ -1,0 +1,178 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-05-15 13:45:52.866096",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "personal_information_section",
+  "name1",
+  "unit_number__office_number",
+  "column_break_abbf3",
+  "phone_number",
+  "email_address",
+  "primary_emergency_contact_section",
+  "emergency_name_1",
+  "emergency_relationship_1",
+  "emergency_email_1",
+  "column_break_8jer4",
+  "emergency_phone_1",
+  "emergency_alt_phone_1",
+  "secondary_emergency_contact_optional_section",
+  "ermergency_name_2",
+  "emergency_relationship_2",
+  "emergency_email_2",
+  "column_break_nv3fq",
+  "emergency_phone_2",
+  "emergency_alt_phone_2",
+  "section_break_psexz",
+  "signature",
+  "column_break_bwddv",
+  "date"
+ ],
+ "fields": [
+  {
+   "fieldname": "personal_information_section",
+   "fieldtype": "Section Break",
+   "label": "Personal Information"
+  },
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "unit_number__office_number",
+   "fieldtype": "Data",
+   "label": "Unit Number / Office Number"
+  },
+  {
+   "fieldname": "column_break_abbf3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Phone",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "email_address",
+   "fieldtype": "Data",
+   "label": "Email Address"
+  },
+  {
+   "fieldname": "primary_emergency_contact_section",
+   "fieldtype": "Section Break",
+   "label": "Primary Emergency Contact"
+  },
+  {
+   "fieldname": "emergency_name_1",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "emergency_relationship_1",
+   "fieldtype": "Data",
+   "label": "Relationship to You"
+  },
+  {
+   "fieldname": "emergency_email_1",
+   "fieldtype": "Data",
+   "label": "Email Address"
+  },
+  {
+   "fieldname": "column_break_8jer4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "emergency_phone_1",
+   "fieldtype": "Phone",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "emergency_alt_phone_1",
+   "fieldtype": "Phone",
+   "label": "Alternate Phone Number"
+  },
+  {
+   "fieldname": "secondary_emergency_contact_optional_section",
+   "fieldtype": "Section Break",
+   "label": "Secondary Emergency Contact (optional)"
+  },
+  {
+   "fieldname": "ermergency_name_2",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "emergency_relationship_2",
+   "fieldtype": "Data",
+   "label": "Relationship to You"
+  },
+  {
+   "fieldname": "emergency_email_2",
+   "fieldtype": "Data",
+   "label": "Email Address"
+  },
+  {
+   "fieldname": "column_break_nv3fq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "emergency_phone_2",
+   "fieldtype": "Phone",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "emergency_alt_phone_2",
+   "fieldtype": "Phone",
+   "label": "Alternate Phone Number"
+  },
+  {
+   "description": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and authorize the building management to contact the individuals listed above in case of an emergency involving me or my property.",
+   "fieldname": "section_break_psexz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "signature",
+   "fieldtype": "Signature",
+   "label": "Signature"
+  },
+  {
+   "fieldname": "column_break_bwddv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-05-15 13:45:52.866096",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Emergency Contact Information",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

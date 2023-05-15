@@ -1,0 +1,175 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-05-15 13:17:29.183970",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "personal_information_section",
+  "name1",
+  "unit_number__office_number",
+  "column_break_abbf3",
+  "phone_number",
+  "email_address",
+  "access_request_details_section",
+  "area_resource",
+  "reason",
+  "datetime",
+  "duration",
+  "dates",
+  "description",
+  "person",
+  "person_1",
+  "person_1_number",
+  "person_2",
+  "person_2_number",
+  "section_break_psexz",
+  "signature",
+  "column_break_bwddv",
+  "date"
+ ],
+ "fields": [
+  {
+   "fieldname": "personal_information_section",
+   "fieldtype": "Section Break",
+   "label": "Personal Information"
+  },
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "unit_number__office_number",
+   "fieldtype": "Data",
+   "label": "Unit Number / Office Number"
+  },
+  {
+   "fieldname": "column_break_abbf3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Phone",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "email_address",
+   "fieldtype": "Data",
+   "label": "Email Address"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Detailed Description of the Incident"
+  },
+  {
+   "fieldname": "datetime",
+   "fieldtype": "Datetime",
+   "label": "Preferred Date and Time for Maintenance Visit (if applicable)"
+  },
+  {
+   "description": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and agree to follow all building policies and regulations while accessing the restricted area or resource.",
+   "fieldname": "section_break_psexz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "signature",
+   "fieldtype": "Signature",
+   "label": "Signature"
+  },
+  {
+   "fieldname": "column_break_bwddv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "fieldname": "access_request_details_section",
+   "fieldtype": "Section Break",
+   "label": "Access Request Details"
+  },
+  {
+   "fieldname": "area_resource",
+   "fieldtype": "Text",
+   "label": "Area/Resource Requesting Access To (please be specific)"
+  },
+  {
+   "fieldname": "reason",
+   "fieldtype": "Text",
+   "label": "Reason for Requesting Access"
+  },
+  {
+   "fieldname": "duration",
+   "fieldtype": "Select",
+   "label": "Duration of Access Required",
+   "options": "One-time access\nShort-term access\nLong-term access"
+  },
+  {
+   "depends_on": "eval:doc.duration == 'Short-term access' || doc.duration == 'Long-term access';",
+   "fieldname": "dates",
+   "fieldtype": "Data",
+   "label": "Please specify dates"
+  },
+  {
+   "fieldname": "person",
+   "fieldtype": "Select",
+   "label": "Will anyone else be accompanying you during the access period",
+   "options": "Yes (please provide their names and contact information below)\nNo"
+  },
+  {
+   "depends_on": "eval:doc.witness != 'No';",
+   "fieldname": "person_1",
+   "fieldtype": "Data",
+   "label": "Person 1"
+  },
+  {
+   "depends_on": "eval:doc.witness != 'No';",
+   "fieldname": "person_1_number",
+   "fieldtype": "Phone",
+   "label": "Phone Number"
+  },
+  {
+   "depends_on": "eval:doc.witness != 'No';",
+   "fieldname": "person_2",
+   "fieldtype": "Data",
+   "label": "Person 2"
+  },
+  {
+   "depends_on": "eval:doc.witness != 'No';",
+   "fieldname": "person_2_number",
+   "fieldtype": "Phone",
+   "label": "Phone Number"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-05-15 13:30:29.536057",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Access Request",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

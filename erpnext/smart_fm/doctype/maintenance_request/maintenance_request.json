@@ -1,0 +1,148 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-05-10 13:37:21.239374",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "personal_information_section",
+  "name1",
+  "unit_number__office_number",
+  "column_break_abbf3",
+  "phone_number",
+  "email_address",
+  "maintenance_issue_details_section",
+  "issue_type",
+  "other",
+  "description",
+  "location",
+  "datetime",
+  "safety",
+  "attachment",
+  "section_break_psexz",
+  "signature",
+  "column_break_bwddv",
+  "date"
+ ],
+ "fields": [
+  {
+   "fieldname": "personal_information_section",
+   "fieldtype": "Section Break",
+   "label": "Personal Information"
+  },
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "unit_number__office_number",
+   "fieldtype": "Data",
+   "label": "Unit Number / Office Number"
+  },
+  {
+   "fieldname": "column_break_abbf3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Phone",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "email_address",
+   "fieldtype": "Data",
+   "label": "Email Address"
+  },
+  {
+   "fieldname": "maintenance_issue_details_section",
+   "fieldtype": "Section Break",
+   "label": "Maintenance Issue Details"
+  },
+  {
+   "depends_on": "eval:doc.issue_type == 'Other';",
+   "fieldname": "other",
+   "fieldtype": "Data",
+   "label": "Other (please specify)"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Detailed Description of the Issue"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Text",
+   "label": "Location of the Issue (e.g., room number, floor, common area)"
+  },
+  {
+   "fieldname": "datetime",
+   "fieldtype": "Datetime",
+   "label": "Preferred Date and Time for Maintenance Visit (if applicable)"
+  },
+  {
+   "fieldname": "safety",
+   "fieldtype": "Select",
+   "label": "Is the maintenance issue causing any immediate safety concerns?",
+   "options": "Yes\nNo"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Please attach any relevant photos or documents to help illustrate the issue (optional)"
+  },
+  {
+   "description": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and understand that maintenance staff may need access to my unit/office to address the issue.",
+   "fieldname": "section_break_psexz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "signature",
+   "fieldtype": "Signature",
+   "label": "Signature"
+  },
+  {
+   "fieldname": "column_break_bwddv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "default": "Plumbing",
+   "fieldname": "issue_type",
+   "fieldtype": "Select",
+   "label": "Issue Type (please check one)",
+   "options": "Plumbing\nElectrical\nHVAC (Heating, Ventilation, and Air Conditioning)\nLighting\nCarpentry\nPest Control\nSecurity\nOther"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-05-15 11:15:23.839096",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Maintenance Request",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
