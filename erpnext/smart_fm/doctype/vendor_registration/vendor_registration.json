@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "VEN.#####",
  "creation": "2023-05-15 13:55:44.455686",
  "default_view": "List",
  "doctype": "DocType",
@@ -64,12 +65,16 @@
   {
    "fieldname": "company_name",
    "fieldtype": "Data",
-   "label": "Company Name"
+   "in_list_view": 1,
+   "label": "Company Name",
+   "reqd": 1
   },
   {
    "fieldname": "address",
    "fieldtype": "Data",
-   "label": "Address"
+   "in_list_view": 1,
+   "label": "Address",
+   "reqd": 1
   },
   {
    "fieldname": "company_website",
@@ -83,12 +88,16 @@
   {
    "fieldname": "phone_number",
    "fieldtype": "Phone",
-   "label": "Phone Number"
+   "in_list_view": 1,
+   "label": "Phone Number",
+   "reqd": 1
   },
   {
    "fieldname": "email_address",
    "fieldtype": "Data",
-   "label": "Email Address"
+   "in_list_view": 1,
+   "label": "Email Address",
+   "reqd": 1
   },
   {
    "fieldname": "contact_information_section",
@@ -98,12 +107,14 @@
   {
    "fieldname": "primary_contact_name",
    "fieldtype": "Data",
-   "label": "Primary Contact Name"
+   "label": "Primary Contact Name",
+   "reqd": 1
   },
   {
    "fieldname": "titleposition",
    "fieldtype": "Data",
-   "label": "Title/Position"
+   "label": "Title/Position",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_rsmpv",
@@ -112,12 +123,14 @@
   {
    "fieldname": "contact_phone",
    "fieldtype": "Phone",
-   "label": "Phone Number"
+   "label": "Phone Number",
+   "reqd": 1
   },
   {
    "fieldname": "contact_email",
    "fieldtype": "Data",
-   "label": "Email Address"
+   "label": "Email Address",
+   "reqd": 1
   },
   {
    "description": "Type of Services Provided (please check all that apply)",
@@ -199,7 +212,8 @@
   {
    "fieldname": "years_of_experience_in_the_industry",
    "fieldtype": "Float",
-   "label": "Years of Experience in the Industry"
+   "label": "Years of Experience in the Industry",
+   "reqd": 1
   },
   {
    "fieldname": "list_of_relevant_certifications_or_licenses_if_applicable",
@@ -300,10 +314,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-05-15 14:45:15.513284",
+ "modified": "2023-05-22 14:58:15.117041",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Vendor Registration",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {

@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "INS.#####",
  "creation": "2023-05-15 15:06:59.258721",
  "default_view": "List",
  "doctype": "DocType",
@@ -56,12 +57,16 @@
   {
    "fieldname": "name1",
    "fieldtype": "Data",
-   "label": "Name"
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1
   },
   {
    "fieldname": "datetime_of_inspection",
    "fieldtype": "Datetime",
-   "label": "Date/Time of Inspection"
+   "in_list_view": 1,
+   "label": "Date/Time of Inspection",
+   "reqd": 1
   },
   {
    "description": "(check if inspected, note any issues found)",
@@ -266,10 +271,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-05-15 15:24:14.736238",
+ "modified": "2023-05-22 14:56:57.604138",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Inspection Checklist",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {

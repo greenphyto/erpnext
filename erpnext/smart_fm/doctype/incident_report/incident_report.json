@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "prompt",
  "creation": "2023-05-12 17:48:26.959550",
  "default_view": "List",
  "doctype": "DocType",
@@ -55,7 +56,9 @@
   {
    "fieldname": "name1",
    "fieldtype": "Data",
-   "label": "Name"
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1
   },
   {
    "fieldname": "unit_number__office_number",
@@ -69,12 +72,16 @@
   {
    "fieldname": "phone_number",
    "fieldtype": "Phone",
-   "label": "Phone Number"
+   "in_list_view": 1,
+   "label": "Phone Number",
+   "reqd": 1
   },
   {
    "fieldname": "email_address",
    "fieldtype": "Data",
-   "label": "Email Address"
+   "in_list_view": 1,
+   "label": "Email Address",
+   "reqd": 1
   },
   {
    "fieldname": "incident_details_section",
@@ -84,7 +91,9 @@
   {
    "fieldname": "date_and_time_of_incident",
    "fieldtype": "Datetime",
-   "label": "Date and Time of Incident"
+   "in_list_view": 1,
+   "label": "Date and Time of Incident",
+   "reqd": 1
   },
   {
    "default": "Plumbing",
@@ -100,17 +109,20 @@
   {
    "fieldname": "description",
    "fieldtype": "Text",
-   "label": "Detailed Description of the Incident"
+   "label": "Detailed Description of the Incident",
+   "reqd": 1
   },
   {
    "fieldname": "location",
    "fieldtype": "Data",
-   "label": "Location of the Issue (e.g., room number, floor, common area)"
+   "label": "Location of the Issue (e.g., room number, floor, common area)",
+   "reqd": 1
   },
   {
    "fieldname": "datetime",
    "fieldtype": "Datetime",
-   "label": "Preferred Date and Time for Maintenance Visit (if applicable)"
+   "label": "Preferred Date and Time for Maintenance Visit (if applicable)",
+   "reqd": 1
   },
   {
    "fieldname": "attachment",
@@ -146,10 +158,12 @@
    "fieldtype": "Section Break"
   },
   {
+   "default": "No",
    "fieldname": "witness",
    "fieldtype": "Select",
    "label": "Were there any witnesses to the incident?",
-   "options": "Yes (please provide their names and contact information below)\nNo"
+   "options": "Yes (please provide their names and contact information below)\nNo",
+   "reqd": 1
   },
   {
    "default": "0",
@@ -252,10 +266,12 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-17 16:54:46.205542",
+ "modified": "2023-05-22 14:09:58.469729",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Incident Report",
+ "name_case": "Title Case",
+ "naming_rule": "Set by user",
  "owner": "Administrator",
  "permissions": [
   {

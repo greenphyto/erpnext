@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "WO.#####",
  "creation": "2023-05-15 15:57:52.267438",
  "default_view": "List",
  "doctype": "DocType",
@@ -44,12 +45,16 @@
   {
    "fieldname": "requesters_name",
    "fieldtype": "Data",
-   "label": "Requester's Name"
+   "in_list_view": 1,
+   "label": "Requester's Name",
+   "reqd": 1
   },
   {
    "fieldname": "email_address",
    "fieldtype": "Data",
-   "label": "Requester's Email Address"
+   "in_list_view": 1,
+   "label": "Requester's Email Address",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_abbf3",
@@ -58,12 +63,16 @@
   {
    "fieldname": "phone_number",
    "fieldtype": "Phone",
-   "label": "Requester's Phone Number"
+   "in_list_view": 1,
+   "label": "Requester's Phone Number",
+   "reqd": 1
   },
   {
    "fieldname": "date_of_request",
    "fieldtype": "Date",
-   "label": "Date of Request"
+   "in_list_view": 1,
+   "label": "Date of Request",
+   "reqd": 1
   },
   {
    "fieldname": "issue_details_section",
@@ -74,7 +83,8 @@
    "fieldname": "type_of_issue",
    "fieldtype": "Select",
    "label": "Type of Issue",
-   "options": "Maintenance Request\nIncident Report"
+   "options": "Maintenance Request\nIncident Report",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_rsmpv",
@@ -84,7 +94,8 @@
    "fieldname": "category",
    "fieldtype": "Select",
    "label": "Category",
-   "options": "Air Conditioning / Heating\nPlumbing / Water Leak\nElectrical / Lighting\nSecurity / Access Control\nCleaning / Janitorial\nBuilding Exterior / Grounds\nOther"
+   "options": "Air Conditioning / Heating\nPlumbing / Water Leak\nElectrical / Lighting\nSecurity / Access Control\nCleaning / Janitorial\nBuilding Exterior / Grounds\nOther",
+   "reqd": 1
   },
   {
    "depends_on": "eval:doc.category == 'Other';",
@@ -99,13 +110,15 @@
   {
    "fieldname": "location",
    "fieldtype": "Text",
-   "label": "Location of Issue (be specific)"
+   "label": "Location of Issue (be specific)",
+   "reqd": 1
   },
   {
    "description": "(include any relevant details, such as when the issue was first noticed, any potential causes, and any actions taken thus far)",
    "fieldname": "description",
    "fieldtype": "Text",
-   "label": "Description of Issue"
+   "label": "Description of Issue",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_l9u7x",
@@ -120,7 +133,8 @@
    "fieldname": "priority_level",
    "fieldtype": "Select",
    "label": "Priority Level",
-   "options": "Low (routine maintenance)\nMedium (issue causing minor disruption)\nHigh (issue causing significant disruption or safety concern)"
+   "options": "Low (routine maintenance)\nMedium (issue causing minor disruption)\nHigh (issue causing significant disruption or safety concern)",
+   "reqd": 1
   },
   {
    "description": "By submitting this form, you are confirming that the information provided is accurate and complete to the best of your knowledge. Our maintenance team will review your request and respond as soon as possible.",
@@ -174,10 +188,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-05-15 16:00:52.141851",
+ "modified": "2023-05-22 14:55:20.801800",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Smart FM Work Order",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {

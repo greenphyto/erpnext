@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "field:name1",
  "creation": "2023-05-15 13:45:52.866096",
  "default_view": "List",
  "doctype": "DocType",
@@ -42,7 +43,10 @@
   {
    "fieldname": "name1",
    "fieldtype": "Data",
-   "label": "Name"
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fieldname": "unit_number__office_number",
@@ -56,12 +60,16 @@
   {
    "fieldname": "phone_number",
    "fieldtype": "Phone",
-   "label": "Phone Number"
+   "in_list_view": 1,
+   "label": "Phone Number",
+   "reqd": 1
   },
   {
    "fieldname": "email_address",
    "fieldtype": "Data",
-   "label": "Email Address"
+   "in_list_view": 1,
+   "label": "Email Address",
+   "reqd": 1
   },
   {
    "fieldname": "primary_emergency_contact_section",
@@ -71,17 +79,21 @@
   {
    "fieldname": "emergency_name_1",
    "fieldtype": "Data",
-   "label": "Name"
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1
   },
   {
    "fieldname": "emergency_relationship_1",
    "fieldtype": "Data",
-   "label": "Relationship to You"
+   "label": "Relationship to You",
+   "reqd": 1
   },
   {
    "fieldname": "emergency_email_1",
    "fieldtype": "Data",
-   "label": "Email Address"
+   "label": "Email Address",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_8jer4",
@@ -90,7 +102,8 @@
   {
    "fieldname": "emergency_phone_1",
    "fieldtype": "Phone",
-   "label": "Phone Number"
+   "label": "Phone Number",
+   "reqd": 1
   },
   {
    "fieldname": "emergency_alt_phone_1",
@@ -163,10 +176,12 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-17 16:43:01.517624",
+ "modified": "2023-05-22 14:13:12.021921",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Emergency Contact Information",
+ "name_case": "Title Case",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "field:name1",
  "creation": "2023-05-15 16:12:56.870994",
  "default_view": "List",
  "doctype": "DocType",
@@ -8,7 +9,7 @@
  "engine": "InnoDB",
  "field_order": [
   "general_information_section",
-  "requesters_name",
+  "name1",
   "email_address",
   "column_break_abbf3",
   "phone_number",
@@ -36,14 +37,11 @@
    "label": "Tenant Information"
   },
   {
-   "fieldname": "requesters_name",
-   "fieldtype": "Data",
-   "label": "Tenant's Name"
-  },
-  {
    "fieldname": "email_address",
    "fieldtype": "Data",
-   "label": "Tenant's Email Address"
+   "in_list_view": 1,
+   "label": "Tenant's Email Address",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_abbf3",
@@ -52,7 +50,9 @@
   {
    "fieldname": "phone_number",
    "fieldtype": "Phone",
-   "label": "Tenant's Phone Number"
+   "in_list_view": 1,
+   "label": "Tenant's Phone Number",
+   "reqd": 1
   },
   {
    "fieldname": "unit_number",
@@ -136,15 +136,25 @@
    "options": "Tenant Feedback",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tenant's Name",
+   "reqd": 1,
+   "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-17 16:41:10.406612",
+ "modified": "2023-05-22 14:49:46.719635",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Tenant Feedback",
+ "name_case": "Title Case",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

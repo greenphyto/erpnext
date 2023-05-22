@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "prompt",
  "creation": "2023-05-15 14:51:17.327974",
  "default_view": "List",
  "doctype": "DocType",
@@ -31,7 +32,9 @@
   {
    "fieldname": "name1",
    "fieldtype": "Data",
-   "label": "Name"
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1
   },
   {
    "fieldname": "unit_number__office_number",
@@ -45,12 +48,16 @@
   {
    "fieldname": "phone_number",
    "fieldtype": "Phone",
-   "label": "Phone Number"
+   "in_list_view": 1,
+   "label": "Phone Number",
+   "reqd": 1
   },
   {
    "fieldname": "email_address",
    "fieldtype": "Data",
-   "label": "Email Address"
+   "in_list_view": 1,
+   "label": "Email Address",
+   "reqd": 1
   },
   {
    "fieldname": "key_or_access_card_request_details_section",
@@ -60,17 +67,21 @@
   {
    "fieldname": "request_access",
    "fieldtype": "Text",
-   "label": "Area/Door/Resource Requesting Access To (please be specific)"
+   "in_list_view": 1,
+   "label": "Area/Door/Resource Requesting Access To (please be specific)",
+   "reqd": 1
   },
   {
    "fieldname": "reason",
    "fieldtype": "Text",
-   "label": "Reason for Requesting Key or Access Card"
+   "label": "Reason for Requesting Key or Access Card",
+   "reqd": 1
   },
   {
    "fieldname": "datetime",
    "fieldtype": "Datetime",
-   "label": "Preferred Date and Time for Key or Access Card Pickup"
+   "label": "Preferred Date and Time for Key or Access Card Pickup",
+   "reqd": 1
   },
   {
    "description": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and agree to follow all building policies and regulations related to key and access card usage. I understand that I am responsible for the security of the key or access card issued to me and agree to return it upon termination of my access rights or upon request by Building Management.",
@@ -94,10 +105,12 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-05-15 14:53:16.739159",
+ "modified": "2023-05-22 13:56:58.516785",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Key Control",
+ "name_case": "Title Case",
+ "naming_rule": "Set by user",
  "owner": "Administrator",
  "permissions": [
   {

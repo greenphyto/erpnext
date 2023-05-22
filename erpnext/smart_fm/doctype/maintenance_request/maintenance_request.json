@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "prompt",
  "creation": "2023-05-10 13:37:21.239374",
  "default_view": "List",
  "doctype": "DocType",
@@ -59,7 +60,8 @@
   {
    "fieldname": "email_address",
    "fieldtype": "Data",
-   "label": "Email Address"
+   "label": "Email Address",
+   "reqd": 1
   },
   {
    "fieldname": "maintenance_issue_details_section",
@@ -144,10 +146,12 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-17 15:40:47.594344",
+ "modified": "2023-05-22 13:56:39.704696",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Maintenance Request",
+ "name_case": "Title Case",
+ "naming_rule": "Set by user",
  "owner": "Administrator",
  "permissions": [
   {
