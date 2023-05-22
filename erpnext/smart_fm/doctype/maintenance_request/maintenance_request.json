@@ -24,7 +24,8 @@
   "section_break_psexz",
   "signature",
   "column_break_bwddv",
-  "date"
+  "date",
+  "amended_from"
  ],
  "fields": [
   {
@@ -35,7 +36,9 @@
   {
    "fieldname": "name1",
    "fieldtype": "Data",
-   "label": "Name"
+   "in_list_view": 1,
+   "label": "Name",
+   "reqd": 1
   },
   {
    "fieldname": "unit_number__office_number",
@@ -49,7 +52,9 @@
   {
    "fieldname": "phone_number",
    "fieldtype": "Phone",
-   "label": "Phone Number"
+   "in_list_view": 1,
+   "label": "Phone Number",
+   "reqd": 1
   },
   {
    "fieldname": "email_address",
@@ -70,23 +75,28 @@
   {
    "fieldname": "description",
    "fieldtype": "Text",
-   "label": "Detailed Description of the Issue"
+   "in_list_view": 1,
+   "label": "Detailed Description of the Issue",
+   "reqd": 1
   },
   {
    "fieldname": "location",
    "fieldtype": "Text",
-   "label": "Location of the Issue (e.g., room number, floor, common area)"
+   "label": "Location of the Issue (e.g., room number, floor, common area)",
+   "reqd": 1
   },
   {
    "fieldname": "datetime",
    "fieldtype": "Datetime",
-   "label": "Preferred Date and Time for Maintenance Visit (if applicable)"
+   "label": "Preferred Date and Time for Maintenance Visit (if applicable)",
+   "reqd": 1
   },
   {
    "fieldname": "safety",
    "fieldtype": "Select",
    "label": "Is the maintenance issue causing any immediate safety concerns?",
-   "options": "Yes\nNo"
+   "options": "Yes\nNo",
+   "reqd": 1
   },
   {
    "fieldname": "attachment",
@@ -116,13 +126,25 @@
    "default": "Plumbing",
    "fieldname": "issue_type",
    "fieldtype": "Select",
-   "label": "Issue Type (please check one)",
-   "options": "Plumbing\nElectrical\nHVAC (Heating, Ventilation, and Air Conditioning)\nLighting\nCarpentry\nPest Control\nSecurity\nOther"
+   "in_list_view": 1,
+   "label": "Issue Type",
+   "options": "Plumbing\nElectrical\nHVAC (Heating, Ventilation, and Air Conditioning)\nLighting\nCarpentry\nPest Control\nSecurity\nOther",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Maintenance Request",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2023-05-15 16:37:21.838408",
+ "modified": "2023-05-17 15:40:47.594344",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Maintenance Request",
@@ -136,13 +158,19 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "System Manager",
+   "role": "All",
    "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Blue",
+   "title": "O"
+  }
+ ],
  "track_changes": 1
 }

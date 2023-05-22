@@ -30,7 +30,8 @@
   "section_break_psexz",
   "signature",
   "column_break_bwddv",
-  "date"
+  "date",
+  "amended_from"
  ],
  "fields": [
   {
@@ -148,11 +149,21 @@
    "fieldname": "date",
    "fieldtype": "Date",
    "label": "Date"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Emergency Contact Information",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2023-05-15 13:45:52.866096",
+ "modified": "2023-05-17 16:43:01.517624",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Emergency Contact Information",
@@ -168,6 +179,7 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],

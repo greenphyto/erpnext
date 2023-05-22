@@ -8,6 +8,7 @@
  "hide_custom": 0,
  "icon": "getting-started",
  "idx": 0,
+ "is_hidden": 0,
  "label": "Home",
  "links": [
   {
@@ -230,10 +231,11 @@
    "type": "Link"
   }
  ],
- "modified": "2022-06-27 16:54:35.462176",
+ "modified": "2023-05-17 14:15:02.436121",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Home",
+ "number_cards": [],
  "owner": "Administrator",
  "parent_page": "",
  "public": 1,

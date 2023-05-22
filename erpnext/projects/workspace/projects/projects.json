@@ -13,6 +13,7 @@
  "hide_custom": 0,
  "icon": "project",
  "idx": 0,
+ "is_hidden": 0,
  "label": "Projects",
  "links": [
   {
@@ -190,17 +191,18 @@
    "type": "Link"
   }
  ],
- "modified": "2022-10-11 22:39:10.436311",
+ "modified": "2023-05-17 14:15:04.221909",
  "modified_by": "Administrator",
  "module": "Projects",
  "name": "Projects",
+ "number_cards": [],
  "owner": "Administrator",
  "parent_page": "",
  "public": 1,
  "quick_lists": [],
  "restrict_to_domain": "",
  "roles": [],
- "sequence_id": 20.0,
+ "sequence_id": 13.0,
  "shortcuts": [
   {
    "color": "Blue",

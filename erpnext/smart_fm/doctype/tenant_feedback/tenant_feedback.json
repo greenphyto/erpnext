@@ -141,7 +141,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-15 16:21:43.440833",
+ "modified": "2023-05-17 16:41:10.406612",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Tenant Feedback",
@@ -155,8 +155,9 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "System Manager",
+   "role": "All",
    "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],
