@@ -1,0 +1,117 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "PLAN.#####",
+ "creation": "2023-05-22 16:40:10.770912",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "emergency_procedures_section",
+  "null1",
+  "roles_and_responsibility",
+  "null2",
+  "fire_prevention_measures",
+  "null3",
+  "fire_safety_equipment",
+  "null4",
+  "emergency_contact_information_section",
+  "local_fire_department",
+  "building_management",
+  "emergency_coordinator"
+ ],
+ "fields": [
+  {
+   "description": " a) Upon discovering a fire:<br>\n      - Activate the nearest fire alarm.<br>\n      - Call the local emergency number and provide the building address and location of the fire.<br>\n      - Notify Building Management.<br>\n<br>\n   b) Upon hearing the fire alarm:<br>\n      - Evacuate the building using the nearest safe exit.<br>\n      - Do not use elevators.<br>\n      - Close doors behind you to prevent the spread of smoke and fire.<br>\n      - Proceed to the designated assembly area outside the building.<br>\n<br>\n   c) Firefighting:<br>\n      - Only attempt to extinguish a fire if it is small and manageable, and you have been trained in the proper use of a fire extinguisher.<br>\n      - Ensure that you have a safe exit before attempting to fight the fire.<br>",
+   "fieldname": "emergency_procedures_section",
+   "fieldtype": "Section Break",
+   "label": "1. Emergency Procedures"
+  },
+  {
+   "fieldname": "emergency_contact_information_section",
+   "fieldtype": "Section Break",
+   "label": "5. Emergency Contact Information"
+  },
+  {
+   "fieldname": "local_fire_department",
+   "fieldtype": "Phone",
+   "label": "Local Fire Department"
+  },
+  {
+   "fieldname": "building_management",
+   "fieldtype": "Phone",
+   "label": "Building Management"
+  },
+  {
+   "fieldname": "emergency_coordinator",
+   "fieldtype": "Phone",
+   "label": "Emergency Coordinator"
+  },
+  {
+   "fieldname": "null1",
+   "fieldtype": "HTML",
+   "label": "null"
+  },
+  {
+   "description": "test",
+   "fieldname": "null2",
+   "fieldtype": "HTML",
+   "label": "null"
+  },
+  {
+   "description": "a) Building Management:<br>\n      - Regularly inspect and maintain fire protection systems.<br>\n      - Ensure fire safety equipment is in good working condition.<br>\n      - Coordinate fire drills and training for building occupants.<br>\n      - Update and distribute the Fire Safety Plan to all occupants.<br>\n<br>\n   b) Building Occupants:<br>\n      - Familiarize yourself with the Fire Safety Plan and emergency procedures.<br>\n      - Participate in fire drills and training.<br>\n      - Report any fire hazards or malfunctioning fire safety equipment to Building Management.<br>",
+   "fieldname": "roles_and_responsibility",
+   "fieldtype": "Section Break",
+   "label": "2. Roles and Responsibilities:"
+  },
+  {
+   "description": "a) Housekeeping:<br>\n      - Keep hallways and stairwells clear of obstructions.<br>\n      - Store flammable materials in approved containers and designated areas.<br>\n      - Dispose of waste materials in appropriate receptacles.<br>\n<br>\n   b) Electrical Safety:<br>\n      - Do not overload electrical outlets or extension cords.<br>\n      - Replace damaged electrical cords or plugs.<br>\n      - Keep electrical appliances away from flammable materials.<br>\n<br>\n   c) Smoking:<br>\n      - Adhere to designated smoking areas and dispose of smoking materials properly.<br>\n      - Do not smoke in non-smoking areas or near flammable materials.<br>",
+   "fieldname": "fire_prevention_measures",
+   "fieldtype": "Section Break",
+   "label": "3. Fire Prevention Measures"
+  },
+  {
+   "fieldname": "null3",
+   "fieldtype": "HTML",
+   "label": "null"
+  },
+  {
+   "description": "a) Fire extinguishers:<br>\n      - Ensure fire extinguishers are accessible, visible, and properly maintained.<br>\n      - Train designated personnel in the proper use of fire extinguishers.<br>\n<br>\n   b) Fire alarm systems:<br>\n      - Regularly test and maintain fire alarm systems.<br>\n      - Ensure all occupants are familiar with the sound of the alarm and know how to respond.<br>\n<br>\n   c) Sprinkler systems:<br>\n      - Regularly inspect and maintain sprinkler systems.<br>\n      - Ensure sprinkler heads are unobstructed and in good working order.<br>",
+   "fieldname": "fire_safety_equipment",
+   "fieldtype": "Section Break",
+   "label": "4. Fire Safety Equipment"
+  },
+  {
+   "fieldname": "null4",
+   "fieldtype": "HTML",
+   "label": "null"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-05-22 17:02:11.988088",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Fire Safety Plan",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
