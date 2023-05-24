@@ -8,6 +8,8 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "ticketing_form",
+  "form_description",
   "general_information_section",
   "requesters_name",
   "email_address",
@@ -26,15 +28,20 @@
   "attachment",
   "priority_level",
   "section_break_psexz",
+  "declaration",
+  "section_break_amtuo",
   "signature",
   "column_break_bwddv",
   "date",
   "section_break_uas3n",
+  "instruction",
+  "section_break_cyoua",
   "ticket_number",
   "assigned_to",
   "column_break_68vfs",
   "date_assigned",
-  "date_completed"
+  "date_completed",
+  "amended_from"
  ],
  "fields": [
   {
@@ -137,14 +144,14 @@
    "reqd": 1
   },
   {
-   "description": "By submitting this form, you are confirming that the information provided is accurate and complete to the best of your knowledge. Our maintenance team will review your request and respond as soon as possible.",
    "fieldname": "section_break_psexz",
    "fieldtype": "Section Break"
   },
   {
    "fieldname": "signature",
    "fieldtype": "Signature",
-   "label": "Signature"
+   "label": "Signature",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_bwddv",
@@ -153,10 +160,10 @@
   {
    "fieldname": "date",
    "fieldtype": "Date",
-   "label": "Date"
+   "label": "Date",
+   "reqd": 1
   },
   {
-   "description": "Please submit the completed form to Building Management for processing. You will receive a ticket number and updates on the status of your request. Thank you for helping to maintain a safe and functional environment for all building occupants.",
    "fieldname": "section_break_uas3n",
    "fieldtype": "Section Break",
    "label": "For Office Use Only"
@@ -184,11 +191,54 @@
    "fieldname": "date_completed",
    "fieldtype": "Date",
    "label": "Date Completed"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Smart FM Work Order",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "ticketing_form",
+   "fieldtype": "Heading",
+   "label": "Ticketing Form"
+  },
+  {
+   "fieldname": "form_description",
+   "fieldtype": "HTML",
+   "label": "Description",
+   "options": "Please complete this form to request maintenance or report an issue with the building facilities. Provide as much detail as possible to help our maintenance team accurately address your concerns. Once submitted, your request will be assigned a ticket number, and a member of our team will follow up with you regarding the status of your request."
+  },
+  {
+   "fieldname": "declaration",
+   "fieldtype": "HTML",
+   "label": "Declaration",
+   "options": "By submitting this form, you are confirming that the information provided is accurate and complete to the best of your knowledge. Our maintenance team will review your request and respond as soon as possible.",
+   "width": "100%"
+  },
+  {
+   "columns": 11,
+   "fieldname": "instruction",
+   "fieldtype": "HTML",
+   "label": "Instruction",
+   "options": "Please submit the completed form to Building Management for processing. You will receive a ticket number and updates on the status of your request. Thank you for helping to maintain a safe and functional environment for all building occupants."
+  },
+  {
+   "fieldname": "section_break_amtuo",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_cyoua",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2023-05-22 14:55:20.801800",
+ "modified": "2023-05-23 16:32:20.116053",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Smart FM Work Order",
@@ -203,7 +253,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "System Manager",
+   "role": "All",
    "share": 1,
    "write": 1
   }

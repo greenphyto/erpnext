@@ -8,6 +8,8 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "tenant_feedback_form",
+  "form_description",
   "general_information_section",
   "name1",
   "email_address",
@@ -116,7 +118,6 @@
    "label": "Any other comments or suggestions"
   },
   {
-   "description": "Thank you for your valuable feedback! Your input helps us better understand the needs of our tenants and make improvements to enhance the living/working environment in our building.<br><br>\nPlease submit the completed form to Building Management.",
    "fieldname": "section_break_psexz",
    "fieldtype": "Section Break"
   },
@@ -126,7 +127,8 @@
   },
   {
    "fieldname": "null",
-   "fieldtype": "HTML"
+   "fieldtype": "HTML",
+   "options": "Thank you for your valuable feedback! Your input helps us better understand the needs of our tenants and make improvements to enhance the living/working environment in our building.<br><br>\nPlease submit the completed form to Building Management."
   },
   {
    "fieldname": "amended_from",
@@ -144,12 +146,23 @@
    "label": "Tenant's Name",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "fieldname": "tenant_feedback_form",
+   "fieldtype": "Heading",
+   "label": "Tenant Feedback Form"
+  },
+  {
+   "fieldname": "form_description",
+   "fieldtype": "HTML",
+   "label": "Description",
+   "options": "Thank you for taking the time to provide feedback on your experience as a tenant in our building. Your insights are valuable to us and will help us improve our services and overall tenant experience. Please complete the form below, and feel free to provide any additional comments or suggestions in the designated space."
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-22 14:49:46.719635",
+ "modified": "2023-05-23 17:13:06.326480",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Tenant Feedback",

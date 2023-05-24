@@ -8,6 +8,8 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "inspection_checklist",
+  "form_description",
   "general_information_section",
   "name1",
   "datetime_of_inspection",
@@ -44,6 +46,8 @@
   "safety_concerns",
   "additional_notes",
   "section_break_psexz",
+  "declaration",
+  "section_break_aful1",
   "signature",
   "column_break_bwddv",
   "date"
@@ -241,7 +245,6 @@
    "label": "Additional Notes or Observations"
   },
   {
-   "description": "By signing below, I confirm that I have completed a thorough inspection of the building's facilities and systems as outlined above and have documented any issues or concerns identified during the inspection.",
    "fieldname": "section_break_psexz",
    "fieldtype": "Section Break"
   },
@@ -267,11 +270,32 @@
   {
    "fieldname": "null",
    "fieldtype": "HTML"
+  },
+  {
+   "fieldname": "inspection_checklist",
+   "fieldtype": "Heading",
+   "label": "Inspection Checklist"
+  },
+  {
+   "fieldname": "form_description",
+   "fieldtype": "HTML",
+   "label": "Description",
+   "options": "Please complete the following form during your inspection of the building's facilities and systems. This checklist will help ensure that all areas have been thoroughly inspected and any issues identified are documented for further action."
+  },
+  {
+   "fieldname": "declaration",
+   "fieldtype": "HTML",
+   "label": "Declaration",
+   "options": "By signing below, I confirm that I have completed a thorough inspection of the building's facilities and systems as outlined above and have documented any issues or concerns identified during the inspection."
+  },
+  {
+   "fieldname": "section_break_aful1",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-05-22 14:56:57.604138",
+ "modified": "2023-05-23 17:05:47.398287",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Inspection Checklist",

@@ -8,6 +8,8 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "emergency_contact_form",
+  "form_description",
   "personal_information_section",
   "name1",
   "unit_number__office_number",
@@ -29,6 +31,8 @@
   "emergency_phone_2",
   "emergency_alt_phone_2",
   "section_break_psexz",
+  "declaration",
+  "section_break_9p9kk",
   "signature",
   "column_break_bwddv",
   "date",
@@ -145,14 +149,14 @@
    "label": "Alternate Phone Number"
   },
   {
-   "description": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and authorize the building management to contact the individuals listed above in case of an emergency involving me or my property.",
    "fieldname": "section_break_psexz",
    "fieldtype": "Section Break"
   },
   {
    "fieldname": "signature",
    "fieldtype": "Signature",
-   "label": "Signature"
+   "label": "Signature",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_bwddv",
@@ -161,7 +165,8 @@
   {
    "fieldname": "date",
    "fieldtype": "Date",
-   "label": "Date"
+   "label": "Date",
+   "reqd": 1
   },
   {
    "fieldname": "amended_from",
@@ -171,12 +176,33 @@
    "options": "Emergency Contact Information",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "emergency_contact_form",
+   "fieldtype": "Heading",
+   "label": "Emergency Contact Form"
+  },
+  {
+   "fieldname": "form_description",
+   "fieldtype": "HTML",
+   "label": "Description",
+   "options": "Please complete the following form to provide emergency contact information. This information will be used by the building management or emergency personnel to contact your designated individual(s) in case of an emergency involving you or your property."
+  },
+  {
+   "fieldname": "declaration",
+   "fieldtype": "HTML",
+   "label": "Declaration",
+   "options": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and authorize the building management to contact the individuals listed above in case of an emergency involving me or my property."
+  },
+  {
+   "fieldname": "section_break_9p9kk",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-22 14:13:12.021921",
+ "modified": "2023-05-23 17:22:18.485317",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Emergency Contact Information",

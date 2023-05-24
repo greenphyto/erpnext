@@ -8,6 +8,8 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "vendor_registration_form",
+  "form_description",
   "personal_information_section",
   "company_name",
   "address",
@@ -39,22 +41,25 @@
   "column_break_vvqhp",
   "reference_1_number",
   "reference_1_email",
-  "section_break_rpu1z",
+  "section_break_dkzwf",
   "reference_2_name",
   "reference_2_company",
   "column_break_2asdy",
   "reference_2_phone",
   "reference_2_email",
-  "section_break_g29dr",
+  "section_break_752nd",
   "reference_3_name",
   "reference_3_company",
   "column_break_2nzbs",
   "reference_3_phone",
   "reference_3_email",
-  "section_break_psexz",
+  "section_break_o2cxp",
+  "declaration",
+  "section_break_fhqwm",
   "signature",
   "column_break_bwddv",
-  "date"
+  "date",
+  "amended_from"
  ],
  "fields": [
   {
@@ -149,14 +154,10 @@
    "label": "Detailed Description of Services Offered"
   },
   {
-   "description": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and understand that submitting this form does not guarantee my company will be selected for future business opportunities.",
-   "fieldname": "section_break_psexz",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "signature",
    "fieldtype": "Signature",
-   "label": "Signature"
+   "label": "Signature",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_bwddv",
@@ -165,7 +166,8 @@
   {
    "fieldname": "date",
    "fieldtype": "Date",
-   "label": "Date"
+   "label": "Date",
+   "reqd": 1
   },
   {
    "default": "Plumbing",
@@ -221,7 +223,7 @@
    "label": "List of Relevant Certifications or Licenses (if applicable)"
   },
   {
-   "description": "Please provide at least three (3) professional references from clients you have worked with in the past.<br><br>\nReference 1",
+   "description": "Please provide at least three (3) professional references from clients you have worked with in the past.<br><br>Reference 1",
    "fieldname": "section_break_p5xt9",
    "fieldtype": "Section Break",
    "label": "References"
@@ -254,11 +256,6 @@
    "label": "Company"
   },
   {
-   "description": "Reference 2",
-   "fieldname": "section_break_rpu1z",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "reference_2_name",
    "fieldtype": "Data",
    "label": "Name"
@@ -283,11 +280,6 @@
    "label": "Email Address"
   },
   {
-   "description": "Reference 3",
-   "fieldname": "section_break_g29dr",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "reference_3_name",
    "fieldtype": "Data",
    "label": "Name"
@@ -310,11 +302,56 @@
    "fieldname": "reference_3_email",
    "fieldtype": "Data",
    "label": "Email Addresss"
+  },
+  {
+   "fieldname": "vendor_registration_form",
+   "fieldtype": "Heading",
+   "label": "Vendor Registration Form"
+  },
+  {
+   "fieldname": "form_description",
+   "fieldtype": "HTML",
+   "label": "Description",
+   "options": "Please complete the following form to register your company as a vendor for our building. Providing accurate and detailed information will help our management team evaluate your services and consider your company for future business opportunities."
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Vendor Registration",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "declaration",
+   "fieldtype": "HTML",
+   "label": "Declaration",
+   "options": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and understand that submitting this form does not guarantee my company will be selected for future business opportunities."
+  },
+  {
+   "description": "Reference 2",
+   "fieldname": "section_break_dkzwf",
+   "fieldtype": "Section Break"
+  },
+  {
+   "description": "Reference 3",
+   "fieldname": "section_break_752nd",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_fhqwm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_o2cxp",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2023-05-22 14:58:15.117041",
+ "modified": "2023-05-23 17:04:04.661370",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Vendor Registration",
@@ -329,7 +366,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "System Manager",
+   "role": "All",
    "share": 1,
    "write": 1
   }

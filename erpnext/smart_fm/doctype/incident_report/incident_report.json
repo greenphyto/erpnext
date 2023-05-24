@@ -1,13 +1,15 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "prompt",
+ "autoname": "INC.#####",
  "creation": "2023-05-12 17:48:26.959550",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "incident_report_form",
+  "form_description",
   "personal_information_section",
   "name1",
   "unit_number__office_number",
@@ -19,6 +21,7 @@
   "column_break_rsmpv",
   "location",
   "section_break_dbcto",
+  "type_of_incident",
   "slip_and_fall_accident",
   "property_damage",
   "theft",
@@ -42,6 +45,8 @@
   "section_break_l9u7x",
   "attachment",
   "section_break_psexz",
+  "declaration",
+  "section_break_cvqc3",
   "signature",
   "column_break_bwddv",
   "date",
@@ -130,14 +135,14 @@
    "label": "Please attach any relevant photos or documents to help illustrate the issue (optional)"
   },
   {
-   "description": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge.",
    "fieldname": "section_break_psexz",
    "fieldtype": "Section Break"
   },
   {
    "fieldname": "signature",
    "fieldtype": "Signature",
-   "label": "Signature"
+   "label": "Signature",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_bwddv",
@@ -146,14 +151,14 @@
   {
    "fieldname": "date",
    "fieldtype": "Date",
-   "label": "Date"
+   "label": "Date",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_rsmpv",
    "fieldtype": "Column Break"
   },
   {
-   "description": "Type of Incident (please check one or more as applicable)",
    "fieldname": "section_break_dbcto",
    "fieldtype": "Section Break"
   },
@@ -261,17 +266,44 @@
    "options": "Incident Report",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "incident_report_form",
+   "fieldtype": "Heading",
+   "label": "Incident Report Form"
+  },
+  {
+   "fieldname": "form_description",
+   "fieldtype": "HTML",
+   "label": "Description",
+   "options": "Please complete this form to report any incidents or accidents that occurred within the building. Providing detailed and accurate information will help our management team take appropriate action and implement measures to prevent similar incidents in the future."
+  },
+  {
+   "fieldname": "type_of_incident",
+   "fieldtype": "HTML",
+   "label": "Type of Incident",
+   "options": "Type of Incident (please check one or more as applicable)<br><br>"
+  },
+  {
+   "fieldname": "declaration",
+   "fieldtype": "HTML",
+   "label": "Declaration",
+   "options": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge."
+  },
+  {
+   "fieldname": "section_break_cvqc3",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-22 14:09:58.469729",
+ "modified": "2023-05-23 17:26:37.299766",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Incident Report",
  "name_case": "Title Case",
- "naming_rule": "Set by user",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {

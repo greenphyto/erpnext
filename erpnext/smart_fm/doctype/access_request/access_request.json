@@ -1,13 +1,15 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "prompt",
+ "autoname": "ACCESS.#####",
  "creation": "2023-05-15 13:17:29.183970",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "access_request_form",
+  "form_description",
   "personal_information_section",
   "name1",
   "unit_number__office_number",
@@ -23,10 +25,16 @@
   "description",
   "person",
   "person_1",
+  "person_1_name",
+  "column_break_n4tbk",
   "person_1_number",
   "person_2",
+  "person_2_name",
+  "column_break_jsjoq",
   "person_2_number",
   "section_break_psexz",
+  "declaration",
+  "section_break_plvrd",
   "signature",
   "column_break_bwddv",
   "date",
@@ -80,14 +88,14 @@
    "label": "Preferred Date and Time for Maintenance Visit (if applicable)"
   },
   {
-   "description": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and agree to follow all building policies and regulations while accessing the restricted area or resource.",
    "fieldname": "section_break_psexz",
    "fieldtype": "Section Break"
   },
   {
    "fieldname": "signature",
    "fieldtype": "Signature",
-   "label": "Signature"
+   "label": "Signature",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_bwddv",
@@ -96,7 +104,8 @@
   {
    "fieldname": "date",
    "fieldtype": "Date",
-   "label": "Date"
+   "label": "Date",
+   "reqd": 1
   },
   {
    "fieldname": "access_request_details_section",
@@ -139,10 +148,9 @@
    "reqd": 1
   },
   {
-   "depends_on": "eval:doc.witness != 'No';",
+   "description": "Person 1",
    "fieldname": "person_1",
-   "fieldtype": "Data",
-   "label": "Person 1"
+   "fieldtype": "Section Break"
   },
   {
    "depends_on": "eval:doc.witness != 'No';",
@@ -151,10 +159,9 @@
    "label": "Phone Number"
   },
   {
-   "depends_on": "eval:doc.witness != 'No';",
+   "description": "Person 2",
    "fieldname": "person_2",
-   "fieldtype": "Data",
-   "label": "Person 2"
+   "fieldtype": "Section Break"
   },
   {
    "depends_on": "eval:doc.witness != 'No';",
@@ -170,17 +177,58 @@
    "options": "Access Request",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "access_request_form",
+   "fieldtype": "Heading",
+   "label": "Access Request Form"
+  },
+  {
+   "fieldname": "form_description",
+   "fieldtype": "HTML",
+   "label": "Description",
+   "options": "Please complete the following form to request access to restricted areas or resources within the building. Providing accurate information will help our management team evaluate your request and grant access as needed."
+  },
+  {
+   "depends_on": "eval:doc.witness != 'No';",
+   "fieldname": "person_1_name",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "column_break_n4tbk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.witness != 'No';",
+   "fieldname": "person_2_name",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "column_break_jsjoq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "declaration",
+   "fieldtype": "HTML",
+   "label": "Declaration",
+   "options": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and agree to follow all building policies and regulations while accessing the restricted area or resource."
+  },
+  {
+   "fieldname": "section_break_plvrd",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-22 14:48:53.404056",
+ "modified": "2023-05-23 17:32:15.262366",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Access Request",
  "name_case": "Title Case",
- "naming_rule": "Set by user",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {

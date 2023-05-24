@@ -1,13 +1,15 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "prompt",
+ "autoname": "KEY.#####",
  "creation": "2023-05-15 14:51:17.327974",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "key_control_form",
+  "form_description",
   "personal_information_section",
   "name1",
   "unit_number__office_number",
@@ -18,10 +20,12 @@
   "request_access",
   "reason",
   "datetime",
+  "declaration",
   "section_break_psexz",
   "signature",
   "column_break_bwddv",
-  "date"
+  "date",
+  "amended_from"
  ],
  "fields": [
   {
@@ -84,14 +88,14 @@
    "reqd": 1
   },
   {
-   "description": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and agree to follow all building policies and regulations related to key and access card usage. I understand that I am responsible for the security of the key or access card issued to me and agree to return it upon termination of my access rights or upon request by Building Management.",
    "fieldname": "section_break_psexz",
    "fieldtype": "Section Break"
   },
   {
    "fieldname": "signature",
    "fieldtype": "Signature",
-   "label": "Signature"
+   "label": "Signature",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_bwddv",
@@ -100,17 +104,45 @@
   {
    "fieldname": "date",
    "fieldtype": "Date",
-   "label": "Date"
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "key_control_form",
+   "fieldtype": "Heading",
+   "label": "Key Control Form"
+  },
+  {
+   "fieldname": "form_description",
+   "fieldtype": "HTML",
+   "label": "Description",
+   "options": "Please complete the following form to request a key or access card for a restricted area within the building. Providing accurate information will help our management team evaluate your request and grant access as needed. Please note that unauthorized duplication of keys or access cards is strictly prohibited."
+  },
+  {
+   "fieldname": "declaration",
+   "fieldtype": "HTML",
+   "label": "Declaration",
+   "options": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and agree to follow all building policies and regulations related to key and access card usage. I understand that I am responsible for the security of the key or access card issued to me and agree to return it upon termination of my access rights or upon request by Building Management."
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Key Control",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2023-05-22 13:56:58.516785",
+ "modified": "2023-05-23 17:29:19.713230",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Key Control",
  "name_case": "Title Case",
- "naming_rule": "Set by user",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {
@@ -121,7 +153,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "System Manager",
+   "role": "All",
    "share": 1,
    "write": 1
   }

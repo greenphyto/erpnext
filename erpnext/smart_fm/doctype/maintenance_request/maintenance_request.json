@@ -1,13 +1,15 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "prompt",
+ "autoname": "MAINT.#####",
  "creation": "2023-05-10 13:37:21.239374",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "maintenance_request_form",
+  "form_description",
   "personal_information_section",
   "name1",
   "unit_number__office_number",
@@ -22,6 +24,7 @@
   "datetime",
   "safety",
   "attachment",
+  "declaration",
   "section_break_psexz",
   "signature",
   "column_break_bwddv",
@@ -106,14 +109,14 @@
    "label": "Please attach any relevant photos or documents to help illustrate the issue (optional)"
   },
   {
-   "description": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and understand that maintenance staff may need access to my unit/office to address the issue.",
    "fieldname": "section_break_psexz",
    "fieldtype": "Section Break"
   },
   {
    "fieldname": "signature",
    "fieldtype": "Signature",
-   "label": "Signature"
+   "label": "Signature",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_bwddv",
@@ -122,7 +125,8 @@
   {
    "fieldname": "date",
    "fieldtype": "Date",
-   "label": "Date"
+   "label": "Date",
+   "reqd": 1
   },
   {
    "default": "Plumbing",
@@ -141,17 +145,34 @@
    "options": "Maintenance Request",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "maintenance_request_form",
+   "fieldtype": "Heading",
+   "label": "Maintenance Request Form"
+  },
+  {
+   "fieldname": "form_description",
+   "fieldtype": "HTML",
+   "label": "Description",
+   "options": "Please complete the following form to report any maintenance issues in the building. Provide as much information as possible to help our maintenance team address the issue promptly."
+  },
+  {
+   "fieldname": "declaration",
+   "fieldtype": "HTML",
+   "label": "Declaration",
+   "options": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and understand that maintenance staff may need access to my unit/office to address the issue."
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-22 13:56:39.704696",
+ "modified": "2023-05-23 17:32:30.894525",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Maintenance Request",
  "name_case": "Title Case",
- "naming_rule": "Set by user",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {
