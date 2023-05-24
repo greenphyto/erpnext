@@ -238,7 +238,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-23 16:32:20.116053",
+ "modified": "2023-05-24 15:02:58.632199",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Smart FM Work Order",
@@ -255,6 +255,7 @@
    "report": 1,
    "role": "All",
    "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],

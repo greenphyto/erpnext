@@ -90,7 +90,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-05-23 16:20:28.456784",
+ "modified": "2023-05-24 14:51:57.054275",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Fire Safety Plan",
@@ -105,7 +105,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Maintenance Manager",
+   "role": "Business Management",
    "share": 1,
    "write": 1
   }
