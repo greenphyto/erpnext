@@ -43,6 +43,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Tenant's Email Address",
+   "options": "Email",
    "reqd": 1
   },
   {
@@ -51,9 +52,10 @@
   },
   {
    "fieldname": "phone_number",
-   "fieldtype": "Phone",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Tenant's Phone Number",
+   "options": "Phone",
    "reqd": 1
   },
   {
@@ -162,7 +164,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-23 17:13:06.326480",
+ "modified": "2023-05-26 10:24:33.648194",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Tenant Feedback",

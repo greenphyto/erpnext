@@ -61,6 +61,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Requester's Email Address",
+   "options": "Email",
    "reqd": 1
   },
   {
@@ -69,9 +70,10 @@
   },
   {
    "fieldname": "phone_number",
-   "fieldtype": "Phone",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Requester's Phone Number",
+   "options": "Phone",
    "reqd": 1
   },
   {
@@ -238,7 +240,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-24 15:02:58.632199",
+ "modified": "2023-05-26 10:22:30.554300",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Smart FM Work Order",

@@ -34,18 +34,21 @@
   },
   {
    "fieldname": "local_fire_department",
-   "fieldtype": "Phone",
-   "label": "Local Fire Department"
+   "fieldtype": "Data",
+   "label": "Local Fire Department",
+   "options": "Phone"
   },
   {
    "fieldname": "building_management",
-   "fieldtype": "Phone",
-   "label": "Building Management"
+   "fieldtype": "Data",
+   "label": "Building Management",
+   "options": "Phone"
   },
   {
    "fieldname": "emergency_coordinator",
-   "fieldtype": "Phone",
-   "label": "Emergency Coordinator"
+   "fieldtype": "Data",
+   "label": "Emergency Coordinator",
+   "options": "Phone"
   },
   {
    "fieldname": "roles_and_responsibility",
@@ -90,7 +93,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-05-24 14:51:57.054275",
+ "modified": "2023-05-26 10:22:59.587644",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Fire Safety Plan",

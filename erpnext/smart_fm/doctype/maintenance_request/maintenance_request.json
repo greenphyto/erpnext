@@ -55,15 +55,17 @@
   },
   {
    "fieldname": "phone_number",
-   "fieldtype": "Phone",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Phone Number",
+   "options": "Phone",
    "reqd": 1
   },
   {
    "fieldname": "email_address",
    "fieldtype": "Data",
    "label": "Email Address",
+   "options": "Email",
    "reqd": 1
   },
   {
@@ -167,7 +169,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-24 15:04:12.595945",
+ "modified": "2023-05-26 10:02:30.059464",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Maintenance Request",

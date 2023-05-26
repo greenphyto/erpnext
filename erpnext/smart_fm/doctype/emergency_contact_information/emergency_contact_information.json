@@ -63,9 +63,10 @@
   },
   {
    "fieldname": "phone_number",
-   "fieldtype": "Phone",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Phone Number",
+   "options": "Phone",
    "reqd": 1
   },
   {
@@ -73,6 +74,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Email Address",
+   "options": "Email",
    "reqd": 1
   },
   {
@@ -97,6 +99,7 @@
    "fieldname": "emergency_email_1",
    "fieldtype": "Data",
    "label": "Email Address",
+   "options": "Email",
    "reqd": 1
   },
   {
@@ -105,14 +108,16 @@
   },
   {
    "fieldname": "emergency_phone_1",
-   "fieldtype": "Phone",
+   "fieldtype": "Data",
    "label": "Phone Number",
+   "options": "Phone",
    "reqd": 1
   },
   {
    "fieldname": "emergency_alt_phone_1",
-   "fieldtype": "Phone",
-   "label": "Alternate Phone Number"
+   "fieldtype": "Data",
+   "label": "Alternate Phone Number",
+   "options": "Phone"
   },
   {
    "fieldname": "secondary_emergency_contact_optional_section",
@@ -132,7 +137,8 @@
   {
    "fieldname": "emergency_email_2",
    "fieldtype": "Data",
-   "label": "Email Address"
+   "label": "Email Address",
+   "options": "Email"
   },
   {
    "fieldname": "column_break_nv3fq",
@@ -140,13 +146,15 @@
   },
   {
    "fieldname": "emergency_phone_2",
-   "fieldtype": "Phone",
-   "label": "Phone Number"
+   "fieldtype": "Data",
+   "label": "Phone Number",
+   "options": "Phone"
   },
   {
    "fieldname": "emergency_alt_phone_2",
-   "fieldtype": "Phone",
-   "label": "Alternate Phone Number"
+   "fieldtype": "Data",
+   "label": "Alternate Phone Number",
+   "options": "Phone"
   },
   {
    "fieldname": "section_break_psexz",
@@ -202,7 +210,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-25 15:37:18.079090",
+ "modified": "2023-05-26 10:10:27.331563",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Emergency Contact Information",

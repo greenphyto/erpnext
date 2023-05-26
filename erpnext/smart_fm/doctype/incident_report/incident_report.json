@@ -76,9 +76,10 @@
   },
   {
    "fieldname": "phone_number",
-   "fieldtype": "Phone",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Phone Number",
+   "options": "Phone",
    "reqd": 1
   },
   {
@@ -86,6 +87,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Email Address",
+   "options": "Email",
    "reqd": 1
   },
   {
@@ -215,14 +217,16 @@
   {
    "depends_on": "eval:doc.witness != 'No';",
    "fieldname": "witness_1_number",
-   "fieldtype": "Phone",
-   "label": "Phone Number"
+   "fieldtype": "Data",
+   "label": "Phone Number",
+   "options": "Phone"
   },
   {
    "depends_on": "eval:doc.witness != 'No';",
    "fieldname": "witness_2_number",
-   "fieldtype": "Phone",
-   "label": "Phone Number"
+   "fieldtype": "Data",
+   "label": "Phone Number",
+   "options": "Phone"
   },
   {
    "description": "Witness 1",
@@ -298,7 +302,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-24 15:04:55.698891",
+ "modified": "2023-05-26 10:11:22.250934",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Incident Report",
