@@ -32,7 +32,6 @@ jobs:
           docker buildx bake -f docker-bake.hcl --load
           docker compose --project-name smart-fm -f ~/gitops/smart-fm.yaml up -d
           docker ps
-          sh ./smart-fm-dev-migrate.sh
           echo 'smart fm finished deployment'
     - name: Send mail
       uses: dawidd6/action-send-mail@v3
