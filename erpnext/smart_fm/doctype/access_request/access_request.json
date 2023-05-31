@@ -22,7 +22,6 @@
   "datetime",
   "duration",
   "dates",
-  "description",
   "person",
   "person_1",
   "person_1_name",
@@ -79,15 +78,9 @@
    "reqd": 1
   },
   {
-   "fieldname": "description",
-   "fieldtype": "Text",
-   "label": "Detailed Description of the Incident",
-   "reqd": 1
-  },
-  {
    "fieldname": "datetime",
    "fieldtype": "Datetime",
-   "label": "Preferred Date and Time for Maintenance Visit (if applicable)"
+   "label": "Preferred Date and Time for Access (if applicable)"
   },
   {
    "fieldname": "section_break_psexz",
@@ -139,7 +132,7 @@
    "fieldname": "dates",
    "fieldtype": "Data",
    "label": "Please specify dates",
-   "reqd": 1
+   "mandatory_depends_on": "eval:doc.duration == 'Short-term access' || doc.duration == 'Long-term access';"
   },
   {
    "default": "No",
@@ -227,7 +220,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-26 10:23:36.367557",
+ "modified": "2023-05-31 15:51:13.086079",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Access Request",
