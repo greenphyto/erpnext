@@ -198,8 +198,7 @@
    "fieldtype": "Date",
    "label": "Purchase Date",
    "read_only": 1,
-   "read_only_depends_on": "eval:!doc.is_existing_asset",
-   "reqd": 1
+   "read_only_depends_on": "eval:!doc.is_existing_asset"
   },
   {
    "fieldname": "disposal_date",
@@ -222,14 +221,12 @@
    "label": "Gross Purchase Amount",
    "options": "Company:company:default_currency",
    "read_only": 1,
-   "read_only_depends_on": "eval:!doc.is_existing_asset",
-   "reqd": 1
+   "read_only_depends_on": "eval:!doc.is_existing_asset"
   },
   {
    "fieldname": "available_for_use_date",
    "fieldtype": "Date",
-   "label": "Available-for-use Date",
-   "reqd": 1
+   "label": "Available-for-use Date"
   },
   {
    "default": "0",
@@ -530,7 +527,7 @@
    "table_fieldname": "accounts"
   }
  ],
- "modified": "2023-03-30 15:07:41.542374",
+ "modified": "2023-06-05 17:16:10.824419",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",
