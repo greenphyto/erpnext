@@ -97,6 +97,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "Today",
    "fieldname": "date",
    "fieldtype": "Date",
    "label": "Date",
@@ -220,7 +221,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-31 15:51:13.086079",
+ "modified": "2023-06-07 19:01:20.457100",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Access Request",

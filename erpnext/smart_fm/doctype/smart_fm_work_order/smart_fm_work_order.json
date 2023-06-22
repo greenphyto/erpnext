@@ -77,6 +77,7 @@
    "reqd": 1
   },
   {
+   "default": "Today",
    "fieldname": "date_of_request",
    "fieldtype": "Date",
    "in_list_view": 1,
@@ -89,6 +90,7 @@
    "label": "Issue Details"
   },
   {
+   "default": "Maintenance Request",
    "fieldname": "type_of_issue",
    "fieldtype": "Select",
    "label": "Type of Issue",
@@ -100,6 +102,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "Air Conditioning / Heating",
    "fieldname": "category",
    "fieldtype": "Select",
    "label": "Category",
@@ -139,6 +142,7 @@
    "label": "Attach any supporting photos or documents (optional)"
   },
   {
+   "default": "Low (routine maintenance)",
    "fieldname": "priority_level",
    "fieldtype": "Select",
    "label": "Priority Level",
@@ -160,6 +164,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "Today",
    "fieldname": "date",
    "fieldtype": "Date",
    "label": "Date",
@@ -240,7 +245,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-26 10:22:30.554300",
+ "modified": "2023-06-07 19:03:33.878277",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Smart FM Work Order",
