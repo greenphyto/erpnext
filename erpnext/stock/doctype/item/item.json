@@ -29,6 +29,7 @@
   "is_fixed_asset",
   "auto_create_assets",
   "is_grouped_asset",
+  "asset_group",
   "asset_category",
   "asset_naming_series",
   "over_delivery_receipt_allowance",
@@ -251,8 +252,8 @@
    "fieldname": "asset_category",
    "fieldtype": "Link",
    "label": "Asset Category",
-   "mandatory_depends_on": "is_fixed_asset",
-   "options": "Asset Category"
+   "options": "Asset Category",
+   "read_only": 1
   },
   {
    "depends_on": "is_fixed_asset",
@@ -903,6 +904,14 @@
    "fieldname": "accounting",
    "fieldtype": "Tab Break",
    "label": "Accounting"
+  },
+  {
+   "depends_on": "is_fixed_asset",
+   "fieldname": "asset_group",
+   "fieldtype": "Link",
+   "label": "Asset Group",
+   "mandatory_depends_on": "is_fixed_asset",
+   "options": "Asset Group"
   }
  ],
  "icon": "fa fa-tag",
@@ -911,7 +920,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2023-02-14 04:48:26.343620",
+ "modified": "2023-06-23 17:41:37.893449",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",
@@ -975,7 +984,6 @@
    "share": 1
   }
  ],
- "quick_entry": 1,
  "search_fields": "item_name,description,item_group,customer_code",
  "show_name_in_global_search": 1,
  "show_preview_popup": 1,
