@@ -160,8 +160,8 @@ class Asset(AccountsController):
 			)
 
 	def validate_in_use_date(self):
-		if not self.available_for_use_date:
-			frappe.throw(_("Available for use date is required"))
+		# if not self.available_for_use_date:
+		# 	frappe.throw(_("Available for use date is required"))
 
 		for d in self.finance_books:
 			if d.depreciation_start_date == self.available_for_use_date:
@@ -184,8 +184,8 @@ class Asset(AccountsController):
 		if not self.asset_category:
 			self.asset_category = frappe.get_cached_value("Item", self.item_code, "asset_category")
 
-		if not flt(self.gross_purchase_amount):
-			frappe.throw(_("Gross Purchase Amount is mandatory"), frappe.MandatoryError)
+		# if not flt(self.gross_purchase_amount):
+		# 	frappe.throw(_("Gross Purchase Amount is mandatory"), frappe.MandatoryError)
 
 		if is_cwip_accounting_enabled(self.asset_category):
 			if not self.is_existing_asset and not (self.purchase_receipt or self.purchase_invoice):

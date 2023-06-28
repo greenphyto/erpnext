@@ -18,6 +18,12 @@
   "email_address",
   "maintenance_issue_details_section",
   "issue_type",
+  "column_break_co5q0",
+  "asset",
+  "asset_name",
+  "item_code",
+  "item_name",
+  "section_break_wiajz",
   "other",
   "description",
   "location",
@@ -166,12 +172,47 @@
    "fieldtype": "HTML",
    "label": "Declaration",
    "options": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and understand that maintenance staff may need access to my unit/office to address the issue."
+  },
+  {
+   "fieldname": "column_break_co5q0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "asset",
+   "fieldtype": "Link",
+   "label": "Asset Involved",
+   "options": "Asset"
+  },
+  {
+   "fieldname": "section_break_wiajz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "asset.asset_name",
+   "fieldname": "asset_name",
+   "fieldtype": "Read Only",
+   "hidden": 1,
+   "label": "Asset Name"
+  },
+  {
+   "fetch_from": "asset.item_code",
+   "fieldname": "item_code",
+   "fieldtype": "Read Only",
+   "hidden": 1,
+   "label": "Item Code"
+  },
+  {
+   "fetch_from": "asset.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Read Only",
+   "hidden": 1,
+   "label": "Item Name"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-06-07 19:07:16.227680",
+ "modified": "2023-06-27 14:42:23.497948",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Maintenance Request",

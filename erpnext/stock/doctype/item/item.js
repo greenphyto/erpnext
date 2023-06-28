@@ -210,18 +210,6 @@ frappe.ui.form.on("Item", {
 		frm.trigger('auto_create_assets');
 	},
 
-  asset_group: function(frm) {
-    if(frm.doc.asset_group){
-      frappe.db.get_doc("Asset Group", frm.doc.asset_group)
-      .then((doc) => {
-        frm.set_value("asset_category", doc.asset_category);
-      });
-    }
-    else{
-      frm.set_value("asset_category", "");
-    }
-  },
-
 	set_asset_naming_series: function(frm, asset_naming_series) {
 		if ((frm.doc.__onload && frm.doc.__onload.asset_naming_series) || asset_naming_series) {
 			let naming_series = (frm.doc.__onload && frm.doc.__onload.asset_naming_series) || asset_naming_series;

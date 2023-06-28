@@ -301,18 +301,6 @@ frappe.ui.form.on('Asset', {
 		frm.trigger("toggle_reference_doc");
 		// frm.toggle_reqd("next_depreciation_date", (!frm.doc.is_existing_asset && frm.doc.calculate_depreciation));
 	},
-  
-  asset_group: function(frm) {
-    if(frm.doc.asset_group){
-      frappe.db.get_doc("Asset Group", frm.doc.asset_group)
-      .then((doc) => {
-        frm.set_value("asset_category", doc.asset_category);
-      });
-    }
-    else{
-      frm.set_value("asset_category", "");
-    }
-  },
 
 	make_schedules_editable: function(frm) {
 		if (frm.doc.finance_books) {
