@@ -8,9 +8,9 @@ class MaintenanceRequest(Document):
 	pass
 
 @frappe.whitelist()
-def create_work_order():
-	wo = frappe.new_doc("Work Order")
-	return wo
+def create_to_do():
+	todo = frappe.new_doc("ToDo")
+	return todo
 
 @frappe.whitelist()
 def create_asset_repair(asset, asset_name):

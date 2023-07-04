@@ -4,8 +4,8 @@
 frappe.ui.form.on('Maintenance Request', {
 	refresh: function(frm) {
     if (!frm.is_new()) {
-			frm.add_custom_button(__("Work Order"), function() {
-				frm.trigger("create_work_order");
+			frm.add_custom_button(__("ToDo"), function() {
+				frm.trigger("create_to_do");
 			}, __("Create"));
       frm.add_custom_button(__("Asset Repair"), function() {
 				frm.trigger("create_asset_repair");
@@ -16,13 +16,13 @@ frappe.ui.form.on('Maintenance Request', {
     }
 	},
 
-	create_work_order: function(frm) {
+	create_to_do: function(frm) {
 		frappe.call({
 			args: {
 				"asset": frm.doc.asset,
 				"asset_name": frm.doc.asset_name
 			},
-			method: "erpnext.smart_fm.doctype.maintenance_request.maintenance_request.create_work_order",
+			method: "erpnext.smart_fm.doctype.maintenance_request.maintenance_request.create_to_do",
 			callback: function(r) {
 				var doclist = frappe.model.sync(r.message);
 				frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
