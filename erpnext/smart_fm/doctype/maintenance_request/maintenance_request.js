@@ -18,10 +18,7 @@ frappe.ui.form.on('Maintenance Request', {
 
 	create_to_do: function(frm) {
 		frappe.call({
-			args: {
-				"asset": frm.doc.asset,
-				"asset_name": frm.doc.asset_name
-			},
+			args: {},
 			method: "erpnext.smart_fm.doctype.maintenance_request.maintenance_request.create_to_do",
 			callback: function(r) {
 				var doclist = frappe.model.sync(r.message);
@@ -33,8 +30,8 @@ frappe.ui.form.on('Maintenance Request', {
 	create_asset_repair: function(frm) {
 		frappe.call({
 			args: {
-				"asset": frm.doc.asset,
-				"asset_name": frm.doc.asset_name
+				"asset": frm.doc.asset ?? null,
+				"asset_name": frm.doc.asset_name ?? null
 			},
 			method: "erpnext.smart_fm.doctype.maintenance_request.maintenance_request.create_asset_repair",
 			callback: function(r) {
@@ -47,9 +44,9 @@ frappe.ui.form.on('Maintenance Request', {
 	create_asset_maintenance_log: function(frm) {
 		frappe.call({
 			args: {
-				"asset_name": frm.doc.asset_name,
-				"item_code": frm.doc.item_code,
-				"item_name": frm.doc.item_name,
+				"asset_name": frm.doc.asset_name ?? null,
+				"item_code": frm.doc.item_code ?? null,
+				"item_name": frm.doc.item_name ?? null,
 			},
 			method: "erpnext.smart_fm.doctype.maintenance_request.maintenance_request.create_asset_maintenance_log",
 			callback: function(r) {
