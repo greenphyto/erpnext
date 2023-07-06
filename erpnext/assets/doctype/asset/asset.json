@@ -543,7 +543,8 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Parent Asset",
-   "options": "Asset"
+   "options": "Asset",
+   "search_index": 1
   },
   {
    "fieldname": "model_number",
@@ -583,7 +584,7 @@
    "table_fieldname": "accounts"
   }
  ],
- "modified": "2023-06-27 17:45:15.787680",
+ "modified": "2023-07-06 13:08:15.129571",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",

@@ -1,0 +1,183 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "UTIL.#####",
+ "creation": "2023-07-06 10:38:10.407091",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "customer_information_section",
+  "customer_name",
+  "address",
+  "column_break_wfjdb",
+  "account_number",
+  "meter_information_section",
+  "meter_id",
+  "column_break_ryto2",
+  "type_of_meter",
+  "section_break_oa52g",
+  "meter_location",
+  "reading_date",
+  "section_break_8k5ko",
+  "previous_reading",
+  "column_break_lnpkn",
+  "current_reading",
+  "section_break_zheus",
+  "usage",
+  "section_break_nqqqt",
+  "remarks",
+  "reader_nameid",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "customer_information_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Information"
+  },
+  {
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Customer Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Address",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_wfjdb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "account_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Account Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "meter_information_section",
+   "fieldtype": "Section Break",
+   "label": "Meter Information"
+  },
+  {
+   "fieldname": "meter_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Meter ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_ryto2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "type_of_meter",
+   "fieldtype": "Select",
+   "label": "Type of Meter",
+   "options": "Electricity\nWater\nGas",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_oa52g",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "meter_location",
+   "fieldtype": "Long Text",
+   "label": "Meter Location",
+   "reqd": 1
+  },
+  {
+   "fieldname": "reading_date",
+   "fieldtype": "Date",
+   "label": "Reading Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_8k5ko",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "previous_reading",
+   "fieldtype": "Float",
+   "label": "Previous Reading"
+  },
+  {
+   "fieldname": "column_break_lnpkn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "current_reading",
+   "fieldtype": "Float",
+   "label": "Current Reading"
+  },
+  {
+   "fieldname": "section_break_zheus",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "usage",
+   "fieldtype": "Float",
+   "label": "Usage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_nqqqt",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Long Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "reader_nameid",
+   "fieldtype": "Data",
+   "label": "Reader Name/ID"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Utilities",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2023-07-06 10:38:10.407091",
+ "modified_by": "Administrator",
+ "module": "Utilities",
+ "name": "Utilities",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

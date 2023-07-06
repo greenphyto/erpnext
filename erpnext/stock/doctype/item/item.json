@@ -901,6 +901,7 @@
    "fieldname": "asset_category",
    "fieldtype": "Link",
    "label": "Asset Category",
+   "mandatory_depends_on": "is_fixed_asset",
    "options": "Asset Category"
   }
  ],
@@ -910,7 +911,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2023-06-27 13:08:20.850546",
+ "modified": "2023-07-06 10:53:10.495895",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",

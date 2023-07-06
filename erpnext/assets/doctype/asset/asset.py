@@ -1475,3 +1475,37 @@ def add_reference_in_jv_on_split(entry_name, new_asset_name, old_asset_name, dep
 	journal_entry.make_gl_entries(1)
 	journal_entry.docstatus = 1
 	journal_entry.make_gl_entries()
+
+
+@frappe.whitelist()
+def get_children(doctype, parent=None, asset=None, is_root=False):
+	if parent is None or parent == "All Assets":
+		parent = ""
+
+	return frappe.db.sql(
+		"""
+		select
+			name as value,
+			is_group as expandable
+		from
+			`tabAsset` comp
+		where
+			ifnull(parent_asset, "")={parent}
+		""".format(
+			parent=frappe.db.escape(parent)
+		),
+		as_dict=1,
+	)
+
+
+@frappe.whitelist()
+def add_node():
+	from frappe.desk.treeview import make_tree_args
+
+	args = frappe.form_dict
+	args = make_tree_args(**args)
+
+	if args.parent_asset == "All Assets":
+		args.parent_asset = None
+
+	frappe.get_doc(args).insert()
