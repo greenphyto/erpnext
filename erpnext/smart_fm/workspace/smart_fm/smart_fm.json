@@ -1,11 +1,6 @@
 {
- "charts": [
-  {
-   "chart_name": "Open Requests",
-   "label": "Open Requests"
-  }
- ],
- "content": "[{\"id\":\"ec1F-jIO5A\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Smart FM</span>\",\"col\":12}},{\"id\":\"Rqq3poleEX\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Open Requests\",\"col\":12}},{\"id\":\"aZ_aYZfJAK\",\"type\":\"card\",\"data\":{\"card_name\":\"Requests\",\"col\":4}},{\"id\":\"ZZ9XJ0Eg0e\",\"type\":\"card\",\"data\":{\"card_name\":\"Form\",\"col\":4}},{\"id\":\"KJP0ulpGyr\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
+ "charts": [],
+ "content": "[{\"id\":\"ec1F-jIO5A\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Smart FM</span>\",\"col\":12}},{\"id\":\"aZ_aYZfJAK\",\"type\":\"card\",\"data\":{\"card_name\":\"Requests\",\"col\":4}},{\"id\":\"ZZ9XJ0Eg0e\",\"type\":\"card\",\"data\":{\"card_name\":\"Form\",\"col\":4}},{\"id\":\"KJP0ulpGyr\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
  "creation": "2023-05-17 14:02:00.454211",
  "docstatus": 0,
  "doctype": "Workspace",
@@ -131,7 +126,7 @@
    "type": "Link"
   }
  ],
- "modified": "2023-07-06 17:56:14.562812",
+ "modified": "2023-07-07 17:23:17.310719",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Smart FM",
