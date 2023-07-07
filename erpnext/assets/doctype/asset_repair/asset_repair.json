@@ -14,6 +14,7 @@
   "naming_series",
   "section_break_5",
   "failure_date",
+  "request_id",
   "repair_status",
   "column_break_6",
   "completion_date",
@@ -259,12 +260,19 @@
    "no_copy": 1,
    "options": "Stock Entry",
    "read_only": 1
+  },
+  {
+   "fieldname": "request_id",
+   "fieldtype": "Read Only",
+   "label": "Request ID",
+   "print_hide": 1,
+   "report_hide": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-08-16 15:55:25.023471",
+ "modified": "2023-07-07 14:33:12.903131",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset Repair",

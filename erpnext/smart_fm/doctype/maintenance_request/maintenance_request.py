@@ -13,9 +13,9 @@ def create_to_do():
 	return todo
 
 @frappe.whitelist()
-def create_asset_repair(asset, asset_name):
+def create_asset_repair(name, asset, asset_name):
 	asset_repair = frappe.new_doc("Asset Repair")
-	asset_repair.update({"asset": asset, "asset_name": asset_name})
+	asset_repair.update({"asset": asset, "asset_name": asset_name, "request_id": name})
 	return asset_repair
 
 @frappe.whitelist()

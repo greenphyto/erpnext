@@ -48,20 +48,20 @@ class Asset(AccountsController):
 		self.status = self.get_status()
 
 	def on_submit(self):
-		self.validate_in_use_date()
-		self.set_status()
-		self.make_asset_movement()
 		if not self.booked_fixed_asset and self.validate_make_gl_entry():
 			self.make_gl_entries()
+		self.validate_in_use_date()
+		self.make_asset_movement()
+		self.set_status()
 
 	def on_cancel(self):
 		self.validate_cancellation()
 		self.cancel_movement_entries()
 		self.delete_depreciation_entries()
-		self.set_status()
 		self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry")
 		make_reverse_gl_entries(voucher_type="Asset", voucher_no=self.name)
 		self.db_set("booked_fixed_asset", 0)
+		self.set_status()
 
 	def validate_asset_and_reference(self):
 		if self.purchase_invoice or self.purchase_receipt:
@@ -1485,6 +1485,7 @@ def get_children(doctype, parent=None, asset=None, is_root=False):
 	return frappe.db.sql(
 		"""
 		select
+			asset_name as title,
 			name as value,
 			is_group as expandable
 		from

@@ -30,6 +30,7 @@ frappe.ui.form.on('Maintenance Request', {
 	create_asset_repair: function(frm) {
 		frappe.call({
 			args: {
+				"name": frm.doc.name,
 				"asset": frm.doc.asset ?? null,
 				"asset_name": frm.doc.asset_name ?? null
 			},

@@ -35,13 +35,7 @@
   "datetime",
   "witness",
   "section_break_v5rlo",
-  "witness_1_name",
-  "column_break_czaeb",
-  "witness_1_number",
-  "section_break_rzuh4",
-  "witness_2_name",
-  "column_break_gwfx8",
-  "witness_2_number",
+  "witness_list",
   "section_break_l9u7x",
   "attachment",
   "section_break_psexz",
@@ -216,48 +210,8 @@
    "label": "Power outage"
   },
   {
-   "depends_on": "eval:doc.witness != 'No';",
-   "fieldname": "witness_1_number",
-   "fieldtype": "Data",
-   "label": "Phone Number",
-   "options": "Phone"
-  },
-  {
-   "depends_on": "eval:doc.witness != 'No';",
-   "fieldname": "witness_2_number",
-   "fieldtype": "Data",
-   "label": "Phone Number",
-   "options": "Phone"
-  },
-  {
-   "description": "Witness 1",
    "fieldname": "section_break_v5rlo",
    "fieldtype": "Section Break"
-  },
-  {
-   "depends_on": "eval:doc.witness != 'No';",
-   "fieldname": "witness_1_name",
-   "fieldtype": "Data",
-   "label": "Name"
-  },
-  {
-   "fieldname": "column_break_czaeb",
-   "fieldtype": "Column Break"
-  },
-  {
-   "description": "Witness 2",
-   "fieldname": "section_break_rzuh4",
-   "fieldtype": "Section Break"
-  },
-  {
-   "depends_on": "eval:doc.witness != 'No';",
-   "fieldname": "witness_2_name",
-   "fieldtype": "Data",
-   "label": "Name"
-  },
-  {
-   "fieldname": "column_break_gwfx8",
-   "fieldtype": "Column Break"
   },
   {
    "fieldname": "section_break_l9u7x",
@@ -298,12 +252,19 @@
   {
    "fieldname": "section_break_cvqc3",
    "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval:doc.witness != 'No';",
+   "fieldname": "witness_list",
+   "fieldtype": "Table",
+   "label": "Witness",
+   "options": "Person"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-06-07 19:04:07.069626",
+ "modified": "2023-07-07 14:16:55.659272",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Incident Report",

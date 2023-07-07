@@ -20,17 +20,16 @@
   "area_resource",
   "reason",
   "datetime",
+  "section_break_3qa03",
   "duration",
-  "dates",
+  "column_break_he6sq",
   "person",
-  "person_1",
-  "person_1_name",
-  "column_break_n4tbk",
-  "person_1_number",
-  "person_2",
-  "person_2_name",
-  "column_break_jsjoq",
-  "person_2_number",
+  "section_break_bfsux",
+  "start_date",
+  "column_break_h11oh",
+  "end_date",
+  "section_break_wpuaz",
+  "person_list",
   "section_break_psexz",
   "declaration",
   "section_break_plvrd",
@@ -129,43 +128,12 @@
    "reqd": 1
   },
   {
-   "depends_on": "eval:doc.duration == 'Short-term access' || doc.duration == 'Long-term access';",
-   "fieldname": "dates",
-   "fieldtype": "Data",
-   "label": "Please specify dates",
-   "mandatory_depends_on": "eval:doc.duration == 'Short-term access' || doc.duration == 'Long-term access';"
-  },
-  {
    "default": "No",
    "fieldname": "person",
    "fieldtype": "Select",
    "label": "Will anyone else be accompanying you during the access period",
    "options": "Yes (please provide their names and contact information below)\nNo",
    "reqd": 1
-  },
-  {
-   "description": "Person 1",
-   "fieldname": "person_1",
-   "fieldtype": "Section Break"
-  },
-  {
-   "depends_on": "eval:doc.witness != 'No';",
-   "fieldname": "person_1_number",
-   "fieldtype": "Data",
-   "label": "Phone Number",
-   "options": "Phone"
-  },
-  {
-   "description": "Person 2",
-   "fieldname": "person_2",
-   "fieldtype": "Section Break"
-  },
-  {
-   "depends_on": "eval:doc.witness != 'No';",
-   "fieldname": "person_2_number",
-   "fieldtype": "Data",
-   "label": "Phone Number",
-   "options": "Phone"
   },
   {
    "fieldname": "amended_from",
@@ -188,26 +156,6 @@
    "options": "Please complete the following form to request access to restricted areas or resources within the building. Providing accurate information will help our management team evaluate your request and grant access as needed."
   },
   {
-   "depends_on": "eval:doc.witness != 'No';",
-   "fieldname": "person_1_name",
-   "fieldtype": "Data",
-   "label": "Name"
-  },
-  {
-   "fieldname": "column_break_n4tbk",
-   "fieldtype": "Column Break"
-  },
-  {
-   "depends_on": "eval:doc.witness != 'No';",
-   "fieldname": "person_2_name",
-   "fieldtype": "Data",
-   "label": "Name"
-  },
-  {
-   "fieldname": "column_break_jsjoq",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "declaration",
    "fieldtype": "HTML",
    "label": "Declaration",
@@ -216,12 +164,53 @@
   {
    "fieldname": "section_break_plvrd",
    "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval:doc.duration == 'Short-term access' || doc.duration == 'Long-term access';",
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date",
+   "mandatory_depends_on": "eval:doc.duration == 'Short-term access' || doc.duration == 'Long-term access';"
+  },
+  {
+   "depends_on": "eval:doc.duration == 'Short-term access' || doc.duration == 'Long-term access';",
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date",
+   "mandatory_depends_on": "eval:doc.duration == 'Short-term access' || doc.duration == 'Long-term access';"
+  },
+  {
+   "fieldname": "column_break_h11oh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_he6sq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Please specify dates",
+   "fieldname": "section_break_bfsux",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_3qa03",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_wpuaz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "person_list",
+   "fieldtype": "Table",
+   "label": "Person",
+   "options": "Person"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-06-07 19:01:20.457100",
+ "modified": "2023-07-07 14:01:06.920980",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Access Request",
