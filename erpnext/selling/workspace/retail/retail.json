@@ -8,7 +8,7 @@
  "hide_custom": 0,
  "icon": "retail",
  "idx": 0,
- "is_hidden": 0,
+ "is_hidden": 1,
  "label": "Retail",
  "links": [
   {
@@ -102,7 +102,7 @@
    "type": "Link"
   }
  ],
- "modified": "2023-05-17 14:15:04.419906",
+ "modified": "2023-07-10 13:53:46.176137",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Retail",
@@ -113,7 +113,7 @@
  "quick_lists": [],
  "restrict_to_domain": "Retail",
  "roles": [],
- "sequence_id": 15.0,
+ "sequence_id": 10.0,
  "shortcuts": [
   {
    "doc_view": "",

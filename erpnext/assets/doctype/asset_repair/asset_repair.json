@@ -263,8 +263,9 @@
   },
   {
    "fieldname": "request_id",
-   "fieldtype": "Read Only",
+   "fieldtype": "Link",
    "label": "Request ID",
+   "options": "Maintenance Request",
    "print_hide": 1,
    "report_hide": 1
   }
@@ -272,7 +273,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-07 14:33:12.903131",
+ "modified": "2023-07-10 11:36:48.371786",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset Repair",
