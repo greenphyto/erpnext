@@ -36,23 +36,7 @@
   "years_of_experience_in_the_industry",
   "list_of_relevant_certifications_or_licenses_if_applicable",
   "section_break_p5xt9",
-  "reference_1_name",
-  "reference_1_company",
-  "column_break_vvqhp",
-  "reference_1_number",
-  "reference_1_email",
-  "section_break_dkzwf",
-  "reference_2_name",
-  "reference_2_company",
-  "column_break_2asdy",
-  "reference_2_phone",
-  "reference_2_email",
-  "section_break_752nd",
-  "reference_3_name",
-  "reference_3_company",
-  "column_break_2nzbs",
-  "reference_3_phone",
-  "reference_3_email",
+  "references",
   "section_break_o2cxp",
   "declaration",
   "section_break_fhqwm",
@@ -219,8 +203,7 @@
   {
    "fieldname": "years_of_experience_in_the_industry",
    "fieldtype": "Float",
-   "label": "Years of Experience in the Industry",
-   "reqd": 1
+   "label": "Years of Experience in the Industry"
   },
   {
    "fieldname": "list_of_relevant_certifications_or_licenses_if_applicable",
@@ -228,91 +211,9 @@
    "label": "List of Relevant Certifications or Licenses (if applicable)"
   },
   {
-   "description": "Please provide at least three (3) professional references from clients you have worked with in the past.<br><br>Reference 1",
+   "description": "Please provide at least three (3) professional references from clients you have worked with in the past.",
    "fieldname": "section_break_p5xt9",
-   "fieldtype": "Section Break",
-   "label": "References"
-  },
-  {
-   "fieldname": "column_break_vvqhp",
-   "fieldtype": "Column Break"
-  },
-  {
-   "depends_on": "eval:doc.witness != 'No';",
-   "fieldname": "reference_1_number",
-   "fieldtype": "Data",
-   "label": "Phone Number",
-   "options": "Phone"
-  },
-  {
-   "depends_on": "eval:doc.witness != 'No';",
-   "fieldname": "reference_1_email",
-   "fieldtype": "Data",
-   "label": "Email Address",
-   "options": "Email"
-  },
-  {
-   "fieldname": "reference_1_name",
-   "fieldtype": "Data",
-   "label": "Name"
-  },
-  {
-   "depends_on": "eval:doc.witness != 'No';",
-   "fieldname": "reference_1_company",
-   "fieldtype": "Data",
-   "label": "Company"
-  },
-  {
-   "fieldname": "reference_2_name",
-   "fieldtype": "Data",
-   "label": "Name"
-  },
-  {
-   "fieldname": "reference_2_company",
-   "fieldtype": "Data",
-   "label": "Company"
-  },
-  {
-   "fieldname": "column_break_2asdy",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "reference_2_phone",
-   "fieldtype": "Data",
-   "label": "Phone Number",
-   "options": "Phone"
-  },
-  {
-   "fieldname": "reference_2_email",
-   "fieldtype": "Data",
-   "label": "Email Address",
-   "options": "Email"
-  },
-  {
-   "fieldname": "reference_3_name",
-   "fieldtype": "Data",
-   "label": "Name"
-  },
-  {
-   "fieldname": "reference_3_company",
-   "fieldtype": "Data",
-   "label": "Company"
-  },
-  {
-   "fieldname": "column_break_2nzbs",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "reference_3_phone",
-   "fieldtype": "Data",
-   "label": "Phone Number",
-   "options": "Phone"
-  },
-  {
-   "fieldname": "reference_3_email",
-   "fieldtype": "Data",
-   "label": "Email Addresss",
-   "options": "Email"
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "vendor_registration_form",
@@ -341,28 +242,24 @@
    "options": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and understand that submitting this form does not guarantee my company will be selected for future business opportunities."
   },
   {
-   "description": "Reference 2",
-   "fieldname": "section_break_dkzwf",
-   "fieldtype": "Section Break"
-  },
-  {
-   "description": "Reference 3",
-   "fieldname": "section_break_752nd",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "section_break_fhqwm",
    "fieldtype": "Section Break"
   },
   {
    "fieldname": "section_break_o2cxp",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "references",
+   "fieldtype": "Table",
+   "label": "References",
+   "options": "Vendor"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-06-07 19:02:03.375905",
+ "modified": "2023-07-10 10:03:57.646366",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Vendor Registration",
