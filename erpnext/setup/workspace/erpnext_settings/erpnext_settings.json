@@ -1,7 +1,7 @@
 {
  "charts": [],
  "content": "[{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Your Shortcuts\\n\\t\\t\\t\\n\\t\\t\\n\\t\\t\\t\\n\\t\\t\\n\\t\\t\\t\\n\\t\\t</b></span>\",\"col\":12}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Projects Settings\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Accounts Settings\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stock Settings\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"HR Settings\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Selling Settings\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Buying Settings\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Support Settings\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Shopping Cart Settings\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Portal Settings\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Domain Settings\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Products Settings\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Naming Series\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Manufacturing Settings\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Education Settings\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Hotel Settings\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"CRM Settings\",\"col\":3}}]",
- "creation": "2022-01-27 13:14:47.349433",
+ "creation": "2023-07-10 14:18:56.313576",
  "docstatus": 0,
  "doctype": "Workspace",
  "for_user": "",
@@ -11,7 +11,7 @@
  "is_hidden": 1,
  "label": "ERPNext Settings",
  "links": [],
- "modified": "2023-05-17 14:15:03.853283",
+ "modified": "2023-07-10 14:19:42.428565",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "ERPNext Settings",
@@ -22,57 +22,66 @@
  "quick_lists": [],
  "restrict_to_domain": "",
  "roles": [],
- "sequence_id": 9.0,
+ "sequence_id": 10.0,
  "shortcuts": [
   {
+   "doc_view": "",
    "icon": "project",
    "label": "Projects Settings",
    "link_to": "Projects Settings",
    "type": "DocType"
   },
   {
+   "doc_view": "",
    "icon": "accounting",
    "label": "Accounts Settings",
    "link_to": "Accounts Settings",
    "type": "DocType"
   },
   {
+   "doc_view": "",
    "icon": "stock",
    "label": "Stock Settings",
    "link_to": "Stock Settings",
    "type": "DocType"
   },
   {
+   "doc_view": "",
    "icon": "sell",
    "label": "Selling Settings",
    "link_to": "Selling Settings",
    "type": "DocType"
   },
   {
+   "doc_view": "",
    "icon": "buying",
    "label": "Buying Settings",
    "link_to": "Buying Settings",
    "type": "DocType"
   },
   {
+   "doc_view": "",
    "icon": "support",
    "label": "Support Settings",
    "link_to": "Support Settings",
    "type": "DocType"
   },
   {
+   "doc_view": "",
    "icon": "retail",
    "label": "E Commerce Settings",
    "link_to": "E Commerce Settings",
    "type": "DocType"
   },
   {
+   "doc_view": "",
    "icon": "website",
    "label": "Portal Settings",
    "link_to": "Portal Settings",
    "type": "DocType"
   },
   {
+   "doc_view": "",
    "icon": "organization",
    "label": "Manufacturing Settings",
    "link_to": "Manufacturing Settings",
@@ -80,6 +89,7 @@
    "type": "DocType"
   },
   {
+   "doc_view": "",
    "icon": "setting",
    "label": "Domain Settings",
    "link_to": "Domain Settings",

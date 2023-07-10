@@ -1,7 +1,7 @@
 {
  "charts": [],
  "content": "[{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports & Masters</b></span>\",\"col\":12}},{\"type\":\"card\",\"data\":{\"card_name\":\"Marketplace\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Payments\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Settings\",\"col\":4}}]",
- "creation": "2020-08-20 19:30:48.138801",
+ "creation": "2023-07-10 14:18:56.417306",
  "docstatus": 0,
  "doctype": "Workspace",
  "for_user": "",
@@ -16,6 +16,7 @@
    "is_query_report": 0,
    "label": "Marketplace",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -35,6 +36,7 @@
    "is_query_report": 0,
    "label": "Payments",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -65,6 +67,7 @@
    "is_query_report": 0,
    "label": "Settings",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -91,7 +94,7 @@
    "type": "Link"
   }
  ],
- "modified": "2023-05-17 14:15:03.758184",
+ "modified": "2023-07-10 14:19:40.295725",
  "modified_by": "Administrator",
  "module": "ERPNext Integrations",
  "name": "ERPNext Integrations",
@@ -102,7 +105,7 @@
  "quick_lists": [],
  "restrict_to_domain": "",
  "roles": [],
- "sequence_id": 8.0,
+ "sequence_id": 9.0,
  "shortcuts": [],
  "title": "ERPNext Integrations"
 }

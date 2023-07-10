@@ -212,7 +212,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-07 17:16:42.270621",
+ "modified": "2023-07-10 14:58:29.711579",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Maintenance Request",
@@ -228,7 +228,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Employee",
+   "role": "Vendor",
    "share": 1,
    "submit": 1,
    "write": 1

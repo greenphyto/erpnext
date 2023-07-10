@@ -6,14 +6,14 @@
   }
  ],
  "content": "[{\"type\":\"onboarding\",\"data\":{\"onboarding_name\":\"Accounts\",\"col\":12}},{\"type\":\"chart\",\"data\":{\"chart_name\":\"Profit and Loss\",\"col\":12}},{\"type\":\"spacer\",\"data\":{\"col\":12}},{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Your Shortcuts</b></span>\",\"col\":12}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Chart of Accounts\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sales Invoice\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Purchase Invoice\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Journal Entry\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payment Entry\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Accounts Receivable\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"General Ledger\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Trial Balance\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Dashboard\",\"col\":3}},{\"type\":\"spacer\",\"data\":{\"col\":12}},{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports & Masters</b></span>\",\"col\":12}},{\"type\":\"card\",\"data\":{\"card_name\":\"Accounting Masters\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"General Ledger\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Accounts Receivable\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Accounts Payable\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Financial Statements\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Multi Currency\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Settings\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Bank Statement\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Subscription Management\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Share Management\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Cost Center and Budgeting\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Opening and Closing\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Taxes\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Profitability\",\"col\":4}}]",
- "creation": "2020-03-02 15:41:59.515192",
+ "creation": "2023-07-10 14:18:57.021324",
  "docstatus": 0,
  "doctype": "Workspace",
  "for_user": "",
  "hide_custom": 0,
  "icon": "accounting",
  "idx": 0,
- "is_hidden": 0,
+ "is_hidden": 1,
  "label": "Accounting",
  "links": [
   {
@@ -21,6 +21,7 @@
    "is_query_report": 0,
    "label": "Accounting Masters",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -117,6 +118,7 @@
    "is_query_report": 0,
    "label": "General Ledger",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -180,6 +182,7 @@
    "is_query_report": 0,
    "label": "Accounts Receivable",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -308,6 +311,7 @@
    "is_query_report": 0,
    "label": "Accounts Payable",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -425,6 +429,7 @@
    "is_query_report": 0,
    "label": "Reports",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -534,6 +539,7 @@
    "is_query_report": 0,
    "label": "Financial Statements",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -597,6 +603,7 @@
    "is_query_report": 0,
    "label": "Multi Currency",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -638,6 +645,7 @@
    "is_query_report": 0,
    "label": "Settings",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -679,6 +687,7 @@
    "is_query_report": 0,
    "label": "Bank Statement",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -742,6 +751,7 @@
    "is_query_report": 0,
    "label": "Subscription Management",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -783,6 +793,7 @@
    "is_query_report": 0,
    "label": "Share Management",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -835,6 +846,7 @@
    "is_query_report": 0,
    "label": "Cost Center and Budgeting",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -909,6 +921,7 @@
    "is_query_report": 0,
    "label": "Opening and Closing",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -950,6 +963,7 @@
    "is_query_report": 0,
    "label": "Taxes",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -1046,6 +1060,7 @@
    "is_query_report": 0,
    "label": "Profitability",
    "link_count": 0,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -1094,7 +1109,7 @@
    "type": "Link"
   }
  ],
- "modified": "2023-05-17 14:15:02.729252",
+ "modified": "2023-07-10 14:20:09.775808",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounting",
@@ -1105,49 +1120,58 @@
  "quick_lists": [],
  "restrict_to_domain": "",
  "roles": [],
- "sequence_id": 2.0,
+ "sequence_id": 3.0,
  "shortcuts": [
   {
+   "doc_view": "",
    "label": "Chart of Accounts",
    "link_to": "Account",
    "type": "DocType"
   },
   {
+   "doc_view": "",
    "label": "Sales Invoice",
    "link_to": "Sales Invoice",
    "type": "DocType"
   },
   {
+   "doc_view": "",
    "label": "Purchase Invoice",
    "link_to": "Purchase Invoice",
    "type": "DocType"
   },
   {
+   "doc_view": "",
    "label": "Journal Entry",
    "link_to": "Journal Entry",
    "type": "DocType"
   },
   {
+   "doc_view": "",
    "label": "Payment Entry",
    "link_to": "Payment Entry",
    "type": "DocType"
   },
   {
+   "doc_view": "",
    "label": "Accounts Receivable",
    "link_to": "Accounts Receivable",
    "type": "Report"
   },
   {
+   "doc_view": "",
    "label": "General Ledger",
    "link_to": "General Ledger",
    "type": "Report"
   },
   {
+   "doc_view": "",
    "label": "Trial Balance",
    "link_to": "Trial Balance",
    "type": "Report"
   },
   {
+   "doc_view": "",
    "label": "Dashboard",
    "link_to": "Accounts",
    "type": "Dashboard"

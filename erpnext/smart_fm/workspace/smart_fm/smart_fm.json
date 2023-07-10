@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"ec1F-jIO5A\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Smart FM</span>\",\"col\":12}},{\"id\":\"KwQzTV_xhR\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Shortcuts</b></span>\",\"col\":12}},{\"id\":\"kRElbJGgi-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Maintenance Request\",\"col\":3}},{\"id\":\"T_ELHHUDFO\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Incident Report\",\"col\":3}},{\"id\":\"AgmTrpMCu0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Access Request\",\"col\":3}},{\"id\":\"sQwP2Ln4-Z\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inspection Checklist\",\"col\":3}},{\"id\":\"aZ_aYZfJAK\",\"type\":\"card\",\"data\":{\"card_name\":\"Requests\",\"col\":4}},{\"id\":\"ZZ9XJ0Eg0e\",\"type\":\"card\",\"data\":{\"card_name\":\"Form\",\"col\":4}},{\"id\":\"KJP0ulpGyr\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
+ "content": "[{\"id\":\"ec1F-jIO5A\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Smart FM</span>\",\"col\":12}},{\"id\":\"KwQzTV_xhR\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Your Shortcuts</b></span>\",\"col\":12}},{\"id\":\"kRElbJGgi-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Maintenance Request\",\"col\":3}},{\"id\":\"T_ELHHUDFO\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Incident Report\",\"col\":3}},{\"id\":\"AgmTrpMCu0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Access Request\",\"col\":3}},{\"id\":\"sQwP2Ln4-Z\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inspection Checklist\",\"col\":3}},{\"id\":\"aZ_aYZfJAK\",\"type\":\"card\",\"data\":{\"card_name\":\"Requests\",\"col\":4}},{\"id\":\"ZZ9XJ0Eg0e\",\"type\":\"card\",\"data\":{\"card_name\":\"Form\",\"col\":4}},{\"id\":\"KJP0ulpGyr\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
  "creation": "2023-05-17 14:02:00.454211",
  "docstatus": 0,
  "doctype": "Workspace",
@@ -116,7 +116,7 @@
    "type": "Link"
   }
  ],
- "modified": "2023-07-10 13:53:45.359166",
+ "modified": "2023-07-10 14:23:20.953736",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Smart FM",
