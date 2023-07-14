@@ -1,12 +1,13 @@
 {
  "actions": [],
- "autoname": "field:asset_name",
+ "autoname": "field:asset",
  "creation": "2017-10-19 16:50:22.879545",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "asset_name",
+  "asset",
   "asset_category",
   "company",
   "column_break_3",
@@ -100,13 +101,23 @@
    "label": "Maintenance Tasks",
    "options": "Asset Maintenance Task",
    "reqd": 1
+  },
+  {
+   "fetch_from": "asset_name.asset_name",
+   "fieldname": "asset",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Asset",
+   "read_only": 1,
+   "unique": 1
   }
  ],
  "links": [],
- "modified": "2020-05-28 20:28:32.993823",
+ "modified": "2023-07-14 15:51:38.013966",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset Maintenance",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -136,5 +147,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

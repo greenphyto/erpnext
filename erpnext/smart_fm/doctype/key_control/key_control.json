@@ -1,7 +1,5 @@
 {
  "actions": [],
- "allow_rename": 1,
- "autoname": "KEY.#####",
  "creation": "2023-05-15 14:51:17.327974",
  "default_view": "List",
  "doctype": "DocType",
@@ -140,12 +138,11 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-06-07 19:02:51.169094",
+ "modified": "2023-07-14 16:33:35.679088",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Key Control",
- "name_case": "Title Case",
- "naming_rule": "Expression (old style)",
+ "name_case": "UPPER CASE",
  "owner": "Administrator",
  "permissions": [
   {

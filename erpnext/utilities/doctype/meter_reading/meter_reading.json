@@ -1,0 +1,125 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{meter_id}-READ-{#####}",
+ "creation": "2023-07-14 14:54:32.674053",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "reader_nameid",
+  "column_break_azezt",
+  "reading_date",
+  "meter_information_section",
+  "meter_id",
+  "current_reading",
+  "column_break_ryto2",
+  "meter_location",
+  "section_break_8k5ko",
+  "remarks",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "meter_information_section",
+   "fieldtype": "Section Break",
+   "label": "Meter Information"
+  },
+  {
+   "fieldname": "meter_id",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Meter ID",
+   "options": "Utility",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_ryto2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "meter_id.meter_location",
+   "fieldname": "meter_location",
+   "fieldtype": "Data",
+   "label": "Meter Location",
+   "read_only": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "reading_date",
+   "fieldtype": "Date",
+   "label": "Reading Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_8k5ko",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "current_reading",
+   "fieldtype": "Float",
+   "label": "Current Reading",
+   "reqd": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Long Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "reader_nameid",
+   "fieldtype": "Data",
+   "label": "Reader Name/ID"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Meter Reading",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Meter Reading",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_azezt",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2023-07-14 16:10:40.364668",
+ "modified_by": "Administrator",
+ "module": "Utilities",
+ "name": "Meter Reading",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

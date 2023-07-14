@@ -12,7 +12,9 @@ frappe.ui.form.on('Tenant Feedback', {
 
   create_to_do: function(frm) {
     frappe.call({
-      args: {},
+			args: {
+				"name": frm.doc.name,
+      },
       method: "erpnext.smart_fm.doctype.tenant_feedback.tenant_feedback.create_to_do",
       callback: function(r) {
         var doclist = frappe.model.sync(r.message);

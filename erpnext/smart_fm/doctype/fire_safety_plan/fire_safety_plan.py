@@ -8,6 +8,7 @@ class FireSafetyPlan(Document):
 	pass
 
 @frappe.whitelist()
-def create_to_do():
+def create_to_do(name):
 	todo = frappe.new_doc("ToDo")
+	todo.update({"reference_type": "Fire Safety", "reference_name": name})
 	return todo

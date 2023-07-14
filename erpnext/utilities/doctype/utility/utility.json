@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "UTIL.#####",
+ "autoname": "field:meter_id",
  "creation": "2023-07-06 10:38:10.407091",
  "default_view": "List",
  "doctype": "DocType",
@@ -15,20 +15,9 @@
   "account_number",
   "meter_information_section",
   "meter_id",
+  "meter_location",
   "column_break_ryto2",
   "type_of_meter",
-  "section_break_oa52g",
-  "meter_location",
-  "reading_date",
-  "section_break_8k5ko",
-  "previous_reading",
-  "column_break_lnpkn",
-  "current_reading",
-  "section_break_zheus",
-  "usage",
-  "section_break_nqqqt",
-  "remarks",
-  "reader_nameid",
   "amended_from"
  ],
  "fields": [
@@ -72,7 +61,8 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Meter ID",
-   "reqd": 1
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fieldname": "column_break_ryto2",
@@ -86,69 +76,18 @@
    "reqd": 1
   },
   {
-   "fieldname": "section_break_oa52g",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "meter_location",
-   "fieldtype": "Long Text",
+   "fieldtype": "Link",
    "label": "Meter Location",
+   "options": "Location",
    "reqd": 1
-  },
-  {
-   "fieldname": "reading_date",
-   "fieldtype": "Date",
-   "label": "Reading Date",
-   "reqd": 1
-  },
-  {
-   "fieldname": "section_break_8k5ko",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "previous_reading",
-   "fieldtype": "Float",
-   "label": "Previous Reading"
-  },
-  {
-   "fieldname": "column_break_lnpkn",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "current_reading",
-   "fieldtype": "Float",
-   "label": "Current Reading"
-  },
-  {
-   "fieldname": "section_break_zheus",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "usage",
-   "fieldtype": "Float",
-   "label": "Usage",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_break_nqqqt",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "remarks",
-   "fieldtype": "Long Text",
-   "label": "Remarks"
-  },
-  {
-   "fieldname": "reader_nameid",
-   "fieldtype": "Data",
-   "label": "Reader Name/ID"
   },
   {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
    "no_copy": 1,
-   "options": "Utilities",
+   "options": "Utility",
    "print_hide": 1,
    "read_only": 1
   }
@@ -156,11 +95,11 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-06 10:38:10.407091",
+ "modified": "2023-07-14 15:02:48.293879",
  "modified_by": "Administrator",
  "module": "Utilities",
  "name": "Utility",
- "naming_rule": "Expression (old style)",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

@@ -1,7 +1,5 @@
 {
  "actions": [],
- "allow_rename": 1,
- "autoname": "INS.#####",
  "creation": "2023-05-15 15:06:59.258721",
  "default_view": "List",
  "doctype": "DocType",
@@ -295,11 +293,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-05-23 17:05:47.398287",
+ "modified": "2023-07-14 16:33:10.346063",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Inspection Checklist",
- "naming_rule": "Expression (old style)",
+ "name_case": "UPPER CASE",
  "owner": "Administrator",
  "permissions": [
   {

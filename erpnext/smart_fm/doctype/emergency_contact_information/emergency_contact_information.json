@@ -1,7 +1,5 @@
 {
  "actions": [],
- "allow_rename": 1,
- "autoname": "field:name1",
  "creation": "2023-05-15 13:45:52.866096",
  "default_view": "List",
  "doctype": "DocType",
@@ -211,12 +209,11 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-06-07 19:01:37.869805",
+ "modified": "2023-07-14 16:31:06.915547",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Emergency Contact Information",
- "name_case": "Title Case",
- "naming_rule": "By fieldname",
+ "name_case": "UPPER CASE",
  "owner": "Administrator",
  "permissions": [
   {

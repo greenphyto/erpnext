@@ -12,7 +12,9 @@ frappe.ui.form.on('Fire Safety Plan', {
 
   create_to_do: function(frm) {
     frappe.call({
-      args: {},
+			args: {
+				"name": frm.doc.name,
+      },
       method: "erpnext.smart_fm.doctype.fire_safety_plan.fire_safety_plan.create_to_do",
       callback: function(r) {
         var doclist = frappe.model.sync(r.message);

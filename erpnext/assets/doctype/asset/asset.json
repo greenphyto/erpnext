@@ -142,11 +142,13 @@
   {
    "allow_on_submit": 1,
    "fetch_from": "item_code.image",
+   "fetch_if_empty": 1,
    "fieldname": "image",
    "fieldtype": "Attach Image",
    "hidden": 1,
    "label": "Image",
    "no_copy": 1,
+   "options": "image",
    "print_hide": 1
   },
   {
@@ -584,7 +586,7 @@
    "table_fieldname": "accounts"
   }
  ],
- "modified": "2023-07-06 13:08:15.129571",
+ "modified": "2023-07-14 13:34:01.057075",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",

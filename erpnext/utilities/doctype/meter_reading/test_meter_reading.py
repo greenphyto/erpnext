@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestSmartFMWorkOrder(FrappeTestCase):
+class TestMeterReading(FrappeTestCase):
 	pass

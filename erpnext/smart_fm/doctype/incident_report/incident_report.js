@@ -12,7 +12,9 @@ frappe.ui.form.on('Incident Report', {
 
 	create_to_do: function(frm) {
 		frappe.call({
-			args: {},
+			args: {
+				"name": frm.doc.name,
+      },
 			method: "erpnext.smart_fm.doctype.incident_report.incident_report.create_to_do",
 			callback: function(r) {
 				var doclist = frappe.model.sync(r.message);
