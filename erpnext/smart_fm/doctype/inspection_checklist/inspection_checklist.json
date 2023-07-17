@@ -48,7 +48,8 @@
   "section_break_aful1",
   "signature",
   "column_break_bwddv",
-  "date"
+  "date",
+  "amended_from"
  ],
  "fields": [
   {
@@ -289,11 +290,21 @@
   {
    "fieldname": "section_break_aful1",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Inspection Checklist",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2023-07-14 16:33:10.346063",
+ "modified": "2023-07-17 13:33:20.019010",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Inspection Checklist",
@@ -308,8 +319,9 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "System Manager",
+   "role": "All",
    "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],

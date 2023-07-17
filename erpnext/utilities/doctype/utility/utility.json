@@ -37,8 +37,7 @@
    "fieldname": "address",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Address",
-   "reqd": 1
+   "label": "Address"
   },
   {
    "fieldname": "column_break_wfjdb",
@@ -95,7 +94,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-14 15:02:48.293879",
+ "modified": "2023-07-17 10:25:53.577938",
  "modified_by": "Administrator",
  "module": "Utilities",
  "name": "Utility",
