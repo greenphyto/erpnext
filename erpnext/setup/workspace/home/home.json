@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"-FiQe2o5QC\",\"type\":\"onboarding\",\"data\":{\"onboarding_name\":\"Home\",\"col\":12}},{\"id\":\"2ITN-0rnSd\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Your Shortcuts</b></span>\",\"col\":12}},{\"id\":\"VzBwgf_RZY\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Item\",\"col\":3}},{\"id\":\"Ff6J68m-Pk\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customer\",\"col\":3}},{\"id\":\"sWICVVT_RC\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Supplier\",\"col\":3}},{\"id\":\"df1sc_LxW4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sales Invoice\",\"col\":3}},{\"id\":\"5EFOItmcuy\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Leaderboard\",\"col\":3}},{\"id\":\"u12ha6xhBa\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"sAi6eBxMiY\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports &amp; Masters</b></span>\",\"col\":12}},{\"id\":\"DRL2PnL1vc\",\"type\":\"card\",\"data\":{\"card_name\":\"Accounting\",\"col\":4}},{\"id\":\"1GHfw82BH8\",\"type\":\"card\",\"data\":{\"card_name\":\"Stock\",\"col\":4}},{\"id\":\"_O8EX0nN9S\",\"type\":\"card\",\"data\":{\"card_name\":\"CRM\",\"col\":4}},{\"id\":\"lPFBDpgPcq\",\"type\":\"card\",\"data\":{\"card_name\":\"Data Import and Settings\",\"col\":4}}]",
+ "content": "[{\"id\":\"2ITN-0rnSd\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Home</b></span>\",\"col\":12}},{\"id\":\"VzBwgf_RZY\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Item\",\"col\":3}},{\"id\":\"Ff6J68m-Pk\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customer\",\"col\":3}},{\"id\":\"sWICVVT_RC\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Supplier\",\"col\":3}},{\"id\":\"df1sc_LxW4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sales Invoice\",\"col\":3}},{\"id\":\"5EFOItmcuy\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Leaderboard\",\"col\":3}},{\"id\":\"u12ha6xhBa\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"sAi6eBxMiY\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports &amp; Masters</b></span>\",\"col\":12}},{\"id\":\"DRL2PnL1vc\",\"type\":\"card\",\"data\":{\"card_name\":\"Accounting\",\"col\":4}},{\"id\":\"1GHfw82BH8\",\"type\":\"card\",\"data\":{\"card_name\":\"Stock\",\"col\":4}},{\"id\":\"_O8EX0nN9S\",\"type\":\"card\",\"data\":{\"card_name\":\"CRM\",\"col\":4}},{\"id\":\"lPFBDpgPcq\",\"type\":\"card\",\"data\":{\"card_name\":\"Data Import and Settings\",\"col\":4}}]",
  "creation": "2020-01-23 13:46:38.833076",
  "docstatus": 0,
  "doctype": "Workspace",
@@ -231,7 +231,7 @@
    "type": "Link"
   }
  ],
- "modified": "2023-07-10 13:53:45.278456",
+ "modified": "2023-07-18 22:59:50.718712",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Home",
