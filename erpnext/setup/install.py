@@ -20,6 +20,7 @@ default_mail_footer = """<div style="padding: 7px; text-align: right; color: #88
 
 def after_install():
 	frappe.get_doc({"doctype": "Role", "role_name": "Analytics"}).insert()
+	frappe.get_doc({"doctype": "Role", "role_name": "Vendor"}).insert()
 	set_single_defaults()
 	create_print_setting_custom_fields()
 	add_all_roles_to("Administrator")
