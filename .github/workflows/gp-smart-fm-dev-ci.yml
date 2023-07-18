@@ -47,7 +47,7 @@ jobs:
         # Required mail subject:
         subject: Smart FM (Dev) Deployment Done
         # Required recipients' addresses:
-        to: weiquan@greenphyto.com,myo@greenphyto.com,aunt.maung@greenphyto.com,eileen@greenphyto.com,aylward@greenphyto.com
+        to: weiquan@greenphyto.com,myo@greenphyto.com,aunt.maung@greenphyto.com,eileen@greenphyto.com,aylward@greenphyto.com,rizky@greenphyto.com
         # Required sender full name (address can be skipped):
         from: Info@greenphyto.com # <user@example.com>
         # Optional whether this connection use TLS (default is true if server_port is 465)
