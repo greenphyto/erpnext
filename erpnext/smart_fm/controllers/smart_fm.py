@@ -38,6 +38,18 @@ def create_employee_from_user(doc, company):
     emp.company = company
     emp.save(ignore_permissions=True)
 
-        
+"""
+Need to add additional reference name on ToDo, which is generated from Assets Maintenance Log.
+The Reference is used by list view to get valid link to directed
+"""     
+def add_assets_maintenance_log_name(doc, method=""):
+    if doc.reference_type == "Asset Maintenance":
+        reff_name = frappe.get_value("Asset Maintenance Log", {
+            "asset_maintenance":doc.reference_name,
+            "task_name": doc.description
+        }, order_by="creation desc")
+        if reff_name:
+            print(reff_name)
+            doc.additional_reference = reff_name
 
 

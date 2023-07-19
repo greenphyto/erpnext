@@ -28,6 +28,10 @@ doctype_js = {
 	"Contact": "public/js/contact.js",
 }
 
+doctype_list_js = {
+	"ToDo": "public/js/todo_list.js",
+}
+
 override_doctype_class = {"Address": "erpnext.accounts.custom.address.ERPNextAddress"}
 
 welcome_email = "erpnext.setup.utils.welcome_email"
@@ -360,6 +364,9 @@ doc_events = {
 	"Integration Request": {
 		"validate": "erpnext.accounts.doctype.payment_request.payment_request.validate_payment"
 	},
+    "ToDo": {
+        "on_insert": "erpnext.smart_fm.controllers.smart_fm.add_assets_maintenance_log_name"
+	}
 }
 
 # On cancel event Payment Entry will be exempted and all linked submittable doctype will get cancelled.
