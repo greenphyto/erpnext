@@ -29,5 +29,6 @@ frappe.treeview_settings["Asset"] = {
 	],
 	onload: function (treeview) {
 		treeview.make_tree();
-	}
+	},
+	disable_quick_entry: 1
 };
