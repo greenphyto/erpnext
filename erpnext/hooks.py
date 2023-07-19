@@ -288,7 +288,10 @@ doc_events = {
 		"on_cancel": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
 	},
 	"User": {
-		"after_insert": "frappe.contacts.doctype.contact.contact.update_contact",
+		"after_insert": [
+            "frappe.contacts.doctype.contact.contact.update_contact",
+            "erpnext.smart_fm.controllers.smart_fm.give_role_based_on_email_domain"
+		],
 		"validate": "erpnext.setup.doctype.employee.employee.validate_employee_role",
 		"on_update": [
 			"erpnext.setup.doctype.employee.employee.update_user_permissions",
