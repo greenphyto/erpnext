@@ -24,5 +24,27 @@ $.extend(frappe.listview_settings["ToDo"], {
             return `/app/asset-repair/${encodeURIComponent(cstr(doc.reference_name))}`
         }
         return `/app/todo/${encodeURIComponent(cstr(doc.name))}`;
-    }
+    },
+    button: {
+		show: function (doc) {
+			return doc.reference_name;
+		},
+		get_label: function () {
+			return __("Open", null, "Access");
+		},
+		get_description: function (doc) {
+            if (doc.reference_type=="Asset Maintenance"){
+                return __("Open {0}", [`Asset Maintenance Log: ${doc.additional_reference}`]);
+            }else{
+                return __("Open {0}", [`${__(doc.reference_type)}: ${doc.reference_name}`]);
+            }
+		},
+		action: function (doc) {
+            if (doc.reference_type=="Asset Maintenance"){
+                frappe.set_route("Form", "Asset Maintenance Log", doc.additional_reference);
+            }else{
+                frappe.set_route("Form", doc.reference_type, doc.reference_name);
+            }
+		},
+	},
 })
