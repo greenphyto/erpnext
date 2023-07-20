@@ -1,0 +1,56 @@
+on:
+  push:
+    branches:
+      - gp-version-14-prod
+
+name: Deploy to Smart FM Dev Env
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+    - name: executing remote ssh commands using ssh key
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SMART_FM_PROD_HOST }}
+        username: ${{ secrets.SMART_FM_PROD_USER_NAME }}
+        key: ${{ secrets.SMART_FM_PROD_KEY }}
+        port: ${{ secrets.SMART_FM_PROD_PORT }}
+        command_timeout: 30m
+        script_stop: true
+        script: |
+          cd arber_docker/greenphyto.frappe_docker/
+          docker compose --project-name smart-fm -f ~/gitops/smart-fm.yaml down
+          docker ps
+          docker builder prune -a -f
+          docker image prune -a -f
+          docker buildx bake -f docker-bake.hcl --load
+          docker compose --project-name smart-fm -f ~/gitops/smart-fm.yaml up -d
+          docker ps
+          echo 'smart fm finished deployment'
+    - name: Send mail
+      uses: dawidd6/action-send-mail@v3
+      with:
+        # Required mail server address:
+        server_address: smtp.gmail.com
+        # Required mail server port:
+        server_port: 465
+        # Required mail server username:
+        username: ${{secrets.MAIL_USERNAME}}
+        # Required mail server password:
+        password: ${{secrets.MAIL_PASSWORD}}
+        # Required mail subject:
+        subject: Smart FM (PROD) Deployment Done
+        # Required recipients' addresses:
+        to: weiquan@greenphyto.com,myo@greenphyto.com,eileen@greenphyto.com,aylward@greenphyto.com,rizky@greenphyto.com
+        # Required sender full name (address can be skipped):
+        from: Info@greenphyto.com # <user@example.com>
+        # Optional whether this connection use TLS (default is true if server_port is 465)
+        secure: true
+        # Optional plain body:
+        body: Smart FM deployment done for Production env! Branch - gp-version-14-prod, Commit Description - ${{github.event.head_commit.message}} URL-https://smart-fm.arber.ai
