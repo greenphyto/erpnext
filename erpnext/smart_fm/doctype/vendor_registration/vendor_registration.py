@@ -3,6 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe.model.naming import make_autoname
 
 class VendorRegistration(Document):
 	def autoname(self):
