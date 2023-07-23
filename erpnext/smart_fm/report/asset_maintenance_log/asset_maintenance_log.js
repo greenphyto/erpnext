@@ -38,12 +38,30 @@ frappe.query_reports["Asset Maintenance Log"] = {
 			"fieldname": "maintenance_status",
 			"fieldtype": "Select",
 			"label": "Maintenance Status",
-			"options": "Planned\nOverdue\nCancelled",
+			"options": "Planned\nOverdue\nCancelled\nCompleted",
 		},
 		{
-			"fieldname": "assign_to_name",
-			"fieldtype": "Data",
+			"fieldname": "assign_to",
+			"fieldtype": "Link",
 			"label": "Assign To",
+			"options":"User"
 		},
-	]
+	],
+	"formatter": function(value, row, column, data, default_formatter) {
+		value = default_formatter(value, row, column, data);
+		if (data && data.bold) {
+			value = value.bold();
+		}
+
+		if (column.fieldname=="maintenance_status"){
+			colors = {
+				"Planned":"blue",
+				"Overdue":"red",
+				"Cancelled":"orange",
+				"Completed":"green",
+			}
+			value = `<div style="color:${colors[value]};">${value}</div>`
+		}
+		return value;
+	},
 };

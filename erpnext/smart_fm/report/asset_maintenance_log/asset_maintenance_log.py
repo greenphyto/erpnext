@@ -32,7 +32,7 @@ class Report:
 			{ "fieldname": "maintenance_type" , 	"label": "Maintenance Type", 	"fieldtype": "Data", "width": 180, "options": ""},
 			{ "fieldname": "periodicity" , 			"label": "Periodicity", 		"fieldtype": "Data", "width": 150, "options": ""},
 			{ "fieldname": "maintenance_status" , 	"label": "Status", 				"fieldtype": "Data", "width": 180, "options": ""},
-			{ "fieldname": "assign_to" , 			"label": "Assign To", 			"fieldtype": "Link", "width": 150, "options": "User"},
+			{ "fieldname": "assign_to_name" , 		"label": "Assign To", 			"fieldtype": "Link", "width": 150, "options": "User"},
 			{ "fieldname": "due_date" , 			"label": "Due Date", 			"fieldtype": "Date", "width": 120, "options": ""},
 			{ "fieldname": "completion_date" , 		"label": "Comp. Date", 	"fieldtype": "Date", "width": 120, "options": ""},
 		]
@@ -50,7 +50,7 @@ class Report:
 				aml.periodicity,
 				aml.maintenance_status,
 				aml.assign_to_name,
-				u.name as user,
+				u.name as assign_to,
 				aml.due_date,
 				aml.completion_date
 			from 
@@ -62,7 +62,7 @@ class Report:
 			{}
 			order by
 				aml.due_date
-		""".format(self.conditions), self.filters, as_dict=1, debug=1)
+		""".format(self.conditions), self.filters, as_dict=1, debug=0)
 
 	def process_data(self):
 		self.data = []
@@ -71,12 +71,13 @@ class Report:
 			if d.item_code not in item_code:
 				if item_code:
 					self.data.append({})
-					
+
 				item_code.append(d.item_code)
 
 				self.data.append({
 					"task_name": d.item_code,
-					"indent":0
+					"indent":0,
+					"bold":1
 				})
 			
 			d.indent = 1
