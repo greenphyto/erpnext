@@ -34,7 +34,7 @@ class Report:
 			{ "fieldname": "maintenance_status" , 	"label": "Status", 				"fieldtype": "Data", "width": 180, "options": ""},
 			{ "fieldname": "assign_to" , 			"label": "Assign To", 			"fieldtype": "Link", "width": 150, "options": "User"},
 			{ "fieldname": "due_date" , 			"label": "Due Date", 			"fieldtype": "Date", "width": 120, "options": ""},
-			{ "fieldname": "completion_date" , 		"label": "Completion Date", 	"fieldtype": "Date", "width": 120, "options": ""},
+			{ "fieldname": "completion_date" , 		"label": "Comp. Date", 	"fieldtype": "Date", "width": 120, "options": ""},
 		]
 
 	def get_data(self):
@@ -65,8 +65,23 @@ class Report:
 		""".format(self.conditions), self.filters, as_dict=1, debug=1)
 
 	def process_data(self):
-		self.data = self.raw_data
+		self.data = []
+		item_code = []
+		for d in self.raw_data:
+			if d.item_code not in item_code:
+				if item_code:
+					self.data.append({})
+					
+				item_code.append(d.item_code)
 
+				self.data.append({
+					"task_name": d.item_code,
+					"indent":0
+				})
+			
+			d.indent = 1
+			self.data.append(d)
+			
 	def get_chart(self):
 		pass
 
