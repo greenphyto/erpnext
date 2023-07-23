@@ -14,6 +14,17 @@ class Report:
 
 	def setup_conditions(self):
 		self.conditions = ""
+  
+		for f in ['item_code', 'maintenance_type', 'periodicity', 'maintenance_status']:
+			if self.filters.get(f):
+				self.conditions += " and aml."+f+" = %("+f+")s"
+    
+		if self.filters.get("user"):
+			self.conditions += " and u.name = %(assign_to)s "
+
+		if self.filters.get("task_name"):
+			self.filters.task_name = "%"+self.filters.task_name+"%"
+			self.conditions += " and aml.task_name like %(task_name)s "
 
 	def get_columns(self):
 		self.columns = [
@@ -21,7 +32,7 @@ class Report:
 			{ "fieldname": "maintenance_type" , 	"label": "Maintenance Type", 	"fieldtype": "Data", "width": 180, "options": ""},
 			{ "fieldname": "periodicity" , 			"label": "Periodicity", 		"fieldtype": "Data", "width": 150, "options": ""},
 			{ "fieldname": "maintenance_status" , 	"label": "Status", 				"fieldtype": "Data", "width": 180, "options": ""},
-			{ "fieldname": "assign_to_name" , 		"label": "Assign To", 			"fieldtype": "", 	 "width": 150, "options": ""},
+			{ "fieldname": "assign_to" , 			"label": "Assign To", 			"fieldtype": "Link", "width": 150, "options": "User"},
 			{ "fieldname": "due_date" , 			"label": "Due Date", 			"fieldtype": "Date", "width": 120, "options": ""},
 			{ "fieldname": "completion_date" , 		"label": "Completion Date", 	"fieldtype": "Date", "width": 120, "options": ""},
 		]
@@ -39,16 +50,19 @@ class Report:
 				aml.periodicity,
 				aml.maintenance_status,
 				aml.assign_to_name,
+				u.name as user,
 				aml.due_date,
 				aml.completion_date
 			from 
 				`tabAsset Maintenance Log` aml
+			left join 
+				tabUser as u on u.full_name = aml.assign_to_name
 			where 
 				aml.docstatus != 2
+			{}
 			order by
 				aml.due_date
-			{}
-		""".format(self.conditions), self.filters, as_dict=1)
+		""".format(self.conditions), self.filters, as_dict=1, debug=1)
 
 	def process_data(self):
 		self.data = self.raw_data
