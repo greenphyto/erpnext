@@ -29,6 +29,7 @@ class Report:
 	def get_columns(self):
 		self.columns = [
 			{ "fieldname": "task_name" , 			"label": "Task Name", 			"fieldtype": "Data", "width": 180, "options": ""},
+			{ "fieldname": "todo" , 				"label": "ToDo", 				"fieldtype": "Link", "width": 120, "options": "ToDo"},
 			{ "fieldname": "maintenance_type" , 	"label": "Maintenance Type", 	"fieldtype": "Data", "width": 180, "options": ""},
 			{ "fieldname": "periodicity" , 			"label": "Periodicity", 		"fieldtype": "Data", "width": 150, "options": ""},
 			{ "fieldname": "maintenance_status" , 	"label": "Status", 				"fieldtype": "Data", "width": 180, "options": ""},
@@ -57,6 +58,8 @@ class Report:
 				`tabAsset Maintenance Log` aml
 			left join 
 				tabUser as u on u.full_name = aml.assign_to_name
+			left join 
+				tabToDo as t on t.additional_reference = aml.name
 			where 
 				aml.docstatus != 2
 			{}
