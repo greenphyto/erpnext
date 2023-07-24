@@ -64,7 +64,7 @@ class Report:
 				aml.docstatus != 2
 			{}
 			order by
-				aml.due_date
+				aml.item_code, aml.due_date
 		""".format(self.conditions), self.filters, as_dict=1, debug=0)
 
 	def process_data(self):
