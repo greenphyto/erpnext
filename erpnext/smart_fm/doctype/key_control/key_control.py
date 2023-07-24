@@ -7,7 +7,7 @@ from frappe.model.naming import make_autoname
 
 class KeyControl(Document):
 	def autoname(self):
-		self.name = make_autoname(self.name1[0:3].upper() + "-.#####") 
+		self.name = make_autoname(self.company[0:3].upper() + "-.#####") 
 
 @frappe.whitelist()
 def create_to_do(name):

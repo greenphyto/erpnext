@@ -11,6 +11,7 @@
   "personal_information_section",
   "name1",
   "unit_number__office_number",
+  "company",
   "column_break_abbf3",
   "phone_number",
   "email_address",
@@ -204,12 +205,17 @@
    "fieldtype": "Table",
    "label": "Person",
    "options": "Person"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Data",
+   "label": "Company"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-14 16:29:06.233315",
+ "modified": "2023-07-24 13:51:45.174699",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Access Request",
