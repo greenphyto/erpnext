@@ -11,6 +11,7 @@
   "personal_information_section",
   "name1",
   "unit_number__office_number",
+  "company",
   "column_break_abbf3",
   "phone_number",
   "email_address",
@@ -133,12 +134,17 @@
    "options": "Key Control",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Data",
+   "label": "Company"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-17 13:34:38.170292",
+ "modified": "2023-07-24 13:43:19.029111",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Key Control",
