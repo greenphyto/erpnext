@@ -43,7 +43,7 @@ Need to add additional reference name on ToDo, which is generated from Assets Ma
 The Reference is used by list view to get valid link to directed
 """     
 def add_assets_maintenance_log_name(doc, method=""):
-    if doc.reference_type == "Asset Maintenance":
+    if doc.reference_type == "Asset Maintenance" and not doc.additional_reference:
         reff_name = frappe.get_value("Asset Maintenance Log", {
             "asset_maintenance":doc.reference_name,
             "task_name": doc.description
@@ -51,5 +51,20 @@ def add_assets_maintenance_log_name(doc, method=""):
         if reff_name:
             print(reff_name)
             doc.additional_reference = reff_name
+
+"""
+Create ToDo if Asset Maintenance Log created
+"""
+def create_todo_from_maintenance_log(doc, method=""):
+    return frappe.get_doc(
+		{
+			"doctype": "ToDo",
+			"description": doc.task_name,
+            "reference_type": doc.doctype,
+            "reference_name": doc.name,
+            "assigned_by": frappe.session.user
+		}
+	).insert(ignore_permissions=True)
+
 
 
