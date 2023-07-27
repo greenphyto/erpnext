@@ -6,8 +6,9 @@ from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 
 class VendorRegistration(Document):
-	def autoname(self):
-		self.name = make_autoname(self.company_name[0:3].upper() + "-.#####") 
+  pass
+	# def autoname(self):
+	# 	self.name = make_autoname(self.company_name[0:3].upper() + "-.#####") 
 
 @frappe.whitelist()
 def create_to_do(name):
