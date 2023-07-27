@@ -365,7 +365,10 @@ doc_events = {
 		"validate": "erpnext.accounts.doctype.payment_request.payment_request.validate_payment"
 	},
     "ToDo": {
-        "on_insert": "erpnext.smart_fm.controllers.smart_fm.add_assets_maintenance_log_name"
+        "after_insert": "erpnext.smart_fm.controllers.smart_fm.add_assets_maintenance_log_name"
+	},
+    "Asset Maintenance Log": {
+        "after_insert": "erpnext.smart_fm.controllers.smart_fm.create_todo_from_maintenance_log"
 	}
 }
 

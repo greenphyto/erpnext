@@ -8,7 +8,8 @@
 	"js/erpnext-web.min.js": [
 		"public/js/website_utils.js",
 		"public/js/shopping_cart.js",
-		"public/js/wishlist.js"
+		"public/js/wishlist.js",
+		"public/js/smart_fm_web.js"
 	],
 	"css/erpnext-web.css": [
 		"public/scss/website.scss",

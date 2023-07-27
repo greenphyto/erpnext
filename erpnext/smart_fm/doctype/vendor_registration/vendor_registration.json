@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "autoname": "VEND-#####",
  "creation": "2023-05-15 13:55:44.455686",
  "default_view": "List",
  "doctype": "DocType",
@@ -257,11 +258,11 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-17 13:34:03.596935",
+ "modified": "2023-07-27 09:35:43.293145",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Vendor Registration",
- "name_case": "UPPER CASE",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {

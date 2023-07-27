@@ -22,6 +22,8 @@ $.extend(frappe.listview_settings["ToDo"], {
             return `/app/asset-maintenance-log/${encodeURIComponent(cstr(doc.additional_reference))}`;
         }else if (doc.reference_type=="Asset Repair"){
             return `/app/asset-repair/${encodeURIComponent(cstr(doc.reference_name))}`
+        }else if (doc.reference_type=="Asset Maintenance Log"){
+            return `/app/asset-maintenance-log/${encodeURIComponent(cstr(doc.reference_name))}`
         }
         return `/app/todo/${encodeURIComponent(cstr(doc.name))}`;
     },
@@ -35,6 +37,8 @@ $.extend(frappe.listview_settings["ToDo"], {
 		get_description: function (doc) {
             if (doc.reference_type=="Asset Maintenance"){
                 return __("Open {0}", [`Asset Maintenance Log: ${doc.additional_reference}`]);
+            }else if (doc.reference_type=="Asset Maintenance Log"){
+                return __("Open {0}", [`Asset Maintenance Log: ${doc.reference_name}`]);
             }else{
                 return __("Open {0}", [`${__(doc.reference_type)}: ${doc.reference_name}`]);
             }
@@ -42,6 +46,8 @@ $.extend(frappe.listview_settings["ToDo"], {
 		action: function (doc) {
             if (doc.reference_type=="Asset Maintenance"){
                 frappe.set_route("Form", "Asset Maintenance Log", doc.additional_reference);
+            } else if (doc.reference_type=="Asset Maintenance Log"){
+                frappe.set_route("Form", "Asset Maintenance Log", doc.reference_name);
             }else{
                 frappe.set_route("Form", doc.reference_type, doc.reference_name);
             }
