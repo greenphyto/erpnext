@@ -116,7 +116,7 @@
    "type": "Link"
   }
  ],
- "modified": "2023-07-28 23:46:17.838045",
+ "modified": "2023-07-29 21:53:46.399669",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Smart FM",
@@ -129,21 +129,21 @@
  "sequence_id": 2.0,
  "shortcuts": [
   {
-   "color": "Cyan",
-   "doc_view": "List",
-   "format": "{} Issued",
-   "label": "Inspection Checklist",
-   "link_to": "Inspection Checklist",
-   "stats_filter": "{\"name\":[\"=\",null]}",
-   "type": "DocType"
-  },
-  {
    "color": "Yellow",
    "doc_view": "List",
    "format": "{} Issued",
    "label": "Maintenance Request",
    "link_to": "Maintenance Request",
-   "stats_filter": "{\"name\":[\"=\",\"Issued\"]}",
+   "stats_filter": "{\"workflow_state\":[\"=\",\"Issued\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Cyan",
+   "doc_view": "List",
+   "format": "{} Issued",
+   "label": "Inspection Checklist",
+   "link_to": "Inspection Checklist",
+   "stats_filter": "{\"workflow_state\":[\"=\",null]}",
    "type": "DocType"
   },
   {
@@ -152,7 +152,7 @@
    "format": "{} Issued",
    "label": "Incident Report",
    "link_to": "Incident Report",
-   "stats_filter": "{\"name\":[\"=\",\"Issued\"]}",
+   "stats_filter": "{\"workflow_state\":[\"=\",\"Issued\"]}",
    "type": "DocType"
   },
   {
@@ -161,7 +161,7 @@
    "format": "{} Issued",
    "label": "Access Request",
    "link_to": "Access Request",
-   "stats_filter": "{\"name\":[\"=\",\"Issued\"]}",
+   "stats_filter": "{\"workflow_state\":[\"=\",\"Issued\"]}",
    "type": "DocType"
   }
  ],
