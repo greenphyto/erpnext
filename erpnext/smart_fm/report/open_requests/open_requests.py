@@ -29,7 +29,7 @@ class Report:
 
 	def get_columns(self):
 		self.columns = [
-			{ "fieldname": "source" , "label": "Source", "fieldtype": "Data", "width": 100, "options": ""},
+			{ "fieldname": "source" , "label": "Source", "fieldtype": "Data", "width": 200, "options": ""},
 			{ "fieldname": "issued" , "label": "Issued", "fieldtype": "Int", "width": 100, "options": ""},
 			{ "fieldname": "started" , "label": "Started", "fieldtype": "Int", "width": 100, "options": ""}
 		]
@@ -50,12 +50,12 @@ class Report:
 				WHERE
 					workflow_state IN ('Issued' , 'Started')
 				GROUP BY workflow_state
-			""".format(doctype), as_dict=1, debug=1)
+			""".format(doctype), as_dict=1, debug=0)
 		dt = {
 			"source": doctype
 		}
 		for d in data:
-			dt[d.state] = d.cnt
+			dt[ frappe.scrub(d.state) ] = d.cnt
 
 		return dt
 
@@ -68,7 +68,39 @@ class Report:
 				self.data.append(dt)
 
 	def get_chart(self):
-		pass
+		labels = []
+		datasets = []
+		data_dict = {}
+		list_type = ['Issued', 'Started']
+
+		for t in list_type:
+			data_dict[t] = []
+
+		for d in self.data:
+			labels.append(d['source'])
+			for t in list_type:
+				typ = frappe.scrub(t)
+				val = d.get(typ)
+				if val:
+					data_dict[t].append(d[typ])
+				else:
+					data_dict[t].append(0)
+
+		
+		for typ, d in data_dict.items():
+			datasets.append({
+				"name": typ,
+				"values": d
+			})
+
+		self.chart = {
+			"data": {
+				"labels": labels, 
+				"datasets": datasets,
+			}, 
+			"colors": ['yellow', "orange"],
+			"type": "bar"
+		}
 
 	def run(self):
 		self.setup_conditions()
@@ -77,4 +109,4 @@ class Report:
 		self.process_data()
 		self.get_chart()
 
-		return self.columns, self.data, self.chart
+		return self.columns, self.data, None, self.chart
