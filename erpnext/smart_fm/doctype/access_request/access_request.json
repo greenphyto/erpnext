@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "ACCESS-#####",
+ "autoname": "ACCESS-.#####",
  "creation": "2023-05-15 13:17:29.183970",
  "default_view": "List",
  "doctype": "DocType",
@@ -216,7 +216,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-27 09:31:49.213014",
+ "modified": "2023-07-31 23:08:17.048139",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Access Request",

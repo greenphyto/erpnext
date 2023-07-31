@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "TNFB-#####",
+ "autoname": "TNFB-.#####",
  "creation": "2023-05-15 16:12:56.870994",
  "default_view": "List",
  "doctype": "DocType",
@@ -172,7 +172,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-27 09:33:04.427418",
+ "modified": "2023-07-31 23:08:07.011601",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Tenant Feedback",
