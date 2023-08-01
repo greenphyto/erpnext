@@ -1,0 +1,111 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-08-01 18:15:42.920406",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "pic",
+  "pic_name",
+  "template",
+  "column_break_xgo1d",
+  "date",
+  "more_information_section",
+  "amended_from",
+  "status"
+ ],
+ "fields": [
+  {
+   "default": "Today",
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "template",
+   "fieldtype": "Link",
+   "label": "Template",
+   "options": "Checklist Template"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Cleaning and Security Checklist",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "more_information_section",
+   "fieldtype": "Section Break",
+   "label": "More Information"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status"
+  },
+  {
+   "description": "Person in Charge",
+   "fieldname": "pic",
+   "fieldtype": "Link",
+   "label": "PIC",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "pic.full_name",
+   "fieldname": "pic_name",
+   "fieldtype": "Data",
+   "label": "PIC Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_xgo1d",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2023-08-01 18:18:56.755121",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Cleaning and Security Checklist",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Building Management",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
