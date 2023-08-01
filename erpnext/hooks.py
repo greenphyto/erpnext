@@ -396,6 +396,9 @@ scheduler_events = {
 		"45 0 * * *": [
 			"erpnext.stock.reorder_item.reorder_item",
 		],
+        "0 6 * * *": [
+            "erpnext.smart_fm.controllers.smart_fm.send_due_date_notification_task"
+		]
 	},
 	"all": [
 		"erpnext.projects.doctype.project.project.project_status_update_reminder",
@@ -621,3 +624,6 @@ additional_timeline_content = {
 	"*": ["erpnext.telephony.doctype.call_log.call_log.get_linked_call_logs"]
 }
 
+jinja = {
+	"methods": "erpnext.smart_fm.controllers.utils",
+}

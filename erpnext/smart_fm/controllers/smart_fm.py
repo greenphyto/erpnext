@@ -1,5 +1,5 @@
 import frappe
-from frappe.utils import getdate
+from frappe.utils import getdate, cint
 
 """
 Only be matching with listed company and the domain.
@@ -66,5 +66,27 @@ def create_todo_from_maintenance_log(doc, method=""):
 		}
 	).insert(ignore_permissions=True)
 
+"""
+- Find doc with -1 H, today, and due date Task
+- Specially to Smart FM's Doctype
+"""
+# run_notifications
+def send_due_date_notification_task():
+    if not cint(frappe.db.get_single_value("Smart FM Settings", "enable_daily_task_notification")):
+        return
+    
+    method = "reminder_task_notification"
 
+    # get list todo
+    data = frappe.db.sql("""
+        SELECT 
+            name, date, reminder_at, DATEDIFF(date, CURDATE()) as left_days
+        FROM
+            `tabToDo`
+        WHERE
+            status = 'Open' and DATEDIFF(date, CURDATE()) <= reminder_at
+    """, as_dict=1)
+    for d in data:
+        doc = frappe.get_doc("ToDo", d.name)
+        doc.run_notifications(method)
 
