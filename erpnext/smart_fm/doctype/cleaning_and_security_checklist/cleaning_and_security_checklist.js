@@ -2,7 +2,15 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Cleaning and Security Checklist', {
-	// refresh: function(frm) {
-
-	// }
+	refresh: function(frm) {
+		if (frm.is_new()){
+			frm.set_value("pic", frappe.session.user);
+		}
+	}
 });
+
+$.extend(cur_frm.cscript, {
+	refresh_tree_view: function(){
+
+	}
+})
