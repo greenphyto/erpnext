@@ -6,6 +6,15 @@ frappe.ui.form.on('Cleaning and Security Checklist', {
 		if (frm.is_new()){
 			frm.set_value("pic", frappe.session.user);
 		}
+
+		// filter enable template only
+		frm.set_query("template", ()=>{
+			return {
+				filters:{
+					enable: 1
+				}
+			}
+		})
 	}
 });
 
