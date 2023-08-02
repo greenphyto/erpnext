@@ -15,11 +15,24 @@ frappe.ui.form.on('Cleaning and Security Checklist', {
 				}
 			}
 		})
+	},
+	template: function(frm){
+		frm.cscript.load_template()
 	}
 });
 
 $.extend(cur_frm.cscript, {
-	refresh_tree_view: function(){
+	load_template: function(){
+		if (!this.frm.doc.template){
+			return;
+		};
 
+		frappe.call({
+			method:"load_template_indicator",
+			doc: this.frm.doc,
+			callback: function(){
+				cur_frm.refresh();
+			}
+		})
 	}
 })

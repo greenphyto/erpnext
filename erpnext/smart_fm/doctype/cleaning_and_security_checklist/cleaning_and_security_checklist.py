@@ -13,3 +13,14 @@ class CleaningandSecurityChecklist(Document):
 	def validate_template(self):
 		if frappe.db.get_value("Checklist Template", self.template, "enable") == 0:
 			frappe.throw(_("Cannot use Template <b>{}</b>!".format(self.template)))
+
+	@frappe.whitelist()
+	def load_template_indicator(self):
+		doc = frappe.get_doc("Checklist Template", self.template)
+		self.checklist = []
+		for d in doc.get("indicators"):
+			row = self.append("checklist")
+			fields = ["indicator", "is_group", "indent", "description"]
+			for f in fields:
+				row.set(f, d.get(f))
+			
