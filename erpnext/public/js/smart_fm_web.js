@@ -20,3 +20,4 @@ frappe.set_default_web_form = function (fields){
         })
     }
 }
+
