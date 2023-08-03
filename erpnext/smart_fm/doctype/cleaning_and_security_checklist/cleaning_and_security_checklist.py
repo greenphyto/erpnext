@@ -21,11 +21,26 @@ class CleaningandSecurityChecklist(Document):
 
 	@frappe.whitelist()
 	def load_template_indicator(self):
-		doc = frappe.get_doc("Checklist Template", self.template)
+		checklist = load_template_indicator_web(self.template)
 		self.checklist = []
-		for d in doc.get("indicators"):
+		for d in checklist:
 			row = self.append("checklist")
-			fields = ["indicator", "is_group", "indent", "description"]
-			for f in fields:
-				row.set(f, d.get(f))
-			
+			row.update(d)
+
+		return checklist
+
+@frappe.whitelist()
+def load_template_indicator_web(template):
+	doc = frappe.get_doc("Checklist Template", template)
+	checklist = []
+	if not template:
+		return checklist
+	
+	for d in doc.get("indicators"):
+		row = {}
+		fields = ["indicator", "is_group", "indent", "description"]
+		for f in fields:
+			row[f] = d.get(f)
+		checklist.append(row)
+	
+	return checklist
