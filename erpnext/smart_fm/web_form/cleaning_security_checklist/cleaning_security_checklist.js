@@ -105,11 +105,30 @@ class EasyChecklist{
 				d.indicator, 
 				d.value, 
 				d.indent, 
-				d.is_group
+				d.is_group,
+
 			)
+			if (!d.is_group){
+				check_el.find("input").change(function(){
+					me.click_checkbox(this)
+				});
+			}
 			me.wrapper.append(check_el);
 		})
 	}
 
+	click_checkbox(elem){
+		var row_name = $(elem).attr("id");
+		var check = elem.checked;
+		var grid = frappe.web_form.fields_dict[this.table_field].grid;
+		if (grid){
+			var grid_row  = grid.grid_rows_by_docname[row_name];
+			if (grid_row){
+				grid_row.doc.value = cint(check);
+				grid_row.refresh();
+			}
+		}
+		console.log(elem, elem.checked)
+	}
 
 }
