@@ -20,6 +20,8 @@ frappe.run_onload = ()=>{
 	})
 
 	// filter template
+	frappe.web_form.fields_dict.template.df.get_query = "erpnext.smart_fm.doctype.checklist_template.checklist_template.get_template_enable"
+
 
 	// mapping checklist to form
 

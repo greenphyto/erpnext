@@ -35,4 +35,6 @@ class ChecklistTemplate(Document):
 			
 
 
-	
+@frappe.whitelist()
+def get_template_enable(**args):
+	return frappe.db.get_all("Checklist Template", {"enable": 1}, ['name as label', "name as value"])
