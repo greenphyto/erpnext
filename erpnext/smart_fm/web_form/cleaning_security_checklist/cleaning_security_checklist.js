@@ -11,7 +11,6 @@ frappe.run_onload = ()=>{
 		if (value){
 			frappe.db.get_value("User", value, "full_name").then(r=>{ 
 				if (r.message){
-					console.log(frm, value, r.message.full_name)
 					frappe.web_form.set_value("pic_name", r.message.full_name)
 				}
 			})
@@ -58,12 +57,15 @@ class EasyChecklist{
 					frappe.call({
 						method:"erpnext.smart_fm.doctype.cleaning_and_security_checklist.cleaning_and_security_checklist.load_template_indicator_web",
 						args:{
-							template: me.frm.doc.template
+							template: me.frm.doc.template,
+							is_new: 1
 						},
 						callback: r=>{
 							if(r.message){
 								r = r.message;
-								console.log(r)
+								me.frm.doc[me.table_field] = r;
+								me.frm.refresh();
+								resolve();
 							}
 						}
 					})
@@ -79,7 +81,7 @@ class EasyChecklist{
 	}
 
 	add_row_table(data){
-
+		
 	}
 
 	init_template(){
@@ -135,6 +137,7 @@ class EasyChecklist{
 	}
 
 	setup_element(){
+		this.base_wrapper.empty();
 		this.base_wrapper.append(`
 			<div class="eazy-wrapper"></div>
 		`);

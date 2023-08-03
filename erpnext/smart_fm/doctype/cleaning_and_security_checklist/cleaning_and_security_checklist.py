@@ -30,7 +30,7 @@ class CleaningandSecurityChecklist(Document):
 		return checklist
 
 @frappe.whitelist()
-def load_template_indicator_web(template):
+def load_template_indicator_web(template, is_new=0):
 	doc = frappe.get_doc("Checklist Template", template)
 	checklist = []
 	if not template:
@@ -41,6 +41,12 @@ def load_template_indicator_web(template):
 		fields = ["indicator", "is_group", "indent", "description"]
 		for f in fields:
 			row[f] = d.get(f)
+		
+		if is_new:
+			row['name'] = frappe.generate_hash("", 8)
+			row['__islocal'] = 1
+			row['__unsaved'] = 1
+
 		checklist.append(row)
 	
 	return checklist
