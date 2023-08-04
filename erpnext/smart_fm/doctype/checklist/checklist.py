@@ -6,7 +6,7 @@ from frappe.model.document import Document
 from frappe.utils import cint
 from frappe import _
 
-class CleaningandSecurityChecklist(Document):
+class Checklist(Document):
 	def validate(self):
 		self.validate_template()
 

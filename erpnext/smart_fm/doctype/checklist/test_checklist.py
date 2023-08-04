@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestCleaningandSecurityChecklist(FrappeTestCase):
+class TestChecklist(FrappeTestCase):
 	pass

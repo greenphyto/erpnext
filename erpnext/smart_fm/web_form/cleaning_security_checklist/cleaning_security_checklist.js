@@ -57,7 +57,7 @@ class EasyChecklist{
 			if (this.frm.doc.template){
 				if (renew){
 					frappe.call({
-						method:"erpnext.smart_fm.doctype.cleaning_and_security_checklist.cleaning_and_security_checklist.load_template_indicator_web",
+						method:"erpnext.smart_fm.doctype.checklist.checklist.load_template_indicator_web",
 						args:{
 							template: me.frm.doc.template,
 							is_new: 1
