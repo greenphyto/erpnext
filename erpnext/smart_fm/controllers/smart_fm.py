@@ -115,7 +115,7 @@ def get_qcode(data={}, doctype=None, docname=None, get_link=False):
 			result_name = exists
 		else:
 			doc = frappe.new_doc("QRCode Data")
-			doc.data = data_temp
+			doc.data = data
 			doc.insert(ignore_permissions=True)
 			result_name = doc.name
 
@@ -134,7 +134,6 @@ def get_qcode(data={}, doctype=None, docname=None, get_link=False):
 	
 	link = get_link_detail(result_name)
 	if get_link:
-		print(137, link)
 		return link
 	
 	# get base 64 string images
