@@ -57,11 +57,17 @@ def add_assets_maintenance_log_name(doc, method=""):
 """
 Create ToDo if Asset Maintenance Log created
 """
-def create_todo_from_maintenance_log(doc, method=""):
+def create_todo(doc, method=""):
+	task = ""
+	if doc.doctype == "Asset Maintenance Log":
+		task = doc.task_name
+	elif doc.doctype == "Asset Repair":
+		task = doc.description[:150]
+
 	return frappe.get_doc(
 		{
 			"doctype": "ToDo",
-			"description": doc.task_name,
+			"description": task,
 			"reference_type": doc.doctype,
 			"reference_name": doc.name,
 			"assigned_by": frappe.session.user

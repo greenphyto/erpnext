@@ -368,7 +368,10 @@ doc_events = {
         "after_insert": "erpnext.smart_fm.controllers.smart_fm.add_assets_maintenance_log_name"
 	},
     "Asset Maintenance Log": {
-        "after_insert": "erpnext.smart_fm.controllers.smart_fm.create_todo_from_maintenance_log"
+        "after_insert": "erpnext.smart_fm.controllers.smart_fm.create_todo"
+	},
+    "Asset Repair": {
+        "after_insert": "erpnext.smart_fm.controllers.smart_fm.create_todo"
 	}
 }
 
