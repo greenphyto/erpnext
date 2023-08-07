@@ -1,0 +1,34 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "creation": "2023-05-25 17:07:49.780803",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Emergency Contact Information",
+ "enabled": 1,
+ "event": "Value Change",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<h3>Emergency Contact Information</h3>\n\n<p>The request ({{doc.name}}) has been {{doc.workflow_state}} by building management.</p>\n\n<p>Please contact info@greenphyto.com if you have any queries.</p>\n\n<p>Thank you.</p>",
+ "modified": "2023-08-07 11:30:27.600646",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Emergency Contact Information",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_document_field": "owner",
+   "receiver_by_role": ""
+  },
+  {
+   "receiver_by_document_field": "email_address"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "sender": "Smart FM",
+ "sender_email": "foms@greenphyto.com",
+ "subject": "Emergency Contact Information: {{doc.name}} {{doc.workflow_state}}",
+ "value_changed": "workflow_state"
+}
