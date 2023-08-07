@@ -2,6 +2,7 @@ import frappe
 from frappe.utils import getdate, cint, get_url
 import json
 from frappe.twofactor import get_qr_svg_code
+from frappe import _
 
 """
 Only be matching with listed company and the domain.
@@ -54,6 +55,14 @@ def add_assets_maintenance_log_name(doc, method=""):
 			print(reff_name)
 			doc.additional_reference = reff_name
 
+def validate_asset_repair_description(doc, method=""):
+	if not doc.description and not doc.get("request_id"):
+		frappe.throw(_("Description must be set!"))
+
+	if doc.get("request_id"):
+		desc = frappe.get_value("Maintenance Request", doc.get("request_id"), "description")
+		doc.description = desc
+
 """
 Create ToDo if Asset Maintenance Log created
 """
@@ -62,7 +71,8 @@ def create_todo(doc, method=""):
 	if doc.doctype == "Asset Maintenance Log":
 		task = doc.task_name
 	elif doc.doctype == "Asset Repair":
-		task = doc.description[:150]
+		if doc.get("description"):
+			task = doc.description[:150]
 
 	return frappe.get_doc(
 		{

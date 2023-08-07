@@ -371,6 +371,7 @@ doc_events = {
         "after_insert": "erpnext.smart_fm.controllers.smart_fm.create_todo"
 	},
     "Asset Repair": {
+        "validate": "erpnext.smart_fm.controllers.smart_fm.validate_asset_repair_description",
         "after_insert": "erpnext.smart_fm.controllers.smart_fm.create_todo"
 	}
 }
