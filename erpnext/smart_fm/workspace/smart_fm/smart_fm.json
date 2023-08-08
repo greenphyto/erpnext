@@ -1,11 +1,11 @@
 {
  "charts": [
   {
-   "chart_name": "Open Requests",
-   "label": "Open Requests"
+   "chart_name": "Request Report",
+   "label": "Request Report"
   }
  ],
- "content": "[{\"id\":\"ec1F-jIO5A\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Smart FM</span>\",\"col\":12}},{\"id\":\"dhi2td2O7b\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Open Requests\",\"col\":12}},{\"id\":\"KwQzTV_xhR\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Your Shortcuts</b></span>\",\"col\":12}},{\"id\":\"kRElbJGgi-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Maintenance Request\",\"col\":3}},{\"id\":\"T_ELHHUDFO\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Incident Report\",\"col\":3}},{\"id\":\"AgmTrpMCu0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Access Request\",\"col\":3}},{\"id\":\"sQwP2Ln4-Z\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inspection Checklist\",\"col\":3}},{\"id\":\"Ca02m-kfPg\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"zvBL_ORvId\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports and Masters</b></span>\",\"col\":12}},{\"id\":\"aZ_aYZfJAK\",\"type\":\"card\",\"data\":{\"card_name\":\"Requests\",\"col\":4}},{\"id\":\"ZZ9XJ0Eg0e\",\"type\":\"card\",\"data\":{\"card_name\":\"Form\",\"col\":4}},{\"id\":\"KJP0ulpGyr\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
+ "content": "[{\"id\":\"ec1F-jIO5A\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Smart FM</span>\",\"col\":12}},{\"id\":\"dhi2td2O7b\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Request Report\",\"col\":12}},{\"id\":\"KwQzTV_xhR\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Your Shortcuts</b></span>\",\"col\":12}},{\"id\":\"kRElbJGgi-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Maintenance Request\",\"col\":3}},{\"id\":\"T_ELHHUDFO\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Incident Report\",\"col\":3}},{\"id\":\"AgmTrpMCu0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Access Request\",\"col\":3}},{\"id\":\"sQwP2Ln4-Z\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inspection Checklist\",\"col\":3}},{\"id\":\"RWvULbK__5\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Calendar</b></span>\",\"col\":12}},{\"id\":\"PJHWO3mD8P\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ToDo Calendar\",\"col\":3}},{\"id\":\"Ca02m-kfPg\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"zvBL_ORvId\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports and Masters</b></span>\",\"col\":12}},{\"id\":\"aZ_aYZfJAK\",\"type\":\"card\",\"data\":{\"card_name\":\"Requests\",\"col\":4}},{\"id\":\"ZZ9XJ0Eg0e\",\"type\":\"card\",\"data\":{\"card_name\":\"Form\",\"col\":4}},{\"id\":\"KJP0ulpGyr\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
  "creation": "2023-05-17 14:02:00.454211",
  "docstatus": 0,
  "doctype": "Workspace",
@@ -21,6 +21,7 @@
    "is_query_report": 0,
    "label": "Requests",
    "link_count": 3,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -59,6 +60,7 @@
    "is_query_report": 0,
    "label": "Form",
    "link_count": 4,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -107,6 +109,7 @@
    "is_query_report": 0,
    "label": "Reports",
    "link_count": 1,
+   "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
   },
@@ -121,7 +124,7 @@
    "type": "Link"
   }
  ],
- "modified": "2023-07-29 22:36:36.378745",
+ "modified": "2023-08-08 15:21:22.264968",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Smart FM",
@@ -143,15 +146,6 @@
    "type": "DocType"
   },
   {
-   "color": "Cyan",
-   "doc_view": "List",
-   "format": "{} Issued",
-   "label": "Inspection Checklist",
-   "link_to": "Inspection Checklist",
-   "stats_filter": "{\"workflow_state\":[\"=\",null]}",
-   "type": "DocType"
-  },
-  {
    "color": "Red",
    "doc_view": "List",
    "format": "{} Issued",
@@ -161,12 +155,28 @@
    "type": "DocType"
   },
   {
-   "color": "Green",
+   "color": "Yellow",
    "doc_view": "List",
    "format": "{} Issued",
    "label": "Access Request",
    "link_to": "Access Request",
    "stats_filter": "{\"workflow_state\":[\"=\",\"Issued\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "ToDo Calendar",
+   "type": "URL",
+   "url": "https://smart-fm-dev.arber.ai/app/todo/view/calendar/default"
+  },
+  {
+   "color": "Cyan",
+   "doc_view": "List",
+   "format": "{} Issued",
+   "label": "Inspection Checklist",
+   "link_to": "Inspection Checklist",
+   "stats_filter": "{\"workflow_state\":[\"=\",null]}",
    "type": "DocType"
   }
  ],
