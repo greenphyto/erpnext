@@ -17,8 +17,7 @@
   "column_break_ryto2",
   "meter_location",
   "section_break_8k5ko",
-  "remarks",
-  "amended_from"
+  "remarks"
  ],
  "fields": [
   {
@@ -73,24 +72,6 @@
    "label": "Reader Name/ID"
   },
   {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Meter Reading",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Meter Reading",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
    "fieldname": "column_break_azezt",
    "fieldtype": "Column Break"
   }
@@ -98,7 +79,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-14 16:10:40.364668",
+ "modified": "2023-08-08 15:25:56.217263",
  "modified_by": "Administrator",
  "module": "Utilities",
  "name": "Meter Reading",
