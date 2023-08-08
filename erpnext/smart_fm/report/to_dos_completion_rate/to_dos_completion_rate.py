@@ -52,7 +52,17 @@ class Report:
 		})
 
 	def get_chart(self):
-		pass
+		labels = []
+		datasets = []
+	
+		self.chart = {
+			"data": {
+				"labels": labels, 
+				"datasets": datasets,
+			}, 
+			"colors": ['yellow', "orange"],
+			"type": "bar"
+		}
 
 	def run(self):
 		self.setup_conditions()
