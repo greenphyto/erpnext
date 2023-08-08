@@ -1,0 +1,32 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"8p2TkviYJY\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">To Do</span>\",\"col\":12}},{\"id\":\"1mlxMZ5Uio\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"ToDo\",\"col\":4}}]",
+ "creation": "2023-07-07 10:40:06.305496",
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "file",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "To Do",
+ "links": [],
+ "modified": "2023-08-08 16:27:15.532853",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "To Do",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [
+  {
+   "document_type": "ToDo",
+   "label": "ToDo"
+  }
+ ],
+ "roles": [],
+ "sequence_id": 6.0,
+ "shortcuts": [],
+ "title": "To Do"
+}
