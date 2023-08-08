@@ -4,6 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
+from erpnext.smart_fm.controllers.utils import create_contact, create_address
 
 class VendorRegistration(Document):
 	def validate(self):
@@ -24,11 +25,27 @@ class VendorRegistration(Document):
 				doc.update(data)
 				doc.insert(ignore_permissions=True)
 
-			# create contact
-			# create address
+				# create contact
+				data_contact = {
+					"email": self.contact_email,
+					"phone": self.contact_phone,
+					"first_name": self.primary_contact_name
+				}
+				create_contact(data_contact, doc, doctype="Supplier")
+
+				# create address
+				data_address = {
+					"address_1": self.address,
+					"email_id": self.contact_email,
+					"address_type": "Office", 
+					"country": "Singapore",
+					"phone": self.contact_phone
+				}
+				create_address(data_address, doc, doctype="Supplier")
+				
 			
-		if old_doc and old_doc.get("workflow_state") != self.workflow_state and self.workflow_state == "Approved" or force:
-			_create_supplier()
+		# if old_doc and old_doc.get("workflow_state") != self.workflow_state and self.workflow_state == "Approved" or force:
+		_create_supplier()
 
 		
 
