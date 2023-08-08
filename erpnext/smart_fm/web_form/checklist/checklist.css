@@ -1,0 +1,38 @@
+.group-indicator{
+    font-size: 1.3em;
+    color: #757575;
+    margin: 6px 0px;
+    font-weight: 500;
+}
+.form-check{
+    font-size: 1.25em;
+    color: #6d6d6d;
+    margin: 8px 0px;
+}
+.frappe-control[data-fieldname="checklist"],
+.frappe-control[data-fieldname="amended_from"],
+.frappe-control[data-fieldname="status"]{
+  display: none;
+}
+
+.treeview .list-group-item {
+    cursor: pointer;
+  }
+  .treeview span.indent {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+  .treeview span.icon {
+    width: 12px;
+    margin-right: 5px;
+  }
+  .treeview .node-disabled {
+    color: silver;
+    cursor: not-allowed;
+  }
+  .node-treeview1 {
+  }
+  .node-treeview1:not(.node-disabled):hover {
+    background-color: #f5f5f5;
+  }
+  

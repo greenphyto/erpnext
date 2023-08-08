@@ -368,7 +368,11 @@ doc_events = {
         "after_insert": "erpnext.smart_fm.controllers.smart_fm.add_assets_maintenance_log_name"
 	},
     "Asset Maintenance Log": {
-        "after_insert": "erpnext.smart_fm.controllers.smart_fm.create_todo_from_maintenance_log"
+        "after_insert": "erpnext.smart_fm.controllers.smart_fm.create_todo"
+	},
+    "Asset Repair": {
+        "validate": "erpnext.smart_fm.controllers.smart_fm.validate_asset_repair_description",
+        "after_insert": "erpnext.smart_fm.controllers.smart_fm.create_todo"
 	}
 }
 
@@ -396,6 +400,9 @@ scheduler_events = {
 		"45 0 * * *": [
 			"erpnext.stock.reorder_item.reorder_item",
 		],
+        "0 6 * * *": [
+            "erpnext.smart_fm.controllers.smart_fm.send_due_date_notification_task"
+		]
 	},
 	"all": [
 		"erpnext.projects.doctype.project.project.project_status_update_reminder",
@@ -621,3 +628,6 @@ additional_timeline_content = {
 	"*": ["erpnext.telephony.doctype.call_log.call_log.get_linked_call_logs"]
 }
 
+jinja = {
+	"methods": "erpnext.smart_fm.controllers.jinja_method",
+}

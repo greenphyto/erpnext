@@ -1,0 +1,62 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-08-01 17:06:02.808213",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "notification_section",
+  "enable_daily_task_notification",
+  "vendor_registration_section",
+  "default_supplier_group"
+ ],
+ "fields": [
+  {
+   "fieldname": "notification_section",
+   "fieldtype": "Section Break",
+   "label": "Notification"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_daily_task_notification",
+   "fieldtype": "Check",
+   "label": "Enable Daily Task Notification"
+  },
+  {
+   "fieldname": "vendor_registration_section",
+   "fieldtype": "Section Break",
+   "label": "Vendor Registration"
+  },
+  {
+   "fieldname": "default_supplier_group",
+   "fieldtype": "Link",
+   "label": "Default Supplier Group",
+   "options": "Supplier Group"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-08-07 17:48:54.625921",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Smart FM Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

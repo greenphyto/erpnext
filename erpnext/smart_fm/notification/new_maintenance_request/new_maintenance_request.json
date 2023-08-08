@@ -1,0 +1,31 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "",
+ "creation": "2023-07-26 14:10:47.345071",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Maintenance Request",
+ "enabled": 1,
+ "event": "New",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<h3>Maintenance Request</h3>\n\n<p>A new request ({{doc.name}}) has been made.</p>\n\n<p>Please contact info@greenphyto.com if you have any queries.</p>\n\n<p>Thank you.</p>",
+ "modified": "2023-08-07 11:30:27.720231",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "New Maintenance Request",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_role": "Building Management"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "sender": "Smart FM",
+ "sender_email": "foms@greenphyto.com",
+ "subject": "New Maintenance Request: {{doc.name}}",
+ "value_changed": "workflow_state"
+}

@@ -1,0 +1,29 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2023-07-28 23:50:48.392601",
+ "disable_prepared_report": 0,
+ "disabled": 1,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "modified": "2023-08-04 17:36:06.808834",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Open Requests",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Maintenance Request",
+ "report_name": "Open Requests",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "Employee"
+  },
+  {
+   "role": "Building Management"
+  }
+ ]
+}

@@ -1,3 +1,4 @@
+frappe.provide("frappe");
 frappe.set_default_web_form = function (fields){
     if (frappe.web_form.is_new){
         frappe.call({
@@ -20,4 +21,3 @@ frappe.set_default_web_form = function (fields){
     }
 }
 
-console.log("set_default_web_form")
