@@ -44,6 +44,7 @@ function set_meter_id(frm, force=0){
       function get_last_number(txt){
         txt = txt.replace(/[^0-9]/g, '|');
         var d = txt.split("|");
+        d = $.map(d, dt=>{ if (dt) return dt })
         var num = d[d.length-1];
         return num
       }
