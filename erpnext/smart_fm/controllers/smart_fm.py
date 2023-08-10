@@ -1,5 +1,5 @@
 import frappe
-from frappe.utils import getdate, cint, get_url
+from frappe.utils import getdate, cint, get_url, cstr
 import json
 from frappe.twofactor import get_qr_svg_code
 from frappe import _
@@ -110,11 +110,11 @@ def send_due_date_notification_task():
 
 
 @frappe.whitelist()
-def get_qcode(data={}, doctype=None, docname=None, get_link=False):
+def get_qrcode(data={}, doctype=None, docname=None, get_link=False):
 	# to generate qr code and store to QRCode Data
 	# return base64 string images
 	if not data and not doctype and not docname:
-		return ""
+		return ''
 	
 	def get_link_detail(doc_name):
 		ids = frappe.generate_hash(length=8)
@@ -146,7 +146,7 @@ def get_qcode(data={}, doctype=None, docname=None, get_link=False):
 			doc.insert(ignore_permissions=True)
 			result_name = doc.name
 	else:
-		return ""
+		return "149"
 	
 	link = get_link_detail(result_name)
 	if get_link:
@@ -154,4 +154,4 @@ def get_qcode(data={}, doctype=None, docname=None, get_link=False):
 	
 	# get base 64 string images
 	img_string = get_qr_svg_code(link)
-	return img_string			
+	return cstr(img_string)	
