@@ -59,6 +59,7 @@ class Report:
 
 	def run(self):
 		self.setup_conditions()
+		self.get_periode()
 		self.get_columns()
 		self.get_data()
 		self.process_data()
