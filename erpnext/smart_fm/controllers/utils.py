@@ -1,5 +1,10 @@
 import frappe
 from frappe.utils import cint, getdate
+from pyqrcode import create as qrcreate
+from io import BytesIO
+from base64 import b32encode, b64encode
+
+
 
 def get_day_diff(date1, date2):
     delta = getdate(date2) - getdate(date1)
@@ -47,3 +52,16 @@ def create_address(raw_data, customer, doctype="Customer"):
 	address.flags.ignore_mandatory = True
 	print("Address", address.name)
 	address.save()
+
+def get_qr_svg_code(totp_uri):
+	"""Get SVG code to display Qrcode for OTP."""
+	url = qrcreate(totp_uri)
+	svg = ""
+	stream = BytesIO()
+	try:
+		url.svg(stream, scale=4, background="#fff", module_color="#222")
+		svg = stream.getvalue().decode().replace("\n", "")
+		svg = b64encode(svg.encode())
+	finally:
+		stream.close()
+	return svg

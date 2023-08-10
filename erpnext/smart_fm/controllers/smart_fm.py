@@ -1,8 +1,8 @@
 import frappe
 from frappe.utils import getdate, cint, get_url, cstr
 import json
-from frappe.twofactor import get_qr_svg_code
 from frappe import _
+from erpnext.smart_fm.controllers.utils import get_qr_svg_code
 
 """
 Only be matching with listed company and the domain.
@@ -155,3 +155,4 @@ def get_qrcode(data={}, doctype=None, docname=None, get_link=False):
 	# get base 64 string images
 	img_string = get_qr_svg_code(link)
 	return cstr(img_string)	
+
