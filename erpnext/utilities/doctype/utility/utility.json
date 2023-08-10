@@ -30,8 +30,7 @@
    "fieldname": "customer_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Customer Name",
-   "reqd": 1
+   "label": "Customer Name"
   },
   {
    "fieldname": "address",
@@ -47,8 +46,7 @@
    "fieldname": "account_number",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Account Number",
-   "reqd": 1
+   "label": "Account Number"
   },
   {
    "fieldname": "meter_information_section",
@@ -94,7 +92,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-17 10:25:53.577938",
+ "modified": "2023-08-09 13:01:42.996391",
  "modified_by": "Administrator",
  "module": "Utilities",
  "name": "Utility",

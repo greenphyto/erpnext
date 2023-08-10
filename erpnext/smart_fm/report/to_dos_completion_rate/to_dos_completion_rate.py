@@ -40,8 +40,15 @@ class Report:
 
 	def process_data(self):
 		self.data = self.raw_data
+		self.open_count = 0
+		self.close_count = 0
 		total = sum([ x.count for x in self.raw_data ])
 		for d in self.data:
+			if d.type == "Closed":
+				self.close_count += d.count
+			elif d.type == "Open":
+				self.open_count += d.count
+
 			d.percent = d.count/total*100
 		
 		self.data.append({
@@ -52,7 +59,20 @@ class Report:
 		})
 
 	def get_chart(self):
-		pass
+		labels = ["Open", "Closed"]
+		datasets = [{
+			"name":"ToDo",
+			"values":[ self.open_count, self.close_count]
+		}]
+	
+		self.chart = {
+			"data": {
+				"labels": labels, 
+				"datasets": datasets,
+			}, 
+			"colors": ['yellow', "orange"],
+			"type": "pie"
+		}
 
 	def run(self):
 		self.setup_conditions()
