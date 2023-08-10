@@ -44,8 +44,8 @@ class VendorRegistration(Document):
 				create_address(data_address, doc, doctype="Supplier")
 				
 			
-		# if old_doc and old_doc.get("workflow_state") != self.workflow_state and self.workflow_state == "Approved" or force:
-		_create_supplier()
+		if old_doc and old_doc.get("workflow_state") != self.workflow_state and self.workflow_state == "Approved" or force:
+			_create_supplier()
 
 		
 

@@ -79,24 +79,6 @@
    "label": "Reader Name/ID"
   },
   {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Meter Reading",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Meter Reading",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
    "fieldname": "column_break_azezt",
    "fieldtype": "Column Break"
   },
