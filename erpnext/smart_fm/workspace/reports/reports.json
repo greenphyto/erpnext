@@ -1,6 +1,15 @@
 {
- "charts": [],
- "content": "[{\"id\":\"zeVhU7DrqO\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Reports</span>\",\"col\":12}}]",
+ "charts": [
+  {
+   "chart_name": "To Do Completion Rate",
+   "label": "To Do Completion Rate"
+  },
+  {
+   "chart_name": "Request Report",
+   "label": "Request Report"
+  }
+ ],
+ "content": "[{\"id\":\"zeVhU7DrqO\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Reports</span>\",\"col\":12}},{\"id\":\"O9XdUZ-mS7\",\"type\":\"chart\",\"data\":{\"chart_name\":\"To Do Completion Rate\",\"col\":12}},{\"id\":\"dykGmxGdWs\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Request Report\",\"col\":12}},{\"id\":\"oMbOhVcxD1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"z9tW-ZlIXg\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Asset Report</b></span>\",\"col\":12}},{\"id\":\"wUpx4wF37k\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset\",\"col\":4}},{\"id\":\"a60Ymnrv_8\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Maintenance\",\"col\":4}},{\"id\":\"Q5huq0yNau\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Movement Report\",\"col\":4}},{\"id\":\"A-jswZ7tFP\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Repair Log\",\"col\":4}},{\"id\":\"9qYA8Jnkpk\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Maintenance Log\",\"col\":4}},{\"id\":\"Nn2LpySdun\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"o5qwoM-qaL\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Project Report</b></span>\",\"col\":12}},{\"id\":\"ASKsvLYoXW\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Project Summary\",\"col\":3}},{\"id\":\"Vm85-MaywV\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"xC-qNTwS8j\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Utility Report</b></span>\",\"col\":12}},{\"id\":\"P1b_J15PWT\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Utility Report\",\"col\":4}},{\"id\":\"W91JmgalSK\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Meter Reading Report\",\"col\":4}},{\"id\":\"ibwG5UidFJ\",\"type\":\"spacer\",\"data\":{\"col\":12}}]",
  "creation": "2023-08-08 15:38:26.405151",
  "docstatus": 0,
  "doctype": "Workspace",
@@ -11,7 +20,7 @@
  "is_hidden": 0,
  "label": "Reports",
  "links": [],
- "modified": "2023-08-08 15:38:54.915798",
+ "modified": "2023-08-11 16:22:28.209693",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Reports",
@@ -22,6 +31,63 @@
  "quick_lists": [],
  "roles": [],
  "sequence_id": 9.0,
- "shortcuts": [],
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Asset",
+   "link_to": "Asset",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Utility Report",
+   "link_to": "Utility Report",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Asset Maintenance Log",
+   "link_to": "Asset Maintenance Log",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Asset Repair Log",
+   "link_to": "Asset Repair Log",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Project Summary",
+   "link_to": "Project Summary",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Asset Movement Report",
+   "link_to": "Asset Movement Report",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Meter Reading Report",
+   "link_to": "Meter Reading Report",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Asset Maintenance",
+   "link_to": "Asset Maintenance",
+   "type": "Report"
+  }
+ ],
  "title": "Reports"
 }
