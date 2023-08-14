@@ -25,6 +25,19 @@ frappe.query_reports["Utility Report"] = {
 			"fieldtype": "Link",
 			"label": "Utility",
 			"options": "Utility",
+			get_query: function(){
+				var filters = {};
+				var type_meter = frappe.query_report.get_filter_value("type_of_meter");
+				if (type_meter){
+					return {
+						filters:{
+							type_of_meter: frappe.query_report.get_filter_value("type_of_meter")
+						}
+					}
+				}else{
+					return filters
+				}
+			}
 		},
 	]
 };
