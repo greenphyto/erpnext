@@ -37,6 +37,7 @@ class Report:
 		self.columns = []
 		self.data = []
 		self.chart = []
+		self.chart_label = []
 
 	def setup_conditions(self):
 		self.conditions = []
@@ -53,7 +54,6 @@ class Report:
 		]
 
 		for d in self.column_date:
-			print(d)
 			self.columns.append({
 				"label": self.get_column_label(d),
 				"fieldname": self.get_column_key(d),
@@ -107,7 +107,34 @@ class Report:
 			self.data.append(d)
 
 	def get_chart(self):
-		pass
+		labels = []
+		datasets = []
+
+		for key, d in self.data_dict.items():
+			
+			values = []
+			for dt in self.column_date:
+				key_date = self.get_column_key(dt)
+				label = self.get_column_label(dt)
+				if label not in labels:
+					labels.append(label)
+
+				value = d.get(key_date)
+				values.append(value)
+
+			datasets.append({
+				"name": key,
+				"values": values
+			})
+
+		self.chart = {
+			"data": {
+				"labels": labels, 
+				"datasets": datasets,
+			}, 
+			"colors": ['yellow', "orange"],
+			"type": "line"
+		}
 
 	def run(self):
 		self.setup_conditions()
