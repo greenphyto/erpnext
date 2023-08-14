@@ -18,11 +18,8 @@ class Report:
         elif self.filters.get("utility"):
             self.conditions += " and u.name = %(utility)s "
 
-        self.filters.date_from = self.filters.get("date_from") or getdate("2000-01-01")
-        self.filters.date_to = self.filters.get("date_to") or getdate("2099-01-01")
-
-        if self.filters.get("date_from") and self.filters.get("date_to"):
-            self.conditions += " and m.reading_date between %(date_from)s and %(date_to)s "
+        if self.filters.get("reading_date"):
+            self.conditions += " and m.reading_date <= %(reading_date)s "
 
 
     def get_columns(self):
@@ -40,7 +37,7 @@ class Report:
                 *
             FROM
                 (SELECT DISTINCT
-                    m.meter_id,
+                        m.meter_id,
                         m.current_reading,
                         m.reading_date,
                         m.reader_nameid,
@@ -61,7 +58,34 @@ class Report:
         self.data = self.raw_data
 
     def get_chart(self):
-        pass
+        self.chart = []
+        if not self.filters.get("type_of_meter"):
+            return
+        
+        labels = []
+        datasets = []
+        values = []
+
+        for d in self.data:
+            if not d.meter_id in labels:
+                labels.append(d.meter_id)
+            
+            values.append(d.current_reading)
+            
+        datasets.append({
+            "name": "Reading unit",
+            "values": values
+        })
+
+        
+        self.chart = {
+            "data": {
+                "labels": labels, 
+                "datasets": datasets
+            }, 
+            "type": "bar"
+        }
+
 
     def run(self):
         self.setup_conditions()

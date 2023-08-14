@@ -5,14 +5,10 @@
 frappe.query_reports["Utility Report"] = {
 	"filters": [
 		{
-			"fieldname": "date_from",
+			"fieldname": "reading_date",
 			"fieldtype": "Date",
-			"label": "Date From",
-		},
-		{
-			"fieldname": "date_to",
-			"fieldtype": "Date",
-			"label": "Date To",
+			"label": "Reading date",
+			"default": "Today"
 		},
 		{
 			"fieldname": "type_of_meter",
