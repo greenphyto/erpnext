@@ -71,9 +71,9 @@ class Report:
                 labels.append(d.meter_id)
             
             values.append(d.current_reading)
-            
+
         datasets.append({
-            "name": "Reading unit",
+            "name": d.meter_id,
             "values": values
         })
 
@@ -83,6 +83,7 @@ class Report:
                 "labels": labels, 
                 "datasets": datasets
             }, 
+            "colors": ['yellow', 'orange', 'green'],
             "type": "bar"
         }
 
