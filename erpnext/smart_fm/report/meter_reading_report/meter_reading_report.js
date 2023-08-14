@@ -5,22 +5,28 @@
 frappe.query_reports["Meter Reading Report"] = {
 	"filters": [
 		{
-			"fieldname": "year",
-			"fieldtype": "Link",
-			"label": "Year",
-			"options": "Fiscal Year"
+			"fieldname": "from_date",
+			"fieldtype": "Date",
+			"label": "From Date",
+		},
+		{
+			"fieldname": "to_date",
+			"fieldtype": "Date",
+			"label": "To Date",
 		},
 		{
 			"fieldname": "group_by",
 			"fieldtype": "Select",
 			"label": "Group By",
-			"options": "Utility\nType of Meter"
+			"options": "Utility\nType of Meter",
+			"default": "Utility"
 		},
 		{
 			"fieldname": "type_of_meter",
 			"fieldtype": "Select",
 			"label": "Type of Meter",
-			"options": "\nElectricity\nWater\nGas",
+			"options": "Electricity\nWater\nGas",
+			"default": "Electricity"
 		},
 		{
 			"fieldname": "utility",
