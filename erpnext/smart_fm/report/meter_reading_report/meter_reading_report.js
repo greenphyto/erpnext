@@ -22,14 +22,17 @@ frappe.query_reports["Meter Reading Report"] = {
 			"default": "Utility",
 			on_change: function(){
 				var value = frappe.query_report.get_filter_value("group_by");
-				var filter = frappe.query_report.get_filter("type_of_meter");
+				var fields = ['utility', 'meter_location'];
 				if (value == "Type of Meter"){
-					filter.df.hidden = 1;
+					fields.forEach(f=>{
+						hide_filter(frappe.query_report, f, 1)
+					})
 				}else{
-					filter.df.hidden = 0;
+					fields.forEach(f=>{
+						hide_filter(frappe.query_report, f, 0)
+					})
 				}
-				filter.refresh();
-				console.log("here")
+				frappe.query_report.refresh();
 			}
 		},
 		{
@@ -53,3 +56,9 @@ frappe.query_reports["Meter Reading Report"] = {
 		},
 	]
 };
+
+function hide_filter(report, field, hide=0){
+	var filter = report.get_filter(field);
+	filter.df.hidden = hide;
+	filter.refresh();
+}

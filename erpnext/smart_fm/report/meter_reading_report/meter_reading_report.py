@@ -47,8 +47,14 @@ class Report:
 			self.key_id = "type_of_meter"
 
 	def get_columns(self):
-		self.columns = [
-			{ "fieldname": "meter_id" ,         "label": "Meter ID",        "fieldtype": "Link",    "width": 120, "options": "Utility"},
+		self.columns = []
+
+		if self.filters.get("group_by") == "Utility":
+			self.columns += [
+				{ "fieldname": "meter_id" ,         "label": "Meter ID",        "fieldtype": "Link",    "width": 120, "options": "Utility"},
+			]
+
+		self.columns += [
             { "fieldname": "type_of_meter" ,    "label": "Type of Meter",   "fieldtype": "Data",    "width": 150, "options": ""},
             { "fieldname": "meter_location" ,   "label": "Meter Location",  "fieldtype": "Data",    "width": 150, "options": ""}
 		]
@@ -86,9 +92,23 @@ class Report:
 	def get_data(self):
 		self.raw_data = []
 		self.data_dict = {}
+		filters = {}
+		if self.filters.get("type_of_meter"):
+			filters['type_of_meter'] = self.filters.type_of_meter
+			
+		if self.filters.get("group_by") == "Utility":
+
+			if self.filters.get("utility"):
+				filters['utility'] = self.filters.utility
+			if self.filters.get("meter_location"):
+				filters['meter_location'] = self.filters.meter_location
+
 		for key, dates in self.periode.items():
 			last_date = dates[1]
-			data = get_last_meter_data({"reading_date": last_date})
+			filters.update({"reading_date": last_date})
+			data = get_last_meter_data(filters)
+			print(filters)
+			print(109, data)
 			for d in data:
 				key_name = d.get(self.key_id)
 				if key_name not in self.data_dict:
@@ -96,8 +116,18 @@ class Report:
 					row = d
 				else:
 					row = self.data_dict[key_name]
-				
-				row[self.get_column_key(dates[0])] = d.current_reading
+
+				key_month = self.get_column_key(dates[0])
+				print(key_month, dates)
+				print(117, key_name, row)
+				if self.filters.get("group_by") == "Utility":
+					row[key_month] = d.current_reading
+				else:
+					if key_month not in row:
+						row[key_month] = d.current_reading
+					else:
+						row[key_month] += d.current_reading
+
 		
 		print(self.data_dict)
 

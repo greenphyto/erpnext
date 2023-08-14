@@ -74,10 +74,13 @@ def get_last_meter_data(filters):
     conditions = ""
     if filters.get("type_of_meter"):
         conditions += " and u.type_of_meter = %(type_of_meter)s "
-    elif filters.get("utility"):
+    if filters.get("utility"):
         conditions += " and u.name = %(utility)s "
     if filters.get("reading_date"):
         conditions += " and m.reading_date <= %(reading_date)s "
+    if filters.get("meter_location"):
+        conditions += " and u.meter_location = %(meter_location)s "
+
 
     data = frappe.db.sql("""
             SELECT 
