@@ -105,6 +105,7 @@ def send_due_date_notification_task():
 			`tabToDo`
 		WHERE
 			status = 'Open' and DATEDIFF(date, CURDATE()) <= reminder_at
+		    and reminder_off = 0
 	""", as_dict=1)
 	for d in data:
 		doc = frappe.get_doc("ToDo", d.name)

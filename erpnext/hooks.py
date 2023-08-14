@@ -32,7 +32,10 @@ doctype_list_js = {
 	"ToDo": "public/js/todo_list.js",
 }
 
-override_doctype_class = {"Address": "erpnext.accounts.custom.address.ERPNextAddress"}
+override_doctype_class = {
+    "Address": "erpnext.accounts.custom.address.ERPNextAddress",
+    "ToDo": "erpnext.smart_fm.custom.todo.SmartFM_ToDo"
+}
 
 welcome_email = "erpnext.setup.utils.welcome_email"
 
