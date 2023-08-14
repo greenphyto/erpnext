@@ -15,6 +15,13 @@ frappe.query_reports["Meter Reading Report"] = {
 			"label": "To Date",
 		},
 		{
+			"fieldname": "show_by",
+			"fieldtype": "Select",
+			"label": "Show by",
+			"options": "Meter\nGrowth",
+			"default": "Meter"
+		},
+		{
 			"fieldname": "group_by",
 			"fieldtype": "Select",
 			"label": "Group By",

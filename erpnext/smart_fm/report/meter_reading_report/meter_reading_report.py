@@ -95,7 +95,7 @@ class Report:
 		filters = {}
 		if self.filters.get("type_of_meter"):
 			filters['type_of_meter'] = self.filters.type_of_meter
-			
+
 		if self.filters.get("group_by") == "Utility":
 
 			if self.filters.get("utility"):
@@ -118,15 +118,15 @@ class Report:
 					row = self.data_dict[key_name]
 
 				key_month = self.get_column_key(dates[0])
-				print(key_month, dates)
-				print(117, key_name, row)
+				value = d.current_reading
+
 				if self.filters.get("group_by") == "Utility":
-					row[key_month] = d.current_reading
+					row[key_month] = value
 				else:
 					if key_month not in row:
-						row[key_month] = d.current_reading
+						row[key_month] = value
 					else:
-						row[key_month] += d.current_reading
+						row[key_month] += value
 
 		
 		print(self.data_dict)
@@ -134,6 +134,21 @@ class Report:
 	def process_data(self):
 		self.data = []
 		for key, d in self.data_dict.items():
+			prev_value = 0
+			for dt in self.column_date:
+				key_date = self.get_column_key(dt)
+				if self.filters.get("show_by") == "Growth":
+					if not prev_value:
+						prev_value = cint(d.get(key_date))
+						
+					if key_date not in d:
+						continue
+
+					print(141, d)
+
+					d[key_date] -= prev_value
+					prev_value += d[key_date]
+
 			self.data.append(d)
 
 	def get_chart(self):
