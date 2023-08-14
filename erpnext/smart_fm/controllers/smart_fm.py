@@ -3,6 +3,8 @@ from frappe.utils import getdate, cint, get_url, cstr
 import json
 from frappe import _
 from erpnext.smart_fm.controllers.utils import get_qr_svg_code
+from frappe.desk.form.utils import get_pdf_link
+from frappe.utils.verified_command import get_signed_params, verify_request
 
 """
 Only be matching with listed company and the domain.
@@ -156,3 +158,54 @@ def get_qrcode(data={}, doctype=None, docname=None, get_link=False):
 	img_string = get_qr_svg_code(link)
 	return cstr(img_string)	
 
+@frappe.whitelist(allow_guest=True)
+def apply_action_to_off_reminder(doctype, docname, user=None, last_modified=None):
+	if not verify_request():
+		return
+
+	doc = frappe.get_doc(doctype, docname)
+
+	if not doc.get("reminder_off"):
+		return_reminder_off_confirmation_page(doc)
+	else:
+		return_link_expired_page_reminder_toto(doc)
+
+def return_reminder_off_confirmation_page(doc):
+	template_params = {
+		"title": doc.get("name"),
+		"doctype": doc.get("doctype"),
+		"docname": doc.get("name"),
+	}
+	template_params["pdf_link"] = get_pdf_link(doc.get("doctype"), doc.get("name"))
+	frappe.respond_as_web_page(
+		title=None,
+		html=None,
+		indicator_color="blue",
+		template="confirm_reminder_off_todo",
+		context=template_params,
+	)
+
+
+def return_link_expired_page_reminder_toto(doc):
+	frappe.respond_as_web_page(
+		_("Link Expired"),
+		_("Reminder still active for {0} {0}").format(
+			frappe.bold(doc.get("doctype")),
+			frappe.bold(doc.get("name")),
+		),
+		indicator_color="blue",
+	)
+
+def get_reminder_off_url(doc, user):
+	apply_action_method = (
+		"/api/method/erpnext.smart_fm.controllers.smart_fm.apply_action_to_off_reminder"
+	)
+
+	params = {
+		"doctype": doc.get("doctype"),
+		"docname": doc.get("name"),
+		"user": user,
+		"last_modified": doc.get("modified"),
+	}
+
+	return get_url(apply_action_method + "?" + get_signed_params(params))
