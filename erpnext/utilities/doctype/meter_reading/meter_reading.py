@@ -22,5 +22,8 @@ class MeterReading(Document):
 		else:
 			self.status = "Cancelled"
 
+		if self.get("workflow_state") and self.status == "Cancelled":
+			self.workflow_state = 'Cancelled'
+			
 		if update_db:
 			self.db_update()
