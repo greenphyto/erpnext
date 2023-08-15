@@ -1,11 +1,80 @@
 {% extends "frappe/www/message.html" %}
 {% block message_body %}
-  <p>
-    {{ _("Create ticket/issue for {} {}").format(doctype, docname) }}
-  </p>
-  <p>
-    <a target="_blank" class="underline" href="{{ pdf_link }}">{{ _('View document') }}</a>
-  </p>
-  <a href="{{ action_link }}" class="btn btn-primary btn-action">Submit Ticket</a>
-  <a href="/" class="btn btn-secondary btn-action">Cancel</a>
+    <style>
+        .page-card{
+            max-width: 600px;
+        }
+        .stright-line{
+            border-top: 1px solid #e3e3e3;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+        .section-name{
+            margin: auto;
+            margin-top: -15px;
+            font-size: 0.8em;
+            background-color: white;
+            padding: 3px 5px;
+            width: fit-content;
+        }
+        .text-content{
+            margin: 20px 0px 32px;
+            padding: 12px 6px;
+        }
+    </style>
+    <form class="ticket-form">
+        <div class="text-content">
+            {{ _("Create new ticket for {} {}").format(doctype, docname) }}
+        </div>
+        <div class="stright-line">
+            <div class="section-name">Sender</div>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input name="name" class="form-control" type="text" placeholder="Your name" value="{{ full_name }}">
+                </div>
+            </div>
+            <dic class="col-6">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input name="email" class="form-control" type="text" value="{{ user }}" readonly>
+                </div>
+            </dic>
+        </div>
+        <div class="stright-line">
+            <div class="section-name">Issue</div>
+        </div>
+        <div class="form-group">
+            <label for="subject">Subject</label>
+            <input class="form-control" name="subject" type="text" required>
+        </div>
+        <div class="form-group">
+            <label for="message">Issue Detail</label>
+            <textarea name="message" class="form-control" id="message" rows="3" placeholder="Type here.." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-action">Submit</button>
+        <button type="" class="btn btn-secondary">Cancel</button>
+    </form>
+    <script>
+        console.log(frappe)
+        console.log("here");
+        var link = "{{ action_link }}";
+        frappe.ready(()=>{
+            var form = $(".ticket-form");
+            form.submit(function(e){
+                e.preventDefault();
+                var el = $(this)
+                var form_data = el.serializeArray();
+                var data={};
+                $.each(form_data, (i,d)=>{
+                    data[d.name] = d.value
+                })
+                console.log("Data: ", data);
+                // not finished 
+                // change to use the issues web form instead
+            })
+        })
+    </script>
 {% endblock %}

@@ -115,15 +115,17 @@ def return_success_page(msg, title="Success"):
 #######################################
 #region
 
-def get_create_ticket_url(doc, user):
+def get_create_ticket_url(doctype, docname, email):
 	apply_action_method = (
 		"/api/method/erpnext.smart_fm.controllers.web_access.create_ticket_page"
 	)
 
+	doc = frappe.get_doc(doctype, docname)
+
 	params = {
 		"doctype": doc.get("doctype"),
 		"docname": doc.get("name"),
-		"user": user,
+		"user": email,
 		"last_modified": doc.get("modified"),
 	}
 
@@ -153,11 +155,18 @@ def get_send_ticket_url():
 	return get_url(confirm_action_method)
 
 def return_create_ticket_page(doc, user, action_link):
+	user = frappe.db.exists("User", {"email": user}) or frappe.db.exists("User", user)
+
+	full_name = ""
+	if user:
+		full_name = frappe.get_value("User", user, "full_name")
+
 	template_params = {
 		"title": "Create ticket/issue",
 		"doctype": doc.get("doctype"),
 		"docname": doc.get("name"),
 		"user": user,
+		"full_name": full_name,
 		"action_link": action_link
 	}
 	template_params["pdf_link"] = get_pdf_link(doc.get("doctype"), doc.get("name"))
