@@ -1,4 +1,5 @@
-import frappe
+import frappe, json
+from six import string_types
 
 @frappe.whitelist(allow_guest=0)
 def qrcode():
@@ -23,3 +24,30 @@ def get_qrcode_data(code):
 		return doc.get_data()
 	else:
 		return 
+	
+@frappe.whitelist()
+def get_widget_settings(user):
+	raw = frappe.db.get_value("Mobile Widget User", {"user":user}, "settings") or {}
+	settings = json.loads(raw)
+	return settings
+
+@frappe.whitelist()
+def save_widget_settings(user, data):
+	if isinstance(data, string_types):
+		data = json.loads(data)
+		
+	temp = frappe.db.exists("Mobile Widget User", {"user":user})
+	if temp:
+		doc = frappe.get_doc("Mobile Widget User", temp)
+	else:
+		doc = frappe.new_doc("Mobile Widget User")
+		doc.user = user
+
+	doc.settings = json.dumps(data)
+	if doc.is_new():
+		doc.insert()
+	else:
+		doc.save()
+
+
+	return "Success"
