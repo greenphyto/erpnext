@@ -78,7 +78,8 @@
   "rgt",
   "old_parent",
   "parent_asset",
-  "is_group"
+  "is_group",
+  "qrcode_image"
  ],
  "fields": [
   {
@@ -557,6 +558,11 @@
    "fieldname": "serial_number",
    "fieldtype": "Data",
    "label": "Serial Number"
+  },
+  {
+   "fieldname": "qrcode_image",
+   "fieldtype": "Attach Image",
+   "label": "QR Code Image"
   }
  ],
  "idx": 72,
@@ -586,7 +592,7 @@
    "table_fieldname": "accounts"
   }
  ],
- "modified": "2023-07-14 13:34:01.057075",
+ "modified": "2023-08-16 15:32:23.973914",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",
