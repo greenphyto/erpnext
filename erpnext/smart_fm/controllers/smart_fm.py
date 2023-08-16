@@ -157,3 +157,32 @@ def get_qrcode(data={}, doctype=None, docname=None, get_link=False):
 	# get base 64 string images
 	img_string = get_qr_svg_code(link)
 	return cstr(img_string)	
+
+import imgkit,base64
+def save_qrcode_image(doctype, name):
+	# get image qrcode
+	# save to doctype
+	url = get_url("/qrcode_preview?doctype=Asset&name=ACC-ASS-2023-00001")
+	print(url)
+	string_img = imgkit.from_url(url, False)
+	encoded = base64.b64encode(string_img)
+
+	# save file
+	filenme= "test.png"
+	content = encoded
+	is_private = 0
+	file = frappe.get_doc(
+		{
+			"doctype": "File",
+			"file_name": filenme,
+			"attached_to_doctype": doctype,
+			"attached_to_name": name,
+			"content": content,
+			"decode": True,
+			"is_private": is_private,
+		}
+	)
+	file.save(ignore_permissions=True)
+	file_url = file.file_url
+	print("file_url", file_url)
+	print(encoded[:100])

@@ -11,6 +11,27 @@
             font-size: 0.9em;
             font-family: Inter, "Helvetica Neue", Helvetica, Arial, "Open Sans", sans-serif;
         }
+        .column-image{
+            width: 5cm;
+            border-right: 1px solid black;
+        }
+        .column-top{
+            height: 1cm;
+            padding: 5px;
+            padding-top: 10px;
+        }
+        .column-middle{
+            height: 2cm;
+            padding: 5px;
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+        }
+        .column-bottom{
+            height: 1.5cm;
+        }
+        .qrcode-table{
+            width: 100%;
+        }
         .qr-code-wrapper{
             display: flex;
         }
@@ -26,7 +47,6 @@
             display: flex;
             flex-direction: column;
             flex: 1;
-            border-left: 1px solid black;
         }
         .doctype{
             font-size: 0.9em;
@@ -39,13 +59,11 @@
         .top-info{
             flex: 2;
             padding: 6px 8px 3px;
-            border-bottom: 1px solid black;
             font-size: 0.92em;
         }
         .asset-name{
-           font-size: 2em;
+           font-size: 1.6em;
             font-weight: 600;
-            border-bottom: 1px solid black;
             flex: 4; 
             text-align: center;
         }
@@ -54,8 +72,8 @@
         }
         .asset-category-div{
             font-style: italic;
-            font-size: 1.1em;
-            color: grey;
+            font-size: 1em;
+            color: #484848;
             text-align: center;
         }
         .flex-center{
@@ -78,30 +96,44 @@
     </style>
 </head>
 <body>
+    {% if doc %}
+    <table class="qrcode-table border-all">
+        <tr>
+            <td rowspan="3" class="column-image">
+                <div class="img-qrcode">
+                    <img src="data:image/svg+xml;base64,{{ get_qrcode(doctype=doc.doctype, docname=doc.name)}}"> 
+                </div>
+            </td>
+            <td class="column-top">
+                <div class="top-info">
+                    <div class="doctype">{{doc.doctype}}</div>
+                    <div class="docname">{{doc.name}}</div>
+                </div>   
+            </td>
+        </tr>
+        <tr>
+            <td class="column-middle">
+                <div class="asset-name flex-center">
+                    <div class="asset-name-div text-center">
+                        {{doc.asset_name}}
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td class="column-bottom">
+                <div class="asset-category flex-center">
+                    <div class="asset-category-div text-center">
+                        {{doc.asset_category}}
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+    {% else %}
     <div class="qr-code-wrapper border-all">
-        {% if doc %}
-        <div class="img-qrcode">
-            <img src="data:image/svg+xml;base64,{{ get_qrcode(doctype=doc.doctype, docname=doc.name)}}"> 
-        </div>
-        <div class="qr-data">
-            <div class="top-info">
-                <div class="doctype">{{doc.doctype}}</div>
-                <div class="docname">{{doc.name}}</div>
-            </div> 
-            <div class="asset-name flex-center">
-                <div class="asset-name-div text-center">
-                    {{doc.asset_name}}
-                </div>
-            </div>
-            <div class="asset-category flex-center">
-                <div class="asset-category-div text-center">
-                    {{doc.asset_category}}
-                </div>
-            </div>
-        </div>
-        {% else %}
         <div class="no-data">No Data</div>
-        {% endif %}
-    </div>    
+    </div>
+    {% endif %}
 </body>
 </html>
