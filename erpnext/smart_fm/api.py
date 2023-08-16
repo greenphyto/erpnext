@@ -28,6 +28,9 @@ def get_qrcode_data(code):
 @frappe.whitelist()
 def get_widget_settings(user):
 	raw = frappe.db.get_value("Mobile Widget User", {"user":user}, "settings") or {}
+	if not raw:
+		return {}
+	
 	settings = json.loads(raw)
 	return settings
 
