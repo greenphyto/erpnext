@@ -4,6 +4,15 @@
 frappe.provide("erpnext.asset");
 frappe.provide("erpnext.accounts.dimensions");
 
+frappe.get_form_sidebar_extension_bottom = function(){
+	var args = {
+		img: cur_frm.doc.qrcode_image
+	}
+	let qr_div = frappe.render_template("qrcode_image_sidebar", args)
+
+	return qr_div
+}
+
 frappe.ui.form.on('Asset', {
 	onload: function(frm) {
 		frm.set_query("item_code", function() {
