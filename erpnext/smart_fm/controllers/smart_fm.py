@@ -158,11 +158,16 @@ def get_qrcode(data={}, doctype=None, docname=None, get_link=False):
 	img_string = get_qr_svg_code(link)
 	return cstr(img_string)	
 
+def create_asset_qrcode(doc, method=""):
+	if not doc.qrcode_image:
+		url = save_qrcode_image(doc.doctype, doc.name)
+		doc.qrcode_image = url
+
 import imgkit,base64
-def save_qrcode_image(doctype, name):
+def save_qrcode_image(doctype, name, update_db=False):
 	# get image qrcode
 	# save to doctype
-	url = get_url("/qrcode_preview?doctype=Asset&name=ACC-ASS-2023-00001")
+	url = get_url("/qrcode_preview?doctype={}&name={}".format(doctype, name))
 	options = {'width': 400, 'disable-smart-width': ''}
 	string_img = imgkit.from_url(url, False, options=options)
 	encoded = base64.b64encode(string_img)
@@ -186,6 +191,7 @@ def save_qrcode_image(doctype, name):
 	file_url = file.file_url
 
 	if doctype in ['Asset']:
-		frappe.db.set_value(doctype, name, "qrcode_image", file_url)
+		if update_db:
+			frappe.db.set_value(doctype, name, "qrcode_image", file_url)			
 
 	return file_url

@@ -10,4 +10,4 @@ def get_context(context):
     if not frappe.db.exists(doctype, name):
         return
     
-    context.doc = frappe.get_doc("Asset", "ACC-ASS-2023-00001")
+    context.doc = frappe.get_doc(doctype, name)
