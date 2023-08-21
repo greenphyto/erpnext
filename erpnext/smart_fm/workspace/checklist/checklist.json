@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"y6nRr564tr\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Checklist</span>\",\"col\":12}},{\"id\":\"NF4SOOmoYe\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Checklist\",\"col\":12}}]",
+ "content": "[{\"id\":\"y6nRr564tr\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Checklist</span>\",\"col\":12}},{\"id\":\"NF4SOOmoYe\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Checklist\",\"col\":12}},{\"id\":\"uAqtvWlaz7\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Inspection Checklist</b></span>\",\"col\":12}},{\"id\":\"5zzB0fSmmj\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Inspection Checklist\",\"col\":12}},{\"id\":\"HUXBUpEzpf\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Setup</b></span>\",\"col\":12}},{\"id\":\"faruHE5rUN\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Checklist Template\",\"col\":3}}]",
  "creation": "2023-08-08 15:35:24.614300",
  "docstatus": 0,
  "doctype": "Workspace",
@@ -11,7 +11,7 @@
  "is_hidden": 0,
  "label": "Checklist",
  "links": [],
- "modified": "2023-08-08 15:36:20.371253",
+ "modified": "2023-08-21 17:17:39.476535",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Checklist",
@@ -21,12 +21,24 @@
  "public": 1,
  "quick_lists": [
   {
+   "document_type": "Inspection Checklist",
+   "label": "Inspection Checklist"
+  },
+  {
    "document_type": "Checklist",
    "label": "Checklist"
   }
  ],
  "roles": [],
  "sequence_id": 11.0,
- "shortcuts": [],
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Checklist Template",
+   "link_to": "Checklist Template",
+   "type": "DocType"
+  }
+ ],
  "title": "Checklist"
 }
