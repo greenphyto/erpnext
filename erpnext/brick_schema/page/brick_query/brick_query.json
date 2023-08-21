@@ -1,0 +1,26 @@
+{
+ "content": null,
+ "creation": "2023-08-21 11:07:32.012528",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2023-08-21 11:07:45.492549",
+ "modified_by": "Administrator",
+ "module": "Brick Schema",
+ "name": "brick-query",
+ "owner": "Administrator",
+ "page_name": "brick-query",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Building Management"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Brick Query"
+}
