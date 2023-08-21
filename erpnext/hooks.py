@@ -378,7 +378,7 @@ doc_events = {
         "after_insert": "erpnext.smart_fm.controllers.smart_fm.create_todo"
 	},
     "Asset": {
-        "validate": "erpnext.smart_fm.controllers.smart_fm.create_asset_qrcode",
+        "on_submit": "erpnext.smart_fm.controllers.smart_fm.create_asset_qrcode",
         "on_update_after_submit": "erpnext.smart_fm.controllers.smart_fm.create_asset_qrcode"
 	}
 }
