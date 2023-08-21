@@ -1,0 +1,12 @@
+.layout-main-section{
+    
+}
+
+#sparql{
+    height: 350px;
+    width: 600px;
+}
+
+.layout-main-section .form-inline{
+    margin-bottom: 8px;
+}
