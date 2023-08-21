@@ -26,12 +26,14 @@ class Report:
 
 	def setup_conditions(self):
 		self.conditions = ""
+		if self.filters.get("date_from") and self.filters.get("date_to"):
+			self.conditions += " and d.creation between %(date_from)s and %(date_to)s "
 
 	def get_columns(self):
 		self.columns = [
 			{ "fieldname": "source" , "label": "Source", "fieldtype": "Data", "width": 200, "options": ""},
 			{ "fieldname": "issued" , "label": "Issued", "fieldtype": "Int", "width": 100, "options": ""},
-			{ "fieldname": "started" , "label": "Started", "fieldtype": "Int", "width": 100, "options": ""}
+			{ "fieldname": "started" , "label": "Started", "fieldtype": "Int", "width": 100, "options": ""},
 		]
 
 	def get_data(self):
@@ -44,13 +46,14 @@ class Report:
 		
 		data = frappe.db.sql("""
 				SELECT 
-					COUNT(name) AS cnt, workflow_state as state
+					COUNT(d.name) AS cnt, d.workflow_state as state
 				FROM
-					`tab{}`
+					`tab{}` as d
 				WHERE
-					workflow_state IN ('Issued' , 'Started')
-				GROUP BY workflow_state
-			""".format(doctype), as_dict=1, debug=0)
+					d.workflow_state IN ('Issued' , 'Started')
+		       		{}
+				GROUP BY d.workflow_state
+			""".format(doctype, self.conditions), self.filters, as_dict=1, debug=0)
 		dt = {
 			"source": doctype
 		}
