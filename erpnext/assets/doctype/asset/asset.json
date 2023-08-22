@@ -45,6 +45,12 @@
   "column_break_33",
   "opening_accumulated_depreciation",
   "number_of_depreciations_booked",
+  "warranty_information_section",
+  "warranty_coverage",
+  "column_break_tmtoe",
+  "warranty_start",
+  "warranty_end",
+  "warranty_agreement",
   "section_break_36",
   "finance_books",
   "section_break_33",
@@ -563,6 +569,37 @@
    "fieldname": "qrcode_image",
    "fieldtype": "Attach Image",
    "label": "QR Code Image"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:doc.warranty_coverage",
+   "fieldname": "warranty_information_section",
+   "fieldtype": "Section Break",
+   "label": "Warranty Information"
+  },
+  {
+   "fieldname": "warranty_start",
+   "fieldtype": "Date",
+   "label": "Warranty Start"
+  },
+  {
+   "fieldname": "warranty_end",
+   "fieldtype": "Date",
+   "label": "Warranty End"
+  },
+  {
+   "fieldname": "warranty_coverage",
+   "fieldtype": "Text Editor",
+   "label": "Warranty Coverage"
+  },
+  {
+   "fieldname": "column_break_tmtoe",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "warranty_agreement",
+   "fieldtype": "Attach",
+   "label": "Warranty Agreement"
   }
  ],
  "idx": 72,
@@ -592,7 +629,7 @@
    "table_fieldname": "accounts"
   }
  ],
- "modified": "2023-08-16 15:32:23.973914",
+ "modified": "2023-08-22 16:56:57.710177",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",
