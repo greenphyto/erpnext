@@ -195,3 +195,45 @@ def save_qrcode_image(doctype, name, update_db=False):
 			frappe.db.set_value(doctype, name, "qrcode_image", file_url)			
 
 	return file_url
+
+def close_todo(doc, method=""):
+	close = False
+	conplete_status_list = {
+		"Tenant Feedback": "Resolved",
+		"Inspection Checklist":"Resolved",
+		"Emergency Contact Flow":"Resolved",
+		"Key Control":"Resolved",
+		"Incident Report Flow":"Resolved",
+		"Access Request Flow":"Resolved",
+		"Maintenance Request":"Resolved",
+		"Vendor Registration": "Resolved",
+		"Smart FM Work Order": "Resolved",
+		"Asset Maintenance Log": "Completed",
+		"Asset Repair": "Completed",
+	}
+	if doc.doctype not in conplete_status_list:
+		return
+	
+	status = doc.get("workflow_state") or doc.get("status")
+	if doc.doctype == "Asset Maintenance Log":
+		status = doc.maintenance_status
+	if doc.doctype == "Asset Repair":
+		status = doc.repair_status
+	
+	if doc.docstatus == 1:
+		if conplete_status_list[doc.doctype] == status:
+			close = True
+	
+	todos = frappe.db.get_list("ToDo", {
+		"reference_type": doc.doctype, 
+		"reference_name": doc.name
+	}, ["name", "status"])
+	for d in todos:
+		if d.status == "Cancelled":
+			continue
+
+		if close and d.status != "Closed":
+			frappe.db.set_value("ToDo", d.name, 'status', 'Closed')
+		elif not close and d.status != "Open":
+			frappe.db.set_value("ToDo", d.name, 'status', 'Open')
+		

@@ -289,6 +289,9 @@ standard_queries = {
 doc_events = {
 	"*": {
 		"validate": "erpnext.support.doctype.service_level_agreement.service_level_agreement.apply",
+		"on_submit": "smart_fm.smart_fm.controllers.smart_fm.close_todo",
+		"on_cancel": "smart_fm.smart_fm.controllers.smart_fm.close_todo",
+		"validate": "smart_fm.smart_fm.controllers.smart_fm.close_todo"    
 	},
 	"Stock Entry": {
 		"on_submit": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
