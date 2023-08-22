@@ -27,5 +27,6 @@ import "./templates/crm_activities.html";
 import "./templates/crm_notes.html";
 import "./templates/qrcode_image_sidebar.html";
 import "./templates/brick_query_page.html";
+import "./workspace_calendar";
 
 // import { sum } from 'frappe/public/utils/util.js'

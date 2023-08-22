@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"R35E1reTRm\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Calendar</span>\",\"col\":12}},{\"id\":\"CQ3PXY5Mkl\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ToDo Calendar\",\"col\":3}}]",
+ "content": "[{\"id\":\"R35E1reTRm\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Calendar</span>\",\"col\":12}},{\"id\":\"CQ3PXY5Mkl\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ToDo Calendar\",\"col\":3}},{\"id\":\"X3zPF_p_A7\",\"type\":\"paragraph\",\"data\":{\"text\":\"tes\",\"col\":12}}]",
  "creation": "2023-08-08 15:39:55.026815",
  "docstatus": 0,
  "doctype": "Workspace",
@@ -11,7 +11,7 @@
  "is_hidden": 0,
  "label": "Calendar",
  "links": [],
- "modified": "2023-08-08 15:40:12.136130",
+ "modified": "2023-08-22 17:26:49.996430",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Calendar",
