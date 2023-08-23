@@ -9,12 +9,12 @@
  "icon": "check",
  "idx": 0,
  "is_hidden": 0,
- "label": "Checklist",
+ "label": "Checklists",
  "links": [],
- "modified": "2023-08-21 17:17:39.476535",
+ "modified": "2023-08-23 11:08:38.849116",
  "modified_by": "Administrator",
  "module": "Smart FM",
- "name": "Checklist",
+ "name": "Checklists",
  "number_cards": [],
  "owner": "Administrator",
  "parent_page": "",
@@ -40,5 +40,5 @@
    "type": "DocType"
   }
  ],
- "title": "Checklist"
+ "title": "Checklists"
 }
