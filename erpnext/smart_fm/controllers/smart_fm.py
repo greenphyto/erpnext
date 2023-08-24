@@ -160,7 +160,7 @@ def get_qrcode(data={}, doctype=None, docname=None, get_link=False):
 
 def create_asset_qrcode(doc, method=""):
 	if not doc.qrcode_image:
-		url = save_qrcode_image(doc.doctype, doc.name, True)
+		url = save_qrcode_image(doc.doctype, doc.name)
 		doc.qrcode_image = url
 
 import imgkit,base64
