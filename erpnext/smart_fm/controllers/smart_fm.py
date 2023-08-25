@@ -236,4 +236,40 @@ def close_todo(doc, method=""):
 			frappe.db.set_value("ToDo", d.name, 'status', 'Closed')
 		elif not close and d.status != "Open":
 			frappe.db.set_value("ToDo", d.name, 'status', 'Open')
+
+def directly_workflow_from_webform(doc, method=""):
+	if not frappe.flags.in_web_form:
+		return
+	
+	# Directly pass state from Draft to Issued
+	if doc.get("workflow_state") != "Draft":
+		return
+	
+	if not validate_workflow(doc, "Submit"):
+		return
+	
+	apply_workflow(doc, "Submit")
+	
+from frappe.model.workflow import get_workflow, apply_workflow, has_approval_access
+from frappe.workflow.doctype.workflow_action.workflow_action import get_next_possible_transitions
+def validate_workflow(doc, action):
+	"""Allow workflow action on the current doc"""
+	doc = frappe.get_doc(frappe.parse_json(doc))
+	workflow = get_workflow(doc.doctype)
+	transitions = get_next_possible_transitions(workflow.name, doc.get("workflow_state"), doc)
+	user = frappe.session.user
+
+	# find the transition
+	transition = None
+	for t in transitions:
+		if t.action == action:
+			transition = t
+
+	if not transition:
+		return False
+
+	if not has_approval_access(user, doc, transition):
+		return False
+	
+	return True
 		

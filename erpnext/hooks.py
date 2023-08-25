@@ -383,6 +383,9 @@ doc_events = {
     "Asset": {
         "before_submit": "erpnext.smart_fm.controllers.smart_fm.create_asset_qrcode",
         "on_update_after_submit": "erpnext.smart_fm.controllers.smart_fm.create_asset_qrcode"
+	},
+    ("Maintenance Request", "Tenant Feedback", "Access Request", "Emergency Contact Information", "Key Control", "Vendor Registration", "Tenant Feedback"):{
+        "after_insert": "erpnext.smart_fm.controllers.smart_fm.directly_workflow_from_webform"
 	}
 }
 
