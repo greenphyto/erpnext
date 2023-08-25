@@ -1,6 +1,7 @@
 {
  "attach_print": 0,
  "channel": "Email",
+ "condition": "doc.workflow_state != \"Draft\" and doc.workflow_state != \"Issued\"",
  "creation": "2023-05-25 17:09:54.567024",
  "days_in_advance": 0,
  "docstatus": 0,
@@ -10,8 +11,8 @@
  "event": "Value Change",
  "idx": 0,
  "is_standard": 1,
- "message": "<h3>Inspection Checklist</h3>\n\n<p>The request ({{doc.name}}) has been {{doc.workflow_state}} by building management.</p>\n\n<p>Please contact info@greenphyto.com if you have any queries.</p>\n\n<p>Thank you.</p>",
- "modified": "2023-08-07 11:30:27.549908",
+ "message": "<h3>{{ doc.doctype }}</h3>\r\n\r\n<p>The request ({{ frappe.utils.get_link_to_form(doc.doctype, doc.name) }}) has been {{doc.workflow_state}} by building management.</p>\r\n\r\n{{ frappe.render_template(\"templates/end_support.html\", {}) }}",
+ "modified": "2023-08-25 17:52:54.470796",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Inspection Checklist",

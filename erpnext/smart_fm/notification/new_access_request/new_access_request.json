@@ -12,15 +12,17 @@
  "idx": 0,
  "is_standard": 1,
  "message": "<h3>{{doc.doctype}}</h3>\n\n<p>A new request ({{doc.name}}) has been made.</p>\n<p>We will inform you if any further updates</p>\n\n{{ frappe.render_template(\"templates/end_support.html\", {}) }}",
- "modified": "2023-08-25 16:28:05.328830",
+ "modified": "2023-08-25 17:53:38.623517",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "New Access Request",
  "owner": "Administrator",
  "recipients": [
   {
-   "receiver_by_document_field": "",
-   "receiver_by_role": "Building Management"
+   "receiver_by_document_field": "owner"
+  },
+  {
+   "receiver_by_document_field": "email_address"
   }
  ],
  "send_system_notification": 0,
