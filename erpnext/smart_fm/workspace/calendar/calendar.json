@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"mRGG3mffg5\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Calendar</span>\",\"col\":12}},{\"id\":\"paZyTDyAUw\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ToDo Calendar\",\"col\":3}}]",
+ "content": "[{\"id\":\"mRGG3mffg5\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Calendar</span>\",\"col\":12}},{\"id\":\"VqTUu6kGTd\",\"type\":\"calendar\",\"data\":{\"calendar_name\":\"Todo Calendar\",\"col\":12}}]",
  "creation": "2023-08-29 11:46:55.767435",
  "docstatus": 0,
  "doctype": "Workspace",
@@ -11,7 +11,7 @@
  "is_hidden": 0,
  "label": "Calendar",
  "links": [],
- "modified": "2023-08-29 14:24:03.797168",
+ "modified": "2023-08-29 16:46:13.611075",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Calendar",
@@ -22,14 +22,6 @@
  "quick_lists": [],
  "roles": [],
  "sequence_id": 9.0,
- "shortcuts": [
-  {
-   "color": "Grey",
-   "doc_view": "List",
-   "label": "ToDo Calendar",
-   "type": "URL",
-   "url": "/app/todo/view/calendar/default"
-  }
- ],
+ "shortcuts": [],
  "title": "Calendar"
 }
