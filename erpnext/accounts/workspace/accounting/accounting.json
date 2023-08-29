@@ -1109,7 +1109,7 @@
    "type": "Link"
   }
  ],
- "modified": "2023-07-10 14:20:09.775808",
+ "modified": "2023-08-29 12:34:19.516845",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounting",
@@ -1120,7 +1120,7 @@
  "quick_lists": [],
  "restrict_to_domain": "",
  "roles": [],
- "sequence_id": 3.0,
+ "sequence_id": 4.0,
  "shortcuts": [
   {
    "doc_view": "",
