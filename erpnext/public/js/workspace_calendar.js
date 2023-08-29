@@ -1,8 +1,7 @@
 console.log("Here custom calendar")
 
-frappe.run_calendar = function (){
+frappe.run_calendar = function (wrapper){
     var opts = {};
-    var wrapper = $('.ce-paragraph');
     // wrapper.append(`
     // <div class='page'>
     //     <div class="container">
@@ -27,7 +26,14 @@ frappe.run_calendar = function (){
         hide_sidebar: 1,
         calendar_use_name:"default",
         hide_sort_selector: 1,
-        can_create: 0
+        can_create: 0,
+        field_map: {
+			id: "name",
+			start: "creation",
+			end: "creation",
+			allDay: "1",
+			convertToUserTz: "convert_to_user_tz",
+		}
     });
 }
 
@@ -40,6 +46,7 @@ class CustomCalendar extends frappe.views.CalendarView{
     before_render() {
         this.calendar_name = this.calendar_use_name;
 		super.before_render();
+        this.parent.find(".page-head").addClass("hidden");
     }
 
     set_menu_items(){
@@ -52,5 +59,9 @@ class CustomCalendar extends frappe.views.CalendarView{
 
     setup_view_menu(){
         
+    }
+
+    render_header(){
+
     }
 }
