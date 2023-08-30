@@ -566,6 +566,7 @@
    "label": "Serial Number"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "qrcode_image",
    "fieldtype": "Attach Image",
    "label": "QR Code Image"
@@ -629,7 +630,7 @@
    "table_fieldname": "accounts"
   }
  ],
- "modified": "2023-08-22 16:56:57.710177",
+ "modified": "2023-08-30 16:25:58.019164",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",
