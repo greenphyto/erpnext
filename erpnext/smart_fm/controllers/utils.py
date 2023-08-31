@@ -5,7 +5,6 @@ from io import BytesIO
 from base64 import b32encode, b64encode
 
 
-
 def get_day_diff(date1, date2):
     delta = getdate(date2) - getdate(date1)
     return delta.days
@@ -33,7 +32,6 @@ def create_contact(data, customer, doctype="Customer"):
 
 	contact.flags.ignore_mandatory = True
 	contact.save()
-
 
 def create_address(raw_data, customer, doctype="Customer"):
 	address = frappe.new_doc("Address")
