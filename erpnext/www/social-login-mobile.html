@@ -1,0 +1,7 @@
+{% extends "frappe/www/message.html" %}
+{% block message_body %}
+    Please wait..
+    <script>
+        window.location.href = '{{ link or home }}'
+    </script>
+{% endblock %}
