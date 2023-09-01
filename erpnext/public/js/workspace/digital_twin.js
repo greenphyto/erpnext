@@ -1,4 +1,4 @@
-console.log("Hello")
+console.log("From custom Unity")
 
 class UnityViewer{
     constructor(page){
@@ -9,20 +9,20 @@ class UnityViewer{
     }
 
     setup_element(){
-        this.wrapper = $("<div id='wrapper-custom'>OKEEE</div>");
+        this.wrapper = $("<div id='wrapper-custom'></div>");
+        this.main.attr('style', 'height: max-content !important');
         this.main.append(this.wrapper);
         console.log(this.wrapper);
         this.render_unity();
     }
 
     render_unity(){
-        var unity = `<iframe src="/unity" title="W3Schools Free Online Web Tutorials"></iframe>`
+        var unity = `<iframe id="unity-view" src="/unity" title="W3Schools Free Online Web Tutorials"></iframe>`
         this.wrapper.append(unity)
     }
 }
 
 
 frappe.custom_workspace = (page)=>{
-    console.log("19", page)
     new UnityViewer(page);
 }
