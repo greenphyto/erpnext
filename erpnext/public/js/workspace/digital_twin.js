@@ -24,5 +24,7 @@ class UnityViewer{
 
 
 frappe.custom_workspace = (page)=>{
-    new UnityViewer(page);
+    setTimeout(()=>{
+        new UnityViewer(page);
+    }, 1000);
 }
