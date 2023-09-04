@@ -17,7 +17,7 @@ class UnityViewer{
     }
 
     render_unity(){
-        var unity = `<iframe id="unity-view" src="/unity" title="W3Schools Free Online Web Tutorials"></iframe>`
+        var unity = `<iframe id="unity-view" src="/unity" title="Unity Previewer"></iframe>`
         this.wrapper.append(unity)
     }
 }
