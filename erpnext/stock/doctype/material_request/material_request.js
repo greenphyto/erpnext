@@ -195,15 +195,12 @@ frappe.ui.form.on('Material Request', {
 	},
 
 	get_item_data: function(frm, item, overwrite_warehouse=false) {
-		debugger;
 		if (item && item.item_name) { 
-			debugger;
 			 item.item_code = item.item_name;
-			  }
+		}
 		if (item && !item.item_code) { 
-			debugger;
-			return; }
-			debugger;
+			return; 
+		}
 		frm.call({
 			method: "erpnext.stock.get_item_details.get_item_details",
 			child: item,
@@ -402,7 +399,6 @@ frappe.ui.form.on("Material Request Item", {
 	},
 
 	item_code: function(frm, doctype, name) {
-		debugger;
 		const item = locals[doctype][name];
 		item.rate = 0;
 		item.uom = '';
@@ -410,7 +406,6 @@ frappe.ui.form.on("Material Request Item", {
 		frm.events.get_item_data(frm, item, true);
 	},
 	item_name: function(frm, doctype, name) {
-		debugger;
 		const item = locals[doctype][name];
 		item.rate = 0;
 		item.uom = '';
@@ -452,7 +447,6 @@ erpnext.buying.MaterialRequestController = class MaterialRequestController exten
 	}
 
 	onload(doc, cdt, cdn) {
-		debugger;
 		this.frm.set_query("item_code", "items", function() {
 			if (doc.material_request_type == "Customer Provided") {
 				return{

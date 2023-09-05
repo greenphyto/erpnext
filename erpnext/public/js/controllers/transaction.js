@@ -410,7 +410,6 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 	}
 
 	item_name(doc, cdt, cdn) {
-		debugger;
 		var me = this;
 		var item = frappe.get_doc(cdt, cdn);
 		var update_stock = 0, show_batch_dialog = 0;
@@ -567,7 +566,6 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		}
 	}
 	item_code(doc, cdt, cdn) {
-		debugger;
 		var me = this;
 		var item = frappe.get_doc(cdt, cdn);
 		var update_stock = 0, show_batch_dialog = 0;
