@@ -195,9 +195,6 @@ frappe.ui.form.on('Material Request', {
 	},
 
 	get_item_data: function(frm, item, overwrite_warehouse=false) {
-		if (item && item.item_name) { 
-			 item.item_code = item.item_name;
-		}
 		if (item && !item.item_code) { 
 			return; 
 		}
