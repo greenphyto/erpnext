@@ -199,13 +199,14 @@
    "print_hide": 1
   },
   {
+   "default": "PI.###./.YYYY",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "ACC-PINV-.YYYY.-\nACC-PINV-RET-.YYYY.-",
+   "options": "PI.###./.YYYY\nPI-RET.###./.YYYY\nACC-PINV-.YYYY.-\nACC-PINV-RET-.YYYY.-",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1519,7 +1520,7 @@
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-11-28 14:42:51.952941",
+ "modified": "2023-09-05 12:12:18.124961",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",

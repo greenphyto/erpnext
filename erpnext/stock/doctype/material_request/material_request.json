@@ -112,13 +112,14 @@
    "options": "fa fa-pushpin"
   },
   {
+   "default": "PR.###./.YYYY",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "MAT-MR-.YYYY.-",
+   "options": "PR.###./.YYYY\nMAT-MR-.YYYY.-",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -867,7 +868,7 @@
  "idx": 70,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-02-21 13:26:03.022575",
+ "modified": "2023-09-05 11:04:36.483507",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request",

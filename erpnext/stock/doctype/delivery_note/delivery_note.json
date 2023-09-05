@@ -183,7 +183,7 @@
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "MAT-DN-.YYYY.-\nMAT-DN-RET-.YYYY.-",
+   "options": "DO.###./.YYYY\nDO-RET.###./.YYYY\nMAT-DN-.YYYY.-\nMAT-DN-RET-.YYYY.-",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1387,7 +1387,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-10-11 13:06:58.655635",
+ "modified": "2023-09-05 12:18:51.268361",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
