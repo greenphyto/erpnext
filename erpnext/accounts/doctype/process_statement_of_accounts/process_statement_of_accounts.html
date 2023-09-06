@@ -172,12 +172,12 @@
 	  <div class="col-xs-5">
 		<div class="row row-no-gutters">
 		  <span class="col-xs-12">
-			{{filters.party[0] }}
+			{{filters.party_name[0] }} ({{ filters.party[0] }})
 		  </span>
 		</div>
 		<div class="row row-no-gutters">
 		  <span class="col-xs-12">
-			{{filters.custAddress}}
+			{{filters.custAddress or "-" }}
 		  </span>
 		</div>
 		<div class="row row-no-gutters">
@@ -278,77 +278,80 @@
 	  <tbody>
 		{% for row in data %}
 		{% if(frappe.format(row.account, {fieldtype: "Link"})!= "Total" ) %}
-		<tr>
-		  {% if(row.posting_date) %}
-		  <td>{{ frappe.format(row.posting_date, 'Date') }}</td>
-		  <!-- <td>{{ row.voucher_type.replace("Entry", "") }}</td> -->
-		  <td>{{ row.voucher_no }}</td>
-		  {% if row.voucher_type == "Sales Invoice" %}
-			<td>{{ frappe.db.get_value(row.voucher_type, row.voucher_no, "po_no") or "-" }}</td>
-		  {% else %}
-			<td>-</td>
-		  {% endif %}
-		  {% if row.voucher_type == "Sales Invoice" %}
-			{% set inv = frappe.get_doc(row.voucher_type, row.voucher_no) %}
-			{% set dn = "" %}
-		  	{% for d in inv.items %}
-				{% if d.delivery_note %}
-					{% set dn = d.delivery_note  %}
+			<tr>
+			{% if(row.posting_date) %}
+				<td>{{ frappe.format(row.posting_date, 'Date') }}</td>
+				<!-- <td>{{ row.voucher_type.replace("Entry", "") }}</td> -->
+				<td>{{ row.voucher_no }}</td>
+				{% if row.voucher_type == "Sales Invoice" %}
+					<td>{{ frappe.db.get_value(row.voucher_type, row.voucher_no, "po_no") or "-" }}</td>
+				{% else %}
+					<td>-</td>
 				{% endif %}
-			{% endfor %}
-			<td>{{ dn or "-" }}</td>
-		  {% else %}
-			<td>-</td>
-		  {% endif %}
-		  <!-- <td> -->
-			<!-- {{ row.voucher_type.replace("Entry", "") }} -->
-			<!-- {% if not (filters.party or filters.account)  %}
-						  {{ row.party or row.account }}
-						  <br>
-					  {% endif %}
-					  {{ _("Against") }}: {{ row.against }}
-					  <br>{{ _("Remarks") }}: {{ row.remarks }}
-					  {% if row.bill_no %}
-						  <br>{{ _("Supplier Invoice No") }}: {{ row.bill_no }}
-					  {% endif %} -->
-		  <!-- </td> -->
-		  <!-- <td style="text-align: right">
-			{{ frappe.utils.fmt_money(row.debit, currency=filters.presentation_currency) }}</td>
-		  <td style="text-align: right">
-			({{ frappe.utils.fmt_money(row.credit, currency=filters.presentation_currency) }})</td> -->
-		  {% else %}
-		  <td></td>
-		  <td></td>
-		  <td></td>
-		  <td>
-			{% if(frappe.format(row.account, {fieldtype: "Link"}) == "Opening" ) %}
-  
-			<b>{{ frappe.format(row.account, {fieldtype: "Link"}) or "&nbsp;" }}</b>
+				{% if row.voucher_type == "Sales Invoice" %}
+					{% set inv = frappe.get_doc(row.voucher_type, row.voucher_no) %}
+					{% set dn = "" %}
+					{% for d in inv.items %}
+						{% if d.delivery_note %}
+							{% set dn = d.delivery_note  %}
+						{% endif %}
+					{% endfor %}
+					<td>{{ dn or "-" }}</td>
+				{% else %}
+					<td>-</td>
+				{% endif %}
+				<!-- <td> -->
+					<!-- {{ row.voucher_type.replace("Entry", "") }} -->
+					<!-- {% if not (filters.party or filters.account)  %}
+								{{ row.party or row.account }}
+								<br>
+							{% endif %}
+							{{ _("Against") }}: {{ row.against }}
+							<br>{{ _("Remarks") }}: {{ row.remarks }}
+							{% if row.bill_no %}
+								<br>{{ _("Supplier Invoice No") }}: {{ row.bill_no }}
+							{% endif %} -->
+				<!-- </td> -->
+				{% if row.voucher_type == "Sales Invoice" %}
+				<td style="text-align: right">
+					{{ frappe.utils.fmt_money(row.debit, currency=filters.presentation_currency) }}</td>
+				{% else %}
+				<td style="text-align: right">
+					({{ frappe.utils.fmt_money(row.credit, currency=filters.presentation_currency) }})</td>
+				{% endif %}
 			{% else %}
-			<b>Current Balance</b>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td>
+					{% if(frappe.format(row.account, {fieldtype: "Link"}) == "Opening" ) %}
+		
+					<b>{{ frappe.format(row.account, {fieldtype: "Link"}) or "&nbsp;" }}</b>
+					{% else %}
+					<b>Current Balance</b>
+					{% endif %}
+		
+				</td>
+				<!-- <td style="text-align: right">
+					{% if(frappe.format(row.account, {fieldtype: "Link"}) == "Opening" ) %}
+					{{ row.get('account', '') and frappe.utils.fmt_money(row.debit, currency=filters.presentation_currency) }}
+					{% endif %}
+				</td>
+				<td style="text-align: right">
+					{% if(frappe.format(row.account, {fieldtype: "Link"}) == "Opening" ) %}
+					({{ row.get('account', '') and frappe.utils.fmt_money(row.credit, currency=filters.presentation_currency) }})
+					{% endif %}
+				</td> -->
+				<td style="text-align: right">
+					{{ frappe.utils.fmt_money(row.balance, currency=filters.presentation_currency) }}
+				</td>
 			{% endif %}
-  
-		  </td>
-		  <!-- <td style="text-align: right">
-			{% if(frappe.format(row.account, {fieldtype: "Link"}) == "Opening" ) %}
-			{{ row.get('account', '') and frappe.utils.fmt_money(row.debit, currency=filters.presentation_currency) }}
-			{% endif %}
-		  </td>
-		  <td style="text-align: right">
-			{% if(frappe.format(row.account, {fieldtype: "Link"}) == "Opening" ) %}
-			({{ row.get('account', '') and frappe.utils.fmt_money(row.credit, currency=filters.presentation_currency) }})
-			{% endif %}
-		  </td> -->
-		  {% endif %}
-		  <td style="text-align: right">
-			{{ frappe.utils.fmt_money(row.balance, currency=filters.presentation_currency) }}
-		  </td>
 		</tr>
+		<!-- <tr>
+			<td colspan="6" style="text-align: right"> {{ frappe.utils.money_in_words(data[-1].balance) }}</td>
+		</tr> -->
 		{% endif %}
 		{% endfor %}
-		<tr>
-			<td colspan="6" style="text-align: right"> {{ frappe.utils.money_in_words(data[-1].balance) }}</td>
-		</tr>
 	  </tbody>
 	</table>
 	<br>

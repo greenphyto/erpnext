@@ -48,11 +48,9 @@ def get_report_pdf(doc, consolidated=True):
     "Dynamic Link","link_name","=",doc.company
 		]],fields=['address_line1','city','pincode'])
 	 
-	print(lstAddress)
 	template_path = (
 		"erpnext/accounts/doctype/process_statement_of_accounts/process_statement_of_accounts.html"
 	)
-	print(doc.company)
 	
 	for entry in doc.customers:
 		if doc.include_ageing:
@@ -93,6 +91,7 @@ def get_report_pdf(doc, consolidated=True):
 				"account": [doc.account] if doc.account else None,
 				"party_type": "Customer",
 				"party": [entry.customer],
+				"party_name": [entry.customer_name],
 				"presentation_currency": presentation_currency,
 				"group_by": doc.group_by,
 				"currency": doc.currency,
