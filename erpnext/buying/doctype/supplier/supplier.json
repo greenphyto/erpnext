@@ -72,13 +72,14 @@
  ],
  "fields": [
   {
+   "default": "S.#####",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "SUP-.YYYY.-",
+   "options": "S.#####\nSUP-.YYYY.-",
    "set_only_once": 1
   },
   {
@@ -457,7 +458,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2022-11-09 18:02:59.075203",
+ "modified": "2023-09-06 14:06:21.653328",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",

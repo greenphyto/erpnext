@@ -91,11 +91,12 @@
    "options": "fa fa-user"
   },
   {
+   "default": "C.#####",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
    "no_copy": 1,
-   "options": "CUST-.YYYY.-",
+   "options": "C.#####\nCUST-.YYYY.-",
    "set_only_once": 1
   },
   {
@@ -568,7 +569,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2022-11-08 15:52:34.462657",
+ "modified": "2023-09-06 13:08:53.674960",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",
