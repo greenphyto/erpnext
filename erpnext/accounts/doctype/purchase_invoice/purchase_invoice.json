@@ -1521,7 +1521,8 @@
    "fieldname": "tax_withholding_net_total",
    "fieldtype": "Currency",
    "label": "Tax Withholding Net Total",
-   "options": "Company:company:default_currency",
+   "options": "currency",
+   "print_hide": 1,
    "read_only": 1
   },
   {
@@ -1529,6 +1530,7 @@
    "fieldtype": "Currency",
    "label": "Base Tax Withholding Net Total",
    "options": "Company:company:default_currency",
+   "print_hide": 1,
    "read_only": 1
   }
  ],
@@ -1536,7 +1538,7 @@
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-09-06 11:51:48.530361",
+ "modified": "2023-09-06 12:21:58.495052",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",

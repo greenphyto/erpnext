@@ -1397,6 +1397,12 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		if(frappe.meta.get_docfield(cur_frm.doctype, "base_net_total"))
 			cur_frm.toggle_display("base_net_total", (show && (me.frm.doc.currency != company_currency)));
 
+		if(frappe.meta.get_docfield(cur_frm.doctype, "tax_withholding_net_total"))
+			cur_frm.toggle_display("tax_withholding_net_total", show);
+
+		if(frappe.meta.get_docfield(cur_frm.doctype, "base_tax_withholding_net_total"))
+			cur_frm.toggle_display("base_tax_withholding_net_total", (show && (me.frm.doc.currency != company_currency)));
+
 	}
 
 	change_grid_labels(company_currency) {
