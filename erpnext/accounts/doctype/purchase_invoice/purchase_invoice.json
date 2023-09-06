@@ -56,9 +56,11 @@
   "column_break_50",
   "base_total",
   "base_net_total",
+  "base_tax_withholding_net_total",
   "column_break_28",
   "total",
   "net_total",
+  "tax_withholding_net_total",
   "taxes_section",
   "taxes_and_charges",
   "column_break_58",
@@ -1514,13 +1516,27 @@
    "oldfieldtype": "Section Break",
    "options": "fa fa-file-text",
    "print_hide": 1
+  },
+  {
+   "fieldname": "tax_withholding_net_total",
+   "fieldtype": "Currency",
+   "label": "Tax Withholding Net Total",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "base_tax_withholding_net_total",
+   "fieldtype": "Currency",
+   "label": "Base Tax Withholding Net Total",
+   "options": "Company:company:default_currency",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-09-05 12:12:18.124961",
+ "modified": "2023-09-06 11:51:48.530361",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",
