@@ -29,6 +29,7 @@ def get_period_list(
 	company=None,
 	reset_period_on_fy_change=True,
 	ignore_fiscal_year=False,
+	month=None,
 ):
 	"""Get a list of dict {"from_date": from_date, "to_date": to_date, "key": key, "label": label}
 	Periodicity can be (Yearly, Quarterly, Monthly)"""
@@ -49,7 +50,7 @@ def get_period_list(
 
 	start_date = year_start_date
 	months = get_months(year_start_date, year_end_date)
-
+	print(53, months)
 	for i in range(cint(math.ceil(months / months_to_add))):
 		period = frappe._dict({"from_date": start_date})
 
@@ -58,7 +59,10 @@ def get_period_list(
 		else:
 			to_date = add_months(start_date, months_to_add)
 
+		cur_month =  start_date.strftime("%B")
 		start_date = to_date
+
+		print(start_date, to_date)
 
 		# Subtract one day from to_date, as it may be first day in next fiscal year or month
 		to_date = add_days(to_date, -1)
@@ -74,7 +78,12 @@ def get_period_list(
 			period.to_date_fiscal_year = get_fiscal_year(period.to_date, company=company)[0]
 			period.from_date_fiscal_year_start_date = get_fiscal_year(period.from_date, company=company)[1]
 
-		period_list.append(period)
+		
+		if month:
+			if cur_month == month:
+				period_list.append(period)
+		else:
+			period_list.append(period)
 
 		if period.to_date == year_end_date:
 			break
