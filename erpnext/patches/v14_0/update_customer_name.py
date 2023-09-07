@@ -4,6 +4,7 @@ def execute():
     update_system_settings()
     delete_existing_property_setters()
     update_existing_customer()
+    update_existing_supplier()
 
 def update_system_settings():
     frappe.db.set_value("Selling Settings", "Selling Settings", "cust_master_name", "Naming Series")
