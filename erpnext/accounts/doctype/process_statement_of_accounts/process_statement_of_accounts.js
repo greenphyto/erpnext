@@ -28,18 +28,29 @@ frappe.ui.form.on('Process Statement Of Accounts', {
 				var url = frappe.urllib.get_full_url(
 					'/api/method/erpnext.accounts.doctype.process_statement_of_accounts.process_statement_of_accounts.download_statements?'
 					+ 'document_name='+encodeURIComponent(frm.doc.name))
-				$.ajax({
-					url: url,
-					type: 'GET',
-					success: function(result) {
-						if(jQuery.isEmptyObject(result)){
-							frappe.msgprint(__('No Records for these settings.'));
+				
+				function download_now(){
+					$.ajax({
+						url: url,
+						type: 'GET',
+						success: function(result) {
+							if(jQuery.isEmptyObject(result)){
+								frappe.msgprint(__('No Records for these settings.'));
+							}
+							else{
+								window.location = url;
+							}
 						}
-						else{
-							window.location = url;
-						}
-					}
-				});
+					});
+				}
+
+				if (frm.is_dirty()){
+					frm.save().then(()=>{
+						download_now();
+					});
+				}else{
+					download_now();
+				}
 			});
 		}
 	},

@@ -48,8 +48,12 @@ def get_report_pdf(doc, consolidated=True):
     "Dynamic Link","link_name","=",doc.company
 		]],fields=['address_line1','city','pincode'])
 	 
+	template = "process_statement_of_accounts"
+	if doc.get("pdf_template") == "Simple":
+		template = "process_statement_of_accounts_simple"
+		
 	template_path = (
-		"erpnext/accounts/doctype/process_statement_of_accounts/process_statement_of_accounts.html"
+		"erpnext/accounts/doctype/process_statement_of_accounts/{}.html".format(template)
 	)
 	
 	for entry in doc.customers:
