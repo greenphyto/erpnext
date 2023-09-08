@@ -16,6 +16,7 @@
   "customer_name",
   "customer_type",
   "customer_group",
+  "customer_id",
   "column_break0",
   "territory",
   "gender",
@@ -556,6 +557,12 @@
   {
    "fieldname": "column_break_54",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "customer_id",
+   "fieldtype": "Data",
+   "label": "Customer ID",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-user",
@@ -569,7 +576,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2023-09-06 13:08:53.674960",
+ "modified": "2023-09-08 11:54:17.119184",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

@@ -5,6 +5,7 @@ def execute():
     delete_existing_property_setters()
     update_existing_customer()
     update_existing_supplier()
+    update_customer_supplier_id()
 
 def update_system_settings():
     frappe.db.set_value("Selling Settings", "Selling Settings", "cust_master_name", "Naming Series")
@@ -22,7 +23,11 @@ def update_existing_supplier():
     _update_existing_data("Supplier")
 
 def _update_existing_data(doctype):
-    data = frappe.db.get_list(doctype, {"name":['not like', '%%C00%%']})
+    series = '%%C00%%'
+    if doctype == "Supplier":
+        series = '%%S00%%'
+
+    data = frappe.db.get_list(doctype, {"name":['not like', series]}, ['name', 'creation'], order_by="creation")
     print("Total {} {} to be rename".format(len(data), doctype))
     for d in data:
         doc = frappe.get_doc(doctype, d.name)
@@ -36,3 +41,7 @@ def _update_existing_data(doctype):
         new_name = doc.name
         print("Rename {} {} to {}".format(doctype, d.name, new_name))
         rename_doc(doctype, old_name, new_name)
+
+def update_customer_supplier_id():
+    frappe.db.sql("update `tabSupplier` set supplier_id = name ")
+    frappe.db.sql("update `tabCustomer` set customer_id = name ")

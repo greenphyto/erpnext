@@ -13,6 +13,7 @@
   "naming_series",
   "supplier_name",
   "country",
+  "supplier_id",
   "column_break0",
   "supplier_group",
   "supplier_type",
@@ -446,6 +447,12 @@
   {
    "fieldname": "column_break_59",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supplier_id",
+   "fieldtype": "Data",
+   "label": "Supplier ID",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-user",
@@ -458,7 +465,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2023-09-06 14:06:21.653328",
+ "modified": "2023-09-08 12:05:45.835753",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",

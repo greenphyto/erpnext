@@ -48,6 +48,8 @@ class Customer(TransactionBase):
 		else:
 			self.name = set_name_from_naming_options(frappe.get_meta(self.doctype).autoname, self)
 
+		self.customer_id = self.name
+
 	def get_customer_name(self):
 
 		if frappe.db.get_value("Customer", self.customer_name) and not frappe.flags.in_import:
@@ -295,6 +297,7 @@ class Customer(TransactionBase):
 	def after_rename(self, olddn, newdn, merge=False):
 		if frappe.defaults.get_global_default("cust_master_name") == "Customer Name":
 			self.db_set("customer_name", newdn)
+			self.db_set("customer_id", newdn)
 
 	def set_loyalty_program(self):
 		if self.loyalty_program:

@@ -47,6 +47,8 @@ class Supplier(TransactionBase):
 			set_name_by_naming_series(self)
 		else:
 			self.name = set_name_from_naming_options(frappe.get_meta(self.doctype).autoname, self)
+		
+		self.supplier_id = self.name
 
 	def on_update(self):
 		if not self.naming_series:
@@ -146,6 +148,7 @@ class Supplier(TransactionBase):
 	def after_rename(self, olddn, newdn, merge=False):
 		if frappe.defaults.get_global_default("supp_master_name") == "Supplier Name":
 			self.db_set("supplier_name", newdn)
+			self.db_set("supplier_id", newdn)
 
 
 @frappe.whitelist()
