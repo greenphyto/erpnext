@@ -112,7 +112,7 @@ def send_due_date_notification_task():
 
 
 @frappe.whitelist()
-def get_qrcode(data={}, doctype=None, docname=None, get_link=False):
+def get_qrcode(data={}, doctype=None, docname=None, get_link=False, commit=False):
 	# to generate qr code and store to QRCode Data
 	# return base64 string images
 	if not data and not doctype and not docname:
@@ -153,6 +153,9 @@ def get_qrcode(data={}, doctype=None, docname=None, get_link=False):
 	link = get_link_detail(result_name)
 	if get_link:
 		return link
+
+	if commit:
+		frappe.db.commit()
 	
 	# get base 64 string images
 	img_string = get_qr_svg_code(link)
@@ -189,8 +192,6 @@ def save_qrcode_image(doctype, name, update_db=False):
 	)
 	file.save(ignore_permissions=True)
 	file_url = file.file_url
-
-	get_qrcode(doctype=doctype, docname=name)
 
 	if doctype in ['Asset']:
 		if update_db:
