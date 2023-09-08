@@ -148,7 +148,7 @@ def get_qrcode(data={}, doctype=None, docname=None, get_link=False):
 			doc.insert(ignore_permissions=True)
 			result_name = doc.name
 	else:
-		return "149"
+		return ""
 	
 	link = get_link_detail(result_name)
 	if get_link:
@@ -160,7 +160,7 @@ def get_qrcode(data={}, doctype=None, docname=None, get_link=False):
 
 def create_asset_qrcode(doc, method=""):
 	if not doc.qrcode_image:
-		url = save_qrcode_image(doc.doctype, doc.name)
+		url = save_qrcode_image(doc.doctype, doc.name, 1)
 		doc.qrcode_image = url
 
 import imgkit,base64
@@ -190,9 +190,11 @@ def save_qrcode_image(doctype, name, update_db=False):
 	file.save(ignore_permissions=True)
 	file_url = file.file_url
 
+	get_qrcode(doctype=doctype, docname=name)
+
 	if doctype in ['Asset']:
 		if update_db:
-			frappe.db.set_value(doctype, name, "qrcode_image", file_url)			
+			frappe.db.set_value(doctype, name, "qrcode_image", file_url, update_modified=False)			
 
 	return file_url
 

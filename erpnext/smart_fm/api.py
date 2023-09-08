@@ -23,7 +23,7 @@ def get_qrcode_data(code):
 		doc = frappe.get_doc("QRCode Data", code)
 		return doc.get_data()
 	else:
-		return 
+		return {}
 	
 @frappe.whitelist()
 def get_widget_settings(user):
