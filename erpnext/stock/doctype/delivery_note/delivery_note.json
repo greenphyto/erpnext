@@ -16,6 +16,7 @@
   "column_break1",
   "posting_date",
   "posting_time",
+  "posting_datetime",
   "set_posting_time",
   "column_break_10",
   "company",
@@ -1381,13 +1382,19 @@
   {
    "fieldname": "column_break_18",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "posting_datetime",
+   "fieldtype": "Datetime",
+   "label": "Posting Date & Time",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-09-05 12:18:51.268361",
+ "modified": "2023-09-11 15:37:26.608431",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
