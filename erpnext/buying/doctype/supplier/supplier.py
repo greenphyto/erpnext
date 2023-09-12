@@ -9,7 +9,7 @@ from frappe.contacts.address_and_contact import (
 	delete_contact_and_address,
 	load_address_and_contact,
 )
-from frappe.model.naming import set_name_by_naming_series, set_name_from_naming_options
+from frappe.model.naming import set_name_by_naming_series, set_name_from_naming_options, parse_naming_series
 
 from erpnext.accounts.party import (  # noqa
 	get_dashboard_info,
@@ -49,6 +49,11 @@ class Supplier(TransactionBase):
 			self.name = set_name_from_naming_options(frappe.get_meta(self.doctype).autoname, self)
 		
 		self.supplier_id = self.name
+		self.set_code()
+
+	def set_code(self):
+		series = "S.#####"
+		self.supplier_code = parse_naming_series(series, doc=self)
 
 	def on_update(self):
 		if not self.naming_series:
