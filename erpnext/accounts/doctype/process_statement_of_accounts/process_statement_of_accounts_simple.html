@@ -276,10 +276,14 @@
 		</tr>
 	  </thead>
 	  <tbody>
+		{% set totals = [] %}
 		{% for row in data %}
 		{% if(frappe.format(row.account, {fieldtype: "Link"})!= "Total" ) %}
+		
+			{% if row.voucher_type == "Sales Invoice" and frappe.db.get_value(row.voucher_type, row.voucher_no, "outstanding_amount") != 0 %}
+			{% set outstanding = frappe.db.get_value(row.voucher_type, row.voucher_no, "outstanding_amount") %}
+			{{ totals.append(outstanding) }}
 			<tr>
-			{% if(row.posting_date) %}
 				<td>{{ frappe.format(row.posting_date, 'Date') }}</td>
 				<!-- <td>{{ row.voucher_type.replace("Entry", "") }}</td> -->
 				<td>{{ row.voucher_no }}</td>
@@ -314,23 +318,19 @@
 				<!-- </td> -->
 				{% if row.voucher_type == "Sales Invoice" %}
 				<td style="text-align: right">
-					{{ frappe.utils.fmt_money(row.debit, currency=filters.presentation_currency) }}</td>
+					{{ frappe.utils.fmt_money(outstanding, currency=filters.presentation_currency) }}</td>
 				{% else %}
 				<td style="text-align: right">
 					({{ frappe.utils.fmt_money(row.credit, currency=filters.presentation_currency) }})</td>
 				{% endif %}
-			{% else %}
+			</tr>
+			{% elif not row.voucher_type and frappe.format(row.account, {fieldtype: "Link"}) != "Opening" %}
+			<tr>
 				<td></td>
 				<td></td>
 				<td></td>
 				<td>
-					{% if(frappe.format(row.account, {fieldtype: "Link"}) == "Opening" ) %}
-		
-					<b>{{ frappe.format(row.account, {fieldtype: "Link"}) or "&nbsp;" }}</b>
-					{% else %}
-					<b>Current Balance</b>
-					{% endif %}
-		
+					<b>Current Balance</b>		
 				</td>
 				<!-- <td style="text-align: right">
 					{% if(frappe.format(row.account, {fieldtype: "Link"}) == "Opening" ) %}
@@ -343,10 +343,10 @@
 					{% endif %}
 				</td> -->
 				<td style="text-align: right">
-					{{ frappe.utils.fmt_money(row.balance, currency=filters.presentation_currency) }}
+					{{ frappe.utils.fmt_money( totals|sum , currency=filters.presentation_currency) }}
 				</td>
+			</tr>
 			{% endif %}
-		</tr>
 		<!-- <tr>
 			<td colspan="6" style="text-align: right"> {{ frappe.utils.money_in_words(data[-1].balance) }}</td>
 		</tr> -->
