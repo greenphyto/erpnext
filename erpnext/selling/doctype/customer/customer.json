@@ -16,7 +16,8 @@
   "customer_name",
   "customer_type",
   "customer_group",
-  "customer_id",
+  "is_cash_sales",
+  "customer_code",
   "column_break0",
   "territory",
   "gender",
@@ -559,9 +560,22 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "customer_id",
+   "allow_in_quick_entry": 1,
+   "default": "0",
+   "fieldname": "is_cash_sales",
+   "fieldtype": "Check",
+   "label": "Is Cash Sales"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "customer_code",
    "fieldtype": "Data",
-   "label": "Customer ID",
+   "in_filter": 1,
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Customer Code",
    "read_only": 1
   }
  ],
@@ -576,7 +590,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2023-09-08 11:54:17.119184",
+ "modified": "2023-09-12 16:28:09.781399",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",
