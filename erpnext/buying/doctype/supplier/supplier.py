@@ -53,7 +53,7 @@ class Supplier(TransactionBase):
 
 	def set_code(self, force=False):
 		series = "S.#####"
-		if self.customer_code and not force:
+		if self.supplier_code and not force:
 			return
 		
 		self.supplier_code = parse_naming_series(series, doc=self)
