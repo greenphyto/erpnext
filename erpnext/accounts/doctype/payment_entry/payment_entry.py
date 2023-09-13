@@ -855,34 +855,39 @@ class PaymentEntry(AccountsController):
 				gl_entries.append(gle)
 
 	def add_bank_gl_entries(self, gl_entries):
+		acc_type = frappe.get_value("Account", self.paid_from, "account_type")
 		if self.payment_type in ("Pay", "Internal Transfer"):
+			data = {
+				"account": self.paid_from,
+				"account_currency": self.paid_from_account_currency,
+				"against": self.party if self.payment_type == "Pay" else self.paid_to,
+				"credit_in_account_currency": self.paid_amount,
+				"credit": self.base_paid_amount,
+				"cost_center": self.cost_center,
+				"post_net_value": True,
+			}
+			if acc_type == "Payable":
+				data['party_type'] = self.party_type
+				data['party'] = self.party
+
 			gl_entries.append(
-				self.get_gl_dict(
-					{
-						"account": self.paid_from,
-						"account_currency": self.paid_from_account_currency,
-						"against": self.party if self.payment_type == "Pay" else self.paid_to,
-						"credit_in_account_currency": self.paid_amount,
-						"credit": self.base_paid_amount,
-						"cost_center": self.cost_center,
-						"post_net_value": True,
-					},
-					item=self,
-				)
+				self.get_gl_dict(data,item=self)
 			)
 		if self.payment_type in ("Receive", "Internal Transfer"):
+			data = {
+				"account": self.paid_to,
+				"account_currency": self.paid_to_account_currency,
+				"against": self.party if self.payment_type == "Receive" else self.paid_from,
+				"debit_in_account_currency": self.received_amount,
+				"debit": self.base_received_amount,
+				"cost_center": self.cost_center,
+			}
+			if acc_type == "Receivable":
+				data['party_type'] = self.party_type
+				data['party'] = self.party
+
 			gl_entries.append(
-				self.get_gl_dict(
-					{
-						"account": self.paid_to,
-						"account_currency": self.paid_to_account_currency,
-						"against": self.party if self.payment_type == "Receive" else self.paid_from,
-						"debit_in_account_currency": self.received_amount,
-						"debit": self.base_received_amount,
-						"cost_center": self.cost_center,
-					},
-					item=self,
-				)
+				self.get_gl_dict(data,item=self)
 			)
 
 	def add_tax_gl_entries(self, gl_entries):
