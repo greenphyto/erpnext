@@ -21,6 +21,7 @@
   "posting_datetime",
   "set_posting_time",
   "due_date",
+  "delivery_note_no",
   "column_break1",
   "is_paid",
   "is_return",
@@ -1539,13 +1540,18 @@
    "fieldtype": "Datetime",
    "label": "Posting Date & Time",
    "read_only": 1
+  },
+  {
+   "fieldname": "delivery_note_no",
+   "fieldtype": "Data",
+   "label": "Delivery Note No"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-09-11 15:25:17.784947",
+ "modified": "2023-09-13 17:20:16.337786",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",
