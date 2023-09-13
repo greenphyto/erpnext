@@ -51,8 +51,11 @@ class Supplier(TransactionBase):
 		self.supplier_id = self.name
 		self.set_code()
 
-	def set_code(self):
+	def set_code(self, force=False):
 		series = "S.#####"
+		if self.customer_code and not force:
+			return
+		
 		self.supplier_code = parse_naming_series(series, doc=self)
 
 	def on_update(self):
@@ -64,6 +67,7 @@ class Supplier(TransactionBase):
 
 	def validate(self):
 		self.flags.is_new_doc = self.is_new()
+		self.set_code()
 
 		# validation for Naming Series mandatory field...
 		if frappe.defaults.get_global_default("supp_master_name") == "Naming Series":

@@ -456,8 +456,7 @@
    "in_list_view": 1,
    "in_preview": 1,
    "in_standard_filter": 1,
-   "label": "Supplier Code",
-   "read_only": 1
+   "label": "Supplier Code"
   }
  ],
  "icon": "fa fa-user",
@@ -470,7 +469,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2023-09-12 16:35:54.818729",
+ "modified": "2023-09-13 10:19:02.777597",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",

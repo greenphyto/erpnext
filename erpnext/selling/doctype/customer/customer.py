@@ -50,9 +50,12 @@ class Customer(TransactionBase):
 
 		self.set_code()
 
-	def set_code(self):
+	def set_code(self, force=False):
 		cash_sales = "C00008"
 		series = "C.#####"
+		if self.customer_code and not force:
+			return
+		
 		if self.is_cash_sales:
 			self.customer_code = cash_sales
 		else:
@@ -98,6 +101,7 @@ class Customer(TransactionBase):
 		self.check_customer_group_change()
 		self.validate_default_bank_account()
 		self.validate_internal_customer()
+		self.set_code()
 
 		# set loyalty program tier
 		if frappe.db.exists("Customer", self.name):
