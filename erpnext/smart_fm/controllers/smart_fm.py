@@ -53,7 +53,6 @@ def add_assets_maintenance_log_name(doc, method=""):
 			"task_name": doc.description
 		}, order_by="creation desc")
 		if reff_name:
-			print(reff_name)
 			doc.additional_reference = reff_name
 
 def validate_asset_repair_description(doc, method=""):

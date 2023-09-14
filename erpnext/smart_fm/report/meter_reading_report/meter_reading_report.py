@@ -85,9 +85,6 @@ class Report:
 			nd = dt + relativedelta(months=1) - relativedelta(days=1)
 			self.periode[name] = [dt, nd]
 			self.column_date.append(dt)
-			print(dt, nd)
-
-		print(start_date, end_date)
 
 	def get_data(self):
 		self.raw_data = []
@@ -143,8 +140,6 @@ class Report:
 						
 					if key_date not in d:
 						continue
-
-					print(141, d)
 
 					d[key_date] -= prev_value
 					prev_value += d[key_date]
