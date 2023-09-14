@@ -316,10 +316,7 @@ class VATAuditReport(object):
 						row["remarks"] = inv_data.get("remarks")
 					 
 						rowgross_amount = 0.0 if item_details.get("gross_amount") =="" else item_details.get("gross_amount")
-						print(rowgross_amount)
-						print(row["gross_amount"])
-						print(type(item_details.get("gross_amount")))
-						print(type(row["gross_amount"]))
+
 						row["gross_amount"] += item_details.get("gross_amount")
 						row["tax_amount"] +=  item_details.get("tax_amount")
 						row["net_amount"] += item_details.get("net_amount")

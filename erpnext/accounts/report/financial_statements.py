@@ -50,7 +50,6 @@ def get_period_list(
 
 	start_date = year_start_date
 	months = get_months(year_start_date, year_end_date)
-	print(53, months)
 	for i in range(cint(math.ceil(months / months_to_add))):
 		period = frappe._dict({"from_date": start_date})
 
@@ -61,8 +60,6 @@ def get_period_list(
 
 		cur_month =  start_date.strftime("%B")
 		start_date = to_date
-
-		print(start_date, to_date)
 
 		# Subtract one day from to_date, as it may be first day in next fiscal year or month
 		to_date = add_days(to_date, -1)

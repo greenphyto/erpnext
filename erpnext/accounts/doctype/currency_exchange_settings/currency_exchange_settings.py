@@ -72,9 +72,6 @@ class CurrencyExchangeSettings(Document):
 		try:
 			
 			for key in self.result_key:
-				print(key.key)
-				print(type(value))
-				print(value)
 				if  isinstance(value,dict):
 					value = value[
 					str(key.key.lower()).format(transaction_date=nowdate(), to_currency="SGD", from_currency="USD")
@@ -86,7 +83,6 @@ class CurrencyExchangeSettings(Document):
 		except Exception:
 			frappe.throw(_("Invalid result key. Response:") + " " + response.text)
 		if not isinstance(value, (int, float,str)):
-			#print(value[0]["usd_sgd"])
 			frappe.throw(_("Returned exchange rate is neither integer not float."))
 
 		self.url = response.url
