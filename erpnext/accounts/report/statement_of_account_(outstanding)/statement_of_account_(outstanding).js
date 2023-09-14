@@ -13,10 +13,27 @@ frappe.query_reports["Statement of Account (Outstanding)"] = {
 			"reqd":1
 		},
 		{
+			"fieldname":"party_type",
+			"label": __("Party Type"),
+			"fieldtype": "Select",
+			"options": "Customer\nSupplier",
+			"default": "Customer",
+			"reqd":1
+		},
+		{
 			"fieldname":"customer",
 			"label": __("Customer"),
 			"fieldtype": "Link",
 			"options": "Customer",
+			"depends_on": "eval:doc.party_type == 'Customer'",
+			"reqd":1
+		},
+		{
+			"fieldname":"supplier",
+			"label": __("Supplier"),
+			"fieldtype": "Link",
+			"options": "Supplier",
+			"depends_on": "eval:doc.party_type == 'Supplier'",
 			"reqd":1
 		},
 		{
