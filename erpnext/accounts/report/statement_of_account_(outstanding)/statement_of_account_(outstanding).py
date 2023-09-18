@@ -14,9 +14,12 @@ def execute(filters=None):
 class Report():
 	def __init__(self, filters):
 		self.filters = filters
+		self.columns = []
+		self.data = []
 	
 	def setup_filters(self):
 		self.conditions = ""
+
 		if self.filters.get("from_date") and self.filters.get("to_date"):
 			self.conditions += " and si.posting_date between %(from_date)s and %(to_date)s "
 		if self.filters.get("supplier"):
@@ -24,6 +27,14 @@ class Report():
 		if self.filters.get("customer"):
 			self.conditions += " and si.customer = %(customer)s "
 	
+	def validate_filters(self):
+		if self.filters.get("party_type")=="Supplier" and not self.filters.get("supplier"):
+			return False
+		elif self.filters.get("party_type")=="Customer" and not self.filters.get("customer"):
+			return False
+		
+		return True
+
 	def setup_query(self):
 		self.query = "po_no"
 		self.doctype = "Sales Invoice"
@@ -71,6 +82,9 @@ class Report():
 		), (self.filters), as_dict=1)
 
 	def execute(self):
+		if not self.validate_filters():
+			return self.columns, self.data
+		
 		self.setup_query()
 		self.setup_filters()
 		self.setup_column()

@@ -26,7 +26,7 @@ frappe.query_reports["Statement of Account (Outstanding)"] = {
 			"fieldtype": "Link",
 			"options": "Customer",
 			"depends_on": "eval:doc.party_type == 'Customer'",
-			"reqd":1
+			"mandatory_depends_on": "eval:doc.party_type == 'Customer'",
 		},
 		{
 			"fieldname":"supplier",
@@ -34,7 +34,7 @@ frappe.query_reports["Statement of Account (Outstanding)"] = {
 			"fieldtype": "Link",
 			"options": "Supplier",
 			"depends_on": "eval:doc.party_type == 'Supplier'",
-			"reqd":1
+			"mandatory_depends_on": "eval:doc.party_type == 'Supplier'",
 		},
 		{
 			"fieldname":"from_date",
@@ -56,5 +56,13 @@ frappe.query_reports["Statement of Account (Outstanding)"] = {
 		// 	"options": erpnext.get_presentation_currency_list(),
 		// 	"default": frappe.defaults.get_user_default("Currency")
 		// },
-	]
+	],
+	"onload": function(report){
+		return new Promise(resolve=>{
+			console.log("end")
+			setTimeout(()=>{
+				console.log("start")
+			}, 5000)
+		})
+	}
 };
