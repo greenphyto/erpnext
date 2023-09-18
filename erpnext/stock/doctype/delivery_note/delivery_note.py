@@ -247,6 +247,18 @@ class DeliveryNote(SellingController):
 		self.update_stock_ledger()
 		self.make_gl_entries()
 		self.repost_future_sle_and_gle()
+		self.update_reference_si()
+
+	def update_reference_si(self):
+		for d in self.get("items"):
+			if d.get("si_detail"):
+				si_name = frappe.get_value("Sales Invoice Item", d.si_detail, "parent")
+				frappe.db.set_value("Sales Invoice", si_name, "delivery_note", self.name)
+			elif d.get("so_detail"):
+				si_detail = frappe.get_value("Sales Order Item", d.so_detail, "si_detail")
+				if si_detail:
+					si_name = frappe.get_value("Sales Invoice Item", d.si_detail, "parent")
+					frappe.db.set_value("Sales Invoice", si_name, "delivery_note", self.name)
 
 	def on_cancel(self):
 		super(DeliveryNote, self).on_cancel()
@@ -572,7 +584,10 @@ def make_sales_invoice(source_name, target_doc=None):
 		{
 			"Delivery Note": {
 				"doctype": "Sales Invoice",
-				"field_map": {"is_return": "is_return"},
+				"field_map": {
+					"is_return": "is_return",
+					"delivery_note": "name"
+				},
 				"validation": {"docstatus": ["=", 1]},
 			},
 			"Delivery Note Item": {
