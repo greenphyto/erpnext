@@ -18,8 +18,10 @@
   "column_break_6",
   "posting_date",
   "posting_time",
+  "posting_datetime",
   "set_posting_time",
   "due_date",
+  "delivery_note_no",
   "column_break1",
   "is_paid",
   "is_return",
@@ -56,9 +58,11 @@
   "column_break_50",
   "base_total",
   "base_net_total",
+  "base_tax_withholding_net_total",
   "column_break_28",
   "total",
   "net_total",
+  "tax_withholding_net_total",
   "taxes_section",
   "taxes_and_charges",
   "column_break_58",
@@ -199,13 +203,14 @@
    "print_hide": 1
   },
   {
+   "default": "PI.###./.YYYY",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "ACC-PINV-.YYYY.-\nACC-PINV-RET-.YYYY.-",
+   "options": "PI.###./.YYYY\nPI-RET.###./.YYYY\nACC-PINV-.YYYY.-\nACC-PINV-RET-.YYYY.-",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1513,13 +1518,40 @@
    "oldfieldtype": "Section Break",
    "options": "fa fa-file-text",
    "print_hide": 1
+  },
+  {
+   "fieldname": "tax_withholding_net_total",
+   "fieldtype": "Currency",
+   "label": "Tax Withholding Net Total",
+   "options": "currency",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "base_tax_withholding_net_total",
+   "fieldtype": "Currency",
+   "label": "Base Tax Withholding Net Total",
+   "options": "Company:company:default_currency",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "posting_datetime",
+   "fieldtype": "Datetime",
+   "label": "Posting Date & Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "delivery_note_no",
+   "fieldtype": "Data",
+   "label": "Delivery Note No"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-11-28 14:42:51.952941",
+ "modified": "2023-09-13 17:20:16.337786",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",

@@ -40,13 +40,15 @@
   "buying_price_list",
   "price_list_currency",
   "plc_conversion_rate",
+  "section_break_34",
+  "department",
   "items_section",
   "items",
   "taxes_section",
   "taxes_and_charges",
   "columnbreak",
   "shipping_rule",
-  "section_break_52",
+  "section_break_521",
   "taxes",
   "totals",
   "base_total",
@@ -101,8 +103,7 @@
   "column_break_35",
   "work_order",
   "connections_tab",
-  "get_items_from_open_material_requests",
-  "department"
+  "get_items_from_open_material_requests"
  ],
  "fields": [
   {
@@ -111,13 +112,14 @@
    "options": "fa fa-pushpin"
   },
   {
+   "default": "PR.###./.YYYY",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "MAT-MR-.YYYY.-",
+   "options": "PR.###./.YYYY\nMAT-MR-.YYYY.-",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -424,11 +426,6 @@
    "label": "Shipping Rule",
    "options": "Shipping Rule",
    "print_hide": 1
-  },
-  {
-   "fieldname": "section_break_52",
-   "fieldtype": "Section Break",
-   "hide_border": 1
   },
   {
    "fieldname": "taxes",
@@ -851,17 +848,27 @@
    "fieldtype": "Section Break"
   },
   {
+   "default": "All Departments",
    "fieldname": "department",
    "fieldtype": "Link",
    "label": "Department",
    "options": "Department"
+  },
+  {
+   "fieldname": "section_break_521",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "section_break_34",
+   "fieldtype": "Section Break"
   }
  ],
  "icon": "fa fa-ticket",
  "idx": 70,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-01-19 16:08:33.387315",
+ "modified": "2023-09-05 11:04:36.483507",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request",

@@ -151,6 +151,14 @@ function get_filters() {
 			"depends_on": "eval:doc.filter_based_on == 'Fiscal Year'"
 		},
 		{
+			"fieldname":"month",
+			"label": __("Month"),
+			"fieldtype": "Select",
+			"reqd": 0,
+			"options": "\nJanuary\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember",
+			"depends_on": "eval:(doc.filter_based_on == 'Fiscal Year' && doc.from_fiscal_year==doc.to_fiscal_year) "
+		},
+		{
 			"fieldname": "periodicity",
 			"label": __("Periodicity"),
 			"fieldtype": "Select",

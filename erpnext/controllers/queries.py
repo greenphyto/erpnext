@@ -254,6 +254,35 @@ def item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=Fals
 		else:
 			filters.pop("customer", None)
 			filters.pop("supplier", None)
+   
+		if filters.get("department"):
+			department = filters.get("department")
+			
+			item_rules_list = frappe.get_all(
+				"Item Department", filters={"department": department}, fields=["parent"]
+			)
+
+			filters_dict = {}
+			if not item_rules_list:
+					item_rules_list = [{"parent":"000"}]
+
+   
+			for rule in item_rules_list:
+				rule["restrict_based_on"] = "name"
+				filters_dict[rule["restrict_based_on"]] = []
+
+			for rule in item_rules_list:
+				filters_dict[rule["restrict_based_on"]].append(rule["parent"])
+
+			for filter in filters_dict:
+				filters[scrub(filter)] = ["in", filters_dict[filter]]
+
+			if filters.get("department"):
+				del filters["department"]
+			 
+		else:
+			filters.pop("department", None)
+		 
 
 	description_cond = ""
 	if frappe.db.count(doctype, cache=True) < 50000:

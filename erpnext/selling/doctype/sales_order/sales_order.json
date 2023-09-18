@@ -193,6 +193,7 @@
    "print_hide": 1
   },
   {
+   "default": "SO.###./.YYYY",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "hide_days": 1,
@@ -201,7 +202,7 @@
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "SAL-ORD-.YYYY.-",
+   "options": "SO.###./.YYYY\nSAL-ORD-.YYYY.-",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1629,7 +1630,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-10-11 13:06:10.469796",
+ "modified": "2023-09-05 12:14:31.336934",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

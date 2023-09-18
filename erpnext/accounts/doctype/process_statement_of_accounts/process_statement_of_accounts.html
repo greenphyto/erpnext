@@ -172,12 +172,12 @@
 	  <div class="col-xs-5">
 		<div class="row row-no-gutters">
 		  <span class="col-xs-12">
-			{{filters.party[0] }}
+			{{filters.party_name[0] }} ({{ filters.party[0] }})
 		  </span>
 		</div>
 		<div class="row row-no-gutters">
 		  <span class="col-xs-12">
-			{{filters.custAddress}}
+			{{filters.custAddress or "-" }}
 		  </span>
 		</div>
 		<div class="row row-no-gutters">
@@ -192,177 +192,177 @@
 			<b>Statement Date:</b>
 		  </span>
 		  <span class="col-xs-5">
-			<b>{{filters.StatementDate}}</b>
+			<b>{{ frappe.utils.format_date(filters.StatementDate) }}</b>
 		  </span>
 		</div>
 	  </div>
 	</div>
 	<br />
 	<div class="row">
-	  <div class="col-xs-6" style="background-color: #225422; color: white">
-		Remittance
-	  </div>
-	  <div class="col-xs-1"></div>
-	  <div class="col-xs-5" style="background-color: #225422; color: white">
-		Account Summary
-	  </div>
-	</div>
-	<div class="row">
-	  <div class="col-xs-6">
-		<div>
-		  To ensure proper credit, please enclose a copy of this statement with your check and remit to:
+		<div class="col-xs-6" style="background-color: #225422; color: white">
+		  Remittance
 		</div>
-		<p class="text-center">
-		  {{filters.company}}
+		<div class="col-xs-1"></div>
+		<div class="col-xs-5" style="background-color: #225422; color: white">
+		  Account Summary
+		</div>
+	  </div>
+	  <div class="row">
+		<div class="col-xs-6">
+		  <div>
+			To ensure proper credit, please enclose a copy of this statement with your check and remit to:
+		  </div>
+		  <p class="text-center">
+			{{filters.company}}
+			<br>
+			{{filters.address}}
+			<br>
+			{{filters.city}}, {{filters.zipcode}}
+		  </p>
+		  <!-- <div>
+				  Please write your Customer ID on your check.
+			  </div> -->
+		</div>
+		<div class="col-xs-1"></div>
+		<div class="col-xs-5">
+		  <div style="display: flex; justify-content: space-between">
+			<span>
+			  Balance Due:
+			</span>
+			<span class="divrightcontent">
+			  {{ frappe.utils.fmt_money(data[-1].balance, currency=filters.presentation_currency) }}
+			</span>
+		  </div>
 		  <br>
-		  {{filters.address}}
+		  <div style="display: flex; justify-content: space-between">
+			<span>
+			  Payment Due Date:
+			</span>
+			<span>
+			  {{filters.LastDay}}
+			</span>
+		  </div>
+		  <!-- <div style="display: flex; justify-content: space-between; border: 2px;">
+				  <div>
+					  Amount Enclosed:
+				  </div>
+				  <div class="divborder">
+					  
+				  </div>
+			  </div> -->
 		  <br>
-		  {{filters.city}}, {{filters.zipcode}}
-		</p>
-		<!-- <div>
-				Please write your Customer ID on your check.
-			</div> -->
-	  </div>
-	  <div class="col-xs-1"></div>
-	  <div class="col-xs-5">
-		<div style="display: flex; justify-content: space-between">
-		  <span>
-			Balance Due:
-		  </span>
-		  <span class="divrightcontent">
-			{{ frappe.utils.fmt_money(data[-1].balance, currency=filters.presentation_currency) }}
-		  </span>
+		  <p class="text-center">
+			Make all checks payable to
+		  </p>
+		  <p class="text-center">
+			{{filters.company}}
+		  </p>
 		</div>
-		<br>
-		<div style="display: flex; justify-content: space-between">
-		  <span>
-			Payment Due Date:
-		  </span>
-		  <span>
-			{{filters.LastDay}}
-		  </span>
-		</div>
-		<!-- <div style="display: flex; justify-content: space-between; border: 2px;">
-				<div>
-					Amount Enclosed:
-				</div>
-				<div class="divborder">
-					
-				</div>
-			</div> -->
-		<br>
-		<p class="text-center">
-		  Make all checks payable to
-		</p>
-		<p class="text-center">
-		  {{filters.company}}
-		</p>
 	  </div>
-	</div>
-	<br>
-  
-	<b>Account Activity</b>
-	<table>
-	  <thead>
-		<tr style="background-color: #225422; color: white">
-		  <th style="width: 15%; color: white">{{ _("Date") }}</th>
-		  <th style="width: 15%; color: white">{{ _("Type") }}</th>
-		  <th style="width: 15%; color: white">{{ _("Invoice") }}</th>
-		  <th style="width: 20%; color: white">{{ _("Description") }}</th>
-		  <th style="width: 13%; color: white">{{ _("Charge") }}</th>
-		  <th style="width: 12%; color: white">{{ _("Payment") }}</th>
-		  <th style="width: 10%; color: white">{{ _("Balance") }}</th>
-		</tr>
-	  </thead>
-	  <tbody>
-		{% for row in data %}
-		{% if(frappe.format(row.account, {fieldtype: "Link"})!= "Total" ) %}
-		<tr>
-		  {% if(row.posting_date) %}
-		  <td>{{ frappe.format(row.posting_date, 'Date') }}</td>
-		  <td>{{ row.voucher_type.replace("Entry", "") }}
-		  </td>
-		  <td>
-			{{ row.voucher_no }}</td>
-		  <td>
-			{{ row.voucher_type.replace("Entry", "") }}
-			<!-- {% if not (filters.party or filters.account)  %}
-						  {{ row.party or row.account }}
-						  <br>
-					  {% endif %}
-					  {{ _("Against") }}: {{ row.against }}
-					  <br>{{ _("Remarks") }}: {{ row.remarks }}
-					  {% if row.bill_no %}
-						  <br>{{ _("Supplier Invoice No") }}: {{ row.bill_no }}
-					  {% endif %} -->
-		  </td>
-		  <td style="text-align: right">
-			{{ frappe.utils.fmt_money(row.debit, currency=filters.presentation_currency) }}</td>
-		  <td style="text-align: right">
-			({{ frappe.utils.fmt_money(row.credit, currency=filters.presentation_currency) }})</td>
-		  {% else %}
-		  <td></td>
-		  <td></td>
-		  <td></td>
-		  <td>
-			{% if(frappe.format(row.account, {fieldtype: "Link"}) == "Opening" ) %}
-  
-			<b>{{ frappe.format(row.account, {fieldtype: "Link"}) or "&nbsp;" }}</b>
+	  <br>
+	
+	  <b>Account Activity</b>
+	  <table>
+		<thead>
+		  <tr style="background-color: #225422; color: white">
+			<th style="width: 15%; color: white">{{ _("Date") }}</th>
+			<th style="width: 15%; color: white">{{ _("Type") }}</th>
+			<th style="width: 15%; color: white">{{ _("Invoice") }}</th>
+			<th style="width: 20%; color: white">{{ _("Description") }}</th>
+			<th style="width: 13%; color: white">{{ _("Charge") }}</th>
+			<th style="width: 12%; color: white">{{ _("Payment") }}</th>
+			<th style="width: 10%; color: white">{{ _("Balance") }}</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  {% for row in data %}
+		  {% if(frappe.format(row.account, {fieldtype: "Link"})!= "Total" ) %}
+		  <tr>
+			{% if(row.posting_date) %}
+			<td>{{ frappe.format(row.posting_date, 'Date') }}</td>
+			<td>{{ row.voucher_type.replace("Entry", "") }}
+			</td>
+			<td>
+			  {{ row.voucher_no }}</td>
+			<td>
+			  {{ row.voucher_type.replace("Entry", "") }}
+			  <!-- {% if not (filters.party or filters.account)  %}
+							{{ row.party or row.account }}
+							<br>
+						{% endif %}
+						{{ _("Against") }}: {{ row.against }}
+						<br>{{ _("Remarks") }}: {{ row.remarks }}
+						{% if row.bill_no %}
+							<br>{{ _("Supplier Invoice No") }}: {{ row.bill_no }}
+						{% endif %} -->
+			</td>
+			<td style="text-align: right">
+			  {{ frappe.utils.fmt_money(row.debit, currency=filters.presentation_currency) }}</td>
+			<td style="text-align: right">
+			  ({{ frappe.utils.fmt_money(row.credit, currency=filters.presentation_currency) }})</td>
 			{% else %}
-			<b>Current Balance</b>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td>
+			  {% if(frappe.format(row.account, {fieldtype: "Link"}) == "Opening" ) %}
+	
+			  <b>{{ frappe.format(row.account, {fieldtype: "Link"}) or "&nbsp;" }}</b>
+			  {% else %}
+			  <b>Current Balance</b>
+			  {% endif %}
+	
+			</td>
+			<td style="text-align: right">
+			  {% if(frappe.format(row.account, {fieldtype: "Link"}) == "Opening" ) %}
+			  {{ row.get('account', '') and frappe.utils.fmt_money(row.debit, currency=filters.presentation_currency) }}
+			  {% endif %}
+			</td>
+			<td style="text-align: right">
+			  {% if(frappe.format(row.account, {fieldtype: "Link"}) == "Opening" ) %}
+			  ({{ row.get('account', '') and frappe.utils.fmt_money(row.credit, currency=filters.presentation_currency) }})
+			  {% endif %}
+			</td>
 			{% endif %}
-  
-		  </td>
-		  <td style="text-align: right">
-			{% if(frappe.format(row.account, {fieldtype: "Link"}) == "Opening" ) %}
-			{{ row.get('account', '') and frappe.utils.fmt_money(row.debit, currency=filters.presentation_currency) }}
-			{% endif %}
-		  </td>
-		  <td style="text-align: right">
-			{% if(frappe.format(row.account, {fieldtype: "Link"}) == "Opening" ) %}
-			({{ row.get('account', '') and frappe.utils.fmt_money(row.credit, currency=filters.presentation_currency) }})
-			{% endif %}
-		  </td>
+			<td style="text-align: right">
+			  {{ frappe.utils.fmt_money(row.balance, currency=filters.presentation_currency) }}
+			</td>
+		  </tr>
 		  {% endif %}
-		  <td style="text-align: right">
-			{{ frappe.utils.fmt_money(row.balance, currency=filters.presentation_currency) }}
-		  </td>
-		</tr>
-		{% endif %}
-		{% endfor %}
-		<tr>
-			<td colspan="6" style="text-align: right"> {{ frappe.utils.money_in_words(data[-1].balance) }}</td>
-		</tr>
-	  </tbody>
-	</table>
-	<br>
-	{% if ageing %}
-	<h4 class="text-center">{{ _("Ageing Report based on ") }} {{ ageing.ageing_based_on }}
-	  {{ _("up to " ) }} {{ frappe.format(filters.to_date, 'Date')}}
-	</h4>
-	<table class="table table-bordered">
-	  <thead>
-		<tr>
-		  <th style="width: 25%">30 Days</th>
-		  <th style="width: 25%">60 Days</th>
-		  <th style="width: 25%">90 Days</th>
-		  <th style="width: 25%">120 Days</th>
-		</tr>
-	  </thead>
-	  <tbody>
-		<tr>
-		  <td>{{ frappe.utils.fmt_money(ageing.range1, currency=filters.presentation_currency) }}</td>
-		  <td>{{ frappe.utils.fmt_money(ageing.range2, currency=filters.presentation_currency) }}</td>
-		  <td>{{ frappe.utils.fmt_money(ageing.range3, currency=filters.presentation_currency) }}</td>
-		  <td>{{ frappe.utils.fmt_money(ageing.range4, currency=filters.presentation_currency) }}</td>
-		</tr>
-	  </tbody>
-	</table>
-	{% endif %}
-	{% if terms_and_conditions %}
-	<div>
-	  {{ terms_and_conditions }}
+		  {% endfor %}
+		  <tr>
+			  <td colspan="6" style="text-align: right"> {{ frappe.utils.money_in_words(data[-1].balance) }}</td>
+		  </tr>
+		</tbody>
+	  </table>
+	  <br>
+	  {% if ageing %}
+	  <h4 class="text-center">{{ _("Ageing Report based on ") }} {{ ageing.ageing_based_on }}
+		{{ _("up to " ) }} {{ frappe.format(filters.to_date, 'Date')}}
+	  </h4>
+	  <table class="table table-bordered">
+		<thead>
+		  <tr>
+			<th style="width: 25%">30 Days</th>
+			<th style="width: 25%">60 Days</th>
+			<th style="width: 25%">90 Days</th>
+			<th style="width: 25%">120 Days</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr>
+			<td>{{ frappe.utils.fmt_money(ageing.range1, currency=filters.presentation_currency) }}</td>
+			<td>{{ frappe.utils.fmt_money(ageing.range2, currency=filters.presentation_currency) }}</td>
+			<td>{{ frappe.utils.fmt_money(ageing.range3, currency=filters.presentation_currency) }}</td>
+			<td>{{ frappe.utils.fmt_money(ageing.range4, currency=filters.presentation_currency) }}</td>
+		  </tr>
+		</tbody>
+	  </table>
+	  {% endif %}
+	  {% if terms_and_conditions %}
+	  <div>
+		{{ terms_and_conditions }}
+	  </div>
+	  {% endif %}
+	
 	</div>
-	{% endif %}
-  
-  </div>

@@ -97,13 +97,36 @@ erpnext.buying.BuyingController = class BuyingController extends erpnext.Transac
 				}
 			}
 			else {
+				
 				return{
 					query: "erpnext.controllers.queries.item_query",
 					filters: { 'supplier': me.frm.doc.supplier, 'is_purchase_item': 1, 'has_variants': 0}
 				}
 			}
 		});
+		this.frm.set_query("item_name", "items", function() {
+			if (me.frm.doc.is_subcontracted) {
+				var filters = {'supplier': me.frm.doc.supplier};
+				if (me.frm.doc.is_old_subcontracting_flow) {
+					filters["is_sub_contracted_item"] = 1;
+				}
+				else {
+					filters["is_stock_item"] = 0;
+				}
 
+				return{
+					query: "erpnext.controllers.queries.item_query",
+					filters: filters
+				}
+			}
+			else {
+				
+				return{
+					query: "erpnext.controllers.queries.item_query",
+					filters: { 'supplier': me.frm.doc.supplier, 'is_purchase_item': 1, 'has_variants': 0}
+				}
+			}
+		});
 
 		this.frm.set_query("manufacturer", "items", function(doc, cdt, cdn) {
 			const row = locals[cdt][cdn];

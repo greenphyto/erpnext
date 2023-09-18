@@ -9,7 +9,7 @@ from frappe.contacts.address_and_contact import (
 	delete_contact_and_address,
 	load_address_and_contact,
 )
-from frappe.model.naming import set_name_by_naming_series, set_name_from_naming_options
+from frappe.model.naming import set_name_by_naming_series, set_name_from_naming_options, parse_naming_series
 
 from erpnext.accounts.party import (  # noqa
 	get_dashboard_info,
@@ -47,6 +47,16 @@ class Supplier(TransactionBase):
 			set_name_by_naming_series(self)
 		else:
 			self.name = set_name_from_naming_options(frappe.get_meta(self.doctype).autoname, self)
+		
+		self.supplier_id = self.name
+		self.set_code()
+
+	def set_code(self, force=False):
+		series = "S.#####"
+		if self.supplier_code and not force:
+			return
+		
+		self.supplier_code = parse_naming_series(series, doc=self)
 
 	def on_update(self):
 		if not self.naming_series:
@@ -57,6 +67,7 @@ class Supplier(TransactionBase):
 
 	def validate(self):
 		self.flags.is_new_doc = self.is_new()
+		self.set_code()
 
 		# validation for Naming Series mandatory field...
 		if frappe.defaults.get_global_default("supp_master_name") == "Naming Series":
@@ -146,6 +157,7 @@ class Supplier(TransactionBase):
 	def after_rename(self, olddn, newdn, merge=False):
 		if frappe.defaults.get_global_default("supp_master_name") == "Supplier Name":
 			self.db_set("supplier_name", newdn)
+			self.db_set("supplier_id", newdn)
 
 
 @frappe.whitelist()

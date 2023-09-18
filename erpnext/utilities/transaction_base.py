@@ -5,7 +5,7 @@
 import frappe
 import frappe.share
 from frappe import _
-from frappe.utils import cint, flt, get_time, now_datetime
+from frappe.utils import cint, flt, get_time, now_datetime, get_datetime
 
 from erpnext.controllers.status_updater import StatusUpdater
 
@@ -29,6 +29,16 @@ class TransactionBase(StatusUpdater):
 				get_time(self.posting_time)
 			except ValueError:
 				frappe.throw(_("Invalid Posting Time"))
+
+		self.set_posting_datetime()
+
+	def set_posting_datetime(self):
+		p = self.meta.get_field("posting_datetime")
+		if self.meta.get_field("posting_datetime"):
+			dt = get_datetime(self.posting_date)
+			tm = get_time(self.posting_time)
+			dt = dt.replace(hour=tm.hour, minute=tm.minute, second=tm.second)
+			self.posting_datetime = dt
 
 	def validate_uom_is_integer(self, uom_field, qty_fields):
 		validate_uom_is_integer(self, uom_field, qty_fields)

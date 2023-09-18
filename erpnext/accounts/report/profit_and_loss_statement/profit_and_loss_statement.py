@@ -23,6 +23,7 @@ def execute(filters=None):
 		filters.filter_based_on,
 		filters.periodicity,
 		company=filters.company,
+		month=filters.month
 	)
 
 	income = get_data(

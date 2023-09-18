@@ -39,6 +39,8 @@
   "reports_to",
   "column_break_18",
   "branch",
+  "section_break_30",
+  "employee_department",
   "employment_details",
   "scheduled_confirmation_date",
   "column_break_32",
@@ -348,6 +350,7 @@
   {
    "fieldname": "department",
    "fieldtype": "Link",
+   "hidden": 1,
    "in_standard_filter": 1,
    "label": "Department",
    "oldfieldname": "department",
@@ -804,13 +807,23 @@
   {
    "fieldname": "column_break_104",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "employee_department",
+   "fieldtype": "Table",
+   "label": "Employee Department",
+   "options": "Employee Department"
+  },
+  {
+   "fieldname": "section_break_30",
+   "fieldtype": "Section Break"
   }
  ],
  "icon": "fa fa-user",
  "idx": 24,
  "image_field": "image",
  "links": [],
- "modified": "2022-09-13 10:27:14.579197",
+ "modified": "2023-02-17 16:07:08.164407",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Employee",

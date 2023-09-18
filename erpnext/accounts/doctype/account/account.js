@@ -1,5 +1,5 @@
 // Copyright (c) 2017, Frappe Technologies Pvt. Ltd. and Contributors
-// License: GNU General Public License v3. See license.txt
+// License: GNU General Public License v3. See license.txt Fixed Item Name
 
 frappe.ui.form.on('Account', {
 	setup: function(frm) {

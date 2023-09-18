@@ -16,6 +16,7 @@
   "column_break1",
   "posting_date",
   "posting_time",
+  "posting_datetime",
   "set_posting_time",
   "column_break_10",
   "company",
@@ -183,7 +184,7 @@
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "MAT-DN-.YYYY.-\nMAT-DN-RET-.YYYY.-",
+   "options": "DO.###./.YYYY\nDO-RET.###./.YYYY\nMAT-DN-.YYYY.-\nMAT-DN-RET-.YYYY.-",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1381,13 +1382,19 @@
   {
    "fieldname": "column_break_18",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "posting_datetime",
+   "fieldtype": "Datetime",
+   "label": "Posting Date & Time",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-10-11 13:06:58.655635",
+ "modified": "2023-09-11 15:37:26.608431",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
