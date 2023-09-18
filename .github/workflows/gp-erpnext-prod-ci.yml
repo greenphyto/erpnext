@@ -1,0 +1,57 @@
+on:
+  push:
+    branches:
+      - gpprod.v14.3.1
+
+name: Deploy to ERPNext Production Environment
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+    - name: executing remote ssh commands using ssh key
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.PROD_HOST }}
+        username: ${{ secrets.PROD_USERNAME }}
+        key: ${{ secrets.PROD_KEY }}
+        port: ${{ secrets.PORT }}
+        command_timeout: 30m
+        script_stop: true
+        script: |
+          cd greenphyto_docker/frappe_docker/
+          docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto.yaml down
+          docker ps
+          docker builder prune -a -f
+          docker image prune -a -f
+          docker buildx bake --load
+          docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto.yaml up -d
+          docker ps
+          echo 'finished deployment'
+    - name: Send mail
+      uses: dawidd6/action-send-mail@v3
+      with:
+        # Required mail server address:
+        server_address: smtp.gmail.com
+        # Required mail server port:
+        server_port: 465
+        # Required mail server username:
+        username: ${{secrets.MAIL_USERNAME}}
+        # Required mail server password:
+        password: ${{secrets.MAIL_PASSWORD}}
+        # Required mail subject:
+        subject: ERPNext Production Deployment Done
+        # Required recipients' addresses:
+        to: weiquan@greenphyto.com,myo@greenphyto.com,aunt.maung@greenphyto.com
+        # Required sender full name (address can be skipped):
+        from: Info@greenphyto.com # <user@example.com>
+        # Optional whether this connection use TLS (default is true if server_port is 465)
+        secure: true
+        # Optional plain body:
+        body: ERPNext deployment done for production env! Branch - gpprod.v14.3.1, Commit Description - ${{github.event.head_commit.message}} URL-https://erp.greenphyto.com
+       

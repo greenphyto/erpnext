@@ -22,7 +22,7 @@ frappe.query_reports["Trade Debtors Summary"] = {
 			"label": __("Ageing Based On"),
 			"fieldtype": "Select",
 			"options": 'Posting Date\nDue Date',
-			"default": "Due Date"
+			"default": "Posting Date"
 		},
 		{
 			"fieldname":"range1",

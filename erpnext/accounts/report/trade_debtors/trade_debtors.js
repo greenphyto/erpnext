@@ -1,5 +1,5 @@
 // Copyright (c) 2023, Frappe Technologies Pvt. Ltd. and contributors
-// For license information, please see license.txt
+// For license information, please see license.txt greenphyto
 /* eslint-disable */
 
 frappe.query_reports["Trade Debtors"] =  {
