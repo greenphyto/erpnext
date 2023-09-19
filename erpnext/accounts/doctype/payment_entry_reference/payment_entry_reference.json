@@ -19,18 +19,20 @@
  ],
  "fields": [
   {
-   "columns": 1,
+   "columns": 2,
    "fieldname": "reference_doctype",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Type",
    "options": "DocType",
    "reqd": 1
   },
   {
-   "columns": 1,
+   "columns": 2,
    "fieldname": "reference_name",
    "fieldtype": "Dynamic Link",
    "in_global_search": 1,
+   "in_list_view": 1,
    "label": "Name",
    "options": "reference_doctype",
    "reqd": 1
@@ -42,8 +44,10 @@
    "read_only": 1
   },
   {
+   "columns": 1,
    "fieldname": "bill_no",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Supplier Invoice No",
    "no_copy": 1,
    "read_only": 1
@@ -61,14 +65,15 @@
    "read_only": 1
   },
   {
-   "columns": 1,
+   "columns": 2,
    "fieldname": "outstanding_amount",
    "fieldtype": "Float",
+   "in_list_view": 1,
    "label": "Outstanding",
    "read_only": 1
   },
   {
-   "columns": 1,
+   "columns": 2,
    "fieldname": "allocated_amount",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -101,7 +106,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-09-13 13:23:21.765286",
+ "modified": "2023-09-19 12:18:39.539786",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry Reference",
