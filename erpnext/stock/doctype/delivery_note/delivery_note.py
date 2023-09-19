@@ -250,15 +250,19 @@ class DeliveryNote(SellingController):
 		self.update_reference_si()
 
 	def update_reference_si(self):
+		done_map = []
 		for d in self.get("items"):
+			si_name = ""
 			if d.get("si_detail"):
 				si_name = frappe.get_value("Sales Invoice Item", d.si_detail, "parent")
-				frappe.db.set_value("Sales Invoice", si_name, "delivery_note", self.name)
 			elif d.get("so_detail"):
-				si_detail = frappe.get_value("Sales Order Item", d.so_detail, "si_detail")
+				si_detail = frappe.get_value("Sales Order Item", d.so_detail, "parent")
 				if si_detail:
-					si_name = frappe.get_value("Sales Invoice Item", d.si_detail, "parent")
-					frappe.db.set_value("Sales Invoice", si_name, "delivery_note", self.name)
+					si_name = frappe.get_value("Sales Invoice Item", {"sales_order": si_detail}, "parent")
+
+			if si_name and si_name not in done_map:
+				frappe.db.set_value("Sales Invoice", si_name, "delivery_note", self.name)
+				done_map.append(si_name)
 
 	def on_cancel(self):
 		super(DeliveryNote, self).on_cancel()
