@@ -20,6 +20,11 @@ class Report():
 	def setup_filters(self):
 		self.conditions = ""
 
+		if not self.filters.get("from_date"):
+			self.filters["from_date"] = getdate("2000-01-01")
+		if not self.filters.get("to_date"):
+			self.filters["to_date"] = getdate("2099-01-01")
+
 		if self.filters.get("from_date") and self.filters.get("to_date"):
 			self.conditions += " and si.posting_date between %(from_date)s and %(to_date)s "
 		if self.filters.get("supplier"):
@@ -80,7 +85,7 @@ class Report():
 			query=self.query,
 			doctype=self.doctype,
 			conditions=self.conditions
-		), (self.filters), as_dict=1)
+		), (self.filters), as_dict=1, debug=1)
 
 	def execute(self):
 		if not self.validate_filters():
