@@ -39,7 +39,7 @@ class Report():
 		self.query = "po_no, delivery_note"
 		self.doctype = "Sales Invoice"
 		if self.filters.party_type == "Supplier":
-			self.query = "delivery_note_no"
+			self.query = "delivery_note_no as delivery_note"
 			self.doctype = "Purchase Invoice"
 
 	def setup_column(self):
@@ -51,11 +51,12 @@ class Report():
 		if self.doctype == "Sales Invoice":
 			self.columns +=[
 				{"label": _("Customer PO"), 	"fieldname": "customer_po",	 "fieldtype": "Data", "width": 120 },
+				{"label": _("Delivery Note"), 	"fieldname": "delivery_note","fieldtype": "Link", "width": 150, "options":"Delivery Note" },
 			]
-
-		self.columns +=[
-			{"label": _("Delivery Note"), 	"fieldname": "delivery_note","fieldtype": "Data", "width": 150 },
-		]
+		else:
+			self.columns +=[
+				{"label": _("Delivery Note"), 	"fieldname": "delivery_note","fieldtype": "Data", "width": 150 },
+			]
 			
 		self.columns += [
 			{"label": _("Amount"), 			"fieldname": "outstanding_amount",		 "fieldtype": "Currency", "width": 120},
