@@ -9,7 +9,7 @@ from frappe.contacts.address_and_contact import (
 	delete_contact_and_address,
 	load_address_and_contact,
 )
-from frappe.model.naming import set_name_by_naming_series, set_name_from_naming_options, parse_naming_series
+from frappe.model.naming import set_name_by_naming_series, set_name_from_naming_options, parse_naming_series, NamingSeries
 
 from erpnext.accounts.party import (  # noqa
 	get_dashboard_info,
@@ -158,6 +158,22 @@ class Supplier(TransactionBase):
 		if frappe.defaults.get_global_default("supp_master_name") == "Supplier Name":
 			self.db_set("supplier_name", newdn)
 			self.db_set("supplier_id", newdn)
+
+	def update_series(self):
+		pass
+
+@frappe.whitelist()
+def get_exists_series(series):
+	# frappe.errprint("Here {}".format(series))
+	naming = NamingSeries(series)
+
+	def fake_counter(_prefix, digits):
+		count =  naming.get_current_value() + 1
+		return str(count).zfill(digits)
+	
+	res = parse_naming_series(series, number_generator=fake_counter)
+
+	return res
 
 
 @frappe.whitelist()

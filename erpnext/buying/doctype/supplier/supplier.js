@@ -93,6 +93,24 @@ frappe.ui.form.on("Supplier", {
 			erpnext.utils.set_party_dashboard_indicators(frm);
 		}
 	},
+	supplier_code_series: function(frm){
+		var cur_series = cstr(frm.doc.supplier_code_series);
+		var cur_number = cstr(frm.doc.supplier_code);
+
+		if (frm.doc.supplier_code_series==cur_series){
+			frm.set_value("supplier_code", cur_number)
+		}else{
+			frappe.call({
+				method: "erpnext.buying.doctype.supplier.supplier.get_exists_series",
+				args:{
+					"series": frm.doc.supplier_code_series
+				},
+				callback: function(r) {
+					frm.set_value("supplier_code", r.message)
+				}
+			});
+		}
+	},
 	get_supplier_group_details: function(frm) {
 		frappe.call({
 			method: "get_supplier_group_details",
