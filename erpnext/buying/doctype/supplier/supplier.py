@@ -68,6 +68,7 @@ class Supplier(TransactionBase):
 	def validate(self):
 		self.flags.is_new_doc = self.is_new()
 		self.set_code()
+		self.update_series()
 
 		# validation for Naming Series mandatory field...
 		if frappe.defaults.get_global_default("supp_master_name") == "Naming Series":
@@ -160,10 +161,12 @@ class Supplier(TransactionBase):
 			self.db_set("supplier_id", newdn)
 
 	def update_series(self):
-		pass
+		next_series = get_exists_series(self.supplier_code_series)
+		if next_series == self.supplier_code:
+			parse_naming_series(self.supplier_code_series, doc=self)
 
 @frappe.whitelist()
-def get_exists_series(series):
+def get_exists_series(series, doctype="", name="", field_series="", field_code=""):
 	# frappe.errprint("Here {}".format(series))
 	naming = NamingSeries(series)
 
@@ -172,6 +175,12 @@ def get_exists_series(series):
 		return str(count).zfill(digits)
 	
 	res = parse_naming_series(series, number_generator=fake_counter)
+
+	if doctype and name:
+		cur_series = frappe.get_value(doctype, name, field_series)
+		cur_code = frappe.get_value(doctype, name, field_code)
+		if cur_series == series:
+			return cur_code
 
 	return res
 
