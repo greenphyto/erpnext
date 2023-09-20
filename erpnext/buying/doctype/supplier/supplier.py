@@ -52,7 +52,7 @@ class Supplier(TransactionBase):
 		self.set_code()
 
 	def set_code(self, force=False):
-		series = "S.#####"
+		series = self.supplier_code_series
 		if self.supplier_code and not force:
 			return
 		
