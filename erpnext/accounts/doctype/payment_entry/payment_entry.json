@@ -108,7 +108,7 @@
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
-   "options": "PV.###./.YYYY\nACC-PAY-.YYYY.-",
+   "options": "PV.###./.YYYY\nACC-PAY-.YYYY.-\nRV.###./.YYYY",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -734,7 +734,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-09-13 17:12:40.707517",
+ "modified": "2023-09-21 14:28:20.761613",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry",
