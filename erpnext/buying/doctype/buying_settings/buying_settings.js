@@ -2,9 +2,15 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Buying Settings', {
-	// refresh: function(frm) {
-
-	// }
+	update_supplier: function(frm) {
+		frappe.call({
+			"method":"update_supplier_account",
+			"doc": frm.doc,
+			callback: function(){
+				frappe.show_alert("Success")
+			}
+		})
+	}
 });
 
 frappe.tour['Buying Settings'] = [
