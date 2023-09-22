@@ -13,6 +13,7 @@
   "naming_series",
   "supplier_name",
   "country",
+  "supplier_code_series",
   "supplier_code",
   "column_break0",
   "supplier_group",
@@ -457,6 +458,14 @@
    "in_preview": 1,
    "in_standard_filter": 1,
    "label": "Supplier Code"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "default": "S0.####",
+   "fieldname": "supplier_code_series",
+   "fieldtype": "Select",
+   "label": "Supplier Code Series",
+   "options": "S0.####\nS1.####\nS2.####\nS3.####\nS4.####\nS5.####"
   }
  ],
  "icon": "fa fa-user",
@@ -469,7 +478,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2023-09-13 10:19:02.777597",
+ "modified": "2023-09-20 15:05:15.226839",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",

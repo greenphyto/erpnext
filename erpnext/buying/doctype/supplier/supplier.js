@@ -93,6 +93,21 @@ frappe.ui.form.on("Supplier", {
 			erpnext.utils.set_party_dashboard_indicators(frm);
 		}
 	},
+	supplier_code_series: function(frm){
+		frappe.call({
+			method: "erpnext.buying.doctype.supplier.supplier.get_exists_series",
+			args:{
+				"series": frm.doc.supplier_code_series,
+				"doctype": frm.doc.doctype,
+				"name": frm.doc.name,
+				"field_series": "supplier_code_series", 
+				"field_code": "supplier_code", 
+			},
+			callback: function(r) {
+				frm.set_value("supplier_code", r.message)
+			}
+		});
+	},
 	get_supplier_group_details: function(frm) {
 		frappe.call({
 			method: "get_supplier_group_details",

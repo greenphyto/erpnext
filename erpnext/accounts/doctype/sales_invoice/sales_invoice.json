@@ -13,6 +13,7 @@
   "customer_name",
   "po_no",
   "po_date",
+  "delivery_note",
   "tax_id",
   "company",
   "company_tax_id",
@@ -2104,6 +2105,11 @@
    "fieldtype": "Datetime",
    "label": "Posting Date & Time",
    "read_only": 1
+  },
+  {
+   "fieldname": "delivery_note",
+   "fieldtype": "Data",
+   "label": "Delivery Note"
   }
  ],
  "icon": "fa fa-file-text",
@@ -2116,7 +2122,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2023-09-11 15:08:08.288235",
+ "modified": "2023-09-22 15:34:08.927741",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

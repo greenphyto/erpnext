@@ -23,7 +23,10 @@
   "subcontract",
   "backflush_raw_materials_of_subcontract_based_on",
   "column_break_11",
-  "over_transfer_allowance"
+  "over_transfer_allowance",
+  "default_supplier_account_section",
+  "default_supplier_account",
+  "update_supplier"
  ],
  "fields": [
   {
@@ -133,6 +136,22 @@
   {
    "fieldname": "column_break_12",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_supplier_account_section",
+   "fieldtype": "Section Break",
+   "label": "Default Supplier Account"
+  },
+  {
+   "fieldname": "default_supplier_account",
+   "fieldtype": "Table",
+   "label": "Default Supplier Account",
+   "options": "Supplier Code Account"
+  },
+  {
+   "fieldname": "update_supplier",
+   "fieldtype": "Button",
+   "label": "Update Supplier"
   }
  ],
  "icon": "fa fa-cog",
@@ -140,7 +159,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-09-27 10:50:27.050252",
+ "modified": "2023-09-21 10:41:34.800801",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Buying Settings",

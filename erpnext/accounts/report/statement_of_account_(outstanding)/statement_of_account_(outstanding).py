@@ -20,6 +20,11 @@ class Report():
 	def setup_filters(self):
 		self.conditions = ""
 
+		if not self.filters.get("from_date"):
+			self.filters["from_date"] = getdate("2000-01-01")
+		if not self.filters.get("to_date"):
+			self.filters["to_date"] = getdate("2099-01-01")
+
 		if self.filters.get("from_date") and self.filters.get("to_date"):
 			self.conditions += " and si.posting_date between %(from_date)s and %(to_date)s "
 		if self.filters.get("supplier"):
@@ -36,10 +41,10 @@ class Report():
 		return True
 
 	def setup_query(self):
-		self.query = "po_no"
+		self.query = "po_no, delivery_note"
 		self.doctype = "Sales Invoice"
 		if self.filters.party_type == "Supplier":
-			self.query = "delivery_note_no"
+			self.query = "delivery_note_no as delivery_note"
 			self.doctype = "Purchase Invoice"
 
 	def setup_column(self):
@@ -52,12 +57,9 @@ class Report():
 			self.columns +=[
 				{"label": _("Customer PO"), 	"fieldname": "customer_po",	 "fieldtype": "Data", "width": 120 },
 			]
-		else:
-			self.columns +=[
-				{"label": _("Delivery Note"), 	"fieldname": "delivery_note","fieldtype": "Data", "width": 150 },
-			]
 			
 		self.columns += [
+			{"label": _("Delivery Note"), 	"fieldname": "delivery_note","fieldtype": "Data", "width": 150 },
 			{"label": _("Amount"), 			"fieldname": "outstanding_amount",		 "fieldtype": "Currency", "width": 120},
 		]
 
@@ -79,7 +81,7 @@ class Report():
 			query=self.query,
 			doctype=self.doctype,
 			conditions=self.conditions
-		), (self.filters), as_dict=1)
+		), (self.filters), as_dict=1, debug=1)
 
 	def execute(self):
 		if not self.validate_filters():

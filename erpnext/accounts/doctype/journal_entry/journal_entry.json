@@ -99,7 +99,7 @@
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "ACC-JV-.YYYY.-\nPV.###./.YYYY\nACC-PAY-.YYYY.-",
+   "options": "ACC-JV-.YYYY.-\nPV.###./.YYYY\nACC-PAY-.YYYY.-\nRV.###./.YYYY",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -539,7 +539,7 @@
  "idx": 176,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-09-18 13:07:55.888510",
+ "modified": "2023-09-21 16:05:50.860173",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",
@@ -585,6 +585,7 @@
   }
  ],
  "search_fields": "voucher_type,posting_date, due_date, cheque_no",
+ "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

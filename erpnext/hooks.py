@@ -581,6 +581,7 @@ global_search_doctypes = {
 		{"doctype": "Material Request", "index": 16},
 		{"doctype": "Delivery Trip", "index": 17},
 		{"doctype": "Pick List", "index": 18},
+        {"doctype": "Journal Entry", "index": 19},
 		{"doctype": "Payment Entry", "index": 22},
 		{"doctype": "Lead", "index": 23},
 		{"doctype": "Opportunity", "index": 24},

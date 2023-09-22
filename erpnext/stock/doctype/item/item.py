@@ -115,6 +115,7 @@ class Item(Document):
 		self.validate_auto_reorder_enabled_in_stock_settings()
 		self.cant_change()
 		self.validate_item_tax_net_rate_range()
+		self.insert_department()
 		set_item_tax_from_hsn_code(self)
 
 		if not self.is_new():
@@ -125,6 +126,13 @@ class Item(Document):
 		self.update_variants()
 		self.update_item_price()
 		self.update_website_item()
+
+	def insert_department(self):
+		if not self.get("item_department"):
+			root_dept = frappe.get_value("Department", {"lft": 1})
+			if root_dept:
+				row = self.append("item_department")
+				row.department = root_dept
 
 	def validate_description(self):
 		"""Clean HTML description if set"""

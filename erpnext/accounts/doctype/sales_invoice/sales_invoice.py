@@ -169,6 +169,29 @@ class SalesInvoice(SellingController):
 			validate_loyalty_points(self, self.loyalty_points)
 
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
+		# self.set_other_reff()
+
+	def set_other_reff(self):
+		done_map = []
+		for d in self.get("items"):
+			if d.get("dn_detail"):
+				# get SO, and set SI to SO
+				dn_name, so_detail, so_name = frappe.get_value("Delivery Note Item", {"name":d.dn_detail, "docstatus":1}, ["parent",'so_detail','against_sales_order']) or (None, None, None)
+				if so_detail:
+					d.so_detail = so_detail
+					d.sales_order = so_name
+
+			elif d.get("so_detail"):
+				# get DN, and set SI to DN
+				dn_detail, dn_name = frappe.get_value("Delivery Note Item", {"so_detail":d.so_detail, "docstatus":1}, ['name', 'parent']) or (None, None)
+
+				# so_name, dn_detail, dn_name = frappe.get_value("Sales Order Item", d.so_detail, ["parent",'dn_detail','delivery_note']) or (None, None, None)
+				if dn_detail:
+					frappe.db.set_value("Delivery Note Item",dn_detail, "si_detail", d.name)
+					frappe.db.set_value("Delivery Note Item",dn_detail, "against_sales_invoice", d.parent)
+					d.dn_detail = dn_detail
+					d.delivery_note = dn_name
+					self.delivery_note = dn_name
 
 	def validate_fixed_asset(self):
 		for d in self.get("items"):
