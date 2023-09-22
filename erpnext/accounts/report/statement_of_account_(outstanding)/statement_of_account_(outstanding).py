@@ -56,14 +56,10 @@ class Report():
 		if self.doctype == "Sales Invoice":
 			self.columns +=[
 				{"label": _("Customer PO"), 	"fieldname": "customer_po",	 "fieldtype": "Data", "width": 120 },
-				{"label": _("Delivery Note"), 	"fieldname": "delivery_note","fieldtype": "Link", "width": 150, "options":"Delivery Note" },
-			]
-		else:
-			self.columns +=[
-				{"label": _("Delivery Note"), 	"fieldname": "delivery_note","fieldtype": "Data", "width": 150 },
 			]
 			
 		self.columns += [
+			{"label": _("Delivery Note"), 	"fieldname": "delivery_note","fieldtype": "Data", "width": 150 },
 			{"label": _("Amount"), 			"fieldname": "outstanding_amount",		 "fieldtype": "Currency", "width": 120},
 		]
 
