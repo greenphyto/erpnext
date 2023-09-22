@@ -247,22 +247,30 @@ class DeliveryNote(SellingController):
 		self.update_stock_ledger()
 		self.make_gl_entries()
 		self.repost_future_sle_and_gle()
-		self.update_reference_si()
+		self.set_other_reff()
 
-	def update_reference_si(self):
-		done_map = []
+	def set_other_reff(self):
 		for d in self.get("items"):
-			si_name = ""
 			if d.get("si_detail"):
-				si_name = frappe.get_value("Sales Invoice Item", d.si_detail, "parent")
-			elif d.get("so_detail"):
-				si_detail = frappe.get_value("Sales Order Item", d.so_detail, "parent")
-				if si_detail:
-					si_name = frappe.get_value("Sales Invoice Item", {"sales_order": si_detail}, "parent")
+				# get So from SI
+				so_detail, so_name = frappe.get_value("Sales Invoice Item", {"name":d.si_detail, "docstatus":1}, ['so_detail','sales_order']) or (None, None)
+				if so_detail:
+					d.so_detail = so_detail
+					d.against_sales_order = so_name
+					frappe.db.set_value("Sales Invoice", d.against_sales_invoice, "delivery_note", self.name)
 
-			if si_name and si_name not in done_map:
-				frappe.db.set_value("Sales Invoice", si_name, "delivery_note", self.name)
-				done_map.append(si_name)
+
+			elif d.get("so_detail"):
+				# get DN, and set SI to DN
+				si_detail, si_name = frappe.get_value("Sales Invoice Item", {"so_detail":d.so_detail, "docstatus":1}, ['name', 'parent']) or (None, None)
+
+				# so_name, dn_detail, dn_name = frappe.get_value("Sales Order Item", d.so_detail, ["parent",'dn_detail','delivery_note']) or (None, None, None)
+				if si_detail:
+					frappe.db.set_value("Sales Invoice Item",si_detail, "dn_detail", d.name)
+					frappe.db.set_value("Sales Invoice Item",si_detail, "delivery_note", d.parent)
+					frappe.db.set_value("Sales Invoice", si_name, "delivery_note", self.name)
+					d.si_detail = si_detail
+					d.against_sales_invoice = si_name
 
 	def on_cancel(self):
 		super(DeliveryNote, self).on_cancel()
