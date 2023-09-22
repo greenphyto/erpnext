@@ -2108,10 +2108,8 @@
   },
   {
    "fieldname": "delivery_note",
-   "fieldtype": "Link",
-   "label": "Delivery Note",
-   "options": "Delivery Note",
-   "read_only": 1
+   "fieldtype": "Data",
+   "label": "Delivery Note"
   }
  ],
  "icon": "fa fa-file-text",
@@ -2124,7 +2122,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2023-09-18 14:45:06.031549",
+ "modified": "2023-09-22 15:34:08.927741",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",
