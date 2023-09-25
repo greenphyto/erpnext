@@ -57,12 +57,4 @@ frappe.query_reports["Statement of Account (Outstanding)"] = {
 		// 	"default": frappe.defaults.get_user_default("Currency")
 		// },
 	],
-	"onload": function(report){
-		return new Promise(resolve=>{
-			console.log("end")
-			setTimeout(()=>{
-				console.log("start")
-			}, 5000)
-		})
-	}
 };
