@@ -126,7 +126,6 @@ def _execute(filters, additional_table_columns=None, additional_query_columns=No
 				"outstanding_amount": inv.outstanding_amount,
 			}
 		)
-		print(row)
 		data.append(row)
 
 	return columns, data
