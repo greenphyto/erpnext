@@ -81,7 +81,7 @@ class Report():
 			query=self.query,
 			doctype=self.doctype,
 			conditions=self.conditions
-		), (self.filters), as_dict=1, debug=1)
+		), (self.filters), as_dict=1, debug=0)
 
 	def execute(self):
 		if not self.validate_filters():

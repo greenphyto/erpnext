@@ -41,6 +41,7 @@
   "before_items_section",
   "scan_barcode",
   "set_from_warehouse",
+  "non_stock_item",
   "items_col_break",
   "set_warehouse",
   "items_section",
@@ -1228,13 +1229,20 @@
   {
    "fieldname": "column_break_103",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_stock_item",
+   "fieldtype": "Check",
+   "label": "Non Stock Item",
+   "hidden":1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-09-05 11:26:26.438039",
+ "modified": "2023-09-25 16:16:40.789483",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order",
