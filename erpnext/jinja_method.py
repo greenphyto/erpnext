@@ -1,1 +1,0 @@
-from erpnext.assets.utils import get_qrcode

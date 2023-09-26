@@ -29,7 +29,7 @@ from erpnext.assets.doctype.asset.depreciation import (
 )
 from erpnext.assets.doctype.asset_category.asset_category import get_asset_category_account
 from erpnext.controllers.accounts_controller import AccountsController
-
+from erpnext.assets.utils import create_asset_qrcode
 
 class Asset(AccountsController):
 	def validate(self):
@@ -45,6 +45,7 @@ class Asset(AccountsController):
 			self.validate_expected_value_after_useful_life()
 
 		self.status = self.get_status()
+		create_asset_qrcode(self)
 
 	def on_submit(self):
 		self.validate_in_use_date()

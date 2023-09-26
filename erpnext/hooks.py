@@ -610,5 +610,5 @@ additional_timeline_content = {
 }
 
 jinja = {
-	"methods": "erpnext.jinja_method",
+	"methods": "erpnext.assets.utils.get_qrcode"
 }
