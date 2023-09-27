@@ -96,11 +96,12 @@ class Asset(AccountsController):
 	def autoname(self):
 		asset_code = frappe.get_value("Item", self.item_code, "asset_code")
 		if asset_code:
-			code = ["1x", "2x", "3x", "4x", "5x", "6x", "7x"]
-			for d in code:
-				if d in asset_code:
-					series = d.replace("x", "") + ".####"
-					self.name = parse_naming_series(series, doc=self)
+			code = frappe.get_value("Asset Code Map", {
+				"account":asset_code,
+				"parent": 'Accounts Settings',
+				"parentfield": "asset_code_map",
+			}, "series") or self.naming_series
+			self.name = parse_naming_series(code, doc=self)
 		
 	def validate_item(self):
 		item = frappe.get_cached_value(

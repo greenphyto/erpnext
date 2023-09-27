@@ -500,8 +500,9 @@
   {
    "fetch_from": "item_code.asset_code",
    "fieldname": "asset_code_series",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "label": "Asset Code Series",
+   "options": "Account",
    "read_only": 1
   }
  ],
@@ -525,7 +526,7 @@
    "link_fieldname": "asset"
   }
  ],
- "modified": "2023-09-27 13:03:30.451776",
+ "modified": "2023-09-27 15:43:09.597538",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",

@@ -51,6 +51,8 @@
   "assets_tab",
   "asset_settings_section",
   "book_asset_depreciation_entry_automatically",
+  "series_mapping_section",
+  "asset_code_map",
   "closing_settings_tab",
   "period_closing_settings_section",
   "acc_frozen_upto",
@@ -347,6 +349,17 @@
    "fieldname": "allow_multi_currency_invoices_against_single_party_account",
    "fieldtype": "Check",
    "label": "Allow multi-currency invoices against single party account "
+  },
+  {
+   "fieldname": "series_mapping_section",
+   "fieldtype": "Section Break",
+   "label": "Series Mapping"
+  },
+  {
+   "fieldname": "asset_code_map",
+   "fieldtype": "Table",
+   "label": "Asset Code Map",
+   "options": "Asset Code Map"
   }
  ],
  "icon": "icon-cog",
@@ -354,7 +367,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-07-11 13:37:50.605141",
+ "modified": "2023-09-27 15:34:02.023847",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounts Settings",
