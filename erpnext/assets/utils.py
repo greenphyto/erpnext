@@ -70,6 +70,9 @@ def get_qr_svg_code(totp_uri):
 
 # use in doctype
 def create_asset_qrcode(doc, method=""):
+	if not frappe.db.exists(doc.doctype, doc.name):
+		return
+ 
 	if not doc.qrcode_image:
 		url = save_qrcode_image(doc.doctype, doc.name, 1)
 		doc.qrcode_image = url
