@@ -612,3 +612,9 @@ additional_timeline_content = {
 jinja = {
 	"methods": "erpnext.assets.utils.get_qrcode"
 }
+
+quick_entry_js = {
+    "Item": [
+        "assets/erpnext/js/quick_entry/item_quick_entry.js"
+	]
+}

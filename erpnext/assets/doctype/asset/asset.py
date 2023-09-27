@@ -1260,3 +1260,16 @@ def add_reference_in_jv_on_split(entry_name, new_asset_name, old_asset_name, dep
 	journal_entry.make_gl_entries(1)
 	journal_entry.docstatus = 1
 	journal_entry.make_gl_entries()
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def filter_account_for_asset_code(doctype, txt, searchfield, start, page_len, filters):
+	return frappe.db.sql(
+		"""select account, series, company from `tabAsset Code Map`
+			where account LIKE %(txt)s and parent="Accounts Settings" and parentfield="asset_code_map"
+			order by idx  limit %(page_len)s offset %(start)s""".format(
+			key=searchfield
+		),
+		{"txt": "%" + txt + "%", "start": start, "page_len": page_len}
+	)
