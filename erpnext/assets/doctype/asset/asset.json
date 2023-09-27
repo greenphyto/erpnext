@@ -11,6 +11,7 @@
   "company",
   "item_code",
   "item_name",
+  "asset_code_series",
   "asset_owner",
   "asset_owner_company",
   "is_existing_asset",
@@ -495,6 +496,13 @@
    "fieldtype": "Data",
    "label": "QRCode Image",
    "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.asset_code",
+   "fieldname": "asset_code_series",
+   "fieldtype": "Data",
+   "label": "Asset Code Series",
+   "read_only": 1
   }
  ],
  "idx": 72,
@@ -517,7 +525,7 @@
    "link_fieldname": "asset"
   }
  ],
- "modified": "2023-09-26 17:38:55.243370",
+ "modified": "2023-09-27 13:03:30.451776",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",

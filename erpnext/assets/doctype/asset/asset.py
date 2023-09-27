@@ -30,6 +30,7 @@ from erpnext.assets.doctype.asset.depreciation import (
 from erpnext.assets.doctype.asset_category.asset_category import get_asset_category_account
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.assets.utils import create_asset_qrcode
+from frappe.model.naming import parse_naming_series
 
 class Asset(AccountsController):
 	def validate(self):
@@ -92,6 +93,15 @@ class Asset(AccountsController):
 				self.opening_accumulated_depreciation
 			)
 
+	def autoname(self):
+		asset_code = frappe.get_value("Item", self.item_code, "asset_code")
+		if asset_code:
+			code = ["1x", "2x", "3x", "4x", "5x", "6x", "7x"]
+			for d in code:
+				if d in asset_code:
+					series = d.replace("x", "") + ".####"
+					self.name = parse_naming_series(series, doc=self)
+		
 	def validate_item(self):
 		item = frappe.get_cached_value(
 			"Item", self.item_code, ["is_fixed_asset", "is_stock_item", "disabled"], as_dict=1
