@@ -219,6 +219,9 @@ class Item(Document):
 			if self.stock_ledger_created():
 				frappe.throw(_("Cannot be a fixed asset item as Stock Ledger is created."))
 
+			if not self.asset_code:
+				frappe.throw(_("Asset Code is mandatory for Fixed Asset item"))
+
 		if not self.is_fixed_asset:
 			asset = frappe.db.get_all("Asset", filters={"item_code": self.name, "docstatus": 1}, limit=1)
 			if asset:

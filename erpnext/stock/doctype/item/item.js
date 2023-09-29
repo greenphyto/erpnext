@@ -45,6 +45,12 @@ frappe.ui.form.on("Item", {
 		if (frm.doc.is_fixed_asset) {
 			frm.trigger("set_asset_naming_series");
 		}
+
+		frm.set_query("asset_code", ()=>{
+            return {
+                query:"erpnext.assets.doctype.asset.asset.filter_account_for_asset_code",
+			}
+        })
 	},
 
 	refresh: function(frm) {
