@@ -404,7 +404,7 @@ scheduler_events = {
 		"erpnext.controllers.accounts_controller.update_invoice_status",
 		"erpnext.accounts.doctype.fiscal_year.fiscal_year.auto_create_fiscal_year",
 		"erpnext.projects.doctype.task.task.set_tasks_as_overdue",
-		"erpnext.assets.doctype.asset.depreciation.post_depreciation_entries",
+		# "erpnext.assets.doctype.asset.depreciation.post_depreciation_entries",
 		"erpnext.stock.doctype.serial_no.serial_no.update_maintenance_status",
 		"erpnext.buying.doctype.supplier_scorecard.supplier_scorecard.refresh_scorecards",
 		"erpnext.setup.doctype.company.company.cache_companies_monthly_sales_history",
@@ -432,6 +432,9 @@ scheduler_events = {
 		"erpnext.accounts.deferred_revenue.process_deferred_accounting",
 		"erpnext.loan_management.doctype.process_loan_interest_accrual.process_loan_interest_accrual.process_loan_interest_accrual_for_demand_loans",
 	],
+    "monthly": [
+		"erpnext.assets.doctype.asset.depreciation.post_depreciation_entries",
+	]
 }
 
 email_brand_image = "assets/erpnext/images/erpnext-logo.jpg"

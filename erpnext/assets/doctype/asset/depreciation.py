@@ -27,11 +27,13 @@ def post_depreciation_entries(date=None, commit=True):
 
 	if not date:
 		date = today()
+
+	date = get_last_day( add_months(date, -1) )
 		
 	data = get_depreciable_assets(date)
 	data_map = {}
 	for d in data:
-		use_date = get_last_day( add_months(d.schedule_date, -1) )
+		use_date = get_last_day( d.schedule_date )
 		key = (use_date, d.company, d.finance_book)
 		if key not in data_map:
 			data_map[key] = {
@@ -74,8 +76,12 @@ def make_depreciation_entry(assets, date=None):
 
 	je = None
 	data_map = {}
+	asset_name_list = []
+	total = 0
 	for asset_name in assets:
 		asset = frappe.get_doc("Asset", asset_name)
+		if asset_name not in asset_name_list:
+			asset_name_list.append(asset_name)
 		(
 			fixed_asset_account,
 			accumulated_depreciation_account,
@@ -97,7 +103,6 @@ def make_depreciation_entry(assets, date=None):
 					"schedule":d
 				}
 				if not je:
-					print(88, je)
 					je = frappe.new_doc("Journal Entry")
 					je.voucher_type = "Depreciation Entry"
 					je.naming_series = depreciation_series
@@ -109,12 +114,15 @@ def make_depreciation_entry(assets, date=None):
 					accumulated_depreciation_account, depreciation_expense_account
 				)
 
+				total += flt(d.depreciation_amount)
+
 				credit_entry = {
 					"account": credit_account,
 					"credit_in_account_currency": d.depreciation_amount,
 					"reference_type": "Asset",
 					"reference_name": asset.name,
 					"cost_center": depreciation_cost_center,
+					"user_remark": "Depreciation entry for Asset {}".format(asset.name)
 				}
 
 				debit_entry = {
@@ -123,6 +131,7 @@ def make_depreciation_entry(assets, date=None):
 					"reference_type": "Asset",
 					"reference_name": asset.name,
 					"cost_center": depreciation_cost_center,
+					"user_remark": "Depreciation entry for Asset {}".format(asset.name)
 				}
 
 				for dimension in accounting_dimensions:
@@ -149,7 +158,7 @@ def make_depreciation_entry(assets, date=None):
 	if not je:
 		return
 
-	# je.remark = "Depreciation Entry against {0} worth {1}".format(asset_name, d.depreciation_amount) #unfinished
+	je.remark = "Depreciation Entry against {0} worth {1}".format(", ".join(asset_name_list), total)
 	je.flags.ignore_permissions = True
 	je.save()
 	if not je.meta.get_workflow():
@@ -167,7 +176,6 @@ def make_depreciation_entry(assets, date=None):
 		asset.set_status()
 
 	return 
-
 
 def get_depreciation_accounts(asset):
 	fixed_asset_account = accumulated_depreciation_account = depreciation_expense_account = None
