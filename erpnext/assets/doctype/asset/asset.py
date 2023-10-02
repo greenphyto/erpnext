@@ -880,8 +880,19 @@ def make_post_gl_entry():
 
 
 def get_asset_naming_series():
-	meta = frappe.get_meta("Asset")
-	return meta.get_field("naming_series").options
+	series = []
+	settings = frappe.get_single("Accounts Settings")
+	for d in settings.get("asset_code_map") or []:
+		series.append(d.series)
+	
+	return "\n".join(series)
+
+def get_asset_naming_series_mapping(asset_code):
+	series = {}
+	settings = frappe.get_single("Accounts Settings")
+	for d in settings.get("asset_code_map") or []:
+		if d.account == asset_code:
+			return d.series
 
 
 @frappe.whitelist()

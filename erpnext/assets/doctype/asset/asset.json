@@ -78,8 +78,10 @@
   {
    "fieldname": "naming_series",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Naming Series",
-   "options": "ACC-ASS-.YYYY.-"
+   "options": "ACC-ASS-.YYYY.-",
+   "permlevel": 10
   },
   {
    "fieldname": "asset_name",
@@ -526,7 +528,7 @@
    "link_fieldname": "asset"
   }
  ],
- "modified": "2023-09-27 15:43:09.597538",
+ "modified": "2023-10-02 13:25:43.138791",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",

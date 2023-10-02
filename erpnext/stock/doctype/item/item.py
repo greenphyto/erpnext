@@ -1337,3 +1337,9 @@ def get_asset_naming_series():
 	from erpnext.assets.doctype.asset.asset import get_asset_naming_series
 
 	return get_asset_naming_series()
+
+@frappe.whitelist()
+def get_asset_naming_series_map(asset_code):
+	from erpnext.assets.doctype.asset.asset import get_asset_naming_series_mapping
+
+	return get_asset_naming_series_mapping(asset_code)
