@@ -698,6 +698,7 @@
    "label": "Default Provisional Account",
    "no_copy": 1,
    "options": "Account"
+  },
   {
    "fieldname": "exchange_rate_revaluation_settings_section",
    "fieldtype": "Section Break",
