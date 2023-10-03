@@ -50,6 +50,12 @@ class ExchangeRateRevaluation(Document):
 
 		return False
 
+	def fetch_and_calculate_accounts_data(self):
+		accounts = self.get_accounts_data()
+		if accounts:
+			for acc in accounts:
+				self.append("accounts", acc)
+
 	@frappe.whitelist()
 	def get_accounts_data(self, account=None):
 		accounts = []
