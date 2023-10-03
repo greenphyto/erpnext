@@ -22,6 +22,7 @@ from frappe.utils import (
 	getdate,
 	now,
 	nowdate,
+	get_last_day
 )
 from pypika import Order
 from pypika.terms import ExistsCriterion
@@ -1409,6 +1410,15 @@ def auto_create_exchange_rate_revaluation_daily() -> None:
 	)
 	create_err_and_its_journals(companies)
 
+	# for monthly but only last month date
+	today = getdate()
+	if get_last_day(today) == today:
+		companies = frappe.db.get_all(
+			"Company",
+			filters={"auto_exchange_rate_revaluation": 1, "auto_err_frequency": "Monthly"},
+			fields=["name", "submit_err_jv"],
+		)
+		create_err_and_its_journals(companies)
 
 def auto_create_exchange_rate_revaluation_weekly() -> None:
 	"""
