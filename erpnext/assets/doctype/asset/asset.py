@@ -1284,3 +1284,11 @@ def filter_account_for_asset_code(doctype, txt, searchfield, start, page_len, fi
 		),
 		{"txt": "%" + txt + "%", "start": start, "page_len": page_len}
 	)
+
+@frappe.whitelist()
+def get_default_asset_code_data(asset_code):
+	return frappe.get_value("Asset Code Map", {
+		"account":asset_code,
+		"parent": 'Accounts Settings',
+		"parentfield": "asset_code_map",
+	}, ["default_asset_category as asset_category", "series"], as_dict=1)

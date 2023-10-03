@@ -226,15 +226,20 @@ frappe.ui.form.on("Item", {
 	},
 
 	asset_code: function(frm){
-		frappe.call({
-			method: "erpnext.stock.doctype.item.item.get_asset_naming_series_map",
-			args:{
-				asset_code: frm.doc.asset_code
-			},
-			callback: function(r) {
-				frm.set_value("asset_naming_series", r.message);
-			}
-		});
+		if (frm.doc.asset_code){
+			frappe.call({
+				method:"erpnext.assets.doctype.asset.asset.get_default_asset_code_data",
+				args:{
+					asset_code:frm.doc.asset_code
+				},
+				callback: function(r){
+					frm.set_value("asset_category", r.message.asset_category);
+					frm.set_value("asset_naming_series", r.message.series);
+				}
+			})
+		}else{
+			frm.set_value("asset_category", "");
+		}
 	},
 
 	page_name: frappe.utils.warn_page_name_change,
