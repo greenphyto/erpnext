@@ -118,8 +118,72 @@ class TestAccountsReceivable(FrappeTestCase):
 			],
 		)
 
+	@change_settings(
+		"Accounts Settings", {"allow_multi_currency_invoices_against_single_party_account": 1}
+	)
+	def test_exchange_revaluation_for_party(self):
+		"""
+		Exchange Revaluation for party on Receivable/Payable shoule be included
+		"""
 
-def make_sales_invoice():
+		company = "_Test Company 2"
+		customer = "_Test Customer 2"
+
+		# Using Exchange Gain/Loss account for unrealized as well.
+		company_doc = frappe.get_doc("Company", company)
+		company_doc.unrealized_exchange_gain_loss_account = company_doc.exchange_gain_loss_account
+		company_doc.save()
+
+		si = make_sales_invoice(no_payment_schedule=True, do_not_submit=True)
+		si.currency = "USD"
+		si.conversion_rate = 0.90
+		si.debit_to = self.debtors_usd
+		si = si.save().submit()
+
+		# Exchange Revaluation
+		err = frappe.new_doc("Exchange Rate Revaluation")
+		err.company = company
+		err.posting_date = today()
+		accounts = err.get_accounts_data()
+		err.extend("accounts", accounts)
+		err.accounts[0].new_exchange_rate = 0.95
+		row = err.accounts[0]
+		row.new_balance_in_base_currency = flt(
+			row.new_exchange_rate * flt(row.balance_in_account_currency)
+		)
+		row.gain_loss = row.new_balance_in_base_currency - flt(row.balance_in_base_currency)
+		err.set_total_gain_loss()
+		err = err.save().submit()
+
+		# Submit JV for ERR
+		err_journals = err.make_jv_entries()
+		je = frappe.get_doc("Journal Entry", err_journals.get("revaluation_jv"))
+		je = je.submit()
+
+		filters = {
+			"company": company,
+			"report_date": today(),
+			"range1": 30,
+			"range2": 60,
+			"range3": 90,
+			"range4": 120,
+		}
+		report = execute(filters)
+
+		expected_data_for_err = [0, -5, 0, 5]
+		row = [x for x in report[1] if x.voucher_type == je.doctype and x.voucher_no == je.name][0]
+		self.assertEqual(
+			expected_data_for_err,
+			[
+				row.invoiced,
+				row.paid,
+				row.credit_note,
+				row.outstanding,
+			],
+		)
+
+
+def make_sales_invoice(no_payment_schedule=False, do_not_submit=False):
 	frappe.set_user("Administrator")
 
 	si = create_sales_invoice(
