@@ -402,7 +402,7 @@ frappe.ui.form.on("Material Request Item", {
 		set_schedule_date(frm);
 		frm.events.get_item_data(frm, item, true);
 	},
-	item_name: function(frm, doctype, name) {
+	item_name_old: function(frm, doctype, name) {
 		const item = locals[doctype][name];
 		item.rate = 0;
 		item.uom = '';
@@ -470,7 +470,7 @@ erpnext.buying.MaterialRequestController = class MaterialRequestController exten
 				}
 			}
 		});
-		this.frm.set_query("item_name", "items", function() {
+		this.frm.set_query("item_name_old", "items", function() {
 			if (doc.material_request_type == "Customer Provided") {
 				return{
 					query: "erpnext.controllers.queries.item_query",
