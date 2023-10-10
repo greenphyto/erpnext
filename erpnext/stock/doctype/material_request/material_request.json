@@ -43,6 +43,7 @@
   "section_break_34",
   "department",
   "items_section",
+  "non_stock_item",
   "items",
   "taxes_section",
   "taxes_and_charges",
@@ -862,13 +863,19 @@
   {
    "fieldname": "section_break_34",
    "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_stock_item",
+   "fieldtype": "Check",
+   "label": "Non Stock Item"
   }
  ],
  "icon": "fa fa-ticket",
  "idx": 70,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-09-05 11:04:36.483507",
+ "modified": "2023-10-10 16:05:57.127907",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request",

@@ -48,6 +48,7 @@
   "is_subcontracted",
   "supplier_warehouse",
   "items_section",
+  "non_stock_item",
   "items",
   "section_break0",
   "total_qty",
@@ -1225,13 +1226,19 @@
    "fieldtype": "Datetime",
    "label": "Posting Date & Time",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "non_stock_item",
+   "fieldtype": "Check",
+   "label": "Non Stock Item"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 261,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-09-11 15:40:42.745697",
+ "modified": "2023-10-10 16:03:33.409646",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Purchase Receipt",

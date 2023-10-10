@@ -51,6 +51,7 @@
   "rejected_warehouse",
   "supplier_warehouse",
   "items_section",
+  "non_stock_item",
   "items",
   "section_break_26",
   "total_qty",
@@ -1545,13 +1546,19 @@
    "fieldname": "delivery_note_no",
    "fieldtype": "Data",
    "label": "Delivery Note No"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_stock_item",
+   "fieldtype": "Check",
+   "label": "Non Stock Item"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-09-13 17:20:16.337786",
+ "modified": "2023-10-10 16:04:03.505982",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",
