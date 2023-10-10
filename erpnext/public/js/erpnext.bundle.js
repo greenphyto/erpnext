@@ -24,5 +24,7 @@ import "./bulk_transaction_processing";
 import "./utils/crm_activities";
 import "./templates/crm_activities.html";
 import "./templates/crm_notes.html";
+import "./templates/qrcode_image_sidebar.html";
+
 
 // import { sum } from 'frappe/public/utils/util.js'

@@ -27,6 +27,7 @@
   "valuation_rate",
   "standard_rate",
   "is_fixed_asset",
+  "asset_code",
   "auto_create_assets",
   "is_grouped_asset",
   "asset_category",
@@ -242,6 +243,7 @@
    "label": "Standard Selling Rate"
   },
   {
+   "allow_in_quick_entry": 1,
    "default": "0",
    "fieldname": "is_fixed_asset",
    "fieldtype": "Check",
@@ -249,6 +251,7 @@
    "set_only_once": 1
   },
   {
+   "allow_in_quick_entry": 1,
    "depends_on": "is_fixed_asset",
    "fieldname": "asset_category",
    "fieldtype": "Link",
@@ -260,6 +263,7 @@
    "depends_on": "is_fixed_asset",
    "fieldname": "asset_naming_series",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Asset Naming Series"
   },
   {
@@ -917,6 +921,15 @@
    "fieldtype": "Table",
    "label": "Item Department",
    "options": "Item Department"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "depends_on": "eval:doc.is_fixed_asset",
+   "fieldname": "asset_code",
+   "fieldtype": "Link",
+   "label": "Asset Code",
+   "mandatory_depends_on": "is_fixed_asset",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-tag",
@@ -925,7 +938,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2023-02-16 09:37:52.975593",
+ "modified": "2023-10-02 13:54:18.552931",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",

@@ -2387,6 +2387,24 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 			]);
 		}
 	}
+
+	// make item_code and item_name switchable
+	non_stock_item(){
+		if (!['Purchase Invoice', 'Purchase Order', 'Purchase Receipt'].includes(this.frm.doctype)) return;
+		const item_table = "items";
+		var table = this.frm.fields_dict[item_table];
+		var field_item_code = table.grid.fields_map.item_code;
+		var field_item_name = table.grid.fields_map.item_name;
+		field_item_name.columns = field_item_code.columns;
+		if (cint(this.frm.doc.non_stock_item)){
+			field_item_code.in_list_view = 0;
+			field_item_name.in_list_view = 1;
+		}else{
+			field_item_code.in_list_view = 1;
+			field_item_name.in_list_view = 0;
+		};
+		table.grid.reset_grid();
+	}
 };
 
 erpnext.show_serial_batch_selector = function (frm, d, callback, on_close, show_dialog) {

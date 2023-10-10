@@ -4,6 +4,16 @@
 frappe.provide("erpnext.asset");
 frappe.provide("erpnext.accounts.dimensions");
 
+frappe.get_form_sidebar_extension_bottom = function(){
+	var img_path = cur_frm.doc.qrcode_image;
+	var args = {
+		img: img_path
+	}
+	let qr_div = frappe.render_template("qrcode_image_sidebar", args)
+
+	return qr_div
+}
+
 frappe.ui.form.on('Asset', {
 	onload: function(frm) {
 		frm.set_query("item_code", function() {
@@ -144,6 +154,8 @@ frappe.ui.form.on('Asset', {
 		if (frm.doc.docstatus == 0) {
 			frm.toggle_reqd("finance_books", frm.doc.calculate_depreciation);
 		}
+
+		erpnext.asset.add_dashboard_qrimage(frm);
 	},
 
 	toggle_reference_doc: function(frm) {
@@ -504,11 +516,11 @@ frappe.ui.form.on('Asset Finance Book', {
 
 	depreciation_start_date: function(frm, cdt, cdn) {
 		const book = locals[cdt][cdn];
-		if (frm.doc.available_for_use_date && book.depreciation_start_date == frm.doc.available_for_use_date) {
-			frappe.msgprint(__("Depreciation Posting Date should not be equal to Available for Use Date."));
-			book.depreciation_start_date = "";
-			frm.refresh_field("finance_books");
-		}
+		// if (frm.doc.available_for_use_date && book.depreciation_start_date == frm.doc.available_for_use_date) {
+		// 	frappe.msgprint(__("Depreciation Posting Date should not be equal to Available for Use Date."));
+		// 	book.depreciation_start_date = "";
+		// 	frm.refresh_field("finance_books");
+		// }
 	}
 });
 
@@ -535,6 +547,45 @@ frappe.ui.form.on('Depreciation Schedule', {
 	}
 
 })
+
+erpnext.asset.add_dashboard_qrimage = function(frm){
+	var img_path = frm.doc.qrcode_image;
+	function show_qr(){
+		var d = new frappe.ui.Dialog({
+			title: __(`QR Code Asset ${frm.doc.name}`),
+			fields: [
+				{
+					"label" : "",
+					"fieldname": "img",
+					"fieldtype": "HTML",
+					"default": ''
+				}
+			],
+			primary_action: function() {
+				$(".download-qr-preview")[0].click();
+			},
+			primary_action_label: __('Download'),
+			secondary_action: function(){
+				d.hide();
+			},
+			secondary_action_label: __("Close"),
+		});
+		d.show();
+		var wrapper = d.fields_dict.img.$wrapper;
+		wrapper.append(`
+			<div class="qr-preview-wrapper text-center" style="min-height: 6cm;">
+				<a href="${img_path}" class="download-qr-preview" download>
+					<img src="${img_path}"></img>
+				</a>
+			</div>
+		`);
+
+	};
+	$(".img-qrcode").attr("src", img_path);
+	$(".img-qrcode").on("click", function(){
+		show_qr();
+	})
+}
 
 erpnext.asset.set_accumulated_depreciation = function(frm) {
 	if(frm.doc.depreciation_method != "Manual") return;

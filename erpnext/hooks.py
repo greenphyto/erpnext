@@ -404,7 +404,7 @@ scheduler_events = {
 		"erpnext.controllers.accounts_controller.update_invoice_status",
 		"erpnext.accounts.doctype.fiscal_year.fiscal_year.auto_create_fiscal_year",
 		"erpnext.projects.doctype.task.task.set_tasks_as_overdue",
-		"erpnext.assets.doctype.asset.depreciation.post_depreciation_entries",
+		# "erpnext.assets.doctype.asset.depreciation.post_depreciation_entries",
 		"erpnext.stock.doctype.serial_no.serial_no.update_maintenance_status",
 		"erpnext.buying.doctype.supplier_scorecard.supplier_scorecard.refresh_scorecards",
 		"erpnext.setup.doctype.company.company.cache_companies_monthly_sales_history",
@@ -420,6 +420,10 @@ scheduler_events = {
 		"erpnext.selling.doctype.quotation.quotation.set_expired_status",
 		"erpnext.buying.doctype.supplier_quotation.supplier_quotation.set_expired_status",
 		"erpnext.accounts.doctype.process_statement_of_accounts.process_statement_of_accounts.send_auto_email",
+		"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_daily",
+	],
+	"weekly": [
+		"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_weekly",
 	],
 	"daily_long": [
 		"erpnext.setup.doctype.email_digest.email_digest.send",
@@ -432,6 +436,9 @@ scheduler_events = {
 		"erpnext.accounts.deferred_revenue.process_deferred_accounting",
 		"erpnext.loan_management.doctype.process_loan_interest_accrual.process_loan_interest_accrual.process_loan_interest_accrual_for_demand_loans",
 	],
+    "monthly": [
+		"erpnext.assets.doctype.asset.depreciation.post_depreciation_entries",
+	]
 }
 
 email_brand_image = "assets/erpnext/images/erpnext-logo.jpg"
@@ -607,4 +614,14 @@ global_search_doctypes = {
 
 additional_timeline_content = {
 	"*": ["erpnext.telephony.doctype.call_log.call_log.get_linked_call_logs"]
+}
+
+jinja = {
+	"methods": "erpnext.assets.utils.get_qrcode"
+}
+
+quick_entry_js = {
+    "Item": [
+        "assets/erpnext/js/quick_entry/item_quick_entry.js"
+	]
 }

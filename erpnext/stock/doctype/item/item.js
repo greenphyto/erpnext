@@ -45,6 +45,12 @@ frappe.ui.form.on("Item", {
 		if (frm.doc.is_fixed_asset) {
 			frm.trigger("set_asset_naming_series");
 		}
+
+		frm.set_query("asset_code", ()=>{
+            return {
+                query:"erpnext.assets.doctype.asset.asset.filter_account_for_asset_code",
+			}
+        })
 	},
 
 	refresh: function(frm) {
@@ -215,8 +221,25 @@ frappe.ui.form.on("Item", {
 	},
 
 	auto_create_assets: function(frm) {
-		frm.toggle_reqd(['asset_naming_series'], frm.doc.auto_create_assets);
-		frm.toggle_display(['asset_naming_series'], frm.doc.auto_create_assets);
+		// frm.toggle_reqd(['asset_naming_series'], frm.doc.auto_create_assets);
+		// frm.toggle_display(['asset_naming_series'], frm.doc.auto_create_assets);
+	},
+
+	asset_code: function(frm){
+		if (frm.doc.asset_code){
+			frappe.call({
+				method:"erpnext.assets.doctype.asset.asset.get_default_asset_code_data",
+				args:{
+					asset_code:frm.doc.asset_code
+				},
+				callback: function(r){
+					frm.set_value("asset_category", r.message.asset_category);
+					frm.set_value("asset_naming_series", r.message.series);
+				}
+			})
+		}else{
+			frm.set_value("asset_category", "");
+		}
 	},
 
 	page_name: frappe.utils.warn_page_name_change,

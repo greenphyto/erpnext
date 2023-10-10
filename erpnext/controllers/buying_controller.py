@@ -624,12 +624,12 @@ class BuyingController(SubcontractingController):
 									is_plural, frappe.bold(d.item_code), assets_link=assets_link
 								)
 							)
-					else:
-						frappe.throw(
-							_("Row {}: Asset Naming Series is mandatory for the auto creation for item {}").format(
-								d.idx, frappe.bold(d.item_code)
-							)
-						)
+					# else:
+					# 	frappe.throw(
+					# 		_("Row {}: Asset Naming Series is mandatory for the auto creation for item {}").format(
+					# 			d.idx, frappe.bold(d.item_code)
+					# 		)
+					# 	)
 				else:
 					messages.append(
 						_("Assets not created for {0}. You will have to create asset manually.").format(
@@ -769,9 +769,15 @@ def get_asset_item_details(asset_items):
 	asset_items_data = {}
 	for d in frappe.get_all(
 		"Item",
-		fields=["name", "auto_create_assets", "asset_naming_series", "is_grouped_asset"],
+		fields=["name", "auto_create_assets", "asset_naming_series", "is_grouped_asset", "asset_code"],
 		filters={"name": ("in", asset_items)},
 	):
+		code = frappe.get_value("Asset Code Map", {
+			"account": d.get("asset_code"),
+			"parent": 'Accounts Settings',
+			"parentfield": "asset_code_map",
+		}, "series")
+		d.asset_naming_series = code
 		asset_items_data.setdefault(d.name, d)
 
 	return asset_items_data

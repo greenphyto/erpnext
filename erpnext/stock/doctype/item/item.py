@@ -219,6 +219,9 @@ class Item(Document):
 			if self.stock_ledger_created():
 				frappe.throw(_("Cannot be a fixed asset item as Stock Ledger is created."))
 
+			if not self.asset_code:
+				frappe.throw(_("Asset Code is mandatory for Fixed Asset item"))
+
 		if not self.is_fixed_asset:
 			asset = frappe.db.get_all("Asset", filters={"item_code": self.name, "docstatus": 1}, limit=1)
 			if asset:
@@ -1334,3 +1337,9 @@ def get_asset_naming_series():
 	from erpnext.assets.doctype.asset.asset import get_asset_naming_series
 
 	return get_asset_naming_series()
+
+@frappe.whitelist()
+def get_asset_naming_series_map(asset_code):
+	from erpnext.assets.doctype.asset.asset import get_asset_naming_series_mapping
+
+	return get_asset_naming_series_mapping(asset_code)

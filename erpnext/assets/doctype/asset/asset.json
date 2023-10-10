@@ -11,6 +11,7 @@
   "company",
   "item_code",
   "item_name",
+  "asset_code_series",
   "asset_owner",
   "asset_owner_company",
   "is_existing_asset",
@@ -70,14 +71,17 @@
   "column_break_51",
   "purchase_receipt_amount",
   "default_finance_book",
-  "amended_from"
+  "amended_from",
+  "qrcode_image"
  ],
  "fields": [
   {
    "fieldname": "naming_series",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Naming Series",
-   "options": "ACC-ASS-.YYYY.-"
+   "options": "ACC-ASS-.YYYY.-",
+   "permlevel": 10
   },
   {
    "fieldname": "asset_name",
@@ -488,6 +492,20 @@
    "fieldtype": "Int",
    "label": "Asset Quantity",
    "read_only_depends_on": "eval:!doc.is_existing_asset"
+  },
+  {
+   "fieldname": "qrcode_image",
+   "fieldtype": "Data",
+   "label": "QRCode Image",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.asset_code",
+   "fieldname": "asset_code_series",
+   "fieldtype": "Link",
+   "label": "Asset Code Series",
+   "options": "Account",
+   "read_only": 1
   }
  ],
  "idx": 72,
@@ -510,7 +528,7 @@
    "link_fieldname": "asset"
   }
  ],
- "modified": "2022-07-20 10:15:12.887372",
+ "modified": "2023-10-02 13:25:43.138791",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",

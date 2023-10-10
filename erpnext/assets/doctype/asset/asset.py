@@ -29,7 +29,8 @@ from erpnext.assets.doctype.asset.depreciation import (
 )
 from erpnext.assets.doctype.asset_category.asset_category import get_asset_category_account
 from erpnext.controllers.accounts_controller import AccountsController
-
+from erpnext.assets.utils import create_asset_qrcode
+from frappe.model.naming import parse_naming_series
 
 class Asset(AccountsController):
 	def validate(self):
@@ -45,6 +46,7 @@ class Asset(AccountsController):
 			self.validate_expected_value_after_useful_life()
 
 		self.status = self.get_status()
+		create_asset_qrcode(self)
 
 	def on_submit(self):
 		self.validate_in_use_date()
@@ -91,6 +93,16 @@ class Asset(AccountsController):
 				self.opening_accumulated_depreciation
 			)
 
+	def autoname(self):
+		asset_code = frappe.get_value("Item", self.item_code, "asset_code")
+		if asset_code:
+			code = frappe.get_value("Asset Code Map", {
+				"account":asset_code,
+				"parent": 'Accounts Settings',
+				"parentfield": "asset_code_map",
+			}, "series") or self.naming_series
+			self.name = parse_naming_series(code, doc=self)
+		
 	def validate_item(self):
 		item = frappe.get_cached_value(
 			"Item", self.item_code, ["is_fixed_asset", "is_stock_item", "disabled"], as_dict=1
@@ -121,14 +133,14 @@ class Asset(AccountsController):
 		if not self.available_for_use_date:
 			frappe.throw(_("Available for use date is required"))
 
-		for d in self.finance_books:
-			if d.depreciation_start_date == self.available_for_use_date:
-				frappe.throw(
-					_("Row #{}: Depreciation Posting Date should not be equal to Available for Use Date.").format(
-						d.idx
-					),
-					title=_("Incorrect Date"),
-				)
+		# for d in self.finance_books:
+		# 	if d.depreciation_start_date == self.available_for_use_date:
+		# 		frappe.throw(
+		# 			_("Row #{}: Depreciation Posting Date should not be equal to Available for Use Date.").format(
+		# 				d.idx
+		# 			),
+		# 			title=_("Incorrect Date"),
+		# 		)
 
 	def set_missing_values(self):
 		if not self.asset_category:
@@ -252,7 +264,10 @@ class Asset(AccountsController):
 			number_of_pending_depreciations += 1
 
 		skip_row = False
-		should_get_last_day = is_last_day_of_the_month(finance_book.depreciation_start_date)
+
+		depreciation_start_date = finance_book.depreciation_start_date
+
+		should_get_last_day = is_last_day_of_the_month(depreciation_start_date)
 
 		for n in range(start[finance_book.idx - 1], number_of_pending_depreciations):
 			# If depreciation is already completed (for double declining balance)
@@ -263,7 +278,7 @@ class Asset(AccountsController):
 
 			if not has_pro_rata or n < cint(number_of_pending_depreciations) - 1:
 				schedule_date = add_months(
-					finance_book.depreciation_start_date, n * cint(finance_book.frequency_of_depreciation)
+					depreciation_start_date, n * cint(finance_book.frequency_of_depreciation)
 				)
 
 				if should_get_last_day:
@@ -292,17 +307,19 @@ class Asset(AccountsController):
 				break
 
 			# For first row
-			if has_pro_rata and not self.opening_accumulated_depreciation and n == 0:
-				from_date = add_days(
-					self.available_for_use_date, -1
-				)  # needed to calc depr amount for available_for_use_date too
-				depreciation_amount, days, months = self.get_pro_rata_amt(
-					finance_book, depreciation_amount, from_date, finance_book.depreciation_start_date
-				)
+			# if has_pro_rata and not self.opening_accumulated_depreciation and n == 0:
+			# 	from_date = add_days(
+			# 		self.available_for_use_date, 0
+			# 	)  # needed to calc depr amount for available_for_use_date too
 
-				# For first depr schedule date will be the start date
-				# so monthly schedule date is calculated by removing month difference between use date and start date
-				monthly_schedule_date = add_months(finance_book.depreciation_start_date, -months + 1)
+
+			# 	depreciation_amount, days, months = self.get_pro_rata_amt(
+			# 		finance_book, depreciation_amount, from_date, depreciation_start_date
+			# 	)
+
+			# 	# For first depr schedule date will be the start date
+			# 	# so monthly schedule date is calculated by removing month difference between use date and start date
+			# 	monthly_schedule_date = add_months(depreciation_start_date, -months + 1)
 
 			# For last row
 			elif has_pro_rata and n == cint(number_of_pending_depreciations) - 1:
@@ -863,8 +880,19 @@ def make_post_gl_entry():
 
 
 def get_asset_naming_series():
-	meta = frappe.get_meta("Asset")
-	return meta.get_field("naming_series").options
+	series = []
+	settings = frappe.get_single("Accounts Settings")
+	for d in settings.get("asset_code_map") or []:
+		series.append(d.series)
+	
+	return "\n".join(series)
+
+def get_asset_naming_series_mapping(asset_code):
+	series = {}
+	settings = frappe.get_single("Accounts Settings")
+	for d in settings.get("asset_code_map") or []:
+		if d.account == asset_code:
+			return d.series
 
 
 @frappe.whitelist()
@@ -1243,3 +1271,24 @@ def add_reference_in_jv_on_split(entry_name, new_asset_name, old_asset_name, dep
 	journal_entry.make_gl_entries(1)
 	journal_entry.docstatus = 1
 	journal_entry.make_gl_entries()
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def filter_account_for_asset_code(doctype, txt, searchfield, start, page_len, filters):
+	return frappe.db.sql(
+		"""select account, series, company from `tabAsset Code Map`
+			where account LIKE %(txt)s and parent="Accounts Settings" and parentfield="asset_code_map"
+			order by idx  limit %(page_len)s offset %(start)s""".format(
+			key=searchfield
+		),
+		{"txt": "%" + txt + "%", "start": start, "page_len": page_len}
+	)
+
+@frappe.whitelist()
+def get_default_asset_code_data(asset_code):
+	return frappe.get_value("Asset Code Map", {
+		"account":asset_code,
+		"parent": 'Accounts Settings',
+		"parentfield": "asset_code_map",
+	}, ["default_asset_category as asset_category", "series"], as_dict=1)
