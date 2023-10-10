@@ -117,7 +117,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 
 				erpnext.accounts.dimensions.copy_dimension_from_first_row(frm, cdt, cdn, 'items');
 
-				me.add_defult_non_stock_item(frm, cdt, cdn);
+				me.add_default_non_stock_item(frm, cdt, cdn);
 			}
 		});
 
@@ -2396,13 +2396,13 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 	}
 
 	change_item_preview(){
-		if (!['Purchase Invoice', 'Purchase Order', 'Purchase Receipt'].includes(this.frm.doctype)) return;
+		if (!['Purchase Invoice', 'Purchase Order', 'Purchase Receipt', 'Material Request'].includes(this.frm.doctype)) return;
 		const item_table = "items";
 		var table = this.frm.fields_dict[item_table];
 		var field_item_code = table.grid.fields_map.item_code;
 		var field_item_name = table.grid.fields_map.item_name;
 		var field_item_name_view = table.grid.fields_map.item_name_view;
-		field_item_name.columns = field_item_code.columns;
+		field_item_name_view.columns = field_item_code.columns;
 		function change_view(view=0){
 			if (view){
 				if (field_item_name_view){
@@ -2462,15 +2462,13 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		})
 	}
 
-	add_defult_non_stock_item(frm, cdt, cdn){
+	add_default_non_stock_item(frm, cdt, cdn){
 		if (this.frm.doc.non_stock_item){
 			var default_item = frappe.boot.sysdefaults.non_stock_item;
 			frappe.model.set_value(cdt, cdn, "item_code", default_item)
 		}
 	}
 };
-
-console.log(2646);
 
 
 erpnext.show_serial_batch_selector = function (frm, d, callback, on_close, show_dialog) {
