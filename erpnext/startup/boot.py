@@ -12,6 +12,7 @@ def boot_session(bootinfo):
 	bootinfo.custom_css = frappe.db.get_value("Style Settings", None, "custom_css") or ""
 
 	if frappe.session["user"] != "Guest":
+
 		update_page_info(bootinfo)
 
 		bootinfo.sysdefaults.territory = frappe.db.get_single_value("Selling Settings", "territory")
@@ -51,6 +52,8 @@ def boot_session(bootinfo):
 		)
 		bootinfo.party_account_types = frappe._dict(party_account_types)
 
+		# non stock item
+		bootinfo.sysdefaults.non_stock_item = frappe.db.get_single_value("Buying Settings", "non_stock_item")
 
 def update_page_info(bootinfo):
 	bootinfo.page_info.update(

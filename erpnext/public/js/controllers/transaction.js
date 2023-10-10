@@ -116,6 +116,8 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 				}
 
 				erpnext.accounts.dimensions.copy_dimension_from_first_row(frm, cdt, cdn, 'items');
+
+				me.add_defult_non_stock_item(frm, cdt, cdn);
 			}
 		});
 
@@ -2395,17 +2397,43 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		var table = this.frm.fields_dict[item_table];
 		var field_item_code = table.grid.fields_map.item_code;
 		var field_item_name = table.grid.fields_map.item_name;
+		var field_item_name_view = table.grid.fields_map.item_name_view;
 		field_item_name.columns = field_item_code.columns;
+		function change_view(view=0){
+			if (view){
+				if (field_item_name_view){
+					field_item_name_view.hidden = 0;
+					field_item_name_view.in_list_view = 1;
+				}
+				field_item_name.hidden = 1; 
+				field_item_code.in_list_view = 0;
+			}else{
+				if (field_item_name_view){
+					field_item_name_view.hidden = 1;
+					field_item_name_view.in_list_view = 0;
+				}
+				field_item_name.hidden = 0; 
+				field_item_code.in_list_view = 1;
+			}
+		}
 		if (cint(this.frm.doc.non_stock_item)){
-			field_item_code.in_list_view = 0;
-			field_item_name.in_list_view = 1;
+			change_view(1);
 		}else{
-			field_item_code.in_list_view = 1;
-			field_item_name.in_list_view = 0;
+			change_view(0);
 		};
 		table.grid.reset_grid();
 	}
+
+	add_defult_non_stock_item(frm, cdt, cdn){
+		if (this.frm.doc.non_stock_item){
+			var default_item = frappe.boot.sysdefaults.non_stock_item;
+			frappe.model.set_value(cdt, cdn, "item_code", default_item)
+		}
+	}
 };
+
+console.log(2646);
+
 
 erpnext.show_serial_batch_selector = function (frm, d, callback, on_close, show_dialog) {
 	let warehouse, receiving_stock, existing_stock;

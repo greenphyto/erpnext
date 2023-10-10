@@ -10,6 +10,7 @@
   "item_code",
   "supplier_part_no",
   "item_name",
+  "item_name_view",
   "brand",
   "product_bundle",
   "fg_item",
@@ -889,13 +890,19 @@
   {
    "fieldname": "column_break_54",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item_name_view",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Item Name"
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-09-21 14:34:56.293329",
+ "modified": "2023-10-10 11:51:02.225488",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order Item",
