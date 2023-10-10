@@ -2392,6 +2392,10 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 
 	// make item_code and item_name switchable
 	non_stock_item(){
+		this.confirm_reset_item();
+	}
+
+	change_item_preview(){
 		if (!['Purchase Invoice', 'Purchase Order', 'Purchase Receipt'].includes(this.frm.doctype)) return;
 		const item_table = "items";
 		var table = this.frm.fields_dict[item_table];
@@ -2422,6 +2426,40 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 			change_view(0);
 		};
 		table.grid.reset_grid();
+	}
+
+	confirm_reset_item(){
+		var me = this;
+		function confirm_action(){
+			return new Promise((resolve)=>{
+				if (is_null(me.frm.doc.items) || cint(me.frm.doc.total_qty)==0){
+					resolve(true)
+				}else{
+					frappe.confirm(
+						'Continue to reset Items?',
+						function(){
+							resolve(true);
+						},
+						function(){
+							resolve(false)
+						}
+					)
+				}
+			});
+		}
+
+		confirm_action().then((reset)=>{
+			if (reset){
+				this.frm.set_value("items", []);
+				this.change_item_preview();
+			}else{
+				console.log("back to previous non stock or not")
+				var field = this.frm.fields_dict.non_stock_item;
+				var d = locals[this.frm.doctype][this.frm.doc.name]
+				d.non_stock_item = field.old_value
+				field.refresh();
+			}
+		})
 	}
 
 	add_defult_non_stock_item(frm, cdt, cdn){

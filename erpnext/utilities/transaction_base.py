@@ -119,6 +119,16 @@ class TransactionBase(StatusUpdater):
 								indicator="orange",
 							)
 
+	def validate_item_non_stock(self):
+		if not self.get("non_stock_item"):
+			return
+		
+		for d in self.items:
+			if not d.item_name_view:
+				frappe.throw(_("Missing item name in row <b>{}</b>".format(d.idx)))
+			else:
+				d.item_name = d.item_name_view
+
 	def get_link_filters(self, for_doctype):
 		if hasattr(self, "prev_link_mapper") and self.prev_link_mapper.get(for_doctype):
 			fieldname = self.prev_link_mapper[for_doctype]["fieldname"]

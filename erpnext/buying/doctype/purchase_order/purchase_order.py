@@ -73,6 +73,8 @@ class PurchaseOrder(BuyingController):
 		self.validate_for_subcontracting()
 		self.validate_minimum_order_qty()
 
+		self.validate_item_non_stock()
+
 		if self.is_old_subcontracting_flow:
 			self.validate_bom_for_subcontracting_items()
 			self.create_raw_materials_supplied()
