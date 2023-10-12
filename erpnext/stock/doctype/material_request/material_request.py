@@ -387,6 +387,9 @@ def make_purchase_order(source_name, target_doc=None, args=None):
 		{
 			"Material Request": {
 				"doctype": "Purchase Order",
+				"field_map": [
+					["purchase_order_series", "naming_series"]
+				],
 				"validation": {"docstatus": ["=", 1], "material_request_type": ["=", "Purchase"]},
 			},
 			"Material Request Item": {
