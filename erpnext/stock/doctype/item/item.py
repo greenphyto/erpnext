@@ -86,6 +86,7 @@ class Item(Document):
 		if not strip_html(cstr(self.description)).strip():
 			self.description = self.item_name
 
+		self.force_to_non_stock()
 		self.validate_uom()
 		self.validate_description()
 		self.add_default_uom_in_conversion_factor_table()
@@ -120,6 +121,10 @@ class Item(Document):
 
 		if not self.is_new():
 			self.old_item_group = frappe.db.get_value(self.doctype, self.name, "item_group")
+
+	def force_to_non_stock(self):
+		if frappe.db.get_single_value("Stock Settings", "force_to_non_stock_item"):
+			self.is_stock_item = 0
 
 	def on_update(self):
 		invalidate_cache_for_item(self)

@@ -10,6 +10,7 @@
   "item_naming_by",
   "item_group",
   "stock_uom",
+  "force_to_non_stock_item",
   "column_break_4",
   "default_warehouse",
   "sample_retention_warehouse",
@@ -339,6 +340,13 @@
   {
    "fieldname": "column_break_121",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Every time create new item it will uncheck in the maintenance stock, so always maintenance stock = 0",
+   "fieldname": "force_to_non_stock_item",
+   "fieldtype": "Check",
+   "label": "Force to non-stock item"
   }
  ],
  "icon": "icon-cog",
@@ -346,7 +354,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-02-05 15:33:43.692736",
+ "modified": "2023-10-12 12:09:24.234372",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Settings",
