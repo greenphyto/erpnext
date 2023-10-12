@@ -25,6 +25,7 @@ from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.doctype.item.item import get_item_defaults, get_last_purchase_details
 from erpnext.stock.stock_balance import get_ordered_qty, update_bin_qty
 from erpnext.stock.utils import get_bin
+from erpnext.buying.doctype.buying_settings.buying_settings import get_series_pr_required
 
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
@@ -541,6 +542,18 @@ def make_purchase_receipt(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_purchase_invoice(source_name, target_doc=None):
+	# validate series
+	series = frappe.get_value("Purchase Order", source_name, "naming_series")
+	if get_series_pr_required(series):
+		po_doc = frappe.get_doc("Purchase Order", source_name)
+		for d in po_doc.get("items"):
+			exist_pr = frappe.get_value("Purchase Receipt Item", {
+				"purchase_order":po_doc.name,
+				"purchase_order_item":d.name,
+			}, "parent")
+			if not exist_pr:
+				frappe.throw(_("Purchase Receipt is required before make Purchase Invoice. Due to series type selected."))
+
 	return get_mapped_purchase_invoice(source_name, target_doc)
 
 

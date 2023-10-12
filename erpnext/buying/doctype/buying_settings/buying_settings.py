@@ -6,6 +6,7 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe.utils import cint
 
 
 class BuyingSettings(Document):
@@ -42,3 +43,12 @@ class BuyingSettings(Document):
 					row.company = d.company
 
 				doc.save()
+
+def get_series_pr_required(series):
+	res = frappe.get_value("Series PO required PR", {
+		"series": series,
+		"parent":"Buying Settings",
+		"parentfield":"series_required_pr",
+	}, "require_pr")
+
+	return cint(res)
