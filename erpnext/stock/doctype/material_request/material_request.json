@@ -11,6 +11,7 @@
   "naming_series",
   "title",
   "material_request_type",
+  "purchase_order_series",
   "column_break_2",
   "transaction_date",
   "schedule_date",
@@ -869,13 +870,21 @@
    "fieldname": "non_stock_item",
    "fieldtype": "Check",
    "label": "Non Stock Item"
+  },
+  {
+   "default": "PO1.#####./.YYYY",
+   "description": "Start with 1 if not required Purchase Receipt, start with 0 if required Purchase Receipt before Invoice",
+   "fieldname": "purchase_order_series",
+   "fieldtype": "Select",
+   "label": "Purchase Order Series",
+   "options": "PO0.#####./.YYYY\nPO1.#####./.YYYY"
   }
  ],
  "icon": "fa fa-ticket",
  "idx": 70,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-10-10 16:05:57.127907",
+ "modified": "2023-10-12 14:24:08.872529",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request",

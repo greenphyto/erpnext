@@ -174,14 +174,14 @@
    "reqd": 1
   },
   {
-   "default": "PO.###./.YYYY",
+   "default": "PO0.#####./.YYYY",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "PO.###./.YYYY\nPUR-ORD-.YYYY.-",
+   "options": "PO0.#####./.YYYY\nPO1.#####./.YYYY\nPUR-ORD-.YYYY.-",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1241,7 +1241,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-10-10 16:13:39.246576",
+ "modified": "2023-10-12 14:16:55.874791",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order",
