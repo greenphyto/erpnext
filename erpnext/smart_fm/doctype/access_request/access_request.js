@@ -22,4 +22,23 @@ frappe.ui.form.on('Access Request', {
 			}
 		});
 	},
+
+	person: function(frm){
+		if (frm.doc.person=="Yes"){
+			// add child based on user login
+			if ( is_null(frm.doc.person_list) ){
+				frappe.db.get_value("User", frappe.session.user, [
+					'full_name as name1', 
+					'email',
+					'phone as phone_number'])
+				.then(r=>{ 
+					var row = frm.add_child("person_list", r.message);
+					frm.refresh_field("person_list");
+				});
+			}
+		}else{
+			frm.set_value("person_list", []);
+			frm.refresh_field("person_list");
+		}
+	}
 });
