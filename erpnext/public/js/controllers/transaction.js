@@ -344,6 +344,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		this.setup_sms();
 		this.setup_quality_inspection();
 		this.validate_has_items();
+		this.change_item_preview();
 	}
 
 	scan_barcode() {
