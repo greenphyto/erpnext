@@ -14,6 +14,7 @@ def create_non_stock_item():
     item.item_name = "Non-stock"
     item.is_stock_item = 0
     item.is_fixed_asset = 0
+    item.include_item_in_manufacturing = 0
     item.stock_uom = "Nos"
     item.item_group = item_group
     item.description = "Non stock / Non fixed asset"
