@@ -249,7 +249,9 @@ erpnext.buying.PurchaseOrderController = class PurchaseOrderController extends e
 			if(doc.status != "Closed") {
 				if (doc.status != "On Hold") {
 					if(flt(doc.per_received) < 100 && allow_receipt) {
-						cur_frm.add_custom_button(__('Purchase Receipt'), this.make_purchase_receipt, __('Create'));
+						if (doc.naming_series != "PO1.#####./.YYYY"){
+							cur_frm.add_custom_button(__('Purchase Receipt'), this.make_purchase_receipt, __('Create'));
+						}
 						if (doc.is_subcontracted) {
 							if (doc.is_old_subcontracting_flow) {
 								if (me.has_unsupplied_items()) {
