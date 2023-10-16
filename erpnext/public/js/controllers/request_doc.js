@@ -15,5 +15,17 @@ $.extend(cur_frm.cscript, {
         }
       )
     })
+  },
+  refresh: function(){
+    var frm = this.frm;
+    if (frm.is_new() && frm.is_dirty()){
+        frappe.db.get_value("User", frappe.session.user, [
+            "email as email_address", 
+            "full_name as name1", 
+            "phone as phone_number"
+        ]).then(r=>{
+            frm.set_value(r.message);
+        })
+    }
   }
 })
