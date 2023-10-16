@@ -1,6 +1,9 @@
 // Copyright (c) 2023, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
+// don't delete this!
+// {% include "erpnext/public/js/controllers/request_doc.js" %}
+
 frappe.ui.form.on('Emergency Contact Information', {
   refresh: function(frm) {
     if (!frm.is_new()) {
