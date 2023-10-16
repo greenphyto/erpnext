@@ -240,8 +240,9 @@ def close_todo(doc, method=""):
 			frappe.db.set_value("ToDo", d.name, 'status', 'Open')
 
 def directly_workflow_from_webform(doc, method=""):
-	if not frappe.flags.in_web_form:
-		return
+	# do all for desk and webform
+	# if not frappe.flags.in_web_form:
+	# 	return
 	
 	# Directly pass state from Draft to Issued
 	if doc.get("workflow_state") != "Draft":
