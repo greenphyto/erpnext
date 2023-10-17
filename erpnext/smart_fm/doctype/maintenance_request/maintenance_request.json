@@ -26,13 +26,15 @@
   "section_break_wiajz",
   "description",
   "location",
+  "section_break_rsefl",
   "datetime",
   "safety",
   "attachment",
-  "declaration",
+  "preview",
   "section_break_psexz",
-  "signature",
   "column_break_bwddv",
+  "declaration",
+  "signature",
   "date",
   "amended_from"
  ],
@@ -118,7 +120,7 @@
   },
   {
    "fieldname": "section_break_psexz",
-   "fieldtype": "Section Break"
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "signature",
@@ -128,7 +130,7 @@
   },
   {
    "fieldname": "column_break_bwddv",
-   "fieldtype": "Column Break"
+   "fieldtype": "Section Break"
   },
   {
    "default": "Today",
@@ -206,12 +208,23 @@
    "fieldtype": "Read Only",
    "hidden": 1,
    "label": "Item Name"
+  },
+  {
+   "depends_on": "attachment",
+   "fieldname": "preview",
+   "fieldtype": "Image",
+   "label": "Preview",
+   "options": "attachment"
+  },
+  {
+   "fieldname": "section_break_rsefl",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-31 22:50:28.470033",
+ "modified": "2023-10-17 18:59:43.309200",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Maintenance Request",
