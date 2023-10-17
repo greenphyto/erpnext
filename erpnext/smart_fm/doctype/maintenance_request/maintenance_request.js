@@ -6,17 +6,18 @@
 
 frappe.ui.form.on('Maintenance Request', {
 	refresh: function(frm) {
-    if (!frm.is_new()) {
+		if (!frm.is_new()) {
 			frm.add_custom_button(__("ToDo"), function() {
 				frm.trigger("create_to_do");
 			}, __("Create"));
-      frm.add_custom_button(__("Asset Repair"), function() {
-				frm.trigger("create_asset_repair");
-      }, __("Create"));
-      frm.add_custom_button(__("Asset Maintenance Log"), function() {
-				frm.trigger("create_asset_maintenance_log");
-      }, __("Create"));
-    }
+			frm.add_custom_button(__("Asset Repair"), function() {
+						frm.trigger("create_asset_repair");
+			}, __("Create"));
+			frm.add_custom_button(__("Asset Maintenance Log"), function() {
+						frm.trigger("create_asset_maintenance_log");
+			}, __("Create"));
+		}
+		frm.events.set_default_value(frm);
 	},
 
 	create_to_do: function(frm) {
@@ -30,6 +31,12 @@ frappe.ui.form.on('Maintenance Request', {
 				frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
 			}
 		});
+	},
+
+	set_default_value: function(frm){
+		if(frm.is_new() && frm.is_dirty()){
+			frm.set_value("datetime", frappe.datetime.now_datetime());
+		}
 	},
 
 	create_asset_repair: function(frm) {
