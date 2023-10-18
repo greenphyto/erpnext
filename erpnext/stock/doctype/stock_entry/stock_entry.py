@@ -1026,6 +1026,7 @@ class StockEntry(StockController):
 		if wo_details:
 			production_item, wo_qty = wo_details
 
+		total_finish = 0
 		for d in self.get("items"):
 			if d.is_finished_item:
 				if not self.work_order:
@@ -1039,15 +1040,19 @@ class StockEntry(StockController):
 							d.item_code, self.work_order
 						)
 					)
-				elif flt(d.transfer_qty) > flt(self.fg_completed_qty):
-					frappe.throw(
-						_("Quantity in row {0} ({1}) must be same as manufactured quantity {2}").format(
-							d.idx, d.transfer_qty, self.fg_completed_qty
-						)
-					)
+				total_finish += d.transfer_qty
+
+				# elif flt(d.transfer_qty) > flt(self.fg_completed_qty):
+				# 	frappe.throw(
+				# 		_("Quantity in row {0} ({1}) must be same as manufactured quantity {2}").format(
+				# 			d.idx, d.transfer_qty, self.fg_completed_qty
+				# 		)
+				# 	)
 
 				finished_items.append(d.item_code)
 
+		self.fg_completed_qty = total_finish
+		
 		if not finished_items:
 			frappe.throw(
 				msg=_("There must be atleast 1 Finished Good in this Stock Entry").format(self.name),
