@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "KEY-.#####",
+ "autoname": "KEY-#####",
  "creation": "2023-05-15 14:51:17.327974",
  "default_view": "List",
  "doctype": "DocType",
@@ -104,9 +104,9 @@
    "fieldtype": "Column Break"
   },
   {
-   "default": "Today",
+   "default": "Now",
    "fieldname": "date",
-   "fieldtype": "Date",
+   "fieldtype": "Datetime",
    "label": "Date",
    "reqd": 1
   },
@@ -145,7 +145,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-31 23:07:48.661784",
+ "modified": "2023-10-19 11:11:06.141336",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Key Control",

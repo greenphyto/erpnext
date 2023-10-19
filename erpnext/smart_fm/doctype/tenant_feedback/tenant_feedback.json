@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "TNFB-.#####",
+ "autoname": "TNFB-#####",
  "creation": "2023-05-15 16:12:56.870994",
  "default_view": "List",
  "doctype": "DocType",
@@ -161,9 +161,9 @@
    "options": "Thank you for taking the time to provide feedback on your experience as a tenant in our building. Your insights are valuable to us and will help us improve our services and overall tenant experience. Please complete the form below, and feel free to provide any additional comments or suggestions in the designated space."
   },
   {
-   "default": "Today",
+   "default": "Now",
    "fieldname": "submission_date",
-   "fieldtype": "Date",
+   "fieldtype": "Datetime",
    "hidden": 1,
    "label": "Date",
    "read_only": 1
@@ -172,7 +172,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-31 23:08:07.011601",
+ "modified": "2023-10-19 11:12:32.284067",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Tenant Feedback",

@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "MAINT-.#####",
+ "autoname": "MAINT-#####",
  "creation": "2023-05-10 13:37:21.239374",
  "default_view": "List",
  "doctype": "DocType",
@@ -100,6 +100,7 @@
    "reqd": 1
   },
   {
+   "default": "Now",
    "fieldname": "datetime",
    "fieldtype": "Datetime",
    "label": "Preferred Date and Time for Maintenance Visit (if applicable)",
@@ -133,9 +134,9 @@
    "fieldtype": "Section Break"
   },
   {
-   "default": "Today",
+   "default": "Now",
    "fieldname": "date",
-   "fieldtype": "Date",
+   "fieldtype": "Datetime",
    "label": "Date",
    "reqd": 1
   },
@@ -224,7 +225,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-10-17 18:59:43.309200",
+ "modified": "2023-10-19 10:17:14.906758",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Maintenance Request",

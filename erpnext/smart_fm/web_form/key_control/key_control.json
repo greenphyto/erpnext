@@ -225,9 +225,9 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "default": "Today",
+   "default": "Now",
    "fieldname": "date",
-   "fieldtype": "Date",
+   "fieldtype": "Datetime",
    "hidden": 0,
    "label": "Date",
    "max_length": 0,

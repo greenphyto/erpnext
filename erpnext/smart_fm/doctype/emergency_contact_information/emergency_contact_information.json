@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "ECI-.#####",
+ "autoname": "ECI-#####",
  "creation": "2023-05-15 13:45:52.866096",
  "default_view": "List",
  "doctype": "DocType",
@@ -172,7 +172,7 @@
   {
    "default": "Today",
    "fieldname": "date",
-   "fieldtype": "Date",
+   "fieldtype": "Datetime",
    "label": "Date",
    "reqd": 1
   },
@@ -210,7 +210,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-31 23:07:28.782991",
+ "modified": "2023-10-19 11:08:01.517950",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Emergency Contact Information",

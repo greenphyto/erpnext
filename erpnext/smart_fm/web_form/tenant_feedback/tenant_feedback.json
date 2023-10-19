@@ -31,8 +31,9 @@
    "label": "Workflow State"
   },
   {
+   "default": "Now",
    "fieldname": "submission_date",
-   "fieldtype": "Date",
+   "fieldtype": "Datetime",
    "label": "Date"
   }
  ],
