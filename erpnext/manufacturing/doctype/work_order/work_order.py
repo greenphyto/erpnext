@@ -41,6 +41,7 @@ from erpnext.stock.doctype.serial_no.serial_no import (
 from erpnext.stock.stock_balance import get_planned_qty, update_bin_qty
 from erpnext.stock.utils import get_bin, get_latest_stock_qty, validate_warehouse_company
 from erpnext.utilities.transaction_base import validate_uom_is_integer
+from frappe.model.naming import set_name_by_naming_series, set_name_from_naming_options, parse_naming_series, getseries
 
 
 class OverProductionError(frappe.ValidationError):
@@ -92,6 +93,12 @@ class WorkOrder(Document):
 		validate_uom_is_integer(self, "stock_uom", ["qty", "produced_qty"])
 
 		self.set_required_items(reset_only_qty=len(self.get("required_items")))
+
+	def autoname(self):
+		if self.foms_work_order:
+			series = self.foms_work_order + "-{}.##".format( cint(self.operation_no) or 1 )
+			self.name = parse_naming_series(series, doc=self)
+			frappe.throw(self.name)
 
 	def validate_workstation_type(self):
 		for row in self.operations:

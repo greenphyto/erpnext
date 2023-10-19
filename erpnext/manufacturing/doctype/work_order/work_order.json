@@ -13,7 +13,9 @@
   "production_item",
   "item_name",
   "image",
+  "foms_work_order",
   "bom_no",
+  "operation_no",
   "column_break1",
   "company",
   "qty",
@@ -568,6 +570,18 @@
    "no_copy": 1,
    "non_negative": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "foms_work_order",
+   "fieldtype": "Data",
+   "label": "FOMS Work Order"
+  },
+  {
+   "fetch_from": "bom_no.operation_no",
+   "fieldname": "operation_no",
+   "fieldtype": "Data",
+   "label": "Operation No",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-cogs",
@@ -575,7 +589,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2022-01-24 21:18:12.160114",
+ "modified": "2023-10-19 18:08:15.179136",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",

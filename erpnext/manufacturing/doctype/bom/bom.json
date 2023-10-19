@@ -10,6 +10,7 @@
   "company",
   "item_name",
   "uom",
+  "operation_no",
   "cb0",
   "is_active",
   "is_default",
@@ -525,6 +526,12 @@
    "fieldname": "section_break_33",
    "fieldtype": "Section Break",
    "hide_border": 1
+  },
+  {
+   "fieldname": "operation_no",
+   "fieldtype": "Select",
+   "label": "Operation No",
+   "options": "\n1\n2\n3\n4\n5"
   }
  ],
  "icon": "fa fa-sitemap",
@@ -532,7 +539,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2022-01-30 21:27:54.727298",
+ "modified": "2023-10-19 18:07:28.403319",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "BOM",
