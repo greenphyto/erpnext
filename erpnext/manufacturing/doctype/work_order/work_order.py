@@ -98,7 +98,6 @@ class WorkOrder(Document):
 		if self.foms_work_order:
 			series = self.foms_work_order + "-{}.##".format( cint(self.operation_no) or 1 )
 			self.name = parse_naming_series(series, doc=self)
-			frappe.throw(self.name)
 
 	def validate_workstation_type(self):
 		for row in self.operations:

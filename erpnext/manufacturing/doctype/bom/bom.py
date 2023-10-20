@@ -151,7 +151,6 @@ class BOM(WebsiteGenerator):
 				)
 
 		
-		frappe.throw(self.name)
 		self.name = name
 
 	@staticmethod
