@@ -31,10 +31,11 @@
   "safety",
   "attachment",
   "preview",
-  "section_break_psexz",
   "column_break_bwddv",
   "declaration",
+  "section_break_sng8x",
   "signature",
+  "section_break_psexz",
   "date",
   "amended_from",
   "section_break_6ayoo",
@@ -250,12 +251,16 @@
    "label": "BM Preview",
    "options": "bm_attachment",
    "permlevel": 2
+  },
+  {
+   "fieldname": "section_break_sng8x",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-10-23 15:36:10.176225",
+ "modified": "2023-10-23 15:39:29.877776",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Maintenance Request",
