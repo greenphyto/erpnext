@@ -40,6 +40,7 @@ class SellingController(StockController):
 		self.set_customer_address()
 		self.validate_for_duplicate_items()
 		self.validate_target_warehouse()
+		self.validate_wip_warehouse()
 
 	def set_missing_values(self, for_validate=False):
 
@@ -184,6 +185,20 @@ class SellingController(StockController):
 
 		if sales_team and total != 100.0:
 			throw(_("Total allocated percentage for sales team should be 100"))
+
+	def validate_wip_warehouse(self):
+		wip_warehouse = [d.name for d in frappe.get_list("Warehouse", {"is_wip_warehouse":1})]
+		if self.doctype in ("Delivery Note", "Sales Invoice"):
+			if self.doctype == "Sales Invoice" and not self.update_stock:
+				return
+
+			if self.set_warehouse in wip_warehouse:
+				frappe.throw(_("Can not sell item from WIP Warehouse."))
+			
+			for d in self.get("items"):
+				if d.warehouse in wip_warehouse:
+					frappe.throw(_("Row {}, Can not sell item from WIP Warehouse.".format(d.idx)))
+
 
 	def validate_max_discount(self):
 		for d in self.get("items"):

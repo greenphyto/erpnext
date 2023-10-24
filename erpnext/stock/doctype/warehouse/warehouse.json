@@ -14,6 +14,7 @@
   "parent_warehouse",
   "default_in_transit_warehouse",
   "is_group",
+  "is_wip_warehouse",
   "column_break_4",
   "account",
   "company",
@@ -238,13 +239,20 @@
    "fieldtype": "Link",
    "label": "Default In-Transit Warehouse",
    "options": "Warehouse"
+  },
+  {
+   "default": "0",
+   "description": "If checked, stock in this warehouse cannot sell",
+   "fieldname": "is_wip_warehouse",
+   "fieldtype": "Check",
+   "label": "Is WIP Warehouse"
   }
  ],
  "icon": "fa fa-building",
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2022-03-01 02:37:48.034944",
+ "modified": "2023-10-24 15:10:34.593031",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Warehouse",
