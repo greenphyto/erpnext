@@ -18,14 +18,11 @@ $.extend(frappe.listview_settings["ToDo"], {
 		me.todo_sidebar_setup = true;
 	},
     get_form_link: function(doc){
-        if (doc.reference_type=="Asset Maintenance"){
-            return `/app/asset-maintenance-log/${encodeURIComponent(cstr(doc.additional_reference))}`;
-        }else if (doc.reference_type=="Asset Repair"){
-            return `/app/asset-repair/${encodeURIComponent(cstr(doc.reference_name))}`
-        }else if (doc.reference_type=="Asset Maintenance Log"){
-            return `/app/asset-maintenance-log/${encodeURIComponent(cstr(doc.reference_name))}`
+        if (doc.reference_type && doc.reference_name){
+            return frappe.utils.get_form_link(doc.reference_type, doc.reference_name)
+        }else{
+            return `/app/todo/${encodeURIComponent(cstr(doc.name))}`;
         }
-        return `/app/todo/${encodeURIComponent(cstr(doc.name))}`;
     },
     button: {
 		show: function (doc) {
@@ -35,22 +32,10 @@ $.extend(frappe.listview_settings["ToDo"], {
 			return __("Open", null, "Access");
 		},
 		get_description: function (doc) {
-            if (doc.reference_type=="Asset Maintenance"){
-                return __("Open {0}", [`Asset Maintenance Log: ${doc.additional_reference}`]);
-            }else if (doc.reference_type=="Asset Maintenance Log"){
-                return __("Open {0}", [`Asset Maintenance Log: ${doc.reference_name}`]);
-            }else{
-                return __("Open {0}", [`${__(doc.reference_type)}: ${doc.reference_name}`]);
-            }
+            return __("Open {0}", [`${__(doc.reference_type)}: ${doc.reference_name}`]);
 		},
 		action: function (doc) {
-            if (doc.reference_type=="Asset Maintenance"){
-                frappe.set_route("Form", "Asset Maintenance Log", doc.additional_reference);
-            } else if (doc.reference_type=="Asset Maintenance Log"){
-                frappe.set_route("Form", "Asset Maintenance Log", doc.reference_name);
-            }else{
-                frappe.set_route("Form", doc.reference_type, doc.reference_name);
-            }
+            frappe.set_route("Form", doc.reference_type, doc.reference_name);
 		},
 	},
 })
