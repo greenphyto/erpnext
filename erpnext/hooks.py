@@ -644,3 +644,4 @@ additional_timeline_content = {
 jinja = {
 	"methods": "erpnext.smart_fm.controllers.jinja_method",
 }
+
