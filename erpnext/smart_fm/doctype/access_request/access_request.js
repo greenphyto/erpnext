@@ -3,14 +3,16 @@
 
 frappe.ui.form.on('Access Request', {
   onload: function (frm) {
-    frappe.db.get_value("User", frappe.session.user, ["email", "full_name", "phone", "mobile_no"])
-    .then(r => {
-      let values = r.message;
-      frm.set_value("name1", values.full_name);
-      frm.set_value("email_address", values.email);
-      frm.set_value("phone_number", values.phone);
-    });
-    frm.set_value("company", frappe.defaults.get_user_default("Company"));
+    if (frm.is_new()) {
+      frappe.db.get_value("User", frappe.session.user, ["email", "full_name", "phone", "mobile_no"])
+      .then(r => {
+        let values = r.message;
+        frm.set_value("name1", values.full_name);
+        frm.set_value("email_address", values.email);
+        frm.set_value("phone_number", values.phone);
+      });
+      frm.set_value("company", frappe.defaults.get_user_default("Company"));
+    }
   },
 
 	refresh: function(frm) {
