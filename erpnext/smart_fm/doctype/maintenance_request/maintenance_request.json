@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "MAINT-#####",
+ "autoname": "MAINT-.#####",
  "creation": "2023-05-10 13:37:21.239374",
  "default_view": "List",
  "doctype": "DocType",
@@ -31,12 +31,17 @@
   "safety",
   "attachment",
   "preview",
-  "section_break_psexz",
   "column_break_bwddv",
   "declaration",
+  "section_break_sng8x",
   "signature",
+  "section_break_psexz",
   "date",
-  "amended_from"
+  "amended_from",
+  "section_break_6ayoo",
+  "bm_comment",
+  "bm_attachment",
+  "bm_preview"
  ],
  "fields": [
   {
@@ -220,12 +225,42 @@
   {
    "fieldname": "section_break_rsefl",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_6ayoo",
+   "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval: doc.workflow_state == 'Accepted' || doc.workflow_state == 'Started'",
+   "fieldname": "bm_comment",
+   "fieldtype": "Text Editor",
+   "label": "Comment",
+   "permlevel": 2
+  },
+  {
+   "depends_on": "eval: doc.workflow_state == 'Accepted' || doc.workflow_state == 'Started'",
+   "fieldname": "bm_attachment",
+   "fieldtype": "Attach Image",
+   "label": "Attachment",
+   "permlevel": 2
+  },
+  {
+   "depends_on": "eval: (doc.workflow_state == 'Accepted' || doc.workflow_state == 'Started') && bm_attachment",
+   "fieldname": "bm_preview",
+   "fieldtype": "Image",
+   "label": "BM Preview",
+   "options": "bm_attachment",
+   "permlevel": 2
+  },
+  {
+   "fieldname": "section_break_sng8x",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-10-19 10:17:14.906758",
+ "modified": "2023-10-23 15:39:29.877776",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Maintenance Request",
