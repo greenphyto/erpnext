@@ -234,9 +234,9 @@ def close_todo(doc, method=""):
 		if d.status == "Cancelled":
 			continue
 
-		if close and d.status != "Completed":
+		if close:
 			frappe.db.set_value("ToDo", d.name, 'status', 'Completed')
-		elif not close and d.status != "Planned":
+		else:
 			frappe.db.set_value("ToDo", d.name, 'status', 'Planned')
 
 def directly_workflow_from_webform(doc, method=""):

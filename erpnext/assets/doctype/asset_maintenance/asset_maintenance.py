@@ -54,7 +54,7 @@ def assign_tasks(asset_maintenance_name, assign_to_member, maintenance_task, nex
 	}
 	if not frappe.db.sql(
 		"""select owner from `tabToDo`
-		where reference_type=%(doctype)s and reference_name=%(name)s and status='Open'
+		where reference_type=%(doctype)s and reference_name=%(name)s and status='Planned'
 		and owner=%(assign_to)s""",
 		args,
 	):
