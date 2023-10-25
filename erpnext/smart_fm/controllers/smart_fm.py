@@ -102,7 +102,7 @@ def send_due_date_notification_task():
 		FROM
 			`tabToDo`
 		WHERE
-			status = 'Open' and DATEDIFF(date, CURDATE()) <= reminder_at
+			status = 'Planned' and DATEDIFF(date, CURDATE()) <= reminder_at
 		    and reminder_off = 0
 	""", as_dict=1)
 	for d in data:
@@ -234,10 +234,10 @@ def close_todo(doc, method=""):
 		if d.status == "Cancelled":
 			continue
 
-		if close and d.status != "Closed":
-			frappe.db.set_value("ToDo", d.name, 'status', 'Closed')
-		elif not close and d.status != "Open":
-			frappe.db.set_value("ToDo", d.name, 'status', 'Open')
+		if close and d.status != "Completed":
+			frappe.db.set_value("ToDo", d.name, 'status', 'Completed')
+		elif not close and d.status != "Planned":
+			frappe.db.set_value("ToDo", d.name, 'status', 'Planned')
 
 def directly_workflow_from_webform(doc, method=""):
 	# do all for desk and webform

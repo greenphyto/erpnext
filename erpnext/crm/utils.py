@@ -142,7 +142,7 @@ def get_open_activities(ref_doctype, ref_docname):
 def get_open_todos(ref_doctype, ref_docname):
 	return frappe.get_all(
 		"ToDo",
-		filters={"reference_type": ref_doctype, "reference_name": ref_docname, "status": "Open"},
+		filters={"reference_type": ref_doctype, "reference_name": ref_docname, "status": "Planned"},
 		fields=[
 			"name",
 			"description",

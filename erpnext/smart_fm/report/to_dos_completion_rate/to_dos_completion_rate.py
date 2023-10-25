@@ -44,9 +44,9 @@ class Report:
 		self.close_count = 0
 		total = sum([ x.count for x in self.raw_data ])
 		for d in self.data:
-			if d.type == "Closed":
+			if d.type == "Completed":
 				self.close_count += d.count
-			elif d.type == "Open":
+			elif d.type == "Planned":
 				self.open_count += d.count
 
 			d.percent = d.count/total*100
@@ -59,7 +59,7 @@ class Report:
 		})
 
 	def get_chart(self):
-		labels = ["Open", "Closed"]
+		labels = ["Planned", "Completed"]
 		datasets = [{
 			"name":"ToDo",
 			"values":[ self.open_count, self.close_count]
