@@ -95,9 +95,20 @@ class WorkOrder(Document):
 		self.set_required_items(reset_only_qty=len(self.get("required_items")))
 
 	def autoname(self):
-		if self.foms_work_order:
-			series = self.foms_work_order + "-{}.##".format( cint(self.operation_no) or 1 )
-			self.name = parse_naming_series(series, doc=self)
+		if cint(self.operation_no):
+			alpha_map = ["A", "B", "C", "D", "E", "F"]
+			alpha = alpha_map[cint(self.operation_no)-1]
+			if self.foms_work_order:
+				series = self.foms_work_order + "-.###.-{}".format( alpha )
+			else:
+				series = self.naming_series + ".###.-{}".format( alpha )
+		else:
+			if self.foms_work_order:
+				series = self.foms_work_order + "-.###"
+			else:
+				series = self.naming_series
+
+		self.name = parse_naming_series(series, doc=self)
 
 	def validate_workstation_type(self):
 		for row in self.operations:
