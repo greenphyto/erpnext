@@ -6,9 +6,8 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import getdate, nowdate
-
 from erpnext.assets.doctype.asset_maintenance.asset_maintenance import calculate_next_due_date
-
+from erpnext.smart_fm.controllers.smart_fm import update_request
 
 class AssetMaintenanceLog(Document):
 	def validate(self):
@@ -28,6 +27,11 @@ class AssetMaintenanceLog(Document):
 		if self.maintenance_status not in ["Completed", "Cancelled"]:
 			frappe.throw(_("Maintenance Status has to be Cancelled or Completed to Submit"))
 		self.update_maintenance_task()
+		if self.repair_status == "Completed":
+			update_request(self, "Resolve")
+
+	def after_insert(self):
+		update_request(self, "Start")
 
 	def update_maintenance_task(self):
 		asset_maintenance_doc = frappe.get_doc("Asset Maintenance Task", self.task)

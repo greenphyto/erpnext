@@ -9,6 +9,7 @@ import erpnext
 from erpnext.accounts.general_ledger import make_gl_entries
 from erpnext.assets.doctype.asset.asset import get_asset_account
 from erpnext.controllers.accounts_controller import AccountsController
+from erpnext.smart_fm.controllers.smart_fm import update_request
 
 
 class AssetRepair(AccountsController):
@@ -35,6 +36,13 @@ class AssetRepair(AccountsController):
 
 		total_value_of_stock_consumed = self.get_total_value_of_stock_consumed()
 		self.total_repair_cost += total_value_of_stock_consumed
+
+	def after_insert(self):
+		update_request(self, "Start")
+
+	def on_submit(self):
+		if self.repair_status == "Completed":
+			update_request(self, "Resolve")
 
 	def before_submit(self):
 		self.check_repair_status()

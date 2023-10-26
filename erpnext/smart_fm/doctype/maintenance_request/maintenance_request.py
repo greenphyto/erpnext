@@ -27,7 +27,7 @@ def create_asset_maintenance_log(name,asset_name, item_code, item_name):
 	asset_maintenance_log = frappe.new_doc("Asset Maintenance Log")
 	asset_maintenance_log.update(
 		{
-      "request_id": name,
+      		"request_id": name,
 			"asset_name": asset_name,
 			"item_code": item_code,
 			"item_name": item_name,

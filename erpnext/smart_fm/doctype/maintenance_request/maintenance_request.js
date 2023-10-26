@@ -18,7 +18,7 @@ frappe.ui.form.on('Maintenance Request', {
   },
   
 	refresh: function(frm) {
-		if (!frm.is_new()) {
+		if (!frm.is_new() && in_list(['Started', 'Approved', 'Accepted'], frm.doc.workflow_state) ) {
 			frm.add_custom_button(__("ToDo"), function() {
 				frm.trigger("create_to_do");
 			}, __("Create"));

@@ -86,7 +86,7 @@
    "label": "Maintenance Issue Details"
   },
   {
-   "depends_on": "eval:doc.issue_type == 'Other';",
+   "depends_on": "eval:doc.issue_type == 'Other'",
    "fieldname": "other",
    "fieldtype": "Data",
    "label": "Other (please specify)"
@@ -216,7 +216,7 @@
    "label": "Item Name"
   },
   {
-   "depends_on": "attachment",
+   "depends_on": "doc.attachment",
    "fieldname": "preview",
    "fieldtype": "Image",
    "label": "Preview",
@@ -247,7 +247,7 @@
    "permlevel": 2
   },
   {
-   "depends_on": "bm_attachment",
+   "depends_on": "doc.bm_attachment",
    "fieldname": "bm_preview",
    "fieldtype": "Image",
    "label": "BM Preview",
@@ -262,7 +262,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-10-26 10:44:30.069981",
+ "modified": "2023-10-26 15:31:25.238342",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Maintenance Request",
