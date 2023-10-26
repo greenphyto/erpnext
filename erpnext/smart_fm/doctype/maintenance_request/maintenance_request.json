@@ -227,25 +227,27 @@
    "fieldtype": "Section Break"
   },
   {
+   "depends_on": "eval: doc.workflow_state == 'Accepted' || doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Rejected'",
    "fieldname": "section_break_6ayoo",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Building Management Comment"
   },
   {
-   "depends_on": "eval: doc.workflow_state == 'Accepted' || doc.workflow_state == 'Started'",
+   "depends_on": "eval: doc.workflow_state == 'Accepted' || doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Rejected'",
    "fieldname": "bm_comment",
    "fieldtype": "Text Editor",
    "label": "Comment",
    "permlevel": 2
   },
   {
-   "depends_on": "eval: doc.workflow_state == 'Accepted' || doc.workflow_state == 'Started'",
+   "depends_on": "eval: doc.workflow_state == 'Accepted' || doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Rejected'",
    "fieldname": "bm_attachment",
    "fieldtype": "Attach Image",
    "label": "Attachment",
    "permlevel": 2
   },
   {
-   "depends_on": "eval: (doc.workflow_state == 'Accepted' || doc.workflow_state == 'Started') && bm_attachment",
+   "depends_on": "bm_attachment",
    "fieldname": "bm_preview",
    "fieldtype": "Image",
    "label": "BM Preview",
@@ -260,7 +262,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-10-23 15:39:29.877776",
+ "modified": "2023-10-26 10:44:30.069981",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Maintenance Request",
