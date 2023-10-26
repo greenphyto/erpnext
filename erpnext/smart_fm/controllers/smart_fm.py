@@ -239,6 +239,17 @@ def close_todo(doc, method=""):
 		else:
 			frappe.db.set_value("ToDo", d.name, 'status', 'Planned')
 
+def update_request(reff_doc, state):
+	if reff_doc.doctype not in ('Asset Repair', 'Asset Maintenance Request'):
+		return
+
+	if not reff_doc.get("request_id"):
+		return
+	
+	doc = frappe.get_doc("Maintenance Request", reff_doc.request_id)
+	if doc.workflow_state != state:
+		apply_workflow(doc, state)
+
 def directly_workflow_from_webform(doc, method=""):
 	# do all for desk and webform
 	# if not frappe.flags.in_web_form:
