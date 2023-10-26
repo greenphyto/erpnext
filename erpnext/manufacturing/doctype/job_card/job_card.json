@@ -254,11 +254,11 @@
    "read_only": 1
   },
   {
-   "default": "PO-JOB.#####",
+   "default": "JO.#####",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Naming Series",
-   "options": "PO-JOB.#####",
+   "options": "JO.#####",
    "reqd": 1
   },
   {
@@ -439,7 +439,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2022-11-09 15:02:44.490731",
+ "modified": "2023-10-26 10:00:12.345734",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Job Card",
