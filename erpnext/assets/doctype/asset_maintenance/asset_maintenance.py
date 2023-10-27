@@ -7,6 +7,7 @@ from frappe import _, throw
 from frappe.desk.form import assign_to
 from frappe.model.document import Document
 from frappe.utils import add_days, add_months, add_years, getdate, nowdate
+from frappe.model.naming import parse_naming_series
 
 
 class AssetMaintenance(Document):
@@ -18,6 +19,8 @@ class AssetMaintenance(Document):
 				task.maintenance_status = "Overdue"
 			if not task.assign_to and self.docstatus == 0:
 				throw(_("Row #{}: Please asign task to a member.").format(task.idx))
+
+		self.rename_task()
 
 	def on_update(self):
 		for task in self.get("asset_maintenance_tasks"):
@@ -41,6 +44,11 @@ class AssetMaintenance(Document):
 				maintenance_log = frappe.get_doc("Asset Maintenance Log", asset_maintenance_log.name)
 				maintenance_log.db_set("maintenance_status", "Cancelled")
 
+	def rename_task(self):
+		for d in self.get("asset_maintenance_tasks"):
+			if d.is_new():
+				series = "TASK-.#####"
+				d.name = parse_naming_series(series, doc=self)
 
 @frappe.whitelist()
 def assign_tasks(asset_maintenance_name, assign_to_member, maintenance_task, next_due_date):
