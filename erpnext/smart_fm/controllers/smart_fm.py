@@ -70,6 +70,9 @@ def create_todo(doc, method=""):
 	task = ""
 	if doc.doctype == "Asset Maintenance Log":
 		task = doc.task_name
+		if not task:
+			frappe.throw(_("Task is missing!"))
+			
 	elif doc.doctype == "Asset Repair":
 		if doc.get("description"):
 			task = doc.description[:150]
@@ -240,13 +243,23 @@ def close_todo(doc, method=""):
 			frappe.db.set_value("ToDo", d.name, 'status', 'Planned')
 
 def update_request(reff_doc, state):
-	if reff_doc.doctype not in ('Asset Repair', 'Asset Maintenance Request'):
-		return
-
-	if not reff_doc.get("request_id"):
+	# from Asset Repair' and Asset Maintenance Log
+	if reff_doc.doctype not in ('Asset Repair', 'Asset Maintenance Log', 'ToDo'):
 		return
 	
-	doc = frappe.get_doc("Maintenance Request", reff_doc.request_id)
+	request_id = reff_doc.get("request_id")
+
+	# from ToDo
+	if reff_doc.doctype == "ToDo":
+		if reff_doc.reference_type == "Maintenance Request":
+			request_id = reff_doc.reference_name
+		else:
+			return
+		
+	if not request_id:
+		return
+	
+	doc = frappe.get_doc("Maintenance Request", request_id)
 	if doc.workflow_state != state:
 		apply_workflow(doc, state)
 
