@@ -47,7 +47,7 @@ class AssetMaintenance(Document):
 	def rename_task(self):
 		for d in self.get("asset_maintenance_tasks"):
 			if d.is_new():
-				series = "TASK-.#####"
+				series = "TASK.#####"
 				d.name = parse_naming_series(series, doc=self)
 
 @frappe.whitelist()
