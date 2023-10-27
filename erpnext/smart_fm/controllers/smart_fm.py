@@ -299,4 +299,7 @@ def validate_workflow(doc, action):
 		return False
 	
 	return True
-		
+
+@frappe.whitelist()
+def planned_todo_count():
+	return frappe.db.count("ToDo", {"status": "Planned"})

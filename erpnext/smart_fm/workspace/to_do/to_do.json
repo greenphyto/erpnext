@@ -1,6 +1,8 @@
 {
+ "activate_count_icon": 1,
  "charts": [],
  "content": "[{\"id\":\"8p2TkviYJY\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">To Do</span>\",\"col\":12}},{\"id\":\"1mlxMZ5Uio\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"ToDo\",\"col\":4}}]",
+ "count_method": "erpnext.smart_fm.controllers.smart_fm.planned_todo_count",
  "creation": "2023-07-07 10:40:06.305496",
  "docstatus": 0,
  "doctype": "Workspace",
@@ -11,7 +13,7 @@
  "is_hidden": 0,
  "label": "To Do",
  "links": [],
- "modified": "2023-08-29 12:34:19.875332",
+ "modified": "2023-10-27 14:28:18.558267",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "To Do",
