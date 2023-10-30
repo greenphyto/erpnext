@@ -27,7 +27,7 @@ class AssetMaintenanceLog(Document):
 		if self.maintenance_status not in ["Completed", "Cancelled"]:
 			frappe.throw(_("Maintenance Status has to be Cancelled or Completed to Submit"))
 		self.update_maintenance_task()
-		if self.repair_status == "Completed":
+		if self.maintenance_status == "Completed":
 			update_request(self, "Resolve")
 
 	def after_insert(self):

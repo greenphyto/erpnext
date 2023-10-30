@@ -6,5 +6,5 @@ def execute():
     """)
 
     frappe.db.sql("""
-        update tabToDo set status="Closed" where status = "Completed"
+        update tabToDo set status="Completed" where status = "Closed"
     """)
