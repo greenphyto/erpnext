@@ -29,7 +29,7 @@ jobs:
           docker ps
           docker builder prune -a -f
           docker image prune -a -f
-          docker buildx bake -f docker-bake.hcl --load
+          docker buildx bake -f docker-bake.hcl --load --no-cache
           docker compose --project-name smart-fm -f ~/gitops/smart-fm.yaml up -d
           docker ps
           echo 'smart fm finished deployment'
