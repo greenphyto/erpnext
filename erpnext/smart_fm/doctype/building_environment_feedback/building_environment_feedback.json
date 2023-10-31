@@ -1,0 +1,171 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "SRV.YY.###",
+ "creation": "2023-10-31 11:16:42.827896",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "heading_1",
+  "personal_information_section",
+  "full_name",
+  "email_address",
+  "survey_questions_section",
+  "q1",
+  "q2",
+  "q2_detail",
+  "q3",
+  "q4",
+  "q4_detail",
+  "q5",
+  "q6",
+  "q6_detail",
+  "q7",
+  "q8",
+  "q8_detail",
+  "q9",
+  "q10"
+ ],
+ "fields": [
+  {
+   "fieldname": "heading_1",
+   "fieldtype": "Heading",
+   "label": "Greenphyto Building Environment Feedback Form"
+  },
+  {
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Full Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "email_address",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Email Address",
+   "options": "Email",
+   "reqd": 1
+  },
+  {
+   "fieldname": "q1",
+   "fieldtype": "Select",
+   "label": "How would you rate the overall temperature comfort in the building?  ",
+   "options": "\nToo Cold\nComfortable\nToo Warm\nVaries throughout the day"
+  },
+  {
+   "fieldname": "q2",
+   "fieldtype": "Select",
+   "label": "Are there areas in the building where you experience drafts or uneven temperatures?  ",
+   "options": "\nYes\nNo"
+  },
+  {
+   "depends_on": "eval:doc.q2==\"Yes\"",
+   "fieldname": "q2_detail",
+   "fieldtype": "Small Text",
+   "label": "If yes, please specify where"
+  },
+  {
+   "fieldname": "personal_information_section",
+   "fieldtype": "Section Break",
+   "label": "Personal Information"
+  },
+  {
+   "fieldname": "survey_questions_section",
+   "fieldtype": "Section Break",
+   "label": "Survey Questions"
+  },
+  {
+   "fieldname": "q10",
+   "fieldtype": "Small Text",
+   "label": "Are there any areas in the building where you feel enhancements could improve your overall comfort? "
+  },
+  {
+   "fieldname": "q3",
+   "fieldtype": "Select",
+   "label": "How satisfied are you with the natural and artificial lighting in your workspace? ",
+   "options": "\nVery Satisfied\nSatisfied\nNeutral\nUnsatisfied\nVery Unsatisfied"
+  },
+  {
+   "fieldname": "q4",
+   "fieldtype": "Select",
+   "label": "Are there any areas where you find the lighting too dim or too bright?",
+   "options": "\nYes\nNo"
+  },
+  {
+   "depends_on": "eval:doc.q4==\"Yes\"",
+   "fieldname": "q4_detail",
+   "fieldtype": "Small Text",
+   "label": "If yes, please specify where"
+  },
+  {
+   "fieldname": "q5",
+   "fieldtype": "Select",
+   "label": "How would you rate the noise level in the building?",
+   "options": "\nVery Quiet\nAcceptable\nDistracting\nToo Noisy"
+  },
+  {
+   "fieldname": "q6",
+   "fieldtype": "Select",
+   "label": "Are there specific sources of noise or areas in the building that are particularly disruptive?",
+   "options": "\nYes\nNo"
+  },
+  {
+   "depends_on": "eval:doc.q6==\"Yes\"",
+   "fieldname": "q6_detail",
+   "fieldtype": "Small Text",
+   "label": "If yes, please describe:"
+  },
+  {
+   "fieldname": "q7",
+   "fieldtype": "Select",
+   "label": "How would you rate the building's overall air quality and freshness?",
+   "options": "\nExcellent\nGood\nAverage\nPoor\nVery Poor"
+  },
+  {
+   "fieldname": "q8",
+   "fieldtype": "Select",
+   "label": "Do you notice any unpleasant odors or smells within the building? ",
+   "options": "\nYes\nNo"
+  },
+  {
+   "depends_on": "eval:doc.q8==\"Yes\"",
+   "fieldname": "q8_detail",
+   "fieldtype": "Small Text",
+   "label": "If yes, please describe:"
+  },
+  {
+   "fieldname": "q9",
+   "fieldtype": "Select",
+   "label": "How would you describe the spaciousness of your workspace and common areas?",
+   "options": "\nVery Spacious\nAdequate\nCramped\nVaries by area"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-10-31 15:03:24.964076",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Building Environment Feedback",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
