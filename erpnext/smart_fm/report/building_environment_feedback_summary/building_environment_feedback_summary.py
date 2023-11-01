@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.utils import flt
+from frappe.utils import flt, cint
 
 def execute(filters=None):
 	report = Report(filters)
@@ -22,6 +22,7 @@ class Report:
 		self.columns = [
 			{"fieldname": "question", 	"label": "Question", 	"fieldtype": "Data", 	"width":500, "options": ""},
 			{"fieldname": "percent", 	"label": "% Percent", 	"fieldtype": "Data", 	"width":100, "precision":2, "options": ""},
+			{"fieldname": "count", 		"label": "Count", 		"fieldtype": "Int", 	"width":100, "precision":2, "options": ""},
 		]
 
 	def set_filter(self):
@@ -36,10 +37,16 @@ class Report:
 			if not df:
 				continue
 
+			msg_field = None
+			field_detail = "{}_detail".format(field)
+			if self.meta.get_field(field_detail):
+				msg_field = field_detail
+
 			label = df.label
 			if not cur_label or cur_label!=label:
 				# add new row quiz
 				if cur_label:
+
 					self.data.append({})
 
 				self.data.append({
@@ -66,6 +73,7 @@ class Report:
 						`tabBuilding Environment Feedback`
 					group by if(isnull({0}), "None", "Answered")
 						 """.format(field), as_dict=1)
+				msg_field = field
 
 			answer_map = {}
 			total = 0
@@ -76,8 +84,10 @@ class Report:
 			for opts in all_opts:
 				d = answer_map.get(opts)
 				percent_view = "0%"
+				count = 0
 				if d:
 					question = d.question or "None"
+					count = cint(d.get("count"))
 					percent = flt(d.count) / total * 100
 					percent_view = "{:.2f}%".format(round(percent, 2))
 				else:
@@ -86,8 +96,12 @@ class Report:
 				self.data.append({
 					"indent":1,
 					"question":question,
-					"percent":percent_view
+					"percent":percent_view,
+					"count": count
 				})
+			
+			if msg_field:
+				self.data.append({"question":"Button", "indent":1, "msg_field":msg_field})
 
 
 	def process_data(self):
