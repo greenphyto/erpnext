@@ -26,7 +26,9 @@
   "q8",
   "q8_detail",
   "q9",
-  "q10"
+  "q10",
+  "more_information_section",
+  "posting_date"
  ],
  "fields": [
   {
@@ -141,11 +143,24 @@
    "fieldtype": "Select",
    "label": "How would you describe the spaciousness of your workspace and common areas?",
    "options": "\nVery Spacious\nAdequate\nCramped\nVaries by area"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "more_information_section",
+   "fieldtype": "Section Break",
+   "label": "More Information"
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-10-31 15:03:24.964076",
+ "modified": "2023-11-01 10:51:06.068148",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Building Environment Feedback",
