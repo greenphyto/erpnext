@@ -4,7 +4,18 @@
 
 frappe.query_reports["Building Environment Feedback Summary"] = {
 	"filters": [
-
+		{
+			"fieldname": "from_date",
+			"fieldtype": "Date",
+			"label": "Date From",
+			"default": frappe.datetime.add_months(frappe.datetime.get_today(), -1),
+		},
+		{
+			"fieldname": "to_date",
+			"fieldtype": "Date",
+			"label": "Date To",
+			"default": frappe.datetime.get_today()
+		},
 	],
 	"formatter": function(value, row, column, data, default_formatter) {
 		if (value=="Button"){

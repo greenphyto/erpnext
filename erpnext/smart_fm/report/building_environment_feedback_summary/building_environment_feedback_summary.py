@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.utils import flt, cint
+from frappe.utils import flt, cint, getdate, add_days
 
 def execute(filters=None):
 	report = Report(filters)
@@ -14,8 +14,8 @@ class Report:
 		self.data = []
 		self.columns = []
 		self.condition = ""
+		self.params = []
 		self.total_quiz = 10
-		self.filters_dict = {}
 		self.meta = frappe.get_meta("Building Environment Feedback")
 
 	def get_columns(self):
@@ -26,7 +26,10 @@ class Report:
 		]
 
 	def set_filter(self):
-		pass
+		from_date = getdate(self.filters.from_date or "2000-01-01") 
+		to_date = add_days(getdate(self.filters.to_date), 1)
+		self.condition = " and posting_date between %s and %s "
+		self.params = [from_date, to_date]
 
 	def get_raw_data(self):
 		self.data
@@ -62,7 +65,18 @@ class Report:
 				all_opts.remove("")
 				all_opts.append("")
 
-				data = frappe.db.get_list("Building Environment Feedback", self.filters_dict, "count({0}) as count, {0} as question".format(field), group_by=field, debug=0)
+				data = frappe.db.sql("""
+					SELECT 
+						count({0}) as count,
+						{0} as question
+					FROM
+						`tabBuilding Environment Feedback`
+					where 
+						docstatus != 2
+						{1}
+					group by {0}
+						""".format(field, self.condition), self.params, as_dict=1, debug=0)
+				
 			else:
 				all_opts = ["Answered", "None"]
 				data = frappe.db.sql("""
@@ -71,8 +85,11 @@ class Report:
 						if(isnull({0}), "None", "Answered") as question
 					FROM
 						`tabBuilding Environment Feedback`
+					where 
+						docstatus != 2
+						{1}
 					group by if(isnull({0}), "None", "Answered")
-						 """.format(field), as_dict=1)
+						 """.format(field, self.condition),self.params, as_dict=1, debug=0)
 				msg_field = field
 
 			answer_map = {}
