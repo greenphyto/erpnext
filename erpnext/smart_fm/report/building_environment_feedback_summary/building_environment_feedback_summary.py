@@ -1,8 +1,10 @@
 # Copyright (c) 2013, erfidner.id and contributors
 # For license information, please see license.txt
 
-import frappe
+import frappe, json
 from frappe.utils import flt, cint, getdate, add_days
+from six import string_types
+
 
 def execute(filters=None):
 	report = Report(filters)
@@ -131,4 +133,21 @@ class Report:
 		self.process_data()
 
 		return self.columns, self.data
+
+@frappe.whitelist()
+def get_message_list(filters, field):
+	if isinstance(filters, string_types):
+		filters = json.loads(filters)
+
+	meta = frappe.get_meta("Building Environment Feedback")
+	from_date = getdate(filters.get('from_date') or "2000-01-01") 
+	to_date = add_days(getdate(filters.get('to_date')), 1)
+	condition = {"posting_date":['between', [from_date, to_date]]}
 	
+	msg = frappe.db.get_list('Building Environment Feedback', condition, ["{} as text".format(field), "full_name", "email_address"], debug=1)
+	field = meta.get_field(field.replace("_detail", ""))
+	data = {
+		"question":field.label,
+		"messages":msg
+	}
+	return data

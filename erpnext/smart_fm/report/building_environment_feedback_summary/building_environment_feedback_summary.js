@@ -42,6 +42,36 @@ frappe.query_reports["Building Environment Feedback Summary"] = {
 frappe.provide("frappe.report_script")
 frappe.report_script = {
 	show_messages:function(el){
-		console.log("show", el)
+		var msg_field = $(el).attr("msg_field");
+		var d = new frappe.ui.Dialog({
+			title: 'Messages List',
+			fields: [
+				{
+					fieldname: 'ht',
+					fieldtype: 'HTML'
+				}
+			],
+		});
+		d.show();
+		var wrapper = d.fields_dict.ht.$wrapper;
+		var filters = frappe.query_report.get_filter_values();
+
+		// get data
+		frappe.call({
+			method:"erpnext.smart_fm.report.building_environment_feedback_summary.building_environment_feedback_summary.get_message_list",
+			args:{
+				filters:filters,
+				field: msg_field
+			},
+			callback:function(res){
+				$.each(res.message.messages, (i,r)=>{
+					var msg_wrapper = $("<div class='card m-2'><div>").text(r.text || "-")
+					wrapper.append(msg_wrapper);
+				})
+			}
+		})
+		// plot to html
+
+		console.log("show", wrapper, msg_field)
 	}
 }
