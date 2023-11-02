@@ -38,6 +38,7 @@
   "currency_exchange_section",
   "allow_stale",
   "stale_days",
+  "save_fetched_currency_exchange_rates",
   "invoicing_settings_tab",
   "accounts_transactions_settings_section",
   "over_billing_allowance",
@@ -360,6 +361,12 @@
    "fieldtype": "Table",
    "label": "Asset Code Map",
    "options": "Asset Code Map"
+  },
+  {
+   "default": "0",
+   "fieldname": "save_fetched_currency_exchange_rates",
+   "fieldtype": "Check",
+   "label": "Save fetched currency exchange rates"
   }
  ],
  "icon": "icon-cog",
@@ -367,7 +374,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-09-27 15:34:02.023847",
+ "modified": "2023-11-02 16:58:17.820470",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounts Settings",
