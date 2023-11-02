@@ -287,6 +287,12 @@ frappe.ui.form.on('Payment Entry', {
 				frm.events.mode_of_payment(frm);
 			}
 		}
+
+		if (frm.doc.payment_type=="Receive"){
+			frm.set_value("naming_series", "RV.###./.YYYY")
+		}else if(frm.doc.payment_type=="Pay"){
+			frm.set_value("naming_series", "PV.###./.YYYY")
+		}
 	},
 
 	party_type: function(frm) {
