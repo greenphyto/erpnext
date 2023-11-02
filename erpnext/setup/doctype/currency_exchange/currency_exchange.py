@@ -6,7 +6,7 @@
 
 from frappe import _, throw
 from frappe.model.document import Document
-from frappe.utils import cint, formatdate, get_datetime_str, nowdate
+from frappe.utils import cint, formatdate, get_datetime_str, nowdate, add_days, getdate
 
 
 class CurrencyExchange(Document):
@@ -37,3 +37,9 @@ class CurrencyExchange(Document):
 
 		if not cint(self.for_buying) and not cint(self.for_selling):
 			throw(_("Currency Exchange must be applicable for Buying or for Selling."))
+
+from erpnext.setup.utils import get_exchange_rate
+def save_main_currency_rate():
+	date = add_days(getdate(), -1)
+	get_exchange_rate("SGD", "USD", date)
+	get_exchange_rate("USD", "SGD", date)

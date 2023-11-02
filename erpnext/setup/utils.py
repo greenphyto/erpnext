@@ -198,7 +198,7 @@ def save_currency_exchange(from_currency, to_currency, date="", rate=0):
 		"from_currency": from_currency,
 		"to_currency": to_currency
 	}
-	if frappe.db.exists("Currency Exchange", params):
+	if frappe.db.exists("Currency Exchange", params) or not rate:
 		return
 
 	if not frappe.db.get_single_value("Currency Exchange", "save_fetched_currency_exchange_rates"):
