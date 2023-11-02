@@ -40,6 +40,7 @@
   "show_payment_schedule_in_print",
   "currency_exchange_section",
   "allow_stale",
+  "save_fetched_currency_exchange_rates",
   "section_break_jpd0",
   "auto_reconcile_payments",
   "stale_days",
@@ -60,8 +61,7 @@
   "period_closing_settings_section",
   "acc_frozen_upto",
   "column_break_25",
-  "frozen_accounts_modifier",
-  "report_settings_sb"
+  "frozen_accounts_modifier"
  ],
  "fields": [
   {
@@ -378,6 +378,12 @@
    "fieldname": "auto_reconcile_payments",
    "fieldtype": "Check",
    "label": "Auto Reconcile Payments"
+  },
+  {
+   "default": "0",
+   "fieldname": "save_fetched_currency_exchange_rates",
+   "fieldtype": "Check",
+   "label": "Save fetched currency exchange rates"
   }
  ],
  "icon": "icon-cog",
@@ -385,7 +391,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-04-21 13:11:37.130743",
+ "modified": "2023-11-02 15:56:13.583070",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounts Settings",

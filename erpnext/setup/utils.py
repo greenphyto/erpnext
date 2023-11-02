@@ -3,7 +3,7 @@
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, flt, get_datetime_str, nowdate
+from frappe.utils import add_days, flt, get_datetime_str, nowdate, getdate
 from frappe.utils.data import now_datetime
 from frappe.utils.nestedset import get_ancestors_of, get_root_of  # noqa
 
@@ -76,17 +76,24 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 
 	# cksgb 19/09/2016: get last entry in Currency Exchange with from_currency and to_currency.
 	entries = frappe.get_all(
-		"Currency Exchange", fields=["exchange_rate"], filters=filters, order_by="date desc", limit=1
+		"Currency Exchange", fields=["exchange_rate", "date"], filters=filters, order_by="date desc", limit=1
 	)
 	if entries:
-		return flt(entries[0].exchange_rate)
+		data = entries[0]
+		if getdate(data.date) != getdate(nowdate()):
+			save_currency_exchange(from_currency, to_currency)
 
+		return flt(data.exchange_rate)
+
+	return get_exchange_rate_from_api(from_currency, to_currency, transaction_date)
+
+def get_exchange_rate_from_api(from_currency, to_currency, transaction_date):
 	try:
 		cache = frappe.cache()
 		key = "currency_exchange_rate_{0}:{1}:{2}".format(transaction_date, from_currency, to_currency)
 		value = cache.get(key)
 
-		if not value:
+		if not value or 1:
 			import requests
 
 			settings = frappe.get_cached_doc("Currency Exchange Settings")
@@ -105,6 +112,7 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 			for res_key in settings.result_key:
 				value = value[format_ces_api(str(res_key.key), req_params)]
 			cache.setex(name=key, time=21600, value=flt(value))
+			save_currency_exchange(from_currency, to_currency, transaction_date, value)
 		return flt(value)
 	except Exception:
 		frappe.log_error("Unable to fetch exchange rate")
@@ -114,6 +122,29 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 			).format(from_currency, to_currency, transaction_date)
 		)
 		return 0.0
+	
+def save_currency_exchange(from_currency, to_currency, date="", rate=0):
+	date = getdate(date)
+	if not rate:
+		rate = get_exchange_rate_from_api(from_currency, to_currency, date)
+	
+	params = {
+		"date":date,
+		"from_currency": from_currency,
+		"to_currency": to_currency
+	}
+	if frappe.db.exists("Currency Exchange", params):
+		return
+
+	if not frappe.db.get_single_value("Currency Exchange", "save_fetched_currency_exchange_rates"):
+		return
+	
+	doc = frappe.new_doc("Currency Exchange")
+	doc.update(params)
+	doc.exchange_rate = rate
+	doc.insert()
+
+	return doc.name
 
 
 def format_ces_api(data, param):
