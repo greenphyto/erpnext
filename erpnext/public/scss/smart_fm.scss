@@ -3,3 +3,29 @@
     height: 600px;
     border: unset;
 }
+
+.message-list-card{
+    border: 1px solid #cfcfcf;
+    border-radius: 5px;
+    padding: 7px 8px;
+    margin: 8px 0px 14px;
+    padding-bottom: 4px;
+    .body-section{
+        margin-bottom: 4px;
+        .content {
+            min-height: 50px;
+            font-size: 1.1em;
+            margin-bottom: 4px
+        }
+    }
+    .bottom-section{
+        font-size: 0.75em;
+        color: #838383;
+        font-style: italic;
+    }
+}
+.msg-list-wrapper{
+    max-height: 75vh;
+    overflow-y: scroll;
+    padding: 7px;
+}

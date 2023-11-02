@@ -143,11 +143,13 @@ def get_message_list(filters, field):
 	from_date = getdate(filters.get('from_date') or "2000-01-01") 
 	to_date = add_days(getdate(filters.get('to_date')), 1)
 	condition = {"posting_date":['between', [from_date, to_date]]}
+	condition[field] = ['not in', ['', None]]
 	
 	msg = frappe.db.get_list('Building Environment Feedback', condition, ["{} as text".format(field), "full_name", "email_address"], debug=1)
 	field = meta.get_field(field.replace("_detail", ""))
 	data = {
 		"question":field.label,
-		"messages":msg
+		"messages":msg,
+		"total":len(msg)
 	}
 	return data

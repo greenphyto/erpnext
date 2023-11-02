@@ -31,7 +31,7 @@ frappe.query_reports["Building Environment Feedback Summary"] = {
 				<a 
 					msg_field="${data.msg_field}"
 					onClick="frappe.report_script.show_messages(this);" 
-					style="font-size: 0.82em;color: #aeaeae;"
+					style="font-size: 0.82em;color: #a5a5a5;"
 				>Show Message</a>
 			</div>`
 		}
@@ -53,7 +53,12 @@ frappe.report_script = {
 			],
 		});
 		d.show();
-		var wrapper = d.fields_dict.ht.$wrapper;
+		var main = d.fields_dict.ht.$wrapper;
+		var heading = $(`<div class='msg-list-header'>Total count <span class="total">0</span> messages</div>`);
+		var wrapper = $("<div class='msg-list-wrapper'></div>");
+		main
+		.append(heading)
+		.append(wrapper);
 		var filters = frappe.query_report.get_filter_values();
 
 		// get data
@@ -64,8 +69,21 @@ frappe.report_script = {
 				field: msg_field
 			},
 			callback:function(res){
+				heading.find(".total").text(res.message.total);
 				$.each(res.message.messages, (i,r)=>{
-					var msg_wrapper = $("<div class='card m-2'><div>").text(r.text || "-")
+					var msg_wrapper = $(`
+					<div class='message-list-card'>
+						<div class="body-section">
+							<div class="content"></div>
+						</div>
+						<div class="bottom-section">
+							From <span class="sender"></span>, <span class="email"></span>
+						</div>
+					<div>`)
+					msg_wrapper.find(".content").text(r.text || "-");
+					msg_wrapper.find(".sender").text(r.full_name || "-");
+					msg_wrapper.find(".email").text(r.email_address || "-");
+					
 					wrapper.append(msg_wrapper);
 				})
 			}
