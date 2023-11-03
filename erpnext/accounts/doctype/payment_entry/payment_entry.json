@@ -104,11 +104,11 @@
   },
   {
    "bold": 1,
-   "default": "PV.###./.YYYY",
+   "default": "RV.###./.YYYY",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
-   "options": "PV.###./.YYYY\nRV.###./.YYYY\nACC-PAY-.YYYY.-",
+   "options": "RV.###./.YYYY\nPV.###./.YYYY\nACC-PAY-.YYYY.-",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -734,7 +734,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-02 17:41:40.321359",
+ "modified": "2023-11-03 11:15:08.305020",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry",
