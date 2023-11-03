@@ -200,10 +200,13 @@ def save_currency_exchange(from_currency, to_currency, date="", rate=0):
 	if not frappe.db.get_single_value("Accounts Settings", "save_fetched_currency_exchange_rates"):
 		return
 	
-	doc = frappe.new_doc("Currency Exchange")
-	doc.update(params)
-	doc.exchange_rate = rate
-	doc.insert()
+	try:
+		doc = frappe.new_doc("Currency Exchange")
+		doc.update(params)
+		doc.exchange_rate = rate
+		doc.insert()
+	except:
+		pass
 
 	return doc.name
 
