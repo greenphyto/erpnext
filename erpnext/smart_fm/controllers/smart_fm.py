@@ -260,7 +260,19 @@ def update_request(reff_doc, state):
 		return
 	
 	doc = frappe.get_doc("Maintenance Request", request_id)
-	if doc.workflow_state != state:
+	workflow = get_workflow(doc.doctype)
+	transitions = get_transitions(doc, workflow)
+	
+	# find the transition
+	transition = None
+	for t in transitions:
+		if t.action == state:
+			transition = t
+
+	if not transition:
+		return
+	
+	if doc.workflow_state != transition.next_state:
 		apply_workflow(doc, state)
 
 def directly_workflow_from_webform(doc, method=""):
@@ -277,7 +289,7 @@ def directly_workflow_from_webform(doc, method=""):
 	
 	apply_workflow(doc, "Submit")
 	
-from frappe.model.workflow import get_workflow, apply_workflow, has_approval_access
+from frappe.model.workflow import get_workflow, apply_workflow, has_approval_access, get_transitions
 from frappe.workflow.doctype.workflow_action.workflow_action import get_next_possible_transitions
 def validate_workflow(doc, action):
 	"""Allow workflow action on the current doc"""
