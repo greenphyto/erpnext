@@ -111,6 +111,9 @@ def get_exchange_rate_from_api(from_currency, to_currency, transaction_date, set
 		)
 		return 0.0
 
+	if value:
+		save_currency_exchange(from_currency, to_currency, transaction_date, value)
+
 	return value
 
 def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, settingscheck=None):
@@ -153,7 +156,6 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 				if from_currency in listofcurrency:	
 					value = flt(value) / 100	
 			cache.setex(name=key, time=21600, value=flt(value))
-			save_currency_exchange(from_currency, to_currency, transaction_date, value)
 		return flt(value)
 	except:
 		return 0.0
@@ -167,24 +169,18 @@ def get_exchange_rate_from_api2(from_currency, to_currency, transaction_date, se
 
 		if not value or 1:
 			import requests
-
-			settings = frappe.get_cached_doc("Currency Exchange Settings")
-			req_params = {
-				"transaction_date": transaction_date,
-				"from_currency": from_currency,
-				"to_currency": to_currency,
-			}
-			params = {}
-			for row in settings.req_params:
-				params[row.key] = format_ces_api(row.value, req_params)
-			response = requests.get(format_ces_api(settings.api_endpoint, req_params), params=params)
+			date_format = getdate(transaction_date).strftime("%Y-%m-%d")
+			url = "https://api.frankfurter.app/{}?from={}&to={}".format(date_format, from_currency.upper(), to_currency.upper())
+			response = requests.get(url)
 			# expire in 6 hours
 			response.raise_for_status()
-			value = response.json()
-			for res_key in settings.result_key:
-				value = value[format_ces_api(str(res_key.key), req_params)]
+			res = response.json()
+			if "rates" in res:
+				value = flt(res['rates'].get(to_currency.upper()))
+
 			cache.setex(name=key, time=21600, value=flt(value))
-			save_currency_exchange(from_currency, to_currency, transaction_date, value)
+		
+		return value
 	except:
 		return 0.0
 
@@ -201,7 +197,7 @@ def save_currency_exchange(from_currency, to_currency, date="", rate=0):
 	if frappe.db.exists("Currency Exchange", params) or not rate:
 		return
 
-	if not frappe.db.get_single_value("Currency Exchange", "save_fetched_currency_exchange_rates"):
+	if not frappe.db.get_single_value("Accounts Settings", "save_fetched_currency_exchange_rates"):
 		return
 	
 	doc = frappe.new_doc("Currency Exchange")
