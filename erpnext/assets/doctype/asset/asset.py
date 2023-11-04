@@ -402,12 +402,12 @@ class Asset(AccountsController):
 
 		for schedule in self.get("schedules"):
 			# to update start when there are JEs linked with all the schedule rows corresponding to an FB
-			if len(start) == (int(schedule.finance_book_id) - 2):
+			if len(start) == (cint(schedule.finance_book_id) - 2):
 				start.append(num_of_depreciations_completed)
 				num_of_depreciations_completed = 0
 
 			# to ensure that start will only be updated once for each FB
-			if len(start) == (int(schedule.finance_book_id) - 1):
+			if len(start) == (cint(schedule.finance_book_id) - 1):
 				if schedule.journal_entry:
 					num_of_depreciations_completed += 1
 					depr_schedule.append(schedule)
@@ -570,10 +570,10 @@ class Asset(AccountsController):
 			if ignore_booked_entry and d.journal_entry:
 				continue
 
-			if int(d.finance_book_id) not in finance_books:
+			if cint(d.finance_book_id) not in finance_books:
 				accumulated_depreciation = flt(self.opening_accumulated_depreciation)
 				value_after_depreciation = flt(self.get_value_after_depreciation(d.finance_book_id))
-				finance_books.append(int(d.finance_book_id))
+				finance_books.append(cint(d.finance_book_id))
 
 			depreciation_amount = flt(d.depreciation_amount, d.precision("depreciation_amount"))
 			value_after_depreciation -= flt(depreciation_amount)
