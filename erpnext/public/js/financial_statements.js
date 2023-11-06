@@ -156,7 +156,15 @@ function get_filters() {
 			"fieldtype": "Select",
 			"reqd": 0,
 			"options": "\nJanuary\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember",
-			"depends_on": "eval:(doc.filter_based_on == 'Fiscal Year' && doc.from_fiscal_year==doc.to_fiscal_year) "
+			"depends_on": "eval:(doc.filter_based_on == 'Fiscal Year' && doc.from_fiscal_year==doc.to_fiscal_year && in_list(['Single Month','Multi Month'], doc.periodicity)) "
+		},
+		{
+			"fieldname":"to_month",
+			"label": __("To Month"),
+			"fieldtype": "Select",
+			"reqd": 0,
+			"options": "\nJanuary\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember",
+			"depends_on": "eval:(doc.filter_based_on == 'Fiscal Year' && doc.from_fiscal_year==doc.to_fiscal_year && in_list(['Multi Month'], doc.periodicity)) "
 		},
 		{
 			"fieldname": "periodicity",
@@ -166,7 +174,9 @@ function get_filters() {
 				{ "value": "Monthly", "label": __("Monthly") },
 				{ "value": "Quarterly", "label": __("Quarterly") },
 				{ "value": "Half-Yearly", "label": __("Half-Yearly") },
-				{ "value": "Yearly", "label": __("Yearly") }
+				{ "value": "Yearly", "label": __("Yearly") },
+				{ "value": "Single Month", "label": __("Single Month") },
+				{ "value": "Multi Month", "label": __("Multi Month") },
 			],
 			"default": "Yearly",
 			"reqd": 1

@@ -21,6 +21,8 @@ def execute(filters=None):
 		filters.periodicity,
 		filters.accumulated_values,
 		filters.company,
+		month=filters.month,
+		to_month=filters.to_month,
 	)
 
 	columns, data = [], []

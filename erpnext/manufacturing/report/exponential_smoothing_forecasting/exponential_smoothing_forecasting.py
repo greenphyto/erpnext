@@ -70,6 +70,8 @@ class ForecastingReport(ExponentialSmoothingForecast):
 			"Date Range",
 			self.filters.periodicity,
 			ignore_fiscal_year=True,
+			month=self.filters.month,
+			to_month=self.filters.to_month,
 		)
 
 		order_data = self.get_data_for_forecast() or []

@@ -22,6 +22,8 @@ def get_data_column(filters, partner_doctype):
 		"Fiscal Year",
 		filters.period,
 		company=filters.company,
+		month=filters.month,
+		to_month=filters.to_month,
 	)
 
 	rows = get_data(filters, period_list, partner_doctype)

@@ -23,7 +23,8 @@ def execute(filters=None):
 		filters.filter_based_on,
 		filters.periodicity,
 		company=filters.company,
-		month=filters.month
+		month=filters.month,
+		to_month=filters.to_month,
 	)
 
 	currency = filters.presentation_currency or frappe.get_cached_value(

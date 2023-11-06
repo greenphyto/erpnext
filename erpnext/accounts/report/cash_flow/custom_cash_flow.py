@@ -432,6 +432,8 @@ def execute(filters=None):
 		filters.filter_based_on,
 		filters.periodicity,
 		company=filters.company,
+		month=filters.month,
+		to_month=filters.to_month,
 	)
 
 	mappers = get_mappers_from_db()

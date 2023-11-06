@@ -131,6 +131,9 @@ class Deferred_Item(object):
 					"Date Range",
 					"Monthly",
 					company=self.filters.company,
+					month=self.filters.month,
+					to_month=self.filters.to_month,
+
 				)
 				for period in self.estimate_for_period_list:
 					amount = self.calculate_amount(period.from_date, period.to_date)
@@ -260,6 +263,8 @@ class Deferred_Revenue_and_Expense_Report(object):
 			self.filters.filter_based_on,
 			self.filters.periodicity,
 			company=self.filters.company,
+			month=self.filters.month,
+			to_month=self.filters.to_month,
 		)
 
 	def get_invoices(self):
