@@ -24,6 +24,7 @@
   "asset_name",
   "asset_category",
   "location",
+  "vendor",
   "split_from",
   "custodian",
   "department",
@@ -506,6 +507,12 @@
    "label": "Asset Code Series",
    "options": "Account",
    "read_only": 1
+  },
+  {
+   "fieldname": "vendor",
+   "fieldtype": "Link",
+   "label": "Vendor",
+   "options": "Supplier"
   }
  ],
  "idx": 72,
@@ -528,7 +535,7 @@
    "link_fieldname": "asset"
   }
  ],
- "modified": "2023-10-02 13:25:43.138791",
+ "modified": "2023-11-06 19:55:10.508155",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",
