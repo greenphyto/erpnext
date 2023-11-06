@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 
-import frappe
+import frappe, json
 from frappe import _
 from frappe.utils import add_months, cint, flt, getdate, nowdate, today
 
@@ -11,6 +11,7 @@ from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 )
 from erpnext.accounts.doctype.journal_entry.journal_entry import make_reverse_journal_entry
 from frappe.utils import getdate, add_days, get_last_day
+from six import string_types
 
 def get_month(date):
 	return getdate(date).month
@@ -71,6 +72,9 @@ def get_depreciable_assets(date):
 def make_depreciation_entry(assets, date=None):
 	frappe.has_permission("Journal Entry", throw=True)
 
+	if isinstance(assets, string_types):
+		assets = json.loads(assets)
+		
 	if not date:
 		date = today()
 
