@@ -76,10 +76,11 @@ def get_period_list(
 			period.to_date_fiscal_year = get_fiscal_year(period.to_date, company=company)[0]
 			period.from_date_fiscal_year_start_date = get_fiscal_year(period.from_date, company=company)[1]
 
+		first_date = year_start_date
 		if month:
 			for d in range(months_to_add):
-				cur_start_date = add_months(get_first_day(start_date), d)
-				to_date = add_days(get_first_day(add_months(start_date, d+1)), -1)
+				cur_start_date = add_months(get_first_day(first_date), d)
+				to_date = add_days(get_first_day(add_months(first_date, d+1)), -1)
 				to_month = to_month or month
 				cur_month =  cur_start_date.strftime("%B")
 				if cur_month == month:
