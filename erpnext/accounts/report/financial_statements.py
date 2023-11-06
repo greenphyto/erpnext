@@ -45,7 +45,14 @@ def get_period_list(
 		year_start_date = getdate(period_start_date)
 		year_end_date = getdate(period_end_date)
 
-	months_to_add = {"Yearly": 12, "Half-Yearly": 6, "Quarterly": 3, "Monthly": 1}[periodicity]
+	months_to_add = {
+		"Yearly": 12, 
+		"Half-Yearly": 6, 
+		"Quarterly": 3, 
+		"Monthly": 1,
+		"Single Month": 12,
+		"Multi Month": 12,
+	}[periodicity]
 
 	period_list = []
 
@@ -89,7 +96,7 @@ def get_period_list(
 				if cur_month == to_month:
 					period.to_date = to_date
 
-				period_list.append(period)
+					period_list.append(period)
 		else:
 			period_list.append(period)
 
@@ -161,6 +168,8 @@ def get_label(periodicity, from_date, to_date):
 			label = formatdate(from_date, "YYYY")
 		else:
 			label = formatdate(from_date, "YYYY") + "-" + formatdate(to_date, "YYYY")
+	elif periodicity == "Single Month":
+		label = formatdate(from_date, "MMM YY")
 	else:
 		label = formatdate(from_date, "MMM YY") + "-" + formatdate(to_date, "MMM YY")
 
