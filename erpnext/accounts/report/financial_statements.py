@@ -30,6 +30,7 @@ def get_period_list(
 	reset_period_on_fy_change=True,
 	ignore_fiscal_year=False,
 	month=None,
+	to_month=None
 ):
 	"""Get a list of dict {"from_date": from_date, "to_date": to_date, "key": key, "label": label}
 	Periodicity can be (Yearly, Quarterly, Monthly)"""
@@ -75,9 +76,18 @@ def get_period_list(
 			period.to_date_fiscal_year = get_fiscal_year(period.to_date, company=company)[0]
 			period.from_date_fiscal_year_start_date = get_fiscal_year(period.from_date, company=company)[1]
 
-		
 		if month:
-			if cur_month == month:
+			for d in range(months_to_add):
+				cur_start_date = add_months(get_first_day(start_date), d)
+				to_date = add_days(get_first_day(add_months(start_date, d+1)), -1)
+				to_month = to_month or month
+				cur_month =  cur_start_date.strftime("%B")
+				if cur_month == month:
+					period.from_date = cur_start_date
+
+				if cur_month == to_month:
+					period.to_date = to_date
+
 				period_list.append(period)
 		else:
 			period_list.append(period)
@@ -184,7 +194,6 @@ def get_data(
 		root_type,
 		as_dict=1,
 	):
-
 		set_gl_entries_by_account(
 			company,
 			period_list[0]["year_start_date"] if only_current_fiscal_year else None,
