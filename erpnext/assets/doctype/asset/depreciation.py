@@ -54,13 +54,17 @@ def get_depreciable_assets(date):
 	return frappe.db.sql(
 		"""select distinct a.name, a.asset_category, ds.schedule_date, a.company, ds.finance_book
 		from tabAsset a, `tabDepreciation Schedule` ds
-		where a.name = ds.parent and a.docstatus=1 and ds.schedule_date<=%s and a.calculate_depreciation = 1
+		where 
+			a.name = ds.parent 
+			and a.docstatus=1 
+			and DATE_FORMAT(ds.schedule_date, "%m %Y") == %s 
+			and a.calculate_depreciation = 1
 			and a.status in ('Submitted', 'Partially Depreciated')
 			and ifnull(ds.journal_entry, '')=''
 		order by 
 			ds.schedule_date asc
 		""",
-		date, as_dict=1
+		get_month_year(date), as_dict=1
 	)
 
 # must be have criteria in asset to be combined:
@@ -101,7 +105,7 @@ def make_depreciation_entry(assets, date=None):
 		accounting_dimensions = get_checks_for_pl_and_bs_accounts()
 
 		for d in asset.get("schedules"):
-			if not d.journal_entry and getdate(d.schedule_date) <= getdate(date):
+			if not d.journal_entry and get_month_year(d.schedule_date) == get_month_year(date):
 				data_map[d.name] = {
 					"asset":asset,
 					"schedule":d
@@ -180,6 +184,9 @@ def make_depreciation_entry(assets, date=None):
 		asset.set_status()
 
 	return 
+
+def get_month_year(date):
+	return getdate(date).strftime("%m %Y")
 
 def get_depreciation_accounts(asset):
 	fixed_asset_account = accumulated_depreciation_account = depreciation_expense_account = None
