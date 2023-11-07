@@ -57,7 +57,7 @@ def get_depreciable_assets(date):
 		where 
 			a.name = ds.parent 
 			and a.docstatus=1 
-			and DATE_FORMAT(ds.schedule_date, "%m %Y") == %s 
+			and DATE_FORMAT(ds.schedule_date, "%%m %%Y") == %s 
 			and a.calculate_depreciation = 1
 			and a.status in ('Submitted', 'Partially Depreciated')
 			and ifnull(ds.journal_entry, '')=''
