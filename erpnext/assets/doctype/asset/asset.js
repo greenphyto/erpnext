@@ -535,8 +535,8 @@ frappe.ui.form.on('Depreciation Schedule', {
 					"date": row.schedule_date
 				},
 				callback: function(r) {
-					frappe.model.sync(r.message);
-					frm.refresh();
+					// frappe.model.sync(r.message);
+					frm.reload_doc();
 				}
 			})
 		}
