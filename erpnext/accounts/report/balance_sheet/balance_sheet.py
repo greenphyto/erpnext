@@ -31,6 +31,8 @@ def execute(filters=None):
 		"Company", filters.company, "default_currency"
 	)
 
+	ignore_closing_entries = filters.ignore_closing_entries
+
 	asset = get_data(
 		filters.company,
 		"Asset",
@@ -39,6 +41,7 @@ def execute(filters=None):
 		only_current_fiscal_year=False,
 		filters=filters,
 		accumulated_values=filters.accumulated_values,
+		ignore_closing_entries=ignore_closing_entries
 	)
 
 	liability = get_data(
@@ -49,6 +52,7 @@ def execute(filters=None):
 		only_current_fiscal_year=False,
 		filters=filters,
 		accumulated_values=filters.accumulated_values,
+		ignore_closing_entries=ignore_closing_entries
 	)
 
 	equity = get_data(
@@ -59,6 +63,7 @@ def execute(filters=None):
 		only_current_fiscal_year=False,
 		filters=filters,
 		accumulated_values=filters.accumulated_values,
+		ignore_closing_entries=ignore_closing_entries
 	)
 
 	provisional_profit_loss, total_credit = get_provisional_profit_loss(
@@ -131,14 +136,17 @@ def get_provisional_profit_loss(
 			provisional_profit_loss[key] = flt(asset[-2].get(key)) - effective_liability
 			total_row[key] = effective_liability + provisional_profit_loss[key]
 
+			print(provisional_profit_loss[key])
 			if provisional_profit_loss[key]:
 				has_value = True
 
+			provisional_profit_loss["total"] = flt(total)
 			total += flt(provisional_profit_loss[key])
-			provisional_profit_loss["total"] = total
 
 			total_row_total += flt(total_row[key])
 			total_row["total"] = total_row_total
+
+			print("==>", key, provisional_profit_loss["total"])
 
 		if has_value:
 			provisional_profit_loss.update(

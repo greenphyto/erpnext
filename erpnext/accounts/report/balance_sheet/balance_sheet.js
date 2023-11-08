@@ -19,4 +19,11 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 		"fieldtype": "Check",
 		"default": 1
 	});
+
+	frappe.query_reports["Balance Sheet"]["filters"].push({
+		"fieldname": "ignore_closing_entries",
+		"label": __("Ignore Closing Entry"),
+		"fieldtype": "Check",
+		"default": 1
+	});
 });
