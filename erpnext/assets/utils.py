@@ -81,17 +81,18 @@ import imgkit,base64
 def save_qrcode_image(doctype, name, update_db=False):
 	# get image qrcode
 	# save to doctype
-	url = get_url("/qrcode_preview?doctype={}&name={}".format(doctype, name))
+	hsh = frappe.generate_hash(length=10)
+	url = get_url("/qrcode_preview/{2}?doctype={0}&name={1}".format(doctype, name, hsh))
 	options = {'width': 600, 'disable-smart-width': ''}
-	print("From url image", url)
 	string_img = imgkit.from_url(url, False, options=options)
 	encoded = base64.b64encode(string_img)
 
 	# save file
-	filenme= "QR Code - {} - {}.png".format(doctype, name)
+	filenme= "QR Code - {} - {} .png".format(doctype, name)
 	content = encoded
 	is_private = 0
-	file = frappe.get_doc(
+	file = frappe.new_doc("File")
+	file.update(
 		{
 			"doctype": "File",
 			"file_name": filenme,

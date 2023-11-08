@@ -91,6 +91,7 @@ website_context = {
 # nosemgrep
 website_route_rules = [
 	{"from_route": "/orders", "to_route": "Sales Order"},
+	{"from_route": "/qrcode_preview/<hash>", "to_route": "/qrcode_preview"},
 	{
 		"from_route": "/orders/<path:name>",
 		"to_route": "order",
