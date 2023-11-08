@@ -148,13 +148,21 @@ frappe.ui.form.on('Payment Entry', {
 				filters: filters
 			};
 		});
-	},
 
+	},
+	
 	refresh: function(frm) {
 		erpnext.hide_company();
 		frm.events.hide_unhide_fields(frm);
 		frm.events.set_dynamic_labels(frm);
 		frm.events.show_general_ledger(frm);
+		if (frm.is_dirty()){
+			if (frm.doc.payment_type == "Receive" ){
+				frm.set_value("naming_series", "RV.###./.YYYY")
+			}else if(frm.doc.payment_type == "Pay" ){
+				frm.set_value("naming_series", "PV.###./.YYYY")
+			}
+		}   
 	},
 
 	validate_company: (frm) => {
