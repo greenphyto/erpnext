@@ -84,7 +84,7 @@ def get_period_list(
 			period.from_date_fiscal_year_start_date = get_fiscal_year(period.from_date, company=company)[1]
 
 		first_date = year_start_date
-		if month:
+		if month and filter_based_on == "Fiscal Year":
 			for d in range(months_to_add):
 				cur_start_date = add_months(get_first_day(first_date), d)
 				to_date = add_days(get_first_day(add_months(first_date, d+1)), -1)
