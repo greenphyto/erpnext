@@ -52,19 +52,26 @@ def post_depreciation_entries(date=None, commit=True):
 
 def get_depreciable_assets(date):
 	return frappe.db.sql(
-		"""select distinct a.name, a.asset_category, ds.schedule_date, a.company, ds.finance_book
+		"""
+		select 
+			distinct a.name, 
+			a.asset_category, 
+			ds.schedule_date, 
+			a.company, 
+			ds.finance_book,
+			DATE_FORMAT(ds.schedule_date, "%%m %%Y")
 		from tabAsset a, `tabDepreciation Schedule` ds
 		where 
 			a.name = ds.parent 
 			and a.docstatus=1 
-			and DATE_FORMAT(ds.schedule_date, "%%m %%Y") == %s 
+			and DATE_FORMAT(ds.schedule_date, "%%m %%Y") = %s 
 			and a.calculate_depreciation = 1
 			and a.status in ('Submitted', 'Partially Depreciated')
 			and ifnull(ds.journal_entry, '')=''
 		order by 
 			ds.schedule_date asc
 		""",
-		get_month_year(date), as_dict=1
+		get_month_year(date), as_dict=1, debug=0
 	)
 
 # must be have criteria in asset to be combined:
