@@ -88,7 +88,7 @@ def save_qrcode_image(doctype, name, update_db=False):
 	encoded = base64.b64encode(string_img)
 
 	# save file
-	filenme= "QR Code - {} - {} .png".format(doctype, name)
+	filenme= "QRCode-{}-{}-.png".format(doctype, name)
 	content = encoded
 	is_private = 0
 	file = frappe.new_doc("File")
