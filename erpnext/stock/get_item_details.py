@@ -342,7 +342,6 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 		{
 			"item_code": item.name,
 			"item_name": item.item_name,
-			"description": cstr(item.description).strip(),
 			"image": cstr(item.image).strip(),
 			"warehouse": warehouse,
 			"income_account": get_default_income_account(
@@ -392,6 +391,9 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 			"grant_commission": item.get("grant_commission"),
 		}
 	)
+
+	if args['doctype'] not in ("Material Request"):
+		out.description = cstr(item.description).strip()
 
 	if item.get("enable_deferred_revenue") or item.get("enable_deferred_expense"):
 		out.update(calculate_service_end_date(args, item))
