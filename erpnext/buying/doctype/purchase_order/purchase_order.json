@@ -149,7 +149,7 @@
   "additional_info_section",
   "is_internal_supplier",
   "represents_company",
-  "ref_sq",
+  "supplier_quotation_no",
   "column_break_74",
   "party_account_currency",
   "inter_company_order_reference",
@@ -917,17 +917,6 @@
    "search_index": 1
   },
   {
-   "fieldname": "ref_sq",
-   "fieldtype": "Link",
-   "label": "Supplier Quotation",
-   "no_copy": 1,
-   "oldfieldname": "ref_sq",
-   "oldfieldtype": "Data",
-   "options": "Supplier Quotation",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
    "fieldname": "party_account_currency",
    "fieldtype": "Link",
    "hidden": 1,
@@ -1235,13 +1224,21 @@
    "fieldname": "non_stock_item",
    "fieldtype": "Check",
    "label": "Non Stock Item"
+  },
+  {
+   "fieldname": "supplier_quotation_no",
+   "fieldtype": "Data",
+   "label": "Supplier Quotation",
+   "no_copy": 1,
+   "oldfieldname": "ref_sq",
+   "oldfieldtype": "Data"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-10-12 14:16:55.874791",
+ "modified": "2023-11-09 12:44:28.137851",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order",

@@ -356,8 +356,8 @@ def make_purchase_order(source_name, target_doc=None, args=None):
 				if frappe.flags.args.default_supplier == default_supplier:
 					supplier_items.append(d)
 			target_doc.items = supplier_items
-
 		set_missing_values(source, target_doc)
+		target_doc.supplier_quotation_no = source.supplier_quotation_no
 
 	def select_item(d):
 		filtered_items = args.get("filtered_children", [])
@@ -405,7 +405,6 @@ def make_purchase_order(source_name, target_doc=None, args=None):
 		target_doc,
 		postprocess,
 	)
-	print(doclist)
 	return doclist
 
 
