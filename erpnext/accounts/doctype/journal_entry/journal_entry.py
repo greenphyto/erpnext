@@ -76,6 +76,8 @@ class JournalEntry(AccountsController):
 		if not self.title:
 			self.title = self.get_title()
 
+		self.validate_reference_payment()
+
 	def on_submit(self):
 		self.validate_cheque_info()
 		self.check_credit_limit()
@@ -110,6 +112,18 @@ class JournalEntry(AccountsController):
 		for voucher_type, order_list in advance_paid.items():
 			for voucher_no in list(set(order_list)):
 				frappe.get_doc(voucher_type, voucher_no).set_total_advance_paid()
+
+	def validate_reference_payment(self):
+		if not frappe.db.get_single_value("Accounts Settings", "mandatory_reference_on_journal_entry"):
+			return
+		
+		for d in self.get("accounts"):
+			if d.account_type == "Payable":
+				if d.is_advance == "No" and d.debit > 0 and not d.reference_name:
+					frappe.throw(_("<b>Row {}</b>, If not advance payment, Please set reference document against this entry".format(d.idx)))
+			if d.account_type == "Receivable":
+				if d.is_advance == "No" and d.credit > 0 and not d.reference_name:
+					frappe.throw(_("<b>Row {}</b>, If not advance payment, Please set reference document against this entry".format(d.idx)))
 
 	def validate_inter_company_accounts(self):
 		if (

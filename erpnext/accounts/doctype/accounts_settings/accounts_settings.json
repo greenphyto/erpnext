@@ -16,6 +16,7 @@
   "invoicing_features_section",
   "check_supplier_invoice_uniqueness",
   "automatically_fetch_payment_terms",
+  "mandatory_reference_on_journal_entry",
   "column_break_17",
   "enable_common_party_accounting",
   "allow_multi_currency_invoices_against_single_party_account",
@@ -367,6 +368,12 @@
    "fieldname": "save_fetched_currency_exchange_rates",
    "fieldtype": "Check",
    "label": "Save fetched currency exchange rates"
+  },
+  {
+   "default": "0",
+   "fieldname": "mandatory_reference_on_journal_entry",
+   "fieldtype": "Check",
+   "label": "Mandatory Reference on Journal Entry"
   }
  ],
  "icon": "icon-cog",
@@ -374,7 +381,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-11-02 16:58:17.820470",
+ "modified": "2023-11-09 18:08:40.572691",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounts Settings",
