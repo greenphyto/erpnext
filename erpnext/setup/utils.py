@@ -60,7 +60,7 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 		to_currency = to_currency.lower()
 		listofcurrency = ["cny", "hkd","inr","idr","jpy","krw","myr","twd","php","qar","sar","thb","aed","ynd"]
 		if from_currency in listofcurrency:
-			to_currency = to_currency +"_100"
+			to_currency = to_currency
 	if not transaction_date:
 		transaction_date = nowdate()
 	
@@ -185,6 +185,9 @@ def get_exchange_rate_from_api2(from_currency, to_currency, transaction_date, se
 		return 0.0
 
 def save_currency_exchange(from_currency, to_currency, date="", rate=0):
+	from_currency = from_currency.upper()
+	to_currency = to_currency.upper()
+	
 	date = getdate(date)
 	if not rate:
 		rate = get_exchange_rate_from_api(from_currency, to_currency, date)
