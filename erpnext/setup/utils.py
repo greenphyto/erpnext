@@ -85,12 +85,12 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 
 	# cksgb 19/09/2016: get last entry in Currency Exchange with from_currency and to_currency.
 	entries = frappe.get_all(
-		"Currency Exchange", fields=["exchange_rate"], filters=filters, order_by="date desc", limit=1
+		"Currency Exchange", fields=["exchange_rate", "date"], filters=filters, order_by="date desc", limit=1
 	)
 	if entries:
 		data = entries[0]
 		if getdate(data.date) != getdate(nowdate()):
-			save_currency_exchange(from_currency, to_currency)
+			return get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck)
 
 		return flt(data.exchange_rate)
 	
@@ -203,13 +203,10 @@ def save_currency_exchange(from_currency, to_currency, date="", rate=0):
 	if not frappe.db.get_single_value("Accounts Settings", "save_fetched_currency_exchange_rates"):
 		return
 	
-	try:
-		doc = frappe.new_doc("Currency Exchange")
-		doc.update(params)
-		doc.exchange_rate = rate
-		doc.insert()
-	except:
-		pass
+	doc = frappe.new_doc("Currency Exchange")
+	doc.update(params)
+	doc.exchange_rate = rate
+	doc.insert(ignore_if_duplicate=1)
 
 	return doc.name
 
