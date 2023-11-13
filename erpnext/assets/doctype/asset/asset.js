@@ -550,40 +550,16 @@ frappe.ui.form.on('Depreciation Schedule', {
 
 erpnext.asset.add_dashboard_qrimage = function(frm){
 	var img_path = frm.doc.qrcode_image;
-	function show_qr(){
-		var d = new frappe.ui.Dialog({
-			title: __(`QR Code Asset ${frm.doc.name}`),
-			fields: [
-				{
-					"label" : "",
-					"fieldname": "img",
-					"fieldtype": "HTML",
-					"default": ''
-				}
-			],
-			primary_action: function() {
-				$(".download-qr-preview")[0].click();
-			},
-			primary_action_label: __('Download'),
-			secondary_action: function(){
-				d.hide();
-			},
-			secondary_action_label: __("Close"),
-		});
-		d.show();
-		var wrapper = d.fields_dict.img.$wrapper;
-		wrapper.append(`
-			<div class="qr-preview-wrapper text-center" style="min-height: 6cm;">
-				<a href="${img_path}" class="download-qr-preview" download>
-					<img src="${img_path}"></img>
-				</a>
-			</div>
-		`);
-
-	};
+	var title = `QR Code Asset ${frm.doc.name}`;
+	var attch_sidebar = frm.attachments.attachments_preview
+	
+	var exists_preview = attch_sidebar.find(".img-preview").attr("src");
+	if (exists_preview==img_path){
+		attch_sidebar.hide();
+	}
 	$(".img-qrcode").attr("src", img_path);
 	$(".img-qrcode").on("click", function(){
-		show_qr();
+		frm.attachments.show_image_detail(img_path, title);
 	})
 }
 
