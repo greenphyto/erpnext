@@ -37,6 +37,7 @@
   "witness_list",
   "section_break_l9u7x",
   "attachment",
+  "preview",
   "section_break_psexz",
   "declaration",
   "section_break_cvqc3",
@@ -290,12 +291,18 @@
    "label": "BM Preview",
    "options": "bm_attachment",
    "permlevel": 2
+  },
+  {
+   "depends_on": "attachment",
+   "fieldname": "preview",
+   "fieldtype": "Image",
+   "label": "Preview"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-10-26 10:44:12.747708",
+ "modified": "2023-11-14 15:59:06.366051",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Incident Report",

@@ -1,4 +1,5 @@
 {
+ "_liked_by": "[\"Administrator\"]",
  "allow_comments": 0,
  "allow_delete": 1,
  "allow_edit": 1,
@@ -42,7 +43,7 @@
  ],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2023-07-30 14:19:23.972078",
+ "modified": "2023-11-14 15:33:49.922645",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "maintenance-request-form",
@@ -287,6 +288,20 @@
   },
   {
    "allow_read_on_all_link_options": 0,
+   "depends_on": "attachment",
+   "fieldname": "preview",
+   "fieldtype": "HTML",
+   "hidden": 0,
+   "label": "Preview",
+   "max_length": 0,
+   "max_value": 0,
+   "options": "",
+   "read_only": 0,
+   "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
    "fieldtype": "HTML",
    "hidden": 0,
    "max_length": 0,
@@ -336,9 +351,9 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "default": "Now",
+   "default": "Today",
    "fieldname": "date",
-   "fieldtype": "Datetime",
+   "fieldtype": "Date",
    "hidden": 0,
    "label": "Date",
    "max_length": 0,
