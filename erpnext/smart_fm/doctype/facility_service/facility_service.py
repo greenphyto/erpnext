@@ -15,13 +15,24 @@ class FacilityService(Document):
 		self.booking_qty = frappe.db.get_value("Facilities Service Reservation", {
 			"service":self.name,
 			"docstatus":1,
-			"to_time":['>=', get_datetime()]
+			"to_time":['>=', get_datetime()],
+			"processed": 0,
 		}, "max(qty) as qty")
 
 	def set_rented(self, qty, cancel=False):
+		if not cancel:
+			self.rented_qty += qty
+		else:
+			self.rented_qty -= qty
+
 		self.update_status()
 
-	def set_return(self, qty, canncel=False):
+	def set_return(self, qty, cancel=False):
+		if not cancel:
+			self.rented_qty -= qty
+		else:
+			self.rented_qty += qty
+
 		self.update_status()
 	
 	def validate_qty(self):

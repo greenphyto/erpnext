@@ -3,8 +3,9 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import getdate, get_datetime
+from frappe.utils import getdate, get_datetime, cint
 from frappe import _
+from datetime import timedelta
 
 class FacilitiesServiceReservation(Document):
 	def validate(self):
@@ -16,7 +17,7 @@ class FacilitiesServiceReservation(Document):
 			frappe.throw(_("From time cannot higher than to time"))
 
 	def validate_service(self):
-
+		self.quantity_available = frappe.get_value("Facility Service", self.service, "available_qty")
 		if self.qty > self.quantity_available:
 			frappe.throw(_("This service is not avilable at your qty"))
 
@@ -47,19 +48,38 @@ class FacilitiesServiceReservation(Document):
 			"name":self.name
 		}, as_dict=1)
 
+		print(data)
 		if data:
 			data = data[0]
 		
 			if data.qty:
 				available_qty_at_date = self.quantity_available - data.qty
 				if available_qty_at_date < self.qty:
-					frappe.throw(_("This service only available {} quantity at the date".format(available_qty_at_date)))
+					frappe.throw(_("This service only available <b>{}</b> quantity at the time".format( cint(available_qty_at_date) )))
 
 	def on_submit(self):
-		doc = frappe.get_doc("Facility Service", self.service)
-		doc.set_rented(self.qty)
+		self.process_rented()
 
 	def on_cancel(self):
-		doc = frappe.get_doc("Facility Service", self.service)
-		doc.set_rented(self.qty, cancel=True)
+		# if cancel at rented so minus the qty
+		# if cancel at returned so add the qty
+		self.process_rented(cancel=True)
 
+	def process_rented(self, cancel=False):
+		until_time = get_datetime() + timedelta(minutes=15)
+		if get_datetime(self.from_time) <= until_time:
+			doc = frappe.get_doc("Facility Service", self.service)
+			doc.set_rented(self.qty, cancel=cancel)
+			doc.db_update()
+			self.processed = 1
+		
+
+def set_booking_to_rented():
+	until_time = get_datetime() + timedelta(minutes=15)
+	data = frappe.db.get_list("Facilities Service Reservation", {
+		"processed": 0,
+		"from_time":['<=', until_time]
+	}, "name")
+	for d in data:
+		doc = frappe.get_doc("", d.name)
+		doc.process_rented()
