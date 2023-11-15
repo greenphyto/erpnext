@@ -15,4 +15,8 @@ class FacilitiesServiceReservation(Document):
 		if get_datetime(self.from_time) > get_datetime(self.to_time):
 			frappe.throw(_("From time cannot higher than to time"))
 
-	
+	def validate_service(self):
+		return
+		frappe.db.sql("""
+				se
+				""")

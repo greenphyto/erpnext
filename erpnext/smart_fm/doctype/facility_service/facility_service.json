@@ -2,7 +2,7 @@
  "actions": [],
  "allow_rename": 1,
  "autoname": "field:service_name",
- "creation": "2023-11-15 14:28:42.257303",
+ "creation": "2023-11-15 16:35:18.687396",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -26,9 +26,20 @@
    "fieldname": "service_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Facilities/Service Name",
+   "label": "Facility/Service Name",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "in_filter": 1,
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_xnk1f",
+   "fieldtype": "Column Break"
   },
   {
    "default": "1",
@@ -45,7 +56,6 @@
    "default": "1",
    "fieldname": "total_count",
    "fieldtype": "Int",
-   "in_list_view": 1,
    "label": "Total Count",
    "reqd": 1
   },
@@ -54,8 +64,22 @@
    "fieldtype": "Column Break"
   },
   {
+   "fieldname": "rented_qty",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Rented Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "booking_qty",
+   "fieldtype": "Int",
+   "label": "Booking Qty",
+   "read_only": 1
+  },
+  {
    "fieldname": "available_qty",
    "fieldtype": "Int",
+   "in_list_view": 1,
    "label": "Available Qty",
    "read_only": 1
   },
@@ -67,39 +91,19 @@
   {
    "fieldname": "status",
    "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Status",
-   "options": "Available\nPartially Rented\nAll Rented\nClose",
-   "read_only": 1
-  },
-  {
-   "fieldname": "description",
-   "fieldtype": "Small Text",
-   "label": "Description",
-   "reqd": 1
-  },
-  {
-   "fieldname": "column_break_xnk1f",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "rented_qty",
-   "fieldtype": "Int",
-   "label": "Rented Qty",
-   "read_only": 1
-  },
-  {
-   "fieldname": "booking_qty",
-   "fieldtype": "Int",
-   "label": "Booking Qty",
+   "options": "Available\nPartially Rented\nAll Rented\nDisabled",
    "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-15 14:50:57.091944",
+ "modified": "2023-11-15 16:35:18.687396",
  "modified_by": "Administrator",
  "module": "Smart FM",
- "name": "Facilities Service",
+ "name": "Facility Service",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
