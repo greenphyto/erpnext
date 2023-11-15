@@ -3,13 +3,20 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import cint
+from frappe.utils import cint, get_datetime
 from frappe import _
 
 class FacilityService(Document):
 	def validate(self):
 		self.validate_qty()
 		self.update_status()
+	
+	def set_booking(self):
+		self.booking_qty = frappe.db.get_value("Facilities Service Reservation", {
+			"service":self.name,
+			"docstatus":1,
+			"to_time":['>=', get_datetime()]
+		}, "max(qty) as qty")
 
 	def set_rented(self, qty, cancel=False):
 		self.update_status()
@@ -18,10 +25,10 @@ class FacilityService(Document):
 		self.update_status()
 	
 	def validate_qty(self):
+		self.set_booking()
 		self.total_count = cint(self.total_count) or 1
 
-		ongoing_qty = cint(self.rented_qty) + cint(self.booking_qty)
-
+		ongoing_qty = cint(self.rented_qty)
 		self.ongoing_qty = ongoing_qty
 
 		if self.total_count < ongoing_qty:
