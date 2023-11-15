@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "RSV.####./.####",
+ "autoname": "RSV.####./.YYYY",
  "creation": "2023-11-15 14:17:38.141163",
  "default_view": "List",
  "doctype": "DocType",
@@ -15,7 +15,7 @@
   "email_address",
   "reservation_detail_section",
   "service",
-  "count",
+  "qty",
   "description",
   "column_break_3vwak",
   "service_status",
@@ -68,15 +68,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Facility Service",
-   "options": "Facilities Service",
-   "reqd": 1
-  },
-  {
-   "default": "1",
-   "fieldname": "count",
-   "fieldtype": "Int",
-   "in_list_view": 1,
-   "label": "Count",
+   "options": "Facility Service",
    "reqd": 1
   },
   {
@@ -91,6 +83,7 @@
    "read_only": 1
   },
   {
+   "fetch_from": "service.available_qty",
    "fieldname": "quantity_available",
    "fieldtype": "Int",
    "label": "Quantity Available",
@@ -172,12 +165,20 @@
   {
    "fieldname": "column_break_ytwep",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "qty",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Qty",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-15 15:31:52.407408",
+ "modified": "2023-11-15 17:21:01.413064",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facilities Service Reservation",
