@@ -211,7 +211,7 @@
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "PI.###./.YYYY\nPI-RET.###./.YYYY\nACC-PINV-.YYYY.-\nACC-PINV-RET-.YYYY.-",
+   "options": "PI.###./.YYYY\nPI-RET.###./.YYYY",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1558,7 +1558,7 @@
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-10-10 16:04:03.505982",
+ "modified": "2023-11-15 10:59:01.901479",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",

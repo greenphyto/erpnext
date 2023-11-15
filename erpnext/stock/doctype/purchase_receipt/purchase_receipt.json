@@ -175,13 +175,14 @@
    "print_hide": 1
   },
   {
+   "default": "GRN.###./.YYYY",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "GRN.###./.YYYY\nGRN-RET.###./.YYYY\nMAT-PRE-.YYYY.-\nMAT-PR-RET-.YYYY.-",
+   "options": "GRN.###./.YYYY\nGRN-RET.###./.YYYY",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1238,7 +1239,7 @@
  "idx": 261,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-10-10 16:03:33.409646",
+ "modified": "2023-11-15 10:59:46.123528",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Purchase Receipt",

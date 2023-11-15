@@ -233,6 +233,7 @@
   },
   {
    "bold": 1,
+   "default": "INV.###./.YYYY",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "hide_days": 1,
@@ -241,7 +242,7 @@
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "INV.###./.YYYY\nINV-RET.###./.YYYY\nACC-SINV-.YYYY.-\nACC-SINV-RET-.YYYY.-",
+   "options": "INV.###./.YYYY\nINV-RET.###./.YYYY",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -2122,7 +2123,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2023-09-22 15:34:08.927741",
+ "modified": "2023-11-15 11:02:41.845738",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

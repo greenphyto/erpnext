@@ -154,7 +154,7 @@
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "QUO.###./.YYYY\nSAL-QTN-.YYYY.-",
+   "options": "QUO.###./.YYYY",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1059,7 +1059,7 @@
  "idx": 82,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-09-05 12:13:14.325437",
+ "modified": "2023-11-15 11:09:29.041286",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Quotation",
