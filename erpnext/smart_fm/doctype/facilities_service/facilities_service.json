@@ -1,0 +1,122 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:service_name",
+ "creation": "2023-11-15 14:28:42.257303",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "service_name",
+  "description",
+  "column_break_xnk1f",
+  "enable",
+  "quantity_section",
+  "total_count",
+  "column_break_sh9st",
+  "rented_qty",
+  "booking_qty",
+  "available_qty",
+  "more_information_section",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "service_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Facilities/Service Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enable",
+   "fieldtype": "Check",
+   "label": "Enable"
+  },
+  {
+   "fieldname": "quantity_section",
+   "fieldtype": "Section Break",
+   "label": "Quantity"
+  },
+  {
+   "default": "1",
+   "fieldname": "total_count",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Total Count",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_sh9st",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "available_qty",
+   "fieldtype": "Int",
+   "label": "Available Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "more_information_section",
+   "fieldtype": "Section Break",
+   "label": "More Information"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Available\nPartially Rented\nAll Rented\nClose",
+   "read_only": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_xnk1f",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rented_qty",
+   "fieldtype": "Int",
+   "label": "Rented Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "booking_qty",
+   "fieldtype": "Int",
+   "label": "Booking Qty",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-11-15 14:50:57.091944",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Facilities Service",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

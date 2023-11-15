@@ -1,0 +1,203 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "RSV.####./.####",
+ "creation": "2023-11-15 14:17:38.141163",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "greenphyto_facilities_service_reservation",
+  "personal_information_section",
+  "full_name",
+  "column_break_3s2ru",
+  "email_address",
+  "reservation_detail_section",
+  "service",
+  "count",
+  "description",
+  "column_break_3vwak",
+  "service_status",
+  "quantity_available",
+  "section_break_a46we",
+  "reason",
+  "column_break_ytwep",
+  "from_time",
+  "to_time",
+  "total_duration",
+  "return_date",
+  "more_information_section",
+  "status",
+  "amended_from",
+  "column_break_wfprl"
+ ],
+ "fields": [
+  {
+   "fieldname": "greenphyto_facilities_service_reservation",
+   "fieldtype": "Heading",
+   "label": "Greenphyto Facilities Service Reservation"
+  },
+  {
+   "fieldname": "personal_information_section",
+   "fieldtype": "Section Break",
+   "label": "Personal Information"
+  },
+  {
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Full Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "email_address",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Email Address",
+   "reqd": 1
+  },
+  {
+   "fieldname": "reservation_detail_section",
+   "fieldtype": "Section Break",
+   "label": "Reservation Detail"
+  },
+  {
+   "bold": 1,
+   "fieldname": "service",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Facility Service",
+   "options": "Facilities Service",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "count",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Count",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_3vwak",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "service_status",
+   "fieldtype": "Select",
+   "label": "Service Status",
+   "options": "Available\nClose",
+   "read_only": 1
+  },
+  {
+   "fieldname": "quantity_available",
+   "fieldtype": "Int",
+   "label": "Quantity Available",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_a46we",
+   "fieldtype": "Section Break",
+   "label": "Time & Reason"
+  },
+  {
+   "default": "Now",
+   "fieldname": "from_time",
+   "fieldtype": "Datetime",
+   "label": "From Time",
+   "reqd": 1
+  },
+  {
+   "default": "Now",
+   "fieldname": "to_time",
+   "fieldtype": "Datetime",
+   "label": "To Time",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Facilities Service Reservation",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_duration",
+   "fieldtype": "Duration",
+   "label": "Total Duration",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "more_information_section",
+   "fieldtype": "Section Break",
+   "label": "More Information"
+  },
+  {
+   "fieldname": "column_break_wfprl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_3s2ru",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "return_date",
+   "fieldtype": "Datetime",
+   "label": "Return Date",
+   "read_only": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Data",
+   "label": "Status",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "service.description",
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reason",
+   "fieldtype": "Small Text",
+   "label": "Reason"
+  },
+  {
+   "fieldname": "column_break_ytwep",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2023-11-15 14:52:05.418342",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Facilities Service Reservation",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
