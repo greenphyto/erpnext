@@ -61,6 +61,12 @@ class DebtorCreditorReport(object):
 		self.invoices = set()
 		self.skip_total_row = 0
 
+		self.default_payable_account, self.default_receivable_account = frappe.db.get_value("Company", self.filters.company, ["default_payable_account", "default_receivable_account"]) or ("", "")
+		if self.dr_or_cr == "credit":
+			self.against_account = self.default_payable_account
+		else:
+			self.against_account = self.default_receivable_account
+
 		if self.filters.get("group_by_party"):
 			self.previous_party = ""
 			self.total_row_map = {}
@@ -669,7 +675,6 @@ class DebtorCreditorReport(object):
 
 	def get_ple_entries(self):
 		# get all the GL entries filtered by the given filters
-
 		self.prepare_conditions()
 
 		if self.filters.show_future_payments:
@@ -706,8 +711,10 @@ class DebtorCreditorReport(object):
 				ple.delinked
 			)
 			.where(ple.delinked == 0)
-			.where(ple.voucher_type != "Journal Entry" )
-			#.where(ple.voucher_type in ["Purchase Invoice", "Payment Entry", "Sales Invoice"] )
+			.where(
+				((ple.voucher_type == "Journal Entry") & (ple.account == self.against_account)) |
+				((ple.voucher_type != "Journal Entry"))
+			)
 			.where(Criterion.all(self.qb_selection_filter))
 		)
 
