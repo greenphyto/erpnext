@@ -357,7 +357,7 @@ def make_purchase_order(source_name, target_doc=None, args=None):
 					supplier_items.append(d)
 			target_doc.items = supplier_items
 		set_missing_values(source, target_doc)
-		target_doc.supplier_quotation_no = source.supplier_quotation_no
+		target_doc.ref_sq = source.get("supplier_quotation_no")
 
 	def select_item(d):
 		filtered_items = args.get("filtered_children", [])
