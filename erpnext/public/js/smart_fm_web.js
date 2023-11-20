@@ -21,3 +21,13 @@ frappe.set_default_web_form = function (fields){
     }
 }
 
+
+frappe.validate_phone_field = function (fields){
+    $.each(fields, (i,field)=>{
+        frappe.web_form.on(field, (frm, value)=>{
+            if (!frappe.utils.validate_type( value, 'phone')){
+                frappe.web_form.set_value(field, "")
+            }
+        })
+    })
+}

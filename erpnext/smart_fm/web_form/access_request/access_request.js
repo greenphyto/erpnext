@@ -11,11 +11,15 @@ frappe.ready(function() {
 					'phone as phone_number'])
 				.then(r=>{ 
 					frappe.web_form.doc.person_list = [r.message]
-					frappe.web_form.refresh();
+					frappe.web_form.refresh_fields([{
+						fieldname:'person_list'
+					}]);
 				});
 			}
 		}else{
 			frappe.web_form.doc.person_list = []
 		}
 	})
+
+	frappe.validate_phone_field(['phone_number'])
 })
