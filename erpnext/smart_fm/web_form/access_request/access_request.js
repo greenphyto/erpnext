@@ -21,5 +21,7 @@ frappe.ready(function() {
 		}
 	})
 
-	frappe.validate_phone_field(['phone_number'])
+	frappe.validate_phone_field(['phone_number']);
+
+	frappe.validate_phone_field_table('person_list', 'phone_number');
 })
