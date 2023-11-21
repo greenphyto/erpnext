@@ -191,12 +191,14 @@
   {
    "fieldname": "purpose",
    "fieldtype": "Small Text",
-   "label": "Purpose"
+   "label": "Purpose",
+   "reqd": 1
   },
   {
    "fieldname": "participants",
    "fieldtype": "Int",
-   "label": "Participants"
+   "label": "Participants",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_bh5jw",
@@ -252,7 +254,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-21 14:11:46.653942",
+ "modified": "2023-11-21 14:24:47.380852",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facilities Service Reservation",

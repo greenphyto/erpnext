@@ -74,6 +74,10 @@ $.extend(cur_frm.cscript, {
 		if (me.frm.doc.all_day || me.frm.doc.multi_days){
 			me.frm.set_value("start_time", START_TIME);
 			me.frm.set_value("end_time", END_TIME);
+			
+		}
+		if (me.frm.doc.all_day && !me.frm.doc.multi_days){
+			me.frm.set_value("to_date", me.frm.doc.from_date);
 		}
 	}
 })

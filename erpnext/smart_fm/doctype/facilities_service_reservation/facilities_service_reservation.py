@@ -12,9 +12,18 @@ class FacilitiesServiceReservation(Document):
 		self.validate_time()
 		self.validate_service()
 
+	def before_validate(self):
+		if (self.all_day and not self.multi_days){
+			self.to_date = self.from_date
+		}
+		# setup datetime
+		self.from_time = get_datetime("{} {}".format(self.from_date, self.start_time))
+		self.to_time = get_datetime("{} {}".format(self.to_date, self.end_time))
+		frappe.msgprint("{} - {}".format(self.from_time, self.to_time))
+
 	def validate_time(self):
 		if get_datetime(self.from_time) > get_datetime(self.to_time):
-			frappe.throw(_("From time cannot higher than to time"))
+			frappe.throw(_("wrong time setting!"))
 
 	def validate_service(self):
 		self.quantity_available = frappe.get_value("Facility Service", self.service, "available_qty")
