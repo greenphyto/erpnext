@@ -14,5 +14,5 @@ Thank you for choosing Greenphyto for your [event/meeting/workshop]. We look for
 <br>
 <p>Warm regards,</p>
 <p>{{ frappe.db.get_value("User", frappe.session.user, "full_name") }}</p>
-<p>Building Management Staff</p>
+<p>Building Management</p>
 <p>Greenphyto Facilities Team</p>
