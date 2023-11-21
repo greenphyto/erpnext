@@ -15,19 +15,29 @@
   "email_address",
   "reservation_detail_section",
   "service",
-  "qty",
   "description",
   "column_break_3vwak",
   "service_status",
   "quantity_available",
+  "qty",
   "section_break_a46we",
+  "from_date",
+  "to_date",
+  "start_time",
+  "end_time",
   "from_time",
   "to_time",
   "total_duration",
-  "return_date",
+  "column_break_ymsww",
+  "all_day",
+  "multi_days",
   "column_break_ytwep",
-  "reason",
+  "purpose",
+  "participants",
+  "column_break_bh5jw",
+  "special_requests",
   "more_information_section",
+  "return_date",
   "status",
   "amended_from",
   "column_break_wfprl",
@@ -93,21 +103,21 @@
   {
    "fieldname": "section_break_a46we",
    "fieldtype": "Section Break",
-   "label": "Time & Reason"
+   "label": "Date & Time"
   },
   {
    "default": "Now",
    "fieldname": "from_time",
    "fieldtype": "Datetime",
-   "label": "From Time",
-   "reqd": 1
+   "hidden": 1,
+   "label": "From Time"
   },
   {
    "default": "Now",
    "fieldname": "to_time",
    "fieldtype": "Datetime",
-   "label": "To Time",
-   "reqd": 1
+   "hidden": 1,
+   "label": "To Time"
   },
   {
    "fieldname": "amended_from",
@@ -159,13 +169,9 @@
    "read_only": 1
   },
   {
-   "fieldname": "reason",
-   "fieldtype": "Small Text",
-   "label": "Reason"
-  },
-  {
    "fieldname": "column_break_ytwep",
-   "fieldtype": "Column Break"
+   "fieldtype": "Section Break",
+   "label": "Reason"
   },
   {
    "default": "1",
@@ -181,12 +187,72 @@
    "fieldtype": "Check",
    "label": "Processed",
    "read_only": 1
+  },
+  {
+   "fieldname": "purpose",
+   "fieldtype": "Small Text",
+   "label": "Purpose"
+  },
+  {
+   "fieldname": "participants",
+   "fieldtype": "Int",
+   "label": "Participants"
+  },
+  {
+   "fieldname": "column_break_bh5jw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "special_requests",
+   "fieldtype": "Small Text",
+   "label": "Special Requests"
+  },
+  {
+   "default": "Today",
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date",
+   "reqd": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date"
+  },
+  {
+   "default": "0",
+   "fieldname": "all_day",
+   "fieldtype": "Check",
+   "label": "All Day"
+  },
+  {
+   "default": "0",
+   "fieldname": "multi_days",
+   "fieldtype": "Check",
+   "label": "Multi Days"
+  },
+  {
+   "fieldname": "column_break_ymsww",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Now",
+   "fieldname": "start_time",
+   "fieldtype": "Time",
+   "label": "Start Time"
+  },
+  {
+   "default": "Now",
+   "fieldname": "end_time",
+   "fieldtype": "Time",
+   "label": "End Time"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-15 17:47:55.595541",
+ "modified": "2023-11-21 14:11:46.653942",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facilities Service Reservation",
