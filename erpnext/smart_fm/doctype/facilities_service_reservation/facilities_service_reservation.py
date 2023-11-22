@@ -1,11 +1,12 @@
 # Copyright (c) 2023, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-import frappe
+import frappe, json
 from frappe.model.document import Document
 from frappe.utils import getdate, get_datetime, cint
 from frappe import _
 from datetime import timedelta
+from frappe.desk.reportview import get_filters_cond
 
 class FacilitiesServiceReservation(Document):
 	def validate(self):
@@ -91,3 +92,21 @@ def set_booking_to_rented():
 	for d in data:
 		doc = frappe.get_doc("", d.name)
 		doc.process_rented()
+
+@frappe.whitelist()
+def get_events(start, end, user=None, for_reminder=False, filters=None):
+	if not user:
+		user = frappe.session.user
+
+	if isinstance(filters, str):
+		filters = json.loads(filters)
+
+	filter_condition = get_filters_cond("Event", filters, [])
+
+	events = frappe.db.sql("select * from `tabFacilities Service Reservation`", as_dict=1)
+
+	# setup filter
+	# format title etc
+	
+
+	return events
