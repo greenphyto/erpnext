@@ -99,6 +99,7 @@
   },
   {
    "fetch_from": "service.available_qty",
+   "fetch_if_empty": 1,
    "fieldname": "quantity_available",
    "fieldtype": "Int",
    "label": "Quantity Available",
@@ -270,7 +271,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-22 12:23:41.222751",
+ "modified": "2023-11-22 17:27:07.415115",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facilities Service Reservation",

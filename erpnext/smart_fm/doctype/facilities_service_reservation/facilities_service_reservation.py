@@ -12,9 +12,12 @@ class FacilitiesServiceReservation(Document):
 	def validate(self):
 		self.validate_time()
 		self.validate_service()
+		self.update_booking()
 
 	def before_validate(self):
 		if (self.all_day and not self.multi_days):
+			self.to_date = self.from_date
+		elif not self.all_day and not self.multi_days:
 			self.to_date = self.from_date
 		
 		# setup datetime
@@ -22,12 +25,15 @@ class FacilitiesServiceReservation(Document):
 		self.to_time = get_datetime("{} {}".format(self.to_date, self.end_time))
 
 	def validate_time(self):
+		if get_datetime(self.from_time) < get_datetime():
+			frappe.throw(_("Cannot reserve for past time"))
+
 		if get_datetime(self.from_time) > get_datetime(self.to_time):
 			frappe.throw(_("wrong time setting!"))
 
 	def validate_service(self):
-		self.quantity_available = frappe.get_value("Facility Service", self.service, "available_qty")
-		if self.qty > self.quantity_available:
+		quantity_available = frappe.get_value("Facility Service", self.service, "available_qty")
+		if self.qty > quantity_available:
 			frappe.throw(_("This service is not avilable at your qty"))
 
 		# validate overlap
@@ -37,7 +43,8 @@ class FacilitiesServiceReservation(Document):
 			from 
 				`tabFacilities Service Reservation`
 			where 
-				docstatus = 1
+				docstatus = 0
+				and status != "Rejected"
 				and 
 					( 
 						( 
@@ -55,16 +62,17 @@ class FacilitiesServiceReservation(Document):
 			"from_time":self.from_time,
 			"to_time":self.to_time,
 			"name":self.name
-		}, as_dict=1)
+		}, as_dict=1, debug=0)
 
-		print(data)
 		if data:
 			data = data[0]
 		
 			if data.qty:
-				available_qty_at_date = self.quantity_available - data.qty
+				available_qty_at_date = quantity_available - data.qty
 				if available_qty_at_date < self.qty:
 					frappe.throw(_("This service only available <b>{}</b> quantity at the time".format( cint(available_qty_at_date) )))
+
+				self.quantity_available = available_qty_at_date
 
 	def on_submit(self):
 		self.process_rented()
@@ -74,6 +82,9 @@ class FacilitiesServiceReservation(Document):
 		# if cancel at returned so add the qty
 		self.process_rented(cancel=True)
 
+	def on_trash(self):
+		self.update_booking()
+
 	def process_rented(self, cancel=False):
 		until_time = get_datetime() + timedelta(minutes=15)
 		if get_datetime(self.from_time) <= until_time:
@@ -81,7 +92,20 @@ class FacilitiesServiceReservation(Document):
 			doc.set_rented(self.qty, cancel=cancel)
 			doc.db_update()
 			self.processed = 1
-		
+	
+	def update_booking(self, qty=0):
+		doc = frappe.get_doc("Facility Service", self.service)
+		if self.is_new():
+			qty = self.qty
+
+		if self.status == "Rejected":
+			old_doc = self.get_doc_before_save()
+			if old_doc and old_doc.get("status") != self.status:
+				qty = self.qty * -1
+
+		doc.set_booking(add_qty=qty)
+		doc.db_update()
+
 
 def set_booking_to_rented():
 	until_time = get_datetime() + timedelta(minutes=15)
@@ -107,6 +131,6 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 
 	# setup filter
 	# format title etc
-	
+
 
 	return events

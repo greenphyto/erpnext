@@ -16,9 +16,9 @@
   "preview",
   "quantity_section",
   "total_count",
+  "booking_qty",
   "column_break_sh9st",
   "rented_qty",
-  "booking_qty",
   "available_qty",
   "more_information_section",
   "status"
@@ -75,7 +75,7 @@
   {
    "fieldname": "booking_qty",
    "fieldtype": "Int",
-   "label": "Booking Qty",
+   "label": "Booked Qty",
    "read_only": 1
   },
   {
@@ -112,7 +112,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-22 12:17:37.488920",
+ "modified": "2023-11-22 17:10:29.345194",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facility Service",
