@@ -15,11 +15,13 @@
   "email_address",
   "reservation_detail_section",
   "service",
-  "description",
-  "column_break_3vwak",
   "service_status",
   "quantity_available",
   "qty",
+  "column_break_3vwak",
+  "preview",
+  "description",
+  "preview_link",
   "section_break_a46we",
   "from_date",
   "to_date",
@@ -85,7 +87,8 @@
   },
   {
    "fieldname": "column_break_3vwak",
-   "fieldtype": "Column Break"
+   "fieldtype": "Column Break",
+   "label": "Detail"
   },
   {
    "fieldname": "service_status",
@@ -250,12 +253,24 @@
    "fieldname": "end_time",
    "fieldtype": "Time",
    "label": "End Time"
+  },
+  {
+   "fetch_from": "service.image",
+   "fieldname": "preview_link",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "preview_link"
+  },
+  {
+   "fieldname": "preview",
+   "fieldtype": "Image",
+   "options": "preview_link"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-21 15:40:54.587257",
+ "modified": "2023-11-22 12:23:41.222751",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facilities Service Reservation",
