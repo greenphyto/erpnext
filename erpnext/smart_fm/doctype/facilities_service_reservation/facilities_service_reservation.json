@@ -245,15 +245,13 @@
    "fieldtype": "Column Break"
   },
   {
-   "default": "Now",
    "fieldname": "start_time",
-   "fieldtype": "Time",
+   "fieldtype": "Select",
    "label": "Start Time"
   },
   {
-   "default": "Now",
    "fieldname": "end_time",
-   "fieldtype": "Time",
+   "fieldtype": "Select",
    "label": "End Time"
   },
   {
@@ -272,7 +270,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-23 12:42:29.460836",
+ "modified": "2023-11-23 15:52:17.750849",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facilities Service Reservation",

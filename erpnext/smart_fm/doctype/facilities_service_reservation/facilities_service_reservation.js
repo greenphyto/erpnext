@@ -19,6 +19,7 @@ frappe.ui.form.on('Facilities Service Reservation', {
 		frm.cscript.set_total_duration();
 	},
 	refresh: function(frm){
+		frm.cscript.set_time_option();
 		frm.cscript.setup_preview();
 	},
 	all_day:function(frm){
@@ -28,6 +29,9 @@ frappe.ui.form.on('Facilities Service Reservation', {
 	multi_days:function(frm){
 		frm.cscript.setup_value();
 		frm.cscript.setup_preview();
+	},
+	service: function(frm){
+		frm.cscript.set_time_option();
 	}
 });
 
@@ -78,6 +82,53 @@ $.extend(cur_frm.cscript, {
 		}
 		if (me.frm.doc.all_day && !me.frm.doc.multi_days){
 			me.frm.set_value("to_date", me.frm.doc.from_date);
+		}
+	},
+	set_time_option: function(){
+		var me = this;
+		if(!me.frm.doc.service){
+			me.frm.set_df_property("start_time", 'options', "");
+			me.frm.set_df_property("end_time", 'options', "");
+			return;
+		};
+		var opts = "";
+		frappe.db.get_value("Facility Service", me.frm.doc.service, ['time_start', 'time_end', "interval"]).then(r=>{
+			r = r.message;
+			var temp = generateTimeList(r.time_start, r.time_end, r.interval);
+			opts = temp.join("\n");
+			me.frm.set_df_property("start_time", "options", opts);
+			me.frm.set_df_property("end_time", "options", opts);
+
+			setTimeout(()=>{
+				if (me.frm.is_dirty()){
+					if ( !in_list(temp, me.frm.doc.start_time) ){
+						me.frm.set_value("start_time", temp[0])
+					}
+					if ( !in_list(temp, me.frm.doc.end_time) ){
+						me.frm.set_value("end_time", temp[1])
+					}
+				}
+			}, 100)
+		})
+
+		function generateTimeList(time_start, time_end, interval) {
+			let timeList = [];
+			
+			// Parsing waktu awal dan akhir
+			let start = new Date("1970-01-01T" + time_start);
+			let end = new Date("1970-01-01T" + time_end);
+		
+			// Loop untuk menghasilkan waktu dengan interval tertentu
+			let current = start;
+			while (current <= end) {
+				let formattedTime = current.getHours().toString().padStart(2, '0') + ':' + current.getMinutes().toString().padStart(2, '0');
+				timeList.push(formattedTime);
+		
+				// Menambahkan interval ke waktu saat ini
+				current.setMinutes(current.getMinutes() + cint(interval));
+			}
+		
+			return timeList;
 		}
 	}
 })
