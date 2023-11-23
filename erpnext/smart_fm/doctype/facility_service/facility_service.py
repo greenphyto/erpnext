@@ -3,13 +3,14 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import cint, get_datetime
+from frappe.utils import cint, get_datetime, get_time
 from frappe import _
 
 class FacilityService(Document):
 	def validate(self):
 		self.validate_qty()
 		self.update_status()
+		self.validate_time()
 	
 	def set_booking(self, add_qty=0):
 		# if booking qty only max qty for order
@@ -64,5 +65,28 @@ class FacilityService(Document):
 
 		else:
 			self.status = "Available"
+
+	def validate_time(self):
+		days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+		valid = False
+		for d in days:
+			if self.get( frappe.scrub(d)):
+				valid = True
+		
+		if not valid:
+			frappe.throw(_("Must be selected at least 1 day"))
+
+		diff = get_datetime(self.time_end) - get_datetime(self.time_start)
+
+		minutes = cint(diff.total_seconds() / 60) 
+		if minutes < 0:
+			frappe.throw("Time is wrong!")
+
+		if minutes < cint(self.interval):
+			frappe.throw(_("Time available lower than interval!"))
+
+		
+
+
 
 

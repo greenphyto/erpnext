@@ -20,6 +20,18 @@
   "column_break_sh9st",
   "rented_qty",
   "available_qty",
+  "enable_hours_section",
+  "interval",
+  "time_start",
+  "time_end",
+  "selected_days_column",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
   "more_information_section",
   "status"
  ],
@@ -108,11 +120,81 @@
    "fieldname": "preview",
    "fieldtype": "Image",
    "options": "image"
+  },
+  {
+   "fieldname": "enable_hours_section",
+   "fieldtype": "Section Break",
+   "label": "Enable Hours"
+  },
+  {
+   "default": "1",
+   "fieldname": "interval",
+   "fieldtype": "Select",
+   "label": "Interval",
+   "options": "1\n5\n10\n15\n20\n30\n60"
+  },
+  {
+   "fieldname": "time_start",
+   "fieldtype": "Time",
+   "label": "Time Start"
+  },
+  {
+   "fieldname": "time_end",
+   "fieldtype": "Time",
+   "label": "Time End"
+  },
+  {
+   "fieldname": "selected_days_column",
+   "fieldtype": "Column Break",
+   "label": "Selected Days"
+  },
+  {
+   "default": "0",
+   "fieldname": "monday",
+   "fieldtype": "Check",
+   "label": "Monday",
+   "options": "Monday"
+  },
+  {
+   "default": "0",
+   "fieldname": "tuesday",
+   "fieldtype": "Check",
+   "label": "Tuesday"
+  },
+  {
+   "default": "0",
+   "fieldname": "wednesday",
+   "fieldtype": "Check",
+   "label": "Wednesday"
+  },
+  {
+   "default": "0",
+   "fieldname": "thursday",
+   "fieldtype": "Check",
+   "label": "Thursday"
+  },
+  {
+   "default": "0",
+   "fieldname": "friday",
+   "fieldtype": "Check",
+   "label": "Friday"
+  },
+  {
+   "default": "0",
+   "fieldname": "saturday",
+   "fieldtype": "Check",
+   "label": "Saturday"
+  },
+  {
+   "default": "0",
+   "fieldname": "sunday",
+   "fieldtype": "Check",
+   "label": "Sunday"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-22 17:10:29.345194",
+ "modified": "2023-11-23 15:32:41.812064",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facility Service",
