@@ -3,7 +3,7 @@
 
 import frappe, json
 from frappe.model.document import Document
-from frappe.utils import getdate, get_datetime, cint, add_days
+from frappe.utils import getdate, get_datetime, cint, add_days, get_time
 from frappe import _
 from datetime import timedelta
 from frappe.desk.reportview import get_filters_cond
@@ -14,6 +14,7 @@ WEEKDAY = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "
 class FacilitiesServiceReservation(Document):
 	def validate(self):
 		self.validate_time()
+		self.validate_time_service()
 		self.validate_service()
 		self.update_booking()
 
@@ -44,15 +45,15 @@ class FacilitiesServiceReservation(Document):
 			frappe.throw(_("wrong time setting!"))
 	
 	def get_service_detail(self):
-		if not self.get("service_data"):
-			self.service_data = frappe.get_doc("Facility Service", self.service)
+		if not self.get("service_doc"):
+			self.service_doc = frappe.get_doc("Facility Service", self.service)
 
 	def validate_time_service(self):
 		self.get_service_detail()
 		# validate date
 		diff = getdate(self.to_date) - getdate(self.from_date)
 		current = getdate(self.from_date)
-		valid_days = self.service_data.get_valid_days()
+		valid_days = self.service_doc.get_valid_days()
 		for d in range(diff.days or 1):
 			current = add_days(current, d)
 			day_name = current.strftime("%A")
@@ -60,7 +61,10 @@ class FacilitiesServiceReservation(Document):
 				frappe.throw("This service only available on <b>{}</b>.".format(", ".join(valid_days)))
 
 		# validate time
-
+		start = get_time(self.service_doc.time_start)
+		ends = get_time(self.service_doc.time_end)
+		if get_time(self.start_time) < start or get_time(self.end_time) > ends:
+			frappe.throw("This service only available at <b>{}-{}</b>.".format(start, ends))
 
 	def get_qty_at_time(self):
 		data = frappe.db.sql("""
