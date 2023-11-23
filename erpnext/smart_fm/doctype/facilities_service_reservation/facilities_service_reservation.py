@@ -92,6 +92,9 @@ class FacilitiesServiceReservation(Document):
 	def on_cancel(self):
 		# if cancel at rented so minus the qty
 		# if cancel at returned so add the qty
+		if self.is_backdate():
+			return
+		
 		state = self.detect_workflow()
 		doc = frappe.get_doc("Facility Service", self.service)
 		if not state:
@@ -116,12 +119,20 @@ class FacilitiesServiceReservation(Document):
 
 		doc.db_update()
 
+	def is_backdate(self):
+		if get_datetime(self.to_time) > get_datetime():
+			return False
+		else:
+			return True
 
 	def process_rented(self):
+		if self.is_backdate():
+			return
+
 		state = self.detect_workflow()
 		if not state:
 			return
-		print(state)
+
 		doc = frappe.get_doc("Facility Service", self.service)
 		if state[0] == "Started":
 			# validate 
@@ -165,6 +176,9 @@ class FacilitiesServiceReservation(Document):
 			doc.db_update()
 	
 	def update_booking(self):
+		if self.is_backdate():
+			return
+
 		doc = frappe.get_doc("Facility Service", self.service)
 		qty = 0
 		state_flow = self.detect_workflow()
