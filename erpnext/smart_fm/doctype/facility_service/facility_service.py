@@ -6,6 +6,9 @@ from frappe.model.document import Document
 from frappe.utils import cint, get_datetime, get_time
 from frappe import _
 
+DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+
 class FacilityService(Document):
 	def validate(self):
 		self.validate_qty()
@@ -67,12 +70,8 @@ class FacilityService(Document):
 			self.status = "Available"
 
 	def validate_time(self):
-		days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-		valid = False
-		for d in days:
-			if self.get( frappe.scrub(d)):
-				valid = True
-		
+		valid = self.get_valid_days()
+
 		if not valid:
 			frappe.throw(_("Must be selected at least 1 day"))
 
@@ -84,6 +83,14 @@ class FacilityService(Document):
 
 		if minutes < cint(self.interval):
 			frappe.throw(_("Time available lower than interval!"))
+
+	def get_valid_days(self):
+		valid = []
+		for d in DAYS:
+			if self.get( frappe.scrub(d)):
+				valid.append(d)
+
+		return valid
 
 		
 
