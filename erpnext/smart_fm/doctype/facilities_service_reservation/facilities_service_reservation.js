@@ -73,14 +73,16 @@ $.extend(cur_frm.cscript, {
 	},
 	setup_value: function(){
 		var me = this;
-		if (!this.frm.is_dirty()) return;
+		if (!this.frm.is_dirty() || !this.frm.doc.service) return;
+
+		var time_list = me.frm.fields_dict.start_time.df.options.split("\n");
 
 		if (me.frm.doc.all_day || me.frm.doc.multi_days){
-			me.frm.set_value("start_time", START_TIME);
-			me.frm.set_value("end_time", END_TIME);
+			me.frm.set_value("start_time", time_list[0]);
+			me.frm.set_value("end_time", time_list[time_list.length-1]);
 			
 		}
-		if (me.frm.doc.all_day && !me.frm.doc.multi_days){
+		if (!me.frm.doc.multi_days){
 			me.frm.set_value("to_date", me.frm.doc.from_date);
 		}
 	},
