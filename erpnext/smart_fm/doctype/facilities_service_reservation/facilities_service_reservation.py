@@ -14,6 +14,9 @@ class FacilitiesServiceReservation(Document):
 		self.validate_service()
 		self.update_booking()
 
+	def on_update_after_submit(self):
+		self.update_booking()
+
 	def after_insert(self):
 		self.processed = 0
 		self.status = "Issued"
@@ -48,7 +51,7 @@ class FacilitiesServiceReservation(Document):
 				`tabFacilities Service Reservation`
 			where 
 				docstatus = 0
-				and status != "Rejected"
+				and status not in ("Rejected", "Cancelled")
 				and 
 					( 
 						( 
@@ -90,9 +93,6 @@ class FacilitiesServiceReservation(Document):
 		elif self.status == "":
 			self.process_return(cancel=True)
 
-	def on_trash(self):
-		self.update_booking(trash=1)
-
 	def process_rented(self, cancel=False):
 		until_time = get_datetime() + timedelta(minutes=15)
 		if get_datetime(self.from_time) <= until_time:
@@ -108,27 +108,20 @@ class FacilitiesServiceReservation(Document):
 			doc.set_return(self.qty, cancel=cancel)
 			doc.db_update()
 	
-	def update_booking(self, trash=0):
+	def update_booking(self):
 		doc = frappe.get_doc("Facility Service", self.service)
 		qty = 0
-		if not trash:
-			state_flow = self.detect_workflow()
-			if not state_flow:
-				return
-			
-			if state_flow[0] in ['Rejected', 'Issued']:
-				return
+		state_flow = self.detect_workflow()
+		if not state_flow:
+			return
+		
+		if state_flow[0] in ['Rejected', 'Issued']:
+			return
 
-			if self.status == "Cancelled":
-				qty = self.qty * -1
-			elif self.status == "Accepted":
-				qty = self.qty
-
-		else:
-			if self.status == "Cancelled":
-				qty = self.qty * -1
-			elif self.status == "Accepted":
-				qty = self.qty
+		if self.status == "Cancelled":
+			qty = self.qty * -1
+		elif self.status == "Accepted":
+			qty = self.qty
 
 		doc.set_booking(add_qty=qty)
 		doc.db_update()
