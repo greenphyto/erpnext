@@ -12,13 +12,15 @@ class FacilityService(Document):
 		self.update_status()
 	
 	def set_booking(self, add_qty=0):
-		self.booking_qty = cint(frappe.db.get_value("Facilities Service Reservation", {
-			"service":self.name,
-			"docstatus":0,
-			"to_time":['>=', get_datetime()],
-			"processed": 0,
-			"status":['!=', 'Rejected' ]
-		}, "max(qty) as qty")) + add_qty
+		# if booking qty only max qty for order
+		# self.booking_qty = cint(frappe.db.get_value("Facilities Service Reservation", {
+		# 	"service":self.name,
+		# 	"docstatus":0,
+		# 	"to_time":['>=', get_datetime()],
+		# 	"processed": 0,
+		# 	"status":['not in', ['Rejected', 'Issued']]
+		# }, "max(qty) as qty", debug=1)) + add_qty
+		self.booking_qty = self.booking_qty + add_qty
 
 	def set_rented(self, qty, cancel=False):
 		if not cancel:
@@ -37,7 +39,7 @@ class FacilityService(Document):
 		self.update_status()
 	
 	def validate_qty(self):
-		self.set_booking()
+		# self.set_booking()
 		self.total_count = cint(self.total_count) or 1
 
 		ongoing_qty = cint(self.rented_qty)

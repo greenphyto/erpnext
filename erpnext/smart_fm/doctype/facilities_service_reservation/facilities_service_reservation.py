@@ -14,6 +14,10 @@ class FacilitiesServiceReservation(Document):
 		self.validate_service()
 		self.update_booking()
 
+	def after_insert(self):
+		self.processed = 0
+		self.status = "Issued"
+
 	def before_validate(self):
 		if (self.all_day and not self.multi_days):
 			self.to_date = self.from_date
@@ -70,20 +74,24 @@ class FacilitiesServiceReservation(Document):
 			if data.qty:
 				available_qty_at_date = quantity_available - data.qty
 				if available_qty_at_date < self.qty:
-					frappe.throw(_("This service only available <b>{}</b> quantity at the time".format( cint(available_qty_at_date) )))
+					frappe.throw(_("This service only available <b>{}</b> quantity at selected time".format( cint(available_qty_at_date) )))
 
 				self.quantity_available = available_qty_at_date
 
 	def on_submit(self):
-		self.process_rented()
+		if self.to_time > get_datetime():
+			self.process_rented()
 
 	def on_cancel(self):
 		# if cancel at rented so minus the qty
 		# if cancel at returned so add the qty
-		self.process_rented(cancel=True)
+		if self.status == "Started":
+			self.process_rented(cancel=True)
+		elif self.status == "":
+			self.process_return(cancel=True)
 
 	def on_trash(self):
-		self.update_booking()
+		self.update_booking(trash=1)
 
 	def process_rented(self, cancel=False):
 		until_time = get_datetime() + timedelta(minutes=15)
@@ -92,19 +100,60 @@ class FacilitiesServiceReservation(Document):
 			doc.set_rented(self.qty, cancel=cancel)
 			doc.db_update()
 			self.processed = 1
-	
-	def update_booking(self, qty=0):
-		doc = frappe.get_doc("Facility Service", self.service)
-		if self.is_new():
-			qty = self.qty
 
-		if self.status == "Rejected":
-			old_doc = self.get_doc_before_save()
-			if old_doc and old_doc.get("status") != self.status:
+	def process_return(self, cancel=False):
+		self.return_date = get_datetime()
+		if self.processed:
+			doc = frappe.get_doc("Facility Service", self.service)
+			doc.set_return(self.qty, cancel=cancel)
+			doc.db_update()
+	
+	def update_booking(self, trash=0):
+		doc = frappe.get_doc("Facility Service", self.service)
+		qty = 0
+		if not trash:
+			state_flow = self.detect_workflow()
+			if not state_flow:
+				return
+			
+			if state_flow[0] in ['Rejected', 'Issued']:
+				return
+
+			if self.status == "Cancelled":
 				qty = self.qty * -1
+			elif self.status == "Accepted":
+				qty = self.qty
+
+		else:
+			if self.status == "Cancelled":
+				qty = self.qty * -1
+			elif self.status == "Accepted":
+				qty = self.qty
 
 		doc.set_booking(add_qty=qty)
 		doc.db_update()
+
+	def detect_workflow(self):
+		# return like return current_state, previous_state, (previous_state, current_state)
+		old_doc = self.get_doc_before_save()
+		status = ""
+		if old_doc:
+			status = old_doc.get("status")
+
+		# changed true
+		if status != self.status:
+			return self.status, status, (status, self.status)
+		else:
+			return
+
+
+	def control_rented(self):
+		if self.status == "Started":
+			if self.to_time >= get_datetime():
+				self.process_rented()
+		
+		elif self.status == "Finished":
+			self.process_return()
 
 
 def set_booking_to_rented():
