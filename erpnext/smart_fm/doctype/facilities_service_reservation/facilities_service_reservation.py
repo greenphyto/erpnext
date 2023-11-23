@@ -7,7 +7,7 @@ from frappe.utils import getdate, get_datetime, cint
 from frappe import _
 from datetime import timedelta
 from frappe.desk.reportview import get_filters_cond
-
+from frappe.model.workflow import apply_workflow
 class FacilitiesServiceReservation(Document):
 	def validate(self):
 		self.validate_time()
@@ -16,6 +16,7 @@ class FacilitiesServiceReservation(Document):
 
 	def on_update_after_submit(self):
 		self.update_booking()
+		self.process_rented()
 
 	def after_insert(self):
 		self.processed = 0
@@ -38,19 +39,14 @@ class FacilitiesServiceReservation(Document):
 		if get_datetime(self.from_time) > get_datetime(self.to_time):
 			frappe.throw(_("wrong time setting!"))
 
-	def validate_service(self):
-		quantity_available = frappe.get_value("Facility Service", self.service, "available_qty")
-		if self.qty > quantity_available:
-			frappe.throw(_("This service is not avilable at your qty"))
-
-		# validate overlap
+	def get_qty_at_time(self):
 		data = frappe.db.sql("""
 			select 
 				sum(qty) as qty, service
 			from 
 				`tabFacilities Service Reservation`
 			where 
-				docstatus = 0
+				docstatus != 2
 				and status not in ("Rejected", "Cancelled")
 				and 
 					( 
@@ -72,34 +68,94 @@ class FacilitiesServiceReservation(Document):
 		}, as_dict=1, debug=0)
 
 		if data:
-			data = data[0]
-		
-			if data.qty:
-				available_qty_at_date = quantity_available - data.qty
-				if available_qty_at_date < self.qty:
-					frappe.throw(_("This service only available <b>{}</b> quantity at selected time".format( cint(available_qty_at_date) )))
+			return cint(data[0].get("qty"))
+		else:
+			return 0
 
-				self.quantity_available = available_qty_at_date
+	def validate_service(self):
+		quantity_available = frappe.get_value("Facility Service", self.service, "available_qty")
+		if self.qty > quantity_available:
+			frappe.throw(_("This service is not avilable at your qty"))
+
+		# validate overlap
+		qty = self.get_qty_at_time()		
+		if qty:
+			available_qty_at_date = quantity_available - qty
+			if available_qty_at_date < self.qty:
+				frappe.throw(_("This service only available <b>{}</b> quantity at selected time".format( cint(available_qty_at_date) )))
+
+			self.quantity_available = available_qty_at_date
 
 	def on_submit(self):
-		if self.to_time > get_datetime():
-			self.process_rented()
+		pass
 
 	def on_cancel(self):
 		# if cancel at rented so minus the qty
 		# if cancel at returned so add the qty
-		if self.status == "Started":
-			self.process_rented(cancel=True)
-		elif self.status == "":
-			self.process_return(cancel=True)
+		state = self.detect_workflow()
+		doc = frappe.get_doc("Facility Service", self.service)
+		if not state:
+			if self.status == 'Started':
+				doc.set_rented(qty=self.qty * -1)
+				self.processed = 0
+				self.db_update()
+			if self.status == 'Accepted':
+				doc.set_booking(add_qty=self.qty * -1)
+				self.db_update()
+			if self.status == 'Finished':
+				doc.set_rented(qty=self.qty)
+				self.db_update()
+		else:
+			if state[2] == ('Started', "Cancelled"):
+				doc.set_rented(qty=self.qty * -1)
+				self.processed = 0
+				self.db_update()
+			if state[2] == ('Accepted', "Cancelled"):
+				doc.set_booking(add_qty=self.qty * -1)
+				self.db_update()
 
-	def process_rented(self, cancel=False):
-		until_time = get_datetime() + timedelta(minutes=15)
-		if get_datetime(self.from_time) <= until_time:
-			doc = frappe.get_doc("Facility Service", self.service)
-			doc.set_rented(self.qty, cancel=cancel)
-			doc.db_update()
+		doc.db_update()
+
+
+	def process_rented(self):
+		state = self.detect_workflow()
+		if not state:
+			return
+		print(state)
+		doc = frappe.get_doc("Facility Service", self.service)
+		if state[0] == "Started":
+			# validate 
+			if not self.flags.autorun:
+				self.validate_force_start()
+
+			doc.set_rented(qty=self.qty)
+			doc.set_booking(add_qty=self.qty * -1)
 			self.processed = 1
+			self.db_update()
+			
+		elif state[2] == ('Accepted', 'Finished'):
+			doc.set_booking(add_qty=self.qty * -1)
+		elif state[2] == ('Started', 'Finished'):
+			doc.set_rented(qty=self.qty * -1)
+		elif state[0] == "Cancelled":
+			doc.set_booking(add_qty=self.qty * -1)
+
+		# until_time = get_datetime() + timedelta(minutes=15)
+		# if get_datetime(self.from_time) <= until_time:
+		# 	doc.set_rented(self.qty)
+		# 	doc.db_update()
+		# 	self.processed = 1
+
+		doc.db_update()
+
+
+	def validate_force_start(self):
+		self.from_time = getdate()
+		quantity_available = frappe.get_value("Facility Service", self.service, "available_qty")
+		qty = self.get_qty_at_time()
+		available_qty_at_date = quantity_available - qty
+		if available_qty_at_date < self.qty:
+			frappe.throw(_("Cannot rent at selected time"))
 
 	def process_return(self, cancel=False):
 		self.return_date = get_datetime()
@@ -135,7 +191,7 @@ class FacilitiesServiceReservation(Document):
 
 		# changed true
 		if status != self.status:
-			return self.status, status, (status, self.status)
+			return self.status, status,(status, self.status)
 		else:
 			return
 
@@ -156,8 +212,9 @@ def set_booking_to_rented():
 		"from_time":['<=', until_time]
 	}, "name")
 	for d in data:
-		doc = frappe.get_doc("", d.name)
-		doc.process_rented()
+		doc = frappe.get_doc("Facilities Service Reservation", d.name)
+		doc.flags.autorun = 1
+		apply_workflow("Start", doc)
 
 @frappe.whitelist()
 def get_events(start, end, user=None, for_reminder=False, filters=None):
