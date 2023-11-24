@@ -32,9 +32,18 @@ frappe.ready(function() {
 	})
 
 	// // from_time
-	// frappe.web_form.on("from_time", (frm, value)=>{
-	// 	frappe.web_form.set_total_duration();
-	// })
+	frappe.web_form.on("from_date", (frm, value)=>{
+		frappe.web_form.set_total_duration();
+	})
+	frappe.web_form.on("to_date", (frm, value)=>{
+		frappe.web_form.set_total_duration();
+	})
+	frappe.web_form.on("start_time", (frm, value)=>{
+		frappe.web_form.set_total_duration();
+	})
+	frappe.web_form.on("end_time", (frm, value)=>{
+		frappe.web_form.set_total_duration();
+	})
 
 	// // to_time
 	// frappe.web_form.on("to_time", (frm, value)=>{
@@ -60,10 +69,18 @@ function setup(){
 	frappe.provide("frappe.web_form")
 	$.extend(frappe.web_form, {
 		set_total_duration(){
-			return
-			var frm = this;
-			var seconds = (moment(frm.doc.to_time) - moment(frm.doc.from_time)) /1000
-			frm.set_value("total_duration", seconds);
+			var me = this;
+			var seconds = 0;
+			if (me.doc.multi_days){
+				seconds = (moment(me.doc.to_date, 'YYYY-MM-DD') - moment(me.doc.from_date, 'YYYY-MM-DD')) / 1000
+			}else{
+				seconds = (moment(me.doc.end_time, 'HH:mm') - moment(me.doc.start_time, 'HH:mm')) / 1000
+			}
+			if (seconds){
+				me.set_value("total_duration", seconds);
+			}else{
+				me.set_value("total_duration", 0);
+			}
 		},
 		setup_preview(){
 			// if all day: hide time

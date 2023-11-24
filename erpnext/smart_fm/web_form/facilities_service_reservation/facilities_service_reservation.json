@@ -19,7 +19,7 @@
  "list_columns": [],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2023-11-24 12:22:29.011928",
+ "modified": "2023-11-24 14:50:15.252247",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "facilities-service-reservation",
@@ -245,6 +245,18 @@
    "max_length": 0,
    "max_value": 0,
    "read_only": 0,
+   "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "fieldname": "total_duration",
+   "fieldtype": "Duration",
+   "hidden": 0,
+   "label": "Total Duration",
+   "max_length": 0,
+   "max_value": 0,
+   "read_only": 1,
    "reqd": 0,
    "show_in_filter": 0
   },
