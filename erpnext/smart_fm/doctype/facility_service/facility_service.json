@@ -8,6 +8,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "reservation_form",
   "service_name",
   "description",
   "enable",
@@ -190,11 +191,16 @@
    "fieldname": "sunday",
    "fieldtype": "Check",
    "label": "Sunday"
+  },
+  {
+   "fieldname": "reservation_form",
+   "fieldtype": "Heading",
+   "label": "Reservation Form"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-23 15:32:41.812064",
+ "modified": "2023-11-24 15:35:22.512574",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facility Service",
