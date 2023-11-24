@@ -11,6 +11,28 @@ from frappe.model.workflow import apply_workflow
 
 WEEKDAY = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
+COLOR_MAP = {
+	"primary": "#007BFF",
+	"secondary": "#6C757D",
+	"success": "#28A745",
+	"danger": "#DC3545",
+	"warning": "#FFC107",
+	"info": "#17A2B8",
+	"light": "#F8F9FA",
+	"dark": "#343A40",
+}
+
+TEXT_COLOR = {
+	"primary": "#FFFFFF", 
+	"secondary": "#FFFFFF",
+	"success": "#FFFFFF",
+	"danger": "#FFFFFF",
+	"warning": "#212529",  
+	"info": "#FFFFFF",
+	"light": "#212529", 
+	"dark": "#FFFFFF",
+}
+
 class FacilitiesServiceReservation(Document):
 	def validate(self):
 		self.validate_time()
@@ -277,8 +299,21 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 
 	events = frappe.db.sql("select * from `tabFacilities Service Reservation`", as_dict=1)
 
-	# setup filter
-	# format title etc
+	style_map = {
+		"Issued": "warning",
+		"Accepted": "primary",
+		"Started": "success",
+		"Finished": "secondary",
+		"Cancelled": "light",
+		"Rejected": "danger",
+	}
 
+	for d in events:
+		ref_color = style_map.get(d.status)
+		if ref_color:
+			d.color = COLOR_MAP[ref_color]
+			d.textColor = TEXT_COLOR[ref_color]
+		
+		print(d.color, d.status)
 
 	return events
