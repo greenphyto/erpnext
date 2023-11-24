@@ -61,8 +61,8 @@ class FacilitiesServiceReservation(Document):
 				frappe.throw("This service only available on <b>{}</b>.".format(", ".join(valid_days)))
 
 		# validate time
-		start = get_time(self.service_doc.time_start)
-		ends = get_time(self.service_doc.time_end)
+		start = get_time(self.service_doc.time_start or "")
+		ends = get_time(self.service_doc.time_end or "")
 		if get_time(self.start_time) < start or get_time(self.end_time) > ends:
 			frappe.throw("This service only available at <b>{}-{}</b>.".format(start, ends))
 
