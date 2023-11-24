@@ -254,7 +254,8 @@ def set_booking_to_rented():
 	until_time = get_datetime() + timedelta(minutes=15)
 	data = frappe.db.get_list("Facilities Service Reservation", {
 		"processed": 0,
-		"from_time":['<=', until_time]
+		"from_time":['<=', until_time],
+		"status":"Accepted"
 	}, "name")
 	for d in data:
 		doc = frappe.get_doc("Facilities Service Reservation", d.name)
@@ -268,6 +269,9 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 
 	if isinstance(filters, str):
 		filters = json.loads(filters)
+
+	if not any(x[0] == 'status' for x in filters):
+		filters.append(['status', 'not in', ['Cancelled', 'Rejected']])
 
 	filter_condition = get_filters_cond("Event", filters, [])
 

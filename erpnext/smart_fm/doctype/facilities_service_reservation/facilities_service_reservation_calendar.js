@@ -6,11 +6,14 @@ frappe.views.calendar["Facilities Service Reservation"] = {
 		allDay: "all_day",
 		title: "service",
 		status: "status",
-		// color: "color",
 	},
 	style_map: {
-		Issued: "blue",
-		Accepted: "orange",
+		Issued: "orange",
+		Accepted: "blue",
+		Started: "green",
+		Finished: "purple",
+		Cancelled: "grey",
+		Rejected: "red",
 	},
     options:{
         timeFormat: 'HH:mm'
