@@ -26,6 +26,10 @@ class FacilitiesServiceReservation(Document):
 		self.processed = 0
 		self.status = "Issued"
 
+	def before_insert(self):
+		if self.status == "Draft":
+			self.status = "Issued"
+
 	def before_validate(self):
 		if (self.all_day and not self.multi_days):
 			self.to_date = self.from_date

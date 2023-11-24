@@ -72,7 +72,7 @@ function setup(){
 			var me = this;
 			var seconds = 0;
 			if (me.doc.multi_days){
-				seconds = (moment(me.doc.to_date, 'YYYY-MM-DD') - moment(me.doc.from_date, 'YYYY-MM-DD')) / 1000
+				seconds = (moment(me.doc.to_date, 'YYYY-MM-DD') - moment(me.doc.from_date, 'YYYY-MM-DD')) / 1000 + 24 * 3600
 			}else{
 				seconds = (moment(me.doc.end_time, 'HH:mm') - moment(me.doc.start_time, 'HH:mm')) / 1000
 			}
