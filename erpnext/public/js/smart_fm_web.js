@@ -50,9 +50,13 @@ frappe.render_image_field = function (class_name, img_path){
     $.each(frappe.web_form.fields_list, (i, field)=>{
         if (field.df.description==class_name){
             var wrapper = $(field.wrapper);
-            wrapper.html(`
-                <img class='${class_name}' src='${img_path}'>
-            `)
+            if (img_path){
+                wrapper.html(`
+                    <img class='${class_name}' src='${img_path}'>
+                `)
+            }else{
+                wrapper.empty()
+            }
         }
     });
 }

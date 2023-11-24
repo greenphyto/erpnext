@@ -66,13 +66,9 @@ function setup(){
 			frm.set_value("total_duration", seconds);
 		},
 		setup_preview(){
-			return
 			// if all day: hide time
 			var me = this;
 			var from_date = me.fields_dict.from_date;
-			var to_date = me.fields_dict.to_date;
-			var from_time = me.fields_dict.from_time;
-			var to_time = me.fields_dict.to_time;
 			if (me.doc.all_day || me.doc.multi_days){
 				me.set_df_property("end_time", "hidden", 1);
 				me.set_df_property("start_time", "hidden", 1);
