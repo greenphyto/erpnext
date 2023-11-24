@@ -89,9 +89,8 @@ function setup(){
 			}
 		},
 		setup_value: function(){
-			return
 			var me = this;
-			if (!this.frm.is_dirty() || !this.frm.doc.service) return;
+			if (!me.doc.service) return;
 	
 			var time_list = me.fields_dict.start_time.df.options.split("\n");
 	
