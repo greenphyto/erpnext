@@ -159,9 +159,10 @@ class FacilitiesCards{
 	}
 
 	get_card(data){
+		var me = this;
 		var card = $(`
 			<div>
-				<div class="facility-card frappe-card">
+				<div class="facility-card frappe-card" service="${data.name}">
 					<div class="top-detail">
 						<div class="status" style="color: ${data.status_color};">${data.status}</div>
 						<div class="facility-name">${data.name}</div>
@@ -176,6 +177,12 @@ class FacilitiesCards{
 		`)
 
 		// setup controller: click etc
+		card.find(".facility-card").click(function(e){
+			var el = $(this);
+			var service = el.attr("service");
+			console.log("add" ,el , service);
+			me.filter_service(service);
+		})
 
 		return card;
 	}
@@ -188,6 +195,13 @@ class FacilitiesCards{
 		})	
 
 		frappe.utils.make_dragable('scrollableElement', 'innerContent');
+	}
+
+	filter_service(service){
+		var me = this;
+		var filters = [['Facilities Service Reservation', 'service', '=', service]];
+		me.main.list_view.filter_area.remove_filters(filters);
+		me.main.list_view.filter_area.add(filters, true);
 	}
 }
 
