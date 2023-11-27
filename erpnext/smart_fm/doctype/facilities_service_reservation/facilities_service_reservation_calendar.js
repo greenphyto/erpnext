@@ -110,8 +110,8 @@ class FacilitiesCards{
 		this.wrapper = $(`
 		<div class="facility-cards">
 			<div class="left-tools">
-				<div class="show-all">Show All</div>
-				<div class="clear-selected">clear</div>
+				<a class="show-all">Show All</a>
+				<a class="clear-selected">clear</a>
 			</div>
 			<div class="list-controller">
 				<div class="btn btn-default icon-btn left-arrow">
@@ -156,6 +156,11 @@ class FacilitiesCards{
 				me.card_list_wrapper.removeClass("scroll-smooth");
 			}, 200);
 		});
+
+		this.wrapper.find(".clear-selected").click(()=>{
+			me.filter_service("", true);
+			frappe.show_alert("Clear filter");
+		})
 	}
 
 	get_card(data){
@@ -197,11 +202,13 @@ class FacilitiesCards{
 		frappe.utils.make_dragable('scrollableElement', 'innerContent');
 	}
 
-	filter_service(service){
+	filter_service(service, remove=false){
 		var me = this;
 		var filters = [['Facilities Service Reservation', 'service', '=', service]];
 		me.main.list_view.filter_area.remove_filters(filters);
-		me.main.list_view.filter_area.add(filters, true);
+		if (!remove){
+			me.main.list_view.filter_area.add(filters, true);
+		}
 	}
 }
 
