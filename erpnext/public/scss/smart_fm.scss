@@ -29,3 +29,92 @@
     overflow-y: scroll;
     padding: 7px;
 }
+
+// custom calendar
+#facilities-calendar{
+    .facility-cards{
+        margin: 20px 0px 38px;
+        min-height: 100px;
+        display: flex;
+        flex-direction: row;
+    }
+
+    .card-list-wrapper{
+        overflow-x: scroll;
+        flex: 1;
+
+        &::-webkit-scrollbar {
+            width: 0px; /* Lebar scrollbar */
+          }
+          
+        &::-webkit-scrollbar-track {
+            background-color: transparent; /* Warna latar belakang track (area di luar thumb) */
+        }
+        
+        &::-webkit-scrollbar-thumb {
+            background-color: #888; /* Warna thumb (bagian yang dapat digerakkan) */
+            border-radius: 6px; /* Bentuk sudut thumb */
+            display: none;
+        }
+        
+        &::-webkit-scrollbar-thumb:hover {
+            background-color: #555; /* Warna thumb saat dihover */
+        }
+    }
+
+    .card-list{
+        display: flex;
+        flex-direction: row;
+        width: fit-content;
+        overflow-x: overlay;
+    }
+
+    .left-tools{
+        width: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        color: #7d7d7d;
+        .show-all{
+            font-size: 0.95em;
+            text-decoration: underline;
+            margin-bottom: 6px;
+        }
+        .clear-selected{
+            font-size: 0.87em;
+        }
+    }
+
+    .facility-card{
+        width: 250px;
+        margin: 5px 16px;
+        .top-detail{
+            margin-bottom: 4px;
+            min-height: 62px;
+            .facility-name{
+                font-size: 1.4em;
+                margin-top: 3px;
+            }
+            .status{
+                font-size: 0.8em;
+                text-align: left;
+            }
+        }
+        .bottom-detail{
+            display: flex;
+            flex-direction: row;
+            font-size: 0.8em;
+            color: #979797;
+            .available{
+                flex: 3;
+            }
+            .rented{
+                flex: 3;
+            } 
+            .blank{
+                flex: 2;
+            }
+        }
+    }
+}
