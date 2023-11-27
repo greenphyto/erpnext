@@ -112,8 +112,22 @@ class FacilitiesCards{
 				<div class="show-all">Show All</div>
 				<div class="clear-selected">clear</div>
 			</div>
+			<div class="list-controller">
+				<div class="btn btn-default icon-btn left-arrow">
+					<svg class="icon  icon-sm" style="">
+						<use class="" href="#icon-left"></use>
+					</svg>
+				</div>
+			</div>
 			<div class="card-list-wrapper" id="scrollableElement">
 				<div class="card-list" id="innerContent" ></div>
+			</div>
+			<div class="list-controller">
+				<div class="btn btn-default icon-btn right-arrow ">
+					<svg class="icon  icon-sm" style="">
+						<use class="" href="#icon-right"></use>
+					</svg>
+				</div>
 			</div>
 		</div>`)
 		this.wrapper.appendTo(this.container);

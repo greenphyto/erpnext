@@ -42,18 +42,17 @@
     .card-list-wrapper{
         overflow-x: scroll;
         flex: 1;
+        margin: 0px 7px;
 
         &::-webkit-scrollbar {
             width: 0px; /* Lebar scrollbar */
           }
           
         &::-webkit-scrollbar-track {
-            background-color: transparent; /* Warna latar belakang track (area di luar thumb) */
+            background-color: transparent; 
         }
         
         &::-webkit-scrollbar-thumb {
-            background-color: #888; /* Warna thumb (bagian yang dapat digerakkan) */
-            border-radius: 6px; /* Bentuk sudut thumb */
             display: none;
         }
         
@@ -62,7 +61,12 @@
         }
     }
 
+    .scroll-smooth{
+        scroll-behavior: smooth;
+    }
+
     .card-list{
+        margin-left: -10px;
         display: flex;
         flex-direction: row;
         width: fit-content;
@@ -76,6 +80,7 @@
         justify-content: center;
         text-align: center;
         color: #7d7d7d;
+        margin-right: 6px;
         .show-all{
             font-size: 0.95em;
             text-decoration: underline;
@@ -86,9 +91,19 @@
         }
     }
 
+    .list-controller{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        .btn{
+            border-radius: 50px;
+            width: 30px;
+            height: 30px;
+        }
+    }
     .facility-card{
-        width: 250px;
-        margin: 5px 16px;
+        width: 230px;
+        margin: 5px 13px;
         .top-detail{
             margin-bottom: 4px;
             min-height: 62px;
