@@ -33,6 +33,7 @@ class FacilitiesCards{
 		this.setup_container();
 		this.get_data();
 		this.setup_cards()
+		this.setup_ui();
 	}
 
 	get_data(){
@@ -134,10 +135,27 @@ class FacilitiesCards{
 		this.page.wrapper.find(".layout-main-section").appendTo(this.container);
 
 		this.card_list = this.wrapper.find(".card-list");
+		this.card_list_wrapper = this.wrapper.find(".card-list-wrapper");
 	}
 
 	setup_ui(){
-
+		var me = this;
+		var travel_size = 256;
+		// click arrow
+		this.wrapper.find(".left-arrow").click(()=>{
+			me.card_list_wrapper.addClass("scroll-smooth");
+			me.card_list_wrapper.scrollLeft(me.card_list_wrapper.scrollLeft()+travel_size*-1);
+			setTimeout(()=>{
+				me.card_list_wrapper.removeClass("scroll-smooth");
+			}, 200);
+		});
+		this.wrapper.find(".right-arrow").click(()=>{
+			me.card_list_wrapper.addClass("scroll-smooth");
+			me.card_list_wrapper.scrollLeft(me.card_list_wrapper.scrollLeft()+travel_size*1);
+			setTimeout(()=>{
+				me.card_list_wrapper.removeClass("scroll-smooth");
+			}, 200);
+		});
 	}
 
 	get_card(data){
