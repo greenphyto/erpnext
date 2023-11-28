@@ -314,6 +314,4 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 			d.color = COLOR_MAP[ref_color]
 			d.textColor = TEXT_COLOR[ref_color]
 		
-		print(d.color, d.status)
-
 	return events

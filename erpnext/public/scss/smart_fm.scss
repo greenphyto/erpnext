@@ -33,7 +33,7 @@
 // custom calendar
 #facilities-calendar{
     .facility-cards{
-        margin: 20px 0px 38px;
+        margin: 14px 0px 20px;
         min-height: 100px;
         display: flex;
         flex-direction: row;
@@ -71,6 +71,8 @@
         flex-direction: row;
         width: fit-content;
         overflow-x: overlay;
+        gap: 13px;
+        padding: 20px 12px;
     }
 
     .left-tools{
@@ -101,42 +103,55 @@
             height: 30px;
         }
     }
-    .facility-card{
-        width: 230px;
-        margin: 5px 13px;
-        .top-detail{
-            margin-bottom: 4px;
-            min-height: 62px;
-            .facility-name{
-                font-size: 1.4em;
-                margin-top: 3px;
-            }
-            .status{
-                font-size: 0.8em;
-                text-align: left;
-            }
+}
+
+.facility-card{
+    width: 230px;
+    margin: auto;
+    .top-detail{
+        margin-bottom: 4px;
+        min-height: 62px;
+        .facility-name{
+            font-size: 1.4em;
+            margin-top: 3px;
         }
-        .bottom-detail{
-            display: flex;
-            flex-direction: row;
+        .status{
             font-size: 0.8em;
-            color: #979797;
-            .available{
-                flex: 3;
-            }
-            .rented{
-                flex: 3;
-            } 
-            .blank{
-                flex: 2;
-            }
-        }
-        &:active{
-            background-color: #e4e9e9;
-            box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
-        }
-        &:hover{
-            box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+            text-align: left;
         }
     }
+    .bottom-detail{
+        display: flex;
+        flex-direction: row;
+        font-size: 0.8em;
+        color: #979797;
+        .available{
+            flex: 3;
+        }
+        .rented{
+            flex: 3;
+        } 
+        .blank{
+            flex: 2;
+        }
+    }
+    &:active{
+        background-color: #e4e9e9;
+        box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+    }
+    &:hover{
+        box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+    }
+}
+
+.facilities-calendar-dialog{
+    height: 400px;
+    background-color: #f1f1f1;
+    box-shadow: inset #0000000f 0 1px 4px;
+    border-radius: 6px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(230px,1fr));
+    gap: 20px 2px;
+    padding: 18px 10px;
+    overflow-y: scroll;
 }

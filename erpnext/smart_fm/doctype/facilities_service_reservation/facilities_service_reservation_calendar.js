@@ -100,6 +100,69 @@ class FacilitiesCards{
 				rented:0,
 				status:"Available",
 				status_color: "#00bf00"
+			},
+			{
+				name:"Game Board",
+				available:3,
+				rented:3,
+				status:"Partially Rent",
+				status_color: "#fd8f00"
+			},
+			{
+				name:"Meeting Room B23",
+				available:0,
+				rented:1,
+				status:"Rented",
+				status_color: "#a22ce9"
+			},
+			{
+				name:"Table Tennis",
+				available:5,
+				rented:0,
+				status:"Available",
+				status_color: "#00bf00"
+			},
+			{
+				name:"Game Board",
+				available:3,
+				rented:3,
+				status:"Partially Rent",
+				status_color: "#fd8f00"
+			},
+			{
+				name:"Meeting Room B23",
+				available:0,
+				rented:1,
+				status:"Rented",
+				status_color: "#a22ce9"
+			},
+			{
+				name:"Table Tennis",
+				available:5,
+				rented:0,
+				status:"Available",
+				status_color: "#00bf00"
+			},
+			{
+				name:"Game Board",
+				available:3,
+				rented:3,
+				status:"Partially Rent",
+				status_color: "#fd8f00"
+			},
+			{
+				name:"Meeting Room B23",
+				available:0,
+				rented:1,
+				status:"Rented",
+				status_color: "#a22ce9"
+			},
+			{
+				name:"Table Tennis",
+				available:5,
+				rented:0,
+				status:"Available",
+				status_color: "#00bf00"
 			}
 		]
 	}
@@ -161,32 +224,37 @@ class FacilitiesCards{
 			me.filter_service("", true);
 			frappe.show_alert("Clear filter");
 		})
+		
+		this.wrapper.find(".show-all").click(()=>{
+			me.show_all();
+		})
 	}
 
 	get_card(data){
 		var me = this;
 		var card = $(`
-			<div>
-				<div class="facility-card frappe-card" service="${data.name}">
-					<div class="top-detail">
-						<div class="status" style="color: ${data.status_color};">${data.status}</div>
-						<div class="facility-name">${data.name}</div>
-					</div>
-					<div class="bottom-detail">
-						<div class="available">Available: <span class="count">${data.available}</span></div>
-						<div class="rented">Rented:<span class="count">${data.rented}</span></div>
-						<div class="blank"></div>
-					</div>
+			<div class="facility-card frappe-card" service="${data.name}">
+				<div class="top-detail">
+					<div class="status" style="color: ${data.status_color};">${data.status}</div>
+					<div class="facility-name">${data.name}</div>
+				</div>
+				<div class="bottom-detail">
+					<div class="available">Available: <span class="count">${data.available}</span></div>
+					<div class="rented">Rented:<span class="count">${data.rented}</span></div>
+					<div class="blank"></div>
 				</div>
 			</div>
 		`)
 
 		// setup controller: click etc
-		card.find(".facility-card").click(function(e){
+		card.click(function(e){
 			var el = $(this);
 			var service = el.attr("service");
 			console.log("add" ,el , service);
 			me.filter_service(service);
+			if (me.all_dialog){
+				me.all_dialog.hide();
+			}
 		})
 
 		return card;
@@ -208,7 +276,73 @@ class FacilitiesCards{
 		me.main.list_view.filter_area.remove_filters(filters);
 		if (!remove){
 			me.main.list_view.filter_area.add(filters, true);
+			frappe.show_alert(__(`Set filter to <b>${service}</b>`))
 		}
+	}
+
+	show_all(){
+		var me = this;
+		if (!me.all_dialog){
+			me.all_dialog = new frappe.ui.Dialog({
+				title: 'Select Facilities',
+				fields: [
+					{
+						label: 'Filters',
+						fieldname: 'sec_break',
+						fieldtype: 'Section Break'
+					},
+					{
+						label: 'Facility Service',
+						fieldname: 'facility_service',
+						fieldtype: 'Data',
+						onchange:()=>{
+							me.update_dialog_list();
+						} 
+					},
+					{
+						label: '',
+						fieldname: 'sec_break3',
+						fieldtype: 'Column Break'
+					},
+					{
+						label: 'Status',
+						fieldname: 'status',
+						fieldtype: 'Select',
+						options:"\nAvailable\nPartially Rent\nRented"
+					},
+					{
+						label: 'Facilties Service',
+						fieldname: 'sec_break2',
+						fieldtype: 'Section Break'
+					},
+					{
+						label: '',
+						fieldname: 'ht',
+						fieldtype: 'HTML'
+					}
+				],
+				size: 'large', // small, large, extra-large 
+			});
+		}
+
+		me.all_dialog.show();
+		me.render_dialog_list()
+	}
+
+	update_dialog_list(){
+		var value = this.all_dialog.fields_dict.facility_service.value;
+		console.log(value);
+	}
+
+	render_dialog_list(filters={}){
+		var data = this.data //temporary
+		var wrapper = this.all_dialog.fields_dict.ht.$wrapper;
+		wrapper.addClass("facilities-calendar-dialog");
+
+		$.each(data, (i, d)=>{
+			var card = this.get_card(d);
+			wrapper.append(card);
+		})
 	}
 }
 
