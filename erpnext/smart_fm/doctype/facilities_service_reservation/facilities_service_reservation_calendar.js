@@ -32,140 +32,15 @@ class FacilitiesCards{
 		console.log("add new custom");
 		this.setup_container();
 		this.get_main_data();
-		this.setup_cards()
-		this.setup_ui();
-		this.load_service;
 	}
-
+	
 	get_main_data(){
-		this.data = [
-			{
-				name:"Game Board",
-				available:3,
-				rented:3,
-				status:"Partially Rent",
-				status_color: "#fd8f00"
-			},
-			{
-				name:"Meeting Room B23",
-				available:0,
-				rented:1,
-				status:"Rented",
-				status_color: "#a22ce9"
-			},
-			{
-				name:"Table Tennis",
-				available:5,
-				rented:0,
-				status:"Available",
-				status_color: "#00bf00"
-			},
-			{
-				name:"Game Board",
-				available:3,
-				rented:3,
-				status:"Partially Rent",
-				status_color: "#fd8f00"
-			},
-			{
-				name:"Meeting Room B23",
-				available:0,
-				rented:1,
-				status:"Rented",
-				status_color: "#a22ce9"
-			},
-			{
-				name:"Table Tennis",
-				available:5,
-				rented:0,
-				status:"Available",
-				status_color: "#00bf00"
-			},
-			{
-				name:"Game Board",
-				available:3,
-				rented:3,
-				status:"Partially Rent",
-				status_color: "#fd8f00"
-			},
-			{
-				name:"Meeting Room B23",
-				available:0,
-				rented:1,
-				status:"Rented",
-				status_color: "#a22ce9"
-			},
-			{
-				name:"Table Tennis",
-				available:5,
-				rented:0,
-				status:"Available",
-				status_color: "#00bf00"
-			},
-			{
-				name:"Game Board",
-				available:3,
-				rented:3,
-				status:"Partially Rent",
-				status_color: "#fd8f00"
-			},
-			{
-				name:"Meeting Room B23",
-				available:0,
-				rented:1,
-				status:"Rented",
-				status_color: "#a22ce9"
-			},
-			{
-				name:"Table Tennis",
-				available:5,
-				rented:0,
-				status:"Available",
-				status_color: "#00bf00"
-			},
-			{
-				name:"Game Board",
-				available:3,
-				rented:3,
-				status:"Partially Rent",
-				status_color: "#fd8f00"
-			},
-			{
-				name:"Meeting Room B23",
-				available:0,
-				rented:1,
-				status:"Rented",
-				status_color: "#a22ce9"
-			},
-			{
-				name:"Table Tennis",
-				available:5,
-				rented:0,
-				status:"Available",
-				status_color: "#00bf00"
-			},
-			{
-				name:"Game Board",
-				available:3,
-				rented:3,
-				status:"Partially Rent",
-				status_color: "#fd8f00"
-			},
-			{
-				name:"Meeting Room B23",
-				available:0,
-				rented:1,
-				status:"Rented",
-				status_color: "#a22ce9"
-			},
-			{
-				name:"Table Tennis",
-				available:5,
-				rented:0,
-				status:"Available",
-				status_color: "#00bf00"
-			}
-		]
+		var me = this;
+		me.get_data().then(r=>{
+			me.data = r;
+			me.setup_cards()
+			me.setup_ui();
+		})
 	}
 
 	setup_container(){
