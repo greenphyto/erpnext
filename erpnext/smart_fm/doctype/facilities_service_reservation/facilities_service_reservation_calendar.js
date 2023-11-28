@@ -101,7 +101,7 @@ class FacilitiesCards{
 
 		this.wrapper.find(".clear-selected").click(()=>{
 			me.filter_service("", true);
-			frappe.show_alert("Clear filter");
+			frappe.show_alert("Clear filter", 2);
 		})
 		
 		this.wrapper.find(".show-all").click(()=>{
@@ -162,7 +162,18 @@ class FacilitiesCards{
 		me.main.list_view.filter_area.remove_filters(filters);
 		if (!remove){
 			me.main.list_view.filter_area.add(filters, true);
-			frappe.show_alert(__(`Set filter to <b>${service}</b>`))
+			frappe.show_alert(__(`Set filter to <b>${service}</b>`), 2)
+		}
+
+		var cal_toolbar = this.main.$cal.find(".fc-toolbar .fc-left");
+		var title = cal_toolbar.find(cal_toolbar.find(".select-service"));
+		if (!service){
+			title.remove();
+		}
+		if (!title.length){
+			cal_toolbar.append(`<div class="select-service">${service}</div>`)
+		}else{
+			title.text(service)
 		}
 	}
 
