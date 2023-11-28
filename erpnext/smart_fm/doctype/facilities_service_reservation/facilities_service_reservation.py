@@ -296,9 +296,13 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 	if not any(x[0] == 'status' for x in filters):
 		filters.append(['status', 'not in', ['Cancelled', 'Rejected']])
 
-	filter_condition = get_filters_cond("Event", filters, [])
+	filter_condition = get_filters_cond("Facilities Service Reservation", filters, [])
 
-	events = frappe.db.sql("select * from `tabFacilities Service Reservation`", as_dict=1)
+	events = frappe.db.sql("""
+		select * 
+		from `tabFacilities Service Reservation` 
+		where docstatus != 2 {}
+	""".format(filter_condition), as_dict=1)
 
 	style_map = {
 		"Issued": "warning",
