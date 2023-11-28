@@ -31,12 +31,13 @@ class FacilitiesCards{
 		this.page = this.main.page;
 		console.log("add new custom");
 		this.setup_container();
-		this.get_data();
+		this.get_main_data();
 		this.setup_cards()
 		this.setup_ui();
+		this.load_service;
 	}
 
-	get_data(){
+	get_main_data(){
 		this.data = [
 			{
 				name:"Game Board",
@@ -250,7 +251,6 @@ class FacilitiesCards{
 		card.click(function(e){
 			var el = $(this);
 			var service = el.attr("service");
-			console.log("add" ,el , service);
 			me.filter_service(service);
 			if (me.all_dialog){
 				me.all_dialog.hide();
@@ -284,7 +284,7 @@ class FacilitiesCards{
 		var me = this;
 		if (!me.all_dialog){
 			me.all_dialog = new frappe.ui.Dialog({
-				title: 'Select Facilities',
+				title: 'Select Facility',
 				fields: [
 					{
 						label: 'Filters',
@@ -292,7 +292,7 @@ class FacilitiesCards{
 						fieldtype: 'Section Break'
 					},
 					{
-						label: 'Facility Service',
+						label: 'Search',
 						fieldname: 'facility_service',
 						fieldtype: 'Data',
 						onchange:()=>{
@@ -308,7 +308,10 @@ class FacilitiesCards{
 						label: 'Status',
 						fieldname: 'status',
 						fieldtype: 'Select',
-						options:"\nAvailable\nPartially Rent\nRented"
+						options:"\nAvailable\nPartially Rented\nAll Rented",
+						onchange:()=>{
+							me.update_dialog_list();
+						}
 					},
 					{
 						label: 'Facilties Service',
@@ -323,25 +326,74 @@ class FacilitiesCards{
 				],
 				size: 'large', // small, large, extra-large 
 			});
-		}
 
+		}
+		
 		me.all_dialog.show();
-		me.render_dialog_list()
+
+		var wrapper = this.all_dialog.fields_dict.ht.$wrapper;
+		wrapper.empty().addClass("facilities-calendar-dialog");
+		wrapper.append("<div class='wrapper-list'></div>")
+
+		me.render_dialog_list({}, true);
 	}
 
 	update_dialog_list(){
-		var value = this.all_dialog.fields_dict.facility_service.value;
-		console.log(value);
+		var load = false;
+		var filters = {};
+
+		var service_field = this.all_dialog.fields_dict.facility_service;
+		if (service_field.old_value != service_field.value){
+			service_field.old_value = service_field.value;
+			load = true
+		}
+
+		var status_field = this.all_dialog.fields_dict.status;
+		if (status_field.old_value != status_field.value){
+			status_field.old_value = status_field.value;
+			load = true
+		}
+		if (status_field.value) filters.status = status_field.value;
+		if (service_field.value) filters.name = ['like', "%"+service_field.value+"%"];
+
+		if (load){
+			this.render_dialog_list(filters, true);
+		}
 	}
 
-	render_dialog_list(filters={}){
-		var data = this.data //temporary
-		var wrapper = this.all_dialog.fields_dict.ht.$wrapper;
-		wrapper.addClass("facilities-calendar-dialog");
+	render_dialog_list(filters={}, clear=false){
+		var me = this;
+		var temp = this.all_dialog.fields_dict.ht.$wrapper;
+		var wrapper = temp.find(".wrapper-list");
+		wrapper.hide();
+		if (clear){
+			wrapper.empty();
+		}
+		this.get_data(filters).then(r=>{
+			var data= r;
+	
+			$.each(data, (i, d)=>{
+				var card = this.get_card(d);
+				wrapper.append(card);
+			})
 
-		$.each(data, (i, d)=>{
-			var card = this.get_card(d);
-			wrapper.append(card);
+			setTimeout(()=>{
+				wrapper.show();
+			}, 100);
+		})
+	}
+
+	get_data(filters){
+		return new Promise((resolve, reject) => {
+			frappe.call({
+				method:"erpnext.smart_fm.doctype.facilities_service_reservation.facilities_service_reservation.get_facilities_list",
+				args:{
+					filters:filters
+				},
+				callback: r=>{
+					resolve(r.message || [])
+				}
+			})
 		})
 	}
 }

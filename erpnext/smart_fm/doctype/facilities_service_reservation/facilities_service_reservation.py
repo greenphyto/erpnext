@@ -8,6 +8,7 @@ from frappe import _
 from datetime import timedelta
 from frappe.desk.reportview import get_filters_cond
 from frappe.model.workflow import apply_workflow
+from six import string_types
 
 WEEKDAY = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
@@ -315,3 +316,21 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 			d.textColor = TEXT_COLOR[ref_color]
 		
 	return events
+
+@frappe.whitelist()
+def get_facilities_list(filters={}):
+	if isinstance(filters, string_types):
+		filters = json.loads(filters)
+
+
+	data = frappe.db.get_list("Facility Service", filters, ['status', 'name', 'available_qty as available', 'rented_qty as rented'])
+	color_map = {
+		"Partially Rented":'#fd8f00',
+		"All Rented":"#a22ce9",
+		"Available":"#00bf00",
+	}
+
+	for d in data:
+		d.status_color = color_map.get(d.status)
+
+	return data
