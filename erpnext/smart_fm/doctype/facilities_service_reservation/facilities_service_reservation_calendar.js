@@ -52,8 +52,8 @@ class FacilitiesCards{
 				<a class="show-all">Show All</a>
 				<a class="clear-selected">clear</a>
 			</div>
-			<div class="list-controller">
-				<div class="btn btn-default icon-btn left-arrow">
+			<div class="list-controller hidden">
+				<div class="btn btn-default icon-btn left-arrow" style="display: none;">
 					<svg class="icon  icon-sm" style="">
 						<use class="" href="#icon-left"></use>
 					</svg>
@@ -62,7 +62,7 @@ class FacilitiesCards{
 			<div class="card-list-wrapper" id="scrollableElement">
 				<div class="card-list" id="innerContent" ></div>
 			</div>
-			<div class="list-controller">
+			<div class="list-controller hidden">
 				<div class="btn btn-default icon-btn right-arrow ">
 					<svg class="icon  icon-sm" style="">
 						<use class="" href="#icon-right"></use>
@@ -79,7 +79,10 @@ class FacilitiesCards{
 
 	setup_ui(){
 		var me = this;
-		var travel_size = 256;
+		var travel_size = 244;
+		if (this.card_list_wrapper.width()<this.card_list.width()){
+			this.wrapper.find(".list-controller").removeClass("hidden");
+		}
 		// click arrow
 		this.wrapper.find(".left-arrow").click(()=>{
 			me.card_list_wrapper.addClass("scroll-smooth");
@@ -103,6 +106,14 @@ class FacilitiesCards{
 		
 		this.wrapper.find(".show-all").click(()=>{
 			me.show_all();
+		})
+
+		this.card_list_wrapper.on("scroll", ()=>{
+			if (me.card_list_wrapper.scrollLeft()<10){
+				me.wrapper.find(".left-arrow").hide();
+			}else{
+				me.wrapper.find(".left-arrow").show();
+			}
 		})
 	}
 
