@@ -13,65 +13,65 @@ class FacilityCalendar{
   }
 
   make_calendar(){
+    var me = this;
     this.calendar = new FullCalendar.Calendar(this.wrapper[0], {
       initialView: 'timeGridDay',
       initialDate: this.initial_date,
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
-        right: ""
+        right: "newReservation,dayGridMonth,timeGridWeek,timeGridDay"
       },
-      events: [
-        {
-          title: 'All Day Event',
-          start: '2023-11-01'
-        },
-        {
-          title: 'Long Event',
-          start: '2023-11-07',
-          end: '2023-11-10'
-        },
-        {
-          groupId: '999',
-          title: 'Repeating Event',
-          start: '2023-11-09T16:00:00'
-        },
-        {
-          groupId: '999',
-          title: 'Repeating Event',
-          start: '2023-11-16T16:00:00'
-        },
-        {
-          title: 'Conference',
-          start: '2023-11-11',
-          end: '2023-11-13'
-        },
-        {
-          title: 'Meeting',
-          start: '2023-11-12T10:30:00',
-          end: '2023-11-12T12:30:00'
-        },
-        {
-          title: 'Lunch',
-          start: '2023-11-12T12:00:00'
-        },
-        {
-          title: 'Meeting',
-          start: '2023-11-12T14:30:00'
-        },
-        {
-          title: 'Birthday Party',
-          start: '2023-11-13T07:00:00'
-        },
-        {
-          title: 'Click for Google',
-          url: 'https://google.com/',
-          start: '2023-11-28'
+      customButtons: {
+        newReservation: {
+          text: 'New Reservation',
+          click: me.make_new_reservation
         }
-      ]});
+      },
+      events: (opts, callback)=>{
+        me.get_events(opts, callback)
+      },
+			selectable: true,
+  
+    });
 
     this.calendar.render();
   };
+
+  make_new_reservation(){
+    window.location.href = "/smart-fm/facilities-service-reservation/new";
+  }
+
+  get_events(opts, callback){
+    var me = this;
+    console.log(opts);
+    var start = frappe.datetime.get_datetime_as_string(opts.start);
+    var end = frappe.datetime.get_datetime_as_string(opts.end);
+
+    frappe.call({
+      method:"erpnext.smart_fm.doctype.facilities_service_reservation.facilities_service_reservation.get_events",
+      args:{
+        start:start,
+        end:end,
+        filters:[]
+      },
+      callback:(r)=>{
+        var events = me.prepare_events(r.message);
+        callback( events )
+      }
+    })
+  }
+
+  prepare_events(events){
+    $.each(events, (i,d)=>{
+      d.title = d.name;
+      d.start = d.from_time;
+      d.end = d.to_time;
+      d.color = "green"
+    });
+
+    return events
+  }
 
   get required_libs() {
 		let assets = [
