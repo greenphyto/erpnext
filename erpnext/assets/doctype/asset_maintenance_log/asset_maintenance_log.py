@@ -58,3 +58,15 @@ def get_maintenance_tasks(doctype, txt, searchfield, start, page_len, filters):
 		"Asset Maintenance Task", {"parent": filters.get("asset_maintenance")}, ["name", "maintenance_task"]
 	)
 	return asset_maintenance_tasks
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def filter_asset_maintenance(doctype, txt, searchfield, start, page_len, filters):
+	return frappe.db.sql(
+		"""select am.name, am.item_name
+		from `tabAsset Maintenance` as am
+		where am.docstatus != 2 and 
+		am.{key} LIKE %(txt)s""".format(
+			key=searchfield
+		), {"txt": "%" + txt + "%"},
+	)
