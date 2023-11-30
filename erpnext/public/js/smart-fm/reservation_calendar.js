@@ -1,7 +1,7 @@
 class FacilityCalendar{
   constructor(class_name){
     this.wrapper = $(class_name);
-    this.initial_date = '2023-11-07';
+    this.initial_date = new Date();
     this.run();
   }
 
@@ -20,7 +20,7 @@ class FacilityCalendar{
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
-        right: "newReservation,dayGridMonth,timeGridWeek,timeGridDay"
+        right: "newReservation"
       },
       customButtons: {
         newReservation: {
@@ -64,10 +64,10 @@ class FacilityCalendar{
 
   prepare_events(events){
     $.each(events, (i,d)=>{
-      d.title = d.name;
+      d.title = d.service;
       d.start = d.from_time;
       d.end = d.to_time;
-      d.color = "green"
+      d.allDay = d.all_day; 
     });
 
     return events
@@ -88,5 +88,3 @@ class FacilityCalendar{
 }
 
 frappe.calendar = new FacilityCalendar("#calendar");
-
-console.log(1111)
