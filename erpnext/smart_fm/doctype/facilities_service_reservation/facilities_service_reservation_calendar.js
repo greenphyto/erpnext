@@ -16,7 +16,19 @@ frappe.views.calendar["Facilities Service Reservation"] = {
 		Rejected: "red",
 	},
     options:{
-        timeFormat: 'HH:mm'
+        timeFormat: 'HH:mm',
+		slotEventOverlap: false,
+		slotDuration: '00:15:00',
+		slotMinTime: "06:00:00",
+		slotMaxTime: "18:30:00",
+		axisFormat: 'HH:mm',
+		// slotLabelFormat: {
+		// 	hour: '2-digit',
+		// 	minute: '2-digit',
+		// 	// omitZeroMinute: false,
+		// 	// meridiem: false,
+		// 	hour12: false
+		// },
     },
 	get_events_method: "erpnext.smart_fm.doctype.facilities_service_reservation.facilities_service_reservation.get_events",
 	hide_sidebar: true,

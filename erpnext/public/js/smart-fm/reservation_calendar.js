@@ -15,8 +15,21 @@ class FacilityCalendar{
   make_calendar(){
     var me = this;
     this.calendar = new FullCalendar.Calendar(this.wrapper[0], {
-      initialView: 'timeGridDay',
+      initialView: 'timeGridWeek',
       initialDate: this.initial_date,
+      slotEventOverlap: false,
+      slotDuration: '00:15:00',
+      slotMinTime: "06:00:00",
+      slotMaxTime: "18:30:00",
+      axisFormat: 'HH:mm',
+      timeFormat: 'HH:mm',
+      slotLabelFormat: {
+        hour: '2-digit',
+        minute: '2-digit',
+        omitZeroMinute: false,
+        meridiem: false,
+        hour12: false
+      },
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
@@ -68,8 +81,10 @@ class FacilityCalendar{
       d.start = d.from_time;
       d.end = d.to_time;
       d.allDay = d.all_day; 
+      d.id = d.name
     });
 
+    console.log(events)
     return events
   }
 
