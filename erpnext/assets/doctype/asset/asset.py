@@ -668,6 +668,16 @@ class Asset(AccountsController):
 		"""Get and update status"""
 		if not status:
 			status = self.get_status()
+
+		# update amount
+		amount = 0
+		for d in self.get("schedules"):
+			if d.journal_entry:
+				amount += flt(d.depreciation_amount)
+
+		if self.accumulated_depreciation_amount != amount:
+			self.db_set("accumulated_depreciation_amount", amount)
+
 		self.db_set("status", status)
 
 	def get_status(self):
