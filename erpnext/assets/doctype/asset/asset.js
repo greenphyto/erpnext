@@ -553,14 +553,16 @@ erpnext.asset.add_dashboard_qrimage = function(frm){
 	var title = `QR Code Asset ${frm.doc.name}`;
 	var attch_sidebar = frm.attachments.attachments_preview
 	
-	var exists_preview = attch_sidebar.find(".img-preview").attr("src");
-	if (exists_preview==img_path){
-		attch_sidebar.hide();
+	if (attch_sidebar){
+		var exists_preview = attch_sidebar.find(".img-preview").attr("src");
+		if (exists_preview==img_path){
+			attch_sidebar.hide();
+		}
+		$(".img-qrcode").attr("src", img_path);
+		$(".img-qrcode").on("click", function(){
+			frm.attachments.show_image_detail(img_path, title);
+		})
 	}
-	$(".img-qrcode").attr("src", img_path);
-	$(".img-qrcode").on("click", function(){
-		frm.attachments.show_image_detail(img_path, title);
-	})
 }
 
 erpnext.asset.set_accumulated_depreciation = function(frm) {
