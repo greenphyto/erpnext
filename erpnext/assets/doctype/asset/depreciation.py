@@ -35,7 +35,7 @@ def post_depreciation_entries(date=None, commit=True):
 	data_map = {}
 	for d in data:
 		use_date = get_last_day( d.schedule_date )
-		key = (use_date, d.company, d.finance_book)
+		key = (use_date, d.company, d.finance_book, d.asset_category)
 		if key not in data_map:
 			data_map[key] = {
 				"date": use_date,
@@ -101,7 +101,10 @@ def make_depreciation_entry(assets, date=None):
 			fixed_asset_account,
 			accumulated_depreciation_account,
 			depreciation_expense_account,
-		) = get_depreciation_accounts(asset)
+		) = get_depreciation_accounts(asset, skip_if_missing=True)
+
+		if not accumulated_depreciation_account or not depreciation_expense_account:
+			continue
 
 		depreciation_cost_center, depreciation_series = frappe.get_cached_value(
 			"Company", asset.company, ["depreciation_cost_center", "series_for_depreciation_entry"]
@@ -112,7 +115,8 @@ def make_depreciation_entry(assets, date=None):
 		accounting_dimensions = get_checks_for_pl_and_bs_accounts()
 
 		for d in asset.get("schedules"):
-			if not d.journal_entry and get_month_year(d.schedule_date) == get_month_year(date):
+			if 	not d.journal_entry and \
+				get_month_year(d.schedule_date) == get_month_year(date):
 				data_map[d.name] = {
 					"asset":asset,
 					"schedule":d
@@ -195,7 +199,7 @@ def make_depreciation_entry(assets, date=None):
 def get_month_year(date):
 	return getdate(date).strftime("%m %Y")
 
-def get_depreciation_accounts(asset):
+def get_depreciation_accounts(asset, skip_if_missing=False):
 	fixed_asset_account = accumulated_depreciation_account = depreciation_expense_account = None
 
 	accounts = frappe.db.get_value(
@@ -213,6 +217,9 @@ def get_depreciation_accounts(asset):
 		fixed_asset_account = accounts.fixed_asset_account
 		accumulated_depreciation_account = accounts.accumulated_depreciation_account
 		depreciation_expense_account = accounts.depreciation_expense_account
+
+	if skip_if_missing:
+		return fixed_asset_account, accumulated_depreciation_account, depreciation_expense_account
 
 	if not accumulated_depreciation_account or not depreciation_expense_account:
 		accounts = frappe.get_cached_value(
