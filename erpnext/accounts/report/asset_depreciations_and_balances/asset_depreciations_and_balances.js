@@ -30,6 +30,24 @@ frappe.query_reports["Asset Depreciations and Balances"] = {
 			"label": __("Asset Category"),
 			"fieldtype": "Link",
 			"options": "Asset Category"
+		},
+		{
+			"fieldname":"show_asset",
+			"label": __("Show Asset"),
+			"fieldtype": "Check",
+			"default": 0
 		}
-	]
+	],
+	"formatter": function(value, row, column, data, default_formatter) {
+		if (data.bold && value) {
+			value = $(`<span>${value}</span>`);
+			var $value = $(value).css("font-weight", "bold");
+			value = $value.wrap("<p></p>").parent().html();
+			return value
+		}
+
+		if (!value && value!=0) return "";
+
+		return value
+	},
 }

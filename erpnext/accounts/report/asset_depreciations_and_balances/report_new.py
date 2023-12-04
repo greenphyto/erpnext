@@ -82,6 +82,7 @@ def get_data(filters):
 			row[field] = assets.get(field)			
 
 		row.update(asset_category)
+		row.bold = 1
 		
 		row.cost_as_on_to_date = (
 			flt(row.cost_as_on_from_date)
@@ -120,7 +121,7 @@ def get_asset_categories():
 def get_asset_individual(filters):
 	return frappe.db.sql(
 		"""
-		SELECT asset_category, name,
+		SELECT asset_category, name, asset_name,
 			   ifnull(sum(case when purchase_date < %(from_date)s then
 							   case when ifnull(disposal_date, 0) = 0 or disposal_date >= %(from_date)s then
 									gross_purchase_amount
@@ -169,11 +170,11 @@ def get_asset_individual(filters):
 def get_assets(filters):
 	return frappe.db.sql(
 		"""
-		SELECT results.asset_category, results.name,
+		SELECT results.asset_category, results.name, results.asset_name,
 			   sum(results.accumulated_depreciation_as_on_from_date) as accumulated_depreciation_as_on_from_date,
 			   sum(results.depreciation_eliminated_during_the_period) as depreciation_eliminated_during_the_period,
 			   sum(results.depreciation_amount_during_the_period) as depreciation_amount_during_the_period
-		from (SELECT a.asset_category,a.name,
+		from (SELECT a.asset_category,a.name,a.asset_name,
 				   ifnull(sum(case when ds.schedule_date < %(from_date)s and (ifnull(a.disposal_date, 0) = 0 or a.disposal_date >= %(from_date)s) then
 								   ds.depreciation_amount
 							  else
@@ -195,7 +196,7 @@ def get_assets(filters):
 			where a.docstatus=1 and a.company=%(company)s and a.purchase_date <= %(to_date)s and a.name = ds.parent and ifnull(ds.journal_entry, '') != ''
 			group by a.name
 			union
-			SELECT a.asset_category,a.name,
+			SELECT a.asset_category,a.name,a.asset_name,
 				   ifnull(sum(case when ifnull(a.disposal_date, 0) != 0 and (a.disposal_date < %(from_date)s or a.disposal_date > %(to_date)s) then
 									0
 							   else
@@ -224,9 +225,14 @@ def get_columns(filters):
 		{
 			"label": _("Asset Category"),
 			"fieldname": "asset_category",
-			"fieldtype": "Link",
-			"options": "Asset Category",
-			"width": 120,
+			"fieldtype": "Data",
+			"width": 150,
+		},
+		{
+			"label": _("Asset Name"),
+			"fieldname": "asset_name",
+			"fieldtype": "Data",
+			"width": 150,
 		},
 		{
 			"label": _("Cost as on") + " " + formatdate(filters.day_before_from_date),

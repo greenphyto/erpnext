@@ -8,8 +8,10 @@ from frappe.utils import add_days, flt, formatdate
 from .report_new import execute as execute_1
 
 def execute(filters=None):
-	return execute_1(filters)
-	# return execute_2(filters)
+	if filters.show_asset:
+		return execute_1(filters)
+	else:
+		return execute_2(filters)
 
 
 def execute_2(filters=None):
