@@ -5,14 +5,9 @@
 import frappe
 from frappe import _
 from frappe.utils import add_days, flt, formatdate
-from .report_new import execute as execute_1
+
 
 def execute(filters=None):
-	# return execute_1(filters)
-	return execute_2(filters)
-
-
-def execute_2(filters=None):
 	filters.day_before_from_date = add_days(filters.from_date, -1)
 	columns, data = get_columns(filters), get_data(filters)
 	return columns, data
@@ -24,11 +19,40 @@ def get_data(filters):
 	asset_categories = get_asset_categories(filters)
 	assets = get_assets(filters)
 
+	map_assets = frappe._dict()
+	calculate_fields = [
+		'cost_as_on_from_date',
+		'accumulated_depreciation_as_on_from_date',
+		'depreciation_eliminated_during_the_period',
+		'depreciation_amount_during_the_period',
+		'cost_of_scrapped_asset',
+		'cost_of_sold_asset',
+		'cost_of_new_purchase'
+	]
+	for asset in assets:
+		category = asset["asset_category"]
+		if category not in map_assets:
+			map_assets[category] = {
+				"assets":[asset]
+			}
+			for field in calculate_fields:
+				map_assets[category][field] = flt(asset.get(field))
+		else:
+			map_assets[category]['assets'].append(asset)
+			for field in calculate_fields:
+				map_assets[category][field] += flt(asset.get(field))
+
 	for asset_category in asset_categories:
 		row = frappe._dict()
+		category = asset_category.get("asset_category", "")
 		# row.asset_category = asset_category
-		row.update(asset_category)
 
+		assets = map_assets[category]
+		for field in calculate_fields:
+			row[field] = assets.get(field)
+
+		row.update(asset_category)
+		
 		row.cost_as_on_to_date = (
 			flt(row.cost_as_on_from_date)
 			+ flt(row.cost_of_new_purchase)
@@ -36,13 +60,6 @@ def get_data(filters):
 			- flt(row.cost_of_scrapped_asset)
 		)
 
-		row.update(
-			next(
-				asset
-				for asset in assets
-				if asset["asset_category"] == asset_category.get("asset_category", "")
-			)
-		)
 		row.accumulated_depreciation_as_on_to_date = (
 			flt(row.accumulated_depreciation_as_on_from_date)
 			+ flt(row.depreciation_amount_during_the_period)
@@ -114,11 +131,11 @@ def get_asset_categories(filters):
 def get_assets(filters):
 	return frappe.db.sql(
 		"""
-		SELECT results.asset_category,
+		SELECT results.asset_category, results.name,
 			   sum(results.accumulated_depreciation_as_on_from_date) as accumulated_depreciation_as_on_from_date,
 			   sum(results.depreciation_eliminated_during_the_period) as depreciation_eliminated_during_the_period,
 			   sum(results.depreciation_amount_during_the_period) as depreciation_amount_during_the_period
-		from (SELECT a.asset_category,
+		from (SELECT a.asset_category,a.name,
 				   ifnull(sum(case when ds.schedule_date < %(from_date)s and (ifnull(a.disposal_date, 0) = 0 or a.disposal_date >= %(from_date)s) then
 								   ds.depreciation_amount
 							  else
@@ -138,9 +155,9 @@ def get_assets(filters):
 							  end), 0) as depreciation_amount_during_the_period
 			from `tabAsset` a, `tabDepreciation Schedule` ds
 			where a.docstatus=1 and a.company=%(company)s and a.purchase_date <= %(to_date)s and a.name = ds.parent and ifnull(ds.journal_entry, '') != ''
-			group by a.asset_category
+			group by a.name
 			union
-			SELECT a.asset_category,
+			SELECT a.asset_category,a.name,
 				   ifnull(sum(case when ifnull(a.disposal_date, 0) != 0 and (a.disposal_date < %(from_date)s or a.disposal_date > %(to_date)s) then
 									0
 							   else
@@ -154,8 +171,10 @@ def get_assets(filters):
 				   0 as depreciation_amount_during_the_period
 			from `tabAsset` a
 			where a.docstatus=1 and a.company=%(company)s and a.purchase_date <= %(to_date)s
-			group by a.asset_category) as results
-		group by results.asset_category
+			group by a.name
+			) as results
+		group by results.name
+		
 		""",
 		{"to_date": filters.to_date, "from_date": filters.from_date, "company": filters.company},
 		as_dict=1,
