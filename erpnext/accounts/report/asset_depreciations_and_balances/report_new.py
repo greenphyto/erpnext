@@ -16,8 +16,13 @@ def execute(filters=None):
 def get_data(filters):
 	data = []
 
-	asset_categories = get_asset_categories(filters)
+	asset_categories = get_asset_categories()
+	asset_groups = get_asset_individual(filters)
 	assets = get_assets(filters)
+
+	asset_selects = frappe._dict()
+	for asset in asset_groups:
+		asset_selects[asset.name] = asset
 
 	map_assets = frappe._dict()
 	calculate_fields = [
@@ -27,20 +32,45 @@ def get_data(filters):
 		'depreciation_amount_during_the_period',
 		'cost_of_scrapped_asset',
 		'cost_of_sold_asset',
-		'cost_of_new_purchase'
+		'cost_of_new_purchase',
 	]
 	for asset in assets:
 		category = asset["asset_category"]
+		asset_select = asset_selects[asset.name]
+
 		if category not in map_assets:
 			map_assets[category] = {
 				"assets":[asset]
 			}
 			for field in calculate_fields:
-				map_assets[category][field] = flt(asset.get(field))
+				asset[field] = flt(asset.get(field)) or flt(asset_select.get(field))
+				map_assets[category][field] = asset.get(field)
 		else:
 			map_assets[category]['assets'].append(asset)
 			for field in calculate_fields:
-				map_assets[category][field] += flt(asset.get(field))
+				asset[field] = flt(asset.get(field)) or flt(asset_select.get(field))
+				map_assets[category][field] += asset.get(field)
+		
+		asset.cost_as_on_to_date = (
+			flt(asset.cost_as_on_from_date)
+			+ flt(asset.cost_of_new_purchase)
+			- flt(asset.cost_of_sold_asset)
+			- flt(asset.cost_of_scrapped_asset)
+		)
+
+		asset.accumulated_depreciation_as_on_to_date = (
+			flt(asset.accumulated_depreciation_as_on_from_date)
+			+ flt(asset.depreciation_amount_during_the_period)
+			- flt(asset.depreciation_eliminated_during_the_period)
+		)
+
+		asset.net_asset_value_as_on_from_date = flt(asset.cost_as_on_from_date) - flt(
+			asset.accumulated_depreciation_as_on_from_date
+		)
+
+		asset.net_asset_value_as_on_to_date = flt(asset.cost_as_on_to_date) - flt(
+			asset.accumulated_depreciation_as_on_to_date
+		)
 
 	for asset_category in asset_categories:
 		row = frappe._dict()
@@ -49,7 +79,7 @@ def get_data(filters):
 
 		assets = map_assets[category]
 		for field in calculate_fields:
-			row[field] = assets.get(field)
+			row[field] = assets.get(field)			
 
 		row.update(asset_category)
 		
@@ -76,13 +106,21 @@ def get_data(filters):
 
 		data.append(row)
 
+		for asset in assets['assets']:
+			child = frappe._dict(asset)
+			child.asset_category = asset.name
+			child.indent = 1
+			data.append(child)
+
 	return data
 
+def get_asset_categories():
+	return frappe.db.get_all("Asset Category", fields=['name as asset_category'])
 
-def get_asset_categories(filters):
+def get_asset_individual(filters):
 	return frappe.db.sql(
 		"""
-		SELECT asset_category,
+		SELECT asset_category, name,
 			   ifnull(sum(case when purchase_date < %(from_date)s then
 							   case when ifnull(disposal_date, 0) = 0 or disposal_date >= %(from_date)s then
 									gross_purchase_amount
@@ -121,7 +159,7 @@ def get_asset_categories(filters):
 						   end), 0) as cost_of_scrapped_asset
 		from `tabAsset`
 		where docstatus=1 and company=%(company)s and purchase_date <= %(to_date)s
-		group by asset_category
+		group by name
 	""",
 		{"to_date": filters.to_date, "from_date": filters.from_date, "company": filters.company},
 		as_dict=1,
