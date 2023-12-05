@@ -36,6 +36,12 @@ frappe.query_reports["Asset Depreciations and Balances"] = {
 			"label": __("Show Asset"),
 			"fieldtype": "Check",
 			"default": 1
+		},
+		{
+			"fieldname":"ignore_entry",
+			"label": __("Ignore Depreciation Entry"),
+			"fieldtype": "Check",
+			"default": 1
 		}
 	],
 	"formatter": function(value, row, column, data, default_formatter) {

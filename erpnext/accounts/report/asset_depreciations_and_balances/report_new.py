@@ -168,6 +168,9 @@ def get_asset_individual(filters):
 
 
 def get_assets(filters):
+	entry_cond = ""
+	if not filters.get("ignore_entry"):
+		entry_cond = " and ifnull(ds.journal_entry, '') != '' "
 	return frappe.db.sql(
 		"""
 		SELECT results.asset_category, results.name, results.asset_name,
@@ -193,7 +196,8 @@ def get_assets(filters):
 								   0
 							  end), 0) as depreciation_amount_during_the_period
 			from `tabAsset` a, `tabDepreciation Schedule` ds
-			where a.docstatus=1 and a.company=%(company)s and a.purchase_date <= %(to_date)s and a.name = ds.parent and ifnull(ds.journal_entry, '') != ''
+			where a.docstatus=1 and a.company=%(company)s and a.purchase_date <= %(to_date)s and a.name = ds.parent 
+				{}
 			group by a.name
 			union
 			SELECT a.asset_category,a.name,a.asset_name,
@@ -214,9 +218,9 @@ def get_assets(filters):
 			) as results
 		group by results.name
 		
-		""",
+		""".format(entry_cond),
 		{"to_date": filters.to_date, "from_date": filters.from_date, "company": filters.company},
-		as_dict=1,
+		as_dict=1
 	)
 
 
