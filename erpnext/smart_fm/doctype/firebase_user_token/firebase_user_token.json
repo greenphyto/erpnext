@@ -15,9 +15,11 @@
   {
    "fieldname": "user",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "User",
    "options": "User",
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1
   },
   {
    "default": "Android",
@@ -30,14 +32,17 @@
   {
    "fieldname": "token",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Token",
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1,
+   "unique": 1
   }
  ],
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-12-05 14:01:55.352557",
+ "modified": "2023-12-05 14:06:44.444445",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Firebase User Token",
