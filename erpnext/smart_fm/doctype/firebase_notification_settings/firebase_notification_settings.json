@@ -7,7 +7,8 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "enable"
+  "enable",
+  "test_send"
  ],
  "fields": [
   {
@@ -15,12 +16,17 @@
    "fieldname": "enable",
    "fieldtype": "Check",
    "label": "Enable"
+  },
+  {
+   "fieldname": "test_send",
+   "fieldtype": "Button",
+   "label": "Test Send"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-12-05 14:09:35.661661",
+ "modified": "2023-12-05 18:35:37.629779",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Firebase Notification Settings",
