@@ -35,16 +35,19 @@ frappe.query_reports["Asset Depreciations and Balances"] = {
 			"fieldname":"show_asset",
 			"label": __("Show Asset"),
 			"fieldtype": "Check",
-			"default": 0
+			"default": 1
 		}
 	],
 	"formatter": function(value, row, column, data, default_formatter) {
-		if (flt(value)>0 || value==0){
-			value = frappe.format(flt(value), {"fieldtype":"Currency", precision:2})
+		if ((flt(value)>0 || value==0) && column.fieldtype=="Currency"){
+			value = frappe.format(flt(value), {"fieldtype":"Currency", precision:2});
+		}
+
+		if (column.fieldtype=="Link"){
+			value = default_formatter(value, row, column, data)
 		}
 
 		if (data.bold && value) {
-			value = $(`<span>${value}</span>`);
 			var $value = $(value).css("font-weight", "bold");
 			value = $value.wrap("<p></p>").parent().html();
 			return value

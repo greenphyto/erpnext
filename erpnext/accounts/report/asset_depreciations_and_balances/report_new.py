@@ -109,7 +109,7 @@ def get_data(filters):
 
 		for asset in assets['assets']:
 			child = frappe._dict(asset)
-			child.asset_category = asset.name
+			child.asset_category = ""
 			child.indent = 1
 			data.append(child)
 
@@ -225,8 +225,16 @@ def get_columns(filters):
 		{
 			"label": _("Asset Category"),
 			"fieldname": "asset_category",
-			"fieldtype": "Data",
+			"fieldtype": "Link",
+			"options": "Asset Category",
 			"width": 150,
+		},
+		{
+			"label": _("Asset ID"),
+			"fieldname": "name",
+			"fieldtype": "Link",
+			"options": "Asset",
+			"width": 100,
 		},
 		{
 			"label": _("Asset Name"),
