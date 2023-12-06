@@ -80,7 +80,7 @@ def validate_filters(filters):
 def get_data(filters):
 
 	accounts = frappe.db.sql(
-		"""select name, account_number, parent_account, account_name, root_type, report_type, lft, rgt
+		"""select name, is_group, account_number, parent_account, account_name, root_type, report_type, lft, rgt
 
 		from `tabAccount` where company=%s order by lft""",
 		filters.company,
@@ -303,7 +303,12 @@ def prepare_data(accounts, filters, total_row, parent_children_map, company_curr
 				has_value = True
 
 		row["has_value"] = has_value
-		data.append(row)
+		if not filters.show_group:
+			if not d.is_group:
+				row['indent'] = 0
+				data.append(row)
+		else:	
+			data.append(row)
 
 	data.extend([{}, total_row])
 
