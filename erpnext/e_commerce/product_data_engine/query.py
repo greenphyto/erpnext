@@ -319,3 +319,4 @@ class ProductQuery:
 			result[: self.page_length]
 
 		return result
+
