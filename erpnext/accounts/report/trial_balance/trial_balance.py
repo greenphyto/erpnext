@@ -16,6 +16,7 @@ from erpnext.accounts.report.financial_statements import (
 	filter_out_zero_value_rows,
 	set_gl_entries_by_account,
 )
+from erpnext.accounts.utils import remove_account_number
 
 value_fields = (
 	"opening_debit",
@@ -303,12 +304,11 @@ def prepare_data(accounts, filters, total_row, parent_children_map, company_curr
 				has_value = True
 
 		row["has_value"] = has_value
-		if not filters.show_group:
-			if not d.is_group:
-				row['indent'] = 0
-				data.append(row)
-		else:	
-			data.append(row)
+		if not filters.show_number_group:
+			if d.is_group:
+				row['account_name'] = remove_account_number(row['account_name'])
+				
+		data.append(row)
 
 	data.extend([{}, total_row])
 

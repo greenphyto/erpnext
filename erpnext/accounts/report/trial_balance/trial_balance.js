@@ -101,8 +101,8 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 				"default": 1
 			},
 			{
-				"fieldname": "show_group",
-				"label": __("Show Group"),
+				"fieldname": "show_number_group",
+				"label": __("Show Number Group"),
 				"fieldtype": "Check",
 				"default": 0
 			}
