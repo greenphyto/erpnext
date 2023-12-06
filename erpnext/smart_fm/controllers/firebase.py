@@ -6,8 +6,8 @@ from firebase_admin import messaging
 
 class FirebaseNotification():
     def __init__(self):
-        print(frappe.local.conf.firebase_key)
-        cred = credentials.Certificate(frappe.local.conf.firebase_key)
+        path_key = frappe.local.conf.firebase_key
+        cred = credentials.Certificate(path_key)
         firebase_admin.initialize_app(cred)
     
     def send_message(self, text, token, title="Smart FM"):

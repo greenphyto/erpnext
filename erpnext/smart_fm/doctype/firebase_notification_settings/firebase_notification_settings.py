@@ -10,7 +10,7 @@ class FirebaseNotificationSettings(Document):
 @frappe.whitelist()
 def send_message(message, user):
 	notif = FirebaseNotification()
-	token = frappe.get_value("Firebase User Token", {"user":user}) 
+	token = frappe.get_value("Firebase User Token", {"user":user}, "token") 
 	if token:
 		notif.send_message(message, token)
 		return True
