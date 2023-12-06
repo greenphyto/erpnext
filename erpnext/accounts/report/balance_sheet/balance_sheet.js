@@ -26,4 +26,11 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 		"fieldtype": "Check",
 		"default": 1
 	});
+
+	frappe.query_reports["Balance Sheet"]["filters"].push({
+		"fieldname": "show_number_group",
+		"label": __("Show Number Group"),
+		"fieldtype": "Check",
+		"default": 0
+	});
 });

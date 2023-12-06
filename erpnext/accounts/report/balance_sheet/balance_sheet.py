@@ -13,6 +13,8 @@ from erpnext.accounts.report.financial_statements import (
 	get_period_list,
 )
 
+from erpnext.accounts.utils import remove_account_number
+
 
 def execute(filters=None):
 	period_list = get_period_list(
@@ -72,10 +74,20 @@ def execute(filters=None):
 
 	message, opening_balance = check_opening_balance(asset, liability, equity)
 
+	temp_data = []
+	temp_data.extend(asset or [])
+	temp_data.extend(liability or [])
+	temp_data.extend(equity or [])
+
 	data = []
-	data.extend(asset or [])
-	data.extend(liability or [])
-	data.extend(equity or [])
+	if filters.show_number_group:
+		data = temp_data
+	else:
+		for d in temp_data:
+			if d.get("is_group"):
+				d['account_name'] = remove_account_number(d['account_name'])
+			data.append(d)
+
 	if opening_balance and round(opening_balance, 2) != 0:
 		unclosed = {
 			"account_name": "'" + _("Unclosed Fiscal Years Profit / Loss (Credit)") + "'",

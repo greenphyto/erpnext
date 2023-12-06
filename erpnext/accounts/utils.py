@@ -1779,3 +1779,8 @@ class QueryPaymentLedger(object):
 		self.query_for_outstanding()
 
 		return self.voucher_outstandings
+	
+def remove_account_number(account_name):
+	part = account_name.split(" - ")[-1]
+	print(part)
+	return part

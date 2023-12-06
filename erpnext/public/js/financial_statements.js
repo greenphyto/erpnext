@@ -13,7 +13,7 @@ erpnext.financial_statements = {
 
 		value = default_formatter(value, row, column, data);
 
-		if (data && !data.parent_account) {
+		if (data && data.is_group) {
 			value = $(`<span>${value}</span>`);
 
 			var $value = $(value).css("font-weight", "bold");
