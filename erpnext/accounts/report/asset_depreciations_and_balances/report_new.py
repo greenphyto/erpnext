@@ -51,26 +51,26 @@ def get_data(filters):
 				asset[field] = flt(asset.get(field)) or flt(asset_select.get(field))
 				map_assets[category][field] += asset.get(field)
 		
-		asset.cost_as_on_to_date = (
+		asset.cost_as_on_to_date = flt(
 			flt(asset.cost_as_on_from_date)
 			+ flt(asset.cost_of_new_purchase)
 			- flt(asset.cost_of_sold_asset)
 			- flt(asset.cost_of_scrapped_asset)
-		)
+		, 2)
 
-		asset.accumulated_depreciation_as_on_to_date = (
+		asset.accumulated_depreciation_as_on_to_date = flt(
 			flt(asset.accumulated_depreciation_as_on_from_date)
 			+ flt(asset.depreciation_amount_during_the_period)
 			- flt(asset.depreciation_eliminated_during_the_period)
-		)
+		, 2)
 
-		asset.net_asset_value_as_on_from_date = flt(asset.cost_as_on_from_date) - flt(
+		asset.net_asset_value_as_on_from_date = flt(flt(asset.cost_as_on_from_date) - flt(
 			asset.accumulated_depreciation_as_on_from_date
-		)
+		), 2)
 
-		asset.net_asset_value_as_on_to_date = flt(asset.cost_as_on_to_date) - flt(
+		asset.net_asset_value_as_on_to_date = flt(flt(asset.cost_as_on_to_date) - flt(
 			asset.accumulated_depreciation_as_on_to_date
-		)
+		), 2)
 
 	for asset_category in asset_categories:
 		row = frappe._dict()
@@ -84,26 +84,26 @@ def get_data(filters):
 		row.update(asset_category)
 		row.bold = 1
 		
-		row.cost_as_on_to_date = (
+		row.cost_as_on_to_date = flt(
 			flt(row.cost_as_on_from_date)
 			+ flt(row.cost_of_new_purchase)
 			- flt(row.cost_of_sold_asset)
 			- flt(row.cost_of_scrapped_asset)
-		)
+		, 2)
 
-		row.accumulated_depreciation_as_on_to_date = (
+		row.accumulated_depreciation_as_on_to_date = flt(
 			flt(row.accumulated_depreciation_as_on_from_date)
 			+ flt(row.depreciation_amount_during_the_period)
 			- flt(row.depreciation_eliminated_during_the_period)
-		)
+		, 2)
 
-		row.net_asset_value_as_on_from_date = flt(row.cost_as_on_from_date) - flt(
+		row.net_asset_value_as_on_from_date = flt(flt(row.cost_as_on_from_date) - flt(
 			row.accumulated_depreciation_as_on_from_date
-		)
+		), 2)
 
-		row.net_asset_value_as_on_to_date = flt(row.cost_as_on_to_date) - flt(
+		row.net_asset_value_as_on_to_date = flt(flt(row.cost_as_on_to_date) - flt(
 			row.accumulated_depreciation_as_on_to_date
-		)
+		))
 
 		data.append(row)
 
