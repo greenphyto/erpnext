@@ -10,8 +10,8 @@
  "event": "New",
  "idx": 0,
  "is_standard": 1,
- "message": "<h3>{{doc.doctype}}</h3>\r\n\r\n<p>A new request ({{ frappe.utils.get_link_to_form(doc.doctype, doc.name) }}) has been made.</p>\r\n<p>We will inform you if any further updates</p>\r\n\r\n{{ frappe.render_template(\"templates/end_support.html\", {}) }}",
- "modified": "2023-08-25 17:56:21.471512",
+ "message": "<h3>{{doc.doctype}}</h3>\n\n<p>A new request ({{ frappe.utils.get_link_to_form(doc.doctype, doc.name) }}) has been made.</p>\n<p>We will inform you if any further updates</p>\n\n{{ frappe.render_template(\"templates/end_support.html\", {}) }}",
+ "modified": "2023-12-07 15:28:30.624516",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "New Inspection Checklist",
@@ -22,7 +22,7 @@
    "receiver_by_role": "Building Management"
   }
  ],
- "send_system_notification": 0,
+ "send_system_notification": 1,
  "send_to_all_assignees": 0,
  "sender": "Smart FM",
  "sender_email": "foms@greenphyto.com",

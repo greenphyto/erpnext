@@ -12,7 +12,7 @@
  "idx": 0,
  "is_standard": 1,
  "message": "<p>Dear {{doc.full_name}},</p>\n<p>We are pleased to confirm your reservation for the facilities at Greenphyto. Below are the details of your booking:\n<br>\n<table>\n    <tr><td>Facility Name</td><td>: <b>{{ doc.service }}</b></td></tr>\n    {% if not doc.all_day and not doc.multi_days %}\n        <tr><td>Date</td><td>: {{ frappe.utils.format_date(doc.from_date) }}</td></tr>\n        <tr><td>Time</td><td>: {{ doc.start_time }} - {{ doc.end_time }}</td></tr>\n    {% elif doc.multi_days %}\n        <tr><td>Dates</td><td>: {{ frappe.utils.format_date(doc.from_date) }} - {{ frappe.utils.format_date(doc.to_date) }}</td></tr>\n    {% else %}\n        <tr><td>Date</td><td>: {{ frappe.utils.format_date(doc.from_date) }} (All Day)</td></tr>\n    {% endif %}\n    <tr><td>Purpose of Use</td><td>: {{ doc.purpose }}</td></tr>\n    <tr><td>Number of Participants</td><td>: {{ doc.participants }}</td></tr>\n    <tr><td>Special Requests</td><td>: {{ doc.special_requests }}</td></tr>\n</table>\n<br>\n<p>Please ensure that all usage complies with our facility guidelines. If you have any further questions or require additional assistance, do not hesitate to contact us.\nThank you for choosing Greenphyto for your [event/meeting/workshop]. We look forward to hosting you.</p>\n<br>\n<p>Warm regards,</p>\n<p>{{ frappe.db.get_value(\"User\", frappe.session.user, \"full_name\") }}</p>\n<p>Building Management</p>\n<p>Greenphyto Facilities Team</p>",
- "modified": "2023-11-21 16:40:45.442763",
+ "modified": "2023-12-07 16:22:29.513881",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facilities Reservation Receipt",
@@ -26,7 +26,7 @@
    "receiver_by_document_field": "email_address"
   }
  ],
- "send_system_notification": 0,
+ "send_system_notification": 1,
  "send_to_all_assignees": 0,
  "sender": "Smart FM",
  "sender_email": "foms@greenphyto.com",

@@ -12,7 +12,7 @@
  "idx": 0,
  "is_standard": 1,
  "message": "<h3>{{doc.doctype}}</h3>\n\n<p>A new request ({{doc.name}}) has been made.</p>\n<p>We will inform you if any further updates</p>\n\n{{ frappe.render_template(\"templates/end_support.html\", {}) }}",
- "modified": "2023-08-25 17:53:38.623517",
+ "modified": "2023-12-07 15:32:20.121461",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "New Access Request",
@@ -25,7 +25,7 @@
    "receiver_by_document_field": "email_address"
   }
  ],
- "send_system_notification": 0,
+ "send_system_notification": 1,
  "send_to_all_assignees": 0,
  "sender": "Smart FM",
  "sender_email": "foms@greenphyto.com",

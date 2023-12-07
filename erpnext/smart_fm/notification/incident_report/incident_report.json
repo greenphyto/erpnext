@@ -13,7 +13,7 @@
  "idx": 0,
  "is_standard": 1,
  "message": "<h3>{{ doc.doctype }}</h3>\r\n\r\n<p>The request ({{ frappe.utils.get_link_to_form(doc.doctype, doc.name) }}) has been {{doc.workflow_state}} by building management.</p>\r\n\r\n{{ frappe.render_template(\"templates/end_support.html\", {}) }}",
- "modified": "2023-08-25 17:52:54.432692",
+ "modified": "2023-12-07 16:22:30.039081",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Incident Report",
@@ -27,7 +27,7 @@
    "receiver_by_document_field": "email_address"
   }
  ],
- "send_system_notification": 0,
+ "send_system_notification": 1,
  "send_to_all_assignees": 0,
  "sender": "Smart FM",
  "sender_email": "foms@greenphyto.com",
