@@ -86,6 +86,9 @@ def execute(filters=None):
 		for d in temp_data:
 			if d.get("is_group"):
 				d['account_name'] = remove_account_number(d['account_name'])
+				if frappe.flags.in_export:
+					d['account'] = d['account_name']
+					
 			data.append(d)
 
 	if opening_balance and round(opening_balance, 2) != 0:
@@ -148,7 +151,6 @@ def get_provisional_profit_loss(
 			provisional_profit_loss[key] = flt(asset[-2].get(key)) - effective_liability
 			total_row[key] = effective_liability + provisional_profit_loss[key]
 
-			print(provisional_profit_loss[key])
 			if provisional_profit_loss[key]:
 				has_value = True
 
@@ -158,13 +160,11 @@ def get_provisional_profit_loss(
 			total_row_total += flt(total_row[key])
 			total_row["total"] = total_row_total
 
-			print("==>", key, provisional_profit_loss["total"])
-
 		if has_value:
 			provisional_profit_loss.update(
 				{
-					"account_name": "'" + _("Provisional Profit / Loss (Credit)") + "'",
-					"account": "'" + _("Provisional Profit / Loss (Credit)") + "'",
+					"account_name": "'" + _("Profit / (Loss) for the Year") + "'",
+					"account": "'" + _("Profit / (Loss) for the Year") + "'",
 					"warn_if_negative": True,
 					"currency": currency,
 				}
@@ -233,7 +233,7 @@ def get_report_summary(
 		{"value": net_equity, "label": _("Total Equity"), "datatype": "Currency", "currency": currency},
 		{
 			"value": net_provisional_profit_loss,
-			"label": _("Provisional Profit / Loss (Credit)"),
+			"label": _("Profit / (Loss) for the Year"),
 			"indicator": "Green" if net_provisional_profit_loss > 0 else "Red",
 			"datatype": "Currency",
 			"currency": currency,
