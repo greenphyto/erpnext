@@ -129,6 +129,17 @@ def get_data(filters):
 		data, parent_children_map, show_zero_values=filters.get("show_zero_values")
 	)
 
+	# add different
+	diff_row = {
+		'account_name': "Difference",
+		'account':'Difference',
+		'opening_credit': flt( total_row['opening_debit']-total_row['opening_credit'] ,2),
+		'credit': flt( total_row['debit']-total_row['credit'] ,2),
+		'closing_credit': flt( total_row['closing_debit']-total_row['closing_credit'] ,2),
+	}
+
+	data.append(diff_row)
+
 	return data
 
 
@@ -304,12 +315,13 @@ def prepare_data(accounts, filters, total_row, parent_children_map, company_curr
 				has_value = True
 
 		row["has_value"] = has_value
-		if not filters.show_number_group:
-			if d.is_group:
-				row['account_name'] = remove_account_number(row['account_name'])
+		if not filters.show_group:
+			if not d.is_group:
+				row['indent'] = 0
+				data.append(row)
+		else:	
+			data.append(row)
 				
-		data.append(row)
-
 	data.extend([{}, total_row])
 
 	return data
