@@ -14,6 +14,7 @@ from erpnext.accounts.report.financial_statements import (
 )
 
 from erpnext.accounts.utils import remove_account_number
+from erpnext.accounts.report.utils import convert_wrap_report_data
 
 
 def execute(filters=None):
@@ -124,6 +125,9 @@ def execute(filters=None):
 	report_summary = get_report_summary(
 		period_list, asset, liability, equity, provisional_profit_loss, total_credit, currency, filters
 	)
+
+	if frappe.flags.in_export:
+		convert_wrap_report_data(columns, data, precision=2)
 
 	return columns, data, message, chart, report_summary
 

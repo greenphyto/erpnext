@@ -154,3 +154,19 @@ def get_invoiced_item_gross_margin(
 		result = sum(d.gross_profit for d in result)
 
 	return result
+
+def convert_wrap_report_data(column, data, precision=0):
+	field = ['Currency', 'Float', 'Int']
+	currency_cols = []
+
+	for d in column:
+		if d.get("fieldtype") in field:
+			currency_cols.append(d.get("fieldname"))
+
+	for d in data:
+		for field, val in d.items():
+			if val and field in currency_cols and val < 0:
+				d[field] = f"({ flt(abs(val), precision) })"
+
+	return data
+
