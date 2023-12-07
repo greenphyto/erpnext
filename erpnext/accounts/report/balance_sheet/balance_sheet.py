@@ -88,7 +88,11 @@ def execute(filters=None):
 				d['account_name'] = remove_account_number(d['account_name'])
 				if frappe.flags.in_export:
 					d['account'] = d['account_name']
-					
+					if not d.get('parent_account'):
+						for key, val in d.items():
+							if key not in ['account', 'account_name']:
+								d[key] = None
+
 			data.append(d)
 
 	if opening_balance and round(opening_balance, 2) != 0:
