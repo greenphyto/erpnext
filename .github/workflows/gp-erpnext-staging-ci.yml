@@ -48,7 +48,7 @@ jobs:
         # Required mail subject:
         subject: ERPNext Staging Deployment Done
         # Required recipients' addresses:
-        to: weiquan@greenphyto.com,myo@greenphyto.com,aunt.maung@greenphyto.com
+        to: weiquan@greenphyto.com,myo@greenphyto.com,rizky@greenphyto.com
         # Required sender full name (address can be skipped):
         from: Info@greenphyto.com # <user@example.com>
         # Optional whether this connection use TLS (default is true if server_port is 465)
