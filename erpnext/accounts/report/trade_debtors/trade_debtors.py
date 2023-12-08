@@ -277,7 +277,7 @@ class DebtorCreditorReport(object):
 			self.append_subtotal_row(self.previous_party)
 			if self.data:
 				if self.filters.get("show_original_currency"):
-					print("here")
+					pass
 				else:
 					self.data.append(self.total_row_map.get("Total"))
 
@@ -796,7 +796,6 @@ class DebtorCreditorReport(object):
 				)
 			]
 			if gpaccounts:
-				print(gpaccounts[0])
 				accounts = [
 				d.name
 				for d in frappe.get_all(
