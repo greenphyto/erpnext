@@ -22,6 +22,12 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 			"label": __("Include Default Book Entries"),
 			"fieldtype": "Check",
 			"default": 1
+		},
+		{
+			"fieldname": "show_number_group",
+			"label": __("Show Number Group"),
+			"fieldtype": "Check",
+			"default": 0
 		}
 	);
 });

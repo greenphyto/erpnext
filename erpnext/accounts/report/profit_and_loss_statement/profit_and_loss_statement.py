@@ -12,6 +12,8 @@ from erpnext.accounts.report.financial_statements import (
 	get_filtered_list_for_consolidated_report,
 	get_period_list,
 )
+from erpnext.accounts.utils import remove_account_number
+from erpnext.accounts.report.utils import convert_wrap_report_data
 
 
 def execute(filters=None):
@@ -59,6 +61,22 @@ def execute(filters=None):
 	if net_profit_loss:
 		data.append(net_profit_loss)
 
+	new_data = []
+	if filters.show_number_group:
+		new_data = data
+	else:
+		for d in data:
+			if d.get("is_group"):
+				d['account_name'] = remove_account_number(d['account_name'])
+				if frappe.flags.in_export:
+					d['account'] = d['account_name']
+					if not d.get('parent_account'):
+						for key, val in d.items():
+							if key not in ['account', 'account_name']:
+								d[key] = None
+
+			new_data.append(d)
+
 	columns = get_columns(
 		filters.periodicity, period_list, filters.accumulated_values, filters.company
 	)
@@ -71,6 +89,9 @@ def execute(filters=None):
 	report_summary = get_report_summary(
 		period_list, filters.periodicity, income, expense, net_profit_loss, currency, filters
 	)
+
+	if frappe.flags.in_export:
+		convert_wrap_report_data(columns, data, precision=2)
 
 	return columns, data, None, chart, report_summary
 
