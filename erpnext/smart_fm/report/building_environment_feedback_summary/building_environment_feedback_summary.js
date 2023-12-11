@@ -34,7 +34,21 @@ frappe.query_reports["Building Environment Feedback Summary"] = {
 				{"value":"q10", "label":"10. Are there any areas in the building where you feel enhancements could improve your overall comfort?"},
 			]
 		},
+		{
+			"fieldname": "from_dashboard",
+			"fieldtype": "Check",
+			"label": "From Dashboard",
+			"default": 0
+		}
 	],
+	onload: function(report){
+		// hide filters
+		if ($(cur_page.page).attr("data-page-route") == 'query-report'){
+			var df = report.get_filter("from_dashboard");
+			df.df.hidden=1
+			df.refresh();
+		}
+	}, 
 	"formatter": function(value, row, column, data, default_formatter) {
 		if (value=="Button"){
 			console.log("Here")

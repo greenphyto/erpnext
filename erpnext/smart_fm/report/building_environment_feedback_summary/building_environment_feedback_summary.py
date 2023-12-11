@@ -109,6 +109,7 @@ class Report:
 			for opts in all_opts:
 				d = answer_map.get(opts)
 				percent_view = "0%"
+				percent=0
 				count = 0
 				if d:
 					question = d.question or "None"
@@ -127,7 +128,7 @@ class Report:
 
 				self.quiz_map[field].append({
 					'question':question,
-					'count': count
+					'percent': flt(percent,2)
 				})
 			
 			if msg_field:
@@ -143,11 +144,11 @@ class Report:
 		values = []
 		select_quiz = self.filters.filter_chart or "q1"
 		data = self.quiz_map[select_quiz]
-		sorted_data = sorted(data, key=lambda x: x['count'], reverse=True)
+		sorted_data = sorted(data, key=lambda x: x['percent'], reverse=True)
 		for d in sorted_data:
-			if d['count']:
+			if d['percent']:
 				labels.append(d['question'])
-				values.append(d['count'])
+				values.append(d['percent'])
 		
 		df = self.meta.get_field(select_quiz)
 		label = f"{select_quiz.replace('q', '')}. {df.label}"
