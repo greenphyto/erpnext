@@ -16,6 +16,24 @@ frappe.query_reports["Building Environment Feedback Summary"] = {
 			"label": "Date To",
 			"default": frappe.datetime.get_today()
 		},
+		{
+			"fieldname": "filter_chart",
+			"fieldtype": "Select",
+			"label": "Filter Chart",
+			"default": "",
+			"options":[
+				{"value":"q1", "label":"1. How would you rate the overall temperature comfort in the building?"},
+				{"value":"q2", "label":"2. Are there areas in the building where you experience drafts or uneven temperatures?"},
+				{"value":"q3", "label":"3. How satisfied are you with the natural and artificial lighting in your workspace?"},
+				{"value":"q4", "label":"4. Are there any areas where you find the lighting too dim or too bright?"},
+				{"value":"q5", "label":"5. How would you rate the noise level in the building?"},
+				{"value":"q6", "label":"6. Are there specific sources of noise or areas in the building that are particularly disruptive?"},
+				{"value":"q7", "label":"7. How would you rate the building's overall air quality and freshness?"},
+				{"value":"q8", "label":"8. Do you notice any unpleasant odors or smells within the building?"},
+				{"value":"q9", "label":"9. How would you describe the spaciousness of your workspace and common areas?"},
+				{"value":"q10", "label":"10. Are there any areas in the building where you feel enhancements could improve your overall comfort?"},
+			]
+		},
 	],
 	"formatter": function(value, row, column, data, default_formatter) {
 		if (value=="Button"){

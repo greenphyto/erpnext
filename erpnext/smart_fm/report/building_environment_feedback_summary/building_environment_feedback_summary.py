@@ -18,6 +18,7 @@ class Report:
 		self.condition = ""
 		self.params = []
 		self.total_quiz = 10
+		self.quiz_map = {}
 		self.meta = frappe.get_meta("Building Environment Feedback")
 
 	def get_columns(self):
@@ -54,11 +55,16 @@ class Report:
 
 					self.data.append({})
 
+				quiz_title = "{}. {}".format(i+1,label)
+
 				self.data.append({
 					"indent":0,
 					"is_group":1,
-					"question": "{}. {}".format(i+1,label)
+					"question": quiz_title
 				})
+
+				self.quiz_map[field] = []
+
 				cur_label = label
 
 			# for optioned question
@@ -118,6 +124,11 @@ class Report:
 					"percent":percent_view,
 					"count": count
 				})
+
+				self.quiz_map[field].append({
+					'question':question,
+					'count': count
+				})
 			
 			if msg_field:
 				self.data.append({"question":"Button", "indent":1, "msg_field":msg_field})
@@ -126,13 +137,46 @@ class Report:
 	def process_data(self):
 		pass
 
+	def get_chart(self):
+		# print("result", self.quiz_map)
+		labels = []
+		values = []
+		select_quiz = self.filters.filter_chart or "q1"
+		data = self.quiz_map[select_quiz]
+		sorted_data = sorted(data, key=lambda x: x['count'], reverse=True)
+		for d in sorted_data:
+			if d['count']:
+				labels.append(d['question'])
+				values.append(d['count'])
+		
+		df = self.meta.get_field(select_quiz)
+		label = f"{select_quiz.replace('q', '')}. {df.label}"
+
+		chart_data = {
+			"labels": labels,
+			"datasets": [
+				{
+					"values": values
+				}
+			]
+		}
+
+		self.charts = {
+			"data": chart_data,
+			"type": "donut",
+			"height": 300,
+			"title": label
+		}
+
+
 	def run(self):
 		self.set_filter()
 		self.get_columns()
 		self.get_raw_data()
 		self.process_data()
+		self.get_chart()
 
-		return self.columns, self.data
+		return self.columns, self.data, None, self.charts
 
 @frappe.whitelist()
 def get_message_list(filters, field):
