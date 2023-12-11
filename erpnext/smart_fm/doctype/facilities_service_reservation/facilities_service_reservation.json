@@ -270,7 +270,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-28 16:06:56.545074",
+ "modified": "2023-12-11 18:30:20.360907",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facilities Service Reservation",
@@ -287,6 +287,31 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Building Management",
+   "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],

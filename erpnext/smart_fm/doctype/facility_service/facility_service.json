@@ -200,7 +200,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-24 15:35:22.512574",
+ "modified": "2023-12-11 18:30:01.189739",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facility Service",
@@ -216,6 +216,28 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Building Management",
    "share": 1,
    "write": 1
   }
