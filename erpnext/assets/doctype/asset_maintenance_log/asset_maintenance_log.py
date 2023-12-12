@@ -30,6 +30,9 @@ class AssetMaintenanceLog(Document):
 		if self.maintenance_status == "Completed":
 			update_request(self, "Resolve")
 
+	def on_cancel(self):
+		self.db_set("maintenance_status", "Cancelled")
+
 	def after_insert(self):
 		update_request(self, "Start")
 
