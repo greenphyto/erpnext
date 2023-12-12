@@ -106,6 +106,9 @@ class MaterialRequest(BuyingController):
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
 		self.reset_default_field_value("set_from_warehouse", "items", "from_warehouse")
 
+	def before_validate(self):
+		self.set_description()
+
 	def before_update_after_submit(self):
 		self.validate_schedule_date()
 
@@ -276,6 +279,14 @@ class MaterialRequest(BuyingController):
 			doc = frappe.get_doc("Production Plan", production_plan)
 			doc.set_status()
 			doc.db_set("status", doc.status)
+	
+	def set_description(self):
+		for d in self.get("items"):
+			if self.non_stock_item:
+				d.item_name = d.item_name_view
+
+			if not d.description:
+				d.description = d.item_name
 
 
 def update_completed_and_requested_qty(stock_entry, method):

@@ -2433,7 +2433,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		var me = this;
 		function confirm_action(){
 			return new Promise((resolve)=>{
-				if (is_null(me.frm.doc.items) || cint(me.frm.doc.total_qty)==0){
+				if (is_null(me.frm.doc.items)){
 					resolve(true)
 				}else{
 					frappe.confirm(
