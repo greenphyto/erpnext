@@ -117,8 +117,8 @@ $.extend(cur_frm.cscript, {
 			let timeList = [];
 			
 			// Parsing waktu awal dan akhir
-			let start = new Date("1970-01-01T" + time_start);
-			let end = new Date("1970-01-01T" + time_end);
+			let start = moment("1970-01-01 " + time_start).toDate();
+			let end = moment("1970-01-01 " + time_end).toDate();
 		
 			// Loop untuk menghasilkan waktu dengan interval tertentu
 			let current = start;
