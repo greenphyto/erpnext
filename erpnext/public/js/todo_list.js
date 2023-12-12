@@ -38,4 +38,15 @@ $.extend(frappe.listview_settings["ToDo"], {
             frappe.set_route("Form", doc.reference_type, doc.reference_name);
 		},
 	},
+	get_indicator: function(doc) {
+		if (doc.status=="Planned") {
+			return [__(doc.status), "orange", "status,=," + doc.status];
+		} else if (doc.status=="Completed") {
+			return [__(doc.status), "green", "status,=," + doc.status];
+		} else if (doc.status=="Cancelled") {
+			return [__(doc.status), "red", "status,=," + doc.status];
+		} else if (doc.status=="Overdue") {
+			return [__(doc.status), "red", "status,=," + doc.status];
+		}
+	}
 })
