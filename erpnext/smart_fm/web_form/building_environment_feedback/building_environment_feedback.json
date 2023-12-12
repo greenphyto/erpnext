@@ -7,7 +7,7 @@
  "allow_print": 0,
  "anonymous": 0,
  "apply_document_permissions": 1,
- "breadcrumbs": "[\n    {\"label\": \"Home\", \"route\":\"/\"},\n    {\"label\": \"Smart FM\", \"route\":\"smart-fm\"},\n    {\"label\": \"Building Environment Feedback\", \"route\":\"smart-fm/building-environment-feedback\"}\n]",
+ "breadcrumbs": "[\n    {\"label\": \"Home\", \"route\":\"/\"},\n    {\"label\": \"Menu\", \"route\":\"/menu\"},\n    {\"label\": \"Building Environment Feedback\", \"route\":\"menu/building-environment-feedback\"}\n]",
  "button_label": "Save",
  "client_script": "frappe.set_default_web_form([\r\n    \"email as email_address\", \r\n    \"full_name as full_name\"\r\n])",
  "creation": "2023-10-31 15:36:14.794117",
@@ -19,13 +19,13 @@
  "list_columns": [],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2023-10-31 15:42:21.089361",
+ "modified": "2023-12-12 16:08:07.381639",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "building-environment-feedback",
  "owner": "Administrator",
  "published": 1,
- "route": "smart-fm/building-environment-feedback",
+ "route": "menu/building-environment-feedback",
  "show_attachments": 0,
  "show_list": 1,
  "show_sidebar": 1,
@@ -264,5 +264,5 @@
    "show_in_filter": 0
   }
  ],
- "website_sidebar": "Smart FM"
+ "website_sidebar": "Menu"
 }
