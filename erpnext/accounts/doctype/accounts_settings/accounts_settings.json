@@ -58,6 +58,7 @@
   "asset_settings_section",
   "book_asset_depreciation_entry_automatically",
   "create_asset_maintenance_log_continuously",
+  "default_days_before_asset_maintenance_log_created",
   "closing_settings_tab",
   "period_closing_settings_section",
   "acc_frozen_upto",
@@ -391,6 +392,11 @@
    "fieldname": "create_asset_maintenance_log_continuously",
    "fieldtype": "Check",
    "label": "Create asset maintenance log continuously"
+  },
+  {
+   "fieldname": "default_days_before_asset_maintenance_log_created",
+   "fieldtype": "Int",
+   "label": "Default days before Asset Maintenance Log created"
   }
  ],
  "icon": "icon-cog",
@@ -398,7 +404,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-12-12 11:28:41.579781",
+ "modified": "2023-12-12 12:08:50.501519",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounts Settings",

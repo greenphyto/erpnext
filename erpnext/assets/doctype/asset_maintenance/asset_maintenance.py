@@ -133,7 +133,8 @@ def update_maintenance_log(asset_maintenance, item_code, item_name, task):
 
 def create_planned_asset_maintenance_log():
 	data = frappe.db.get_all("Asset Maintenance Task", {"docstatus":0, "generated_log":0}, "distinct parent")
-	date_create = add_days(getdate(), 5)
+	days_before = frappe.db.get_single_value('Accounts Settings', "default_days_before_asset_maintenance_log_created") or 5
+	date_create = add_days(getdate(), days_before)
 	for d in data:
 		doc = frappe.get_doc("Asset Maintenance", d.parent)
 		for task in doc.get("asset_maintenance_tasks", {"generated_log":0, "next_due_date":["<=", date_create]}):
