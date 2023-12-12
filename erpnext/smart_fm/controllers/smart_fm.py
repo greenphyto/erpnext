@@ -1,5 +1,5 @@
 import frappe
-from frappe.utils import getdate, cint, get_url, cstr
+from frappe.utils import getdate, cint, get_url, cstr, now
 import json
 from frappe import _
 from erpnext.smart_fm.controllers.utils import get_qr_svg_code
@@ -68,12 +68,15 @@ Create ToDo if Asset Maintenance Log created
 """
 def create_todo(doc, method=""):
 	task = ""
+	due_date = now()
 	if doc.doctype == "Asset Maintenance Log":
 		task = doc.task_name
+		due_date = doc.due_date
 		if not task:
 			frappe.throw(_("Task is missing!"))
 			
 	elif doc.doctype == "Asset Repair":
+		due_date = doc.due_date
 		if doc.get("description"):
 			task = doc.description[:150]
 
@@ -83,7 +86,8 @@ def create_todo(doc, method=""):
 			"description": task,
 			"reference_type": doc.doctype,
 			"reference_name": doc.name,
-			"assigned_by": frappe.session.user
+			"assigned_by": frappe.session.user,
+			"date":due_date
 		}
 	).insert(ignore_permissions=True)
 

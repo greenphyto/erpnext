@@ -166,6 +166,7 @@
    "fetch_from": "task.maintenance_task",
    "fieldname": "task_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "in_preview": 1,
    "label": "Task Name",
    "read_only": 1
@@ -180,7 +181,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-10 12:57:38.774494",
+ "modified": "2023-12-12 10:54:20.166471",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset Maintenance Log",
