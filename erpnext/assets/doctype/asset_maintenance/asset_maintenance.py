@@ -6,7 +6,7 @@ import frappe
 from frappe import _, throw
 from frappe.desk.form import assign_to
 from frappe.model.document import Document
-from frappe.utils import add_days, add_months, add_years, getdate, nowdate
+from frappe.utils import add_days, add_months, add_years, getdate, nowdate, today
 from frappe.model.naming import parse_naming_series
 
 
@@ -116,23 +116,11 @@ def update_maintenance_log(asset_maintenance, item_code, item_name, task):
 	)
 
 	if not asset_maintenance_log:
-		asset_maintenance_log = frappe.get_doc(
-			{
-				"doctype": "Asset Maintenance Log",
-				"asset_maintenance": asset_maintenance,
-				"asset_name": asset_maintenance,
-				"item_code": item_code,
-				"item_name": item_name,
-				"task": task.name,
-				"has_certificate": task.certificate_required,
-				"description": task.description,
-				"assign_to_name": task.assign_to_name,
-				"periodicity": str(task.periodicity),
-				"maintenance_type": task.maintenance_type,
-				"due_date": task.next_due_date,
-			}
-		)
-		asset_maintenance_log.insert()
+		if not frappe.db.get_single_value("Accounts Settings", "create_asset_maintenance_log_continuously"):
+			return
+		
+		create_asset_maintenance_log(asset_maintenance, item_code, item_name, task)
+
 	else:
 		maintenance_log = frappe.get_doc("Asset Maintenance Log", asset_maintenance_log)
 		maintenance_log.assign_to_name = task.assign_to_name
@@ -142,6 +130,36 @@ def update_maintenance_log(asset_maintenance, item_code, item_name, task):
 		maintenance_log.maintenance_type = task.maintenance_type
 		maintenance_log.due_date = task.next_due_date
 		maintenance_log.save()
+
+def create_planned_asset_maintenance_log():
+	data = frappe.db.get_all("Asset Maintenance Task", {"docstatus":0, "generated_log":0}, "distinct parent")
+	date_create = add_days(getdate(), 5)
+	for d in data:
+		doc = frappe.get_doc("Asset Maintenance", d.parent)
+		for task in doc.get("asset_maintenance_tasks", {"generated_log":0, "next_due_date":["<=", date_create]}):
+			create_asset_maintenance_log(
+				asset_maintenance=doc.name, item_code=doc.item_code, item_name=doc.item_name, task=task
+			)
+
+def create_asset_maintenance_log(asset_maintenance, item_code, item_name, task):
+	asset_maintenance_log = frappe.get_doc(
+		{
+			"doctype": "Asset Maintenance Log",
+			"asset_maintenance": asset_maintenance,
+			"asset_name": asset_maintenance,
+			"item_code": item_code,
+			"item_name": item_name,
+			"task": task.name,
+			"has_certificate": task.certificate_required,
+			"description": task.description,
+			"assign_to_name": task.assign_to_name,
+			"periodicity": str(task.periodicity),
+			"maintenance_type": task.maintenance_type,
+			"due_date": task.next_due_date,
+		}
+	)
+	asset_maintenance_log.insert()
+	task.db_set("generated_log", 1)
 
 
 @frappe.whitelist()

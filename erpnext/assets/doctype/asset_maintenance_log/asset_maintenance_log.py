@@ -46,9 +46,11 @@ class AssetMaintenanceLog(Document):
 				asset_maintenance_doc.last_completion_date = self.completion_date
 				asset_maintenance_doc.next_due_date = next_due_date
 				asset_maintenance_doc.maintenance_status = "Planned"
+				asset_maintenance_doc.generated_log = 0
 				asset_maintenance_doc.save()
 		if self.maintenance_status == "Cancelled":
 			asset_maintenance_doc.maintenance_status = "Cancelled"
+			asset_maintenance_doc.generated_log = 0
 			asset_maintenance_doc.save()
 		asset_maintenance_doc = frappe.get_doc("Asset Maintenance", self.asset_maintenance)
 		asset_maintenance_doc.save()

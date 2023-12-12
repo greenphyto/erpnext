@@ -456,6 +456,7 @@ scheduler_events = {
 		"erpnext.selling.doctype.quotation.quotation.set_expired_status",
 		"erpnext.buying.doctype.supplier_quotation.supplier_quotation.set_expired_status",
 		"erpnext.accounts.doctype.process_statement_of_accounts.process_statement_of_accounts.send_auto_email",
+        "erpnext.assets.doctype.asset_maintenance.asset_maintenance.create_planned_asset_maintenance_log"
 	],
 	"daily_long": [
 		"erpnext.setup.doctype.email_digest.email_digest.send",
