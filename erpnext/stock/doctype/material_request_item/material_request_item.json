@@ -120,7 +120,6 @@
    "oldfieldname": "description",
    "oldfieldtype": "Text",
    "print_width": "250px",
-   "reqd": 1,
    "width": "250px"
   },
   {
@@ -579,7 +578,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-10-10 16:07:05.552769",
+ "modified": "2023-12-12 17:16:13.476131",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request Item",
