@@ -118,6 +118,19 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 				erpnext.accounts.dimensions.copy_dimension_from_first_row(frm, cdt, cdn, 'items');
 
 				me.add_default_non_stock_item(frm, cdt, cdn);
+			},
+			item_name_view: function(frm,cdt,cdn){
+				var d = locals[cdt][cdn]
+				if (frm.doc.non_stock_item){
+					if (d.description){
+						d.description = d.item_name_view
+					}
+					d.item_name = d.item_name_view;
+				}
+				if (d.description){
+					d.description = d.item_name_view
+				}
+				frm.refresh_field("items");
 			}
 		});
 

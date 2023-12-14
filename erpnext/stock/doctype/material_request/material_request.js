@@ -419,16 +419,6 @@ frappe.ui.form.on("Material Request Item", {
 				set_schedule_date(frm);
 			}
 		}
-	},
-	item_name_view: function(frm,cdt,cdn){
-		var d = locals[cdt][cdn]
-		if (frm.doc.non_stock_item){
-			if (!d.description){
-				d.description = d.item_name_view
-			}
-			d.item_name = d.item_name_view;
-			frm.refresh_field("items");
-		}
 	}
 });
 

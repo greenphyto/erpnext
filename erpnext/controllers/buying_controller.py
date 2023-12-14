@@ -763,6 +763,20 @@ class BuyingController(SubcontractingController):
 			validate_item_type(self, "is_sub_contracted_item", "subcontracted")
 		else:
 			validate_item_type(self, "is_purchase_item", "purchase")
+	
+	def before_validate(self):
+		self.set_description()
+
+	def set_description(self):
+		for d in self.get("items"):
+			if self.non_stock_item:
+				d.item_name = d.item_name_view
+
+				if d.description:
+					d.description = d.item_name
+
+			if not d.description:
+				d.description = d.item_name
 
 
 def get_asset_item_details(asset_items):
