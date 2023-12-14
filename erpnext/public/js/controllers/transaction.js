@@ -2442,7 +2442,8 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		var me = this;
 		function confirm_action(){
 			return new Promise((resolve)=>{
-				if (is_null(me.frm.doc.items)){
+				var exists = $.map(me.frm.doc.items, d=>{ if (d.item_code) return d.item_code });
+				if (is_null(exists)){
 					resolve(true)
 				}else{
 					frappe.confirm(
