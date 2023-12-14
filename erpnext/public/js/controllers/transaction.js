@@ -122,13 +122,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 			item_name_view: function(frm,cdt,cdn){
 				var d = locals[cdt][cdn]
 				if (frm.doc.non_stock_item){
-					if (d.description){
-						d.description = d.item_name_view
-					}
 					d.item_name = d.item_name_view;
-				}
-				if (d.description){
-					d.description = d.item_name_view
 				}
 				frm.refresh_field("items");
 			}
@@ -2425,6 +2419,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 				}
 				field_item_name.hidden = 1; 
 				field_item_code.in_list_view = 0;
+				field_item_code.hidden = 1;
 			}else{
 				if (field_item_name_view){
 					field_item_name_view.hidden = 1;
@@ -2432,6 +2427,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 				}
 				field_item_name.hidden = 0; 
 				field_item_code.in_list_view = 1;
+				field_item_code.hidden = 0;
 			}
 		}
 		if (cint(this.frm.doc.non_stock_item)){

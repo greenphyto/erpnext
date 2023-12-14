@@ -772,7 +772,9 @@ class BuyingController(SubcontractingController):
 			if self.non_stock_item:
 				d.item_name = d.item_name_view
 
-				if d.description:
+				# only replace description if not change
+				origin_description = frappe.get_value("Item", d.item_code, 'description')
+				if origin_description == d.description:
 					d.description = d.item_name
 
 			if not d.description:
