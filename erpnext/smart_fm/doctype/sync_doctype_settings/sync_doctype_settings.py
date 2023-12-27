@@ -63,6 +63,11 @@ class SyncAPI():
 		res = self.req("POST", "frappe.core.doctype.sync_log.sync_log.update_success", {"logs":json.dumps(logs)})
 		return res
 	
-	def get_updates(self):
+	def get_updates(self, doctype, docname):
 		# get update from every pending logs
-		pass
+		self.get_login()
+		url = urljoin(self.settings.origin_site, f"/api/resource/{doctype}/{docname}")
+		res = self.session.get(url)
+		result =  res.json()
+
+		return frappe._dict(result.get("data"))
