@@ -30,7 +30,7 @@ from erpnext.assets.doctype.asset.depreciation import (
 )
 from erpnext.assets.doctype.asset_category.asset_category import get_asset_category_account
 from erpnext.controllers.accounts_controller import AccountsController
-
+from erpnext.smart_fm.doctype.sync_doctype_settings.sync_doctype_settings import SyncAPI
 
 class Asset(AccountsController):
 	def validate(self):
@@ -1510,3 +1510,48 @@ def add_node():
 		args.parent_asset = None
 
 	frappe.get_doc(args).insert()
+
+METHOD_NAME = "asset_sync_smart_fm"
+def sync_asset():
+	api = SyncAPI()
+	logs = api.get_pending_log({"doc_type":"Asset"})
+	for log in logs:
+		source_doc = api.get_updates(log['doctype'], log['name'])
+		sync_asset_data(source_doc)
+
+from erpnext.smart_fm.doctype.sync_map.sync_map import get_sync_map, create_sync_map
+def sync_asset_data(source_doc):
+	sync_map = get_sync_map(source_doc.doctype, source_doc.name, METHOD_NAME)
+	if not sync_map:
+		# create new
+		asset = CreateAsset(source_doc).build()
+		create_sync_map(source_doc, asset, METHOD_NAME)
+
+	elif get_datetime(sync_map.last_sync) < get_datetime(source_doc.modified):
+		# update
+		pass
+	else:
+		# skip
+		pass
+
+class CreateAsset():
+	def __init__(self, source_doc):
+		self.source_doc = source_doc
+	
+	def build(self):
+		self.create_asset_location()
+		self.create_asset_category()
+		self.create_item()
+		self.create_asset()
+
+	def create_asset(self):
+		pass
+
+	def create_item(self):
+		pass
+
+	def create_asset_category(self):
+		pass
+
+	def create_asset_location(self):
+		pass

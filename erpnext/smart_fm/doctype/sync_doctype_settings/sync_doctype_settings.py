@@ -11,6 +11,7 @@ class SyncDoctypeSettings(Document):
 		pass
 
 class SyncAPI():
+	# API
 	def __init__(self, settings=None):
 		self.settings = settings or frappe.get_single("Sync Doctype Settings")
 		self.init_request()
@@ -71,3 +72,4 @@ class SyncAPI():
 		result =  res.json()
 
 		return frappe._dict(result.get("data"))
+	
