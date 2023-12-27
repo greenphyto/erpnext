@@ -15,7 +15,8 @@
   "destination_doctype",
   "destination_name",
   "section_break_lg9tu",
-  "last_sync"
+  "last_sync",
+  "method"
  ],
  "fields": [
   {
@@ -71,12 +72,18 @@
    "fieldtype": "Datetime",
    "label": "Last Sync",
    "read_only": 1
+  },
+  {
+   "fieldname": "method",
+   "fieldtype": "Data",
+   "label": "Method",
+   "read_only": 1
   }
  ],
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-12-27 15:21:57.784791",
+ "modified": "2023-12-27 15:23:17.123148",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Sync Map",
