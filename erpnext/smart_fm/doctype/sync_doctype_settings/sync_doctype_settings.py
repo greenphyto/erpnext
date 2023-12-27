@@ -1,9 +1,10 @@
 # Copyright (c) 2023, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-import frappe, requests
+import frappe, requests, json
 from frappe.model.document import Document
 from urllib.parse import urljoin
+from six import string_types
 
 class SyncDoctypeSettings(Document):
 	def get_login(self):
@@ -53,7 +54,13 @@ class SyncAPI():
 		return res
 
 	def set_success(self, log_name):
-		res = self.req("POST", "frappe.core.doctype.sync_log.sync_log.update_success", {"log_name":log_name})
+		logs = []
+		if isinstance(log_name, string_types):
+			logs = [log_name]
+		else:
+			logs = log_name
+
+		res = self.req("POST", "frappe.core.doctype.sync_log.sync_log.update_success", {"logs":json.dumps(logs)})
 		return res
 	
 	def get_updates(self):
