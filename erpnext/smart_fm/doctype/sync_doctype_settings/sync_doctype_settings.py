@@ -49,8 +49,8 @@ class SyncAPI():
 		return result.get("message")
 
 	
-	def get_pending_log(self):
-		res = self.req("GET", "frappe.core.doctype.sync_log.sync_log.get_pending_log")
+	def get_pending_log(self, filters={}):
+		res = self.req("GET", "frappe.core.doctype.sync_log.sync_log.get_pending_log", {"filters": json.dumps(filters) })
 		return res
 
 	def set_success(self, log_name):
