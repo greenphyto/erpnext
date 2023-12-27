@@ -43,6 +43,17 @@ frappe.ui.form.on("Company", {
 				}
 			};
 		});
+
+		frm.set_query('fixed_asset_account', function() {
+			return {
+				"filters": {
+					"account_type": "Fixed Asset",
+					"root_type": "Asset",
+					"is_group": 0,
+					"company": frm.doc.name
+				}
+			};
+		});
 	},
 
 	company_name: function(frm) {

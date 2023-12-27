@@ -14,6 +14,7 @@ class AssetCategory(Document):
 		self.validate_account_types()
 		self.validate_account_currency()
 		self.valide_cwip_account()
+		self.set_default_account()
 
 	def validate_finance_books(self):
 		for d in self.finance_books:
@@ -95,6 +96,15 @@ class AssetCategory(Document):
 				)
 				frappe.throw(msg, title=_("Missing Account"))
 
+	def set_default_account(self):
+		for d in self.get("accounts"):
+			if not d.fixed_asset_account:
+				account = frappe.get_value("Company", d.company_name, "fixed_asset_account")
+				if not account:
+					frappe.throw(_("Please set default Fixed Asset Account in Company settings"))
+				
+				d.fixed_asset_account = account
+			
 
 @frappe.whitelist()
 def get_asset_category_account(

@@ -85,6 +85,7 @@
   "depreciation_expense_account",
   "series_for_depreciation_entry",
   "expenses_included_in_asset_valuation",
+  "fixed_asset_account",
   "column_break_40",
   "disposal_account",
   "depreciation_cost_center",
@@ -694,6 +695,12 @@
    "label": "Default Provisional Account",
    "no_copy": 1,
    "options": "Account"
+  },
+  {
+   "fieldname": "fixed_asset_account",
+   "fieldtype": "Link",
+   "label": "Fixed Asset Account",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-building",
@@ -701,7 +708,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2022-08-16 16:09:02.327724",
+ "modified": "2023-12-27 12:27:31.359680",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",
