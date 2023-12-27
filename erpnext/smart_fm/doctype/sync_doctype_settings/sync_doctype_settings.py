@@ -45,9 +45,17 @@ class SyncAPI():
 
 		result =  res.json()
 
-		return result.get("message") or {}
+		return result.get("message")
 
 	
 	def get_pending_log(self):
 		res = self.req("GET", "frappe.core.doctype.sync_log.sync_log.get_pending_log")
 		return res
+
+	def set_success(self, log_name):
+		res = self.req("POST", "frappe.core.doctype.sync_log.sync_log.update_success", {"log_name":log_name})
+		return res
+	
+	def get_updates(self):
+		# get update from every pending logs
+		pass
