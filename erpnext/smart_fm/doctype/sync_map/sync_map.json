@@ -1,0 +1,102 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "SYNC.#####",
+ "creation": "2023-12-27 15:10:48.097699",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "origin_site",
+  "origin_doctype",
+  "origin_name",
+  "column_break_6wfy5",
+  "destination_doctype",
+  "destination_name",
+  "section_break_lg9tu",
+  "last_sync"
+ ],
+ "fields": [
+  {
+   "fieldname": "origin_site",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Origin Site",
+   "read_only": 1
+  },
+  {
+   "fieldname": "origin_doctype",
+   "fieldtype": "Data",
+   "label": "Origin Doctype",
+   "read_only": 1
+  },
+  {
+   "fieldname": "origin_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Origin Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_6wfy5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "destination_doctype",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Destination Doctype",
+   "options": "DocType",
+   "read_only": 1
+  },
+  {
+   "fieldname": "destination_name",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Destination Name",
+   "options": "destination_doctype",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_lg9tu",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "Now",
+   "fieldname": "last_sync",
+   "fieldtype": "Datetime",
+   "label": "Last Sync",
+   "read_only": 1
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-12-27 15:21:57.784791",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Sync Map",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
