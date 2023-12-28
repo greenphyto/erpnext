@@ -1562,7 +1562,7 @@ class CreateAsset():
 
 	def create_asset(self):
 		source = self.source
-		existing = frappe.db.exists("Asset", {"asset_name":self.source.asset_name })
+		existing = frappe.db.exists("Asset", {"name":self.source.name })
 
 		if existing:
 			asset = frappe.get_doc("Asset", existing)
@@ -1572,7 +1572,6 @@ class CreateAsset():
 		asset = frappe.new_doc("Asset")
 		asset.update(
 			{
-				"name": source.name,
 				"doctype": "Asset",
 				"asset_name": source.asset_name,
 				"asset_category": source.asset_category,
@@ -1592,9 +1591,12 @@ class CreateAsset():
 			}
 		)
 
+		asset.flags.name_set = True
+		asset.name = source.name
+
 		# not yet for not existing asset to existing asset
 
-		asset.save(ignore_permissions=1)
+		asset.insert(ignore_permissions=1)
 		asset.submit()
 		self.asset = asset
 
