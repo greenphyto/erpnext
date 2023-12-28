@@ -1306,6 +1306,6 @@ def get_default_asset_code_data(asset_code):
 from frappe.core.doctype.sync_log.sync_log import delete_log, create_log
 def asset_trigger(doc, method=""):
 	if method in ("on_cancel", "on_trash"):
-		delete_log(doc.doctype, doc.name)
+		create_log(doc.doctype, doc.name, 'Cancel' if method == 'on_cancel' else "Delete")
 	else:
 		create_log(doc.doctype, doc.name)
