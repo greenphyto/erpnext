@@ -359,6 +359,11 @@ doc_events = {
 	"Integration Request": {
 		"validate": "erpnext.accounts.doctype.payment_request.payment_request.validate_payment"
 	},
+    "Asset":{
+        "on_submit":"erpnext.assets.doctype.asset.asset.asset_trigger",
+        "on_cancel": "erpnext.assets.doctype.asset.asset.asset_trigger",
+        "on_update_after_submit": "erpnext.assets.doctype.asset.asset.asset_trigger"
+	}
 }
 
 # On cancel event Payment Entry will be exempted and all linked submittable doctype will get cancelled.
