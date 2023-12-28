@@ -382,7 +382,8 @@ doc_events = {
 	},
     "Asset": {
         "before_submit": "erpnext.smart_fm.controllers.smart_fm.create_asset_qrcode",
-        "on_update_after_submit": "erpnext.smart_fm.controllers.smart_fm.create_asset_qrcode"
+        "on_update_after_submit": "erpnext.smart_fm.controllers.smart_fm.create_asset_qrcode",
+        "on_cancel": "erpnext.assets.doctype.asset.asset.remove_sync_map"
 	},
     ("Maintenance Request", "Tenant Feedback", "Access Request", "Emergency Contact Information", "Key Control", "Vendor Registration", "Tenant Feedback"):{
         "after_insert": "erpnext.smart_fm.controllers.smart_fm.directly_workflow_from_webform"
@@ -456,7 +457,8 @@ scheduler_events = {
 		"erpnext.selling.doctype.quotation.quotation.set_expired_status",
 		"erpnext.buying.doctype.supplier_quotation.supplier_quotation.set_expired_status",
 		"erpnext.accounts.doctype.process_statement_of_accounts.process_statement_of_accounts.send_auto_email",
-        "erpnext.assets.doctype.asset_maintenance.asset_maintenance.create_planned_asset_maintenance_log"
+        "erpnext.assets.doctype.asset_maintenance.asset_maintenance.create_planned_asset_maintenance_log",
+        "erpnext.assets.doctype.asset.asset.sync_asset",
 	],
 	"daily_long": [
 		"erpnext.setup.doctype.email_digest.email_digest.send",

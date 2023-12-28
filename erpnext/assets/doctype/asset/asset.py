@@ -1559,7 +1559,8 @@ class CreateAsset():
 			self.asset = asset
 			return asset
 		
-		asset = frappe.get_doc(
+		asset = frappe.new_doc("Asset")
+		asset.update(
 			{
 				"name": source.name,
 				"doctype": "Asset",
@@ -1583,7 +1584,7 @@ class CreateAsset():
 
 		# not yet for not existing asset to existing asset
 
-		asset.save()
+		asset.save(ignore_permissions=1)
 		asset.submit()
 		self.asset = asset
 
@@ -1644,3 +1645,13 @@ def remove_base_field(source):
 			del source[field]
 	
 	return source
+
+def remove_sync_map(doc, method=""):
+	exists = frappe.db.exists("Sync Map", {
+		"destination_doctype":doc.doctype, 
+		"destination_name":doc.name
+	})
+	if not exists:
+		return
+
+	frappe.delete_doc("Sync Map", exists)
