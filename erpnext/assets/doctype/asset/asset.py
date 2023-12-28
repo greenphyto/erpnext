@@ -1554,12 +1554,31 @@ class CreateAsset():
 		pass
 
 	def create_item(self):
-		pass
+		if frappe.db.exists("Item", self.source.item_code):
+			return
+		
+		data = remove_base_field(self.api.get_resource("Item", self.source.item_code))
+		item = frappe.get_doc(data)
+
+		if data.get("stock_uom") and not frappe.db.exists("UOM", data.get("stock_uom")):
+			frappe.get_doc({"doctype": "UOM", "uom_name": data.get("stock_uom")}).insert(ignore_if_duplicate=True)
+
+		item.update({
+			"item_group": "All Item Groups",
+			"item_department": [],
+			"item_defaults": [],
+			"reorder_levels": [],
+			"uoms":[],
+			"taxes":[],
+			"customer_items": [],
+			"barcodes":[],
+			"attributes":[],
+			"auto_create_assets":0
+		})
+		item.insert(ignore_if_duplicate=True)
+		return item
 
 	def create_asset_category(self):
-		pass
-
-	def create_asset_location(self):
 		if frappe.db.exists("Asset Category", self.source.asset_category):
 			return
 		
@@ -1577,6 +1596,10 @@ class CreateAsset():
 		)
 
 		asset_category.insert()
+
+	def create_asset_location(self):
+		if not frappe.db.exists("Location", self.source.location):
+			frappe.get_doc({"doctype": "Location", "location_name": self.source.location}).insert()
 
 def remove_base_field(source):
 	IGNORE_FIELD_MAP = ['owner', 'creation', 'name', 'modified', 'modified_by']
