@@ -15,7 +15,7 @@ def get_sync_map(origin_doctype, origin_name, method_name):
 		"method_name": method_name
 	})
 	if not exists:
-		return False
+		return 
 	else:
 		return frappe.get_doc("Sync Map", exists)
 	
