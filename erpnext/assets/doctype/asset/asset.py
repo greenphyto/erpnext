@@ -1551,7 +1551,35 @@ class CreateAsset():
 		return self.asset
 
 	def create_asset(self):
-		pass
+		source = self.source
+		asset = frappe.get_doc(
+			{
+				"doctype": "Asset",
+				"asset_name": source.asset_name,
+				"asset_category": source.asset_category,
+				"item_code": source.item_code,
+				"company": self.company,
+				"purchase_date": source.purchase_date,
+				"calculate_depreciation": 0,
+				"opening_accumulated_depreciation": source.opening_accumulated_depreciation,
+				"number_of_depreciations_booked": source.number_of_depreciations_booked,
+				"gross_purchase_amount": source.gross_purchase_amount,
+				"purchase_receipt_amount": source.purchase_receipt_amount,
+				"maintenance_required": source.maintenance_required,
+				"available_for_use_date": source.available_for_use_date,
+				"location": source.location,
+				"is_existing_asset": 1,
+				"asset_quantity": source.get("asset_quantity"),
+			}
+		)
+
+		# not yet for not existing asset to existing asset
+
+		asset.save()
+		asset.submit()
+		self.asset = asset
+
+		return asset
 
 	def create_item(self):
 		if frappe.db.exists("Item", self.source.item_code):
