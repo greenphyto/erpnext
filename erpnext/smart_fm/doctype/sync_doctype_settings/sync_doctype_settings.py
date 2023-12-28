@@ -25,7 +25,6 @@ class SyncAPI():
 	
 	def get_login(self):
 		if self.session.cookies.get("user_id"):
-			print(26)
 			return
 		
 		url = self.get_url("login")
@@ -64,7 +63,7 @@ class SyncAPI():
 		res = self.req("POST", "frappe.core.doctype.sync_log.sync_log.update_success", {"logs":json.dumps(logs)})
 		return res
 	
-	def get_updates(self, doctype, docname):
+	def get_resource(self, doctype, docname):
 		# get update from every pending logs
 		self.get_login()
 		url = urljoin(self.settings.origin_site, f"/api/resource/{doctype}/{docname}")

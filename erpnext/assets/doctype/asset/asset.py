@@ -1516,16 +1516,16 @@ def sync_asset():
 	api = SyncAPI()
 	logs = api.get_pending_log({"doc_type":"Asset"})
 	for log in logs:
-		source_doc = api.get_updates(log['doctype'], log['name'])
-		sync_asset_data(source_doc)
+		source_doc = api.get_resource(log['doctype'], log['name'])
+		sync_asset_data(source_doc, api)
 
 from erpnext.smart_fm.doctype.sync_map.sync_map import get_sync_map, create_sync_map
-def sync_asset_data(source_doc):
+def sync_asset_data(source_doc, api=None):
 	sync_map = get_sync_map(source_doc.doctype, source_doc.name, METHOD_NAME)
 	if not sync_map:
 		# create new
-		asset = CreateAsset(source_doc).build()
-		create_sync_map(source_doc, asset, METHOD_NAME)
+		asset = CreateAsset(source_doc, api).build()
+		# create_sync_map(source_doc, asset, METHOD_NAME)
 
 	elif get_datetime(sync_map.last_sync) < get_datetime(source_doc.modified):
 		# update
@@ -1535,14 +1535,20 @@ def sync_asset_data(source_doc):
 		pass
 
 class CreateAsset():
-	def __init__(self, source_doc):
-		self.source_doc = source_doc
+	def __init__(self, source_doc, api=None):
+		self.source = source_doc
+		self.api = api
+		self.reff = frappe._dict({})
+		self.company = erpnext.get_default_company()
+
+		self.asset = source_doc
 	
 	def build(self):
 		self.create_asset_location()
 		self.create_asset_category()
 		self.create_item()
 		self.create_asset()
+		return self.asset
 
 	def create_asset(self):
 		pass
@@ -1554,4 +1560,28 @@ class CreateAsset():
 		pass
 
 	def create_asset_location(self):
-		pass
+		if frappe.db.exists("Asset Category", self.source.asset_category):
+			return
+		
+		self.reff.asset_category = remove_base_field(self.api.get_resource("Asset Category", self.source.asset_category))
+		
+		asset_category = frappe.new_doc("Asset Category")
+		asset_category.update(self.reff.asset_category)
+		asset_category.accounts = []
+
+		asset_category.append(
+			"accounts",
+			{
+				"company_name": self.company,
+			},
+		)
+
+		asset_category.insert()
+
+def remove_base_field(source):
+	IGNORE_FIELD_MAP = ['owner', 'creation', 'name', 'modified', 'modified_by']
+	for field in IGNORE_FIELD_MAP:
+		if field in source:
+			del source[field]
+	
+	return source
