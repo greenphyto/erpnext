@@ -1518,6 +1518,7 @@ def sync_asset():
 	for log in logs:
 		source_doc = api.get_resource(log['doctype'], log['name'])
 		sync_asset_data(source_doc, api)
+		api.set_success(log['log_name'])
 
 from erpnext.smart_fm.doctype.sync_map.sync_map import get_sync_map, create_sync_map
 def sync_asset_data(source_doc, api=None):
@@ -1525,7 +1526,8 @@ def sync_asset_data(source_doc, api=None):
 	if not sync_map:
 		# create new
 		asset = CreateAsset(source_doc, api).build()
-		# create_sync_map(source_doc, asset, METHOD_NAME)
+		create_sync_map(source_doc, asset, METHOD_NAME)
+		return True
 
 	elif get_datetime(sync_map.last_sync) < get_datetime(source_doc.modified):
 		# update
@@ -1540,8 +1542,6 @@ class CreateAsset():
 		self.api = api
 		self.reff = frappe._dict({})
 		self.company = erpnext.get_default_company()
-
-		self.asset = source_doc
 	
 	def build(self):
 		self.create_asset_location()
@@ -1552,8 +1552,16 @@ class CreateAsset():
 
 	def create_asset(self):
 		source = self.source
+		existing = frappe.db.exists("Asset", {"asset_name":self.source.asset_name })
+
+		if existing:
+			asset = frappe.get_doc("Asset", existing)
+			self.asset = asset
+			return asset
+		
 		asset = frappe.get_doc(
 			{
+				"name": source.name,
 				"doctype": "Asset",
 				"asset_name": source.asset_name,
 				"asset_category": source.asset_category,

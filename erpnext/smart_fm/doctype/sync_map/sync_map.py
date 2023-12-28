@@ -24,7 +24,7 @@ def create_sync_map(source, result, method_name):
 	doc.origin_doctype = source.doctype
 	doc.origin_name = source.name
 	doc.destination_doctype = result.doctype
-	doc.destination_name = source.name
+	doc.destination_name = result.name
 	doc.method_name = method_name
 	doc.last_sync = now()
 	doc.insert(ignore_permissions=1)
