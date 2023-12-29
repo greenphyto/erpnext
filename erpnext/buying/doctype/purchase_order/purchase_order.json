@@ -16,6 +16,7 @@
   "order_confirmation_no",
   "order_confirmation_date",
   "get_items_from_open_material_requests",
+  "payment_terms_template",
   "column_break_7",
   "transaction_date",
   "schedule_date",
@@ -123,7 +124,6 @@
   "customer_contact_email",
   "terms_tab",
   "payment_schedule_section",
-  "payment_terms_template",
   "payment_schedule",
   "terms_section_break",
   "tc_name",
@@ -866,7 +866,7 @@
   {
    "fieldname": "payment_terms_template",
    "fieldtype": "Link",
-   "label": "Payment Terms Template",
+   "label": "Payment Terms",
    "options": "Payment Terms Template"
   },
   {
@@ -1238,7 +1238,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-12-27 12:04:26.949566",
+ "modified": "2023-12-29 13:55:18.072035",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order",
