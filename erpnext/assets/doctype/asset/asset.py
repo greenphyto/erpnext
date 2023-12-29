@@ -1518,6 +1518,7 @@ def sync_asset():
 	for log in logs:
 		sync_asset_data(log, api)
 		api.set_success(log['log_name'])
+	frappe.enqueue("erpnext.assets.doctype.asset.asset.update_missing_asset_qr_code")
 
 from erpnext.smart_fm.doctype.sync_map.sync_map import get_sync_map, create_sync_map
 def sync_asset_data(log, api=None):
@@ -1667,3 +1668,9 @@ def remove_sync_map(doc, method=""):
 		return
 
 	frappe.delete_doc("Sync Map", exists)
+
+from erpnext.smart_fm.controllers.smart_fm import save_qrcode_image
+def update_missing_asset_qr_code():
+	data = frappe.db.get_all("Asset", {"qrcode_image":['is','not set']})
+	for d in data:
+		save_qrcode_image("Asset", d.name, True)

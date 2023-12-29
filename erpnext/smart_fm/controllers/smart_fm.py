@@ -110,7 +110,7 @@ def send_due_date_notification_task():
 			`tabToDo`
 		WHERE
 			status = 'Planned' and DATEDIFF(date, CURDATE()) <= reminder_at
-		    and reminder_off = 0
+			and reminder_off = 0
 	""", as_dict=1)
 	for d in data:
 		doc = frappe.get_doc("ToDo", d.name)
@@ -176,6 +176,9 @@ import imgkit,base64
 def save_qrcode_image(doctype, name, update_db=False):
 	# get image qrcode
 	# save to doctype
+	if not frappe.db.exists(doctype, name):
+		return
+	
 	url = get_url("/qrcode_preview?doctype={}&name={}".format(doctype, name))
 	options = {'width': 400, 'disable-smart-width': ''}
 	string_img = imgkit.from_url(url, False, options=options)
