@@ -332,3 +332,4 @@ erpnext.patches.v14_0.migrate_gl_to_payment_ledger
 erpnext.patches.v14_0.update_company_in_ldc
 erpnext.patches.v14_0.update_todo_task
 erpnext.patches.v14_0.update_task_maintenance_log_name
+erpnext.patches.v14_0.reset_role_vendor
