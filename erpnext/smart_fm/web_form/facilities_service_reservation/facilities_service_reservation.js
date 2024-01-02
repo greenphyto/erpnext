@@ -1,4 +1,3 @@
-console.log("here form")
 
 frappe.ready(function() {
 	setup();
@@ -14,7 +13,6 @@ frappe.ready(function() {
 	])
 
 	// bind events here
-	console.log("here form")
 	frappe.web_form.on("service", (frm, value)=>{
 		if (value){
 			frappe.set_value_web_form("Facility Service", {"name":value}, [

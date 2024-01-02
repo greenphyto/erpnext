@@ -57,7 +57,6 @@ class FacilityCalendar{
 
   get_events(opts, callback){
     var me = this;
-    console.log(opts);
     var start = frappe.datetime.get_datetime_as_string(opts.start);
     var end = frappe.datetime.get_datetime_as_string(opts.end);
 
@@ -84,7 +83,6 @@ class FacilityCalendar{
       d.id = d.name
     });
 
-    console.log(events)
     return events
   }
 

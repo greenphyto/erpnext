@@ -43,5 +43,3 @@ $.extend(cur_frm.cscript, {
 		}
 	}
 })
-
-console.log("controller here")

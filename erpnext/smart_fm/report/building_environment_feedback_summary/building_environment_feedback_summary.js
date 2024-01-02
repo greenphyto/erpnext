@@ -50,13 +50,9 @@ frappe.query_reports["Building Environment Feedback Summary"] = {
 		}
 	}, 
 	"formatter": function(value, row, column, data, default_formatter) {
-		if (value=="Button"){
-			console.log("Here")
-		}
 		value = default_formatter(value, row, column, data);
 		if (data && data.is_group) {
 			value = value.bold();
-			console.log(16, value)
 		}
 		if (value=="Button"){
 			return `<div>

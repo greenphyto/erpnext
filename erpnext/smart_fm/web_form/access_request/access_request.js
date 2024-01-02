@@ -1,6 +1,5 @@
 frappe.ready(function() {
 	// bind events here
-	console.log("here")
 	frappe.web_form.on("person", (frm, value)=>{
 		if (value=="Yes"){
 			// add child based on user login

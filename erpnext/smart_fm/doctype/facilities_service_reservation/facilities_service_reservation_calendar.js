@@ -41,7 +41,6 @@ class FacilitiesCards{
 	constructor(calendar){
 		this.main = calendar;
 		this.page = this.main.page;
-		console.log("add new custom");
 		this.setup_container();
 		this.get_main_data();
 	}

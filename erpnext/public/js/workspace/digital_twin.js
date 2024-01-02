@@ -1,4 +1,3 @@
-console.log("From custom Unity")
 
 class UnityViewer{
     constructor(page){
@@ -12,7 +11,6 @@ class UnityViewer{
         this.wrapper = $("<div id='wrapper-custom'></div>");
         this.main.attr('style', 'height: max-content !important');
         this.main.append(this.wrapper);
-        console.log(this.wrapper);
         this.render_unity();
     }
 
