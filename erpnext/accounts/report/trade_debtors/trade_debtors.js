@@ -239,7 +239,6 @@ frappe.query_reports["Trade Debtors"] =  {
 erpnext.utils.add_dimensions('Accounts Receivable', 9);
 
 function fetch_AccountPayable(){
-	console.log('entered into function');
 	var wfl_department=''
 	frappe.call({
 	method: "frappe.client.get_value",
