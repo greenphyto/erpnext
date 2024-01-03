@@ -223,14 +223,14 @@
    "label": "Building Management Comment"
   },
   {
-   "depends_on": "eval: doc.workflow_state == 'Accepted' || doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Rejected'",
+   "depends_on": "",
    "fieldname": "bm_comment",
    "fieldtype": "Text Editor",
    "label": "Comment",
    "permlevel": 2
   },
   {
-   "depends_on": "eval: doc.workflow_state == 'Accepted' || doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Rejected'",
+   "depends_on": "",
    "fieldname": "bm_attachment",
    "fieldtype": "Attach Image",
    "label": "Attachment",
@@ -248,7 +248,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-01-02 12:00:32.367952",
+ "modified": "2024-01-03 15:22:32.105320",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Access Request",
@@ -283,6 +283,18 @@
    "select": 1,
    "share": 1,
    "submit": 1,
+   "write": 1
+  },
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "permlevel": 2,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Building Management",
+   "share": 1,
    "write": 1
   }
  ],
