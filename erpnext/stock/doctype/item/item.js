@@ -182,6 +182,9 @@ frappe.ui.form.on("Item", {
 		});
 
 		frm.toggle_reqd('customer', frm.doc.is_customer_provided_item ? 1:0);
+		if (frm.doc.material_group){
+			frm.set_df_property("material_group", "read_only", 1);
+		}
 	},
 
 	validate: function(frm){

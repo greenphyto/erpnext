@@ -33,6 +33,18 @@ from erpnext.controllers.item_variant import (
 from erpnext.setup.doctype.item_group.item_group import invalidate_cache_for
 from erpnext.stock.doctype.item_default.item_default import ItemDefault
 
+MATERIAL_MAP = {
+	"Seeds"							:"10.####",
+	"Nutrition"						:"11.####",
+	"Other Packaging"				:"13.####",
+	"Vegetables (Lettuce)"			:"14.####",
+	"Vegetables (Asian Vegetables)"	:"15.####",
+	"LED"							:"20.####",
+	"Gataway"						:"21.####",
+	"Dimmer Controller"				:"22.####",
+	"FG - Systems"					:"26.####"
+}
+
 
 class DuplicateReorderRows(frappe.ValidationError):
 	pass
@@ -117,6 +129,8 @@ class Item(Document):
 		self.cant_change()
 		self.validate_item_tax_net_rate_range()
 		self.insert_department()
+		self.set_material_number()
+
 		set_item_tax_from_hsn_code(self)
 
 		if not self.is_new():
@@ -1000,6 +1014,15 @@ class Item(Document):
 					title=_("Enable Auto Re-Order"),
 					indicator="orange",
 				)
+
+	def set_material_number(self):
+		from frappe.model.naming import parse_naming_series
+		if self.get("material_group"):
+			series = MATERIAL_MAP.get(self.material_group)
+			if not self.get("material_number"):
+				self.material_number = parse_naming_series(series)
+		else:
+			self.material_number = ""
 
 
 def make_item_price(item, price_list_name, item_price):
