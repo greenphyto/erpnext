@@ -2464,7 +2464,6 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 				this.frm.set_value("items", []);
 				this.change_item_preview();
 			}else{
-				console.log("back to previous non stock or not")
 				var field = this.frm.fields_dict.non_stock_item;
 				var d = locals[this.frm.doctype][this.frm.doc.name]
 				d.non_stock_item = field.old_value
