@@ -32,7 +32,6 @@ form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
 class PurchaseOrder(BuyingController):
 	def __init__(self, *args, **kwargs):
-		print("Here PO init")
 		super(PurchaseOrder, self).__init__(*args, **kwargs)
 		self.status_updater = [
 			{
@@ -50,11 +49,9 @@ class PurchaseOrder(BuyingController):
 
 	def onload(self):
 		supplier_tds = frappe.db.get_value("Supplier", self.supplier, "tax_withholding_category")
-		print("PO here")
 		self.set_onload("supplier_tds", supplier_tds)
 
 	def validate(self):
-		print("Here PO validate")
 		super(PurchaseOrder, self).validate()
 
 		self.set_status()
