@@ -10,4 +10,7 @@ def get_context(context):
     if not frappe.db.exists(doctype, name):
         return
     
-    context.doc = frappe.get_doc(doctype, name)
+    context.name = name
+    context.doctype = doctype
+    context.doc = frappe.db.get_value(doctype, name, "*")
+    context.doc.doctype = doctype
