@@ -183,6 +183,10 @@ website_route_rules = [
 		},
 	},
 	{"from_route": "/project", "to_route": "Project"},
+	{
+		"from_route": "/qrcode/<cdt>/<cdn>",
+		"to_route": "qrcode_preview_page",
+	},
 ]
 
 standard_portal_menu_items = [

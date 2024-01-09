@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html{
+            height: fit-content;
+        }
+        body{
+            width: 10cm;
+            height: fit-content;
+            padding: 10px;
+            margin: auto;
+            font-size: 0.9em;
+            font-family: Inter, "Helvetica Neue", Helvetica, Arial, "Open Sans", sans-serif;
+        }
+        .column-image{
+            width: 5cm;
+            border-right: 1px solid black;
+        }
+        .column-top{
+            height: 1cm;
+            padding: 5px;
+            padding-top: 10px;
+        }
+        .column-middle{
+            height: 2cm;
+            padding: 5px;
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+        }
+        .column-bottom{
+            height: 1.5cm;
+        }
+        .qrcode-table{
+            width: 100%;
+        }
+        .qr-code-wrapper{
+            display: flex;
+        }
+        .img-qrcode{
+            width: 5cm;
+            height: 5cm;
+        }
+        .img-qrcode img{
+            width: 100%;
+            height: auto;
+        }
+        .qr-data{
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .doctype{
+            font-size: 0.9em;
+            font-style: italic;
+        }
+        .docname{
+            text-align: center;
+            margin-top: 4px;
+        }
+        .top-info{
+            flex: 2;
+            padding: 6px 8px 3px;
+            font-size: 0.92em;
+        }
+        .asset-name{
+            font-size: 1.6em;
+            font-weight: 600;
+            flex: 4; 
+            text-align: center;
+        }
+        .asset-category{
+            flex: 4;
+        }
+        .asset-category-div{
+            font-style: italic;
+            font-size: 1em;
+            color: #484848;
+            text-align: center;
+        }
+        .flex-center{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .border-all{
+            border: 1px solid black;
+        }
+        .no-data{
+            height: 5cm;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+    </style>
+</head>
+<body>
+    {% if doc %}
+    <table class="qrcode-table border-all">
+        <tr>
+            <td rowspan="3" class="column-image">
+                <div class="img-qrcode">
+                    <img src="data:image/svg+xml;base64,{{ get_qrcode(doctype=doc.doctype, docname=doc.name, commit=1)}}"> 
+                </div>
+            </td>
+            <td class="column-top">
+                <div class="top-info">
+                    <div class="doctype">{{doc.doctype}}</div>
+                    <div class="docname">{{doc.name}}</div>
+                </div>   
+            </td>
+        </tr>
+        <tr>
+            <td class="column-middle">
+                <div class="asset-name flex-center">
+                    <div class="asset-name-div text-center" style="font-size: {{ font_size or 24 }}px;">
+                        {{name_view}}
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td class="column-bottom">
+                <div class="asset-category flex-center">
+                    <div class="asset-category-div text-center">
+                        {{doc.asset_category}}
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+    {% else %}
+    <div class="qr-code-wrapper border-all">
+        <div class="no-data">No Data</div>
+    </div>
+    {% endif %}
+</body>
+</html>
