@@ -579,16 +579,19 @@
    "label": "Warranty Information"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "warranty_start",
    "fieldtype": "Date",
    "label": "Warranty Start"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "warranty_end",
    "fieldtype": "Date",
    "label": "Warranty End"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "warranty_coverage",
    "fieldtype": "Text Editor",
    "label": "Warranty Coverage"
@@ -598,6 +601,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "warranty_agreement",
    "fieldtype": "Attach",
    "label": "Warranty Agreement"
@@ -630,7 +634,7 @@
    "table_fieldname": "accounts"
   }
  ],
- "modified": "2023-08-30 16:25:58.019164",
+ "modified": "2024-01-10 14:15:12.111974",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",
