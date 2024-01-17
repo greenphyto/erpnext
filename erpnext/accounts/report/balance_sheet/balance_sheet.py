@@ -15,7 +15,7 @@ from erpnext.accounts.report.financial_statements import (
 
 from erpnext.accounts.utils import remove_account_number
 from erpnext.accounts.report.utils import convert_wrap_report_data
-
+from erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement import execute as pl_report
 
 def execute(filters=None):
 	period_list = get_period_list(
@@ -73,7 +73,7 @@ def execute(filters=None):
 	)
 
 	provisional_profit_loss, total_credit = get_provisional_profit_loss(
-		asset, liability, equity, period_list, filters.company, currency
+		asset, liability, equity, period_list, filters.company, currency, filters=filters
 	)
 
 	message, opening_balance = check_opening_balance(asset, liability, equity)
@@ -136,10 +136,12 @@ def execute(filters=None):
 
 
 def get_provisional_profit_loss(
-	asset, liability, equity, period_list, company, currency=None, consolidated=False
+	asset, liability, equity, period_list, company, currency=None, consolidated=False, filters={}
 ):
 	provisional_profit_loss = {}
 	total_row = {}
+	pl_data = get_pl_report_data(filters)
+
 	if asset and (liability or equity):
 		total = total_row_total = 0
 		currency = currency or frappe.get_cached_value("Company", company, "default_currency")
@@ -170,6 +172,14 @@ def get_provisional_profit_loss(
 
 			total_row_total += flt(total_row[key])
 			total_row["total"] = total_row_total
+
+			# different P/L for greenphyto
+			# P/L only calculate based on fiscal year start and end, not accumulated
+			# 17Jan23
+			value = pl_data.get(key)
+			if value != None:
+				provisional_profit_loss[key] = value	
+
 
 		if has_value:
 			provisional_profit_loss.update(
@@ -281,3 +291,12 @@ def get_chart_data(filters, columns, asset, liability, equity):
 		chart["type"] = "line"
 
 	return chart
+
+def get_pl_report_data(filters):
+	pl_data = pl_report(filters)
+	data = {}
+	if len(pl_data) > 1 and pl_data[1]:
+		for d in pl_data[1]:
+			if d.get("profit_data"):
+				data = d
+	return data
