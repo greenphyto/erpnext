@@ -144,6 +144,7 @@ def get_net_profit_loss(income, expense, period_list, company, currency=None, co
 		"account_name": "'" + _("Profit for the year") + "'",
 		"account": "'" + _("Profit for the year") + "'",
 		"warn_if_negative": True,
+		"profit_data":1,
 		"currency": currency or frappe.get_cached_value("Company", company, "default_currency"),
 	}
 

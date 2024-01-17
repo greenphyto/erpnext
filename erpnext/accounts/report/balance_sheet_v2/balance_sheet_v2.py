@@ -70,7 +70,7 @@ def execute(filters=None):
 	)
 
 	provisional_profit_loss, total_credit = get_provisional_profit_loss(
-		asset, liability, equity, period_list, filters.company, currency
+		asset, liability, equity, period_list, filters.company, currency, filters=filters
 	)
 
 	message, opening_balance = check_opening_balance(asset, liability, equity)
@@ -133,10 +133,12 @@ def execute(filters=None):
 
 
 def get_provisional_profit_loss(
-	asset, liability, equity, period_list, company, currency=None, consolidated=False
+	asset, liability, equity, period_list, company, currency=None, consolidated=False, filters={}
 ):
 	provisional_profit_loss = {}
 	total_row = {}
+	pl_data = get_pl_report_data(filters)
+
 	if asset and (liability or equity):
 		total = total_row_total = 0
 		currency = currency or frappe.get_cached_value("Company", company, "default_currency")
@@ -151,16 +153,12 @@ def get_provisional_profit_loss(
 		for period in period_list:
 			key = period if consolidated else period.key
 			effective_liability = 0.0
-			print("Key:", key)
 			if liability:
 				effective_liability += flt(liability[-2].get(key))
 			if equity:
 				effective_liability += flt(equity[-2].get(key))
 
-			print(160, effective_liability)
 			provisional_profit_loss[key] = flt(asset[-2].get(key)) - effective_liability
-			print(161, flt(asset[-2].get(key)))
-			print(162, provisional_profit_loss[key] )
 			total_row[key] = effective_liability + provisional_profit_loss[key]
 
 			if provisional_profit_loss[key]:
@@ -171,6 +169,14 @@ def get_provisional_profit_loss(
 
 			total_row_total += flt(total_row[key])
 			total_row["total"] = total_row_total
+
+			# different P/L for greenphyto
+			# P/L only calculate based on fiscal year start and end, not accumulated
+			# 17Jan23
+			value = pl_data.get(key)
+			if value != None:
+				provisional_profit_loss[key] = value	
+
 
 		if has_value:
 			provisional_profit_loss.update(
@@ -285,4 +291,9 @@ def get_chart_data(filters, columns, asset, liability, equity):
 
 def get_pl_report_data(filters):
 	pl_data = pl_report(filters)
-	print(pl_data)
+	data = {}
+	if len(pl_data) > 1 and pl_data[1]:
+		for d in pl_data[1]:
+			if d.get("profit_data"):
+				data = d
+	return data
