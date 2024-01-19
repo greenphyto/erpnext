@@ -473,12 +473,13 @@ def set_gl_entries_by_account(
 
 		gl_entries = frappe.db.sql(
 			"""
-			select posting_date, account, debit, credit, is_opening, fiscal_year,
+			select posting_date, account, debit, credit, is_opening, fiscal_year, voucher_type,
 				debit_in_account_currency, credit_in_account_currency, account_currency from `tabGL Entry`
 			where company=%(company)s
 			{additional_conditions}
 			and posting_date <= %(to_date)s
-			and is_cancelled = 0""".format(
+			and is_cancelled = 0
+			""".format(
 				additional_conditions=additional_conditions
 			),
 			gl_filters,
@@ -489,6 +490,8 @@ def set_gl_entries_by_account(
 			convert_to_presentation_currency(gl_entries, get_currency(filters), filters.get("company"))
 
 		for entry in gl_entries:
+			if entry.voucher_type == 'Period Closing Voucher':
+				entry.posting_date = add_days(entry.posting_date, 1)
 			gl_entries_by_account.setdefault(entry.account, []).append(entry)
 
 		return gl_entries_by_account
