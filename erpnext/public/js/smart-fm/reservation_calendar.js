@@ -52,7 +52,7 @@ class FacilityCalendar{
   };
 
   make_new_reservation(){
-    window.location.href = "/smart-fm/facilities-service-reservation/new";
+    window.location.href = "/menu/facilities-service-reservation/new";
   }
 
   get_events(opts, callback){
