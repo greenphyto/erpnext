@@ -427,7 +427,8 @@ scheduler_events = {
 		"erpnext.buying.doctype.supplier_quotation.supplier_quotation.set_expired_status",
 		"erpnext.accounts.doctype.process_statement_of_accounts.process_statement_of_accounts.send_auto_email",
 		"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_daily",
-        "erpnext.setup.doctype.currency_exchange.currency_exchange.save_main_currency_rate"
+        "erpnext.setup.doctype.currency_exchange.currency_exchange.save_main_currency_rate",
+        "erpnext.controllers.foms.update_foms_supplier"
 	],
 	"weekly": [
 		"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_weekly",
