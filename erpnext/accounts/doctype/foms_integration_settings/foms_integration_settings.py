@@ -6,9 +6,13 @@ from frappe.model.document import Document
 from urllib.parse import urljoin
 from six import string_types
 from frappe.model.document import Document
+from frappe.utils import cint
 
 class FOMSIntegrationSettings(Document):
 	pass
+
+def is_enable_integration():
+	return cint(frappe.db.get_single_value('FOMS Integration Settings', "enable"))
 
 class FomsAPI():
 	# API
@@ -20,7 +24,7 @@ class FomsAPI():
 	def init_request(self):
 		self.session = requests.Session()
 		self.update_header({
-			'accept': 'text/plain',
+			'accept': 'application/json',
 			'Content-Type': 'application/json-patch+json',
 		})
 
@@ -56,6 +60,7 @@ class FomsAPI():
 	def req(self, req="POST", method="", data={}, params={}):
 		url = self.get_url(method)
 		self.get_login()
+		print(data)
 		print(url)
 		if req == "POST":
 			res = self.session.post(url, data=data, params=params)
@@ -63,7 +68,10 @@ class FomsAPI():
 			res = self.session.get(url, data=data, params=params)
 
 		print(res.status_code)
+		# print(res.text[:500])
 		result =  res.json()
+		if "error" in result and result['error']:
+			print("ERROR: ", result['error'])
 
 		return result.get("result")
 	
@@ -71,5 +79,12 @@ class FomsAPI():
 		res = self.req("GET", "/Customer/GetAllCustomer", params={
 			"MaxResultCount":999
 		})
+
+		return res
+	
+	def create_or_update_supplier(self, data={}):
+		data['isFromERP'] = True
+
+		res = self.req("POST", "/Supplier/CreateOrUpdateSupplier", data= json.dumps(data) )
 
 		return res

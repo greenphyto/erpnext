@@ -11,7 +11,9 @@
   "password",
   "column_break_4",
   "enable",
-  "section_break_6"
+  "section_break_6",
+  "farm_id",
+  "country_id"
  ],
  "fields": [
   {
@@ -48,12 +50,22 @@
   {
    "fieldname": "section_break_6",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "farm_id",
+   "fieldtype": "Int",
+   "label": "Farm ID"
+  },
+  {
+   "fieldname": "country_id",
+   "fieldtype": "Data",
+   "label": "Country ID"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-01-04 17:42:07.775997",
+ "modified": "2024-01-24 15:54:57.039193",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "FOMS Integration Settings",
