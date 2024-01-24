@@ -15,6 +15,7 @@
   "country",
   "supplier_code_series",
   "supplier_code",
+  "foms_id",
   "column_break0",
   "supplier_group",
   "supplier_type",
@@ -466,6 +467,12 @@
    "fieldtype": "Select",
    "label": "Supplier Code Series",
    "options": "S0.####\nS1.####\nS2.####\nS3.####\nS4.####\nS5.####"
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-user",
@@ -478,7 +485,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2023-09-20 15:05:15.226839",
+ "modified": "2024-01-24 16:51:50.818129",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",

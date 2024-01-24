@@ -60,15 +60,11 @@ class FomsAPI():
 	def req(self, req="POST", method="", data={}, params={}):
 		url = self.get_url(method)
 		self.get_login()
-		print(data)
-		print(url)
 		if req == "POST":
 			res = self.session.post(url, data=data, params=params)
 		else:
 			res = self.session.get(url, data=data, params=params)
 
-		print(res.status_code)
-		# print(res.text[:500])
 		result =  res.json()
 		if "error" in result and result['error']:
 			print("ERROR: ", result['error'])
