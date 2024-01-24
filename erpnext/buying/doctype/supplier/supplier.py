@@ -17,6 +17,7 @@ from erpnext.accounts.party import (  # noqa
 	validate_party_accounts,
 )
 from erpnext.utilities.transaction_base import TransactionBase
+from frappe.core.doctype.sync_log.sync_log import create_log
 
 
 class Supplier(TransactionBase):
@@ -77,6 +78,7 @@ class Supplier(TransactionBase):
 
 		validate_party_accounts(self)
 		self.validate_internal_supplier()
+		create_log(self.doctype, self.name)
 
 	@frappe.whitelist()
 	def get_supplier_group_details(self):
@@ -154,6 +156,7 @@ class Supplier(TransactionBase):
 			)
 
 		delete_contact_and_address("Supplier", self.name)
+		create_log(self.doctype, self.name, "Delete")
 
 	def after_rename(self, olddn, newdn, merge=False):
 		if frappe.defaults.get_global_default("supp_master_name") == "Supplier Name":
