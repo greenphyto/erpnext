@@ -65,11 +65,16 @@ class FomsAPI():
 		else:
 			res = self.session.get(url, data=data, params=params)
 
+		if frappe.flags.in_test:
+			print(data)
+			print(res.status_code)
+			print(res.text)
+
 		result =  res.json()
 		if "error" in result and result['error']:
 			print("ERROR: ", result['error'])
 
-		return result.get("result")
+		return result.get("result") or {}
 	
 	def get_all_customer(self):
 		res = self.req("GET", "/Customer/GetAllCustomer", params={
@@ -82,5 +87,12 @@ class FomsAPI():
 		data['isFromERP'] = True
 
 		res = self.req("POST", "/Supplier/CreateOrUpdateSupplier", data= json.dumps(data) )
+
+		return res
+
+	def create_or_update_customer(self, data={}):
+		data['isFromERP'] = True
+
+		res = self.req("POST", "/Customer/CreateOrUpdateCustomer", data= json.dumps(data) )
 
 		return res
