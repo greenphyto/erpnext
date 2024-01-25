@@ -1,5 +1,5 @@
 import frappe
-from erpnext.accounts.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration
+from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration
 from frappe.core.doctype.sync_log.sync_log import get_pending_log
 from frappe.utils import cint
 from erpnext.accounts.party import get_party_details

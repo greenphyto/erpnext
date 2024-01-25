@@ -65,9 +65,9 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-01-24 15:54:57.039193",
+ "modified": "2024-01-25 16:02:03.987648",
  "modified_by": "Administrator",
- "module": "Accounts",
+ "module": "FOMS",
  "name": "FOMS Integration Settings",
  "owner": "Administrator",
  "permissions": [
