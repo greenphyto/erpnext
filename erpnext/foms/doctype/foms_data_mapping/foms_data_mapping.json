@@ -1,0 +1,121 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "FMAP.#####",
+ "creation": "2024-01-25 15:54:43.747596",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_2",
+  "reference",
+  "data_type",
+  "data_name",
+  "reference_column",
+  "destination",
+  "doc_type",
+  "doc_name",
+  "section_break_8",
+  "status",
+  "raw_data_section",
+  "data"
+ ],
+ "fields": [
+  {
+   "fieldname": "data",
+   "fieldtype": "Code",
+   "label": "Data"
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "data_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Data Type"
+  },
+  {
+   "fieldname": "data_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Data Name"
+  },
+  {
+   "fieldname": "reference_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "doc_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Doc Type",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "doc_name",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Doc Name",
+   "options": "doc_type"
+  },
+  {
+   "fieldname": "section_break_8",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "Unknown",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Unknown\nSuccess"
+  },
+  {
+   "fieldname": "reference",
+   "fieldtype": "Heading",
+   "label": "Reference"
+  },
+  {
+   "fieldname": "destination",
+   "fieldtype": "Heading",
+   "label": "Destination"
+  },
+  {
+   "fieldname": "raw_data_section",
+   "fieldtype": "Section Break",
+   "label": "Raw Data"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-25 16:00:05.498287",
+ "modified_by": "Administrator",
+ "module": "FOMS",
+ "name": "FOMS Data Mapping",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
