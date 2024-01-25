@@ -24,6 +24,7 @@ from erpnext.accounts.party import (  # noqa
 	validate_party_accounts,
 )
 from erpnext.utilities.transaction_base import TransactionBase
+from frappe.core.doctype.sync_log.sync_log import create_log
 
 
 class Customer(TransactionBase):
@@ -112,6 +113,9 @@ class Customer(TransactionBase):
 		if self.sales_team:
 			if sum(member.allocated_percentage or 0 for member in self.sales_team) != 100:
 				frappe.throw(_("Total contribution percentage should be equal to 100"))
+		
+		create_log(self.doctype, self.name)
+
 
 	@frappe.whitelist()
 	def get_customer_group_details(self):
