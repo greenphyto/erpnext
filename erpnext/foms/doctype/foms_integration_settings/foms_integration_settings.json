@@ -13,7 +13,9 @@
   "enable",
   "section_break_6",
   "farm_id",
-  "country_id"
+  "country_id",
+  "section_break_9",
+  "get_foms_raw_material"
  ],
  "fields": [
   {
@@ -60,12 +62,21 @@
    "fieldname": "country_id",
    "fieldtype": "Data",
    "label": "Country ID"
+  },
+  {
+   "fieldname": "section_break_9",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "get_foms_raw_material",
+   "fieldtype": "Button",
+   "label": "Get FOMS Raw Material"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-01-25 16:02:03.987648",
+ "modified": "2024-01-25 16:06:10.901463",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",

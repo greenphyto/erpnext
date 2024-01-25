@@ -9,7 +9,9 @@ from frappe.model.document import Document
 from frappe.utils import cint
 
 class FOMSIntegrationSettings(Document):
-	pass
+	@frappe.whitelist()
+	def get_raw_material(self):
+		frappe.enqueue("erpnext.controllers.foms.get_raw_material", show_progress=True)
 
 def is_enable_integration():
 	return cint(frappe.db.get_single_value('FOMS Integration Settings', "enable"))

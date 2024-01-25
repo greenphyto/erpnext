@@ -2,7 +2,15 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('FOMS Integration Settings', {
-	// refresh: function(frm) {
-
-	// }
+	onload: function(frm){
+		frappe.realtime.on("progress_foms_download", data=>{
+			console.log(data)
+		})
+	},
+	get_foms_raw_material: function(frm) {
+		frappe.call({
+			"doc": frm.doc,
+			"method":"get_raw_material"
+		})
+	}
 });
