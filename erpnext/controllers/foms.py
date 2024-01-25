@@ -1,8 +1,9 @@
 import frappe
-from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration
+from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
 from frappe.core.doctype.sync_log.sync_log import get_pending_log
 from frappe.utils import cint
 from erpnext.accounts.party import get_party_details
+from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
 
 """
 Make Supplier from ERP to FOMS
@@ -35,7 +36,8 @@ def update_foms_supplier():
 # RAW MATERIAL (GET)
 def get_raw_material(show_progress=False):
 	title = "Get FOMS raw material.."
-
+	api = FomsAPI()
+	farm_id = get_farm_id()
 	def show_progress_bar(percent):
 		if show_progress:
 			frappe.publish_realtime("progress_foms_download", {
@@ -43,10 +45,17 @@ def get_raw_material(show_progress=False):
 				"title":title
 			})
 		  
-	data = [x for x in range(100)]
+	raw = api.get_raw_material(farm_id)
+	data = raw.get("items")
+	print(data)
 	
 	total_count = len(data)
 	for i in range(total_count):
+		d = data[i]
+
+		# pull to foms data mapping
+		create_foms_data("Raw Material", d.get("rawMaterialName"), d)
+
 		percent = (i+1)/total_count*100
 		if i % 10 == 0:
 			show_progress_bar(percent)
@@ -56,7 +65,7 @@ def get_raw_material(show_progress=False):
 def _update_foms_supplier(api, log):
 	supplier = frappe.get_doc("Supplier", log.name)
 	details = get_party_details(supplier.name, party_type="Supplier")
-	farm_id = cint(frappe.db.get_single_value('FOMS Integration Settings', "farm_id"))
+	farm_id = get_farm_id()
 	data = {
 		"farmId": farm_id,
 		"supplierID": supplier.foms_id,
@@ -80,7 +89,7 @@ def _update_foms_customer(api, log):
 	customer = frappe.get_doc("Customer", log.name)
 	details = get_party_details(customer.name, party_type="Customer")
 	# print(details)
-	farm_id = cint(frappe.db.get_single_value('FOMS Integration Settings', "farm_id"))
+	farm_id = get_farm_id()
 	address = details.address_display or details.company_address_display
 	shipping_address = details.get("shipping_address") or address
 

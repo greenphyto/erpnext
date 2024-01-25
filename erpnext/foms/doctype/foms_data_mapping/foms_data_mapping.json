@@ -18,14 +18,10 @@
   "section_break_8",
   "status",
   "raw_data_section",
-  "data"
+  "raw_data",
+  "view_in_console"
  ],
  "fields": [
-  {
-   "fieldname": "data",
-   "fieldtype": "Code",
-   "label": "Data"
-  },
   {
    "fieldname": "section_break_2",
    "fieldtype": "Section Break"
@@ -75,7 +71,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Unknown\nSuccess"
+   "options": "Unknown\nMapped"
   },
   {
    "fieldname": "reference",
@@ -91,11 +87,22 @@
    "fieldname": "raw_data_section",
    "fieldtype": "Section Break",
    "label": "Raw Data"
+  },
+  {
+   "fieldname": "raw_data",
+   "fieldtype": "Code",
+   "label": "Raw Data",
+   "read_only": 1
+  },
+  {
+   "fieldname": "view_in_console",
+   "fieldtype": "Button",
+   "label": "View in console"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-25 16:00:05.498287",
+ "modified": "2024-01-25 17:38:15.818479",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Data Mapping",

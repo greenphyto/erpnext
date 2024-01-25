@@ -11,10 +11,15 @@ from frappe.utils import cint
 class FOMSIntegrationSettings(Document):
 	@frappe.whitelist()
 	def get_raw_material(self):
+		frappe.flags.in_migrate = 1
 		frappe.enqueue("erpnext.controllers.foms.get_raw_material", show_progress=True)
 
 def is_enable_integration():
 	return cint(frappe.db.get_single_value('FOMS Integration Settings', "enable"))
+
+def get_farm_id():
+	farm_id = cint(frappe.db.get_single_value('FOMS Integration Settings', "farm_id"))
+	return farm_id
 
 class FomsAPI():
 	# API
@@ -98,3 +103,10 @@ class FomsAPI():
 		res = self.req("POST", "/Customer/CreateOrUpdateCustomer", data= json.dumps(data) )
 
 		return res
+	
+	def get_raw_material(self, farm_id):
+		params = {
+			"FarmId":farm_id
+		}
+		res = self.req("GET", "/RawMaterial/GetAllRawMaterial", params=params )
+		return res.get("rawMaterialFinishList") or {}

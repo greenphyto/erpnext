@@ -2,7 +2,8 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('FOMS Data Mapping', {
-	// refresh: function(frm) {
-
-	// }
+	view_in_console: function(frm) {
+		console.log(JSON.parse(frm.doc.raw_data));
+		frappe.show_alert("Print to browser console",3)
+	}
 });
