@@ -14,6 +14,42 @@ def execute(filters=None):
 	
 	return CashFlowReport(filters).run()
 
+ACCOUNT = {
+	"Direct Income": "Direct Income - GPL",
+	"COGS":"Cost of Goods Sold - GPL",
+	"COS":"Cost of Sales - GPL",
+	"Selling & Marketing": "600002 - Selling & Marketing - GPL - GPL",
+	"Staff Cost": "600001 - Staff Cost - GPL",
+	"Professional Cost": "600003 - Audit & Consultation Fees - GPL",
+	"Expense Operating": "Expenses-Operating - GPL",
+	"Expense Other": "Expenses-Other - GPL",
+	"Depreciation": "Depreciation - GPL",
+	"Finance Expense": "Finance Expenses - GPL",
+	"Other Income": "Indirect Income - GPL"
+}
+
+# region
+
+def get_pl_report_data(filters):
+	pl_data = pl_report(filters)
+	data = {}
+	if len(pl_data) > 1 and pl_data[1]:
+		for d in pl_data[1]:
+			if d.get("account"):
+				data[d['account']] = d
+
+	return data
+
+def get_bs_report_data(filters):
+	bs_data = bs_report(filters)
+	data = {}
+	if len(bs_data) > 1 and bs_data[1]:
+		for d in bs_data[1]:
+			if d.get("account"):
+				data[d['account']] = d
+
+	return data
+
 class CashFlowReport():
 	def __init__(self, filters):
 		self.filters = filters
@@ -40,35 +76,127 @@ class CashFlowReport():
 
 	def get_data(self):
 		self.data = []
-		pl_data = get_pl_report_data(filters=self.filters)
+		self.pl_data = get_pl_report_data(filters=self.filters)
 	
 		self.filters.accumulated_values = 1
-		bs_data = get_bs_report_data(filters=self.filters)
-		self.data = [bs_data]
+		self.bs_data = get_bs_report_data(filters=self.filters)
+
+		self.cf_data = {}
+		self.data = [self.pl_data, self.bs_data, self.cf_data]
 
 	def run(self):
 		self.setup_report()
 		self.setup_column()
 		self.get_data()
+		self.process_data()
 
 		return self.columns, self.data
+	
+	def get_row_reference(self, source, account):
+		if source == "PL":
+			return self.pl_data.get(account) 
+		elif source == "BS":
+			return self.bs_data.get(account)
+		elif source == "CF":
+			return self.cf_data.get(account)
 
-def get_pl_report_data(filters):
-	pl_data = pl_report(filters)
-	data = {}
-	if len(pl_data) > 1 and pl_data[1]:
-		for d in pl_data[1]:
-			if d.get("account"):
-				data[d['account']] = d
+	def loop_data(self, account_title, func):
+		data = {
+			'account' : account_title
+		}
+		for period in self.period_list:
+			key = period.key
+			data[key] = func(key)
 
-	return data
+		self.cf_data[account_title] = data
+		self.data.append(data)
+		
+		return data
+	
+	def process_data(self):
+		# Revenue
+		ref = self.get_row_reference("PL", ACCOUNT['Direct Income'])
+		self.loop_data("Revenue", lambda key: ref[key])
 
-def get_bs_report_data(filters):
-	bs_data = bs_report(filters)
-	data = {}
-	if len(bs_data) > 1 and bs_data[1]:
-		for d in bs_data[1]:
-			if d.get("account"):
-				data[d['account']] = d
+		# COGS
+		ref = self.get_row_reference("PL", ACCOUNT['COGS'])
+		ref2 = self.get_row_reference("PL", ACCOUNT['COS'])
+		self.loop_data("COGS", lambda key: ref[key]+ref2[key])
 
-	return data
+		# Gross Profit
+		ref = self.get_row_reference("CF", "Revenue")
+		ref2 = self.get_row_reference("CF", "COGS")
+		self.loop_data("Gross Profit", lambda key: ref[key]-ref2[key])
+
+		# Less: Operating Expenses
+		self.loop_data("Less: Operating Expenses", lambda key: "")
+
+		# Sales and Marketing Cost
+		ref = self.get_row_reference("PL", ACCOUNT['Selling & Marketing'])
+		self.loop_data("Sales and Marketing Cost", lambda key: ref[key])
+
+		# Manpower Cost
+		ref = self.get_row_reference("PL", ACCOUNT["Staff Cost"])
+		self.loop_data("Manpower Cost", lambda key: ref[key])
+
+		# Professional Fees
+		ref = self.get_row_reference("PL", ACCOUNT["Professional Cost"])
+		self.loop_data("Professional Fees", lambda key: ref[key])
+
+		# Other Expenses
+		ref = self.get_row_reference("PL", ACCOUNT["Expense Operating"])
+		ref1 = self.get_row_reference("PL", ACCOUNT["Expense Other"])
+		ref2 = self.get_row_reference("CF", "Sales and Marketing Cost")
+		ref3 = self.get_row_reference("CF", "Manpower Cost")
+		ref4 = self.get_row_reference("CF", "Professional Fees")
+		self.loop_data("Other Expenses", lambda key: ref[key]+ref1[key]-ref2[key]-ref3[key]-ref4[key])
+
+		# Operating Expenses
+		self.loop_data("Operating Expenses", lambda key: sum([ 
+			self.cf_data['Sales and Marketing Cost'][key],
+			self.cf_data['Manpower Cost'][key],
+			self.cf_data['Professional Fees'][key],
+			self.cf_data['Other Expenses'][key],
+		]))
+
+		# Operating Profit/ (Loss)
+		self.loop_data("Operating Profit/ (Loss)", lambda key: sum([ 
+			self.cf_data['Gross Profit'][key],
+			-1*self.cf_data['Operating Expenses'][key],
+		]))
+
+		# Depreciation
+		ref = self.get_row_reference("PL", ACCOUNT["Depreciation"])
+		self.loop_data("Depreciation", lambda key: ref[key])
+
+		# Interest
+		ref = self.get_row_reference("PL", ACCOUNT["Finance Expense"])
+		self.loop_data("Interest", lambda key: ref[key])
+
+		# EBITDA
+		self.loop_data("EBITDA", lambda key: sum([ 
+			self.cf_data['Operating Profit/ (Loss)'][key],
+			self.cf_data['Depreciation'][key],
+			self.cf_data['Interest'][key],
+		]))
+
+# endregion
+
+
+		# Other Income
+		ref = self.get_row_reference("PL", ACCOUNT["Other Income"])
+		self.loop_data("Other Income", lambda key: ref[key])
+
+		# Net Profit/ (Loss)
+		self.loop_data("EBITDA", lambda key: sum([ 
+			self.cf_data['Operating Profit/ (Loss)'][key],
+			self.cf_data['Other Income'][key],
+		]))
+
+		
+
+
+
+
+
+	
