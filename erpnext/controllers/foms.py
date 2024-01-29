@@ -17,6 +17,8 @@ UOM_MAPPING = {
 	"g":"gram"
 }
 
+
+
 # SUPPLIER (POST)
 def update_foms_supplier():
 	if not is_enable_integration():
@@ -40,35 +42,91 @@ def update_foms_customer():
 		if log.update_type == "Update":
 			_update_foms_customer(api, log) 
 
+class GetData():
+	def __init__(self, data_type, get_data, get_key_name, post_process, show_progress=False):
+		self.data_type = data_type
+		self.show_progress = show_progress
+		self.get_data = get_data
+		self.get_key_name = get_key_name
+		self.post_process = post_process
+	
+	def setup(self):
+		self.api = FomsAPI()
+		self.farm_id = get_farm_id()
+
+	def run(self):
+		self.setup()
+		title = f"Get FOMS {self.data_type}..."
+		def show_progress_bar(percent):
+			if self.show_progress:
+				frappe.publish_realtime("progress_foms_download", {
+					"percent":percent,
+					"title":title
+				})
+			
+		raw = self.api.get_raw_material(self.farm_id)
+		data = raw.get("items")
+
+		data = self.get_data(self)
+
+		
+		total_count = len(data)
+		for i in range(total_count):
+			d = data[i]
+
+			# pull to foms data mapping
+			key_name = self.get_key_name(d)
+			map_doc = create_foms_data("Raw Material", key_name, d)
+			result = self.post_process(d)
+			map_doc.doc_type = "Item"
+			map_doc.doc_name = result
+			map_doc.save()
+
+			percent = (i+1)/total_count*100
+			if i % 10 == 0:
+				show_progress_bar(percent)
+
+
 # RAW MATERIAL (GET)
 def get_raw_material(show_progress=False):
-	title = "Get FOMS raw material.."
-	api = FomsAPI()
-	farm_id = get_farm_id()
-	def show_progress_bar(percent):
-		if show_progress:
-			frappe.publish_realtime("progress_foms_download", {
-				"percent":percent,
-				"title":title
-			})
-		  
-	raw = api.get_raw_material(farm_id)
-	data = raw.get("items")
+	def get_data(gd):
+		raw = gd.api.get_raw_material(gd.farm_id)
+		data = raw.get("items")
+		return data
+
+	def post_process(log):
+		return create_raw_material(log) 
+
+	def get_key_name(log):
+		return log.get("rawMaterialRefNo")
 	
-	total_count = len(data)
-	for i in range(total_count):
-		d = data[i]
+	GetData(
+		data_type = "Raw Material",
+		get_data=get_data,
+		get_key_name = get_key_name,
+		post_process=post_process
+	).run()
 
-		# pull to foms data mapping
-		map_doc = create_foms_data("Raw Material", d.get("rawMaterialRefNo"), d)
-		result = create_raw_material(d)
-		map_doc.doc_type = "Item"
-		map_doc.doc_name = result
-		map_doc.save()
 
-		percent = (i+1)/total_count*100
-		if i % 10 == 0:
-			show_progress_bar(percent)
+# PRODUCTS (GET)
+def get_products(show_progress=False):
+	def get_data(gd):
+		raw = gd.api.get_raw_material(gd.farm_id)
+		data = raw.get("items")
+		return data
+
+	def post_process(log):
+		return create_raw_material(log) 
+
+	def get_key_name(log):
+		return log.get("rawMaterialRefNo")
+	
+	GetData(
+		data_type = "Raw Material",
+		get_data=get_data,
+		get_key_name = get_key_name,
+		post_process=post_process
+	).run()
 
 		
 
