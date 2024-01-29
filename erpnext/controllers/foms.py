@@ -23,7 +23,7 @@ def update_foms_supplier():
 			_update_foms_supplier(api, log) 
 
 # CUSTOMER (POST)
-def update_foms_supplier():
+def update_foms_customer():
 	if not is_enable_integration():
 		return 
 	
@@ -47,20 +47,23 @@ def get_raw_material(show_progress=False):
 		  
 	raw = api.get_raw_material(farm_id)
 	data = raw.get("items")
-	print(data)
 	
 	total_count = len(data)
 	for i in range(total_count):
 		d = data[i]
 
 		# pull to foms data mapping
-		create_foms_data("Raw Material", d.get("rawMaterialName"), d)
+		map_doc = create_foms_data("Raw Material", d.get("rawMaterialRefNo"), d)
+		result = create_raw_material(d)
+		map_doc.doc_type = "Item"
+		map_doc.doc_name = result
+		map_doc.save()
 
 		percent = (i+1)/total_count*100
 		if i % 10 == 0:
 			show_progress_bar(percent)
 
-		  
+		
 
 def _update_foms_supplier(api, log):
 	supplier = frappe.get_doc("Supplier", log.name)
@@ -109,3 +112,7 @@ def _update_foms_customer(api, log):
 	res = api.create_or_update_customer(data)
 	if 'customerRefNo' in res:
 		customer.db_set("foms_id", res['customerRefNo'])
+
+def create_raw_material(log):
+	exists = frappe.get_value("Item", log.get("rawMaterialRefNo"))
+	return exists

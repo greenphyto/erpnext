@@ -31,3 +31,5 @@ def create_foms_data(data_type, data_name, raw):
 	doc.raw_data = json.dumps(raw)
 
 	doc.save()
+
+	return doc

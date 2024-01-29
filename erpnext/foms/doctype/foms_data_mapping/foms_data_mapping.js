@@ -4,6 +4,6 @@
 frappe.ui.form.on('FOMS Data Mapping', {
 	view_in_console: function(frm) {
 		console.log(JSON.parse(frm.doc.raw_data));
-		frappe.show_alert("Print to browser console",3)
+		frappe.show_alert("Plot to console",3)
 	}
 });
