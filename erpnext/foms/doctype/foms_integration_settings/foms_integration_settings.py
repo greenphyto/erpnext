@@ -106,7 +106,8 @@ class FomsAPI():
 	
 	def get_raw_material(self, farm_id):
 		params = {
-			"FarmId":farm_id
+			"FarmId":farm_id,
+			"MaxResultCount":99999
 		}
 		res = self.req("GET", "/RawMaterial/GetAllRawMaterial", params=params )
 		return res.get("rawMaterialFinishList") or {}

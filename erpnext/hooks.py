@@ -430,6 +430,7 @@ scheduler_events = {
         "erpnext.setup.doctype.currency_exchange.currency_exchange.save_main_currency_rate",
         "erpnext.controllers.foms.update_foms_supplier",
         "erpnext.controllers.foms.update_foms_customer",
+        "erpnext.controllers.foms.get_raw_material",
 	],
 	"weekly": [
 		"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_weekly",

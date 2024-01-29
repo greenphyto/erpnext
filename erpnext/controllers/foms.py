@@ -131,6 +131,7 @@ def create_raw_material(log):
 		doc.description = log.rawMaterialDescription
 		doc.stock_uom = convert_uom(log.unitOfMeasurement)
 		doc.item_group = "Raw Material"
+		doc.safety_stock = log.safetyLevel
 		doc.insert()
 		name = doc.name
 
