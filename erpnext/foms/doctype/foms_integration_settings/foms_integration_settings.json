@@ -7,17 +7,19 @@
  "engine": "InnoDB",
  "field_order": [
   "foms_url",
+  "enable",
+  "column_break_4",
   "user",
   "password",
-  "column_break_4",
-  "enable",
   "section_break_6",
   "farm_id",
+  "column_break_8",
   "country_id",
+  "default_section",
+  "product_uom",
   "section_break_9",
   "get_foms_raw_material",
-  "default_section",
-  "product_uom"
+  "get_foms_products"
  ],
  "fields": [
   {
@@ -53,7 +55,8 @@
   },
   {
    "fieldname": "section_break_6",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Settings"
   },
   {
    "fieldname": "farm_id",
@@ -66,15 +69,18 @@
    "label": "Country ID"
   },
   {
+   "collapsible": 1,
    "fieldname": "section_break_9",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Sync Data"
   },
   {
    "fieldname": "get_foms_raw_material",
    "fieldtype": "Button",
-   "label": "Get FOMS Raw Material"
+   "label": "Get Raw Material"
   },
   {
+   "collapsible": 1,
    "fieldname": "default_section",
    "fieldtype": "Section Break",
    "label": "Default"
@@ -84,12 +90,21 @@
    "fieldtype": "Link",
    "label": "Product UOM",
    "options": "UOM"
+  },
+  {
+   "fieldname": "get_foms_products",
+   "fieldtype": "Button",
+   "label": "Get Products"
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-01-29 14:26:51.681068",
+ "modified": "2024-01-29 14:47:14.456084",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",

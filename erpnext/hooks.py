@@ -431,6 +431,7 @@ scheduler_events = {
         "erpnext.controllers.foms.update_foms_supplier",
         "erpnext.controllers.foms.update_foms_customer",
         "erpnext.controllers.foms.get_raw_material",
+        "erpnext.controllers.foms.get_products",
 	],
 	"weekly": [
 		"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_weekly",
