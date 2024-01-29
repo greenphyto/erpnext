@@ -10,6 +10,13 @@ Make Supplier from ERP to FOMS
 can update or delete
 supplierID = foms_id
 """
+
+# VARIABLE
+# mapping uom FOMS to ERP
+UOM_MAPPING = {
+	"g":"gram"
+}
+
 # SUPPLIER (POST)
 def update_foms_supplier():
 	if not is_enable_integration():
@@ -114,5 +121,20 @@ def _update_foms_customer(api, log):
 		customer.db_set("foms_id", res['customerRefNo'])
 
 def create_raw_material(log):
-	exists = frappe.get_value("Item", log.get("rawMaterialRefNo"))
-	return exists
+	name = frappe.get_value("Item", log.get("rawMaterialRefNo"))
+	log = frappe._dict(log)
+
+	if not name:
+		doc = frappe.new_doc("Item")
+		doc.item_code = log.rawMaterialRefNo
+		doc.item_name = log.rawMaterialName
+		doc.description = log.rawMaterialDescription
+		doc.stock_uom = convert_uom(log.unitOfMeasurement)
+		doc.item_group = "Raw Material"
+		doc.insert()
+		name = doc.name
+
+	return name
+
+def convert_uom(foms_uom):
+	return UOM_MAPPING.get(foms_uom) or foms_uom

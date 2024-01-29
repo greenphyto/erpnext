@@ -8,6 +8,9 @@ class FOMSDataMapping(Document):
 	def validate(self):
 		self.set_status()
 
+	def get_data(self):
+		return json.loads(self.raw_data)
+
 	def set_status(self):
 		if self.doc_type and self.doc_name:
 			self.status = "Mapped"
