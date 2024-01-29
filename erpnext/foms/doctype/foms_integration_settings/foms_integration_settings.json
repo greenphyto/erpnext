@@ -15,7 +15,9 @@
   "farm_id",
   "country_id",
   "section_break_9",
-  "get_foms_raw_material"
+  "get_foms_raw_material",
+  "default_section",
+  "product_uom"
  ],
  "fields": [
   {
@@ -71,12 +73,23 @@
    "fieldname": "get_foms_raw_material",
    "fieldtype": "Button",
    "label": "Get FOMS Raw Material"
+  },
+  {
+   "fieldname": "default_section",
+   "fieldtype": "Section Break",
+   "label": "Default"
+  },
+  {
+   "fieldname": "product_uom",
+   "fieldtype": "Link",
+   "label": "Product UOM",
+   "options": "UOM"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-01-25 16:06:10.901463",
+ "modified": "2024-01-29 14:26:51.681068",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",

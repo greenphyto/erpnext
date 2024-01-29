@@ -111,3 +111,11 @@ class FomsAPI():
 		}
 		res = self.req("GET", "/RawMaterial/GetAllRawMaterial", params=params )
 		return res.get("rawMaterialFinishList") or {}
+	
+	def get_products(self, farm_id):
+		params = {
+			"FarmId":farm_id,
+			"MaxResultCount":99999
+		}
+		res = self.req("GET", "/Product/GetAllProducts", params=params )
+		return res.get("productFinishedList") or {}

@@ -104,30 +104,37 @@ def get_raw_material(show_progress=False):
 		data_type = "Raw Material",
 		get_data=get_data,
 		get_key_name = get_key_name,
-		post_process=post_process
+		post_process=post_process,
+		show_progress=show_progress
 	).run()
 
 
 # PRODUCTS (GET)
 def get_products(show_progress=False):
 	def get_data(gd):
-		raw = gd.api.get_raw_material(gd.farm_id)
+		raw = gd.api.get_products(gd.farm_id)
 		data = raw.get("items")
 		return data
 
 	def post_process(log):
-		return create_raw_material(log) 
+		return create_products(log) 
 
 	def get_key_name(log):
-		return log.get("rawMaterialRefNo")
+		return log.get("productID")
 	
 	GetData(
-		data_type = "Raw Material",
+		data_type = "Product",
 		get_data=get_data,
 		get_key_name = get_key_name,
-		post_process=post_process
+		post_process=post_process,
+		show_progress=show_progress
 	).run()
 
+
+# EQUIPTMENT (GET)
+# RECIPE (GET)
+# WORK ORDER
+# FINISH PRODUCTS
 		
 
 def _update_foms_supplier(api, log):
@@ -180,9 +187,9 @@ def _update_foms_customer(api, log):
 
 def create_raw_material(log):
 	name = frappe.get_value("Item", log.get("rawMaterialRefNo"))
-	log = frappe._dict(log)
 
 	if not name:
+		log = frappe._dict(log)
 		doc = frappe.new_doc("Item")
 		doc.item_code = log.rawMaterialRefNo
 		doc.item_name = log.rawMaterialName
@@ -197,3 +204,22 @@ def create_raw_material(log):
 
 def convert_uom(foms_uom):
 	return UOM_MAPPING.get(foms_uom) or foms_uom
+
+def get_foms_settings(field):
+	return frappe.db.get_single_value("FOMS Integration Settings", field)
+
+def create_products(log):
+	name = frappe.get_value("Item", log.get("productID"))
+
+	if not name:
+		log = frappe._dict(log)
+		doc = frappe.new_doc("Item")
+		doc.item_code = log.productID
+		doc.item_name = log.productName
+		doc.description = log.productDesc or log.productDetail or log.productName
+		doc.stock_uom = get_foms_settings("product_uom")
+		doc.item_group = "Products"
+		doc.insert()
+		name = doc.name
+
+	return name
