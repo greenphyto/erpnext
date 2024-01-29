@@ -25,7 +25,13 @@ ACCOUNT = {
 	"Expense Other": "Expenses-Other - GPL",
 	"Depreciation": "Depreciation - GPL",
 	"Finance Expense": "Finance Expenses - GPL",
-	"Other Income": "Indirect Income - GPL"
+	"Other Income": "Indirect Income - GPL",
+	"Cash in Bank": "100030 - Cash in Bank - GPL",
+	"Investments": "100090 - Investments - GPL",
+	"Accounts Receivable": "100020 - Accounts Receivable - GPL",
+	"Deposit": "100060 - Deposit & Prepayment - GPL",
+	"Other Receivables": "147000 - GST Input Tax - GPL",
+	"Non Current Asset": "100000 - Non-Current Assets - GPL"
 }
 
 # region
@@ -193,7 +199,41 @@ class CashFlowReport():
 			self.cf_data['Other Income'][key],
 		]))
 
-		
+		# Cash and Cash on hand
+		ref = self.get_row_reference("BS", ACCOUNT["Cash in Bank"])
+		self.loop_data("Cash and Cash on hand", lambda key: ref[key])
+
+		# Investments
+		ref = self.get_row_reference("BS", ACCOUNT["Investments"])
+		self.loop_data("Investments", lambda key: ref[key])
+
+		# Accounts Receivables
+		ref = self.get_row_reference("BS", ACCOUNT["Accounts Receivable"])
+		self.loop_data("Accounts Receivables", lambda key: ref[key])
+
+		# Deposits
+		ref = self.get_row_reference("BS", ACCOUNT["Deposit"])
+		self.loop_data("Deposits", lambda key: ref[key])
+
+		# Other Receivables
+		ref = self.get_row_reference("BS", ACCOUNT["Other Receivables"])
+		self.loop_data("Other Receivables", lambda key: ref[key])
+
+		# Non-Current Assets
+		ref = self.get_row_reference("BS", ACCOUNT["Non Current Asset"])
+		self.loop_data("Non-Current Assets", lambda key: ref[key])
+
+		# Total Assets
+		self.loop_data("Total Assets", lambda key: sum([ 
+			self.cf_data['Cash and Cash on hand'][key],
+			self.cf_data['Investments'][key],
+			self.cf_data['Accounts Receivables'][key],
+			self.cf_data['Deposits'][key],
+			self.cf_data['Other Receivables'][key],
+			self.cf_data['Non-Current Assets'][key],
+		]))
+
+
 
 
 
