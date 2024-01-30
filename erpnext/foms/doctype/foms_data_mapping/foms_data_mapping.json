@@ -17,6 +17,8 @@
   "doc_name",
   "section_break_8",
   "status",
+  "last_sync",
+  "created_on",
   "raw_data_section",
   "raw_data",
   "view_in_console"
@@ -99,11 +101,25 @@
    "fieldname": "view_in_console",
    "fieldtype": "Button",
    "label": "View in console"
+  },
+  {
+   "default": "Now",
+   "fieldname": "last_sync",
+   "fieldtype": "Datetime",
+   "label": "Last Sync",
+   "read_only": 1
+  },
+  {
+   "default": "Now",
+   "fieldname": "created_on",
+   "fieldtype": "Datetime",
+   "label": "Created On",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-29 15:10:16.123610",
+ "modified": "2024-01-30 15:22:48.703258",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Data Mapping",

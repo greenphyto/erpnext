@@ -3,6 +3,7 @@
 
 import frappe, json
 from frappe.model.document import Document
+from frappe.utils import now
 
 class FOMSDataMapping(Document):
 	def validate(self):
@@ -30,8 +31,10 @@ def create_foms_data(data_type, data_name, raw):
 		doc = frappe.new_doc("FOMS Data Mapping")
 		doc.data_type = data_type
 		doc.data_name = data_name
+		doc.created_on = now()
 	
 	doc.raw_data = json.dumps(raw)
+	doc.last_sync = now()
 
 	doc.save()
 
