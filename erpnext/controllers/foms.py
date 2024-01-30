@@ -87,7 +87,7 @@ class GetData():
 			# pull to foms data mapping
 			key_name = self.get_key_name(d)
 			map_doc = create_foms_data(self.data_type, key_name, d)
-			result = self.post_process(d)
+			result = self.post_process(self, d)
 			map_doc.doc_type = self.doc_type
 			map_doc.doc_name = result
 			map_doc.save()
@@ -104,7 +104,7 @@ def get_raw_material(show_progress=False):
 		data = raw.get("items")
 		return data
 
-	def post_process(log):
+	def post_process(gd, log):
 		return create_raw_material(log) 
 
 	def get_key_name(log):
@@ -126,7 +126,7 @@ def get_products(show_progress=False):
 		data = raw.get("items")
 		return data
 
-	def post_process(log):
+	def post_process(gd, log):
 		return create_products(log) 
 
 	def get_key_name(log):
@@ -145,17 +145,18 @@ def get_products(show_progress=False):
 # Pending
 
 # RECIPE (GET)
-def get_recipe(product_id, show_progress=False):
+def get_recipe(show_progress=False):
 	def get_data(gd):
-		raw = gd.api.get_recipe(gd.farm_id, product_id)
-		data = [raw]
+		data = gd.api.get_product_list_for_recipe(gd.farm_id)
 		return data
 
-	def post_process(log):
-		return 
+	def post_process(gd, log):
+		product_id =  log.get("id")
+		raw = gd.api.get_product_process(gd.farm_id, product_id)
+		return create_bom_products(raw, product_id)
 
 	def get_key_name(log):
-		return log.get("productRefNo")
+		return log.get("productId")
 	
 	GetData(
 		data_type = "Recipe",
@@ -282,7 +283,6 @@ def create_bom_products(log, product_id):
 	item_name = frappe.get_value("Item", {"foms_id":product_id})
 	# find existing
 	name = find_existing_bom(item_name, log.productVersionName)
-
 	if not name and item_name:
 		for op in log.preHarvestProcess:
 			op = frappe._dict(op)
@@ -308,6 +308,8 @@ def create_bom_products(log, product_id):
 
 			bom.insert()
 			name = bom.name
+	
+	return name
 
 def find_existing_bom(item, foms_version):
 	return frappe.get_value("BOM", {"item":item, "foms_recipe_version":foms_version})
