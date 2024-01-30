@@ -84,6 +84,7 @@
    "label": "Destination"
   },
   {
+   "collapsible": 1,
    "fieldname": "raw_data_section",
    "fieldtype": "Section Break",
    "label": "Raw Data"
@@ -102,7 +103,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-25 17:38:15.818479",
+ "modified": "2024-01-29 15:10:16.123610",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Data Mapping",

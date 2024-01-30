@@ -122,3 +122,20 @@ class FomsAPI():
 		}
 		res = self.req("GET", "/Product/GetAllProducts", params=params )
 		return res.get("productFinishedList") or {}
+
+	def get_recipe(self, farm_id, product_id):
+		params = {
+			"FarmId":farm_id,
+			"ProductId": product_id,
+		}
+		res = self.req("GET", "/Recipe/GetRecipeByProductId", params=params )
+		return res
+	
+	def get_product_process(self, farm_id, product_id):
+		params = {
+			"FarmId":farm_id,
+			"ProductId": product_id,
+		}
+		res = self.req("GET", "/Product/GetProductProcessByProductID", params=params )
+		return res
+		

@@ -14,7 +14,9 @@ supplierID = foms_id
 # VARIABLE
 # mapping uom FOMS to ERP
 UOM_MAPPING = {
-	"g":"gram"
+	"g":"gram",
+	"L":"Litre",
+	"ml":"Millilitre",
 }
 
 
@@ -43,12 +45,13 @@ def update_foms_customer():
 			_update_foms_customer(api, log) 
 
 class GetData():
-	def __init__(self, data_type, get_data, get_key_name, post_process, show_progress=False):
+	def __init__(self, data_type, get_data, get_key_name, post_process, doc_type="Item", show_progress=False):
 		self.data_type = data_type
 		self.show_progress = show_progress
 		self.get_data = get_data
 		self.get_key_name = get_key_name
 		self.post_process = post_process
+		self.doc_type = doc_type
 	
 	def setup(self):
 		self.api = FomsAPI()
@@ -63,9 +66,6 @@ class GetData():
 					"percent":percent,
 					"title":title
 				})
-			
-		raw = self.api.get_raw_material(self.farm_id)
-		data = raw.get("items")
 
 		data = self.get_data(self)
 
@@ -76,9 +76,9 @@ class GetData():
 
 			# pull to foms data mapping
 			key_name = self.get_key_name(d)
-			map_doc = create_foms_data("Raw Material", key_name, d)
+			map_doc = create_foms_data(self.data_type, key_name, d)
 			result = self.post_process(d)
-			map_doc.doc_type = "Item"
+			map_doc.doc_type = self.doc_type
 			map_doc.doc_name = result
 			map_doc.save()
 
@@ -132,7 +132,30 @@ def get_products(show_progress=False):
 
 
 # EQUIPTMENT (GET)
+# Pending
+
 # RECIPE (GET)
+def get_recipe(product_id, show_progress=False):
+	def get_data(gd):
+		raw = gd.api.get_recipe(gd.farm_id, product_id)
+		data = [raw]
+		return data
+
+	def post_process(log):
+		return 
+
+	def get_key_name(log):
+		return log.get("productRefNo")
+	
+	GetData(
+		data_type = "Recipe",
+		doc_type="BOM",
+		get_data=get_data,
+		get_key_name = get_key_name,
+		post_process=post_process,
+		show_progress=show_progress
+	).run()
+	
 # WORK ORDER
 # FINISH PRODUCTS
 		
@@ -187,18 +210,27 @@ def _update_foms_customer(api, log):
 
 def create_raw_material(log):
 	name = frappe.get_value("Item", log.get("rawMaterialRefNo"))
+	types = "Raw Material"
+	log = frappe._dict(log)
 
 	if not name:
-		log = frappe._dict(log)
 		doc = frappe.new_doc("Item")
 		doc.item_code = log.rawMaterialRefNo
 		doc.item_name = log.rawMaterialName
 		doc.description = log.rawMaterialDescription
 		doc.stock_uom = convert_uom(log.unitOfMeasurement)
-		doc.item_group = "Raw Material"
+		doc.item_group = types
 		doc.safety_stock = log.safetyLevel
+		doc.foms_id = log.id
 		doc.insert()
 		name = doc.name
+	else:
+		doc = frappe.get_doc("Item", name)
+		doc.item_name = log.productName
+		doc.description = log.productDesc or log.productDetail or log.productName
+		doc.item_group = types
+		doc.foms_id = log.id
+		doc.db_update()
 
 	return name
 
@@ -210,16 +242,67 @@ def get_foms_settings(field):
 
 def create_products(log):
 	name = frappe.get_value("Item", log.get("productID"))
-
+	types = "Products"
+	log = frappe._dict(log)
 	if not name:
-		log = frappe._dict(log)
 		doc = frappe.new_doc("Item")
 		doc.item_code = log.productID
 		doc.item_name = log.productName
 		doc.description = log.productDesc or log.productDetail or log.productName
 		doc.stock_uom = get_foms_settings("product_uom")
-		doc.item_group = "Products"
+		doc.item_group = types
+		doc.foms_id = log.id
 		doc.insert()
 		name = doc.name
+	else:
+		doc = frappe.get_doc("Item", name)
+		doc.item_name = log.productName
+		doc.description = log.productDesc or log.productDetail or log.productName
+		doc.item_group = types
+		doc.foms_id = log.id
+		doc.db_update()
 
 	return name
+
+OPERATION_MAP = {
+	"Nursery":1,
+	"Transfer + Growth":2,
+	"Harvesting":3,
+}
+
+def get_operation_no(operation):
+	return OPERATION_MAP.get(operation) or 1
+
+def create_bom_products(log, product_id):
+	# find existing
+
+	name = None
+	item_name = frappe.get_value("Item", {"foms_id":product_id})
+
+	log = frappe._dict(log)
+	if not name and item_name:
+		for op in log.preHarvestProcess:
+			op = frappe._dict(op)
+			bom = frappe.new_doc("BOM")
+			bom.item = item_name
+			bom.operation_no = get_operation_no(op.processName)
+
+			# bom.with_operation = 1
+			# unfinish
+
+			bom.transfer_material_against = 'Work Order'
+
+			if not op.productRawMaterial:
+				# unfinish
+				continue
+
+			for rm in op.productRawMaterial:
+				rm = frappe._dict(rm)
+				row = bom.append("items")
+				row.item_code = rm.rawMaterialRefNo
+				row.uom = convert_uom(rm.uomrm)
+				row.qty = rm.qtyrm
+
+			bom.insert()
+
+
