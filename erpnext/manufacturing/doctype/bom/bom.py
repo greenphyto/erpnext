@@ -114,21 +114,22 @@ class BOM(WebsiteGenerator):
 			self.flags.skip_amend_name = 1
 
 	def autoname(self):
-		# ignore amended documents while calculating current index
-		existing_boms = frappe.get_all(
-			"BOM", filters={"item": self.item, "amended_from": ["is", "not set"]}, pluck="name"
-		)
+		prefix = self.doctype
+		suffix = cstr(cint(self.operation_no))
 
+		bom_name = f"{prefix}-{self.item}-{suffix}"
+
+		existing_boms = frappe.get_all(
+			"BOM", filters={"name": ['like', "%%"+bom_name+"%%"]}, pluck="name"
+		)
 		if existing_boms:
 			index = self.get_next_version_index(existing_boms)
 		else:
 			index = 1
 
-		prefix = self.doctype
-		suffix = "%.3i" % index  # convert index to string (1 -> "001")
+		suffix_index = "%.3i" % index  # convert index to string (1 -> "001")
+		bom_name = bom_name + suffix_index
 
-		suffix = cstr(cint(self.operation_no))
-		bom_name = f"{prefix}-{self.item}-{suffix}"
 		if len(bom_name) <= 136:
 			name = bom_name
 		else:
@@ -158,7 +159,6 @@ class BOM(WebsiteGenerator):
 					)
 				)
 
-		
 		self.name = name
 
 	@staticmethod
