@@ -20,7 +20,8 @@
   "operation_time",
   "section_break_9",
   "get_foms_raw_material",
-  "get_foms_products"
+  "get_foms_products",
+  "get_foms_recipe"
  ],
  "fields": [
   {
@@ -106,12 +107,17 @@
    "fieldname": "operation_time",
    "fieldtype": "Int",
    "label": "Operation Time"
+  },
+  {
+   "fieldname": "get_foms_recipe",
+   "fieldtype": "Button",
+   "label": "Get Recipe"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-01-30 12:10:10.363140",
+ "modified": "2024-01-30 15:15:55.990186",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",

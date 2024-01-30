@@ -18,5 +18,11 @@ frappe.ui.form.on('FOMS Integration Settings', {
 			"doc": frm.doc,
 			"method":"get_products"
 		})
+	},
+	get_foms_recipe: function(frm) {
+		frappe.call({
+			"doc": frm.doc,
+			"method":"get_recipe"
+		})
 	}	
 });
