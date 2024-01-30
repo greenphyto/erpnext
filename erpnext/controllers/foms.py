@@ -19,7 +19,17 @@ UOM_MAPPING = {
 	"ml":"Millilitre",
 }
 
+OPERATION_MAP = {
+	"Nursery":1,
+	"Transfer + Growth":2,
+	"Harvesting":3,
+}
 
+OPERATION_MAP_NAME = {
+	1:"Seeding",
+	2:"Transplanting",
+	3:"Harvesting"
+}
 
 # SUPPLIER (POST)
 def update_foms_supplier():
@@ -264,12 +274,6 @@ def create_products(log):
 
 	return name
 
-OPERATION_MAP = {
-	"Nursery":1,
-	"Transfer + Growth":2,
-	"Harvesting":3,
-}
-
 def get_operation_no(operation):
 	return OPERATION_MAP.get(operation) or 1
 
@@ -286,14 +290,14 @@ def create_bom_products(log, product_id):
 			bom = frappe.new_doc("BOM")
 			bom.item = item_name
 			bom.operation_no = get_operation_no(op.processName)
+			bom.foms_recipe_version = log.productVersionName
 
-			# bom.with_operation = 1
-			# unfinish
+			bom.with_operations = 1
+			bom.routing = get_routing_name(op.processName)
 
 			bom.transfer_material_against = 'Work Order'
 
 			if not op.productRawMaterial:
-				# unfinish
 				continue
 
 			for rm in op.productRawMaterial:
@@ -305,4 +309,34 @@ def create_bom_products(log, product_id):
 
 			bom.insert()
 
+def get_operation_map_name(operation):
+	op_no = get_operation_no(operation)
+	return OPERATION_MAP_NAME.get(op_no or 1)
 
+def get_routing_name(operation):
+	operation_name = get_operation_map_name(operation)
+	routing_name = operation_name
+	name = frappe.get_value("Routing", routing_name)
+	if not name:
+		doc = frappe.new_doc("Routing")
+		doc.routing_name = routing_name
+		row = doc.append("operations")
+		row.operation = get_operation_name(operation)
+		row.operation_time = get_foms_settings("operation_time")
+		doc.insert(ignore_permissions=1)
+		name = doc.name
+
+	return name
+
+def get_operation_name(operation):
+	operation_name = get_operation_map_name(operation)
+	name = frappe.get_value("Operation", operation_name)
+	if not name:
+		doc = frappe.new_doc("Operation")
+		doc.__newname = operation_name
+		doc.description = operation_name
+		doc.insert(ignore_permissions=1)
+		name = doc.name
+	
+	return name
+	

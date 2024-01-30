@@ -11,6 +11,7 @@
   "item_name",
   "uom",
   "operation_no",
+  "foms_recipe_version",
   "cb0",
   "is_active",
   "is_default",
@@ -532,6 +533,12 @@
    "fieldtype": "Select",
    "label": "Operation No",
    "options": "\n1\n2\n3\n4\n5"
+  },
+  {
+   "fieldname": "foms_recipe_version",
+   "fieldtype": "Data",
+   "label": "FOMS Recipe Version",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-sitemap",
@@ -539,7 +546,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2023-10-19 18:07:28.403319",
+ "modified": "2024-01-30 12:13:26.012414",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "BOM",

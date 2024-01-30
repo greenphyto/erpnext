@@ -17,6 +17,7 @@
   "country_id",
   "default_section",
   "product_uom",
+  "operation_time",
   "section_break_9",
   "get_foms_raw_material",
   "get_foms_products"
@@ -99,12 +100,18 @@
   {
    "fieldname": "column_break_8",
    "fieldtype": "Column Break"
+  },
+  {
+   "description": "in minutes",
+   "fieldname": "operation_time",
+   "fieldtype": "Int",
+   "label": "Operation Time"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-01-29 14:47:14.456084",
+ "modified": "2024-01-30 12:10:10.363140",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",
