@@ -278,12 +278,11 @@ def get_operation_no(operation):
 	return OPERATION_MAP.get(operation) or 1
 
 def create_bom_products(log, product_id):
-	# find existing
-
-	name = None
-	item_name = frappe.get_value("Item", {"foms_id":product_id})
-
 	log = frappe._dict(log)
+	item_name = frappe.get_value("Item", {"foms_id":product_id})
+	# find existing
+	name = find_existing_bom(item_name, log.productVersionName)
+
 	if not name and item_name:
 		for op in log.preHarvestProcess:
 			op = frappe._dict(op)
@@ -308,6 +307,10 @@ def create_bom_products(log, product_id):
 				row.qty = rm.qtyrm
 
 			bom.insert()
+			name = bom.name
+
+def find_existing_bom(item, foms_version):
+	return frappe.get_value("BOM", {"item":item, "foms_recipe_version":foms_version})
 
 def get_operation_map_name(operation):
 	op_no = get_operation_no(operation)
