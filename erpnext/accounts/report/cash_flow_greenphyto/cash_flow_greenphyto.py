@@ -35,7 +35,21 @@ ACCOUNT = {
 	"Repairs and Maintenance":"600004 - Repairs and Maintenance - GPL",
 	"Operating Expense":"600005 - Operating Expense - GPL",
 	"Subscription Fees":"600006 - Subscription Fees - GPL",
-	"Foreign Exchange":"600007 - Other Operating Expenses - GPL"
+	"Foreign Exchange":"600007 - Other Operating Expenses - GPL",
+	"Motor Vehicles":"110020 - Motor Vehicles - GPL",
+	"Plant Machinery":"110030 - Plant & Machinery - GPL",
+	"Furniture":"110050 - Furniture & Fittings - GPL",
+	"IT Hardware":"110070 - IT (Hardware) - GPL",
+	"IT Others":"110072 - IT (Others) - GPL",
+	"Land":"110003 - Land - GPL",
+	"Dep Motor Vehicles":"110520 - Acc Dep - Motor Vehicles - GPL",
+	"Dep Plant Machinery":"110530 - Acc Dep - Plant & Machinery - GPL",
+	"Dep Furniture":"110550 - Acc Dep - Furniture & Fittings - GPL",
+	"Dep IT Hardware":"110570 - Acc Dep - IT ( Hardware) - GPL",
+	"Dep IT Others":"110575 - Acc Dep - IT (Software) - GPL",
+	"Dep Land":"110512 - Acc Dep - Land - GPL",
+	"Asset U Construction":"110900 - Assets U. Construction - GPL",
+	"Right-of-use asset":"Right-Of-Use Assets - GPL"
 }
 
 # region
@@ -126,6 +140,8 @@ class CashFlowReport():
 		return data
 	
 	def process_data(self):
+		self.loop_data("INCOME STATEMENT", lambda key: "", is_group=1)
+
 		# Revenue
 		ref = self.get_row_reference("PL", ACCOUNT['Direct Income'])
 		self.loop_data("Revenue", lambda key: ref[key])
@@ -201,6 +217,46 @@ class CashFlowReport():
 		self.loop_data("Net Profit/ (Loss) for the year", lambda key: sum([ 
 			self.cf_data['Profit / (Loss) before tax'][key],
 			-1*self.cf_data['Income Tax Expenses'][key],
+		]), is_group=1)
+
+		self.loop_data("", lambda key: "")
+		self.loop_data("BALANCE SHEET", lambda key: "", is_group=1)
+		self.loop_data("Non-Current Assets", lambda key: "", is_group=1)
+
+		# Property, Plant and Equipment
+		ref = self.get_row_reference("BS", ACCOUNT["Motor Vehicles"])
+		ref1 = self.get_row_reference("BS", ACCOUNT["Plant Machinery"])
+		ref2 = self.get_row_reference("BS", ACCOUNT["Furniture"])
+		ref3 = self.get_row_reference("BS", ACCOUNT["IT Hardware"])
+		ref4 = self.get_row_reference("BS", ACCOUNT["Dep Motor Vehicles"])
+		ref5 = self.get_row_reference("BS", ACCOUNT["Dep Plant Machinery"])
+		ref6 = self.get_row_reference("BS", ACCOUNT["Dep Furniture"])
+		ref7 = self.get_row_reference("BS", ACCOUNT["Dep IT Hardware"])
+		self.loop_data("Property, Plant and Equipment", lambda key: sum([ 
+			 ref[key], ref1[key], ref2[key], ref3[key],
+			ref4[key], ref5[key], ref6[key], ref7[key]
+		]))
+
+		# Intangible assets
+		ref = self.get_row_reference("BS", ACCOUNT["IT Others"])
+		ref1 = self.get_row_reference("BS", ACCOUNT["Dep IT Others"])
+		self.loop_data("Intangible Assets", lambda key: ref[key] + ref1[key])
+
+		# Assets under Construction
+		ref = self.get_row_reference("BS", ACCOUNT["Asset U Construction"])
+		self.loop_data("Assets under Construction", lambda key: ref[key])
+
+		# Right-of-use assets
+		ref = self.get_row_reference("BS", ACCOUNT["Land"])
+		ref1 = self.get_row_reference("BS", ACCOUNT["Dep Land"])
+		ref2 = self.get_row_reference("BS", ACCOUNT["Right-of-use asset"])
+		self.loop_data("Right-of-use Assets", lambda key: ref[key]+ref1[key]+ref2[key])
+
+		self.loop_data("", lambda key: sum([ 
+			self.cf_data['Property, Plant and Equipment'][key],
+			self.cf_data['Intangible Assets'][key],
+			self.cf_data['Assets under Construction'][key],
+			self.cf_data['Right-of-use Assets'][key],
 		]), is_group=1)
 
 # 		# Gross Profit
