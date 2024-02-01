@@ -31,7 +31,11 @@ ACCOUNT = {
 	"Accounts Receivable": "100020 - Accounts Receivable - GPL",
 	"Deposit": "100060 - Deposit & Prepayment - GPL",
 	"Other Receivables": "147000 - GST Input Tax - GPL",
-	"Non Current Asset": "100000 - Non-Current Assets - GPL"
+	"Non Current Asset": "100000 - Non-Current Assets - GPL",
+	"Repairs and Maintenance":"600004 - Repairs and Maintenance - GPL",
+	"Operating Expense":"600005 - Operating Expense - GPL",
+	"Subscription Fees":"600006 - Subscription Fees - GPL",
+	"Foreign Exchange":"600007 - Other Operating Expenses - GPL"
 }
 
 # region
@@ -106,13 +110,15 @@ class CashFlowReport():
 		elif source == "CF":
 			return self.cf_data.get(account)
 
-	def loop_data(self, account_title, func):
+	def loop_data(self, account_title, func, is_group=False):
 		data = {
 			'account' : account_title
 		}
 		for period in self.period_list:
 			key = period.key
 			data[key] = func(key)
+		if is_group:
+			data['is_group'] = 1
 
 		self.cf_data[account_title] = data
 		self.data.append(data)
@@ -130,108 +136,172 @@ class CashFlowReport():
 		self.loop_data("COGS", lambda key: ref[key]+ref2[key])
 
 		# Gross Profit
-		ref = self.get_row_reference("CF", "Revenue")
-		ref2 = self.get_row_reference("CF", "COGS")
-		self.loop_data("Gross Profit", lambda key: ref[key]-ref2[key])
+		self.loop_data("Gross Profit", lambda key: sum([ 
+			self.cf_data['Revenue'][key],
+			self.cf_data['COGS'][key],
+		]), is_group=1)
 
-		# Less: Operating Expenses
-		self.loop_data("Less: Operating Expenses", lambda key: "")
-
-		# Sales and Marketing Cost
-		ref = self.get_row_reference("PL", ACCOUNT['Selling & Marketing'])
-		self.loop_data("Sales and Marketing Cost", lambda key: ref[key])
-
-		# Manpower Cost
-		ref = self.get_row_reference("PL", ACCOUNT["Staff Cost"])
-		self.loop_data("Manpower Cost", lambda key: ref[key])
-
-		# Professional Fees
-		ref = self.get_row_reference("PL", ACCOUNT["Professional Cost"])
-		self.loop_data("Professional Fees", lambda key: ref[key])
-
-		# Other Expenses
-		ref = self.get_row_reference("PL", ACCOUNT["Expense Operating"])
-		ref1 = self.get_row_reference("PL", ACCOUNT["Expense Other"])
-		ref2 = self.get_row_reference("CF", "Sales and Marketing Cost")
-		ref3 = self.get_row_reference("CF", "Manpower Cost")
-		ref4 = self.get_row_reference("CF", "Professional Fees")
-		self.loop_data("Other Expenses", lambda key: ref[key]+ref1[key]-ref2[key]-ref3[key]-ref4[key])
-
-		# Operating Expenses
-		self.loop_data("Operating Expenses", lambda key: sum([ 
-			self.cf_data['Sales and Marketing Cost'][key],
-			self.cf_data['Manpower Cost'][key],
-			self.cf_data['Professional Fees'][key],
-			self.cf_data['Other Expenses'][key],
-		]))
-
-		# Operating Profit/ (Loss)
-		self.loop_data("Operating Profit/ (Loss)", lambda key: sum([ 
-			self.cf_data['Gross Profit'][key],
-			-1*self.cf_data['Operating Expenses'][key],
-		]))
-
-		# Depreciation
-		ref = self.get_row_reference("PL", ACCOUNT["Depreciation"])
-		self.loop_data("Depreciation", lambda key: ref[key])
-
-		# Interest
-		ref = self.get_row_reference("PL", ACCOUNT["Finance Expense"])
-		self.loop_data("Interest", lambda key: ref[key])
-
-		# EBITDA
-		self.loop_data("EBITDA", lambda key: sum([ 
-			self.cf_data['Operating Profit/ (Loss)'][key],
-			self.cf_data['Depreciation'][key],
-			self.cf_data['Interest'][key],
-		]))
-
-# endregion
-
+		self.loop_data("", lambda key: "")
 
 		# Other Income
 		ref = self.get_row_reference("PL", ACCOUNT["Other Income"])
 		self.loop_data("Other Income", lambda key: ref[key])
 
-		# Net Profit/ (Loss)
-		self.loop_data("EBITDA", lambda key: sum([ 
-			self.cf_data['Operating Profit/ (Loss)'][key],
+		self.loop_data("", lambda key: "")
+
+		# Depreciation
+		ref = self.get_row_reference("PL", ACCOUNT["Depreciation"])
+		self.loop_data("Depreciation", lambda key: ref[key])
+
+		# Manpower Cost
+		ref = self.get_row_reference("PL", ACCOUNT["Staff Cost"])
+		self.loop_data("Staff Cost", lambda key: ref[key])
+
+		# Legal and Professional Fees
+		ref = self.get_row_reference("PL", ACCOUNT["Professional Cost"])
+		self.loop_data("Legal and Professional Fees", lambda key: ref[key])
+
+		# Finance Cost
+		ref = self.get_row_reference("PL", ACCOUNT["Finance Expense"])
+		self.loop_data("Finance Cost", lambda key: ref[key])
+
+		# Other operating expenses
+		ref = self.get_row_reference("PL", ACCOUNT['Selling & Marketing'])
+		ref1 = self.get_row_reference("PL", ACCOUNT["Repairs and Maintenance"])
+		ref2 = self.get_row_reference("PL", ACCOUNT["Operating Expense"])
+		ref3 = self.get_row_reference("PL", ACCOUNT["Subscription Fees"])
+		self.loop_data("Other Operating Expenses", lambda key: ref[key]+ref1[key]+ref2[key]+ref3[key])
+
+		# Foreign Exchange
+		ref = self.get_row_reference("PL", ACCOUNT["Foreign Exchange"])
+		self.loop_data("Foreign Exchange", lambda key: ref[key])
+
+		self.loop_data("", lambda key: "")
+
+		# Profit / (Loss) before tax
+		self.loop_data("Profit / (Loss) before tax", lambda key: sum([ 
+			self.cf_data['Gross Profit'][key],
 			self.cf_data['Other Income'][key],
-		]))
+			-1*self.cf_data['Legal and Professional Fees'][key],
+			-1*self.cf_data['Depreciation'][key],
+			-1*self.cf_data['Finance Cost'][key],
+			-1*self.cf_data['Staff Cost'][key],
+			-1*self.cf_data['Other Operating Expenses'][key],
+			-1*self.cf_data['Foreign Exchange'][key],
+		]), is_group=1)
 
-		# Cash and Cash on hand
-		ref = self.get_row_reference("BS", ACCOUNT["Cash in Bank"])
-		self.loop_data("Cash and Cash on hand", lambda key: ref[key])
+		self.loop_data("", lambda key: "")
 
-		# Investments
-		ref = self.get_row_reference("BS", ACCOUNT["Investments"])
-		self.loop_data("Investments", lambda key: ref[key])
+		# Income Tax expenses
+		self.loop_data("Income Tax Expenses", lambda key: 0)
 
-		# Accounts Receivables
-		ref = self.get_row_reference("BS", ACCOUNT["Accounts Receivable"])
-		self.loop_data("Accounts Receivables", lambda key: ref[key])
+		self.loop_data("", lambda key: "")
 
-		# Deposits
-		ref = self.get_row_reference("BS", ACCOUNT["Deposit"])
-		self.loop_data("Deposits", lambda key: ref[key])
+		# Net Profit/ (Loss) for the year
+		self.loop_data("Net Profit/ (Loss) for the year", lambda key: sum([ 
+			self.cf_data['Profit / (Loss) before tax'][key],
+			-1*self.cf_data['Income Tax Expenses'][key],
+		]), is_group=1)
 
-		# Other Receivables
-		ref = self.get_row_reference("BS", ACCOUNT["Other Receivables"])
-		self.loop_data("Other Receivables", lambda key: ref[key])
+# 		# Gross Profit
+# 		ref = self.get_row_reference("CF", "Revenue")
+# 		ref2 = self.get_row_reference("CF", "COGS")
+# 		self.loop_data("Gross Profit", lambda key: ref[key]-ref2[key])
 
-		# Non-Current Assets
-		ref = self.get_row_reference("BS", ACCOUNT["Non Current Asset"])
-		self.loop_data("Non-Current Assets", lambda key: ref[key])
+# 		# Less: Operating Expenses
+# 		self.loop_data("Less: Operating Expenses", lambda key: "")
 
-		# Total Assets
-		self.loop_data("Total Assets", lambda key: sum([ 
-			self.cf_data['Cash and Cash on hand'][key],
-			self.cf_data['Investments'][key],
-			self.cf_data['Accounts Receivables'][key],
-			self.cf_data['Deposits'][key],
-			self.cf_data['Other Receivables'][key],
-			self.cf_data['Non-Current Assets'][key],
-		]))
+# 		# Sales and Marketing Cost
+# 		ref = self.get_row_reference("PL", ACCOUNT['Selling & Marketing'])
+# 		self.loop_data("Sales and Marketing Cost", lambda key: ref[key])
+
+
+
+# 		# Professional Fees
+# 		ref = self.get_row_reference("PL", ACCOUNT["Professional Cost"])
+# 		self.loop_data("Professional Fees", lambda key: ref[key])
+
+# 		# Other Expenses
+# 		ref = self.get_row_reference("PL", ACCOUNT["Expense Operating"])
+# 		ref1 = self.get_row_reference("PL", ACCOUNT["Expense Other"])
+# 		ref2 = self.get_row_reference("CF", "Sales and Marketing Cost")
+# 		ref3 = self.get_row_reference("CF", "Manpower Cost")
+# 		ref4 = self.get_row_reference("CF", "Professional Fees")
+# 		self.loop_data("Other Expenses", lambda key: ref[key]+ref1[key]-ref2[key]-ref3[key]-ref4[key])
+
+# 		# Operating Expenses
+# 		self.loop_data("Operating Expenses", lambda key: sum([ 
+# 			self.cf_data['Sales and Marketing Cost'][key],
+# 			self.cf_data['Manpower Cost'][key],
+# 			self.cf_data['Professional Fees'][key],
+# 			self.cf_data['Other Expenses'][key],
+# 		]))
+
+# 		# Operating Profit/ (Loss)
+# 		self.loop_data("Operating Profit/ (Loss)", lambda key: sum([ 
+# 			self.cf_data['Gross Profit'][key],
+# 			-1*self.cf_data['Operating Expenses'][key],
+# 		]))
+
+# 		# Depreciation
+# 		ref = self.get_row_reference("PL", ACCOUNT["Depreciation"])
+# 		self.loop_data("Depreciation", lambda key: ref[key])
+
+
+
+# 		# EBITDA
+# 		self.loop_data("EBITDA", lambda key: sum([ 
+# 			self.cf_data['Operating Profit/ (Loss)'][key],
+# 			self.cf_data['Depreciation'][key],
+# 			self.cf_data['Interest'][key],
+# 		]))
+
+# # endregion
+
+
+# 		# Other Income
+# 		ref = self.get_row_reference("PL", ACCOUNT["Other Income"])
+# 		self.loop_data("Other Income", lambda key: ref[key])
+
+# 		# Net Profit/ (Loss)
+# 		self.loop_data("EBITDA", lambda key: sum([ 
+# 			self.cf_data['Operating Profit/ (Loss)'][key],
+# 			self.cf_data['Other Income'][key],
+# 		]))
+
+# 		# Cash and Cash on hand
+# 		ref = self.get_row_reference("BS", ACCOUNT["Cash in Bank"])
+# 		self.loop_data("Cash and Cash on hand", lambda key: ref[key])
+
+# 		# Investments
+# 		ref = self.get_row_reference("BS", ACCOUNT["Investments"])
+# 		self.loop_data("Investments", lambda key: ref[key])
+
+# 		# Accounts Receivables
+# 		ref = self.get_row_reference("BS", ACCOUNT["Accounts Receivable"])
+# 		self.loop_data("Accounts Receivables", lambda key: ref[key])
+
+# 		# Deposits
+# 		ref = self.get_row_reference("BS", ACCOUNT["Deposit"])
+# 		self.loop_data("Deposits", lambda key: ref[key])
+
+# 		# Other Receivables
+# 		ref = self.get_row_reference("BS", ACCOUNT["Other Receivables"])
+# 		self.loop_data("Other Receivables", lambda key: ref[key])
+
+# 		# Non-Current Assets
+# 		ref = self.get_row_reference("BS", ACCOUNT["Non Current Asset"])
+# 		self.loop_data("Non-Current Assets", lambda key: ref[key])
+
+# 		# Total Assets
+# 		self.loop_data("Total Assets", lambda key: sum([ 
+# 			self.cf_data['Cash and Cash on hand'][key],
+# 			self.cf_data['Investments'][key],
+# 			self.cf_data['Accounts Receivables'][key],
+# 			self.cf_data['Deposits'][key],
+# 			self.cf_data['Other Receivables'][key],
+# 			self.cf_data['Non-Current Assets'][key],
+# 		]))
 
 
 
