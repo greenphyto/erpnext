@@ -30,9 +30,6 @@ def execute(filters=None):
 		to_month=filters.to_month,
 	)
 
-	if not filters.get("accumulated_values"):
-		frappe.throw(_("Accumulated Values must be set fo Balance Sheet report"))
-
 	currency = filters.presentation_currency or frappe.get_cached_value(
 		"Company", filters.company, "default_currency"
 	)

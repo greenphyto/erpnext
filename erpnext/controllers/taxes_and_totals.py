@@ -439,6 +439,9 @@ class calculate_taxes_and_totals(object):
 		tax_rate = self._get_tax_rate(tax, item_tax_map)
 		current_tax_amount = 0.0
 
+		if tax.charge_type == "Actual" and not self.doc.net_total:
+			frappe.msgprint("Please set <b>On Item Quantity</b> on the taxes type, if only applying tax on the items.")
+
 		if tax.charge_type == "Actual":
 			# distribute the tax amount proportionally to each item row
 			actual = flt(tax.tax_amount, tax.precision("tax_amount"))

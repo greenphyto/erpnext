@@ -170,7 +170,7 @@ class VATAuditReport(object):
 		self.tax_details = frappe.db.sql(
 			"""
 			SELECT
-				parent, account_head, item_wise_tax_detail
+				parent, account_head, item_wise_tax_detail, parenttype
 			FROM
 				`tab%s`
 			WHERE
@@ -183,7 +183,7 @@ class VATAuditReport(object):
 			tuple([doctype] + list(self.invoices.keys())),
 		)
 
-		for parent, account, item_wise_tax_detail in self.tax_details:
+		for parent, account, item_wise_tax_detail, parenttype in self.tax_details:
 			if item_wise_tax_detail:
 				try:
 					# if account in self.sa_vat_accounts:
@@ -197,7 +197,7 @@ class VATAuditReport(object):
 						# to skip items with non-zero tax rate in multiple rows gf
 						#if taxes[0] == 0 and not is_zero_rated:
 							#continue
-						tax_rate = self.get_item_amount_map(parent, item_code, taxes)
+						tax_rate = self.get_item_amount_map(parent, parenttype, item_code, taxes)
 
 						if tax_rate is not None:
 							rate_based_dict = self.items_based_on_tax_rate.setdefault(parent, {}).setdefault(
@@ -208,8 +208,11 @@ class VATAuditReport(object):
 				except ValueError:
 					continue
 
-	def get_item_amount_map(self, parent, item_code, taxes):
+	def get_item_amount_map(self, parent, parenttype, item_code, taxes):
 		net_amount =self.invoice_items.get(parent).get(item_code).get("net_amount")
+		if not net_amount and parent and parenttype == "Purchase Invoice":
+			net_amount = frappe.get_value("Purchase Invoice", parent, "base_value_for_gst_input")
+
 		tax_rate = taxes[0]
 		tax_amount = taxes[1]
 		gross_amount = net_amount + tax_amount

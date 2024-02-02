@@ -10,6 +10,9 @@
   "account",
   "account_type",
   "balance",
+  "gst_input_tax",
+  "gst_type",
+  "base_value",
   "col_break1",
   "bank_account",
   "party_type",
@@ -279,12 +282,32 @@
    "hidden": 1,
    "label": "Reference Detail No",
    "no_copy": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "gst_input_tax",
+   "fieldtype": "Check",
+   "label": "GST Input Tax"
+  },
+  {
+   "depends_on": "eval:doc.gst_input_tax",
+   "description": "Base value for tax input",
+   "fieldname": "base_value",
+   "fieldtype": "Currency",
+   "label": "Base Value"
+  },
+  {
+   "depends_on": "eval:doc.gst_input_tax",
+   "fieldname": "gst_type",
+   "fieldtype": "Link",
+   "label": "GST Type",
+   "options": "Purchase Taxes and Charges Template"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-10-26 20:03:10.906259",
+ "modified": "2024-02-02 18:52:57.268397",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry Account",

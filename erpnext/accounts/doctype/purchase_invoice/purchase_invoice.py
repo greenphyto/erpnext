@@ -126,6 +126,12 @@ class PurchaseInvoice(BuyingController):
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
 		self.reset_default_field_value("rejected_warehouse", "items", "rejected_warehouse")
 		self.reset_default_field_value("set_from_warehouse", "items", "from_warehouse")
+		self.validate_gst_input()
+	
+	def validate_gst_input(self):
+		if self.gst_input_tax and not self.base_value_for_gst_input:
+			frappe.throw(_("Please set Base Value for GST input"))
+			
 
 	def validate_release_date(self):
 		if self.release_date and getdate(nowdate()) >= getdate(self.release_date):
