@@ -49,7 +49,11 @@ ACCOUNT = {
 	"Dep IT Others":"110575 - Acc Dep - IT (Software) - GPL",
 	"Dep Land":"110512 - Acc Dep - Land - GPL",
 	"Asset U Construction":"110900 - Assets U. Construction - GPL",
-	"Right-of-use asset":"Right-Of-Use Assets - GPL"
+	"Right-of-use asset":"Right-Of-Use Assets - GPL",
+	"Acc Receivable":'100020 - Accounts Receivable - GPL',
+	"Deposit and Prepayment":'100060 - Deposit & Prepayment - GPL',
+	"GST Input":'100080 - GST- Input Tax - GPL',
+	"Duties and Taxes":'240000 - Duties and Taxes - GPL'
 }
 
 # region
@@ -258,6 +262,14 @@ class CashFlowReport():
 			self.cf_data['Assets under Construction'][key],
 			self.cf_data['Right-of-use Assets'][key],
 		]), is_group=1)
+
+
+		# Trade & other receivables
+		ref = self.get_row_reference("BS", ACCOUNT["Acc Receivable"])
+		ref1 = self.get_row_reference("BS", ACCOUNT["Deposit and Prepayment"])
+		ref2 = self.get_row_reference("BS", ACCOUNT["GST Input"])
+		ref3 = self.get_row_reference("BS", ACCOUNT["Duties and Taxes"])
+		self.loop_data("Gross Profit", lambda key: ref[key]-ref1[key]+ref2[key]+ref3[key])
 
 # 		# Gross Profit
 # 		ref = self.get_row_reference("CF", "Revenue")
