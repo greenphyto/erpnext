@@ -27,6 +27,23 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 		});
 	}
 
+	gst_input_tax(){
+		var frm = this.frm;
+		if(frm.doc.gst_input_tax){
+			frm.set_value("non_stock_item", 1);
+			setTimeout(()=>{
+				cur_frm.clear_table("items");
+				var row = frm.add_child("items");
+				frappe.model.set_value(row.doctype, row.name, "item_code", 'Non-stock');
+				frappe.model.set_value(row.doctype, row.name, "item_name_view", 'GST Input');
+				frappe.model.set_value(row.doctype, row.name, "qty", 1);
+			}, 100);
+			frm.set_df_property("non_stock_item", "hidden", 1);
+		}else{
+			frm.set_df_property("non_stock_item", "hidden", 0);
+		}
+	}
+
 	onload() {
 		super.onload();
 

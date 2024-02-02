@@ -51,6 +51,8 @@
   "rejected_warehouse",
   "supplier_warehouse",
   "items_section",
+  "gst_input_tax",
+  "base_value_for_gst_input",
   "non_stock_item",
   "items",
   "section_break_26",
@@ -1552,13 +1554,25 @@
    "fieldname": "non_stock_item",
    "fieldtype": "Check",
    "label": "Non Stock Item"
+  },
+  {
+   "default": "0",
+   "fieldname": "gst_input_tax",
+   "fieldtype": "Check",
+   "label": "GST Input Tax"
+  },
+  {
+   "depends_on": "eval:doc.gst_input_tax",
+   "fieldname": "base_value_for_gst_input",
+   "fieldtype": "Currency",
+   "label": "Base Value for GST input"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-01-02 18:49:40.130367",
+ "modified": "2024-02-02 17:10:49.458886",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",

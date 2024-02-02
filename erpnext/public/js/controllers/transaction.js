@@ -649,6 +649,9 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 
 					callback: function(r) {
 						if(!r.exc) {
+							if (me.frm.doc.gst_input_tax){
+								r.message.price_list_rate = 0;
+							}
 							frappe.run_serially([
 								() => {
 									var d = locals[cdt][cdn];
@@ -722,6 +725,11 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 								() => {
 									var company_currency = me.get_company_currency();
 									me.update_item_grid_labels(company_currency);
+								},
+								() => {
+									if (me.frm.doc.gst_input_tax && item.price_list_rate!=0){
+										frappe.model.set_value(item.doctype, item.name, "price_list_rate", 0);
+									}
 								}
 							]);
 						}
@@ -1901,11 +1909,19 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 					if(!r.exc) {
 						if(me.frm.doc.shipping_rule && me.frm.doc.taxes) {
 							for (let tax of r.message) {
+								if (me.frm.doc.gst_input_tax){
+									tax.charge_type = "On Item Quantity";
+								}
 								me.frm.add_child("taxes", tax);
 							}
 
 							refresh_field("taxes");
 						} else {
+							$.map(r.message, tax=>{
+								if (me.frm.doc.gst_input_tax){
+									tax.charge_type = "On Item Quantity";
+								}
+							})
 							me.frm.set_value("taxes", r.message);
 							me.calculate_taxes_and_totals();
 						}
