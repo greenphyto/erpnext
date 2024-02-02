@@ -11,6 +11,7 @@
   "account_type",
   "balance",
   "gst_input_tax",
+  "gst_type",
   "base_value",
   "col_break1",
   "bank_account",
@@ -294,12 +295,19 @@
    "fieldname": "base_value",
    "fieldtype": "Currency",
    "label": "Base Value"
+  },
+  {
+   "depends_on": "eval:doc.gst_input_tax",
+   "fieldname": "gst_type",
+   "fieldtype": "Link",
+   "label": "GST Type",
+   "options": "Purchase Taxes and Charges Template"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-02-02 18:25:44.550919",
+ "modified": "2024-02-02 18:52:57.268397",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry Account",
