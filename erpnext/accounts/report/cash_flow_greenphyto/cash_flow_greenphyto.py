@@ -415,6 +415,34 @@ class CashFlowReport():
 			self.cf_data["Preference Shares"][key],
 		]), is_group=1)
 
+		self.loop_data("", lambda key: "")
+
+		# CASHFLOW STATEMENT
+		self.loop_data("CASHFLOW STATEMENT", lambda key: "", is_group=1)
+		self.loop_data("", lambda key: "")
+		# Cashflow from Operating activities
+		self.loop_data("Cashflow from Operating activities", lambda key: "", is_group=1)
+		# Loss before tax
+		self.loop_data("Loss before tax", lambda key: self.cf_data["Current Year Profit / (Loss)"][key])
+		# Adjustment for:-
+		self.loop_data("Adjustment for:-", lambda key: 0)
+		# Depreciation of plant and machinery
+		self.loop_data("Depreciation of plant and machinery", lambda key: self.cf_data["Depreciation"][key])
+		# Loss on valuation of investments
+		self.loop_data("Loss on valuation of investments", lambda key: 0)
+		# Interest Paid
+		self.loop_data("Interest Paid", lambda key: self.cf_data["Finance Cost"][key])
+		# Loss on disposal of investments
+		self.loop_data("Loss on disposal of investments", lambda key: 0)
+		# Operating cash flows before changes in working capital 
+		self.loop_data("Operating cash flows before changes in working capital", lambda key: sum([
+			self.cf_data['Loss before tax'][key],
+			self.cf_data["Adjustment for:-"][key],
+			self.cf_data["Depreciation of plant and machinery"][key],
+			self.cf_data["Loss on valuation of investments"][key],
+			self.cf_data["Interest Paid"][key],
+			self.cf_data["Loss on disposal of investments"][key],
+		]), is_group=1)
 
 
 # 		# Gross Profit
