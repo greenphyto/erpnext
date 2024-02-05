@@ -68,7 +68,11 @@ ACCOUNT = {
 	"UOB TLC":"280020 - UOB Term Loan Construction - GPL",
 	"UOB PFL":"280050 - UOB Premium Financing Loan - PFL (LN:8018088347) - GPL",
 	"Other LT Liabilities":"260000 - Other LT Liabilities - GPL",
-	"Long Term Lease Liabilities":"270000 - Long Term Lease Liabilities - GPL"
+	"Long Term Lease Liabilities":"270000 - Long Term Lease Liabilities - GPL",
+	"Retained Earnings":"340000 - Retained Earnings - GPL",
+	"Current Year Profit / (Loss)":"'Profit / (Loss) for the Year'",
+	"Ordinary Shares":"300000 - Shares Ordinary - GPL",
+	"Preference Shares":'310000 - Shares Preference "A" - GPL',
 }
 
 # region
@@ -385,6 +389,32 @@ class CashFlowReport():
 			ref[key],
 			ref1[key],
 		]), is_group=1)
+
+		# Equity
+		self.loop_data("Equity", lambda key: "", is_group=1)
+		# Retained Earnings
+		ref=self.get_row_reference("BS", ACCOUNT["Retained Earnings"])
+		self.loop_data("Retained Earnings", lambda key: ref[key])
+		# Current Year Profit / (Loss)
+		ref=self.get_row_reference("BS", ACCOUNT["Current Year Profit / (Loss)"])
+		self.loop_data("Current Year Profit / (Loss)", lambda key: ref[key])
+		# Ordinary Shares
+		ref=self.get_row_reference("BS", ACCOUNT["Ordinary Shares"])
+		self.loop_data("Ordinary Shares", lambda key: ref[key])
+		# Preference Shares
+		ref=self.get_row_reference("BS", ACCOUNT["Preference Shares"])
+		self.loop_data("Preference Shares", lambda key: ref[key])
+
+		self.loop_data("", lambda key: "")
+
+		# Total Equity
+		self.loop_data("Total Equity", lambda key: sum([ 
+			self.cf_data["Retained Earnings"][key],
+			self.cf_data["Current Year Profit / (Loss)"][key],
+			self.cf_data["Ordinary Shares"][key],
+			self.cf_data["Preference Shares"][key],
+		]), is_group=1)
+
 
 
 # 		# Gross Profit
