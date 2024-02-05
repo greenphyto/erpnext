@@ -8,6 +8,8 @@ from erpnext.accounts.report.financial_statements import (
 	get_columns,
 	get_period_list
 )
+from frappe.utils import get_first_day, add_months, add_years, get_last_day, getdate,add_days, cstr
+from erpnext.accounts.utils import get_fiscal_year
 
 def execute(filters=None):
 	columns, data = [], []
@@ -115,6 +117,7 @@ class CashFlowReport():
 			month=self.filters.month,
 			to_month=self.filters.to_month,
 		)
+		self.use_date = self.period_list[0]
 			
 	def setup_column(self):
 		self.columns = get_columns(
@@ -123,13 +126,232 @@ class CashFlowReport():
 
 	def get_data(self):
 		self.data = []
+		self.cf_data_prev = {}
 		self.pl_data = get_pl_report_data(filters=self.filters)
 	
 		self.filters.accumulated_values = 1
 		self.bs_data = get_bs_report_data(filters=self.filters)
 
+		self.get_previous_month()
+
 		self.cf_data = {}
-		self.data = [self.pl_data, self.bs_data, self.cf_data]
+		self.data = [self.pl_data, self.bs_data, self.bs_data_prev, self.cf_data_prev]
+
+	def get_previous_month(self):
+		# previous month balance sheet
+		prev_filters = frappe._dict(self.filters)
+
+		if self.filters.filter_based_on == "Date Range":
+			self.start_date = getdate(self.filters.period_start_date)
+			if self.filters.periodicity in ['Single Month', 'Multi Month', 'Monthly']:
+				months = 1
+			elif self.filters.periodicity == 'Quarterly':
+				months = 4
+			elif self.filters.periodicity == 'Half-Yearly':
+				months = 6
+			else:
+				months = 12
+			prev_filters.period_start_date = add_months(self.filters.period_start_date, months*-1)
+			prev_filters.period_end_date = add_months(self.filters.period_end_date, months*-1)
+		else:
+			prev_date = add_years(getdate("1-1-{}".format(self.use_date.from_date)), -1)
+			self.end_date = getdate("31-12-{}".format(self.use_date.to_date))
+			fy = get_fiscal_year(prev_date, as_dict=1)
+			if fy:
+				prev_filters.from_fiscal_year = fy.name
+				prev_filters.to_fiscal_year = fy.name
+
+
+		self.period_list_prev = get_period_list(
+			prev_filters.from_fiscal_year,
+			prev_filters.to_fiscal_year,
+			prev_filters.period_start_date,
+			prev_filters.period_end_date,
+			prev_filters.filter_based_on,
+			prev_filters.periodicity,
+			company=prev_filters.company,
+			month=prev_filters.month,
+			to_month=prev_filters.to_month,
+		)
+
+		self.prev_key_date = self.period_list_prev[-1].key
+
+		# self.start_from_previous =
+		# self.end_from_previous = add_days(self.start_date, -1)
+		# prev_filters.filter_based_on = "Date Range"
+		# self.period_end_date = self.end_from_previous
+		# self.period_start_date = self.start_from_previous
+
+		self.bs_data_prev = get_bs_report_data(filters=prev_filters)
+
+		# Cash Flow
+		self.get_previous_cashflow()
+
+	def get_previous_cashflow(self):
+		self.cf_data_prev = {}
+		self.loop_data_prev("BALANCE SHEET", lambda key: "", is_group=1)
+		self.loop_data_prev("Non-Current Assets", lambda key: "", is_group=1)
+
+		# Property, Plant and Equipment
+		ref = self.get_row_reference("BS Prev", ACCOUNT["Motor Vehicles"])
+		ref1 = self.get_row_reference("BS Prev", ACCOUNT["Plant Machinery"])
+		ref2 = self.get_row_reference("BS Prev", ACCOUNT["Furniture"])
+		ref3 = self.get_row_reference("BS Prev", ACCOUNT["IT Hardware"])
+		ref4 = self.get_row_reference("BS Prev", ACCOUNT["Dep Motor Vehicles"])
+		ref5 = self.get_row_reference("BS Prev", ACCOUNT["Dep Plant Machinery"])
+		ref6 = self.get_row_reference("BS Prev", ACCOUNT["Dep Furniture"])
+		ref7 = self.get_row_reference("BS Prev", ACCOUNT["Dep IT Hardware"])
+		self.loop_data_prev("Property, Plant and Equipment", lambda key: sum([ 
+			 ref[key], ref1[key], ref2[key], ref3[key],
+			ref4[key], ref5[key], ref6[key], ref7[key]
+		]))
+
+		# Intangible assets
+		ref = self.get_row_reference("BS Prev", ACCOUNT["IT Others"])
+		ref1 = self.get_row_reference("BS Prev", ACCOUNT["Dep IT Others"])
+		self.loop_data_prev("Intangible Assets", lambda key: ref[key] + ref1[key])
+
+		# Assets under Construction
+		ref = self.get_row_reference("BS Prev", ACCOUNT["Asset U Construction"])
+		self.loop_data_prev("Assets under Construction", lambda key: ref[key])
+
+		# Right-of-use assets
+		ref = self.get_row_reference("BS Prev", ACCOUNT["Land"])
+		ref1 = self.get_row_reference("BS Prev", ACCOUNT["Dep Land"])
+		ref2 = self.get_row_reference("BS Prev", ACCOUNT["Right-of-use asset"])
+		self.loop_data_prev("Right-of-use Assets", lambda key: ref[key]+ref1[key]+ref2[key])
+
+		self.loop_data_prev("", lambda key: sum([ 
+			self.cf_data_prev['Property, Plant and Equipment'][key],
+			self.cf_data_prev['Intangible Assets'][key],
+			self.cf_data_prev['Assets under Construction'][key],
+			self.cf_data_prev['Right-of-use Assets'][key],
+		]), is_group=1, sub_title='Total non-current assets')
+
+		self.loop_data_prev("", lambda key: "")
+
+		# Trade & other receivables
+		ref = self.get_row_reference("BS Prev", ACCOUNT["Acc Receivable"])
+		ref1 = self.get_row_reference("BS Prev", ACCOUNT["Deposit and Prepayment"])
+		ref2 = self.get_row_reference("BS Prev", ACCOUNT["GST Input"])
+		ref3 = self.get_row_reference("BS Prev", ACCOUNT["Duties and Taxes"])
+		self.loop_data_prev("Trade & other receivables", lambda key: ref[key]+ref1[key]+ref2[key]-ref3[key])
+
+		# Cash and Cash equvalents
+		ref = self.get_row_reference("BS Prev", ACCOUNT["Cash in Bank"])
+		self.loop_data_prev("Cash and Cash equvalents", lambda key: ref[key])
+
+		# Investments
+		ref = self.get_row_reference("BS Prev", ACCOUNT["Investments"])
+		self.loop_data_prev("Investments", lambda key: ref[key])
+
+		self.loop_data_prev("", lambda key: sum([ 
+			self.cf_data_prev['Trade & other receivables'][key],
+			self.cf_data_prev['Cash and Cash equvalents'][key],
+			self.cf_data_prev['Investments'][key],
+		]), is_group=1, sub_title="Total current assets")
+
+		self.loop_data_prev("", lambda key: "")
+
+		# Total Assets
+		ref=self.get_sub_total_prev("Total non-current assets")
+		ref1=self.get_sub_total_prev("Total current assets")
+		self.loop_data_prev("Total Assets", lambda key: sum([ 
+			ref[key],
+			ref1[key],
+		]), is_group=1)
+
+		self.loop_data_prev("", lambda key: "") 
+
+		# Current liabilities
+		self.loop_data_prev("Current liabilities", lambda key: "", is_group=1) 
+		# Accounts Payable
+		ref=self.get_row_reference("BS Prev", ACCOUNT["Account Payable"])
+		ref1=self.get_row_reference("BS Prev", ACCOUNT["Accruals and Provision"])
+		ref2=self.get_row_reference("BS Prev", ACCOUNT["Contra Account"])
+		self.loop_data_prev("Accounts Payable", lambda key: ref[key]+ref1[key]+ref2[key])
+		
+		# Amount Due to Directors
+		ref=self.get_row_reference("BS Prev", ACCOUNT["Amount Due to Directors"])
+		self.loop_data_prev("Amount Due to Directors", lambda key: ref[key])
+
+		# Term Loans
+		ref=self.get_row_reference("BS Prev", ACCOUNT["Term loan liabilities"])
+		ref1=self.get_row_reference("BS Prev", ACCOUNT["UOB 4m"])
+		ref2=self.get_row_reference("BS Prev", ACCOUNT["UOB 5m"])
+		self.loop_data_prev("Term Loans", lambda key: ref[key]+ref1[key]+ref2[key])
+
+		# Lease Liabilities
+		ref=self.get_row_reference("BS Prev", ACCOUNT["Hire Purchase Creditors"])
+		ref1=self.get_row_reference("BS Prev", ACCOUNT["Hire Purchase Interest"])
+		ref2=self.get_row_reference("BS Prev", ACCOUNT["Lease Liabilities"])
+		self.loop_data_prev("Lease Liabilities", lambda key: ref[key]+ref1[key]+ref2[key])
+
+		# Total Current Liabilities
+		self.loop_data_prev("", lambda key: sum([ 
+			self.cf_data_prev["Accounts Payable"][key],
+			self.cf_data_prev["Amount Due to Directors"][key],
+			self.cf_data_prev["Term Loans"][key],
+			self.cf_data_prev["Lease Liabilities"][key],
+		]), is_group=1, sub_title="total current liabilities")
+
+		self.loop_data_prev("", lambda key: "")
+
+		# Non-Current liabilities 
+		self.loop_data_prev("Non-Current liabilities", lambda key: "", is_group=1)
+		# Term Loans
+		ref=self.get_row_reference("BS Prev", ACCOUNT["UOB LEFS"])
+		ref1=self.get_row_reference("BS Prev", ACCOUNT["UOB TLC"])
+		ref2=self.get_row_reference("BS Prev", ACCOUNT["UOB PFL"])
+		self.loop_data_prev("Term Loans ", lambda key: ref[key]+ref1[key]+ref2[key])
+
+		# Lease Liabilities
+		ref=self.get_row_reference("BS Prev", ACCOUNT["Other LT Liabilities"])
+		ref1=self.get_row_reference("BS Prev", ACCOUNT["Long Term Lease Liabilities"])
+		self.loop_data_prev("Lease Liabilities ", lambda key: ref[key]+ref1[key])
+
+		# Total Current Liabilities
+		self.loop_data_prev("", lambda key: sum([ 
+			self.cf_data_prev["Term Loans "][key],
+			self.cf_data_prev["Lease Liabilities "][key],
+		]), is_group=1, sub_title="total non-current liabilities")
+
+		# Total liabilities
+		ref=self.get_sub_total_prev("total current liabilities")
+		ref1=self.get_sub_total_prev("total non-current liabilities")
+		self.loop_data_prev("Total Liabilities", lambda key: sum([ 
+			ref[key],
+			ref1[key],
+		]), is_group=1)
+
+		# Equity
+		self.loop_data_prev("Equity", lambda key: "", is_group=1)
+		# Retained Earnings
+		ref=self.get_row_reference("BS Prev", ACCOUNT["Retained Earnings"])
+		self.loop_data_prev("Retained Earnings", lambda key: ref[key])
+		# Current Year Profit / (Loss)
+		ref=self.get_row_reference("BS Prev", ACCOUNT["Current Year Profit / (Loss)"])
+		self.loop_data_prev("Current Year Profit / (Loss)", lambda key: ref[key])
+		# Ordinary Shares
+		ref=self.get_row_reference("BS Prev", ACCOUNT["Ordinary Shares"])
+		self.loop_data_prev("Ordinary Shares", lambda key: ref[key])
+		# Preference Shares
+		ref=self.get_row_reference("BS Prev", ACCOUNT["Preference Shares"])
+		self.loop_data_prev("Preference Shares", lambda key: ref[key])
+
+		self.loop_data_prev("", lambda key: "")
+
+		# Total Equity
+		self.loop_data_prev("Total Equity", lambda key: sum([ 
+			self.cf_data_prev["Retained Earnings"][key],
+			self.cf_data_prev["Current Year Profit / (Loss)"][key],
+			self.cf_data_prev["Ordinary Shares"][key],
+			self.cf_data_prev["Preference Shares"][key],
+		]), is_group=1)
+
+		self.loop_data_prev("", lambda key: "")
+
+		return self.cf_data_prev
 
 	def run(self):
 		self.setup_report()
@@ -140,12 +362,19 @@ class CashFlowReport():
 		return self.columns, self.data
 	
 	def get_row_reference(self, source, account):
+		data = {}
 		if source == "PL":
-			return self.pl_data.get(account) 
+			data = self.pl_data.get(account) 
 		elif source == "BS":
-			return self.bs_data.get(account)
+			data = self.bs_data.get(account)
 		elif source == "CF":
-			return self.cf_data.get(account)
+			data = self.cf_data_prev.get(account)
+		elif source == "BS Prev":
+			data = self.bs_data_prev.get(account)
+		
+		def_data = {}
+		def_data[self.prev_key_date] = 0
+		return frappe._dict(data or def_data)
 
 	def loop_data(self, account_title, func, is_group=False, sub_title=""):
 		data = {
@@ -168,11 +397,40 @@ class CashFlowReport():
 		self.data.append(data)
 		
 		return data
+
+	def loop_data_prev(self, account_title, func, is_group=False, sub_title=""):
+		data = {
+			'account' : account_title
+		}
+
+		key = self.prev_key_date
+
+		for d in [key]:	
+			data[key] = func(key)
+
+		if is_group:
+			data['is_group'] = 1
+
+		if account_title:
+			self.cf_data_prev[account_title] = data
+		else:
+			if "" not in self.cf_data_prev:
+				self.cf_data_prev[account_title] = {}
+			
+			self.cf_data_prev[account_title][sub_title] = data
+
+		self.data.append(data)
+		
+		return data
 	
 	def get_sub_total(self, sub_title):
 		return self.cf_data[""][sub_title]
+
+	def get_sub_total_prev(self, sub_title):
+		return self.cf_data_prev[""][sub_title]
 	
 	def process_data(self):
+
 		self.loop_data("INCOME STATEMENT", lambda key: "", is_group=1)
 
 		# Revenue
@@ -444,107 +702,26 @@ class CashFlowReport():
 			self.cf_data["Loss on disposal of investments"][key],
 		]), is_group=1)
 
+		# Change in Working Capital 
+		self.loop_data("Change in Working Capital ", lambda key: "", is_group=1)
+		# Decrease/(increase) in trade and other Receivables
+		self.loop_data("Decrease/(increase) in trade and other Receivables", lambda key: 0)
+		# Increase/(Decrease) in trade and other payables and accruals
+		self.loop_data("Increase/(Decrease) in trade and other payables and accruals", lambda key: 0)
+		# Cash flows used in operating activities
+		self.loop_data("Cash flows used in operating activities", lambda key: sum([
+			self.cf_data['Decrease/(increase) in trade and other Receivables'][key],
+			self.cf_data["Increase/(Decrease) in trade and other payables and accruals"][key],
+			self.cf_data["Operating cash flows before changes in working capital"][key],
+		]), is_group=1)
+		# Interest Paid
+		self.loop_data("Interest Paid ", lambda key: -1*self.cf_data["Interest Paid"][key])
 
-# 		# Gross Profit
-# 		ref = self.get_row_reference("CF", "Revenue")
-# 		ref2 = self.get_row_reference("CF", "COGS")
-# 		self.loop_data("Gross Profit", lambda key: ref[key]-ref2[key])
+		# Cash flows from investing activities
+		self.loop_data("", lambda key: "")
 
-# 		# Less: Operating Expenses
-# 		self.loop_data("Less: Operating Expenses", lambda key: "")
+		# Purchase of plant and equipment
 
-# 		# Sales and Marketing Cost
-# 		ref = self.get_row_reference("PL", ACCOUNT['Selling & Marketing'])
-# 		self.loop_data("Sales and Marketing Cost", lambda key: ref[key])
-
-
-
-# 		# Professional Fees
-# 		ref = self.get_row_reference("PL", ACCOUNT["Professional Cost"])
-# 		self.loop_data("Professional Fees", lambda key: ref[key])
-
-# 		# Other Expenses
-# 		ref = self.get_row_reference("PL", ACCOUNT["Expense Operating"])
-# 		ref1 = self.get_row_reference("PL", ACCOUNT["Expense Other"])
-# 		ref2 = self.get_row_reference("CF", "Sales and Marketing Cost")
-# 		ref3 = self.get_row_reference("CF", "Manpower Cost")
-# 		ref4 = self.get_row_reference("CF", "Professional Fees")
-# 		self.loop_data("Other Expenses", lambda key: ref[key]+ref1[key]-ref2[key]-ref3[key]-ref4[key])
-
-# 		# Operating Expenses
-# 		self.loop_data("Operating Expenses", lambda key: sum([ 
-# 			self.cf_data['Sales and Marketing Cost'][key],
-# 			self.cf_data['Manpower Cost'][key],
-# 			self.cf_data['Professional Fees'][key],
-# 			self.cf_data['Other Expenses'][key],
-# 		]))
-
-# 		# Operating Profit/ (Loss)
-# 		self.loop_data("Operating Profit/ (Loss)", lambda key: sum([ 
-# 			self.cf_data['Gross Profit'][key],
-# 			-1*self.cf_data['Operating Expenses'][key],
-# 		]))
-
-# 		# Depreciation
-# 		ref = self.get_row_reference("PL", ACCOUNT["Depreciation"])
-# 		self.loop_data("Depreciation", lambda key: ref[key])
-
-
-
-# 		# EBITDA
-# 		self.loop_data("EBITDA", lambda key: sum([ 
-# 			self.cf_data['Operating Profit/ (Loss)'][key],
-# 			self.cf_data['Depreciation'][key],
-# 			self.cf_data['Interest'][key],
-# 		]))
-
-
-
-# 		# Other Income
-# 		ref = self.get_row_reference("PL", ACCOUNT["Other Income"])
-# 		self.loop_data("Other Income", lambda key: ref[key])
-
-# 		# Net Profit/ (Loss)
-# 		self.loop_data("EBITDA", lambda key: sum([ 
-# 			self.cf_data['Operating Profit/ (Loss)'][key],
-# 			self.cf_data['Other Income'][key],
-# 		]))
-
-# 		# Cash and Cash on hand
-# 		ref = self.get_row_reference("BS", ACCOUNT["Cash in Bank"])
-# 		self.loop_data("Cash and Cash on hand", lambda key: ref[key])
-
-
-# 		# Accounts Receivables
-# 		ref = self.get_row_reference("BS", ACCOUNT["Accounts Receivable"])
-# 		self.loop_data("Accounts Receivables", lambda key: ref[key])
-
-# 		# Deposits
-# 		ref = self.get_row_reference("BS", ACCOUNT["Deposit"])
-# 		self.loop_data("Deposits", lambda key: ref[key])
-
-# 		# Other Receivables
-# 		ref = self.get_row_reference("BS", ACCOUNT["Other Receivables"])
-# 		self.loop_data("Other Receivables", lambda key: ref[key])
-
-# 		# Non-Current Assets
-# 		ref = self.get_row_reference("BS", ACCOUNT["Non Current Asset"])
-# 		self.loop_data("Non-Current Assets", lambda key: ref[key])
-
-# 		# Total Assets
-# 		self.loop_data("Total Assets", lambda key: sum([ 
-# 			self.cf_data['Cash and Cash on hand'][key],
-# 			self.cf_data['Investments'][key],
-# 			self.cf_data['Accounts Receivables'][key],
-# 			self.cf_data['Deposits'][key],
-# 			self.cf_data['Other Receivables'][key],
-# 			self.cf_data['Non-Current Assets'][key],
-# 		]))
-
-
-
-
-
-
-
-	
+		# Purchase of intangible assets
+		# Proceeds from investments
+		# Net cash flows generated from/(used in) investing activities
