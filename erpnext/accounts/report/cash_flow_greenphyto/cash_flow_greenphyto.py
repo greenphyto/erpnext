@@ -53,7 +53,7 @@ ACCOUNT = {
 	"Acc Receivable":'100020 - Accounts Receivable - GPL',
 	"Deposit and Prepayment":'100060 - Deposit & Prepayment - GPL',
 	"GST Input":'100080 - GST- Input Tax - GPL',
-	"Duties and Taxes":'240000 - Duties and Taxes - GPL'
+	"Duties and Taxes":'240000 - Duties and Taxes - GPL',
 }
 
 # region
@@ -128,7 +128,7 @@ class CashFlowReport():
 		elif source == "CF":
 			return self.cf_data.get(account)
 
-	def loop_data(self, account_title, func, is_group=False):
+	def loop_data(self, account_title, func, is_group=False, sub_title=""):
 		data = {
 			'account' : account_title
 		}
@@ -138,10 +138,20 @@ class CashFlowReport():
 		if is_group:
 			data['is_group'] = 1
 
-		self.cf_data[account_title] = data
+		if account_title:
+			self.cf_data[account_title] = data
+		else:
+			if "" not in self.cf_data:
+				self.cf_data[account_title] = {}
+			
+			self.cf_data[account_title][sub_title] = data
+
 		self.data.append(data)
 		
 		return data
+	
+	def get_sub_total(self, sub_title):
+		return self.cf_data[""][sub_title]
 	
 	def process_data(self):
 		self.loop_data("INCOME STATEMENT", lambda key: "", is_group=1)
@@ -261,15 +271,41 @@ class CashFlowReport():
 			self.cf_data['Intangible Assets'][key],
 			self.cf_data['Assets under Construction'][key],
 			self.cf_data['Right-of-use Assets'][key],
-		]), is_group=1)
+		]), is_group=1, sub_title='Total non-current assets')
 
+		self.loop_data("", lambda key: "")
 
 		# Trade & other receivables
 		ref = self.get_row_reference("BS", ACCOUNT["Acc Receivable"])
 		ref1 = self.get_row_reference("BS", ACCOUNT["Deposit and Prepayment"])
 		ref2 = self.get_row_reference("BS", ACCOUNT["GST Input"])
 		ref3 = self.get_row_reference("BS", ACCOUNT["Duties and Taxes"])
-		self.loop_data("Gross Profit", lambda key: ref[key]-ref1[key]+ref2[key]+ref3[key])
+		self.loop_data("Trade & other receivables", lambda key: ref[key]+ref1[key]+ref2[key]-ref3[key])
+
+		# Cash and Cash equvalents
+		ref = self.get_row_reference("BS", ACCOUNT["Cash in Bank"])
+		self.loop_data("Cash and Cash equvalents", lambda key: ref[key])
+
+		# Investments
+		ref = self.get_row_reference("BS", ACCOUNT["Investments"])
+		self.loop_data("Investments", lambda key: ref[key])
+
+		self.loop_data("", lambda key: sum([ 
+			self.cf_data['Trade & other receivables'][key],
+			self.cf_data['Cash and Cash equvalents'][key],
+			self.cf_data['Investments'][key],
+		]), is_group=1, sub_title="Total current assets")
+
+		self.loop_data("", lambda key: "")
+
+		# Total Assets
+		ref=self.get_sub_total("Total non-current assets")
+		ref1=self.get_sub_total("Total current assets")
+		self.loop_data("Total Assets", lambda key: sum([ 
+			ref[key],
+			ref1[key],
+		]), is_group=1)
+
 
 # 		# Gross Profit
 # 		ref = self.get_row_reference("CF", "Revenue")
@@ -341,9 +377,6 @@ class CashFlowReport():
 # 		ref = self.get_row_reference("BS", ACCOUNT["Cash in Bank"])
 # 		self.loop_data("Cash and Cash on hand", lambda key: ref[key])
 
-# 		# Investments
-# 		ref = self.get_row_reference("BS", ACCOUNT["Investments"])
-# 		self.loop_data("Investments", lambda key: ref[key])
 
 # 		# Accounts Receivables
 # 		ref = self.get_row_reference("BS", ACCOUNT["Accounts Receivable"])
