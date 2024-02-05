@@ -210,13 +210,14 @@ class VATAuditReport(object):
 
 	def get_item_amount_map(self, parent, parenttype, item_code, taxes):
 		net_amount =self.invoice_items.get(parent).get(item_code).get("net_amount")
+		gst_item = False
 		if not net_amount and parent and parenttype == "Purchase Invoice":
 			net_amount = frappe.get_value("Purchase Invoice", parent, "base_value_for_gst_input")
+			gst_item = True
 
 		tax_rate = taxes[0]
 		tax_amount = taxes[1]
 		gross_amount = net_amount + tax_amount
-
 
 		self.item_tax_rate.setdefault(parent, {}).setdefault(
 			item_code,
@@ -229,9 +230,15 @@ class VATAuditReport(object):
 			},
 		)
 
-		self.item_tax_rate[parent][item_code]["net_amount"] += net_amount
 		self.item_tax_rate[parent][item_code]["tax_amount"] += tax_amount
-		self.item_tax_rate[parent][item_code]["gross_amount"] += gross_amount
+		if not gst_item:
+			self.item_tax_rate[parent][item_code]["net_amount"] += net_amount
+			self.item_tax_rate[parent][item_code]["gross_amount"] += gross_amount
+		else:
+			gross_amount = net_amount + self.item_tax_rate[parent][item_code]["tax_amount"]
+			self.item_tax_rate[parent][item_code]["net_amount"] = net_amount
+			self.item_tax_rate[parent][item_code]["gross_amount"] = gross_amount
+
 		#print(tax_rate)
 		return tax_rate
 
@@ -296,8 +303,10 @@ class VATAuditReport(object):
 			}
 		self.data.append(gtotal)
 		self.data.append({}) #if doctype == "Purchase Invoice" else _void
+
 	def get_consolidated_data(self, doctype):
 		consolidated_data_map = {}
+		self.already_add = []
 		for inv, inv_data in self.invoices.items():
 			if self.items_based_on_tax_rate.get(inv):
 				for rate, items in self.items_based_on_tax_rate.get(inv).items():
@@ -306,6 +315,12 @@ class VATAuditReport(object):
 					taxdata ="" if  inv_data.get("taxes_and_charges") is None else inv_data.get("taxes_and_charges")
 					taxType = docprefix + taxdata
 					consolidated_data_map.setdefault(taxType, {"data": []})
+					key = inv
+					if key not in self.already_add:
+						self.already_add.append(key)
+					else:
+						continue
+
 					for item in items:
 						item_details = self.item_tax_rate.get(inv).get(item)
 						row["account"] = inv_data.get("account")
@@ -330,6 +345,7 @@ class VATAuditReport(object):
 					row["net_amount"] = fmt_money(row["net_amount"] )
 					row["gross_amount"] = fmt_money(row["gross_amount"] )
 					consolidated_data_map[taxType]["data"].append(row)
+
 		get_tax_type = self.get_tax_types(doctype)
 		
 		for tax_type in get_tax_type:
