@@ -54,6 +54,21 @@ ACCOUNT = {
 	"Deposit and Prepayment":'100060 - Deposit & Prepayment - GPL',
 	"GST Input":'100080 - GST- Input Tax - GPL',
 	"Duties and Taxes":'240000 - Duties and Taxes - GPL',
+	"Account Payable":'200009 - Account Payable - GPL',
+	"Accruals and Provision":"210000 - Accruals and Provision - GPL",
+	"Contra Account":"250000 - Contra Account - GPL",
+	"Amount Due to Directors":"230000 - Amount Due to Directors - GPL",
+	"Term loan liabilities":"220040 - ST - Term Loan Liabilities - GPL",
+	"UOB 4m":"280030 - Bank Term Loan UOB $4m - GPL",
+	"UOB 5m":"280040 - Bank Term Loan UOB $5m - GPL",
+	"Hire Purchase Creditors":"220010 - ST - Hire Purchase Creditor - GPL",
+	"Hire Purchase Interest":"220020 - ST - Hire Purchase Interest Payable - GPL",
+	"Lease Liabilities":"220030 - ST - Lease Liabilities - GPL",
+	"UOB LEFS":"280010 - UOB TL-LEFS (LN:8018611651) - GPL",
+	"UOB TLC":"280020 - UOB Term Loan Construction - GPL",
+	"UOB PFL":"280050 - UOB Premium Financing Loan - PFL (LN:8018088347) - GPL",
+	"Other LT Liabilities":"260000 - Other LT Liabilities - GPL",
+	"Long Term Lease Liabilities":"270000 - Long Term Lease Liabilities - GPL"
 }
 
 # region
@@ -298,10 +313,75 @@ class CashFlowReport():
 
 		self.loop_data("", lambda key: "")
 
+# endregion
+		
 		# Total Assets
 		ref=self.get_sub_total("Total non-current assets")
 		ref1=self.get_sub_total("Total current assets")
 		self.loop_data("Total Assets", lambda key: sum([ 
+			ref[key],
+			ref1[key],
+		]), is_group=1)
+
+		self.loop_data("", lambda key: "") 
+
+		# Current liabilities
+		self.loop_data("Current liabilities", lambda key: "", is_group=1) 
+		# Accounts Payable
+		ref=self.get_row_reference("BS", ACCOUNT["Account Payable"])
+		ref1=self.get_row_reference("BS", ACCOUNT["Accruals and Provision"])
+		ref2=self.get_row_reference("BS", ACCOUNT["Contra Account"])
+		self.loop_data("Accounts Payable", lambda key: ref[key]+ref1[key]+ref2[key])
+		
+		# Amount Due to Directors
+		ref=self.get_row_reference("BS", ACCOUNT["Amount Due to Directors"])
+		self.loop_data("Amount Due to Directors", lambda key: ref[key])
+
+		# Term Loans
+		ref=self.get_row_reference("BS", ACCOUNT["Term loan liabilities"])
+		ref1=self.get_row_reference("BS", ACCOUNT["UOB 4m"])
+		ref2=self.get_row_reference("BS", ACCOUNT["UOB 5m"])
+		self.loop_data("Term Loans", lambda key: ref[key]+ref1[key]+ref2[key])
+
+		# Lease Liabilities
+		ref=self.get_row_reference("BS", ACCOUNT["Hire Purchase Creditors"])
+		ref1=self.get_row_reference("BS", ACCOUNT["Hire Purchase Interest"])
+		ref2=self.get_row_reference("BS", ACCOUNT["Lease Liabilities"])
+		self.loop_data("Lease Liabilities", lambda key: ref[key]+ref1[key]+ref2[key])
+
+		# Total Current Liabilities
+		self.loop_data("", lambda key: sum([ 
+			self.cf_data["Accounts Payable"][key],
+			self.cf_data["Amount Due to Directors"][key],
+			self.cf_data["Term Loans"][key],
+			self.cf_data["Lease Liabilities"][key],
+		]), is_group=1, sub_title="total current liabilities")
+
+		self.loop_data("", lambda key: "")
+
+		# Non-Current liabilities 
+		self.loop_data("Non-Current liabilities", lambda key: "", is_group=1)
+		# Term Loans
+		ref=self.get_row_reference("BS", ACCOUNT["UOB LEFS"])
+		ref1=self.get_row_reference("BS", ACCOUNT["UOB TLC"])
+		ref2=self.get_row_reference("BS", ACCOUNT["UOB PFL"])
+		self.loop_data("Term Loans ", lambda key: ref[key]+ref1[key]+ref2[key])
+
+		# Lease Liabilities
+		ref=self.get_row_reference("BS", ACCOUNT["Other LT Liabilities"])
+		ref1=self.get_row_reference("BS", ACCOUNT["Long Term Lease Liabilities"])
+		self.loop_data("Lease Liabilities ", lambda key: ref[key]+ref1[key])
+
+		# Total Current Liabilities
+		self.loop_data("", lambda key: sum([ 
+			self.cf_data["Term Loans "][key],
+			self.cf_data["Lease Liabilities "][key],
+		]), is_group=1, sub_title="total non-current liabilities")
+
+		# Total liabilities
+		ref=self.get_sub_total("total current liabilities")
+		ref1=self.get_sub_total("total non-current liabilities")
+		self.loop_data("Total Liabilities", lambda key: sum([ 
 			ref[key],
 			ref1[key],
 		]), is_group=1)
@@ -360,7 +440,6 @@ class CashFlowReport():
 # 			self.cf_data['Interest'][key],
 # 		]))
 
-# # endregion
 
 
 # 		# Other Income
