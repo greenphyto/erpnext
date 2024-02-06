@@ -10,6 +10,9 @@ from erpnext.accounts.report.financial_statements import (
 )
 from frappe.utils import get_first_day, add_months, add_years, get_last_day, getdate,add_days, cstr, flt
 from erpnext.accounts.utils import get_fiscal_year
+from erpnext.accounts.utils import remove_account_number
+from erpnext.accounts.report.utils import convert_wrap_report_data
+
 
 def execute(filters=None):
 	columns, data = [], []
@@ -137,7 +140,7 @@ class CashFlowReport():
 		self.get_previous_month()
 
 		self.cf_data = {}
-		self.data = [self.pl_data, self.bs_data, self.bs_data_prev, self.cf_data_prev]
+		# self.data = [self.pl_data, self.bs_data, self.bs_data_prev, self.cf_data_prev]
 
 	def get_previous_month(self):
 		# previous month balance sheet
@@ -363,10 +366,18 @@ class CashFlowReport():
 		return self.cf_data_prev
 
 	def run(self):
+		self.in_export = False
+		if frappe.flags.in_export:
+			self.in_export = True
+			frappe.flags.in_export = False
+
 		self.setup_report()
 		self.setup_column()
 		self.get_data()
 		self.process_data()
+
+		if self.in_export:
+			convert_wrap_report_data(self.columns, self.data, precision=2)
 
 		return self.columns, self.data
 	
@@ -457,6 +468,7 @@ class CashFlowReport():
 		else:
 			cur_data = self.cf_data.get(account) or {}
 
+		data[self.prev_key_date] = 0
 		for d in self.period_list:
 			if not prev_key:
 				data[d.key] = flt(prev_data.get(self.prev_key_date))
