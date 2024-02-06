@@ -8,7 +8,7 @@ from erpnext.accounts.report.financial_statements import (
 	get_columns,
 	get_period_list
 )
-from frappe.utils import get_first_day, add_months, add_years, get_last_day, getdate,add_days, cstr
+from frappe.utils import get_first_day, add_months, add_years, get_last_day, getdate,add_days, cstr, flt
 from erpnext.accounts.utils import get_fiscal_year
 
 def execute(filters=None):
@@ -118,6 +118,7 @@ class CashFlowReport():
 			to_month=self.filters.to_month,
 		)
 		self.use_date = self.period_list[0]
+		self.prev_key_date = 'none'
 		self.make_default_data()
 			
 	def setup_column(self):
@@ -141,6 +142,8 @@ class CashFlowReport():
 	def get_previous_month(self):
 		# previous month balance sheet
 		prev_filters = frappe._dict(self.filters)
+		self.bs_data_prev = {}
+		self.cf_data_prev = {}
 
 		if self.filters.filter_based_on == "Date Range":
 			self.start_date = getdate(self.filters.period_start_date)
@@ -157,6 +160,9 @@ class CashFlowReport():
 		else:
 			prev_date = add_years(getdate("1-1-{}".format(self.use_date.from_date)), -1)
 			self.end_date = getdate("31-12-{}".format(self.use_date.to_date))
+			if not frappe.db.exists("Fiscal Year", {"year_start_date":prev_date}):
+				return
+			
 			fy = get_fiscal_year(prev_date, as_dict=1)
 			if fy:
 				prev_filters.from_fiscal_year = fy.name
@@ -176,6 +182,7 @@ class CashFlowReport():
 		)
 
 		self.prev_key_date = self.period_list_prev[-1].key
+		self.default_data[self.prev_key_date] = 0
 
 		# self.start_from_previous =
 		# self.end_from_previous = add_days(self.start_date, -1)
@@ -184,7 +191,6 @@ class CashFlowReport():
 		# self.period_start_date = self.start_from_previous
 
 		self.bs_data_prev = get_bs_report_data(filters=prev_filters)
-		# print(186, self.bs_data_prev)
 		# self.last_bs_data_prev = self.bs_data_prev.get(self.prev_key_date)
 
 		# Cash Flow
@@ -369,6 +375,8 @@ class CashFlowReport():
 		for d in self.period_list:
 			self.default_data[d.key] = 0
 		
+		self.default_data[self.prev_key_date] = 0
+		
 		return self.default_data
 	
 	def get_row_reference(self, source, account):
@@ -426,8 +434,6 @@ class CashFlowReport():
 				self.cf_data_prev[account_title] = {}
 			
 			self.cf_data_prev[account_title][sub_title] = data
-
-		self.default_data[self.prev_key_date] = 0
 			
 		return data
 	
@@ -442,23 +448,22 @@ class CashFlowReport():
 		prev_key = None
 
 		if types == "BS":
-			prev_data = self.bs_data_prev.get(account)
+			prev_data = self.bs_data_prev.get(account) or {}
 		else:
-			prev_data = self.cf_data_prev.get(account)
+			prev_data = self.cf_data_prev.get(account) or {}
 		
 		if types == "BS":
-			cur_data = self.bs_data.get(account)
+			cur_data = self.bs_data.get(account) or {}
 		else:
-			cur_data = self.cf_data.get(account)
+			cur_data = self.cf_data.get(account) or {}
 
 		for d in self.period_list:
 			if not prev_key:
-				data[d.key] = prev_data[self.prev_key_date]
+				data[d.key] = flt(prev_data.get(self.prev_key_date))
 			else:
-				data[d.key] = cur_data[prev_key]
+				data[d.key] = flt(cur_data.get(prev_key))
 
 			prev_key = d.key
-
 		return data
 	
 	def process_data(self):
