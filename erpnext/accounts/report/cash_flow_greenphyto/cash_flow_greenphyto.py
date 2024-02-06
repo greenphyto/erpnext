@@ -183,6 +183,8 @@ class CashFlowReport():
 		# self.period_start_date = self.start_from_previous
 
 		self.bs_data_prev = get_bs_report_data(filters=prev_filters)
+		# print(186, self.bs_data_prev)
+		# self.last_bs_data_prev = self.bs_data_prev.get(self.prev_key_date)
 
 		# Cash Flow
 		self.get_previous_cashflow()
@@ -429,6 +431,30 @@ class CashFlowReport():
 	def get_sub_total_prev(self, sub_title):
 		return self.cf_data_prev[""][sub_title]
 	
+	def get_prev_data(self, types, account):
+		data = {}
+		prev_key = None
+
+		if types == "BS":
+			prev_data = self.bs_data_prev.get(account)
+		else:
+			prev_data = self.cf_data_prev.get(account)
+		
+		if types == "BS":
+			cur_data = self.bs_data.get(account)
+		else:
+			cur_data = self.cf_data.get(account)
+
+		for d in self.period_list:
+			if not prev_key:
+				data[d.key] = prev_data[self.prev_key_date]
+			else:
+				data[d.key] = cur_data[prev_key]
+
+			prev_key = d.key
+
+		return data
+	
 	def process_data(self):
 
 		self.loop_data("INCOME STATEMENT", lambda key: "", is_group=1)
@@ -575,8 +601,6 @@ class CashFlowReport():
 
 		self.loop_data("", lambda key: "")
 
-# endregion
-		
 		# Total Assets
 		ref=self.get_sub_total("Total non-current assets")
 		ref1=self.get_sub_total("Total current assets")
@@ -693,6 +717,7 @@ class CashFlowReport():
 		# Loss on disposal of investments
 		self.loop_data("Loss on disposal of investments", lambda key: 0)
 		# Operating cash flows before changes in working capital 
+		self.loop_data("", lambda key: "")
 		self.loop_data("Operating cash flows before changes in working capital", lambda key: sum([
 			self.cf_data['Loss before tax'][key],
 			self.cf_data["Adjustment for:-"][key],
@@ -703,11 +728,18 @@ class CashFlowReport():
 		]), is_group=1)
 
 		# Change in Working Capital 
+		self.loop_data("", lambda key: "")
 		self.loop_data("Change in Working Capital ", lambda key: "", is_group=1)
 		# Decrease/(increase) in trade and other Receivables
-		self.loop_data("Decrease/(increase) in trade and other Receivables", lambda key: 0)
+		ref=self.get_prev_data("CF","Trade & other receivables")
+		ref1=self.cf_data.get("Trade & other receivables")
+		self.loop_data("Decrease/(increase) in trade and other Receivables", lambda key: ref[key]-ref1[key] )
 		# Increase/(Decrease) in trade and other payables and accruals
-		self.loop_data("Increase/(Decrease) in trade and other payables and accruals", lambda key: 0)
+		ref=self.cf_data.get("Accounts Payable")
+		ref1=self.get_prev_data("CF","Accounts Payable")
+		self.loop_data("Increase/(Decrease) in trade and other payables and accruals", lambda key: ref[key]-ref1[key])
+
+		self.loop_data("", lambda key: "")
 		# Cash flows used in operating activities
 		self.loop_data("Cash flows used in operating activities", lambda key: sum([
 			self.cf_data['Decrease/(increase) in trade and other Receivables'][key],
@@ -716,12 +748,92 @@ class CashFlowReport():
 		]), is_group=1)
 		# Interest Paid
 		self.loop_data("Interest Paid ", lambda key: -1*self.cf_data["Interest Paid"][key])
+		# Net cash flows used in operating activities
+		self.loop_data("", lambda key: "")
+		self.loop_data("Net cash flows used in operating activities", lambda key: sum([
+			self.cf_data["Cash flows used in operating activities"][key],
+			self.cf_data["Interest Paid "][key],
+		]), is_group=1)
 
 		# Cash flows from investing activities
 		self.loop_data("", lambda key: "")
+		self.loop_data("Cash flows from investing activities", lambda key: "", is_group=1)
 
 		# Purchase of plant and equipment
+		ref=self.get_prev_data("CF","Property, Plant and Equipment")
+		ref1=self.get_prev_data("CF","Intangible Assets")
+		ref2=self.get_prev_data("CF","Assets under Construction")
+		ref3=self.get_prev_data("CF","Right-of-use Assets")
+		ref4=self.cf_data.get("Property, Plant and Equipment")
+		ref5=self.cf_data.get("Intangible Assets")
+		ref6=self.cf_data.get("Assets under Construction")
+		ref7=self.cf_data.get("Right-of-use Assets")
+		ref8=self.cf_data.get("Depreciation of plant and machinery")
+		self.loop_data("Purchase of plant and equipment", lambda key: sum([
+			ref[key],ref1[key],ref2[key],ref3[key],
+			-ref4[key],-ref5[key],-ref6[key],-ref7[key],-ref8[key]
+		]))
 
 		# Purchase of intangible assets
+		self.loop_data("Purchase of intangible assets", lambda key: 0)
 		# Proceeds from investments
+		ref=self.get_prev_data("CF", "Investments")
+		ref1=self.cf_data['Investments']
+		self.loop_data("Proceeds from investments", lambda key: ref[key]-ref1[key])
 		# Net cash flows generated from/(used in) investing activities
+		self.loop_data("Net cash flows generated from/(used in) investing activities", lambda key: sum([
+			self.cf_data['Purchase of intangible assets'][key],
+			self.cf_data['Proceeds from investments'][key],
+			self.cf_data['Purchase of plant and equipment'][key],
+		]), is_group=1)
+		
+		self.loop_data("", lambda key: "")
+		# Cash flow from financing activities
+		self.loop_data("Cash flow from financing activities", lambda key: "", is_group=1)
+
+		# Proceed from issue of preference shares
+		self.loop_data("Proceed from issue of preference shares", lambda key: 0)
+
+		# (Repayment) from Term Loans
+		ref=self.cf_data['Term Loans']
+		ref1=self.get_prev_data("CF", "Term Loans")
+		self.loop_data("(Repayment) from Term Loans", lambda key: ref[key]-ref1[key])
+
+		# Drawdown from Term Loans
+		ref=self.cf_data['Term Loans ']
+		ref1=self.get_prev_data("CF", "Term Loans ")
+		self.loop_data("Drawdown from Term Loans", lambda key: ref[key]-ref1[key])
+
+		# Increase/(Decrease) in Amounts Due to Directors
+		ref=self.cf_data['Amount Due to Directors']
+		ref1=self.get_prev_data("CF", "Amount Due to Directors")
+		self.loop_data("Increase/(Decrease) in Amounts Due to Directors", lambda key: ref[key]-ref1[key])
+
+		# Increase/(Decrease) of lease liabilities
+		ref=self.cf_data.get("Lease Liabilities")
+		ref1=self.cf_data.get("Lease Liabilities ")
+		ref2=self.get_prev_data("CF","Lease Liabilities")
+		ref3=self.get_prev_data("CF","Lease Liabilities ")
+		self.loop_data("Increase/(Decrease) of lease liabilities", lambda key: ref[key]+ref1[key]-ref2[key]-ref3[key])
+
+		self.loop_data("", lambda key: "")
+		# Net cash flows (used in)/generated from financing activities
+		self.loop_data("Net cash flows (used in)/generated from financing activities", lambda key: sum([
+			self.cf_data["(Repayment) from Term Loans"][key],
+			self.cf_data["Drawdown from Term Loans"][key],
+			self.cf_data["Increase/(Decrease) in Amounts Due to Directors"][key],
+			self.cf_data["Increase/(Decrease) of lease liabilities"][key],
+		]), is_group=1)
+
+		self.loop_data("", lambda key: "")
+		# Net Cashflow for the period
+		self.loop_data("Net Cashflow for the period", lambda key: sum([
+			self.cf_data["Net cash flows used in operating activities"][key],
+			self.cf_data["Net cash flows generated from/(used in) investing activities"][key],
+			self.cf_data["Net cash flows (used in)/generated from financing activities"][key],
+		]), is_group=1)
+
+		self.loop_data("", lambda key: "")
+		# Beginning Balance
+		# Ending Balance
+
