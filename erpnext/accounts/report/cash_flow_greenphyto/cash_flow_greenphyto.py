@@ -135,7 +135,7 @@ class CashFlowReport():
 		self.get_previous_month()
 
 		self.cf_data = {}
-		self.data = [self.pl_data, self.bs_data, self.bs_data_prev, self.cf_data_prev]
+		# self.data = [self.pl_data, self.bs_data, self.bs_data_prev, self.cf_data_prev]
 
 	def get_previous_month(self):
 		# previous month balance sheet
@@ -471,7 +471,7 @@ class CashFlowReport():
 		# Gross Profit
 		self.loop_data("Gross Profit", lambda key: sum([ 
 			self.cf_data['Revenue'][key],
-			self.cf_data['COGS'][key],
+			-1*self.cf_data['COGS'][key],
 		]), is_group=1)
 
 		self.loop_data("", lambda key: "")
@@ -705,7 +705,7 @@ class CashFlowReport():
 		# Cashflow from Operating activities
 		self.loop_data("Cashflow from Operating activities", lambda key: "", is_group=1)
 		# Loss before tax
-		self.loop_data("Loss before tax", lambda key: self.cf_data["Current Year Profit / (Loss)"][key])
+		self.loop_data("Loss before tax", lambda key: self.cf_data["Net Profit/ (Loss) for the year"][key])
 		# Adjustment for:-
 		self.loop_data("Adjustment for:-", lambda key: 0)
 		# Depreciation of plant and machinery
@@ -835,5 +835,9 @@ class CashFlowReport():
 
 		self.loop_data("", lambda key: "")
 		# Beginning Balance
+		ref=self.get_prev_data("CF","Cash and Cash equvalents")
+		self.loop_data("Beginning Balance", lambda key: ref[key])
 		# Ending Balance
+		ref=self.cf_data["Cash and Cash equvalents"]
+		self.loop_data("Ending Balance", lambda key: ref[key])
 
