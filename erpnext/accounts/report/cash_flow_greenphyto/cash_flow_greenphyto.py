@@ -118,6 +118,7 @@ class CashFlowReport():
 			to_month=self.filters.to_month,
 		)
 		self.use_date = self.period_list[0]
+		self.make_default_data()
 			
 	def setup_column(self):
 		self.columns = get_columns(
@@ -135,7 +136,7 @@ class CashFlowReport():
 		self.get_previous_month()
 
 		self.cf_data = {}
-		# self.data = [self.pl_data, self.bs_data, self.bs_data_prev, self.cf_data_prev]
+		self.data = [self.pl_data, self.bs_data, self.bs_data_prev, self.cf_data_prev]
 
 	def get_previous_month(self):
 		# previous month balance sheet
@@ -363,6 +364,13 @@ class CashFlowReport():
 
 		return self.columns, self.data
 	
+	def make_default_data(self):
+		self.default_data = {}
+		for d in self.period_list:
+			self.default_data[d.key] = 0
+		
+		return self.default_data
+	
 	def get_row_reference(self, source, account):
 		data = {}
 		if source == "PL":
@@ -374,9 +382,7 @@ class CashFlowReport():
 		elif source == "BS Prev":
 			data = self.bs_data_prev.get(account)
 		
-		def_data = {}
-		def_data[self.prev_key_date] = 0
-		return frappe._dict(data or def_data)
+		return frappe._dict(data or self.default_data)
 
 	def loop_data(self, account_title, func, is_group=False, sub_title=""):
 		data = {
@@ -421,8 +427,8 @@ class CashFlowReport():
 			
 			self.cf_data_prev[account_title][sub_title] = data
 
-		self.data.append(data)
-		
+		self.default_data[self.prev_key_date] = 0
+			
 		return data
 	
 	def get_sub_total(self, sub_title):
