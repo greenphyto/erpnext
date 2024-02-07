@@ -85,8 +85,9 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 			row.append(flt(internal_invoice_map.get((inv.name, account))))
 
 		# net total
-		row.append(inv.net_total)
-		row.append(base_net_total or inv.base_net_total)
+			
+		row.append(inv.net_total if not inv.gst_input_tax else inv.base_value)
+		row.append((base_net_total or inv.base_net_total) if not inv.gst_input_tax else inv.base_value)
 
 		# tax account
 		total_tax = 0
@@ -236,8 +237,8 @@ def get_columns(invoice_list, additional_table_columns):
 		columns
 		+ expense_columns
 		+ unrealized_profit_loss_account_columns
-		+ [_("Net Total(Original Currency)") + ":Currency/currency:120"]
-		+ [_("Net Total(Book Currency)") + ":Currency/Company:company:default_currency:120"]
+		+ [_("Taxable Amount(Original Currency)") + ":Currency/currency:120"]
+		+ [_("Taxable Amount(Book Currency)") + ":Currency/Company:company:default_currency:120"]
 		+ tax_columns
 		+ [
 			_("Total Tax(Original Currency)") + ":Currency/currency:120",
@@ -320,7 +321,7 @@ def get_invoices(filters, additional_query_columns):
 	return frappe.db.sql(
 		"""
 		select
-			name, posting_date, credit_to, supplier, supplier_name, tax_id, bill_no, bill_date,
+			name, posting_date, credit_to, supplier, supplier_name, tax_id, bill_no, bill_date, base_value_for_gst_input as base_value, gst_input_tax,
 			remarks,net_total, base_net_total,grand_total, base_grand_total, outstanding_amount,
 			currency,total_taxes_and_charges,
 			mode_of_payment {0}

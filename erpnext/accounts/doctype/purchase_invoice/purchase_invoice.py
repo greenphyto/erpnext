@@ -131,6 +131,8 @@ class PurchaseInvoice(BuyingController):
 	def validate_gst_input(self):
 		if self.gst_input_tax and not self.base_value_for_gst_input:
 			frappe.throw(_("Please set Base Value for GST input"))
+
+		self.base_currency_of_base_value = self.base_value_for_gst_input * self.conversion_rate
 			
 
 	def validate_release_date(self):

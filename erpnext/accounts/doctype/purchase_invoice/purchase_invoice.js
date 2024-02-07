@@ -44,6 +44,12 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 		}
 	}
 
+	base_value_for_gst_input(){
+		var frm = this.frm;
+		var base_currency = frm.doc.conversion_rate * frm.doc.base_value_for_gst_input;
+		frm.set_value("base_currency_of_base_value", base_currency);
+	}
+
 	onload() {
 		super.onload();
 

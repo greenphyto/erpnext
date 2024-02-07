@@ -50,9 +50,12 @@
   "is_subcontracted",
   "rejected_warehouse",
   "supplier_warehouse",
-  "items_section",
+  "gst_input_section_section",
   "gst_input_tax",
   "base_value_for_gst_input",
+  "base_currency_of_base_value",
+  "column_break_47",
+  "items_section",
   "non_stock_item",
   "items",
   "section_break_26",
@@ -1566,13 +1569,30 @@
    "fieldname": "base_value_for_gst_input",
    "fieldtype": "Currency",
    "label": "Base Value for GST input"
+  },
+  {
+   "fieldname": "gst_input_section_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "GST Input"
+  },
+  {
+   "fieldname": "column_break_47",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.base_value_for_gst_input!=doc.base_currency_of_base_value",
+   "fieldname": "base_currency_of_base_value",
+   "fieldtype": "Currency",
+   "label": "Base Currency of Base Value",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-02-02 17:10:49.458886",
+ "modified": "2024-02-07 12:14:12.889463",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",
