@@ -87,7 +87,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 		# net total
 			
 		row.append(inv.net_total if not inv.gst_input_tax else inv.base_value)
-		row.append((base_net_total or inv.base_net_total) if not inv.gst_input_tax else inv.base_value)
+		row.append((base_net_total or inv.base_net_total) if not inv.gst_input_tax else (inv.base_value or inv.base_currency_of_base_value))
 
 		# tax account
 		total_tax = 0
@@ -321,7 +321,8 @@ def get_invoices(filters, additional_query_columns):
 	return frappe.db.sql(
 		"""
 		select
-			name, posting_date, credit_to, supplier, supplier_name, tax_id, bill_no, bill_date, base_value_for_gst_input as base_value, gst_input_tax,
+			name, posting_date, credit_to, supplier, supplier_name, tax_id, bill_no, bill_date, 
+			base_value_for_gst_input as base_value, gst_input_tax, base_currency_of_base_value,
 			remarks,net_total, base_net_total,grand_total, base_grand_total, outstanding_amount,
 			currency,total_taxes_and_charges,
 			mode_of_payment {0}
