@@ -87,7 +87,7 @@ def _execute(filters=None, additional_table_columns=None, additional_query_colum
 		# net total
 			
 		row.append(inv.net_total if not inv.gst_input_tax else inv.base_value)
-		row.append((base_net_total or inv.base_net_total) if not inv.gst_input_tax else (inv.base_value or inv.base_currency_of_base_value))
+		row.append((base_net_total or inv.base_net_total) if not inv.gst_input_tax else (inv.base_currency_of_base_value or inv.base_value))
 
 		# tax account
 		total_tax = 0
