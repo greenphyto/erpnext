@@ -149,4 +149,11 @@ class FomsAPI():
 		}
 		res = self.req("GET", "/Recipe/GetProductList", params=params )
 		return res
+
+	def get_work_order_list(self, farm_id):
+		params = {
+			"FarmId":farm_id,
+		}
+		res = self.req("GET", "/userportal/CommonLookup/GetWorkOrderList?", params=params )
+		return res
 		

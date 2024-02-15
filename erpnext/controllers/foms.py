@@ -345,3 +345,24 @@ def get_operation_name(operation):
 	
 	return name
 	
+# WORK ORDER (GET)
+def get_work_order(show_progress=False):
+	def get_data(gd):
+		data = gd.api.get_work_order_list(gd.farm_id)
+		print(352, data)
+		return data
+
+	def post_process(gd, log):
+		pass
+
+	def get_key_name(log):
+		return log.get("workOrderNo")
+	
+	GetData(
+		data_type = "Work Order",
+		doc_type="Work Order",
+		get_data=get_data,
+		get_key_name = get_key_name,
+		post_process=post_process,
+		show_progress=show_progress
+	).run()
