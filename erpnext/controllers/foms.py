@@ -349,11 +349,14 @@ def get_operation_name(operation):
 def get_work_order(show_progress=False):
 	def get_data(gd):
 		data = gd.api.get_work_order_list(gd.farm_id)
-		print(352, data)
 		return data
 
 	def post_process(gd, log):
-		pass
+		for d in log.get("products"):
+			item_code = d.get("productRefNo")
+			bom_no = frappe.db.get_value("Item", item_code, "default_bom")
+			qty = 1
+			create_work_order(item_code, bom_no, qty)
 
 	def get_key_name(log):
 		return log.get("workOrderNo")
@@ -366,3 +369,12 @@ def get_work_order(show_progress=False):
 		post_process=post_process,
 		show_progress=show_progress
 	).run()
+
+def create_work_order(item_code, bom_no, qty=1):
+	doc = frappe.new_doc("Work Order")
+	doc.production_item = item_code
+	doc.bom_no = bom_no
+	doc.qty = qty
+	doc.insert()
+
+	return doc.name

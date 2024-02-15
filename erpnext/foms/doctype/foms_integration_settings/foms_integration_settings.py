@@ -154,6 +154,6 @@ class FomsAPI():
 		params = {
 			"FarmId":farm_id,
 		}
-		res = self.req("GET", "/userportal/CommonLookup/GetWorkOrderList?", params=params )
+		res = self.req("GET", "/userportal/CommonLookup/GetWorkOrderList", params=params )
 		return res
 		
