@@ -351,7 +351,8 @@ def get_routing_name(operation):
 		doc.routing_name = routing_name
 		row = doc.append("operations")
 		row.operation = get_operation_name(operation)
-		row.operation_time = get_foms_settings("operation_time")
+		row.operation_time = get_foms_settings("operation_time") or 60
+		row.workstation = get_foms_settings("workstation")
 		doc.insert(ignore_permissions=1)
 		name = doc.name
 
