@@ -286,10 +286,19 @@ def create_bom_products(log, product_id, submit=False):
 	name = None
 	# find existing
 	if item_name:
+		bom_harvest = None
+		is_bom_harvesting = False
+		# Pre Harvest Process
 		for op in log.preHarvestProcess:
 			op = frappe._dict(op)
 			operation_no = get_operation_no(op.processName)
 			name, status = find_existing_bom(item_name, log.productVersionName, operation_no) 
+
+			if operation_no == 3:
+				is_bom_harvesting = True
+			else:
+				is_bom_harvesting = False
+
 			if not name:
 				bom = frappe.new_doc("BOM")
 				bom.item = item_name
@@ -317,9 +326,11 @@ def create_bom_products(log, product_id, submit=False):
 					row.qty = rm.qtyrm
 
 				bom.insert()
-				if submit:
+				if submit and not is_bom_harvesting:
 					bom.submit()
 				name = bom.name
+			
+
 			
 			elif name and cint(status) != cint(submit) and submit:
 				bom = frappe.get_doc("BOM", name)
@@ -327,6 +338,24 @@ def create_bom_products(log, product_id, submit=False):
 					bom.is_default = 1
 				else:
 					bom.is_default = 0
+				
+				if not is_bom_harvesting:
+					bom.submit()
+			
+			if is_bom_harvesting:
+				bom_harvest = bom
+
+		# Post Harvest Process
+		for op in log.postHarvestProcess:
+			op = frappe._dict(op)
+			for rm in op.productRawMaterial:
+				rm = frappe._dict(rm)
+				row = bom.append("items")
+				row.item_code = rm.rawMaterialRefNo
+				row.uom = convert_uom(rm.uomrm)
+				row.qty = rm.qtyrm
+			bom.save()
+			if submit:
 				bom.submit()
 	
 	return name
