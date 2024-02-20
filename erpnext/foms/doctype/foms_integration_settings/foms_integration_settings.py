@@ -39,7 +39,7 @@ class FomsAPI():
 		self.session = requests.Session()
 		self.update_header({
 			'accept': 'application/json',
-			'Content-Type': 'application/json-patch+json',
+			'Content-Type': 'application/json',
 		})
 
 	def update_header(self, header):
@@ -60,7 +60,6 @@ class FomsAPI():
 			"password": self.settings.get_password("password"),
 			"rememberClient":True
 		}))
-
 		if res.status_code == 200:
 			data = res.json()
 			if data.get("result") and data['result'].get("accessToken"):

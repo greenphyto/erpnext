@@ -146,6 +146,8 @@ def get_products(show_progress=False):
 
 # RECIPE (GET)
 def get_recipe(show_progress=False):
+	submit = get_foms_settings("auto_submit_bom")
+
 	def get_data(gd):
 		data = gd.api.get_product_list_for_recipe(gd.farm_id)
 		return data
@@ -153,7 +155,7 @@ def get_recipe(show_progress=False):
 	def post_process(gd, log):
 		product_id =  log.get("id")
 		raw = gd.api.get_product_process(gd.farm_id, product_id)
-		return create_bom_products(raw, product_id)
+		return create_bom_products(raw, product_id, submit)
 
 	def get_key_name(log):
 		return log.get("productId")
@@ -278,41 +280,63 @@ def create_products(log):
 def get_operation_no(operation):
 	return OPERATION_MAP.get(operation) or 1
 
-def create_bom_products(log, product_id):
+def create_bom_products(log, product_id, submit=False):
 	log = frappe._dict(log)
 	item_name = frappe.get_value("Item", {"foms_id":product_id})
+	name = None
 	# find existing
-	name = find_existing_bom(item_name, log.productVersionName)
-	if not name and item_name:
+	if item_name:
 		for op in log.preHarvestProcess:
 			op = frappe._dict(op)
-			bom = frappe.new_doc("BOM")
-			bom.item = item_name
-			bom.operation_no = get_operation_no(op.processName)
-			bom.foms_recipe_version = log.productVersionName
+			operation_no = get_operation_no(op.processName)
+			name, status = find_existing_bom(item_name, log.productVersionName, operation_no) 
+			if not name:
+				bom = frappe.new_doc("BOM")
+				bom.item = item_name
+				bom.operation_no = operation_no
+				bom.foms_recipe_version = log.productVersionName
 
-			bom.with_operations = 1
-			bom.routing = get_routing_name(op.processName)
+				bom.with_operations = 1
+				bom.routing = get_routing_name(op.processName)
 
-			bom.transfer_material_against = 'Work Order'
+				if bom.operation_no == 1:
+					bom.is_default = 1
+				else:
+					bom.is_default = 0
 
-			if not op.productRawMaterial:
-				continue
+				bom.transfer_material_against = 'Work Order'
 
-			for rm in op.productRawMaterial:
-				rm = frappe._dict(rm)
-				row = bom.append("items")
-				row.item_code = rm.rawMaterialRefNo
-				row.uom = convert_uom(rm.uomrm)
-				row.qty = rm.qtyrm
+				if not op.productRawMaterial:
+					continue
 
-			bom.insert()
-			name = bom.name
+				for rm in op.productRawMaterial:
+					rm = frappe._dict(rm)
+					row = bom.append("items")
+					row.item_code = rm.rawMaterialRefNo
+					row.uom = convert_uom(rm.uomrm)
+					row.qty = rm.qtyrm
+
+				bom.insert()
+				if submit:
+					bom.submit()
+				name = bom.name
+			
+			elif name and cint(status) != cint(submit) and submit:
+				bom = frappe.get_doc("BOM", name)
+				if bom.operation_no == 1:
+					bom.is_default = 1
+				else:
+					bom.is_default = 0
+				bom.submit()
 	
 	return name
 
-def find_existing_bom(item, foms_version):
-	return frappe.get_value("BOM", {"item":item, "foms_recipe_version":foms_version})
+def find_existing_bom(item, foms_version, operation_no):
+	return frappe.get_value("BOM", {
+		"item":item, 
+		"foms_recipe_version":foms_version,
+		"operation_no": operation_no
+	}, ["name", "docstatus"]) or (None, None)
 
 def get_operation_map_name(operation):
 	op_no = get_operation_no(operation)
@@ -344,6 +368,13 @@ def get_operation_name(operation):
 		name = doc.name
 	
 	return name
+
+def get_bom_for_work_order(item_code):
+	return frappe.get_value("BOM", {
+		"item":item_code,
+		"operation_no":1,
+		"docstatus":1
+	}, "name", order_by="foms_recipe_version")
 	
 # WORK ORDER (GET)
 def get_work_order(show_progress=False):
@@ -354,7 +385,7 @@ def get_work_order(show_progress=False):
 	def post_process(gd, log):
 		for d in log.get("products"):
 			item_code = d.get("productRefNo")
-			bom_no = frappe.db.get_value("Item", item_code, "default_bom")
+			bom_no = get_bom_for_work_order(item_code)
 			qty = 1
 			create_work_order(item_code, bom_no, qty)
 

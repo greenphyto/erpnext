@@ -18,6 +18,7 @@
   "default_section",
   "product_uom",
   "operation_time",
+  "auto_submit_bom",
   "section_break_9",
   "get_foms_raw_material",
   "get_foms_products",
@@ -112,12 +113,18 @@
    "fieldname": "get_foms_recipe",
    "fieldtype": "Button",
    "label": "Get Recipe"
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_submit_bom",
+   "fieldtype": "Check",
+   "label": "Auto Submit BOM"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-01-30 15:15:55.990186",
+ "modified": "2024-02-20 14:53:16.468823",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",
