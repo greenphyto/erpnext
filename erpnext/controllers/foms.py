@@ -23,12 +23,13 @@ OPERATION_MAP = {
 	"Nursery":1,
 	"Transfer + Growth":2,
 	"Harvesting":3,
+	"Packaging":3
 }
 
 OPERATION_MAP_NAME = {
 	1:"Seeding",
 	2:"Transplanting",
-	3:"Harvesting"
+	3:"Harvesting",
 }
 
 # SUPPLIER (POST)
@@ -284,20 +285,26 @@ def create_bom_products(log, product_id, submit=False):
 	log = frappe._dict(log)
 	item_name = frappe.get_value("Item", {"foms_id":product_id})
 	name = None
+	bom_map = {}
 	# find existing
 	if item_name:
-		bom_harvest = None
-		is_bom_harvesting = False
 		# Pre Harvest Process
-		for op in log.preHarvestProcess:
+		if item_name != "PR-AV-GN":
+			return name
+		
+		# join process Preharvest and PostHarvest
+		all_process = log.preHarvestProcess + log.postHarvestProcess
+		
+		for op in all_process:
 			op = frappe._dict(op)
 			operation_no = get_operation_no(op.processName)
-			name, status = find_existing_bom(item_name, log.productVersionName, operation_no) 
-
-			if operation_no == 3:
-				is_bom_harvesting = True
+			bom = None
+			if operation_no in bom_map:
+				bom = bom_map[operation_no]
+				name = bom.name
+				status = bom.docstatus
 			else:
-				is_bom_harvesting = False
+				name, status = find_existing_bom(item_name, log.productVersionName, operation_no) 
 
 			if not name:
 				bom = frappe.new_doc("BOM")
@@ -326,37 +333,32 @@ def create_bom_products(log, product_id, submit=False):
 					row.qty = rm.qtyrm
 
 				bom.insert()
-				if submit and not is_bom_harvesting:
-					bom.submit()
 				name = bom.name
 			
+			else:
+				if not bom:
+					bom = frappe.get_doc("BOM", name)
 
-			
-			elif name and cint(status) != cint(submit) and submit:
-				bom = frappe.get_doc("BOM", name)
 				if bom.operation_no == 1:
 					bom.is_default = 1
 				else:
 					bom.is_default = 0
-				
-				if not is_bom_harvesting:
-					bom.submit()
-			
-			if is_bom_harvesting:
-				bom_harvest = bom
 
-		# Post Harvest Process
-		for op in log.postHarvestProcess:
-			op = frappe._dict(op)
-			for rm in op.productRawMaterial:
-				rm = frappe._dict(rm)
-				row = bom.append("items")
-				row.item_code = rm.rawMaterialRefNo
-				row.uom = convert_uom(rm.uomrm)
-				row.qty = rm.qtyrm
-			bom.save()
-			if submit:
-				bom.submit()
+				for rm in op.productRawMaterial:
+					rm = frappe._dict(rm)
+					row = bom.append("items")
+					row.item_code = rm.rawMaterialRefNo
+					row.uom = convert_uom(rm.uomrm)
+					row.qty = rm.qtyrm
+
+				bom.save()
+			
+			bom_map[operation_no] = bom
+
+		if submit:
+			for operation_no, bom in bom_map.items():
+				if bom.docstatus == 0:
+					bom.submit()
 	
 	return name
 
@@ -364,7 +366,8 @@ def find_existing_bom(item, foms_version, operation_no):
 	return frappe.get_value("BOM", {
 		"item":item, 
 		"foms_recipe_version":foms_version,
-		"operation_no": operation_no
+		"operation_no": operation_no,
+		"docstatus":["!=", 2]
 	}, ["name", "docstatus"]) or (None, None)
 
 def get_operation_map_name(operation):
@@ -382,6 +385,7 @@ def get_routing_name(operation):
 		row.operation = get_operation_name(operation)
 		row.operation_time = get_foms_settings("operation_time") or 60
 		row.workstation = get_foms_settings("workstation")
+		row.fixed_time = 1
 		doc.insert(ignore_permissions=1)
 		name = doc.name
 
