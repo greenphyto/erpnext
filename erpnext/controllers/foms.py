@@ -4,6 +4,7 @@ from frappe.core.doctype.sync_log.sync_log import get_pending_log
 from frappe.utils import cint
 from erpnext.accounts.party import get_party_details
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
+from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
 
 """
 Make Supplier from ERP to FOMS
@@ -83,7 +84,7 @@ class GetData():
 		
 		total_count = len(data)
 		for i in range(total_count):
-			d = data[i]
+			d = frappe._dict(data[i])
 
 			# pull to foms data mapping
 			key_name = self.get_key_name(d)
@@ -411,17 +412,19 @@ def get_bom_for_work_order(item_code):
 	}, "name", order_by="foms_recipe_version")
 	
 # WORK ORDER (GET)
-def get_work_order(show_progress=False):
+def get_work_order(show_progress=False, work_order=""):
 	def get_data(gd):
-		data = gd.api.get_work_order_list(gd.farm_id)
+		data = gd.api.get_work_order_list(gd.farm_id, work_order=work_order)
 		return data
 
 	def post_process(gd, log):
+		submit = get_foms_settings("auto_submit_work_order")
 		for d in log.get("products"):
 			item_code = d.get("productRefNo")
 			bom_no = get_bom_for_work_order(item_code)
 			qty = 1
-			create_work_order(item_code, bom_no, qty)
+
+			create_work_order(log, item_code, bom_no, qty, submit)
 
 	def get_key_name(log):
 		return log.get("workOrderNo")
@@ -435,11 +438,15 @@ def get_work_order(show_progress=False):
 		show_progress=show_progress
 	).run()
 
-def create_work_order(item_code, bom_no, qty=1):
-	doc = frappe.new_doc("Work Order")
-	doc.production_item = item_code
-	doc.bom_no = bom_no
-	doc.qty = qty
+def create_work_order(log, item_code, bom_no, qty=1, submit=False):
+	# if item_code != "PR-AV-GN":
+	# 	return
+	
+	doc = make_work_order(bom_no, item_code, qty)
+	doc.foms_work_order = log.workOrderNo
 	doc.insert()
+
+	if submit:
+		doc.submit()
 
 	return doc.name

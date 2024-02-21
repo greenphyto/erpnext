@@ -18,8 +18,10 @@
   "default_section",
   "product_uom",
   "operation_time",
-  "auto_submit_bom",
   "workstation",
+  "column_break_14",
+  "auto_submit_bom",
+  "auto_submit_work_order",
   "section_break_9",
   "get_foms_raw_material",
   "get_foms_products",
@@ -126,12 +128,22 @@
    "fieldtype": "Link",
    "label": "Workstation",
    "options": "Workstation"
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_submit_work_order",
+   "fieldtype": "Check",
+   "label": "Auto Submit Work Order"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-02-20 16:34:28.954107",
+ "modified": "2024-02-21 16:05:42.965158",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",
