@@ -43,7 +43,7 @@
  ],
  "fields": [
   {
-   "columns": 3,
+   "columns": 2,
    "fieldname": "item_code",
    "fieldtype": "Link",
    "in_filter": 1,
@@ -62,9 +62,11 @@
    "label": "Item Name"
   },
   {
+   "columns": 2,
    "depends_on": "eval:parent.with_operations == 1",
    "fieldname": "operation",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Item operation",
    "options": "Operation"
   },
@@ -129,7 +131,7 @@
    "label": "Quantity and Rate"
   },
   {
-   "columns": 2,
+   "columns": 1,
    "fieldname": "qty",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -179,6 +181,7 @@
    "label": "Rate & Amount"
   },
   {
+   "columns": 1,
    "fieldname": "rate",
    "fieldtype": "Currency",
    "in_list_view": 1,
@@ -289,7 +292,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-07-28 10:20:51.559010",
+ "modified": "2024-02-22 12:32:56.122034",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "BOM Item",

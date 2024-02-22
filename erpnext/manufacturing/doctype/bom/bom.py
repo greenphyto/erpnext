@@ -1022,6 +1022,7 @@ def get_bom_items_as_dict(
 	item_dict = {}
 
 	# Did not use qty_consumed_per_unit in the query, as it leads to rounding loss
+	group_by = "group by item_code, operation, stock_uom"
 	query = """select
 				bom_item.item_code,
 				bom_item.idx,
@@ -1049,7 +1050,7 @@ def get_bom_items_as_dict(
 				and bom.name = %(bom)s
 				and item.is_stock_item in (1, {is_stock_item})
 				{where_conditions}
-				group by item_code, stock_uom
+				{group_by}
 				order by idx"""
 
 	is_stock_item = 0 if include_non_stock_items else 1
@@ -1059,6 +1060,7 @@ def get_bom_items_as_dict(
 			where_conditions="",
 			is_stock_item=is_stock_item,
 			qty_field="stock_qty",
+			group_by=group_by,
 			select_columns=""", bom_item.source_warehouse, bom_item.operation,
 				bom_item.include_item_in_manufacturing, bom_item.description, bom_item.rate, bom_item.sourced_by_supplier,
 				(Select idx from `tabBOM Item` where item_code = bom_item.item_code and parent = %(parent)s limit 1) as idx""",
@@ -1070,6 +1072,7 @@ def get_bom_items_as_dict(
 	elif fetch_scrap_items:
 		query = query.format(
 			table="BOM Scrap Item",
+			group_by="group by item_code, stock_uom",
 			where_conditions="",
 			select_columns=", item.description, is_process_loss",
 			is_stock_item=is_stock_item,
@@ -1080,6 +1083,7 @@ def get_bom_items_as_dict(
 	else:
 		query = query.format(
 			table="BOM Item",
+			group_by=group_by,
 			where_conditions="",
 			is_stock_item=is_stock_item,
 			qty_field="stock_qty" if fetch_qty_in_stock_uom else "qty",
@@ -1090,10 +1094,11 @@ def get_bom_items_as_dict(
 		items = frappe.db.sql(query, {"qty": qty, "bom": bom, "company": company}, as_dict=True)
 
 	for item in items:
-		if item.item_code in item_dict:
-			item_dict[item.item_code]["qty"] += flt(item.qty)
+		key = (item.item_code, item.get("operation"))
+		if key in item_dict:
+			item_dict[key]["qty"] += flt(item.qty)
 		else:
-			item_dict[item.item_code] = item
+			item_dict[key] = item
 
 	for item, item_details in item_dict.items():
 		for d in [
