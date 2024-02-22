@@ -11,6 +11,7 @@
   "naming_series",
   "title",
   "material_request_type",
+  "payment_terms",
   "column_break_2",
   "transaction_date",
   "schedule_date",
@@ -869,13 +870,19 @@
    "fieldname": "non_stock_item",
    "fieldtype": "Check",
    "label": "Non Stock Item"
+  },
+  {
+   "fieldname": "payment_terms",
+   "fieldtype": "Link",
+   "label": "Payment Terms",
+   "options": "Payment Terms Template"
   }
  ],
  "icon": "fa fa-ticket",
  "idx": 70,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-01-02 18:50:05.546490",
+ "modified": "2024-02-22 17:37:07.347127",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request",
