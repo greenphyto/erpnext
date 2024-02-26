@@ -34,33 +34,42 @@ from erpnext.smart_fm.doctype.sync_doctype_settings.sync_doctype_settings import
 
 class Asset(AccountsController):
 	def validate(self):
-		self.validate_asset_values()
-		self.validate_asset_and_reference()
-		self.validate_item()
-		self.validate_cost_center()
-		self.set_missing_values()
-		if not self.split_from:
-			self.prepare_depreciation_data()
-		self.validate_gross_and_purchase_amount()
-		if self.get("schedules"):
-			self.validate_expected_value_after_useful_life()
+		if not self.is_mirroring:
+			self.validate_asset_values()
+			self.validate_asset_and_reference()
+			self.validate_item()
+			self.validate_cost_center()
+			self.set_missing_values()
+			if not self.split_from:
+				self.prepare_depreciation_data()
+			self.validate_gross_and_purchase_amount()
+			if self.get("schedules"):
+				self.validate_expected_value_after_useful_life()
 
-		self.status = self.get_status()
+			self.status = self.get_status()
+		else:
+			self.set_missing_values()
+			self.status = self.get_status()
+
 
 	def on_submit(self):
-		if not self.booked_fixed_asset and self.validate_make_gl_entry():
-			self.make_gl_entries()
-		self.validate_in_use_date()
-		self.make_asset_movement()
+		if not self.is_mirroring:
+			if not self.booked_fixed_asset and self.validate_make_gl_entry():
+				self.make_gl_entries()
+			self.validate_in_use_date()
+			self.make_asset_movement()
+
 		self.set_status()
 
 	def on_cancel(self):
-		self.validate_cancellation()
-		self.cancel_movement_entries()
-		self.delete_depreciation_entries()
-		self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry")
-		make_reverse_gl_entries(voucher_type="Asset", voucher_no=self.name)
-		self.db_set("booked_fixed_asset", 0)
+		if not self.is_mirroring:
+			self.validate_cancellation()
+			self.cancel_movement_entries()
+			self.delete_depreciation_entries()
+			self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry")
+			make_reverse_gl_entries(voucher_type="Asset", voucher_no=self.name)
+			self.db_set("booked_fixed_asset", 0)
+
 		self.set_status()
 
 	def validate_asset_and_reference(self):
@@ -739,6 +748,9 @@ class Asset(AccountsController):
 			movement.cancel()
 
 	def delete_depreciation_entries(self):
+		if not self.gross_purchase_amount and not self.purchase_receipt_amount:
+			return
+		
 		if self.calculate_depreciation:
 			for d in self.get("schedules"):
 				if d.journal_entry:
@@ -1589,6 +1601,7 @@ class CreateAsset():
 				"location": source.location,
 				"is_existing_asset": 1,
 				"asset_quantity": source.get("asset_quantity"),
+				"is_mirroring":1,
 			}
 		)
 

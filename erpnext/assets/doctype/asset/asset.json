@@ -85,7 +85,8 @@
   "old_parent",
   "parent_asset",
   "is_group",
-  "qrcode_image"
+  "qrcode_image",
+  "is_mirroring"
  ],
  "fields": [
   {
@@ -605,6 +606,13 @@
    "fieldname": "warranty_agreement",
    "fieldtype": "Attach",
    "label": "Warranty Agreement"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_mirroring",
+   "fieldtype": "Check",
+   "label": "Is Mirroring",
+   "read_only": 1
   }
  ],
  "idx": 72,
@@ -634,7 +642,7 @@
    "table_fieldname": "accounts"
   }
  ],
- "modified": "2024-01-10 14:15:12.111974",
+ "modified": "2024-02-26 12:50:57.546266",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",
