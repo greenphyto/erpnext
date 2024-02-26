@@ -69,6 +69,8 @@ class Asset(AccountsController):
 			self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry")
 			make_reverse_gl_entries(voucher_type="Asset", voucher_no=self.name)
 			self.db_set("booked_fixed_asset", 0)
+		else:
+			frappe.throw(_("Cannot cancel data from ERP's mirroring site"))
 
 		self.set_status()
 
