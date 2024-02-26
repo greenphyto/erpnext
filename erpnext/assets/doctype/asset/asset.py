@@ -941,6 +941,9 @@ class Asset(AccountsController):
 
 	@frappe.whitelist()
 	def get_manual_depreciation_entries(self):
+		if not self.gross_purchase_amount and not self.purchase_receipt_amount:
+			return []
+		
 		(_, _, depreciation_expense_account) = get_depreciation_accounts(self)
 
 		gle = frappe.qb.DocType("GL Entry")
