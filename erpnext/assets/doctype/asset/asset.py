@@ -70,7 +70,8 @@ class Asset(AccountsController):
 			make_reverse_gl_entries(voucher_type="Asset", voucher_no=self.name)
 			self.db_set("booked_fixed_asset", 0)
 		else:
-			frappe.throw(_("Cannot cancel data from ERP's mirroring site"))
+			# frappe.throw(_("Cannot cancel data from ERP's mirroring site"))
+			pass
 
 		self.set_status()
 
@@ -187,9 +188,10 @@ class Asset(AccountsController):
 		if not self.asset_category:
 			self.asset_category = frappe.get_cached_value("Item", self.item_code, "asset_category")
 
-		if self.item_code and not self.get("finance_books"):
+		if self.item_code and not self.get("finance_books") and self.calculate_depreciation:
 			finance_books = get_item_details(self.item_code, self.asset_category)
 			self.set("finance_books", finance_books)
+		
 
 	def validate_asset_values(self):
 		if not self.asset_category:
@@ -1551,6 +1553,9 @@ def sync_asset_data(log, api=None):
 			return 
 
 	else:
+		if not sync_map.destination_name:
+			return 
+		
 		reff_doc = frappe.get_doc(sync_map.destination_doctype, sync_map.destination_name)
 		if log['update_type'] == 'Delete':
 			frappe.delete_doc("Sync Map", sync_map.name)
@@ -1573,7 +1578,7 @@ class CreateAsset():
 	
 	def build(self):
 		self.create_asset_location()
-		self.create_asset_category()
+		# self.create_asset_category()
 		self.create_item()
 		self.create_asset()
 		return self.asset
@@ -1592,7 +1597,7 @@ class CreateAsset():
 			{
 				"doctype": "Asset",
 				"asset_name": source.asset_name,
-				"asset_category": source.asset_category,
+				"asset_category": "",
 				"item_code": source.item_code,
 				"company": self.company,
 				"purchase_date": source.purchase_date,
@@ -1612,11 +1617,13 @@ class CreateAsset():
 
 		asset.flags.name_set = True
 		asset.name = source.name
+		asset.finance_books = []
 
 		# not yet for not existing asset to existing asset
 
-		asset.insert(ignore_permissions=1)
-		asset.submit()
+		asset.insert(ignore_permissions=1, ignore_mandatory=1)
+		# asset.submit()
+
 		self.asset = asset
 
 		return asset
