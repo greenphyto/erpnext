@@ -10,10 +10,11 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		frappe.ui.form.on(this.frm.doctype + " Item", "rate", function(frm, cdt, cdn) {
 			var item = frappe.get_doc(cdt, cdn);
 			var has_margin_field = frappe.meta.has_field(cdt, 'margin_type');
+			var is_non_stock = cint(me.frm.doc.non_stock_item);
 
 			frappe.model.round_floats_in(item, ["rate", "price_list_rate"]);
 
-			if(item.price_list_rate) {
+			if(item.price_list_rate && !is_non_stock) {
 				if(item.rate > item.price_list_rate && has_margin_field) {
 					// if rate is greater than price_list_rate, set margin
 					// or set discount
@@ -35,6 +36,9 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 				item.margin_type = '';
 				item.margin_rate_or_amount = 0;
 				item.rate_with_margin = 0;
+				if (is_non_stock){
+					item.price_list_rate = item.rate;
+				}
 			}
 			item.base_rate_with_margin = item.rate_with_margin * flt(frm.doc.conversion_rate);
 
