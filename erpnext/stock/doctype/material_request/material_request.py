@@ -731,3 +731,28 @@ def create_pick_list(source_name, target_doc=None):
 	doc.set_item_locations()
 
 	return doc
+
+def validate_purchase_request(doc, workflow):
+	creator = doc.owner
+	user = frappe.session.user
+	if user == "Administrator":
+		return True
+	
+	data = frappe.get_all("Purchase User Permissions List", filters={
+		"parenttype":'Buying Settings',
+		'parentfield':"purchase_approval",
+		'purchase_user':creator,
+	}, fields="purchase_manager")
+	allow_specific = False
+
+	# allow if not yet specific
+	if not data:
+		return True
+	
+	# allow if mentioned
+	for d in data:
+		if d.purchase_manager == user:
+			allow_specific = True
+
+	
+	return allow_specific

@@ -637,3 +637,7 @@ quick_entry_js = {
         "assets/erpnext/js/quick_entry/item_quick_entry.js"
 	]
 }
+
+validate_workflow = {
+    "Material Request": "erpnext.stock.doctype.material_request.material_request.validate_purchase_request"
+}
