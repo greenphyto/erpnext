@@ -10,6 +10,14 @@ frappe.ui.form.on('Buying Settings', {
 				frappe.show_alert("Success")
 			}
 		})
+	},
+	setup: function(frm){
+		frm.set_query("purchase_user", "purchase_approval", function (doc, cdt, cdn) {
+			return { query: "erpnext.controllers.queries.filter_purchase_user" }
+		});
+		frm.set_query("purchase_manager", "purchase_approval", function (doc, cdt, cdn) {
+			return { query: "erpnext.controllers.queries.filter_purchase_manager" }
+		});
 	}
 });
 

@@ -735,6 +735,48 @@ def get_batch_numbers(doctype, txt, searchfield, start, page_len, filters):
 
 	return frappe.db.sql(query, filters)
 
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def filter_purchase_user(doctype, txt, searchfield, start, page_len, filters):
+	query = """
+			SELECT 
+				r.parent, u.full_name
+			FROM
+				`tabHas Role` r
+					LEFT JOIN
+				`tabUser` u ON u.name = parent
+			WHERE
+				r.parentfield = 'roles'
+					AND r.parenttype = 'User'
+					AND r.role = 'Purchase User'
+					AND r.parent NOT IN ('Guest' , 'Administrator')
+					and u.full_name name like {txt}""".format(
+		txt=frappe.db.escape("%{0}%".format(txt))
+	)
+
+	return frappe.db.sql(query)
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def filter_purchase_manager(doctype, txt, searchfield, start, page_len, filters):
+	query = """
+			SELECT 
+				parent, u.full_name
+			FROM
+				`tabHas Role`
+					LEFT JOIN
+				`tabUser` u ON u.name = parent
+			WHERE
+				parentfield = 'roles'
+					AND parenttype = 'User'
+					AND role = 'Purchase Manager'
+					AND parent NOT IN ('Guest' , 'Administrator')
+					and u.full_name like {txt}""".format(
+		txt=frappe.db.escape("%{0}%".format(txt))
+	)
+
+	return frappe.db.sql(query)
+
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs

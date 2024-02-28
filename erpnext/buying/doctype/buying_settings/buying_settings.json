@@ -30,7 +30,9 @@
   "non_stock_item_section",
   "non_stock_item",
   "mandatory_series_section",
-  "series_required_pr"
+  "series_required_pr",
+  "permissions_section",
+  "purchase_approval"
  ],
  "fields": [
   {
@@ -179,6 +181,17 @@
    "fieldtype": "Table",
    "label": "Series Required PR",
    "options": "Series PO required PR"
+  },
+  {
+   "fieldname": "permissions_section",
+   "fieldtype": "Section Break",
+   "label": "Permissions"
+  },
+  {
+   "fieldname": "purchase_approval",
+   "fieldtype": "Table",
+   "label": "Purchase Approval",
+   "options": "Purchase User Permissions List"
   }
  ],
  "icon": "fa fa-cog",
@@ -186,7 +199,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-10-12 14:14:25.038217",
+ "modified": "2024-02-28 11:07:50.300705",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Buying Settings",
