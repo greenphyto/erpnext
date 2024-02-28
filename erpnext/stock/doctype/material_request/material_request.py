@@ -732,10 +732,10 @@ def create_pick_list(source_name, target_doc=None):
 
 	return doc
 
-def validate_purchase_request(doc, workflow):
+def validate_purchase_request(doc, workflow=None, user=None):
 	creator = doc.owner
-	user = frappe.session.user
-	if user == "Administrator":
+	user = user or frappe.session.user
+	if user == "Administrator" or user == creator:
 		return True
 	
 	data = frappe.get_all("Purchase User Permissions List", filters={
