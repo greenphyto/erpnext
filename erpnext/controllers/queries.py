@@ -740,17 +740,17 @@ def get_batch_numbers(doctype, txt, searchfield, start, page_len, filters):
 def filter_purchase_user(doctype, txt, searchfield, start, page_len, filters):
 	query = """
 			SELECT 
-				r.parent, u.full_name
+				parent, u.full_name
 			FROM
-				`tabHas Role` r
+				`tabHas Role`
 					LEFT JOIN
 				`tabUser` u ON u.name = parent
 			WHERE
-				r.parentfield = 'roles'
-					AND r.parenttype = 'User'
-					AND r.role = 'Purchase User'
-					AND r.parent NOT IN ('Guest' , 'Administrator')
-					and u.full_name name like {txt}""".format(
+				parentfield = 'roles'
+					AND parenttype = 'User'
+					AND role = 'Purchase User'
+					AND parent NOT IN ('Guest' , 'Administrator')
+					and u.full_name like {txt}""".format(
 		txt=frappe.db.escape("%{0}%".format(txt))
 	)
 
