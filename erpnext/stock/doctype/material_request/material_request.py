@@ -741,8 +741,8 @@ def validate_purchase_request(doc, workflow=None, user=None):
 	data = frappe.get_all("Purchase User Permissions List", filters={
 		"parenttype":'Buying Settings',
 		'parentfield':"purchase_approval",
-		'purchase_user':creator,
-	}, fields="purchase_manager")
+		'requester':creator,
+	}, fields="approver")
 	allow_specific = False
 
 	# allow if not yet specific
@@ -751,7 +751,7 @@ def validate_purchase_request(doc, workflow=None, user=None):
 	
 	# allow if mentioned
 	for d in data:
-		if d.purchase_manager == user:
+		if d.approver == user:
 			allow_specific = True
 
 	

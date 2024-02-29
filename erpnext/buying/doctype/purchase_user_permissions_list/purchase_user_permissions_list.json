@@ -6,23 +6,23 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "purchase_user",
-  "purchase_manager"
+  "requester",
+  "approver"
  ],
  "fields": [
   {
-   "fieldname": "purchase_user",
+   "fieldname": "requester",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Purchase User",
+   "label": "Requester",
    "options": "User",
    "reqd": 1
   },
   {
-   "fieldname": "purchase_manager",
+   "fieldname": "approver",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Purchase Manager",
+   "label": "Approver",
    "options": "User",
    "reqd": 1
   }
@@ -30,7 +30,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-02-28 11:07:27.471197",
+ "modified": "2024-02-29 11:52:50.465614",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase User Permissions List",

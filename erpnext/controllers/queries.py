@@ -747,6 +747,7 @@ def filter_purchase_user(doctype, txt, searchfield, start, page_len, filters):
 				`tabUser` u ON u.name = parent
 			WHERE
 				parentfield = 'roles'
+					AND u.enabled = 1
 					AND parenttype = 'User'
 					AND role = 'Purchase User'
 					AND parent NOT IN ('Guest' , 'Administrator')
@@ -768,6 +769,7 @@ def filter_purchase_manager(doctype, txt, searchfield, start, page_len, filters)
 				`tabUser` u ON u.name = parent
 			WHERE
 				parentfield = 'roles'
+					AND u.enabled = 1
 					AND parenttype = 'User'
 					AND role = 'Purchase Manager'
 					AND parent NOT IN ('Guest' , 'Administrator')
