@@ -1,0 +1,30 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "not doc.asset_category",
+ "creation": "2024-02-29 17:56:24.545449",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Asset",
+ "enabled": 1,
+ "event": "Custom",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "Need to set asset category:\n{{doc.name}}\n<a href=\"{{frappe.get_value()}}\">edit</a>",
+ "modified": "2024-02-29 18:02:18.065565",
+ "modified_by": "Administrator",
+ "module": "Assets",
+ "name": "New Asset",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_role": "Building Management"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "sender": "Smart FM",
+ "sender_email": "foms@greenphyto.com",
+ "subject": "Need to set Asset Category"
+}
