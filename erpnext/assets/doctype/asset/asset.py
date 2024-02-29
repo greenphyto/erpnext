@@ -19,6 +19,7 @@ from frappe.utils import (
 	month_diff,
 	nowdate,
 	today,
+	get_url
 )
 
 import erpnext
@@ -1534,10 +1535,34 @@ METHOD_NAME = "asset_sync_smart_fm"
 def sync_asset():
 	api = SyncAPI()
 	logs = api.get_pending_log({"doc_type":"Asset"})
+	send_notif = False
+	sample_doc = None
+	new_assets = []
 	for log in logs:
-		sync_asset_data(log, api)
+		res = sync_asset_data(log, api)
 		api.set_success(log['log_name'])
+		if res:
+			new_assets.append(res.name)
+			if not send_notif:
+				send_notif = True
+				sample_doc = res
+
+	if send_notif:
+		send_notif_new_asset(sample_doc, new_assets)
+
 	frappe.enqueue("erpnext.assets.doctype.asset.asset.update_missing_asset_qr_code")
+
+from frappe.email.doctype.notification.notification import get_context
+def send_notif_new_asset(sample_doc,new_assets):
+	notif_doc = frappe.get_doc("Notification", "New Asset")
+	context = get_context(sample_doc)
+	text_list = "<table>"
+	for d in new_assets:
+		url = get_url(f"/app/Asset/{d}", full_address=True)
+		text_list += f"<tr><td>{d}</td><td><a href='{url}'>edit</a></td></tr>"
+	text_list+="</table>"
+	context['asset_list'] = text_list
+	notif_doc.send_an_email(sample_doc, context)
 
 from erpnext.smart_fm.doctype.sync_map.sync_map import get_sync_map, create_sync_map
 def sync_asset_data(log, api=None):
@@ -1548,7 +1573,7 @@ def sync_asset_data(log, api=None):
 			# create new
 			asset = CreateAsset(source_doc, api).build()
 			create_sync_map(source_doc, asset, METHOD_NAME)
-			return True
+			return asset
 		else:
 			return 
 
