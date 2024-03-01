@@ -1785,9 +1785,8 @@ class UpdateExistingAsset():
 					self.update_by_db(field, value)
 			
 			else:
-				if field not in ['name']:
-					pass
-					# self.update_directly(field, value)
+				if field not in ['name', 'company']:
+					self.update_directly(field, value)
 		
 		if self.asset.docstatus == 0:
 			self.save_asset()
@@ -1806,8 +1805,8 @@ class UpdateExistingAsset():
 	def make_asset_movement(self):
 		pass
 
-	def update_by_db(self):
-		pass
+	def update_by_db(self, field, value):
+		self.asset.db_set(field, value)
 
 	def update_directly(self, field, value):
 		self.asset.set(field, value)
