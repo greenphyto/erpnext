@@ -1803,7 +1803,7 @@ class UpdateExistingAsset():
 		return self.value_changes
 
 	def make_asset_movement(self):
-		pass
+		self.asset.make_asset_movement()
 
 	def update_by_db(self, field, value):
 		self.asset.db_set(field, value)
