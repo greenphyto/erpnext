@@ -362,7 +362,9 @@ doc_events = {
     "Asset":{
         "on_submit":"erpnext.assets.doctype.asset.asset.asset_trigger",
         "on_cancel": "erpnext.assets.doctype.asset.asset.asset_trigger",
-        "on_update_after_submit": "erpnext.assets.doctype.asset.asset.asset_trigger"
+        "on_update_after_submit": "erpnext.assets.doctype.asset.asset.asset_trigger",
+        "validate": "erpnext.assets.doctype.asset.asset.asset_trigger",
+        "on_trash": "erpnext.assets.doctype.asset.asset.asset_trigger",
 	}
 }
 
