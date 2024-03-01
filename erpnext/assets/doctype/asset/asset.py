@@ -1540,7 +1540,7 @@ def sync_asset():
 	new_assets = []
 	for log in logs:
 		res = sync_asset_data(log, api)
-		api.set_success(log['log_name'])
+		# api.set_success(log['log_name'])
 		if res:
 			new_assets.append(res.name)
 			if not send_notif:
@@ -1593,6 +1593,67 @@ def sync_asset_data(log, api=None):
 			frappe.delete_doc("Sync Map", sync_map.name)
 			if reff_doc.docstatus == 1:
 				reff_doc.cancel()
+		
+		elif log['update_type'] == 'Update':
+			UpdateExistingAsset(reff_doc, log, source_doc)
+
+ASSET_FIELD_PRIMARY = [
+	'company',
+	'item_code',
+	'item_name',
+	'is_existing_asset',
+	'naming_series',
+	'asset_name',
+	'asset_category',
+	'location',
+	'cost_center',
+	'purchase_receipt',
+	'purchase_invoice',
+	'available_for_use_date',
+	'gross_purchase_amount',
+	'asset_quantity',
+	'purchase_date',
+	'calculate_depreciation',
+	'opening_accumulated_depreciation',
+	'number_of_depreciations_booked',
+	'depreciation_method',
+	'value_after_depreciation',
+	'total_number_of_depreciations',
+	'frequency_of_depreciation',
+	'next_depreciation_date',
+	'status',
+	'booked_fixed_asset',
+	'purchase_receipt_amount',
+	'default_finance_book',
+	'depr_entry_posting_status'
+]
+ASSET_FIELD_OPTIONAL = [
+	'asset_owner',
+	'asset_owner_company',
+	'supplier',
+	'customer',
+	'image',
+	'journal_entry_for_scrap',
+	'model_number',
+	'serial_number',
+	'split_from',
+	'custodian',
+	'department',
+	'disposal_date',
+	'warranty_coverage',
+	'warranty_start',
+	'warranty_end',
+	'warranty_agreement',
+	'insurance_details',
+	'policy_number',
+	'insurer',
+	'insured_value',
+	'insurance_start_date',
+	'insurance_end_date',
+	'comprehensive_insurance',
+	'maintenance_required',
+	'other_details',
+]
 
 class CreateAsset():
 	def __init__(self, source_doc, api=None):
@@ -1700,6 +1761,60 @@ class CreateAsset():
 	def create_asset_location(self):
 		if not frappe.db.exists("Location", self.source.location):
 			frappe.get_doc({"doctype": "Location", "location_name": self.source.location}).insert()
+
+class UpdateExistingAsset():
+	print(1767)
+	def __init__(self, asset, log, source_doc):
+		self.asset = asset
+		self.log = log
+		self.source_doc = source_doc
+		self.run_update()
+
+	def run_update(self):
+		self.value_changes = self.get_value_change()
+
+		for field, value in self.value_changes.items():
+
+			if self.asset.docstatus == 1:
+				# make new asset movement
+				if field in ['location']:
+					self.make_asset_movement(field, value) 
+
+				# update by db
+				if field not in ['item_code', "naming_series", "name"]:
+					self.update_by_db(field, value)
+			
+			else:
+				if field not in ['name']:
+					pass
+					# self.update_directly(field, value)
+		
+		if self.asset.docstatus == 0:
+			self.save_asset()
+
+	def get_value_change(self):
+		self.value_changes = {}
+		asset = self.asset.as_dict()
+		for field, value in self.source_doc.items():
+			if field in ASSET_FIELD_OPTIONAL+ASSET_FIELD_PRIMARY and field in asset:
+				cur_value = self.asset.get(field)
+				if cur_value != value:
+					self.value_changes[field] = value
+		
+		return self.value_changes
+
+	def make_asset_movement(self):
+		pass
+
+	def update_by_db(self):
+		pass
+
+	def update_directly(self, field, value):
+		self.asset.set(field, value)
+
+	def save_asset(self):
+		self.asset.save()
+
 
 def remove_base_field(source):
 	IGNORE_FIELD_MAP = ['owner', 'creation', 'name', 'modified', 'modified_by']
