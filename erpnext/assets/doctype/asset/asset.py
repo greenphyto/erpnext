@@ -1791,6 +1791,7 @@ class UpdateExistingAsset():
 		if self.asset.docstatus == 0:
 			self.save_asset()
 
+
 	def get_value_change(self):
 		self.value_changes = {}
 		asset = self.asset.as_dict()
