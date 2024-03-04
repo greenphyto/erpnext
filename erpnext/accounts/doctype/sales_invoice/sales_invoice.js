@@ -1004,6 +1004,9 @@ frappe.ui.form.on('Sales Invoice', {
 					}
 				})
 			}
+
+			frm.set_value("items", []);
+			frm.cscript.change_item_preview();
 		}
 	},
 

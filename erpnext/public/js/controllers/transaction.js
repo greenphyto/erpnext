@@ -122,6 +122,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 				erpnext.accounts.dimensions.copy_dimension_from_first_row(frm, cdt, cdn, 'items');
 
 				me.add_default_non_stock_item(frm, cdt, cdn);
+				me.add_default_debit_note_item(frm, cdt, cdn);
 			},
 			item_name_view: function(frm,cdt,cdn){
 				var d = locals[cdt][cdn]
@@ -2496,6 +2497,15 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		if (this.frm.doc.non_stock_item){
 			var default_item = frappe.boot.sysdefaults.non_stock_item;
 			frappe.model.set_value(cdt, cdn, "item_code", default_item)
+		}
+	}
+
+	add_default_debit_note_item(frm, cdt, cdn){
+		if (this.frm.doc.debit_note_transaction){
+			var default_item = frappe.boot.sysdefaults.debit_note_item;
+			frappe.model.set_value(cdt, cdn, "item_code", default_item);
+			frappe.model.set_value(cdt, cdn, "item_name_view", default_item);
+			frappe.model.set_value(cdt, cdn, "item_name", default_item);
 		}
 	}
 };
