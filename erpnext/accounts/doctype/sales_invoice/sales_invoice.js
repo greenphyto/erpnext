@@ -52,6 +52,17 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 			me.frm.refresh_fields();
 		}
 		erpnext.queries.setup_warehouse_query(this.frm);
+
+
+		me.frm.set_query("customer", ()=>{
+			var filters = erpnext.queries.customer();
+			if (me.frm.doc.debit_note_transaction){
+				filters.filters = {
+					"debit_note_enable":1
+				};
+			}
+			return filters;
+		})
 	}
 
 	refresh(doc, dt, dn) {
@@ -979,6 +990,20 @@ frappe.ui.form.on('Sales Invoice', {
 		}else{
 			frm.set_value("update_stock", 1);
 			frm.set_df_property('update_stock', 'hidden', 1);
+		}
+	},
+
+	debit_note_transaction: function(frm){
+		if (frm.doc.debit_note_transaction){
+			if (frm.doc.customer){
+				// check customer debit note enable
+				frappe.db.get_value("Customer", frm.doc.customer, ["debit_note_enable", "name"]).then(r=>{
+					if (!r.message.debit_note_enable){
+						frm.set_value("customer", "");
+						frappe.throw(__(`Customer <b>${r.message.name}</b> is not enable for debit note transaction`));
+					}
+				})
+			}
 		}
 	},
 
