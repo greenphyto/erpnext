@@ -130,6 +130,7 @@ class Item(Document):
 		self.validate_item_tax_net_rate_range()
 		self.insert_department()
 		self.set_material_number()
+		self.validate_debit_note_item()
 
 		set_item_tax_from_hsn_code(self)
 
@@ -139,6 +140,11 @@ class Item(Document):
 	def force_to_non_stock(self):
 		if frappe.db.get_single_value("Stock Settings", "force_to_non_stock_item"):
 			self.is_stock_item = 0
+
+	def validate_debit_note_item(self):
+		if self.get("debit_note_item"):
+			if frappe.db.exists("Item", {"debit_note_item":1, "name":['!=', self.name]}):
+				frappe.throw(_("Cannot make more item debit note")) 
 
 	def on_update(self):
 		invalidate_cache_for_item(self)

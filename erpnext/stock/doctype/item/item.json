@@ -75,6 +75,7 @@
   "attributes",
   "accounting",
   "item_defaults",
+  "debit_note_item",
   "purchasing_tab",
   "purchase_uom",
   "min_order_qty",
@@ -955,6 +956,12 @@
    "fieldtype": "Int",
    "label": "FOMS ID",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "debit_note_item",
+   "fieldtype": "Check",
+   "label": "Debit Note Item"
   }
  ],
  "icon": "fa fa-tag",
@@ -963,7 +970,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2024-01-29 17:22:48.666823",
+ "modified": "2024-03-04 15:10:19.895022",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",

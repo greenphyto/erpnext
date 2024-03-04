@@ -17,6 +17,7 @@
   "customer_type",
   "customer_group",
   "is_cash_sales",
+  "debit_note_enable",
   "customer_code",
   "foms_id",
   "column_break0",
@@ -583,6 +584,12 @@
    "fieldtype": "Data",
    "label": "FOMS ID",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "debit_note_enable",
+   "fieldtype": "Check",
+   "label": "Debit Note enable"
   }
  ],
  "icon": "fa fa-user",
@@ -596,7 +603,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-01-25 11:43:34.070688",
+ "modified": "2024-03-04 15:02:30.424674",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",
