@@ -121,7 +121,7 @@ erpnext.taxes_and_totals = class TaxesAndTotals extends erpnext.payments {
 
 				if ((!item.qty) && me.frm.doc.is_return) {
 					item.amount = flt(item.rate * -1, precision("amount", item));
-				} else if ((!item.qty) && me.frm.doc.is_debit_note) {
+				} else if ((!item.qty) && (me.frm.doc.is_debit_note || me.frm.doc.debit_note_transaction)) {
 					item.amount = flt(item.rate, precision("amount", item));
 				} else {
 					item.amount = flt(item.rate * item.qty, precision("amount", item));

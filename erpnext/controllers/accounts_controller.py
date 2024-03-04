@@ -137,7 +137,7 @@ class AccountsController(TransactionBase):
 					)
 
 	def validate(self):
-		if not self.get("is_return") and not self.get("is_debit_note"):
+		if not self.get("is_return") and not self.get("is_debit_note") and not self.get("debit_note_transaction"):
 			self.validate_qty_is_not_zero()
 
 		if self.get("_action") and self._action != "update_after_submit":

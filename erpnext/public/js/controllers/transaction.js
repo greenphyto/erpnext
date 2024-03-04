@@ -2424,7 +2424,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 	}
 
 	change_item_preview(){
-		if (!['Purchase Invoice', 'Purchase Order', 'Purchase Receipt', 'Material Request'].includes(this.frm.doctype)) return;
+		if (!['Purchase Invoice', 'Purchase Order', 'Purchase Receipt', 'Material Request', "Sales Invoice"].includes(this.frm.doctype)) return;
 		const item_table = "items";
 		var table = this.frm.fields_dict[item_table];
 		var field_item_code = table.grid.fields_map.item_code;
@@ -2450,7 +2450,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 				field_item_code.hidden = 0;
 			}
 		}
-		if (cint(this.frm.doc.non_stock_item)){
+		if (cint(this.frm.doc.non_stock_item) || cint(this.frm.doc.debit_note_transaction)){
 			change_view(1);
 		}else{
 			change_view(0);

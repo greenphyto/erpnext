@@ -31,6 +31,7 @@
   "return_against",
   "update_billed_amount_in_sales_order",
   "is_debit_note",
+  "debit_note_transaction",
   "amended_from",
   "accounting_dimensions_section",
   "cost_center",
@@ -2111,6 +2112,12 @@
    "fieldname": "delivery_note",
    "fieldtype": "Data",
    "label": "Delivery Note"
+  },
+  {
+   "default": "0",
+   "fieldname": "debit_note_transaction",
+   "fieldtype": "Check",
+   "label": "Debit Note Transaction (without reference document)"
   }
  ],
  "icon": "fa fa-file-text",
@@ -2123,7 +2130,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2023-11-15 11:02:41.845738",
+ "modified": "2024-03-04 12:24:42.509538",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",
