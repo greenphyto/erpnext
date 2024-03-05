@@ -461,9 +461,10 @@ def rename_old_against_account_gl_entry():
 	acc_map = mapping_previous_merge_account()
 	ledger_map = mapping_previous_merge_ledger()
 	manual_map = get_manual_map()
-	data = frappe.db.sql("""
+
+	data1 = frappe.db.sql("""
 		SELECT 
-			against_account, posting_date, g.name AS gl_name, a.name
+			against_account, posting_date, g.name AS gl_name, a.name, "account" as types
 		FROM
 			`tabGL Entry` g
 				LEFT JOIN
@@ -476,16 +477,39 @@ def rename_old_against_account_gl_entry():
 		group by g.name
 	limit 99999
 	""", as_dict=1)
+
+	data2 = frappe.db.sql("""
+		SELECT 
+			against, against_party, posting_date, g.name AS gl_name, a.name, "party" as types
+		FROM
+			`tabGL Entry` g
+				LEFT JOIN
+			`tabAccount` a ON a.name LIKE against_party
+		WHERE
+			against_party NOT REGEXP '^[0-9]{5}'
+				AND against_party IS NOT NULL
+				AND a.name IS NULL
+				and against_party != ""
+				and against_party like "%GPL%"
+		group by g.name
+		order by against_party desc
+	limit 99999
+	""", as_dict=1)
+
+	data = data1 + data2
+
 	for i,d in enumerate(data):
 		text = d.get("against") or d.get("against_account")
 		text = text.replace("GPL,", "GPL|")
 		text = text.replace("), ", ")|")
+		if d.get("types") == "party":
+			text = text.replace(",", "|")
 		accounts = [x.strip() for x in text.split('|')]
 		acc_list = []
 		party_list = []
 		print(accounts)
 		for acc in accounts:
-			new_name = acc_map.get(acc) or ledger_map.get(acc) or manual_map.get(acc)
+			new_name = manual_map.get(acc) or acc_map.get(acc) or ledger_map.get(acc)
 			print(acc_map.get(acc), ledger_map.get(acc), acc)
 			if new_name:
 				acc_list.append(new_name)
@@ -542,7 +566,14 @@ def mapping_previous_merge_ledger():
 
 def get_manual_map():
 	map = {
-		"GST Input Tax (Purchases) - GPL":"147000 - GST Input Tax - GPL"
+		"GST Input Tax (Purchases) - GPL":"147000 - GST Input Tax - GPL",
+		"Retained Earnings - GPL": "340000 - Retained Earnings - GPL",
+		"Bank DBS 003-9282-010 - GPL":"161023 - DBS - SGD - 003-928-2010 - GPL",
+		"Bank UOB SGD 348-323-621-0 - GPL":"161027 - UOB - SGD (Main) - GPL",
+		"CPF - GPL":"620200 - CPF - GPL",
+		"Salary-Executive - GPL":"620000 - Salary - GPL",
+		"SDL - GPL":"621400 - SDL Fund - GPL",
+		"Fixtures - GPL":"110050 - Furniture & Fittings - GPL"
 	}
 
 	return map
