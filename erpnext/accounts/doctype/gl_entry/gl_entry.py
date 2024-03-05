@@ -459,27 +459,34 @@ def rename_temporarily_named_docs(doctype):
 
 def rename_old_against_account_gl_entry():
 	acc_map = mapping_previous_merge_account()
+	ledger_map = mapping_previous_merge_ledger()
+	manual_map = get_manual_map()
 	data = frappe.db.sql("""
 		SELECT 
-			against,posting_date, g.name as gl_name,  a.name
+			against_account, posting_date, g.name AS gl_name, a.name
 		FROM
 			`tabGL Entry` g
-		left join `tabAccount` a on a.name like against
+				LEFT JOIN
+			`tabAccount` a ON a.name LIKE against_account
 		WHERE
-			against not REGEXP '^[0-9]{5}'
-			and a.name is null
-		group by against
-		-- limit 10
+			against_account NOT REGEXP '^[0-9]{5}'
+				AND against_account IS NOT NULL
+				AND a.name IS NULL
+				and against_account != ""
+		group by g.name
+	limit 99999
 	""", as_dict=1)
 	for i,d in enumerate(data):
-		text = d.against.replace("GPL,", "GPL|")
+		text = d.get("against") or d.get("against_account")
+		text = text.replace("GPL,", "GPL|")
 		text = text.replace("), ", ")|")
 		accounts = [x.strip() for x in text.split('|')]
 		acc_list = []
 		party_list = []
 		print(accounts)
 		for acc in accounts:
-			new_name = acc_map.get(acc)
+			new_name = acc_map.get(acc) or ledger_map.get(acc) or manual_map.get(acc)
+			print(acc_map.get(acc), ledger_map.get(acc), acc)
 			if new_name:
 				acc_list.append(new_name)
 			else:
@@ -519,3 +526,23 @@ def mapping_previous_merge_account():
 	
 	return map
 
+def mapping_previous_merge_ledger():
+	map = {}
+	data = frappe.db.sql("""
+	SELECT 
+		account, creation, account_name
+	FROM
+		`tabLedger Merge Accounts`
+	order by creation asc
+	""", as_dict=1)
+	for d in data:
+		map[d.account_name] = d.account
+	
+	return map
+
+def get_manual_map():
+	map = {
+		"GST Input Tax (Purchases) - GPL":"147000 - GST Input Tax - GPL"
+	}
+
+	return map
