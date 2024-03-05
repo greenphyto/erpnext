@@ -189,7 +189,7 @@ def get_gl_entries(filters, accounting_dimensions):
 			voucher_type, voucher_no, {dimension_fields}
 			cost_center, project,
 			against_voucher_type, against_voucher, account_currency,
-			remarks, against, is_opening, creation {select_fields}
+			remarks, against,against_account,against_party, is_opening, creation {select_fields}
 		from `tabGL Entry`
 		where company=%(company)s {conditions}
 		{order_by_statement}
@@ -558,7 +558,8 @@ def get_columns(filters):
 			"options": "voucher_type",
 			"width": 180,
 		},
-		{"label": _("Against Account"), "fieldname": "against", "width": 120},
+		{"label": _("Against"), "fieldname": "against", "width": 120, "hidden":1},
+		{"label": _("Against Account"), "fieldname": "against_account", "width": 120, "hidden":0},
 		{"label": _("Party Type"), "fieldname": "party_type", "width": 100},
 		{"label": _("Party"), "fieldname": "party", "width": 100},
 		{"label": _("Project"), "options": "Project", "fieldname": "project", "width": 100},
@@ -575,6 +576,7 @@ def get_columns(filters):
 
 	columns.extend(
 		[
+			{"label": _("Against Party"), "fieldname": "against_party", "width": 120, "hidden":0},
 			{"label": _("Against Voucher Type"), "fieldname": "against_voucher_type", "width": 100},
 			{
 				"label": _("Against Voucher"),
