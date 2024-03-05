@@ -18,6 +18,8 @@
   "debit_in_account_currency",
   "credit_in_account_currency",
   "against",
+  "against_party",
+  "against_account",
   "against_voucher_type",
   "against_voucher",
   "voucher_type",
@@ -253,15 +255,29 @@
    "fieldname": "is_cancelled",
    "fieldtype": "Check",
    "label": "Is Cancelled"
+  },
+  {
+   "fieldname": "against_party",
+   "fieldtype": "Data",
+   "label": "Against Party",
+   "length": 250
+  },
+  {
+   "fieldname": "against_account",
+   "fieldtype": "Data",
+   "label": "Against Account",
+   "length": 500
   }
  ],
  "icon": "fa fa-list",
  "idx": 1,
  "in_create": 1,
- "modified": "2020-04-07 16:22:33.766994",
+ "links": [],
+ "modified": "2024-03-05 11:05:07.795984",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "GL Entry",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {
@@ -290,5 +306,6 @@
  "quick_entry": 1,
  "search_fields": "voucher_no,account,posting_date,against_voucher",
  "sort_field": "modified",
- "sort_order": "DESC"
+ "sort_order": "DESC",
+ "states": []
 }
