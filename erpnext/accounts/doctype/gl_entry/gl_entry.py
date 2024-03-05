@@ -49,6 +49,8 @@ class GLEntry(Document):
 			self.validate_party()
 			self.validate_currency()
 
+		self.set_against_value()
+
 	def on_update(self):
 		adv_adj = self.flags.adv_adj
 		if not self.flags.from_repost and self.voucher_type != "Period Closing Voucher":
@@ -72,6 +74,13 @@ class GLEntry(Document):
 					update_outstanding_amt(
 						self.account, self.party_type, self.party, self.against_voucher_type, self.against_voucher
 					)
+
+	def set_against_value(self):
+		if self.against:
+			if frappe.db.exists("Account", self.against):
+				self.against_account = self.against
+			else:
+				self.against_party = self.against
 
 	def check_mandatory(self):
 	 
