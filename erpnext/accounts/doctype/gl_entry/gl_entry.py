@@ -455,3 +455,67 @@ def rename_temporarily_named_docs(doctype):
 			(newname, oldname),
 			auto_commit=True,
 		)
+
+
+def rename_old_against_account_gl_entry():
+	acc_map = mapping_previous_merge_account()
+	data = frappe.db.sql("""
+		SELECT 
+			against,posting_date, g.name as gl_name,  a.name
+		FROM
+			`tabGL Entry` g
+		left join `tabAccount` a on a.name like against
+		WHERE
+			against not REGEXP '^[0-9]{5}'
+			and a.name is null
+		group by against
+		-- limit 10
+	""", as_dict=1)
+	for i,d in enumerate(data):
+		text = d.against.replace("GPL,", "GPL|")
+		text = text.replace("), ", ")|")
+		accounts = [x.strip() for x in text.split('|')]
+		acc_list = []
+		party_list = []
+		print(accounts)
+		for acc in accounts:
+			new_name = acc_map.get(acc)
+			if new_name:
+				acc_list.append(new_name)
+			else:
+				party_list.append(acc)
+		
+		print("ACC  ", acc_list)
+		print("PARTY", party_list)
+		new_against_account = ", ".join(acc_list) 
+		new_against_party = ", ".join(party_list)
+		frappe.db.set_value("GL Entry", d.gl_name, "against_account", new_against_account) 
+		frappe.db.set_value("GL Entry", d.gl_name, "against_party", new_against_party) 
+		print("Update", d.gl_name)
+		print("\n")
+
+def mapping_previous_merge_account():
+	map = {}
+	data = frappe.db.sql("""
+		SELECT 
+			a.name, c.content, c.creation
+		FROM
+			`tabAccount` a
+				LEFT JOIN
+			`tabComment` c ON c.reference_name = a.name and c.comment_type = 'Edit'
+		order by c.creation asc
+	""", as_dict=1)
+	for d in data:
+		content = d.content
+		if content:
+			text = content.replace("<strong>", "|")
+			text = text.replace("</strong>", "|")
+			text = text.replace("&amp;", "&")
+			accounts = text.split("|")
+			# print(accounts)
+			from_name = accounts[1]
+			to_name = accounts[3]
+			map[from_name] = to_name
+	
+	return map
+
