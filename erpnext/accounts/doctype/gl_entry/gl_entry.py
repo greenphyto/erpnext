@@ -628,7 +628,7 @@ def fix_against_account_in_party_gl():
 		FROM
 			`tabGL Entry`
 		WHERE
-			against_account IS NULL
+			against_account in (NULL, "")
 				AND against IS NOT NULL
 			-- and voucher_type not in ("Sales Invoice", "Purchase Invoice", "Payment Entry")
 		ORDER BY voucher_type asc;
@@ -660,8 +660,9 @@ def fix_against_account_in_party_gl():
 			elif cdt == "Journal Entry":
 				acc = []
 				doc = frappe.get_doc(cdt, cdn)
+				party = d.against_party or d.against
 				for x in doc.get("accounts"):
-					if x.party and x.party in d.against_party and x.account not in acc:
+					if x.party and x.party in party and x.account not in acc:
 						acc.append(x.account)
 				
 				account = ", ".join(acc)
@@ -672,6 +673,18 @@ def fix_against_account_in_party_gl():
 
 			frappe.db.set_value("GL Entry", d.name, "against_account", account)
 				
+
+def fix_against_party_in_gl():
+	data = frappe.db.sql("""
+		update
+			`tabGL Entry`
+		set against_party = against
+		WHERE
+			against_party IN (NULL , '')
+				AND against IS NOT NULL
+				and against not like "%GPL%"
+	""", as_dict=1)
+
 
 
 
