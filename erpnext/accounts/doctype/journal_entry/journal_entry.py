@@ -601,7 +601,9 @@ class JournalEntry(AccountsController):
 					)
 
 	def set_against_account(self):
+		# set against value
 		accounts_debited, accounts_credited = [], []
+		party_debited, party_credited = [], []
 		if self.voucher_type in ("Deferred Revenue", "Deferred Expense"):
 			for d in self.get("accounts"):
 				if d.reference_type == "Sales Invoice":
@@ -613,15 +615,19 @@ class JournalEntry(AccountsController):
 		else:
 			for d in self.get("accounts"):
 				if flt(d.debit > 0):
-					accounts_debited.append(d.party or d.account)
+					accounts_debited.append(d.account)
+					party_debited.append(d.party)
 				if flt(d.credit) > 0:
-					accounts_credited.append(d.party or d.account)
+					accounts_credited.append(d.account)
+					party_credited.append(d.party)
 
 			for d in self.get("accounts"):
 				if flt(d.debit > 0):
 					d.against_account = ", ".join(list(set(accounts_credited)))
+					d.against_party = ", ".join(list(set(party_credited)))
 				if flt(d.credit > 0):
 					d.against_account = ", ".join(list(set(accounts_debited)))
+					d.against_party = ", ".join(list(set(party_debited)))
 
 	def validate_debit_credit_amount(self):
 		if not (self.voucher_type == "Exchange Gain Or Loss" and self.multi_currency):

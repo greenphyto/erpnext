@@ -791,6 +791,7 @@ class PaymentEntry(AccountsController):
 		make_gl_entries(gl_entries, cancel=cancel, adv_adj=adv_adj)
 
 	def add_party_gl_entries(self, gl_entries):
+		# set against value
 		if self.party_account:
 			if self.payment_type == "Receive":
 				against_account = self.paid_to

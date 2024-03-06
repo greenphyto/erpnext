@@ -1063,7 +1063,8 @@ class SalesInvoice(SellingController):
 					self.get_gl_dict(
 						{
 							"account": tax.account_head,
-							"against": self.customer,
+							"against": self.debit_to,
+							"against_party": self.customer,
 							"credit": flt(base_amount, tax.precision("tax_amount_after_discount_amount")),
 							"credit_in_account_currency": (
 								flt(base_amount, tax.precision("base_tax_amount_after_discount_amount"))
@@ -1084,7 +1085,8 @@ class SalesInvoice(SellingController):
 				self.get_gl_dict(
 					{
 						"account": self.unrealized_profit_loss_account,
-						"against": self.customer,
+						"against": self.debit_to,
+						"against_party": self.customer,
 						"debit": flt(self.total_taxes_and_charges),
 						"debit_in_account_currency": flt(self.base_total_taxes_and_charges),
 						"cost_center": self.cost_center,
@@ -1127,7 +1129,8 @@ class SalesInvoice(SellingController):
 						asset.db_set("disposal_date", self.posting_date)
 
 					for gle in fixed_asset_gl_entries:
-						gle["against"] = self.customer
+						gle["against_party"] = self.customer
+						gle["against"] = self.debit_to
 						gl_entries.append(self.get_gl_dict(gle, item=item))
 
 					self.set_asset_status(asset)
@@ -1148,7 +1151,8 @@ class SalesInvoice(SellingController):
 							self.get_gl_dict(
 								{
 									"account": income_account,
-									"against": self.customer,
+									"against": self.debit_to,
+									"against_party": self.customer,
 									"credit": flt(base_amount, item.precision("base_net_amount")),
 									"credit_in_account_currency": (
 										flt(base_amount, item.precision("base_net_amount"))
@@ -1218,7 +1222,8 @@ class SalesInvoice(SellingController):
 					{
 						"account": self.loyalty_redemption_account,
 						"cost_center": self.cost_center or self.loyalty_redemption_cost_center,
-						"against": self.customer,
+						"against": self.debit_to,
+						"against_party": self.customer,
 						"debit": self.loyalty_amount,
 						"remark": "Loyalty Points redeemed by the customer",
 					},
@@ -1266,7 +1271,8 @@ class SalesInvoice(SellingController):
 						self.get_gl_dict(
 							{
 								"account": payment_mode.account,
-								"against": self.customer,
+								"against": self.debit_to,
+								"against_party": self.customer,
 								"debit": payment_mode.base_amount,
 								"debit_in_account_currency": payment_mode.base_amount
 								if payment_mode_account_currency == self.company_currency
@@ -1311,7 +1317,8 @@ class SalesInvoice(SellingController):
 					self.get_gl_dict(
 						{
 							"account": self.account_for_change_amount,
-							"against": self.customer,
+							"against": self.debit_to,
+							"against_party": self.customer,
 							"credit": self.base_change_amount,
 							"cost_center": self.cost_center,
 						},
@@ -1357,7 +1364,8 @@ class SalesInvoice(SellingController):
 				self.get_gl_dict(
 					{
 						"account": self.write_off_account,
-						"against": self.customer,
+						"against": self.debit_to,
+						"against_party": self.customer,
 						"debit": flt(self.base_write_off_amount, self.precision("base_write_off_amount")),
 						"debit_in_account_currency": (
 							flt(self.base_write_off_amount, self.precision("base_write_off_amount"))
@@ -1385,7 +1393,8 @@ class SalesInvoice(SellingController):
 				self.get_gl_dict(
 					{
 						"account": round_off_account,
-						"against": self.customer,
+						"against": self.debit_to,
+						"against_party": self.customer,
 						"credit_in_account_currency": flt(
 							self.rounding_adjustment, self.precision("rounding_adjustment")
 						),
