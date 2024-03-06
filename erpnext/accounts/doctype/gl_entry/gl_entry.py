@@ -82,6 +82,13 @@ class GLEntry(Document):
 		# and it will conflict if joined like "account1, account2, account3, IT, Internet, Wifi - GPL"
 		# so we sill need temporary converting this comma in text become another character, and convert back after split
 
+		if not self.against:
+			return
+		
+		if self.against_party:
+			self.against_account = self.against
+			return
+
 		if "," in self.against:
 			comma_account = get_comma_in_name_account()
 
