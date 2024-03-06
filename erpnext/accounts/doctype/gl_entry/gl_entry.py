@@ -628,9 +628,8 @@ def fix_against_account_in_party_gl():
 		FROM
 			`tabGL Entry`
 		WHERE
-			against_account in (NULL, "")
-				AND against IS NOT NULL
-			-- and voucher_type not in ("Sales Invoice", "Purchase Invoice", "Payment Entry")
+			against IS NOT NULL
+			and (against_account = "" or against_account is NULL)
 		ORDER BY voucher_type asc;
 	""", as_dict=1)
 
