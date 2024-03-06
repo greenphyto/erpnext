@@ -620,3 +620,62 @@ def get_manual_map():
 
 def get_comma_in_name_account():
 	return [x.name for x in frappe.db.sql('select name from `tabAccount` where name like "%,%"', as_dict=1)]
+
+def fix_against_account_in_party_gl():
+	data = frappe.db.sql("""
+		SELECT 
+			against, name, against_account, against_party, voucher_no, voucher_type
+		FROM
+			`tabGL Entry`
+		WHERE
+			against_account IS NULL
+				AND against IS NOT NULL
+			-- and voucher_type not in ("Sales Invoice", "Purchase Invoice", "Payment Entry")
+		ORDER BY voucher_type asc;
+	""", as_dict=1)
+
+	account_map = {}
+
+	total_count = len(data)
+
+	for i,d in enumerate(data):
+		cdt = d.voucher_type
+		cdn = d.voucher_no
+		key = (cdn, d.against_party)
+		account = account_map.get(key)
+		progress = flt(i/total_count*100)
+		print("loop", flt(progress, 2), cdt, cdn, d.against_party)
+		if not account:
+			if cdt == "Sales Invoice":
+				account = frappe.db.get_value(cdt, cdn, "debit_to")
+			elif cdt == "Purchase Invoice":
+				account = frappe.db.get_value(cdt, cdn, "credit_to")
+			elif cdt == "Payment Entry":
+				paid_to, paid_from, types = frappe.db.get_value(cdt, cdn, ['paid_to', 'paid_from', 'payment_type']) or ("", "", "")
+				if types == "Receive":
+					account = paid_from
+				else:
+					account = paid_to
+		
+			elif cdt == "Journal Entry":
+				acc = []
+				doc = frappe.get_doc(cdt, cdn)
+				for x in doc.get("accounts"):
+					if x.party and x.party in d.against_party and x.account not in acc:
+						acc.append(x.account)
+				
+				account = ", ".join(acc)
+	
+		if account:
+			print("Update", d.name, account)
+			print()
+
+			frappe.db.set_value("GL Entry", d.name, "against_account", account)
+				
+
+
+
+
+
+
+	
