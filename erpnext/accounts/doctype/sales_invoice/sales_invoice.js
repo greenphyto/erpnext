@@ -988,7 +988,9 @@ frappe.ui.form.on('Sales Invoice', {
 			frm.set_df_property('return_against', 'label', __('Adjustment Against'));
 			frm.set_df_property('return_against', 'reqd', 1);
 		}else{
-			frm.set_value("update_stock", 1);
+			if (frm.is_dirty()){
+				frm.set_value("update_stock", 1);
+			}
 			frm.set_df_property('update_stock', 'hidden', 1);
 			frm.set_df_property('return_against', 'reqd', 0);
 		}
