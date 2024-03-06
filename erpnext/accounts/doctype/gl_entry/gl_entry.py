@@ -76,11 +76,44 @@ class GLEntry(Document):
 					)
 
 	def set_against_value(self):
-		if self.against:
-			if frappe.db.exists("Account", self.against):
-				self.against_account = self.against
+		# sometime against has multiple value like "account1, account2, account3"
+		# so, we need to split by comma
+		# but also, sometimes account name has comma inside the text, it will be like "IT, Internet, Wifi - GPL" 
+		# and it will conflict if joined like "account1, account2, account3, IT, Internet, Wifi - GPL"
+		# so we sill need temporary converting this comma in text become another character, and convert back after split
+
+		if "," in self.against:
+			comma_account = get_comma_in_name_account()
+
+			against_value = self.against
+			do_convert = False
+			for acc in comma_account:
+				if acc in against_value:
+					new_name = acc.replace(",", "%2C")
+					against_value = against_value.replace(acc, new_name)
+					do_convert = True
+			
+			against_list = [x.strip() for x in against_value.split(",")]
+			if do_convert:
+				for i, value in enumerate(against_list):
+					if "%2C" in value:
+						against_list[i] = value.replace("%2C", ",")
+		else:
+			against_list = [self.against]
+
+
+		acc_flags = "- "+frappe.get_value("Company", self.company, "abbr") or ""
+		
+		against_account = []
+		against_party = []
+		for against in against_list:
+			if acc_flags in against:
+				against_account.append(against)
 			else:
-				self.against_party = self.against
+				against_party.append(against)
+
+		self.against_account = ", ".join(against_account)
+		self.against_party =  ", ".join(against_party)
 
 	def check_mandatory(self):
 	 
@@ -577,3 +610,6 @@ def get_manual_map():
 	}
 
 	return map
+
+def get_comma_in_name_account():
+	return [x.name for x in frappe.db.sql('select name from `tabAccount` where name like "%,%"', as_dict=1)]
