@@ -987,11 +987,12 @@ frappe.ui.form.on('Sales Invoice', {
 		if (frm.doc.is_debit_note) {
 			frm.set_df_property('return_against', 'label', __('Adjustment Against'));
 			frm.set_df_property('return_against', 'reqd', 1);
-		}else{
-			if (frm.is_dirty()){
-				frm.set_value("update_stock", 1);
-			}
 			frm.set_df_property('update_stock', 'hidden', 1);
+			if (frm.is_dirty()){
+				frm.set_value("update_stock", 0);
+			}
+		}else{
+			frm.set_df_property('update_stock', 'hidden', 0);
 			frm.set_df_property('return_against', 'reqd', 0);
 		}
 	},
