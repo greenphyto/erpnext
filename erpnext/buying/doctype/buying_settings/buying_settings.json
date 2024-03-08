@@ -32,6 +32,7 @@
   "mandatory_series_section",
   "series_required_pr",
   "permissions_section",
+  "enable_specific_purchase_approval",
   "purchase_approval"
  ],
  "fields": [
@@ -188,10 +189,17 @@
    "label": "Permissions"
   },
   {
+   "depends_on": "eval:doc.enable_specific_purchase_approval",
    "fieldname": "purchase_approval",
    "fieldtype": "Table",
    "label": "Purchase Approval",
    "options": "Purchase User Permissions List"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_specific_purchase_approval",
+   "fieldtype": "Check",
+   "label": "Enable specific purchase approval"
   }
  ],
  "icon": "fa fa-cog",
@@ -199,7 +207,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-02-28 11:07:50.300705",
+ "modified": "2024-03-08 10:58:36.342381",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Buying Settings",

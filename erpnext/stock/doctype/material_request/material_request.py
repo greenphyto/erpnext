@@ -733,6 +733,9 @@ def create_pick_list(source_name, target_doc=None):
 	return doc
 
 def validate_purchase_request(doc, workflow=None, user=None):
+	if not frappe.db.get_single_value("Buying Settings", "enable_specific_purchase_approval"):
+		return True
+	
 	creator = doc.owner
 	user = user or frappe.session.user
 	if user == "Administrator" or user == creator:
