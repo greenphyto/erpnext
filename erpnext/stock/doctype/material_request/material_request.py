@@ -732,13 +732,44 @@ def create_pick_list(source_name, target_doc=None):
 
 	return doc
 
-def validate_purchase_request(doc, workflow=None, user=None):
+def validate_purchase_request(doc, workflow=None, transition=None, user=None):
+	user = user or frappe.session.user
+
+	if doc.name != "PR00057/2024":
+		return False
+
+	condition = [True]
+	low_amont = is_low_amount(doc)
+
+	if transition.state == "Pending Approval by Purchasing Manager":
+		res = validate_purchase_request_based_user(doc, user)
+		condition.append(res)
+
+		if transition.next_state == "Approved":
+			if low_amont:
+				condition.append(True)
+			else:
+				condition.append(False)
+		if transition.next_state == "Pending Approval by Purchasing Master Manager":
+			if not low_amont:
+				condition.append(True)
+			else:
+				condition.append(False)
+
+	# print()
+	# print(738, user, doc.name)
+	# print("State :", transition.state)
+	# print("Next State: ", transition.next_state)
+	# print(condition, all(condition))
+
+	return all(condition)
+
+def validate_purchase_request_based_user(doc, user=None):
 	if not frappe.db.get_single_value("Buying Settings", "enable_specific_purchase_approval"):
 		return True
 	
 	creator = doc.owner
-	user = user or frappe.session.user
-	if user == "Administrator" or user == creator:
+	if user == "Administrator":
 		return True
 	
 	data = frappe.get_all("Purchase User Permissions List", filters={
@@ -757,5 +788,29 @@ def validate_purchase_request(doc, workflow=None, user=None):
 		if d.approver == user:
 			allow_specific = True
 
-	
 	return allow_specific
+
+def is_low_amount(doc):
+	if not frappe.db.get_single_value("Buying Settings", "enable_approval_by_amount_type"):
+		return True
+	
+	raw_material_totals = sum([d.base_net_amount for d in doc.get("items", {"item_group":"Raw Material"})])
+	general_item_totals = sum([d.base_net_amount for d in doc.get("items", {"item_group":['!=', "Raw Material"]})])
+
+	forbidden = []
+	if flt(raw_material_totals) < 50001:
+		forbidden.append(False)
+	else:
+		forbidden.append(True)
+
+	if flt(general_item_totals) < 5001:
+		forbidden.append(False)
+	else:
+		forbidden.append(True)
+
+
+	return not any(forbidden)
+
+
+	
+

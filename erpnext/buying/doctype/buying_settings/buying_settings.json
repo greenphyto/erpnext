@@ -33,7 +33,8 @@
   "series_required_pr",
   "permissions_section",
   "enable_specific_purchase_approval",
-  "purchase_approval"
+  "purchase_approval",
+  "enable_approval_by_amount_type"
  ],
  "fields": [
   {
@@ -200,6 +201,12 @@
    "fieldname": "enable_specific_purchase_approval",
    "fieldtype": "Check",
    "label": "Enable specific purchase approval"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_approval_by_amount_type",
+   "fieldtype": "Check",
+   "label": "Enable approval by amount type"
   }
  ],
  "icon": "fa fa-cog",
@@ -207,7 +214,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-03-08 10:58:36.342381",
+ "modified": "2024-03-08 11:09:18.262524",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Buying Settings",
