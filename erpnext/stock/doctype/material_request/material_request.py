@@ -735,9 +735,6 @@ def create_pick_list(source_name, target_doc=None):
 def validate_purchase_request(doc, workflow=None, transition=None, user=None):
 	user = user or frappe.session.user
 
-	if doc.name != "PR00057/2024":
-		return False
-
 	condition = [True]
 	low_amont = is_low_amount(doc)
 
