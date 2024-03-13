@@ -12,6 +12,8 @@
   "column_break_3",
   "help",
   "section_break_2",
+  "header_params",
+  "column_break_9",
   "req_params",
   "column_break_4",
   "result_key"
@@ -56,12 +58,12 @@
    "fieldtype": "Table",
    "label": "Parameters",
    "options": "Currency Exchange Settings Details",
-   "read_only_depends_on": "eval: doc.service_provider != \"Custom\"",
    "reqd": 1
   },
   {
    "fieldname": "column_break_4",
-   "fieldtype": "Column Break"
+   "fieldtype": "Section Break",
+   "label": "Result"
   },
   {
    "fieldname": "result_key",
@@ -77,12 +79,22 @@
    "label": "Service Provider",
    "options": "frankfurter.app\nexchangerate.host\nmas.gov.sg\nCustom",
    "reqd": 1
+  },
+  {
+   "fieldname": "column_break_9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "header_params",
+   "fieldtype": "Table",
+   "label": "Headers",
+   "options": "Currency Exchange Settings Details"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-12-06 22:26:54.659658",
+ "modified": "2024-03-13 16:36:49.785130",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Currency Exchange Settings",

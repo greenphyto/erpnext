@@ -37,15 +37,10 @@ class CurrencyExchangeSettings(Document):
 			self.append("req_params", {"key": "symbols", "value": "{to_currency}"})
 		elif self.service_provider == "mas.gov.sg":
 			self.set("result_key", [])
-			self.set("req_params", [])
 
-			self.api_endpoint = "https://eservices.mas.gov.sg/api/action/datastore/search.json"
-			self.append("result_key", {"key": "result"})
-			self.append("result_key", {"key": "records"})
+			self.api_endpoint = "https://eservices.mas.gov.sg/apimg-gw/server/monthly_statistical_bulletin_non610ora/exchange_rates_end_of_period_daily/views/exchange_rates_end_of_period_daily"
+			self.append("result_key", {"key": "elements"})
 			self.append("result_key", {"key": "{from_currency}_{to_currency}"})
-			self.append("req_params", {"key": "resource_id", "value": "95932927-c8bc-4e7a-b484-68a66a24edfe"})
-			self.append("req_params", {"key": "filters[end_of_day]", "value": "{transaction_date}"})
-			self.append("req_params", {"key": "fields", "value": "{from_currency}_{to_currency}"})
 
 	def validate_parameters(self):
 		params = {}
@@ -58,8 +53,17 @@ class CurrencyExchangeSettings(Document):
 			transaction_date=nowdate(), to_currency="SGD", from_currency="USD"
 		)
 
+		headers = {
+			"accept": "application/json"
+		}
+
+		for row in self.header_params:
+			headers[row.key] = row.value.lower().format(
+				transaction_date=nowdate(), to_currency="SGD", from_currency="USD"
+			).lower()
+
 		try:
-			response = requests.get(api_url, params=params)
+			response = requests.get(api_url, params=params, headers=headers)
 		except requests.exceptions.RequestException as e:
 			frappe.throw("Error: " + str(e))
 
