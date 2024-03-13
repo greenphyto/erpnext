@@ -105,6 +105,7 @@ class MaterialRequest(BuyingController):
 
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
 		self.reset_default_field_value("set_from_warehouse", "items", "from_warehouse")
+		self.set_is_low_amount()
 
 	def before_update_after_submit(self):
 		self.validate_schedule_date()
@@ -276,6 +277,35 @@ class MaterialRequest(BuyingController):
 			doc = frappe.get_doc("Production Plan", production_plan)
 			doc.set_status()
 			doc.db_set("status", doc.status)
+
+	def set_is_low_amount(self):		
+		raw_material_totals, general_item_totals = 0, 0
+
+		for d in self.get("items"):
+			if "Raw Material" in  d.item_group or "Raw Material" ==  d.item_group:
+				raw_material_totals += flt(d.base_net_amount)
+			else:
+				general_item_totals += flt(d.base_net_amount)
+
+		forbidden = []
+		if flt(raw_material_totals) < 50001:
+			forbidden.append(False)
+		else:
+			forbidden.append(True)
+
+		if flt(general_item_totals) < 5001:
+			forbidden.append(False)
+		else:
+			forbidden.append(True)
+
+		if not any(forbidden):
+			self.is_low_amount = 1
+			return 1
+		else:
+			self.is_low_amount = 0
+			return 0
+
+
 
 def update_completed_and_requested_qty(stock_entry, method):
 	if stock_entry.doctype == "Stock Entry":
@@ -735,27 +765,21 @@ def create_pick_list(source_name, target_doc=None):
 def validate_purchase_request(doc, workflow=None, transition=None, user=None):
 	user = user or frappe.session.user
 
-	condition = [True]
-	low_amont = is_low_amount(doc)
+	if user == "Administrator":
+		return True
 
+	# if doc.name != "PR00057/2024":
+	# 	return False
+
+	condition = []
 	if transition.state == "Pending Approval by Purchasing Manager":
 		res = validate_purchase_request_based_user(doc, user)
 		condition.append(res)
 
-		if transition.next_state == "Approved":
-			if low_amont:
-				condition.append(True)
-			else:
-				condition.append(False)
-		if transition.next_state == "Pending Approval by Purchasing Master Manager":
-			if not low_amont:
-				condition.append(True)
-			else:
-				condition.append(False)
-
 	# print()
 	# print(738, user, doc.name)
 	# print("State :", transition.state)
+	# print("Action :", transition.action)
 	# print("Next State: ", transition.next_state)
 	# print(condition, all(condition))
 
@@ -787,26 +811,7 @@ def validate_purchase_request_based_user(doc, user=None):
 
 	return allow_specific
 
-def is_low_amount(doc):
-	if not frappe.db.get_single_value("Buying Settings", "enable_approval_by_amount_type"):
-		return True
-	
-	raw_material_totals = sum([d.base_net_amount for d in doc.get("items", {"item_group":"Raw Material"})])
-	general_item_totals = sum([d.base_net_amount for d in doc.get("items", {"item_group":['!=', "Raw Material"]})])
 
-	forbidden = []
-	if flt(raw_material_totals) < 50001:
-		forbidden.append(False)
-	else:
-		forbidden.append(True)
-
-	if flt(general_item_totals) < 5001:
-		forbidden.append(False)
-	else:
-		forbidden.append(True)
-
-
-	return not any(forbidden)
 
 
 	

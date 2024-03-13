@@ -102,6 +102,7 @@
   "select_print_heading",
   "reference",
   "job_card",
+  "is_low_amount",
   "column_break_35",
   "work_order",
   "connections_tab",
@@ -876,13 +877,20 @@
    "fieldtype": "Link",
    "label": "Payment Terms",
    "options": "Payment Terms Template"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_low_amount",
+   "fieldtype": "Check",
+   "label": "Is Low Amount",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-ticket",
  "idx": 70,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-02-22 17:37:07.347127",
+ "modified": "2024-03-13 12:35:20.999216",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request",
