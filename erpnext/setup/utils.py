@@ -98,9 +98,7 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 
 def get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck=None):
 	value = get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, settingscheck)
-	if not value:
-		value = get_exchange_rate_from_api2(from_currency, to_currency, transaction_date, settingscheck)
-	
+		
 	if not value:
 		frappe.log_error("Unable to fetch exchange rate")
 		frappe.log_error(Exception)
@@ -116,7 +114,10 @@ def get_exchange_rate_from_api(from_currency, to_currency, transaction_date, set
 
 	return value
 
-def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, settingscheck=None):
+def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, settingscheck=None, dummy={}):
+	from_currency = from_currency.lower()
+	to_currency = to_currency.lower()
+	
 	try:
 		cache = frappe.cache()
 		key = "currency_exchange_rate_{0}:{1}:{2}".format(transaction_date, from_currency, to_currency)
@@ -136,31 +137,49 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 
 			req_params = {
 				"transaction_date": transaction_date,
-				"from_currency": from_currency,
-				"to_currency": to_currency,
 			}
 			params = {}
 			for row in settings.req_params:
 				params[row.key] = format_ces_api(row.value, req_params)
-			response = requests.get(format_ces_api(settings.api_endpoint, req_params), params=params)
-			# expire in 6 hours
-			response.raise_for_status()
-			value = response.json()
+
+			headers = {
+				"accept": "application/json"
+				}
+
+			for row in settings.header_params:
+				headers[row.key] = row.value.lower().format(
+					transaction_date=nowdate(), to_currency="SGD", from_currency="USD"
+				).lower()
+
+			if not dummy:
+				response = requests.get(format_ces_api(settings.api_endpoint, req_params), params=params, headers=headers)
+				# expire in 6 hours
+				response.raise_for_status()
+				value = response.json()
+			else:
+				value = dummy
+
+			if not from_currency in req_params:
+				req_params['from_currency'] = from_currency.lower()
+			if not to_currency in req_params:
+				req_params['to_currency'] = to_currency.lower()
+
 			for res_key in settings.result_key:
-				if  isinstance(value,dict):
+				if  isinstance(value, dict):
 					value = value[format_ces_api(str(res_key.key), req_params)]
-				elif  isinstance(value,list):
-					value = value[0][format_ces_api(str(res_key.key.lower()), req_params)]
-			if settingscheck.api_endpoint.find("mas.gov.sg") > -1:
-				listofcurrency = ["cny", "hkd","inr","idr","jpy","krw","myr","twd","php","qar","sar","thb","aed","ynd"]
-				if from_currency in listofcurrency:	
-					value = flt(value) / 100	
+				elif isinstance(value,list):
+					k = format_ces_api(str(res_key.key.lower()), req_params)
+					if k in value[0]:
+						value = value[0][k]
+					else:
+						value = 0
+
 			cache.setex(name=key, time=21600, value=flt(value))
 		return flt(value)
 	except:
 		return 0.0
 		
-
+# unused
 def get_exchange_rate_from_api2(from_currency, to_currency, transaction_date, settingscheck=None):
 	try:
 		cache = frappe.cache()
