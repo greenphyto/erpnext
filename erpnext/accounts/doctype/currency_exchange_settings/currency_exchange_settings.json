@@ -16,7 +16,9 @@
   "column_break_9",
   "req_params",
   "column_break_4",
-  "result_key"
+  "result_key",
+  "other_settings_section",
+  "use_rate_as_first_day_of_month_rate"
  ],
  "fields": [
   {
@@ -89,12 +91,23 @@
    "fieldtype": "Table",
    "label": "Headers",
    "options": "Currency Exchange Settings Details"
+  },
+  {
+   "fieldname": "other_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Other Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "use_rate_as_first_day_of_month_rate",
+   "fieldtype": "Check",
+   "label": "Use rate as first day of month rate"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-03-13 16:36:49.785130",
+ "modified": "2024-03-14 12:29:18.164156",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Currency Exchange Settings",
