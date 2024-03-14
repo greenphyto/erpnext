@@ -615,11 +615,11 @@ class JournalEntry(AccountsController):
 		else:
 			for d in self.get("accounts"):
 				if flt(d.debit > 0):
-					accounts_debited.append(d.account)
-					party_debited.append(d.party)
+					accounts_debited.append(d.account or "")
+					party_debited.append(d.party or "")
 				if flt(d.credit) > 0:
-					accounts_credited.append(d.account)
-					party_credited.append(d.party)
+					accounts_credited.append(d.account or "")
+					party_credited.append(d.party or "")
 
 			for d in self.get("accounts"):
 				if flt(d.debit > 0):
