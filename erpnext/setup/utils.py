@@ -123,74 +123,87 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 	to_currency = to_currency.lower()
 	
 	try:
-		settings = frappe.get_cached_doc("Currency Exchange Settings")
-		if settings.api_endpoint.find("mas.gov.sg") > -1:
-			weekday = findDay(transaction_date)
-			if (weekday=="Monday"):
-				transaction_date=add_days(transaction_date, -3)
-			elif  (weekday=="Sunday") :
-				transaction_date=add_days(transaction_date, -2)
-			else:
-				transaction_date=add_days(transaction_date, -1)
+		# if any holiday and missing result, will be back -1 day
+		for i in range(5):
+			transaction_date=add_days(transaction_date, i*-1)
+			settings = frappe.get_cached_doc("Currency Exchange Settings")
+			if settings.api_endpoint.find("mas.gov.sg") > -1:
+				weekday = getdate(transaction_date).strftime('%A')
+				if weekday=="Monday":
+					transaction_date=add_days(transaction_date, -3)
+				elif weekday=="Sunday" :
+					transaction_date=add_days(transaction_date, -2)
+				else:
+					transaction_date=add_days(transaction_date, -1)
 
-		cache = frappe.cache()
-		key = "currency_exchange_rate_{0}:{1}:{2}".format(transaction_date, from_currency, to_currency)
-		value = flt(cache.get(key))
-		if not value or 0:
-			import requests
+			cache = frappe.cache()
+			key = "currency_exchange_rate_{0}:{1}:{2}".format(transaction_date, from_currency, to_currency)
+			value = flt(cache.get(key))
 
-			req_params = {
-				"transaction_date": transaction_date,
-			}
-			params = {}
-			for row in settings.req_params:
-				params[row.key] = format_ces_api(row.value, req_params)
+			if not value or 1:
+				import requests
 
-			headers = {
-				"accept": "application/json"
+				req_params = {
+					"transaction_date": transaction_date,
 				}
+				params = {}
+				for row in settings.req_params:
+					params[row.key] = format_ces_api(row.value, req_params)
 
-			for row in settings.header_params:
-				headers[row.key] = row.value.lower().format(
-					transaction_date=nowdate(), to_currency="SGD", from_currency="USD"
-				).lower()
+				headers = {
+					"accept": "application/json"
+					}
 
-			if not dummy:
-				response = requests.get(format_ces_api(settings.api_endpoint, req_params), params=params, headers=headers)
-				# expire in 6 hours
-				response.raise_for_status()
-				result = response.json()
+				for row in settings.header_params:
+					headers[row.key] = row.value.lower().format(
+						transaction_date=nowdate(), to_currency="SGD", from_currency="USD"
+					).lower()
+
+				if not dummy:
+					response = requests.get(format_ces_api(settings.api_endpoint, req_params), params=params, headers=headers)
+					# expire in 6 hours
+					response.raise_for_status()
+					result = response.json()
+				else:
+					result = dummy
+
+				if not result or not result['elements']:
+					continue
+
+				if not from_currency in req_params:
+					req_params['from_currency'] = from_currency.lower()
+				if not to_currency in req_params:
+					req_params['to_currency'] = to_currency.lower()
+
+				value = result
+				for res_key in settings.result_key:
+					if  isinstance(value, dict):
+						value = value[format_ces_api(str(res_key.key), req_params)]
+					elif isinstance(value,list):
+						k = format_ces_api(str(res_key.key.lower()), req_params)
+						for ky, val in value[0].items():
+							if to_currency in ky:
+								curr = ky.split("_")
+								key_c = "currency_exchange_rate_{0}:{1}:{2}".format(transaction_date, curr[0], to_currency)
+								if "100" in ky:
+									val = flt(val)/100
+
+								cache.setex(name=key_c, time=21600, value=cstr(val))
+
+						if k in value[0]:
+							value = value[0][k]
+						elif k+"_100" in value[0]:
+							value = flt(value[0][k+"_100"])/100
+						else:
+							value = 0
+
+				cache.setex(name=key, time=21600, value=flt(value))
+
+				if value:
+					break
+
 			else:
-				result = dummy
-
-			if not from_currency in req_params:
-				req_params['from_currency'] = from_currency.lower()
-			if not to_currency in req_params:
-				req_params['to_currency'] = to_currency.lower()
-
-			value = result
-			for res_key in settings.result_key:
-				if  isinstance(value, dict):
-					value = value[format_ces_api(str(res_key.key), req_params)]
-				elif isinstance(value,list):
-					k = format_ces_api(str(res_key.key.lower()), req_params)
-					for ky, val in value[0].items():
-						if to_currency in ky:
-							curr = ky.split("_")
-							key_c = "currency_exchange_rate_{0}:{1}:{2}".format(transaction_date, curr[0], to_currency)
-							if "100" in ky:
-								val = flt(val)/100
-
-							cache.setex(name=key_c, time=21600, value=cstr(val))
-
-					if k in value[0]:
-						value = value[0][k]
-					elif k+"_100" in value[0]:
-						value = flt(value[0][k+"_100"])/100
-					else:
-						value = 0
-
-			cache.setex(name=key, time=21600, value=flt(value))
+				break
 
 		return flt(value)
 	except:
