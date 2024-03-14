@@ -101,7 +101,10 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 	return get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck)
 
 def get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck=None):
-	value = get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, settingscheck)
+	if settingscheck.use_rate_as_first_day_of_month_rate:
+		value = get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, settingscheck)
+	else:
+		value = get_exchange_rate_from_api2(from_currency, to_currency, transaction_date, settingscheck)
 		
 	if not value:
 		frappe.log_error("Unable to fetch exchange rate")
