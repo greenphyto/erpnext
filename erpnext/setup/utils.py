@@ -3,7 +3,7 @@
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, flt, get_datetime_str, nowdate, getdate
+from frappe.utils import add_days, flt, get_datetime_str, nowdate, getdate, get_first_day, cstr
 from frappe.utils.data import now_datetime
 from frappe.utils.nestedset import get_ancestors_of, get_root_of  # noqa
 import datetime
@@ -48,13 +48,17 @@ def before_tests():
 
 
 @frappe.whitelist()
-def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=None):
+def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=None, err_journal=False):
 	if not (from_currency and to_currency):
 		# manqala 19/09/2016: Should this be an empty return or should it throw and exception?
 		return
 	if from_currency == to_currency:
 		return 1
 	settingscheck = frappe.get_cached_doc("Currency Exchange Settings")
+	
+	if settingscheck.use_rate_as_first_day_of_month_rate and not err_journal:
+		transaction_date = get_first_day(transaction_date)
+
 	if settingscheck.api_endpoint.find("mas.gov.sg") > -1:
 		from_currency = from_currency.lower()
 		to_currency = to_currency.lower()
@@ -89,7 +93,7 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 	)
 	if entries:
 		data = entries[0]
-		if getdate(data.date) != getdate(nowdate()):
+		if getdate(data.date) != getdate(transaction_date):
 			return get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck)
 
 		return flt(data.exchange_rate)
@@ -119,21 +123,21 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 	to_currency = to_currency.lower()
 	
 	try:
+		settings = frappe.get_cached_doc("Currency Exchange Settings")
+		if settings.api_endpoint.find("mas.gov.sg") > -1:
+			weekday = findDay(transaction_date)
+			if (weekday=="Monday"):
+				transaction_date=add_days(transaction_date, -3)
+			elif  (weekday=="Sunday") :
+				transaction_date=add_days(transaction_date, -2)
+			else:
+				transaction_date=add_days(transaction_date, -1)
+
 		cache = frappe.cache()
 		key = "currency_exchange_rate_{0}:{1}:{2}".format(transaction_date, from_currency, to_currency)
-		value = cache.get(key)
-		if not value:
+		value = flt(cache.get(key))
+		if not value or 0:
 			import requests
-
-			settings = frappe.get_cached_doc("Currency Exchange Settings")
-			if settings.api_endpoint.find("mas.gov.sg") > -1:
-				weekday = findDay(transaction_date)
-				if (weekday=="Monday"):
-					transaction_date=add_days(transaction_date, -3)
-				elif  (weekday=="Sunday") :
-					transaction_date=add_days(transaction_date, -2)
-				else:
-					transaction_date=add_days(transaction_date, -1)
 
 			req_params = {
 				"transaction_date": transaction_date,
@@ -155,26 +159,39 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 				response = requests.get(format_ces_api(settings.api_endpoint, req_params), params=params, headers=headers)
 				# expire in 6 hours
 				response.raise_for_status()
-				value = response.json()
+				result = response.json()
 			else:
-				value = dummy
+				result = dummy
 
 			if not from_currency in req_params:
 				req_params['from_currency'] = from_currency.lower()
 			if not to_currency in req_params:
 				req_params['to_currency'] = to_currency.lower()
 
+			value = result
 			for res_key in settings.result_key:
 				if  isinstance(value, dict):
 					value = value[format_ces_api(str(res_key.key), req_params)]
 				elif isinstance(value,list):
 					k = format_ces_api(str(res_key.key.lower()), req_params)
+					for ky, val in value[0].items():
+						if to_currency in ky:
+							curr = ky.split("_")
+							key_c = "currency_exchange_rate_{0}:{1}:{2}".format(transaction_date, curr[0], to_currency)
+							if "100" in ky:
+								val = flt(val)/100
+
+							cache.setex(name=key_c, time=21600, value=cstr(val))
+
 					if k in value[0]:
 						value = value[0][k]
+					elif k+"_100" in value[0]:
+						value = flt(value[0][k+"_100"])/100
 					else:
 						value = 0
 
 			cache.setex(name=key, time=21600, value=flt(value))
+
 		return flt(value)
 	except:
 		return 0.0
