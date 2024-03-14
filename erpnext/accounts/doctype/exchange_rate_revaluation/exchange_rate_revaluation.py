@@ -193,7 +193,7 @@ class ExchangeRateRevaluation(Document):
 				current_exchange_rate = (
 					d.balance / d.balance_in_account_currency if d.balance_in_account_currency else 0
 				)
-				new_exchange_rate = get_exchange_rate(d.account_currency, company_currency, posting_date)
+				new_exchange_rate = get_exchange_rate(d.account_currency, company_currency, posting_date, err_journal=True)
 				new_balance_in_base_currency = flt(d.balance_in_account_currency * new_exchange_rate)
 				gain_loss = flt(new_balance_in_base_currency, precision) - flt(d.balance, precision)
 				if gain_loss:
@@ -417,42 +417,49 @@ class ExchangeRateRevaluation(Document):
 				else "credit_in_account_currency"
 			)
 
-			journal_entry_accounts.append(
-				{
-					"account": d.get("account"),
-					"party_type": d.get("party_type"),
-					"party": d.get("party"),
-					"account_currency": d.get("account_currency"),
-					"balance": flt(
-						d.get("balance_in_account_currency"), d.precision("balance_in_account_currency")
-					),
-					dr_or_cr: flt(
-						abs(d.get("balance_in_account_currency")), d.precision("balance_in_account_currency")
-					),
-					"cost_center": erpnext.get_default_cost_center(self.company),
-					"exchange_rate": flt(d.get("new_exchange_rate"), d.precision("new_exchange_rate")),
-					"reference_type": "Exchange Rate Revaluation",
-					"reference_name": self.name,
-				}
+			amount = flt(
+				abs(d.get("balance_in_account_currency")), d.precision("balance_in_account_currency")
 			)
-			journal_entry_accounts.append(
-				{
-					"account": d.get("account"),
-					"party_type": d.get("party_type"),
-					"party": d.get("party"),
-					"account_currency": d.get("account_currency"),
-					"balance": flt(
-						d.get("balance_in_account_currency"), d.precision("balance_in_account_currency")
-					),
-					reverse_dr_or_cr: flt(
-						abs(d.get("balance_in_account_currency")), d.precision("balance_in_account_currency")
-					),
-					"cost_center": erpnext.get_default_cost_center(self.company),
-					"exchange_rate": flt(d.get("current_exchange_rate"), d.precision("current_exchange_rate")),
-					"reference_type": "Exchange Rate Revaluation",
-					"reference_name": self.name,
-				}
-			)
+
+			exchange_rate = flt(d.get("new_exchange_rate"), d.precision("new_exchange_rate"))
+			amount_in_currency = flt(amount * exchange_rate, d.precision("balance_in_account_currency"))
+			if amount_in_currency:
+				journal_entry_accounts.append(
+					{
+						"account": d.get("account"),
+						"party_type": d.get("party_type"),
+						"party": d.get("party"),
+						"account_currency": d.get("account_currency"),
+						"balance": flt(
+							d.get("balance_in_account_currency"), d.precision("balance_in_account_currency")
+						),
+						dr_or_cr: amount,
+						"cost_center": erpnext.get_default_cost_center(self.company),
+						"exchange_rate": exchange_rate,
+						"reference_type": "Exchange Rate Revaluation",
+						"reference_name": self.name,
+					}
+				)
+
+			exchange_rate = flt(d.get("current_exchange_rate"), d.precision("current_exchange_rate"))
+			amount_in_currency = flt(amount * exchange_rate, d.precision("balance_in_account_currency"))
+			if amount_in_currency:
+				journal_entry_accounts.append(
+					{
+						"account": d.get("account"),
+						"party_type": d.get("party_type"),
+						"party": d.get("party"),
+						"account_currency": d.get("account_currency"),
+						"balance": flt(
+							d.get("balance_in_account_currency"), d.precision("balance_in_account_currency")
+						),
+						reverse_dr_or_cr: amount,
+						"cost_center": erpnext.get_default_cost_center(self.company),
+						"exchange_rate": exchange_rate,
+						"reference_type": "Exchange Rate Revaluation",
+						"reference_name": self.name,
+					}
+				)
 
 		journal_entry_accounts.append(
 			{
@@ -472,7 +479,10 @@ class ExchangeRateRevaluation(Document):
 		journal_entry.set("accounts", journal_entry_accounts)
 		journal_entry.set_amounts_in_company_currency()
 		journal_entry.set_total_debit_credit()
-		journal_entry.save()
+		# journal_entry.flags.ignore_validate = True
+		if not journal_entry.difference:
+			journal_entry.save()
+
 		return journal_entry
 
 

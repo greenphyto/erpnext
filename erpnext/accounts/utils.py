@@ -1380,6 +1380,7 @@ def check_and_delete_linked_reports(report):
 
 
 def create_err_and_its_journals(companies: list = None) -> None:
+	result = []
 	if companies:
 		for company in companies:
 			err = frappe.new_doc("Exchange Rate Revaluation")
@@ -1391,15 +1392,17 @@ def create_err_and_its_journals(companies: list = None) -> None:
 			if err.accounts:
 				err.save().submit()
 				response = err.make_jv_entries()
-
+				result.append(response.get("revaluation_jv"))
 				if company.submit_err_jv:
 					jv = response.get("revaluation_jv", None)
 					jv and frappe.get_doc("Journal Entry", jv).submit()
 					jv = response.get("zero_balance_jv", None)
 					jv and frappe.get_doc("Journal Entry", jv).submit()
 
+	return result
 
-def auto_create_exchange_rate_revaluation_daily() -> None:
+
+def auto_create_exchange_rate_revaluation_daily(force=False) -> None:
 	"""
 	Executed by background job
 	"""
@@ -1412,13 +1415,13 @@ def auto_create_exchange_rate_revaluation_daily() -> None:
 
 	# for monthly but only last month date
 	today = getdate()
-	if get_last_day(today) == today:
+	if get_last_day(today) == today or force:
 		companies = frappe.db.get_all(
 			"Company",
 			filters={"auto_exchange_rate_revaluation": 1, "auto_err_frequency": "Monthly"},
 			fields=["name", "submit_err_jv"],
 		)
-		create_err_and_its_journals(companies)
+		return create_err_and_its_journals(companies)
 
 def auto_create_exchange_rate_revaluation_weekly() -> None:
 	"""
