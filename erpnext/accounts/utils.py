@@ -1413,6 +1413,7 @@ def auto_create_exchange_rate_revaluation_daily(force=False) -> None:
 	)
 	create_err_and_its_journals(companies)
 
+def auto_create_exchange_rate_revaluation_last_day(force=False) -> None:
 	# for monthly but only last month date
 	today = getdate()
 	if get_last_day(today) == today or force:

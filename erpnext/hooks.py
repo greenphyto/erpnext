@@ -391,6 +391,9 @@ scheduler_events = {
 		"45 0 * * *": [
 			"erpnext.stock.reorder_item.reorder_item",
 		],
+        "0 23 * * *": [
+			"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_last_day",
+		]
 	},
 	"all": [
 		"erpnext.projects.doctype.project.project.project_status_update_reminder",
