@@ -57,7 +57,11 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 	settingscheck = frappe.get_cached_doc("Currency Exchange Settings")
 	
 	if settingscheck.use_rate_as_first_day_of_month_rate and not err_journal:
-		transaction_date = get_first_day(transaction_date)
+		first_day = get_first_day(transaction_date)
+		if getdate(transaction_date) == first_day:
+			transaction_date = add_days(transaction_date, -1)
+		else:
+			transaction_date = first_day
 
 	if settingscheck.api_endpoint.find("mas.gov.sg") > -1:
 		from_currency = from_currency.lower()
@@ -132,11 +136,9 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 			settings = frappe.get_cached_doc("Currency Exchange Settings")
 			if settings.api_endpoint.find("mas.gov.sg") > -1:
 				weekday = getdate(transaction_date).strftime('%A')
-				if weekday=="Monday":
-					transaction_date=add_days(transaction_date, -3)
-				elif weekday=="Sunday" :
+				if weekday=="Sunday":
 					transaction_date=add_days(transaction_date, -2)
-				else:
+				elif weekday=="Saturday" :
 					transaction_date=add_days(transaction_date, -1)
 
 			cache = frappe.cache()

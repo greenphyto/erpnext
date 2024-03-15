@@ -74,6 +74,8 @@ class CurrencyExchangeSettings(Document):
 
 	def validate_result(self, response, value):
 		try:
+			if value.get("name") and value['name']=="exchange_rates_end_of_period_daily":
+				return
 			
 			for key in self.result_key:
 				if  isinstance(value,dict):
