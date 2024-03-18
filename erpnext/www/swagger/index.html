@@ -29,7 +29,7 @@
       return request;
     }
     window.onload = () => {
-      fetch('/gp-swagger/api.json')
+      fetch('/swagger/api.json')
         .then(response => response.json())
         .then(swaggerSpec => {
           console.log(swaggerSpec);
