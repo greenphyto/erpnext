@@ -5,6 +5,7 @@ from frappe.utils import cint
 from erpnext.accounts.party import get_party_details
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
+from frappe import _
 
 """
 Make Supplier from ERP to FOMS
@@ -22,6 +23,7 @@ UOM_MAPPING = {
 
 OPERATION_MAP = {
 	"Nursery":1,
+	"Seeding":1,
 	"Transfer + Growth":2,
 	"Harvesting":3,
 	"Packaging":3
@@ -283,7 +285,7 @@ def get_operation_no(operation):
 	return OPERATION_MAP.get(operation) or 1
 
 def create_bom_products(log, product_id, submit=False, force_new=False):
-	create_bom_products_version_2(log, product_id, submit, force_new)
+	return create_bom_products_version_2(log, product_id, submit, force_new)
 
 # bom created based on 1 operation 1 work order
 # so it will cause 1 operation 1 bom
@@ -378,7 +380,10 @@ def create_bom_products_version_1(log, product_id, submit=False):
 # each job card will be finish each operation one-by-one
 def create_bom_products_version_2(log, product_id, submit=False, force_new=False):
 	log = frappe._dict(log)
+	if not product_id:
+		frappe.throw(_(f"Missing Item with Product ID {product_id}"), frappe.DoesNotExistError)
 	item_name = frappe.get_value("Item", {"foms_id":product_id})
+
 	name = None
 	bom = None
 
@@ -411,7 +416,7 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 					op_row.operation = operation_name
 					op_row.workstation = "Farm"
 					op_row.fixed_time = 1
-					op_row.operation_time = 60*24 #(24 hours)
+					op_row.time_in_mins = 60*24 #(24 hours)
 					op_row.description = operation_name
 					operation_map[operation_name] = op_row
 
@@ -423,7 +428,6 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 						row.uom = convert_uom(rm.uomrm)
 						row.qty = rm.qtyrm
 						row.operation = operation_name
-
 			bom.save()
 		else:
 			if not bom:

@@ -118,16 +118,51 @@
                 },
                 "example": {
                   "data": {
-                    "productID": "PR-AV-SPC",
+                    "productID": "37",
                     "productVersionName": "V1.6",
                     "process": [
                       {
                         "processName": "Seeding",
                         "productRawMaterial": [
                           {
+                            "rawMaterialId": 38,
                             "rawMaterialRefNo": "RM-IN-WW",
-                            "uomrm": "Litre",
-                            "qtyrm": 0.01
+                            "rawMaterialName": "Water",
+                            "uomrm": "L",
+                            "uomProduct": "Per Tray",
+                            "qtyrm": 36.0
+                          },
+                          {
+                            "rawMaterialId": 39,
+                            "rawMaterialRefNo": "RM-MS-SP",
+                            "rawMaterialName": "Sponge",
+                            "uomrm": "unit",
+                            "uomProduct": "Per Tray",
+                            "qtyrm": 180.0
+                          },
+                          {
+                            "rawMaterialId": 40,
+                            "rawMaterialRefNo": "RM-NS-NSA",
+                            "rawMaterialName": "Nutrient A",
+                            "uomrm": "ml",
+                            "uomProduct": "Per Tray",
+                            "qtyrm": 180.0
+                          },
+                          {
+                            "rawMaterialId": 41,
+                            "rawMaterialRefNo": "RM-NS-NSB",
+                            "rawMaterialName": "Nutrient B",
+                            "uomrm": "ml",
+                            "uomProduct": "Per Tray",
+                            "qtyrm": 180.0
+                          },
+                          {
+                            "rawMaterialId": 57,
+                            "rawMaterialRefNo": "RM-SD-SPC",
+                            "rawMaterialName": "Small Size Pak Choy Seeds",
+                            "uomrm": "g",
+                            "uomProduct": "Per Tray",
+                            "qtyrm": 0.75
                           }
                         ],
                         "productTask": [
@@ -137,6 +172,13 @@
                             "taskName": "Check in RM & Equipment",
                             "details": "Check in all the required RM",
                             "taskType": "Check in Raw Materials/Equipment"
+                          },
+                          {
+                            "taskID": "T-0290",
+                            "taskSequence": 2,
+                            "taskName": "Get location from ASRS",
+                            "details": "Location obtained from ASRS",
+                            "taskType": "ASRS Storage"
                           }
                         ]
                       }
@@ -154,7 +196,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "example":{
+                  "example": {
                     "bomId": "bomName"
                   }
                 }
@@ -186,7 +228,7 @@
                 "example": {
                   "workOrderID": "FOMS-001",
                   "lotID": "LOT12",
-                  "productID": "PR-AV-SPC",
+                  "productID": "37",
                   "qty": 2,
                   "uom": "Kg"
                 }
@@ -201,7 +243,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "example":{
+                  "example": {
                     "workOrderId": "workOrderName"
                   }
                 }

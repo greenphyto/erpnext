@@ -916,11 +916,13 @@ class WorkOrder(Document):
 		if self.get("operations") and len(self.operations) == 1:
 			operation = self.operations[0].operation
 
+		print(919)
 		if self.bom_no and self.qty:
 			item_dict = get_bom_items_as_dict(
 				self.bom_no, self.company, qty=self.qty, fetch_exploded=self.use_multi_level_bom
 			)
 
+			print(923, item_dict)
 			if reset_only_qty:
 				for d in self.get("required_items"):
 					if item_dict.get(d.item_code):
@@ -930,6 +932,7 @@ class WorkOrder(Document):
 						d.operation = operation
 			else:
 				for item in sorted(item_dict.values(), key=lambda d: d["idx"] or float("inf")):
+					print("Add Operation", item)
 					self.append(
 						"required_items",
 						{

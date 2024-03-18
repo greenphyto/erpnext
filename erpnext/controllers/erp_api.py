@@ -32,10 +32,11 @@ def create_bom(data):
 
 @frappe.whitelist()
 def create_work_order(workOrderID, lotID, productID, qty, uom):
-	print(29, workOrderID, lotID, productID, qty, uom)
-
 	submit = get_foms_settings("auto_submit_work_order")
-	item_code = frappe.get_value("Item", productID)
+	item_code = frappe.get_value("Item", {"foms_id":productID})
+	if not item_code or productID==0:
+		frappe.throw(_(f"Missing Item with Product ID {productID}"), frappe.DoesNotExistError)
+
 	bom_no = get_bom_for_work_order2(item_code)
 	if not bom_no:
 		frappe.throw(_(f"Missing BOM for {item_code}"), frappe.DoesNotExistError)
