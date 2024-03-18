@@ -150,9 +150,65 @@
         },
         "responses": {
           "200": {
-            "description": "Successful operation"
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example":{
+                    "bomId": "bomName"
+                  }
+                }
+              }
+            }
           },
           "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_work_order": {
+      "post": {
+        "summary": "Create new Work Order in ERP",
+        "description": "-",
+        "operationId": "create new Work Order",
+        "requestBody": {
+          "description": "Create new Work Order in ERP",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "workOrderID": "FOMS-001",
+                  "lotID": "LOT12",
+                  "productID": "PR-AV-SPC",
+                  "qty": 2,
+                  "uom": "Kg"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example":{
+                    "workOrderId": "workOrderName"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
             "description": "Invalid input"
           }
         }

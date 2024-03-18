@@ -491,6 +491,13 @@ def get_bom_for_work_order(item_code):
 		"operation_no":1,
 		"docstatus":1
 	}, "name", order_by="foms_recipe_version")
+
+def get_bom_for_work_order2(item_code):
+	return frappe.get_value("BOM", {
+		"item":item_code,
+		"operation_no":"",
+		"docstatus":1
+	}, "name", order_by="foms_recipe_version")
 	
 # WORK ORDER (GET)
 def get_work_order(show_progress=False, work_order=""):
@@ -520,11 +527,10 @@ def get_work_order(show_progress=False, work_order=""):
 	).run()
 
 def create_work_order(log, item_code, bom_no, qty=1, submit=False):
-	# if item_code != "PR-AV-GN":
-	# 	return
 	
 	doc = make_work_order(bom_no, item_code, qty)
 	doc.foms_work_order = log.workOrderNo
+	doc.foms_lot_id = log.lotID
 	doc.insert()
 
 	if submit:
