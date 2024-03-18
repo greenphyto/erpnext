@@ -9,7 +9,7 @@ def ping_data(data):
 	return data
 
 @frappe.whitelist()
-def post_recipe(data):
+def create_bom(data):
 	print(12, data)
 	if isinstance(data, string_types):
 		data = json.loads(data)

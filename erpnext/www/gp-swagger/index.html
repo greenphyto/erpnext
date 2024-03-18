@@ -1,28 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="SwaggerUI" />
-    <title>SwaggerUI</title>
-    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
-  </head>
-  <body>
-  <div id="swagger-ui"></div>
+{% extends "templates/web.html" %}
+
+{% block title %} Greenphyto Swagger {% endblock %}
+
+{% block page_content %}
+<div id="swagger-ui"></div>
+{% endblock %}
+
+{% block head_include %}
+<link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
+<style>
+  .container{
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    width: 100%;
+    max-width: 2000px;
+  }
+</style>
+{% endblock %}
+
+{% block body_include %}
   <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js" crossorigin></script>
   <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js" crossorigin></script>
   <script>
+    window.csrf_token = "{{token}}";
+    function addCSRFTokenHeader(request) {
+      var csrfToken = "{{token}}"; 
+      request.headers['X-Frappe-CSRF-Token'] = csrfToken;
+      return request;
+    }
     window.onload = () => {
-      window.ui = SwaggerUIBundle({
-        url: '/gp-swagger/api.json',
-        dom_id: '#swagger-ui',
-        presets: [
-          SwaggerUIBundle.presets.apis,
-          SwaggerUIStandalonePreset
-        ],
-        layout: "StandaloneLayout",
-      });
+      fetch('/gp-swagger/api.json')
+        .then(response => response.json())
+        .then(swaggerSpec => {
+          console.log(swaggerSpec);
+          window.ui = SwaggerUIBundle({
+            spec: swaggerSpec,
+            dom_id: '#swagger-ui',
+            presets: [
+              SwaggerUIBundle.presets.apis,
+              SwaggerUIStandalonePreset
+            ],
+            layout: "StandaloneLayout",
+            requestInterceptor: addCSRFTokenHeader
+          });
+        })
+
     };
   </script>
-  </body>
-</html>
+{% endblock %}

@@ -100,13 +100,13 @@
         }
       }
     },
-    "/erpnext.controllers.erp_api.post_recipe": {
+    "/erpnext.controllers.erp_api.create_bom": {
       "post": {
-        "summary": "To test push data dummy",
+        "summary": "Create new Bill of Material (BOM) from recipe FOMS",
         "description": "-",
-        "operationId": "test push data",
+        "operationId": "create new BOM",
         "requestBody": {
-          "description": "Test push data",
+          "description": "Create new Bill of Material (BOM) from recipe FOMS",
           "content": {
             "application/json": {
               "schema": {
