@@ -80,9 +80,67 @@
                   }
                 },
                 "example": {
-                  "data":{
+                  "data": {
                     "usr": "100",
                     "pwd": "200"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.post_recipe": {
+      "post": {
+        "summary": "To test push data dummy",
+        "description": "-",
+        "operationId": "test push data",
+        "requestBody": {
+          "description": "Test push data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "productID": "string",
+                    "productVersionName": "string",
+                    "process": [
+                      {
+                        "processName": "string"
+                      }
+                    ],
+                    "productRawMaterial": [
+                      {
+                        "rawMaterialRefNo": "string",
+                        "uomrm": "string",
+                        "qtyrm": 1
+                      }
+                    ],
+                    "productTask": [
+                      {
+                        "taskID": "T-0289",
+                        "taskSequence": 1,
+                        "taskName": "Check in RM & Equipment",
+                        "details": "Check in all the required RM",
+                        "taskType": "Check in Raw Materials/Equipment"
+                      }
+                    ]
                   }
                 }
               }
