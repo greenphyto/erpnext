@@ -81,8 +81,8 @@
                 },
                 "example": {
                   "data": {
-                    "usr": "100",
-                    "pwd": "200"
+                    "data1": "100",
+                    "data2": "200"
                   }
                 }
               }
@@ -118,27 +118,27 @@
                 },
                 "example": {
                   "data": {
-                    "productID": "string",
-                    "productVersionName": "string",
+                    "productID": "PR-AV-SPC",
+                    "productVersionName": "V1.6",
                     "process": [
                       {
-                        "processName": "string"
-                      }
-                    ],
-                    "productRawMaterial": [
-                      {
-                        "rawMaterialRefNo": "string",
-                        "uomrm": "string",
-                        "qtyrm": 1
-                      }
-                    ],
-                    "productTask": [
-                      {
-                        "taskID": "T-0289",
-                        "taskSequence": 1,
-                        "taskName": "Check in RM & Equipment",
-                        "details": "Check in all the required RM",
-                        "taskType": "Check in Raw Materials/Equipment"
+                        "processName": "Seeding",
+                        "productRawMaterial": [
+                          {
+                            "rawMaterialRefNo": "RM-IN-WW",
+                            "uomrm": "Litre",
+                            "qtyrm": 0.01
+                          }
+                        ],
+                        "productTask": [
+                          {
+                            "taskID": "T-0289",
+                            "taskSequence": 1,
+                            "taskName": "Check in RM & Equipment",
+                            "details": "Check in all the required RM",
+                            "taskType": "Check in Raw Materials/Equipment"
+                          }
+                        ]
                       }
                     ]
                   }

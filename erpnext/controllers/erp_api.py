@@ -17,6 +17,6 @@ def post_recipe(data):
 	data = frappe._dict(data)
 	product_id = data.get("productID")
 	
-	# create_bom_products(data, product_id )
+	create_bom_products(data, product_id )
 	
 	return product_id

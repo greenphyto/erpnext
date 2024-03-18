@@ -295,12 +295,16 @@ def create_bom_products_version_1(log, product_id, submit=False):
 	bom_map = {}
 	# find existing
 	if item_name:
-		# Pre Harvest Process
-		if item_name != "PR-AV-GN":
-			return name
+		# # Pre Harvest Process
+		# if item_name != "PR-AV-GN":
+		# 	return name
 		
 		# join process Preharvest and PostHarvest
-		all_process = log.preHarvestProcess + log.postHarvestProcess
+		print(303, log)
+		if "process" in log:
+			all_process = log.process
+		else:
+			all_process = log.preHarvestProcess + log.postHarvestProcess
 		
 		for op in all_process:
 			op = frappe._dict(op)
@@ -381,7 +385,10 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 	if item_name:
 		
 		# join process Preharvest and PostHarvest
-		all_process = log.preHarvestProcess + log.postHarvestProcess
+		if "process" in log:
+			all_process = log.process
+		else:
+			all_process = log.preHarvestProcess + log.postHarvestProcess
 		
 		name, status = find_existing_bom2(item_name, log.productVersionName) 
 
