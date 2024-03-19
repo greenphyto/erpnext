@@ -106,7 +106,7 @@
         "description": "-",
         "operationId": "create new BOM",
         "requestBody": {
-          "description": "Create new Bill of Material (BOM) from recipe FOMS",
+          "description": "Use data request as data returned from FOMS <b>GetRecipeByProductId</b>",
           "content": {
             "application/json": {
               "schema": {
@@ -197,7 +197,9 @@
               "application/json": {
                 "schema": {
                   "example": {
-                    "bomId": "bomName"
+                    "message": {
+                      "bomId": "BOM-PR-AV-KL-0001"
+                    }
                   }
                 }
               }
@@ -244,7 +246,56 @@
               "application/json": {
                 "schema": {
                   "example": {
-                    "workOrderId": "workOrderName"
+                    "message": {
+                      "workOrderId": "workOrderName"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.update_work_order_operation_status": {
+      "post": {
+        "summary": "Update current Work Order status based on FOMS Process",
+        "description": "This endpoint is used to update operation process start/end information. So ERPNext can initiate job card, stock entry, start, and end job card logic based on the provided data. Completion of job card logic depends on FOMS's operation process start and end statuses",
+        "operationId": "update Work Order status",
+        "requestBody": {
+          "description": "Update Work Order Status",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "workOrderID": "FOMS-001",
+                  "lotID": "LOT12",
+                  "operationName":"Seeding",
+                  "percentage": 10,
+                  "status": "Start"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": true
                   }
                 }
               }

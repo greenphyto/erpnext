@@ -62,7 +62,8 @@
   "job_started",
   "started_time",
   "current_time",
-  "amended_from"
+  "amended_from",
+  "percentage"
  ],
  "fields": [
   {
@@ -435,11 +436,17 @@
    "fieldname": "expected_end_date",
    "fieldtype": "Datetime",
    "label": "Expected End Date"
+  },
+  {
+   "fieldname": "percentage",
+   "fieldtype": "Percent",
+   "label": "Percentage",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2023-10-26 10:00:12.345734",
+ "modified": "2024-03-19 14:20:47.170286",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Job Card",

@@ -1,6 +1,6 @@
 import frappe, json
 from six import string_types
-from frappe.utils import flt
+from frappe.utils import flt, now_datetime
 from erpnext.controllers.foms import (
     create_bom_products, 
     get_bom_for_work_order2, 
@@ -8,6 +8,7 @@ from erpnext.controllers.foms import (
 	create_work_order as _create_work_order
 )
 from frappe import _
+from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry, make_time_log
 
 def get_data(data):
 	if isinstance(data, string_types):
@@ -50,3 +51,67 @@ def create_work_order(workOrderID, lotID, productID, qty, uom):
 
 	return {"workOrderId":result}
 
+@frappe.whitelist()
+def update_work_order_operation_status(workOrderID, lotID, operationName, percentage=0, status="Start"):
+	# status: Start/Stop
+	work_order_name = frappe.db.get_value("Work Order", {
+		"foms_work_order": workOrderID,
+		"foms_lot_id": lotID
+	})
+
+	if not work_order_name:
+		frappe.throw(_(f"Missing Work Order with LotID {lotID}"), frappe.DoesNotExistError)
+	
+	doc = frappe.get_doc("Work Order", work_order_name)
+
+	operation_name = frappe.db.get_value("Job Card", {
+		"work_order":work_order_name,
+		"operation": operationName,
+		"docstatus":0
+	})
+
+	if not operation_name:
+		frappe.throw(_(f"Missing Operation {operationName} for Work Order {workOrderID}"), frappe.DoesNotExistError)
+	
+	job_card = frappe.get_doc("Job Card", operation_name)
+
+	# temporary stock entry is created based on work order (stright flow)
+	if not job_card.transferred_qty:
+		se_doc = make_stock_entry(job_card.name)
+		se_doc.save()
+		se_doc.submit()
+
+	# start job card
+	if not job_card.job_started:
+		employee = frappe.get_value("Employee")
+		args = frappe._dict({
+			"job_card_id": job_card.name,
+			"start_time": now_datetime(),
+			"employees": [employee],
+			# "status": status
+		})
+		job_card.validate_sequence_id()
+		job_card.add_time_log(args)
+		job_card.started_time = now_datetime()
+		job_card.job_started = 1
+		job_card.save()
+
+	if percentage > 0 and percentage < 100:
+		job_card.percentage = percentage
+		job_card.save()
+	elif percentage == 100:
+		# complete
+		args = frappe._dict({
+			"job_card_id": job_card.name,
+			"complete_time": now_datetime(),
+			# "status": status,
+			"completed_qty": job_card.for_quantity # temporary like job card settings
+		})
+		job_card.validate_sequence_id()
+		job_card.add_time_log(args)
+		job_card.save()
+		job_card.submit()
+
+	return True
+
+		
