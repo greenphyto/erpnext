@@ -53,8 +53,7 @@ def create_work_order(workOrderID, lotID, productID, qty, uom):
 	return {"workOrderId":result}
 
 @frappe.whitelist()
-def update_work_order_operation_status(workOrderID, lotID, operationName, percentage=0, status="Start"):
-	# status: Start/Stop
+def update_work_order_operation_status(workOrderID, lotID, operationName, percentage=0):
 	work_order_name = frappe.db.get_value("Work Order", {
 		"foms_work_order": workOrderID,
 		"foms_lot_id": lotID
@@ -63,8 +62,6 @@ def update_work_order_operation_status(workOrderID, lotID, operationName, percen
 	if not work_order_name:
 		frappe.throw(_(f"Missing Work Order with LotID {lotID}"), frappe.DoesNotExistError)
 	
-	doc = frappe.get_doc("Work Order", work_order_name)
-
 	operation_name = frappe.db.get_value("Job Card", {
 		"work_order":work_order_name,
 		"operation": operationName,

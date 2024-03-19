@@ -280,8 +280,7 @@
                   "workOrderID": "FOMS-001",
                   "lotID": "LOT12",
                   "operationName":"Seeding",
-                  "percentage": 10,
-                  "status": "Start"
+                  "percentage": 10
                 }
               }
             }
