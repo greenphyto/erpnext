@@ -306,6 +306,53 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.submit_work_order_finish_goods": {
+      "post": {
+        "summary": "Submit Finish Goods and completing Work Order",
+        "description": "This endpoint updates the finished goods quantity from FOMS to ERPNext. It is triggered when the Operation module updates confirmed finished goods quantity",
+        "operationId": "submit finish goods",
+        "requestBody": {
+          "description": "Submit Finish Goods",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "workOrderID": "FOMS-001",
+                  "lotID": "LOT12",
+                  "qty": 1
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "stockEntry":"stockEntryName"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
     }
   },
   "components": {

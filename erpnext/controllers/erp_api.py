@@ -9,6 +9,7 @@ from erpnext.controllers.foms import (
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry, make_time_log
+from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry
 
 def get_data(data):
 	if isinstance(data, string_types):
@@ -114,4 +115,20 @@ def update_work_order_operation_status(workOrderID, lotID, operationName, percen
 
 	return True
 
-		
+@frappe.whitelist()
+def submit_work_order_finish_goods(workOrderID, lotID, qty):
+	work_order_name = frappe.db.get_value("Work Order", {
+		"foms_work_order": workOrderID,
+		"foms_lot_id": lotID
+	})
+
+	if not work_order_name:
+		frappe.throw(_(f"Missing Work Order with LotID {lotID}"), frappe.DoesNotExistError)
+	
+	se_doc = make_stock_entry(work_order_name,"Manufacture", qty, return_doc=1)
+	se_doc.save()
+	se_doc.submit()
+
+	return {
+		"stockEntry":se_doc.name
+	}

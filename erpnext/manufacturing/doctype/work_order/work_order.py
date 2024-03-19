@@ -1236,7 +1236,7 @@ def set_work_order_ops(name):
 
 
 @frappe.whitelist()
-def make_stock_entry(work_order_id, purpose, qty=None):
+def make_stock_entry(work_order_id, purpose, qty=None, return_doc=False):
 	work_order = frappe.get_doc("Work Order", work_order_id)
 	if not frappe.db.get_value("Warehouse", work_order.wip_warehouse, "is_group"):
 		wip_warehouse = work_order.wip_warehouse
@@ -1271,6 +1271,8 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 	stock_entry.set_stock_entry_type()
 	stock_entry.get_items()
 	stock_entry.set_serial_no_batch_for_finished_good()
+	if return_doc:
+		return stock_entry
 	return stock_entry.as_dict()
 
 
