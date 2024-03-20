@@ -402,9 +402,7 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 			bom = frappe.new_doc("BOM")
 			bom.item = item_name
 			bom.foms_recipe_version = log.productVersionName
-
 			bom.with_operations = 1
-
 			bom.transfer_material_against = 'Job Card'
 						
 			for op in all_process:
@@ -429,6 +427,7 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 						row.qty = rm.qtyrm
 						row.operation = operation_name
 			bom.save()
+			name = bom.name
 		else:
 			if not bom:
 				bom = frappe.get_doc("BOM", name)
