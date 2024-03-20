@@ -8,8 +8,8 @@ from erpnext.controllers.foms import (
 	create_work_order as _create_work_order
 )
 from frappe import _
-from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry, make_time_log
-from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry
+from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
+from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry as make_stock_entry_wo
 
 def get_data(data):
 	if isinstance(data, string_types):
@@ -27,8 +27,8 @@ def create_bom(data):
 	data = get_data(data)
 		
 	product_id = data.get("productID")
-	
-	result = create_bom_products(data, product_id )
+	submit = get_foms_settings("auto_submit_bom")
+	result = create_bom_products(data, product_id, submit=submit)
 	
 	return {"bomId":result}
 
@@ -75,7 +75,7 @@ def update_work_order_operation_status(workOrderID, lotID, operationName, percen
 
 	# temporary stock entry is created based on work order (stright flow)
 	if not job_card.transferred_qty:
-		se_doc = make_stock_entry(job_card.name)
+		se_doc = make_stock_entry_jc(job_card.name)
 		se_doc.save()
 		se_doc.submit()
 
@@ -122,7 +122,7 @@ def submit_work_order_finish_goods(workOrderID, lotID, qty):
 	if not work_order_name:
 		frappe.throw(_(f"Missing Work Order with LotID {lotID}"), frappe.DoesNotExistError)
 	
-	se_doc = make_stock_entry(work_order_name,"Manufacture", qty, return_doc=1)
+	se_doc = make_stock_entry_wo(work_order_name,"Manufacture", qty, return_doc=1)
 	se_doc.save()
 	se_doc.submit()
 
