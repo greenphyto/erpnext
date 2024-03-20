@@ -278,7 +278,7 @@
                 },
                 "example": {
                   "ERPWorkOrderID": "FOMS-001-005",
-                  "operationName":"Seeding",
+                  "operationNo":1,
                   "percentage": 10
                 }
               }

@@ -1,11 +1,12 @@
 import frappe, json
 from six import string_types
-from frappe.utils import flt, now_datetime
+from frappe.utils import flt, now_datetime, cint
 from erpnext.controllers.foms import (
     create_bom_products, 
     get_bom_for_work_order2, 
 	get_foms_settings,
-	create_work_order as _create_work_order
+	create_work_order as _create_work_order,
+	OPERATION_MAP_NAME
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
@@ -53,7 +54,8 @@ def create_work_order(FomsWorkOrderID, FomsLotID, productID, qty, uom):
 	return {"ERPWorkOrderID":result}
 
 @frappe.whitelist()
-def update_work_order_operation_status(ERPWorkOrderID, operationName, percentage=0):
+def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0):
+	operationName = OPERATION_MAP_NAME.get( cint(operationNo) )
 	work_order_name = frappe.db.get_value("Work Order", ERPWorkOrderID)
 
 	if not work_order_name:
