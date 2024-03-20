@@ -414,9 +414,9 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 				if not operation_name in operation_map:
 					op_row = bom.append("operations")
 					op_row.operation = operation_name
-					op_row.workstation = "Farm"
+					op_row.time_in_mins = get_foms_settings("operation_time") or 60*24 #(24 hours)
+					op_row.workstation = get_foms_settings("workstation")
 					op_row.fixed_time = 1
-					op_row.time_in_mins = 60*24 #(24 hours)
 					op_row.description = operation_name
 					operation_map[operation_name] = op_row
 
