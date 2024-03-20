@@ -198,7 +198,7 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "bomId": "BOM-PR-AV-KL-0001"
+                      "ERPBomId": "BOM-PR-AV-KL-0001"
                     }
                   }
                 }
@@ -228,8 +228,8 @@
                   }
                 },
                 "example": {
-                  "workOrderID": "FOMS-001",
-                  "lotID": "LOT12",
+                  "FomsWorkOrderID": "FOMS-001",
+                  "FomsLotID": "LOT12",
                   "productID": "37",
                   "qty": 2,
                   "uom": "Kg"
@@ -247,7 +247,7 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "workOrderId": "workOrderName"
+                      "ERPWorkOrderId": "workOrderName"
                     }
                   }
                 }
@@ -277,8 +277,7 @@
                   }
                 },
                 "example": {
-                  "workOrderID": "FOMS-001",
-                  "lotID": "LOT12",
+                  "ERPWorkOrderID": "FOMS-001-005",
                   "operationName":"Seeding",
                   "percentage": 10
                 }
@@ -323,8 +322,7 @@
                   }
                 },
                 "example": {
-                  "workOrderID": "FOMS-001",
-                  "lotID": "LOT12",
+                  "ERPWorkOrderID": "FOMS-001-005",
                   "qty": 1
                 }
               }
@@ -340,7 +338,7 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "stockEntry":"stockEntryName"
+                      "ERPStockEntry":"stockEntryName"
                     }
                   }
                 }

@@ -30,10 +30,10 @@ def create_bom(data):
 	submit = get_foms_settings("auto_submit_bom")
 	result = create_bom_products(data, product_id, submit=submit)
 	
-	return {"bomId":result}
+	return {"ERPBomId":result}
 
 @frappe.whitelist()
-def create_work_order(workOrderID, lotID, productID, qty, uom):
+def create_work_order(FomsWorkOrderID, FomsLotID, productID, qty, uom):
 	submit = get_foms_settings("auto_submit_work_order")
 	item_code = frappe.get_value("Item", {"foms_id":productID})
 	if not item_code or productID==0:
@@ -45,22 +45,19 @@ def create_work_order(workOrderID, lotID, productID, qty, uom):
 		
 	qty = flt(qty) or 1
 	log = frappe._dict({
-		"workOrderNo":workOrderID,
-		"lotID":lotID,
+		"workOrderNo":FomsWorkOrderID,
+		"FomsLotID":FomsLotID,
 	})
 	result = _create_work_order(log, item_code, bom_no, qty, submit)
 
-	return {"workOrderId":result}
+	return {"ERPWorkOrderID":result}
 
 @frappe.whitelist()
-def update_work_order_operation_status(workOrderID, lotID, operationName, percentage=0):
-	work_order_name = frappe.db.get_value("Work Order", {
-		"foms_work_order": workOrderID,
-		"foms_lot_id": lotID
-	})
+def update_work_order_operation_status(ERPWorkOrderID, operationName, percentage=0):
+	work_order_name = frappe.db.get_value("Work Order", ERPWorkOrderID)
 
 	if not work_order_name:
-		frappe.throw(_(f"Missing Work Order with LotID {lotID}"), frappe.DoesNotExistError)
+		frappe.throw(_(f"Work Order {ERPWorkOrderID} not found!"), frappe.DoesNotExistError)
 	
 	operation_name = frappe.db.get_value("Job Card", {
 		"work_order":work_order_name,
@@ -69,30 +66,30 @@ def update_work_order_operation_status(workOrderID, lotID, operationName, percen
 	})
 
 	if not operation_name:
-		frappe.throw(_(f"Missing Operation {operationName} for Work Order {workOrderID}"), frappe.DoesNotExistError)
+		frappe.throw(_(f"Missing Operation {operationName} for Work Order {ERPWorkOrderID}"), frappe.DoesNotExistError)
 	
-	job_card = frappe.get_doc("Job Card", operation_name)
+	transferred_qty, job_card_name = frappe.db.get_value("Job Card", operation_name, ["transferred_qty", "name"]) or (0, "")
 
 	# temporary stock entry is created based on work order (stright flow)
-	if not job_card.transferred_qty:
-		se_doc = make_stock_entry_jc(job_card.name)
+	if not transferred_qty:
+		se_doc = make_stock_entry_jc(job_card_name)
 		se_doc.save()
 		se_doc.submit()
 
+	job_card = frappe.get_doc("Job Card", job_card_name)
 	# start job card
 	if not job_card.job_started:
 		employee = frappe.get_value("Employee")
 		args = frappe._dict({
 			"job_card_id": job_card.name,
 			"start_time": now_datetime(),
-			"employees": [employee],
+			# "employees": [{"name":employee}],
 			# "status": status
 		})
 		job_card.validate_sequence_id()
 		job_card.add_time_log(args)
 		job_card.started_time = now_datetime()
 		job_card.job_started = 1
-		job_card.save()
 
 	if percentage > 0 and percentage < 100:
 		job_card.percentage = percentage
@@ -109,23 +106,23 @@ def update_work_order_operation_status(workOrderID, lotID, operationName, percen
 		job_card.add_time_log(args)
 		job_card.save()
 		job_card.submit()
+	else:
+		job_card.save()
+
 
 	return True
 
 @frappe.whitelist()
-def submit_work_order_finish_goods(workOrderID, lotID, qty):
-	work_order_name = frappe.db.get_value("Work Order", {
-		"foms_work_order": workOrderID,
-		"foms_lot_id": lotID
-	})
+def submit_work_order_finish_goods(ERPWorkOrderID, qty):
+	work_order_name = frappe.db.get_value("Work Order", ERPWorkOrderID)
 
 	if not work_order_name:
-		frappe.throw(_(f"Missing Work Order with LotID {lotID}"), frappe.DoesNotExistError)
+		frappe.throw(_(f"Work Order {ERPWorkOrderID} not found!"), frappe.DoesNotExistError)
 	
 	se_doc = make_stock_entry_wo(work_order_name,"Manufacture", qty, return_doc=1)
 	se_doc.save()
 	se_doc.submit()
 
 	return {
-		"stockEntry":se_doc.name
+		"ERPStockEntry":se_doc.name
 	}
