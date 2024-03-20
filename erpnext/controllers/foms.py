@@ -403,7 +403,7 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 			bom.item = item_name
 			bom.foms_recipe_version = log.productVersionName
 			bom.with_operations = 1
-			bom.transfer_material_against = 'Job Card'
+			bom.transfer_material_against = 'Work Order'
 						
 			for op in all_process:
 				op = frappe._dict(op)

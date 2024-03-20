@@ -128,3 +128,25 @@ def submit_work_order_finish_goods(ERPWorkOrderID, qty):
 	return {
 		"ERPStockEntry":se_doc.name
 	}
+
+# Create Raw Material Request
+@frappe.whitelist()
+def create_raw_material_reserve(ERPWorkOrderID, status, data):
+	work_order_name, qty = frappe.get_value("Work Order", ERPWorkOrderID, ["name", "qty"]) or ("", 1)
+	if not work_order_name:
+		frappe.throw(_(f"Work Order {ERPWorkOrderID} not found!"), frappe.DoesNotExistError)
+	
+	se_doc = make_stock_entry_wo(work_order_name, "Material Transfer for Manufacture", qty, return_doc=1)
+	
+	# overide items as request
+
+	se_doc.save()
+	se_doc.submit()
+
+	return {
+		"ERPStockEntry":se_doc.name
+	}
+
+# Call Raw Material Receipt (refer to GetPurchaseReceiptFromERP)
+
+# Create Raw Material Return

@@ -278,7 +278,7 @@
                 },
                 "example": {
                   "ERPWorkOrderID": "FOMS-001-005",
-                  "operationNo":1,
+                  "operationNo": 1,
                   "percentage": 10
                 }
               }
@@ -338,8 +338,94 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "ERPStockEntry":"stockEntryName"
+                      "ERPStockEntry": "stockEntryName"
                     }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_raw_material_reserve": {
+      "post": {
+        "summary": "Update current Work Order status based on FOMS Process",
+        "description": "This endpoint is used to update operation process start/end information. So ERPNext can initiate job card, stock entry, start, and end job card logic based on the provided data. Completion of job card logic depends on FOMS's operation process start and end statuses.<br>Set <b>percentage</b> as <b>100</b> to complete the Operation",
+        "operationId": "work order reserve api",
+        "requestBody": {
+          "description": "Update Work Order Status",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "ERPWorkOrderID": "ERPWorkOrderID",
+                  "status": "Reserved",
+                  "data": {
+                    "totalCount": 6,
+                    "items": [
+                      {
+                        "workOrderId": 123,
+                        "workOrderNumber": "WO-240315-00001",
+                        "rawMaterialBatchId": 214,
+                        "rawMaterialBatchRefNo": "RM-NS-NSB-BN00009",
+                        "location": "Warehouse (R01-01-01)",
+                        "rawMaterialId": 41,
+                        "rawMaterialRefNo": "RM-NS-NSB",
+                        "rawMaterialName": "Nutrient B",
+                        "isInfinityQty": false,
+                        "isSeed": false,
+                        "currentQty": 170240,
+                        "unitCost": 0,
+                        "lossRatePercent": 0,
+                        "productId": 48,
+                        "productRefNo": "PR-AV-KLL",
+                        "productName": "F1 Hybrid Kailan 2",
+                        "productVersionId": 0,
+                        "productTaskId": 0,
+                        "productGrowthProcessId": 0,
+                        "isMixProduct": false,
+                        "creationDate": "2024-03-14T14:01:38.11067",
+                        "reserveDate": "2024-04-04T00:00:00",
+                        "qtyReserve": 3480,
+                        "uom": "ml",
+                        "reserveByUserId": 0,
+                        "reserveByUserName": "Planning",
+                        "parentProductId": 0,
+                        "status": "Reserved",
+                        "rawMaterialReserveStatus": null,
+                        "issuedTimeStamp": "0001-01-01T00:00:00",
+                        "issuedUserId": 0,
+                        "issuedUser": null,
+                        "unableToIssue": false,
+                        "lotId": "24-0022",
+                        "id": 9558
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": true
                   }
                 }
               }
