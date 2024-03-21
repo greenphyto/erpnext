@@ -351,6 +351,79 @@
         }
       }
     },
+    "/erpnext.controllers.erp_api.create_raw_material": {
+      "post": {
+        "summary": "Create/update raw material",
+        "description": "Create raw material from FOMS to ERP",
+        "operationId": "create raw material",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data":{
+                    "farmId": 15,
+                    "rawMaterialType": {
+                      "rawMaterialTypeName": "Water",
+                      "rawMaterialTypeShortForm": "IN",
+                      "rawMaterialVariantTypes": null,
+                      "id": 16
+                    },
+                    "rawMaterialVariantType": {
+                      "rawMaterialTypeId": 16,
+                      "variantTypeName": "Water",
+                      "variantTypeShortForm": "WW",
+                      "id": 41
+                    },
+                    "rawMaterialRefNo": "RM-IN-WW",
+                    "rawMaterialName": "Water",
+                    "rawMaterialDescription": "Water Raw Material",
+                    "unitOfMeasurement": "L",
+                    "safetyLevel": 0,
+                    "maximumLevel": 0,
+                    "requestLeadTime": 0,
+                    "currentQty": 0,
+                    "isDraft": false,
+                    "isInfinityQty": true,
+                    "isSeed": false,
+                    "minimumOrderQuantity": 0,
+                    "isNutrient": false,
+                    "rawMaterialMapping": null,
+                    "batches": null,
+                    "id": 38
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": true
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
     "/erpnext.controllers.erp_api.create_raw_material_reserve": {
       "post": {
         "summary": "Create raw material reserve",

@@ -8,7 +8,8 @@ from erpnext.controllers.foms import (
 	create_work_order as _create_work_order,
 	OPERATION_MAP_NAME,
 	get_item_foms,
-	get_uom
+	get_uom,
+	create_raw_material as _create_raw_material
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
@@ -195,14 +196,26 @@ def create_material_request(
 	doc.flags.ignore_mandatory = 1
 	doc.save()
 
+	# should be trigger workflow change without validate supplier (supplier still empty)
+
 	return {
 		"materialRequestNo": doc.name
 	}
 
+# Create Material Request 
+@frappe.whitelist()
+def material_return(requestedBy, items=[]):
+	# create purchase receipt return
+	pass
 
 
-
-
+@frappe.whitelist()
+def create_raw_material(data):
+	res = _create_raw_material(data)
+	
+	return {
+		"rawMaterialNo":res
+	}
 
 
 # Call Raw Material Receipt (refer to GetPurchaseReceiptFromERP)

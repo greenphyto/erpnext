@@ -14,13 +14,6 @@ supplierID = foms_id
 """
 
 # VARIABLE
-# mapping uom FOMS to ERP
-UOM_MAPPING = {
-	"g":"gram",
-	"L":"Litre",
-	"ml":"Millilitre",
-}
-
 OPERATION_MAP = {
 	"Nursery":1,
 	"Seeding":1,
@@ -255,7 +248,7 @@ def create_raw_material(log):
 		doc.item_code = log.rawMaterialRefNo
 		doc.item_name = log.rawMaterialName
 		doc.description = log.rawMaterialDescription
-		doc.stock_uom = convert_uom(log.unitOfMeasurement)
+		doc.stock_uom = get_uom(log.unitOfMeasurement)
 		doc.item_group = types
 		doc.safety_stock = log.safetyLevel
 		doc.foms_id = log.id
@@ -270,9 +263,6 @@ def create_raw_material(log):
 		doc.db_update()
 
 	return name
-
-def convert_uom(foms_uom):
-	return UOM_MAPPING.get(foms_uom) or foms_uom
 
 def get_foms_settings(field):
 	return frappe.db.get_single_value("FOMS Integration Settings", field)
@@ -362,7 +352,7 @@ def create_bom_products_version_1(log, product_id, submit=False):
 					rm = frappe._dict(rm)
 					row = bom.append("items")
 					row.item_code = rm.rawMaterialRefNo
-					row.uom = convert_uom(rm.uomrm)
+					row.uom = get_uom(rm.uomrm)
 					row.qty = rm.qtyrm
 
 				bom.insert()
@@ -381,7 +371,7 @@ def create_bom_products_version_1(log, product_id, submit=False):
 					rm = frappe._dict(rm)
 					row = bom.append("items")
 					row.item_code = rm.rawMaterialRefNo
-					row.uom = convert_uom(rm.uomrm)
+					row.uom = get_uom(rm.uomrm)
 					row.qty = rm.qtyrm
 
 				bom.save()
@@ -443,7 +433,7 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 						rm = frappe._dict(rm)
 						row = bom.append("items")
 						row.item_code = rm.rawMaterialRefNo
-						row.uom = convert_uom(rm.uomrm)
+						row.uom = get_uom(rm.uomrm)
 						row.qty = rm.qtyrm
 						row.operation = operation_name
 			bom.save()
