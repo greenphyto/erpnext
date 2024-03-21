@@ -44,7 +44,7 @@ def get_uom(uom_foms):
 		uom = frappe.db.exists("Item", uom_foms)
 	
 	if not uom:
-		frappe.throw(_(f"Missing UOM for {uom_foms}"), frappe.frappe.DoesNotExistError)
+		frappe.throw(_(f"Missing UOM for {uom_foms}"), frappe.DoesNotExistError)
 	
 	return uom
 

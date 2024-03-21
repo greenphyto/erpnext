@@ -14,6 +14,7 @@ from erpnext.controllers.foms import (
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
 from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry as make_stock_entry_wo
+from erpnext.stock.doctype.purchase_receipt.purchase_receipt import make_purchase_return
 
 def get_data(data):
 	if isinstance(data, string_types):
@@ -204,9 +205,43 @@ def create_material_request(
 
 # Create Material Request 
 @frappe.whitelist()
-def material_return(requestedBy, items=[]):
+def create_material_return(data):
 	# create purchase receipt return
-	pass
+	data = frappe._dict(data)
+	return_against = frappe.db.get_value("Purchase Receipt", data.return_against)
+	if not return_against:
+		frappe.throw(_(f"Purchase receipt {data.return_against} not found"), frappe.DoesNotExistError)
+
+	doc = frappe.get_doc(make_purchase_return(return_against))
+
+	select_items = []
+	for d in data.get("items") or []:
+		d = frappe._dict(d)
+		
+		item = None
+		for row in doc.get("items"):
+			if row.item_code == d.item_code and row.uom == get_uom(d.uom) and cstr(d.batch_no)==cstr(row.batch_no):
+				item = row
+				break
+
+		if item:
+			select_items.append(item)
+			item.qty = flt(d.return_qty) * -1
+			item.received_qty = item.qty
+
+		if not item:
+			frappe.throw(_(f"Selected item is not found ({d.item_code})"))
+	
+	for row in doc.get("items"):
+		if row not in select_items:
+			doc.remove(row)
+
+	doc.save()
+
+	return {
+		"purchaseReturnNo":doc.name
+	}
+	
 
 
 @frappe.whitelist()

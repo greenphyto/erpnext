@@ -368,7 +368,7 @@
                   }
                 },
                 "example": {
-                  "data":{
+                  "data": {
                     "farmId": 15,
                     "rawMaterialType": {
                       "rawMaterialTypeName": "Water",
@@ -524,9 +524,9 @@
                   }
                 },
                 "example": {
-                  "transactionDate":"transactionDate",
+                  "transactionDate": "transactionDate",
                   "requiredBy": "2024-05-01",
-                  "requestedBy":"adeline",
+                  "requestedBy": "adeline",
                   "cancel": false,
                   "items": [
                     {
@@ -563,7 +563,64 @@
               "application/json": {
                 "schema": {
                   "example": {
-                    "message": true
+                    "message": {
+                      "materialRequestNo": "materialRequestName"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_material_return": {
+      "post": {
+        "summary": "Create material return",
+        "description": "This endpoint is to return material from related purchase record",
+        "operationId": "create material return",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "return_against": "GRN00003/2024",
+                    "items": [
+                      {
+                        "return_qty": 2,
+                        "item_code": "F1 HK Kailan seeds",
+                        "uom": "g",
+                        "batch_no": ""
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "purchaseReturnNo": "purchaseReturnName"
+                    }
                   }
                 }
               }
