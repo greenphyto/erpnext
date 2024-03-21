@@ -6,7 +6,9 @@ from erpnext.controllers.foms import (
     get_bom_for_work_order2, 
 	get_foms_settings,
 	create_work_order as _create_work_order,
-	OPERATION_MAP_NAME
+	OPERATION_MAP_NAME,
+	get_item_foms,
+	get_uom
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
@@ -132,13 +134,23 @@ def submit_work_order_finish_goods(ERPWorkOrderID, qty):
 # Create Raw Material Request
 @frappe.whitelist()
 def create_raw_material_reserve(ERPWorkOrderID, status, data):
-	work_order_name, qty = frappe.get_value("Work Order", ERPWorkOrderID, ["name", "qty"]) or ("", 1)
+	work_order_name, qty, source_warehouse = frappe.get_value("Work Order", ERPWorkOrderID, ["name", "qty", "source_warehouse"]) or ("", 1, "")
 	if not work_order_name:
 		frappe.throw(_(f"Work Order {ERPWorkOrderID} not found!"), frappe.DoesNotExistError)
 	
 	se_doc = make_stock_entry_wo(work_order_name, "Material Transfer for Manufacture", qty, return_doc=1)
 	
 	# overide items as request
+	se_doc.items = []
+	items_list = data.get("items") or []
+	se_doc.from_warehouse = source_warehouse
+	for d in items_list:
+		d = frappe._dict(d)
+		row = se_doc.append("items")
+		row.item_code = get_item_foms(d.rawMaterialId, d.rawMaterialRefNo)
+		row.batch_no = d.rawMaterialBatchRefNo
+		row.qty = d.qtyReserve
+		row.uom = get_uom(d.uom)
 
 	se_doc.save()
 	se_doc.submit()

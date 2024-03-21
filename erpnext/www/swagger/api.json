@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "Swagger ERP API enpoint for FOMS",
-    "description": "this is to inetgrating between ERP Controller from FOMS action",
+    "description": "this is to integrating between ERP Controller from FOMS action",
     "termsOfService": "http://greenphyto.com/",
     "contact": {
       "email": "support@greenphyto.com"

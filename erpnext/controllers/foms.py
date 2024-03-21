@@ -35,6 +35,26 @@ OPERATION_MAP_NAME = {
 	3:"Harvesting",
 }
 
+# FOMS UOM to ERP UOM
+UOM_MAP = {
+	"L":"Litre",
+	"g":"Gram",
+	"kg":"Kg",
+	"unit":"Unit",
+	"ml":"Millilitre",
+}
+
+def get_uom(uom_foms):
+	uom = UOM_MAP.get(uom_foms)
+
+	if not uom:
+		uom = frappe.db.exists("Item", uom_foms)
+	
+	if not uom:
+		frappe.throw(_(f"Missing UOM for {uom_foms}"), frappe.frappe.DoesNotExistError)
+	
+	return uom
+
 # SUPPLIER (POST)
 def update_foms_supplier():
 	if not is_enable_integration():
@@ -540,3 +560,12 @@ def create_work_order(log, item_code, bom_no, qty=1, submit=False):
 		doc.submit()
 
 	return doc.name
+
+def get_item_foms(item_id="", item_code=""):
+	if item_id:
+		item = frappe.get_value("Item", {"foms_id":1})
+	
+	if not item and item_code:
+		item = frappe.get_value("Item", item_code)
+	
+	return item
