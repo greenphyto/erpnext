@@ -1,6 +1,6 @@
 import frappe, json
 from six import string_types
-from frappe.utils import flt, now_datetime, cint
+from frappe.utils import flt, now_datetime, cint, getdate, cstr
 from erpnext.controllers.foms import (
     create_bom_products, 
     get_bom_for_work_order2, 
@@ -131,9 +131,9 @@ def submit_work_order_finish_goods(ERPWorkOrderID, qty):
 		"ERPStockEntry":se_doc.name
 	}
 
-# Create Raw Material Request
+# Create Material Reserve
 @frappe.whitelist()
-def create_raw_material_reserve(ERPWorkOrderID, status, data):
+def create_raw_material_reserve(ERPWorkOrderID, status, items):
 	work_order_name, qty, source_warehouse = frappe.get_value("Work Order", ERPWorkOrderID, ["name", "qty", "source_warehouse"]) or ("", 1, "")
 	if not work_order_name:
 		frappe.throw(_(f"Work Order {ERPWorkOrderID} not found!"), frappe.DoesNotExistError)
@@ -142,9 +142,8 @@ def create_raw_material_reserve(ERPWorkOrderID, status, data):
 	
 	# overide items as request
 	se_doc.items = []
-	items_list = data.get("items") or []
 	se_doc.from_warehouse = source_warehouse
-	for d in items_list:
+	for d in items:
 		d = frappe._dict(d)
 		row = se_doc.append("items")
 		row.item_code = get_item_foms(d.rawMaterialId, d.rawMaterialRefNo)
@@ -159,6 +158,53 @@ def create_raw_material_reserve(ERPWorkOrderID, status, data):
 		"ERPStockEntry":se_doc.name
 	}
 
+# Create Material Request 
+@frappe.whitelist()
+def create_material_request(
+		transactionDate,
+		requiredBy,
+		requestedBy,
+		items=[],
+		cancel=False,
+	):
+
+	# find draft
+	doc_name = frappe.get_value("Material Request", {"requested_by":requestedBy, "workflow_state":"Draft"})
+	if doc_name:
+		doc = frappe.get_doc("Material Request", doc_name)
+	else:
+		# create material request
+		doc = frappe.new_doc("Material Request")
+		doc.transaction_date = getdate(transactionDate)
+		doc.requiredBy = getdate(requiredBy)
+		doc.requested_by = requestedBy
+
+	for d in items:
+		d = frappe._dict(d)
+		row = doc.get("items", {"foms_request_id": cstr(d.id) })
+		if row:
+			row = row[0]
+		else:
+			row = doc.append("items")
+
+		row.foms_request_id = d.id
+		row.item_code = d.rawMaterialRefNo
+		row.qty = d.qtyRequest
+		row.uom = get_uom(d.uom)
+	
+	doc.flags.ignore_mandatory = 1
+	doc.save()
+
+	return {
+		"materialRequestNo": doc.name
+	}
+
+
+
+
+
+
+
 # Call Raw Material Receipt (refer to GetPurchaseReceiptFromERP)
 
-# Create Raw Material Return
+# Create Raw Material Return (Purchase Receiot return)

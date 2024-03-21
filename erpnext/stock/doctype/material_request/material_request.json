@@ -15,6 +15,7 @@
   "column_break_2",
   "transaction_date",
   "schedule_date",
+  "requested_by",
   "amended_from",
   "supplier_section",
   "supplier",
@@ -884,13 +885,19 @@
    "fieldtype": "Check",
    "label": "Is Low Amount",
    "read_only": 1
+  },
+  {
+   "fieldname": "requested_by",
+   "fieldtype": "Data",
+   "label": "Requested By",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-ticket",
  "idx": 70,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-03-13 12:35:20.999216",
+ "modified": "2024-03-21 15:09:40.769547",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request",

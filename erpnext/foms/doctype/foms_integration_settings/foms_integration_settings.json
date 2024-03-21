@@ -19,6 +19,8 @@
   "product_uom",
   "operation_time",
   "workstation",
+  "warehouse_for_material_request",
+  "purpose_for_material_request",
   "column_break_14",
   "auto_submit_bom",
   "auto_submit_work_order",
@@ -138,12 +140,24 @@
    "fieldname": "auto_submit_work_order",
    "fieldtype": "Check",
    "label": "Auto Submit Work Order"
+  },
+  {
+   "fieldname": "warehouse_for_material_request",
+   "fieldtype": "Link",
+   "label": "Warehouse for Material Request",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "purpose_for_material_request",
+   "fieldtype": "Select",
+   "label": "Purpose for Material Request",
+   "options": "Purchase\nMaterial Transfer\nMaterial Issue\nManufacture\nCustomer Provided"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-02-21 16:05:42.965158",
+ "modified": "2024-03-21 12:41:21.111705",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",
