@@ -1,7 +1,7 @@
 import frappe
 from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
 from frappe.core.doctype.sync_log.sync_log import get_pending_log
-from frappe.utils import cint
+from frappe.utils import cint, flt
 from erpnext.accounts.party import get_party_details
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
@@ -250,7 +250,18 @@ def create_raw_material(log):
 		doc.description = log.rawMaterialDescription
 		doc.stock_uom = get_uom(log.unitOfMeasurement)
 		doc.item_group = types
+		doc.is_purchase_item = 1
+		doc.is_sales_item = 0
+		doc.has_expiry_date = 1
+		doc.has_batch_no = 1
+		if doc.has_batch_no:
+			doc.batch_number_series = log.RawMaterialRefNo + "-" + "BN.#####"
+
+		doc.lead_time_days = cint(log.RequestLeadTime)
+		doc.min_order_qty = flt(log.MinimumOrderQuantity)
 		doc.safety_stock = log.safetyLevel
+		doc.shelf_life_in_days = 365
+		doc.valuation_method = "FIFO"
 		doc.foms_id = log.id
 		doc.insert()
 		name = doc.name
@@ -259,7 +270,10 @@ def create_raw_material(log):
 		doc.item_name = log.productName
 		doc.description = log.productDesc or log.productDetail or log.productName
 		doc.item_group = types
-		doc.foms_id = log.id
+		doc.lead_time_days = cint(log.RequestLeadTime)
+		doc.min_order_qty = flt(log.MinimumOrderQuantity)
+		doc.safety_stock = log.safetyLevel
+		doc.shelf_life_in_days = 365
 		doc.db_update()
 
 	return name
