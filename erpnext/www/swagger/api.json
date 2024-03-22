@@ -263,7 +263,7 @@
     "/erpnext.controllers.erp_api.update_work_order_operation_status": {
       "post": {
         "summary": "Update current Work Order status based on FOMS Process",
-        "description": "This endpoint is used to update operation process start/end information. So ERPNext can initiate job card, stock entry, start, and end job card logic based on the provided data. Completion of job card logic depends on FOMS's operation process start and end statuses.<br>Set <b>percentage</b> as <b>100</b> to complete the Operation",
+        "description": "This endpoint is used to update operation process start/end information. So ERPNext can initiate job card, stock entry, start, and end job card logic based on the provided data. Completion of job card logic depends on FOMS's operation process start and end statuses.<br>Set <b>percentage</b> to <b>100</b> to complete the Operation",
         "operationId": "update Work Order status",
         "requestBody": {
           "description": "Update Work Order Status",

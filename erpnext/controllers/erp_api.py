@@ -15,6 +15,8 @@ from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
 from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry as make_stock_entry_wo
 from erpnext.stock.doctype.purchase_receipt.purchase_receipt import make_purchase_return
+from frappe.model.workflow import apply_workflow
+
 
 def get_data(data):
 	if isinstance(data, string_types):
@@ -197,7 +199,7 @@ def create_material_request(
 	doc.flags.ignore_mandatory = 1
 	doc.save()
 
-	# should be trigger workflow change without validate supplier (supplier still empty)
+	apply_workflow(doc, "Submit")
 
 	return {
 		"materialRequestNo": doc.name
