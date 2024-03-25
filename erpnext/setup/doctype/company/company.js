@@ -258,7 +258,9 @@ erpnext.company.set_custom_query = function(frm, v) {
 		filters[key] = v[1][key];
 	}
 
-	frm.set_query(v[0], function() {
+	frm.set_query(v[0], function(doc) {
+		filters['company'] = doc.name
+
 		return {
 			filters: filters
 		}
