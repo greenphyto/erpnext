@@ -495,7 +495,9 @@
               "application/json": {
                 "schema": {
                   "example": {
-                    "message": true
+                    "message": {
+                      "ERPStockEntry": "StockEntryName"
+                    }
                   }
                 }
               }
