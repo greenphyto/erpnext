@@ -655,3 +655,10 @@ jinja = {
 	"methods": "erpnext.smart_fm.controllers.jinja_method",
 }
 
+has_permission = {
+	"Asset": "erpnext.assets.doctype.asset.asset.has_permission",
+}
+
+permission_query_conditions = {
+	"Asset": "erpnext.assets.doctype.asset.asset.get_permission_query_conditions",
+}

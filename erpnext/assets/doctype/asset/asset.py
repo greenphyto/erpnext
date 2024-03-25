@@ -1839,3 +1839,30 @@ def update_missing_asset_qr_code():
 	data = frappe.db.get_all("Asset", {"qrcode_image":['is','not set']})
 	for d in data:
 		save_qrcode_image("Asset", d.name, True)
+
+
+def has_permission(doc, user):
+	roles = frappe.get_roles()
+
+	if user == "Administrator":
+		return True
+	
+	if "Navix" == doc.asset_category:
+		if "Navix Personnel" in roles:
+			return True
+		else:
+			return False
+	else:
+		return True
+
+def get_permission_query_conditions(user):
+	roles = frappe.get_roles()
+
+	if user == "Administrator":
+		return ''
+	
+	if "Navix Personnel" in roles:
+		return "(`tabAsset`.`asset_category`='Navix')"
+	else:
+		return "(`tabAsset`.`asset_category`!='Navix')"
+	
