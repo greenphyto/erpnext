@@ -60,12 +60,26 @@ def create_work_order(FomsWorkOrderID, FomsLotID, productID, qty, uom):
 	return {"ERPWorkOrderID":result}
 
 @frappe.whitelist()
-def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0):
-	operationName = OPERATION_MAP_NAME.get( cint(operationNo) )
+def start_work_order(ERPWorkOrderID):
 	work_order_name = frappe.db.get_value("Work Order", ERPWorkOrderID)
 
 	if not work_order_name:
 		frappe.throw(_(f"Work Order {ERPWorkOrderID} not found!"), frappe.DoesNotExistError)
+
+	doc = frappe.get_doc("Work Order", work_order_name)
+
+	transfer_material = doc.qty - doc.material_transferred_for_manufacturing
+	if transfer_material:
+		se_doc = make_stock_entry_wo(doc.name, 'Material Transfer for Manufacture', transfer_material)
+		se_doc.submit()	
+
+@frappe.whitelist()
+def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0):
+	operationName = OPERATION_MAP_NAME.get( cint(operationNo) )
+	work_order_name, transfer_material = frappe.db.get_value("Work Order", ERPWorkOrderID, ['name', 'material_transferred_for_manufacturing']) or ("", 0)
+	
+	if not transfer_material:
+		frappe.throw(_(f"Raw Material reserve not found for Work Order {ERPWorkOrderID}, please make Material Reserve first!"), frappe.ValidationError)
 	
 	operation_name = frappe.db.get_value("Job Card", {
 		"work_order":work_order_name,
@@ -79,7 +93,7 @@ def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0
 	transferred_qty, job_card_name = frappe.db.get_value("Job Card", operation_name, ["transferred_qty", "name"]) or (0, "")
 
 	# temporary stock entry is created based on work order (stright flow)
-	if not transferred_qty:
+	if not transferred_qty and not transfer_material:
 		se_doc = make_stock_entry_jc(job_card_name)
 		se_doc.save()
 		se_doc.submit()
