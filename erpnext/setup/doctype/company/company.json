@@ -94,6 +94,8 @@
   "auto_exchange_rate_revaluation",
   "auto_err_frequency",
   "submit_err_jv",
+  "column_break_86",
+  "unrealized_fx_account_map",
   "budget_detail",
   "exception_budget_approver_role",
   "registration_info",
@@ -721,6 +723,16 @@
    "fieldname": "submit_err_jv",
    "fieldtype": "Check",
    "label": "Submit ERR Journals?"
+  },
+  {
+   "fieldname": "column_break_86",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "unrealized_fx_account_map",
+   "fieldtype": "Table",
+   "label": "Unrealized FX Account Map",
+   "options": "Account Adjustment Map"
   }
  ],
  "icon": "fa fa-building",
@@ -728,7 +740,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2023-10-03 17:51:47.106265",
+ "modified": "2024-03-26 11:53:37.510493",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

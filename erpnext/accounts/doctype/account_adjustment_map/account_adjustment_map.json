@@ -1,0 +1,44 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2024-03-26 11:51:33.506393",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "account",
+  "adj_account"
+ ],
+ "fields": [
+  {
+   "description": "Select <b>Group</b> if apply to all child of group, select non-group if apply directly to against in",
+   "fieldname": "account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Account",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "adj_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Adj Account",
+   "options": "Account",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-03-26 11:55:37.127240",
+ "modified_by": "Administrator",
+ "module": "Accounts",
+ "name": "Account Adjustment Map",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
