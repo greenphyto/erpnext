@@ -92,7 +92,7 @@ class PurchaseInvoice(BuyingController):
 		if not self.is_return:
 			self.po_required()
 			self.pr_required()
-			# self.validate_supplier_invoice()
+			self.validate_supplier_invoice()
 
 		# validate cash purchase
 		if self.is_paid == 1:
