@@ -7,7 +7,8 @@
  "engine": "InnoDB",
  "field_order": [
   "account",
-  "adj_account"
+  "adj_account",
+  "currency"
  ],
  "fields": [
   {
@@ -26,12 +27,20 @@
    "label": "Adj Account",
    "options": "Account",
    "reqd": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Currency",
+   "options": "Currency"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-03-26 11:55:37.127240",
+ "modified": "2024-03-26 12:11:33.302996",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Account Adjustment Map",

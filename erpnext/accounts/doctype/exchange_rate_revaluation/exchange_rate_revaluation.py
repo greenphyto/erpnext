@@ -264,7 +264,7 @@ class ExchangeRateRevaluation(Document):
 			message = _("No outstanding invoices found")
 		frappe.msgprint(message)
 
-	def get_for_unrealized_gain_loss_account(self):
+	def get_for_unrealized_gain_loss_account(self, account=None, for_currency=None):
 		unrealized_exchange_gain_loss_account = frappe.get_cached_value(
 			"Company", self.company, "unrealized_exchange_gain_loss_account"
 		)
@@ -272,7 +272,39 @@ class ExchangeRateRevaluation(Document):
 			frappe.throw(
 				_("Please set Unrealized Exchange Gain/Loss Account in Company {0}").format(self.company)
 			)
-		return unrealized_exchange_gain_loss_account
+
+		if not account:
+			return unrealized_exchange_gain_loss_account
+		else:
+			if not self.get("account_adjustment"):
+				self.get_adjust_account_map()
+			lft, rgt, currency = frappe.get_value("Account", account, ['lft','rgt','account_currency']) or (0,0,"")
+			for key, acc in self.account_adjustment.items():
+				if key[0] <= lft and key[1] >= rgt:
+					return acc
+				
+			return unrealized_exchange_gain_loss_account
+
+	def get_adjust_account_map(self):
+		data = frappe.db.sql("""
+			SELECT 
+				am.account, am.adj_account, a.lft, a.rgt
+			FROM
+				`tabAccount Adjustment Map` am
+					LEFT JOIN
+				`tabAccount` a ON a.name = am.account
+			WHERE
+				am.parent = %s
+					AND am.parentfield = 'unrealized_fx_account_map'
+
+			ORDER BY a.lft DESC
+		""", (self.company), as_dict=1)
+		self.account_adjustment = {}
+		for d in data:
+			key = (d.lft, d.rgt)
+			self.account_adjustment[key] = d.adj_account
+		
+		return data		
 
 	@frappe.whitelist()
 	def make_jv_entries(self):
