@@ -24,6 +24,7 @@ class ExchangeRateRevaluation(Document):
 
 		gain_loss_booked = 0
 		gain_loss_unbooked = 0
+		self.gain_loss_amount_map = {}
 
 		for d in self.accounts:
 			if not d.zero_balance:
@@ -35,6 +36,10 @@ class ExchangeRateRevaluation(Document):
 				gain_loss_booked += flt(d.gain_loss, d.precision("gain_loss"))
 			else:
 				gain_loss_unbooked += flt(d.gain_loss, d.precision("gain_loss"))
+				if d.account not in self.gain_loss_amount_map:
+					self.gain_loss_amount_map[d.account] = flt(d.gain_loss, d.precision("gain_loss"))
+				else:
+					self.gain_loss_amount_map[d.account] += flt(d.gain_loss, d.precision("gain_loss"))
 
 			total_gain_loss += flt(d.gain_loss, d.precision("gain_loss"))
 
@@ -431,10 +436,129 @@ class ExchangeRateRevaluation(Document):
 		journal_entry.set_total_debit_credit()
 		journal_entry.save()
 		return journal_entry
-
+	
 	def make_jv_for_revaluation(self):
+		print(441)
+		return self.make_jv_for_revaluation1()
+	
+	def make_jv_for_revaluation1(self):
+		if self.gain_loss_unbooked == 0:
+			print(445, self.gain_loss_unbooked)
+			return
+
+		accounts = [x for x in self.accounts if not x.zero_balance]
+
+		if not accounts:
+			print(451, accounts)
+			return
+
+		unrealized_exchange_gain_loss_account = self.get_for_unrealized_gain_loss_account()
+
+		journal_entry = frappe.new_doc("Journal Entry")
+		journal_entry.voucher_type = "Exchange Rate Revaluation"
+		journal_entry.company = self.company
+		journal_entry.posting_date = self.posting_date
+		journal_entry.multi_currency = 1
+
+		journal_entry_accounts = []
+		for d in accounts:
+			dr_or_cr = (
+				"debit_in_account_currency"
+				if d.get("balance_in_account_currency") > 0
+				else "credit_in_account_currency"
+			)
+
+			reverse_dr_or_cr = (
+				"debit_in_account_currency"
+				if dr_or_cr == "credit_in_account_currency"
+				else "credit_in_account_currency"
+			)
+
+			amount = flt(
+				abs(d.get("balance_in_account_currency")), d.precision("balance_in_account_currency")
+			)
+
+			exchange_rate = flt(d.get("new_exchange_rate"), d.precision("new_exchange_rate"))
+			amount_in_currency = flt(amount * exchange_rate, d.precision("balance_in_account_currency"))
+			if amount_in_currency:
+				journal_entry_accounts.append(
+					{
+						"account": d.get("account"),
+						"party_type": d.get("party_type"),
+						"party": d.get("party"),
+						"account_currency": d.get("account_currency"),
+						"balance": flt(
+							d.get("balance_in_account_currency"), d.precision("balance_in_account_currency")
+						),
+						dr_or_cr: amount,
+						"cost_center": erpnext.get_default_cost_center(self.company),
+						"exchange_rate": exchange_rate,
+						"reference_type": "Exchange Rate Revaluation",
+						"reference_name": self.name,
+					}
+				)
+
+			exchange_rate = flt(d.get("current_exchange_rate"), d.precision("current_exchange_rate"))
+			amount_in_currency = flt(amount * exchange_rate, d.precision("balance_in_account_currency"))
+			if amount_in_currency:
+				journal_entry_accounts.append(
+					{
+						"account": d.get("account"),
+						"party_type": d.get("party_type"),
+						"party": d.get("party"),
+						"account_currency": d.get("account_currency"),
+						"balance": flt(
+							d.get("balance_in_account_currency"), d.precision("balance_in_account_currency")
+						),
+						reverse_dr_or_cr: amount,
+						"cost_center": erpnext.get_default_cost_center(self.company),
+						"exchange_rate": exchange_rate,
+						"reference_type": "Exchange Rate Revaluation",
+						"reference_name": self.name,
+					}
+				)
+
+		journal_entry.set("accounts", journal_entry_accounts)
+		adj_row = None
+		adj_row = journal_entry.append("accounts",
+			{
+				"account": unrealized_exchange_gain_loss_account,
+				"balance": get_balance_on(unrealized_exchange_gain_loss_account),
+				"debit_in_account_currency": abs(self.gain_loss_unbooked)
+				if self.gain_loss_unbooked < 0
+				else 0,
+				"credit_in_account_currency": self.gain_loss_unbooked if self.gain_loss_unbooked > 0 else 0,
+				"cost_center": erpnext.get_default_cost_center(self.company),
+				"exchange_rate": 1,
+				"reference_type": "Exchange Rate Revaluation",
+				"reference_name": self.name,
+			}
+		)
+
+		journal_entry.set_amounts_in_company_currency()
+		journal_entry.set_total_debit_credit()
+		if journal_entry.difference:
+			# allowed to add differences to unrealized account 27-03-2024
+			if adj_row.debit_in_account_currency > 0:
+				adj_row.debit_in_account_currency -= journal_entry.difference
+			else:
+				adj_row.credit_in_account_currency -= journal_entry.difference
+			journal_entry.set_amounts_in_company_currency()
+			journal_entry.set_total_debit_credit()
+
+		# journal_entry.flags.ignore_validate = True
+		# journal_entry.save()
+		if not journal_entry.difference:
+			journal_entry.save()
+
+		return journal_entry
+
+	def make_jv_for_revaluation2(self):
 		if self.gain_loss_unbooked == 0:
 			return
+		
+		if not self.get("gain_loss_amount_map "):
+			self.set_total_gain_loss()
 
 		accounts = [x for x in self.accounts if not x.zero_balance]
 		if not accounts:
@@ -506,22 +630,23 @@ class ExchangeRateRevaluation(Document):
 					}
 				)
 
-		journal_entry_accounts.append(
-			{
-				"account": unrealized_exchange_gain_loss_account,
-				"balance": get_balance_on(unrealized_exchange_gain_loss_account),
-				"debit_in_account_currency": abs(self.gain_loss_unbooked)
-				if self.gain_loss_unbooked < 0
-				else 0,
-				"credit_in_account_currency": self.gain_loss_unbooked if self.gain_loss_unbooked > 0 else 0,
-				"cost_center": erpnext.get_default_cost_center(self.company),
-				"exchange_rate": 1,
-				"reference_type": "Exchange Rate Revaluation",
-				"reference_name": self.name,
-			}
-		)
+			gain_loss_amount = self.gain_loss_amount_map.get(d.get("account")) or 0
+			journal_entry_accounts.append(
+				{
+					"account": unrealized_exchange_gain_loss_account,
+					"balance": get_balance_on(unrealized_exchange_gain_loss_account),
+					"debit_in_account_currency": abs(gain_loss_amount)
+					if gain_loss_amount < 0
+					else 0,
+					"credit_in_account_currency": gain_loss_amount if gain_loss_amount > 0 else 0,
+					"cost_center": erpnext.get_default_cost_center(self.company),
+					"exchange_rate": 1,
+					"reference_type": "Exchange Rate Revaluation",
+					"reference_name": self.name,
+				}
+			)
 
-		journal_entry.set("accounts", journal_entry_accounts)
+			journal_entry.set("accounts", journal_entry_accounts)
 		journal_entry.set_amounts_in_company_currency()
 		journal_entry.set_total_debit_credit()
 		# journal_entry.flags.ignore_validate = True
