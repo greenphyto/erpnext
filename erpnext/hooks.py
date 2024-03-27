@@ -306,7 +306,10 @@ doc_events = {
             "frappe.contacts.doctype.contact.contact.update_contact",
             "erpnext.smart_fm.controllers.smart_fm.give_role_based_on_email_domain"
 		],
-		"validate": "erpnext.setup.doctype.employee.employee.validate_employee_role",
+		"validate": [
+			"erpnext.setup.doctype.employee.employee.validate_employee_role",
+            "erpnext.smart_fm.controllers.smart_fm.add_user_permissions"
+		],
 		"on_update": [
 			"erpnext.setup.doctype.employee.employee.update_user_permissions",
 			"erpnext.portal.utils.set_default_role",

@@ -3,6 +3,11 @@ from frappe.utils import getdate, cint, get_url, cstr, now
 import json
 from frappe import _
 from erpnext.smart_fm.controllers.utils import get_qr_svg_code
+from frappe.permissions import (
+	add_user_permission,
+	has_permission,
+	remove_user_permission,
+)
 
 
 """
@@ -322,3 +327,28 @@ def validate_workflow(doc, action):
 @frappe.whitelist()
 def planned_todo_count():
 	return frappe.db.count("ToDo", {"status": "Planned"})
+
+def add_user_permissions(doc, method=""):
+	if not has_permission("User Permission", ptype="write", raise_exception=False):
+		return
+
+	employee_user_permission_exists = frappe.db.exists(
+		"User Permission", {"allow": "User", "for_value": doc.name, "user": doc.name}
+	)
+
+	adds = False
+	for d in doc.get("roles"):
+		if d.role == "Navix Personnel":
+			adds = True
+			break
+
+	if adds:
+		if employee_user_permission_exists:
+			return
+
+		add_user_permission("User", doc.name, doc.name)
+	else:
+		if not employee_user_permission_exists:
+			return
+		
+		remove_user_permission("User", doc.name, doc.name)
