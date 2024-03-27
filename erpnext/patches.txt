@@ -333,4 +333,3 @@ erpnext.patches.v14_0.update_company_in_ldc
 erpnext.patches.v14_0.update_todo_task
 erpnext.patches.v14_0.update_task_maintenance_log_name
 erpnext.patches.v14_0.reset_role_vendor
-erpnext.patches.vgp.update_is_mirror_check.update_is_mirror
