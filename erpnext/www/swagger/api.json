@@ -511,8 +511,8 @@
     },
     "/erpnext.controllers.erp_api.create_material_request": {
       "post": {
-        "summary": "Create raw material reserve",
-        "description": "This endpoint is to reserve raw material to ERP side, before starting the Work Order",
+        "summary": "Create raw material request",
+        "description": "This endpoint is to request to buy new items stock ",
         "operationId": "create material request",
         "requestBody": {
           "description": "-",
