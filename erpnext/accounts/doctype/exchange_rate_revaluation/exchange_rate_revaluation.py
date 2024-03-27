@@ -36,16 +36,20 @@ class ExchangeRateRevaluation(Document):
 				gain_loss_booked += flt(d.gain_loss, d.precision("gain_loss"))
 			else:
 				gain_loss_unbooked += flt(d.gain_loss, d.precision("gain_loss"))
-				if d.account not in self.gain_loss_amount_map:
-					self.gain_loss_amount_map[d.account] = flt(d.gain_loss, d.precision("gain_loss"))
+				key = self.get_gain_loss_amount_key(d)
+				if key not in self.gain_loss_amount_map:
+					self.gain_loss_amount_map[key] = flt(d.gain_loss, d.precision("gain_loss"))
 				else:
-					self.gain_loss_amount_map[d.account] += flt(d.gain_loss, d.precision("gain_loss"))
+					self.gain_loss_amount_map[key] += flt(d.gain_loss, d.precision("gain_loss"))
 
 			total_gain_loss += flt(d.gain_loss, d.precision("gain_loss"))
 
 		self.gain_loss_booked = gain_loss_booked
 		self.gain_loss_unbooked = gain_loss_unbooked
 		self.total_gain_loss = flt(total_gain_loss, self.precision("total_gain_loss"))
+
+	def get_gain_loss_amount_key(self, row):
+		return (row.account, row.party, row.party_type)
 
 	def validate_mandatory(self):
 		if not (self.company and self.posting_date):
@@ -439,7 +443,7 @@ class ExchangeRateRevaluation(Document):
 	
 	def make_jv_for_revaluation(self):
 		print(441)
-		return self.make_jv_for_revaluation1()
+		return self.make_jv_for_revaluation2()
 	
 	def make_jv_for_revaluation1(self):
 		if self.gain_loss_unbooked == 0:
@@ -557,7 +561,7 @@ class ExchangeRateRevaluation(Document):
 		if self.gain_loss_unbooked == 0:
 			return
 		
-		if not self.get("gain_loss_amount_map "):
+		if not self.get("gain_loss_amount_map"):
 			self.set_total_gain_loss()
 
 		accounts = [x for x in self.accounts if not x.zero_balance]
@@ -572,7 +576,10 @@ class ExchangeRateRevaluation(Document):
 		journal_entry.posting_date = self.posting_date
 		journal_entry.multi_currency = 1
 
+		adj_row = []
+
 		journal_entry_accounts = []
+		print(576, self.gain_loss_amount_map)
 		for d in accounts:
 			dr_or_cr = (
 				"debit_in_account_currency"
@@ -591,9 +598,9 @@ class ExchangeRateRevaluation(Document):
 			)
 
 			exchange_rate = flt(d.get("new_exchange_rate"), d.precision("new_exchange_rate"))
-			amount_in_currency = flt(amount * exchange_rate, d.precision("balance_in_account_currency"))
-			if amount_in_currency:
-				journal_entry_accounts.append(
+			amount_in_currency_old = flt(amount * exchange_rate, d.precision("balance_in_account_currency"))
+			if amount_in_currency_old:
+				journal_entry.append("accounts",
 					{
 						"account": d.get("account"),
 						"party_type": d.get("party_type"),
@@ -611,9 +618,9 @@ class ExchangeRateRevaluation(Document):
 				)
 
 			exchange_rate = flt(d.get("current_exchange_rate"), d.precision("current_exchange_rate"))
-			amount_in_currency = flt(amount * exchange_rate, d.precision("balance_in_account_currency"))
-			if amount_in_currency:
-				journal_entry_accounts.append(
+			amount_in_currency_new = flt(amount * exchange_rate, d.precision("balance_in_account_currency"))
+			if amount_in_currency_new:
+				journal_entry.append("accounts",
 					{
 						"account": d.get("account"),
 						"party_type": d.get("party_type"),
@@ -630,8 +637,13 @@ class ExchangeRateRevaluation(Document):
 					}
 				)
 
-			gain_loss_amount = self.gain_loss_amount_map.get(d.get("account")) or 0
-			journal_entry_accounts.append(
+			# journal_entry.set("accounts", journal_entry_accounts)
+			key = self.get_gain_loss_amount_key(d)
+			# gain_loss_amount = self.gain_loss_amount_map.get(key) or 0
+			gain_loss_amount = flt(amount_in_currency_old - amount_in_currency_new, 2) * -1
+			print(key, gain_loss_amount)
+
+			row = journal_entry.append("accounts",
 				{
 					"account": unrealized_exchange_gain_loss_account,
 					"balance": get_balance_on(unrealized_exchange_gain_loss_account),
@@ -645,11 +657,24 @@ class ExchangeRateRevaluation(Document):
 					"reference_name": self.name,
 				}
 			)
+			adj_row.append(row)
 
-			journal_entry.set("accounts", journal_entry_accounts)
 		journal_entry.set_amounts_in_company_currency()
 		journal_entry.set_total_debit_credit()
+
 		# journal_entry.flags.ignore_validate = True
+		# journal_entry.save()
+
+		if journal_entry.difference:
+			# allowed to add differences to unrealized account 27-03-2024
+			adj_row = adj_row[-1]
+			if adj_row.debit_in_account_currency > 0:
+				adj_row.debit_in_account_currency -= journal_entry.difference
+			else:
+				adj_row.credit_in_account_currency -= journal_entry.difference
+			journal_entry.set_amounts_in_company_currency()
+			journal_entry.set_total_debit_credit()
+
 		if not journal_entry.difference:
 			journal_entry.save()
 
