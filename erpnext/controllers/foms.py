@@ -580,6 +580,12 @@ def create_delivery_order(log):
 	# need to add foms id
 	log = frappe._dict(log)
 	doc = frappe.new_doc("Delivery Note")
+	exists = frappe.get_value("Delivery Note", {"foms_id":log.id})
+	if exists:
+		return exists
+	
+	doc.foms_id = log.id
+
 	doc.customer = log.CustomerName
 	for d in log.get("items") or []:
 		d = frappe._dict(d)
