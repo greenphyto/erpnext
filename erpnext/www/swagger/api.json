@@ -534,14 +534,10 @@
                     {
                       "rawMaterialName": "Sponge",
                       "rawMaterialRefNo": "RM-MS-SP",
-                      "workOrderNumber": null,
-                      "workOrderId": 0,
                       "po": "",
                       "status": "Received",
                       "rawMaterialId": 39,
                       "purchaseOrderId": 0,
-                      "rawMaterialBatchId": 220,
-                      "rawMaterialBatchRefNo": "RM-MS-SP-BN00021",
                       "requestDate": "2024-03-21T14:08:21.500927",
                       "requestByUserId": 15,
                       "requestByUserName": "jeraldine",
@@ -622,6 +618,117 @@
                   "example": {
                     "message": {
                       "purchaseReturnNo": "purchaseReturnName"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_product": {
+      "post": {
+        "summary": "Create Product (item)",
+        "description": "This endpoint is to create item in ERP from FOMS Product",
+        "operationId": "create product",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "productID":"FD-VG-01",
+                    "productName":"Red Bean",
+                    "productDetail":"Read bean F1 quality",
+                    "productDesc":"Read bean F1 quality from Taiwan",
+                    "unitOfMeasurement":"kg",
+                    "id":101
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "ProductNo":"item-001"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_delivery_order": {
+      "post": {
+        "summary": "Create Delivery Order",
+        "description": "This endpoint is to create Delivery Order in ERP",
+        "operationId": "create delivery order",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "id":"12",
+                    "CustomerName":"NTUC Fairprice Co-Operative Limited",
+                    "items":[
+                      {
+                        "Product_Id":"FD-VG-01",
+                        "ProductName":"Red Beans",
+                        "uom":"Nos",
+                        "DONumberOfPacket":2,
+                        "Price":10,
+                        "amount":20,
+                        "SOnumber":""
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "ProductNo":"item-001"
                     }
                   }
                 }

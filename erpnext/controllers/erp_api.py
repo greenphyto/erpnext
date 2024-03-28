@@ -9,7 +9,9 @@ from erpnext.controllers.foms import (
 	OPERATION_MAP_NAME,
 	get_item_foms,
 	get_uom,
-	create_raw_material as _create_raw_material
+	create_raw_material as _create_raw_material,
+	create_products as _create_products,
+	create_delivery_order as _create_delivery_order
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
@@ -268,6 +270,19 @@ def create_raw_material(data):
 		"rawMaterialNo":res
 	}
 
+@frappe.whitelist()
+def create_product(data):
+	res = _create_products(data)
+	return {
+		"ProductNo":res
+	}
+
+@frappe.whitelist()
+def create_delivery_order(data):
+	res = _create_delivery_order(data)
+	return {
+		"DeliveryOrderNo":res
+	}
 
 # Call Raw Material Receipt (refer to GetPurchaseReceiptFromERP)
 

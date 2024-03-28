@@ -292,7 +292,7 @@ def create_products(log):
 		doc.item_code = log.productID
 		doc.item_name = log.productName
 		doc.description = log.productDesc or log.productDetail or log.productName
-		doc.stock_uom = get_foms_settings("product_uom")
+		doc.stock_uom = get_uom(log.unitOfMeasurement)
 		doc.item_group = types
 		doc.foms_id = log.id
 		doc.insert()
@@ -575,3 +575,27 @@ def get_item_foms(item_id="", item_code=""):
 		item = frappe.get_value("Item", item_code)
 	
 	return item
+
+def create_delivery_order(log):
+	# need to add foms id
+	log = frappe._dict(log)
+	doc = frappe.new_doc("Delivery Note")
+	exists = frappe.get_value("Delivery Note", {"foms_id":log.id})
+	if exists:
+		return exists
+	
+	doc.foms_id = log.id
+
+	doc.customer = log.CustomerName
+	for d in log.get("items") or []:
+		d = frappe._dict(d)
+		row = doc.append("items")
+		row.item_code = d.Product_Id
+		row.uom = d.uom
+		row.qty = d.DONumberOfPacket
+		row.rate = d.Price
+		row.against_sales_order = d.SOnumber
+	
+	doc.save()
+
+	return doc.name
