@@ -637,7 +637,7 @@
     "/erpnext.controllers.erp_api.create_product": {
       "post": {
         "summary": "Create Product (item)",
-        "description": "This endpoint is to create item in ERP from FOMS Prodcut",
+        "description": "This endpoint is to create item in ERP from FOMS Product",
         "operationId": "create product",
         "requestBody": {
           "description": "-",
@@ -658,6 +658,64 @@
                     "productDesc":"Read bean F1 quality from Taiwan",
                     "unitOfMeasurement":"kg",
                     "id":101
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "ProductNo":"item-001"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_delivery_order": {
+      "post": {
+        "summary": "Create Delivery Order",
+        "description": "This endpoint is to create Delivery Order in ERP",
+        "operationId": "create delivery order",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "CustomerName":"NTUC Fairprice Co-Operative Limited",
+                    "items":[
+                      {
+                        "Product_Id":"FD-VG-01",
+                        "ProductName":"Red Beans",
+                        "uom":"Nos",
+                        "DONumberOfPacket":2,
+                        "Price":10,
+                        "amount":20,
+                        "SOnumber":""
+                      }
+                    ]
                   }
                 }
               }
