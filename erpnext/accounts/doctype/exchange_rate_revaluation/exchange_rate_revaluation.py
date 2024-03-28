@@ -442,18 +442,15 @@ class ExchangeRateRevaluation(Document):
 		return journal_entry
 	
 	def make_jv_for_revaluation(self):
-		print(441)
 		return self.make_jv_for_revaluation2()
 	
 	def make_jv_for_revaluation1(self):
 		if self.gain_loss_unbooked == 0:
-			print(445, self.gain_loss_unbooked)
 			return
 
 		accounts = [x for x in self.accounts if not x.zero_balance]
 
 		if not accounts:
-			print(451, accounts)
 			return
 
 		unrealized_exchange_gain_loss_account = self.get_for_unrealized_gain_loss_account()
@@ -579,7 +576,6 @@ class ExchangeRateRevaluation(Document):
 		adj_row = []
 
 		journal_entry_accounts = []
-		print(576, self.gain_loss_amount_map)
 		for d in accounts:
 			dr_or_cr = (
 				"debit_in_account_currency"
@@ -641,7 +637,6 @@ class ExchangeRateRevaluation(Document):
 			key = self.get_gain_loss_amount_key(d)
 			# gain_loss_amount = self.gain_loss_amount_map.get(key) or 0
 			gain_loss_amount = flt(amount_in_currency_old - amount_in_currency_new, 2) * -1
-			print(key, gain_loss_amount)
 
 			row = journal_entry.append("accounts",
 				{
