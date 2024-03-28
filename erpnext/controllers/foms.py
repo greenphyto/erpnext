@@ -292,7 +292,7 @@ def create_products(log):
 		doc.item_code = log.productID
 		doc.item_name = log.productName
 		doc.description = log.productDesc or log.productDetail or log.productName
-		doc.stock_uom = get_foms_settings("product_uom")
+		doc.stock_uom = get_uom(log.unitOfMeasurement)
 		doc.item_group = types
 		doc.foms_id = log.id
 		doc.insert()

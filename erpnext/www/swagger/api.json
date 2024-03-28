@@ -633,6 +633,58 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.create_product": {
+      "post": {
+        "summary": "Create Product (item)",
+        "description": "This endpoint is to create item in ERP from FOMS Prodcut",
+        "operationId": "create product",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "productID":"FD-VG-01",
+                    "productName":"Red Bean",
+                    "productDetail":"Read bean F1 quality",
+                    "productDesc":"Read bean F1 quality from Taiwan",
+                    "unitOfMeasurement":"kg",
+                    "id":101
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "ProductNo":"item-001"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
     }
   },
   "components": {
