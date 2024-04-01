@@ -156,4 +156,10 @@ class FomsAPI():
 		}
 		res = self.req("GET", "/userportal/CommonLookup/GetWorkOrderList", params=params )
 		return res
+	
+	def update_warehouse(self, data):
+		data = json.dumps(data)
+		res = self.req("POST", "/Warehouse/CreateOrUpdateWarehouse", data=data )
+		return res
+
 		

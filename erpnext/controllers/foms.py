@@ -188,9 +188,29 @@ def get_recipe(show_progress=False):
 		show_progress=show_progress
 	).run()
 	
-# WORK ORDER
-# FINISH PRODUCTS
-		
+
+# WAREHOUSE
+def update_warehouse(doc, method=""):
+	farm_id = get_foms_settings("farm_id")
+	wh_id = doc.name.replace(" ", "")[:12]
+	data = {
+		"farmId": farm_id,
+		"warehouseID": wh_id,
+		"warehouseName": doc.warehouse_name,
+		"countryCode": "SG",
+		"capacity": 0,
+		"uom": "Kg",
+		"address": "",
+		"noRackRow": 0,
+		"noRackLevel": 0,
+		"noOfLane": 0,
+		"isFromERP": True,
+		"id": 0
+	}
+	api = FomsAPI()
+	res = api.update_warehouse(data)
+	return res
+
 
 def _update_foms_supplier(api, log):
 	supplier = frappe.get_doc("Supplier", log.name)
