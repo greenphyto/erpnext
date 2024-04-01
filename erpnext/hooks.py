@@ -365,6 +365,9 @@ doc_events = {
         "on_update_after_submit": "erpnext.assets.doctype.asset.asset.asset_trigger",
         "validate": "erpnext.assets.doctype.asset.asset.asset_trigger",
         "on_trash": "erpnext.assets.doctype.asset.asset.asset_trigger",
+	},
+    "Warehouse":{
+        "validate":"erpnext.controllers.foms.update_warehouse"
 	}
 }
 
