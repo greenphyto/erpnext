@@ -740,6 +740,66 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.create_stock_issue": {
+      "post": {
+        "summary": "Create Stock Issue",
+        "description": "This endpoint is to issuing stock material from warehouse",
+        "operationId": "create stock issue",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "posting_date": "2024-02-24",
+                    "posting_time": "08:12",
+                    "from_warehouse":"Raw Materials - GPL",
+                    "company":"Greenphyto Pte Ltd",
+                    "purpose":"Material Issue",
+                    "is_opening":"No",
+                    "items":[{
+                      "item":"RM-MS-SP",
+                      "qty":"2",
+                      "uom":"Unit",
+                      "serial_no":"",
+                      "batch_no":"",
+                      "rate":1
+                    }]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "ProductNo":"item-001"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
     }
   },
   "components": {

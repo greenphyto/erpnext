@@ -18,6 +18,7 @@ from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as 
 from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry as make_stock_entry_wo
 from erpnext.stock.doctype.purchase_receipt.purchase_receipt import make_purchase_return
 from frappe.model.workflow import apply_workflow
+from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 
 
 def get_data(data):
@@ -282,6 +283,76 @@ def create_delivery_order(data):
 	res = _create_delivery_order(data)
 	return {
 		"DeliveryOrderNo":res
+	}
+
+@frappe.whitelist()
+def create_stock_issue(data):
+	data = frappe._dict(data)
+	# se_data = {
+	# 	"posting_date": "",
+	# 	"posting_time": "",
+	# 	"from_warehouse":"",
+	# 	"to_warehouse":"",
+	# 	"company":"",
+	# 	"purpose":"",
+	# 	"is_opening":"No",
+	# 	"items":[{
+	# 		"item":"",
+	# 		"qty":"",
+	# 		"uom":1,
+	# 		"serial_no":"",
+	# 		"batch_no":"",
+	# 		"rate":1
+	# 	}]
+	# }
+	args = data
+	args.do_not_save = 1
+	args.do_not_submit = 1
+	for d in args.get("items"):
+		d = frappe._dict(d)
+		args.qty = d.qty
+		args.item = d.item
+		args.uom = d.uom
+		args.serial_no = d.serial_no
+		args.batch_no = d.batch_no
+		args.rate = d.rate
+		break
+	
+	doc = make_stock_entry(**args)
+
+	if not args.cost_center:
+		args.cost_center = frappe.get_value("Company", args.company, "cost_center")
+	
+	if not args.expense_account and args.is_opening == "No":
+		args.expense_account = frappe.get_value("Company", args.company, "stock_adjustment_account")
+
+	idx = 0
+	if len(args.get("items")) > 1:
+		for d in args.get("items"):
+			idx += 1
+			if idx == 1:
+				continue
+
+			d = frappe._dict(d)
+			row = doc.append("items")
+			row.update({
+				"item_code": d.item,
+				"s_warehouse": args.source,
+				"t_warehouse": args.target,
+				"qty": d.qty,
+				"basic_rate": d.rate or d.basic_rate,
+				"conversion_factor": d.conversion_factor or 1.0,
+				"transfer_qty": flt(d.qty) * (flt(d.conversion_factor) or 1.0),
+				"serial_no": d.serial_no,
+				"batch_no": d.batch_no,
+				"cost_center": args.cost_center,
+				"expense_account": d.expense_account,
+			})
+
+	doc.save()
+
+	return {
+		"StockEntryName":doc.name
 	}
 
 # Call Raw Material Receipt (refer to GetPurchaseReceiptFromERP)
