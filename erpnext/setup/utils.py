@@ -131,8 +131,9 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 	
 	try:
 		# if any holiday and missing result, will be back -1 day
+		idx = 0
 		for i in range(5):
-			transaction_date=add_days(transaction_date, i*-1)
+			transaction_date=add_days(transaction_date, idx*-1)
 			settings = frappe.get_cached_doc("Currency Exchange Settings")
 			if settings.api_endpoint.find("mas.gov.sg") > -1:
 				weekday = getdate(transaction_date).strftime('%A')
@@ -140,6 +141,8 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 					transaction_date=add_days(transaction_date, -2)
 				elif weekday=="Saturday" :
 					transaction_date=add_days(transaction_date, -1)
+				else:
+					idx += 1
 
 			cache = frappe.cache()
 			key = "currency_exchange_rate_{0}:{1}:{2}".format(transaction_date, from_currency, to_currency)
