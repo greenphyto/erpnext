@@ -728,7 +728,65 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "ProductNo":"item-001"
+                      "StockEntryNo":""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.remove_expired_stock": {
+      "post": {
+        "summary": "Remove Expired Stock",
+        "description": "When stock is expired on FOMS, and after real item is removed in the farm, You can call this endpoint to remove stock in ERP.",
+        "operationId": "remove expired stock",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "posting_date": "2024-02-24",
+                    "posting_time": "08:12",
+                    "from_warehouse":"Raw Materials - GPL",
+                    "company":"Greenphyto Pte Ltd",
+                    "items":[{
+                      "item":"RM-MS-SP",
+                      "qty":"2",
+                      "uom":"Unit",
+                      "serial_no":"",
+                      "batch_no":"",
+                      "rate":1
+                    }]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "StockEntryNo":""
                     }
                   }
                 }

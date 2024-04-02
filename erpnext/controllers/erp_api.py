@@ -288,24 +288,9 @@ def create_delivery_order(data):
 @frappe.whitelist()
 def create_stock_issue(data):
 	data = frappe._dict(data)
-	# se_data = {
-	# 	"posting_date": "",
-	# 	"posting_time": "",
-	# 	"from_warehouse":"",
-	# 	"to_warehouse":"",
-	# 	"company":"",
-	# 	"purpose":"",
-	# 	"is_opening":"No",
-	# 	"items":[{
-	# 		"item":"",
-	# 		"qty":"",
-	# 		"uom":1,
-	# 		"serial_no":"",
-	# 		"batch_no":"",
-	# 		"rate":1
-	# 	}]
-	# }
 	args = data
+	if not args.purpose:
+		args.purpose = "Material Issue"
 	args.do_not_save = 1
 	args.do_not_submit = 1
 	for d in args.get("items"):
@@ -352,9 +337,15 @@ def create_stock_issue(data):
 	doc.save()
 
 	return {
-		"StockEntryName":doc.name
+		"StockEntryNo":doc.name
 	}
 
-# Call Raw Material Receipt (refer to GetPurchaseReceiptFromERP)
+@frappe.whitelist()
+def remove_expired_stock(data):
+	data = frappe._dict(data)
+	# mandatory batch no
+	for d in data.get("items"):
+		if not d.batch_no:
+			frappe.throw(_(f"Missing batch no for item {d.item}"), frappe.DoesNotExistError)
 
-# Create Raw Material Return (Purchase Receiot return)
+	create_stock_issue(data)
