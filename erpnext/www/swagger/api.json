@@ -728,7 +728,7 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "StockEntryNo":""
+                      "DeliveryOrderNo":""
                     }
                   }
                 }
@@ -821,8 +821,6 @@
                     "posting_time": "08:12",
                     "from_warehouse":"Raw Materials - GPL",
                     "company":"Greenphyto Pte Ltd",
-                    "purpose":"Material Issue",
-                    "is_opening":"No",
                     "items":[{
                       "item":"RM-MS-SP",
                       "qty":"2",
@@ -846,7 +844,67 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "ProductNo":"item-001"
+                      "StockEntryNo":""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_material_consume": {
+      "post": {
+        "summary": "Create Material Consume",
+        "description": "Material consumed is stock transaction for consume material inside process of Work Order",
+        "operationId": "create material consume",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "posting_date": "2024-02-24",
+                    "posting_time": "08:12",
+                    "from_warehouse":"Raw Materials - GPL",
+                    "company":"Greenphyto Pte Ltd",
+                    "work_order":"",
+                    "operation_no":2,
+                    "items":[{
+                      "item":"RM-MS-SP",
+                      "qty":"2",
+                      "uom":"Unit",
+                      "serial_no":"",
+                      "batch_no":"",
+                      "rate":1
+                    }]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "StockEntryNo":""
                     }
                   }
                 }

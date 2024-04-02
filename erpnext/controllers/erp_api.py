@@ -11,7 +11,8 @@ from erpnext.controllers.foms import (
 	get_uom,
 	create_raw_material as _create_raw_material,
 	create_products as _create_products,
-	create_delivery_order as _create_delivery_order
+	create_delivery_order as _create_delivery_order,
+	get_operation_map_name
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
@@ -287,6 +288,9 @@ def create_delivery_order(data):
 
 @frappe.whitelist()
 def create_stock_issue(data):
+	return _create_stock_entry(data)
+
+def _create_stock_entry(data):
 	data = frappe._dict(data)
 	args = data
 	if not args.purpose:
@@ -304,7 +308,8 @@ def create_stock_issue(data):
 		break
 	
 	doc = make_stock_entry(**args)
-
+	doc.work_order = args.work_order
+	doc.job_card = args.job_card
 	if not args.cost_center:
 		args.cost_center = frappe.get_value("Company", args.company, "cost_center")
 	
@@ -348,4 +353,33 @@ def remove_expired_stock(data):
 		if not d.batch_no:
 			frappe.throw(_(f"Missing batch no for item {d.item}"), frappe.DoesNotExistError)
 
-	create_stock_issue(data)
+	_create_stock_entry(data)
+
+@frappe.whitelist()
+def create_material_consume(data):
+	data = frappe._dict(data)
+	# mandatory batch no
+	if not data.work_order:
+		frappe.throw(_(f"Work Order must be set!"), frappe.DoesNotExistError)
+	if not data.operation_no:
+		frappe.throw(_(f"Operation No must be set!"), frappe.DoesNotExistError)
+	
+	work_order = frappe.get_value("Work Order", data.work_order)
+	if not work_order:
+		frappe.throw(_(f"Work Order {data.work_order} is not exists"), frappe.DoesNotExistError)
+
+	operation_name = get_operation_map_name(cint(data.operation_no))
+	job_card = frappe.get_value("Job Card", {"operation":operation_name, "work_order":work_order})
+
+	result = None
+	if not job_card:
+		frappe.msgprint("Job Card did not exists")
+	else:
+		data.purpose = "Material Transfer for Manufacture"
+		data.job_card = job_card
+		_create_stock_entry(data)
+
+	
+	return {
+		"StockEntryNo":result
+	}
