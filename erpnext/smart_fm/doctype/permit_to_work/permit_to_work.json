@@ -1,0 +1,777 @@
+{
+ "actions": [],
+ "autoname": "PTW-.#####",
+ "creation": "2024-04-01 17:40:12.407118",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "maintenance_request_form",
+  "permit_to_work_number",
+  "section_a_please_provide_the_necessary_information",
+  "permit_applicant_name",
+  "date_time_apply",
+  "section_break_tom1l",
+  "date_time_work_start",
+  "column_break_zjaap",
+  "date_time_work_complete",
+  "section_break_k6yik",
+  "company",
+  "section_break_ldwox",
+  "description_purpose_of_activities",
+  "person_list",
+  "area_location_equipment_unit",
+  "section_break_numjs",
+  "type_of_work",
+  "normal_work_until_6pm",
+  "confined_space_entry",
+  "lifting_operation_involving",
+  "excavation__15m_tower_mobile_crawler_and_lorry_cane",
+  "column_break_aaucf",
+  "space",
+  "night_work_after_7pm",
+  "working_at_height_2m",
+  "working_at_scaffolds__2m",
+  "working_involving_hazardous_materials",
+  "column_break_ngtyj",
+  "space2",
+  "demolition_work",
+  "piling_work",
+  "hot_work",
+  "section_break_kvwr7",
+  "declaration",
+  "section_break_450yx",
+  "signature",
+  "column_break_vo7eg",
+  "date",
+  "safety_provisionmeasure_tab",
+  "section_b_to_be_completed_by_permit_to_work_applicant_section",
+  "safety_precaution_required",
+  "access_ladder",
+  "scaffold",
+  "log_outtag_out",
+  "barriers",
+  "electrical_check",
+  "no_hot_work_at_vicinity",
+  "sufficient_lighting",
+  "mechanical_ventilation",
+  "fire_extinguisher",
+  "backsmanwatchman",
+  "safety_precaution_others",
+  "column_break_ky5t9",
+  "confined_space_to_complete_gas_monitoring_below",
+  "gas_check",
+  "rescue_equipment_required",
+  "safety_line",
+  "safety_watcher",
+  "scba",
+  "reqcue_equipments_others",
+  "column_break_s01eo",
+  "ppes_required",
+  "head_protection",
+  "eye_protection",
+  "face_protection",
+  "hand_protection",
+  "hearing_protection",
+  "foot_protection",
+  "respiratory_protection",
+  "safety_harness_with_lanyard",
+  "lifelines",
+  "protective_clothing",
+  "ppe_others",
+  "confined_space",
+  "result_of_gas_monitoring",
+  "testing_number",
+  "time_of_testing",
+  "oxygen",
+  "state_of_entry",
+  "column_break_s4odm",
+  "space3",
+  "flammable_gas__lel",
+  "carbon_monoxide_ppm",
+  "hydrogen_sulfide_ppm",
+  "section_c_tab",
+  "toolbox_meeting_conducted_at_worksite",
+  "datetime",
+  "evaluated_and_endorsed_by",
+  "column_break_tcmkg",
+  "conducted_by",
+  "section_break_t3bri",
+  "contractor_safety_assessor",
+  "column_break_hjq4s",
+  "conductor_signature",
+  "section_break_drj3t",
+  "permit_to_work_applicant",
+  "column_break_n0bwj",
+  "ptw_signature",
+  "section_break_4mkju",
+  "special_instructionsprecautions",
+  "section_d_tab",
+  "section_d",
+  "reviewed_and_approved",
+  "section_break_lb472",
+  "name1",
+  "column_break_q5lb6",
+  "authorized_signature",
+  "section_break_zb7hr",
+  "information",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "maintenance_request_form",
+   "fieldtype": "Heading",
+   "label": "Permit to Work Application Form"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Permit to Work",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "permit_to_work_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Permit-To-Work No.",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_a_please_provide_the_necessary_information",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Section A (Please provide the necessary information)"
+  },
+  {
+   "fieldname": "permit_applicant_name",
+   "fieldtype": "Data",
+   "label": "Permit Applicant Name"
+  },
+  {
+   "fieldname": "date_time_apply",
+   "fieldtype": "Datetime",
+   "label": "Date/Time Apply"
+  },
+  {
+   "fieldname": "date_time_work_start",
+   "fieldtype": "Datetime",
+   "label": "Date/Time Work Start"
+  },
+  {
+   "fieldname": "date_time_work_complete",
+   "fieldtype": "Datetime",
+   "label": "Date/Time Work Complete"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Data",
+   "label": "Company"
+  },
+  {
+   "fieldname": "description_purpose_of_activities",
+   "fieldtype": "Long Text",
+   "label": "Description/Purpose of Activities"
+  },
+  {
+   "fieldname": "person_list",
+   "fieldtype": "Table",
+   "label": "Name of Workers",
+   "options": "Person"
+  },
+  {
+   "fieldname": "area_location_equipment_unit",
+   "fieldtype": "Data",
+   "label": "Area/Location/Equipment/Unit"
+  },
+  {
+   "fieldname": "section_break_numjs",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "type_of_work",
+   "fieldtype": "HTML",
+   "label": "Type of Work",
+   "options": "Type of Work<br><br>"
+  },
+  {
+   "default": "0",
+   "fieldname": "normal_work_until_6pm",
+   "fieldtype": "Check",
+   "label": "Normal Work until 6pm"
+  },
+  {
+   "default": "0",
+   "fieldname": "confined_space_entry",
+   "fieldtype": "Check",
+   "label": "Confined Space Entry"
+  },
+  {
+   "default": "0",
+   "fieldname": "lifting_operation_involving",
+   "fieldtype": "Check",
+   "label": "Lifting Operation Involving"
+  },
+  {
+   "default": "0",
+   "fieldname": "excavation__15m_tower_mobile_crawler_and_lorry_cane",
+   "fieldtype": "Check",
+   "label": "Excavation > 1.5m tower, mobile, crawler and lorry cane"
+  },
+  {
+   "fieldname": "column_break_aaucf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "night_work_after_7pm",
+   "fieldtype": "Check",
+   "label": "Night Work after 7pm"
+  },
+  {
+   "fieldname": "section_break_ldwox",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "space",
+   "fieldtype": "HTML",
+   "label": "space",
+   "options": "<br><br>"
+  },
+  {
+   "default": "0",
+   "fieldname": "working_at_height_2m",
+   "fieldtype": "Check",
+   "label": "Working At Height >2m"
+  },
+  {
+   "default": "0",
+   "fieldname": "working_at_scaffolds__2m",
+   "fieldtype": "Check",
+   "label": "Working at Scaffolds > 2m"
+  },
+  {
+   "default": "0",
+   "fieldname": "working_involving_hazardous_materials",
+   "fieldtype": "Check",
+   "label": "Working involving hazardous materials"
+  },
+  {
+   "fieldname": "space2",
+   "fieldtype": "HTML",
+   "label": "space2",
+   "options": "<br><br>"
+  },
+  {
+   "default": "0",
+   "fieldname": "demolition_work",
+   "fieldtype": "Check",
+   "label": "Demolition Work"
+  },
+  {
+   "default": "0",
+   "fieldname": "piling_work",
+   "fieldtype": "Check",
+   "label": "Piling Work"
+  },
+  {
+   "default": "0",
+   "fieldname": "hot_work",
+   "fieldtype": "Check",
+   "label": "Hot Work"
+  },
+  {
+   "fieldname": "column_break_ngtyj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "declaration",
+   "fieldtype": "HTML",
+   "label": "Declaration",
+   "options": "I, the Supervisor for the above work activities hereby take responsibility to supervise full time and ensure all workers comply with the safe work procedure and work in a safe manner."
+  },
+  {
+   "fieldname": "section_break_450yx",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "signature",
+   "fieldtype": "Signature",
+   "label": "Signature"
+  },
+  {
+   "fieldname": "column_break_vo7eg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Now",
+   "fieldname": "date",
+   "fieldtype": "Datetime",
+   "label": "Date"
+  },
+  {
+   "fieldname": "safety_provisionmeasure_tab",
+   "fieldtype": "Tab Break",
+   "label": "Safety Provision/Measure"
+  },
+  {
+   "fieldname": "section_b_to_be_completed_by_permit_to_work_applicant_section",
+   "fieldtype": "Section Break",
+   "label": "Section B (To be completed by Permit to Work Applicant)"
+  },
+  {
+   "fieldname": "section_break_kvwr7",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "safety_precaution_required",
+   "fieldtype": "HTML",
+   "label": "Safety Precaution Required",
+   "options": "<b>Safety Precaution Required</b><br><br>"
+  },
+  {
+   "default": "0",
+   "fieldname": "access_ladder",
+   "fieldtype": "Check",
+   "label": "Access Ladder"
+  },
+  {
+   "default": "0",
+   "fieldname": "scaffold",
+   "fieldtype": "Check",
+   "label": "Scaffold"
+  },
+  {
+   "default": "0",
+   "fieldname": "log_outtag_out",
+   "fieldtype": "Check",
+   "label": "Log out/Tag out"
+  },
+  {
+   "default": "0",
+   "fieldname": "barriers",
+   "fieldtype": "Check",
+   "label": "Barriers"
+  },
+  {
+   "default": "0",
+   "fieldname": "electrical_check",
+   "fieldtype": "Check",
+   "label": "Electrical Check"
+  },
+  {
+   "default": "0",
+   "fieldname": "no_hot_work_at_vicinity",
+   "fieldtype": "Check",
+   "label": "No Hot Work at Vicinity"
+  },
+  {
+   "default": "0",
+   "fieldname": "sufficient_lighting",
+   "fieldtype": "Check",
+   "label": "Sufficient Lighting"
+  },
+  {
+   "default": "0",
+   "fieldname": "mechanical_ventilation",
+   "fieldtype": "Check",
+   "label": "Mechanical Ventilation"
+  },
+  {
+   "default": "0",
+   "fieldname": "fire_extinguisher",
+   "fieldtype": "Check",
+   "label": "Fire Extinguisher"
+  },
+  {
+   "default": "0",
+   "fieldname": "backsmanwatchman",
+   "fieldtype": "Check",
+   "label": "Backsman/Watchman"
+  },
+  {
+   "fieldname": "safety_precaution_others",
+   "fieldtype": "Data",
+   "label": "Other (please specify)"
+  },
+  {
+   "fieldname": "column_break_ky5t9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "confined_space_to_complete_gas_monitoring_below",
+   "fieldtype": "HTML",
+   "label": "Confined Space (to complete Gas monitoring below)",
+   "options": "<b>Confined Space (to complete Gas monitoring below)</b><br><br>"
+  },
+  {
+   "default": "0",
+   "fieldname": "gas_check",
+   "fieldtype": "Check",
+   "label": "Gas Check"
+  },
+  {
+   "fieldname": "rescue_equipment_required",
+   "fieldtype": "HTML",
+   "label": "Rescue Equipment Required",
+   "options": "<br><br><b>Rescue Equipment Required</b><br><br>"
+  },
+  {
+   "default": "0",
+   "fieldname": "safety_line",
+   "fieldtype": "Check",
+   "label": "Safety Line"
+  },
+  {
+   "default": "0",
+   "fieldname": "safety_watcher",
+   "fieldtype": "Check",
+   "label": "Safety Watcher"
+  },
+  {
+   "default": "0",
+   "fieldname": "scba",
+   "fieldtype": "Check",
+   "label": "SCBA"
+  },
+  {
+   "fieldname": "reqcue_equipments_others",
+   "fieldtype": "Data",
+   "label": "Other (please specify)"
+  },
+  {
+   "fieldname": "column_break_s01eo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ppes_required",
+   "fieldtype": "HTML",
+   "label": "PPEs Required",
+   "options": "<b>PPEs Required</b><br><br>"
+  },
+  {
+   "default": "0",
+   "fieldname": "head_protection",
+   "fieldtype": "Check",
+   "label": "Head Protection"
+  },
+  {
+   "default": "0",
+   "fieldname": "eye_protection",
+   "fieldtype": "Check",
+   "label": "Eye Protection"
+  },
+  {
+   "default": "0",
+   "fieldname": "face_protection",
+   "fieldtype": "Check",
+   "label": "Face Protection"
+  },
+  {
+   "default": "0",
+   "fieldname": "hand_protection",
+   "fieldtype": "Check",
+   "label": "Hand Protection"
+  },
+  {
+   "default": "0",
+   "fieldname": "hearing_protection",
+   "fieldtype": "Check",
+   "label": "Hearing Protection"
+  },
+  {
+   "default": "0",
+   "fieldname": "foot_protection",
+   "fieldtype": "Check",
+   "label": "Foot Protection"
+  },
+  {
+   "default": "0",
+   "fieldname": "respiratory_protection",
+   "fieldtype": "Check",
+   "label": "Respiratory Protection"
+  },
+  {
+   "default": "0",
+   "fieldname": "safety_harness_with_lanyard",
+   "fieldtype": "Check",
+   "label": "Safety Harness with Lanyard"
+  },
+  {
+   "default": "0",
+   "fieldname": "lifelines",
+   "fieldtype": "Check",
+   "label": "Lifelines"
+  },
+  {
+   "default": "0",
+   "fieldname": "protective_clothing",
+   "fieldtype": "Check",
+   "label": "Protective Clothing"
+  },
+  {
+   "fieldname": "ppe_others",
+   "fieldtype": "Data",
+   "label": "Other (please specify)"
+  },
+  {
+   "fieldname": "confined_space",
+   "fieldtype": "Section Break",
+   "label": "Confined Space (to be evaluated by Confined Space Safety Assessor)"
+  },
+  {
+   "fieldname": "result_of_gas_monitoring",
+   "fieldtype": "HTML",
+   "label": "Result of Gas Monitoring",
+   "options": "<b>Result of Gas Monitoring</b>"
+  },
+  {
+   "description": "Permissible Entry Level",
+   "fieldname": "testing_number",
+   "fieldtype": "Data",
+   "label": "Testing Number"
+  },
+  {
+   "fieldname": "time_of_testing",
+   "fieldtype": "Datetime",
+   "label": "Time of Testing"
+  },
+  {
+   "description": "19.5% to 23%",
+   "fieldname": "oxygen",
+   "fieldtype": "Data",
+   "label": "Oxygen (%)"
+  },
+  {
+   "fieldname": "column_break_s4odm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "space3",
+   "fieldtype": "HTML",
+   "label": "space3",
+   "options": "<br>"
+  },
+  {
+   "description": "Less than 10% LEL",
+   "fieldname": "flammable_gas__lel",
+   "fieldtype": "Data",
+   "label": "Flammable Gas (% LEL)"
+  },
+  {
+   "description": "Less than 25ppm",
+   "fieldname": "carbon_monoxide_ppm",
+   "fieldtype": "Data",
+   "label": "Carbon Monoxide (ppm)"
+  },
+  {
+   "description": "Less than 10ppm",
+   "fieldname": "hydrogen_sulfide_ppm",
+   "fieldtype": "Data",
+   "label": "Hydrogen Sulfide (ppm)"
+  },
+  {
+   "default": "UNSAFE for Entry",
+   "fieldname": "state_of_entry",
+   "fieldtype": "Select",
+   "label": "State of Entry",
+   "options": "UNSAFE for Entry\nSAFE for Entry"
+  },
+  {
+   "fieldname": "toolbox_meeting_conducted_at_worksite",
+   "fieldtype": "HTML",
+   "label": "Toolbox Meeting conducted at worksite",
+   "options": "<b>Toolbox Meeting conducted at worksite<b><br><br></b></b>"
+  },
+  {
+   "fieldname": "datetime",
+   "fieldtype": "Datetime",
+   "label": "Datetime"
+  },
+  {
+   "fieldname": "evaluated_and_endorsed_by",
+   "fieldtype": "Data",
+   "label": "Evaluated and Endorsed By"
+  },
+  {
+   "fieldname": "column_break_tcmkg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "conducted_by",
+   "fieldtype": "Data",
+   "label": "Conducted By"
+  },
+  {
+   "fieldname": "section_break_t3bri",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "contractor_safety_assessor",
+   "fieldtype": "Data",
+   "label": "Contractor Safety Assessor"
+  },
+  {
+   "fieldname": "permit_to_work_applicant",
+   "fieldtype": "Data",
+   "label": "Permit to Work Applicant"
+  },
+  {
+   "fieldname": "column_break_n0bwj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "conductor_signature",
+   "fieldtype": "Signature",
+   "label": "Signature"
+  },
+  {
+   "fieldname": "ptw_signature",
+   "fieldtype": "Signature",
+   "label": "Signature"
+  },
+  {
+   "fieldname": "section_break_4mkju",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "special_instructionsprecautions",
+   "fieldtype": "Text Editor",
+   "label": "Special Instructions/Precautions"
+  },
+  {
+   "fieldname": "section_d_tab",
+   "fieldtype": "Tab Break",
+   "label": "Section D"
+  },
+  {
+   "fieldname": "section_d",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Please ensure the form is properly filled and seek approval before any work start"
+  },
+  {
+   "fieldname": "reviewed_and_approved",
+   "fieldtype": "HTML",
+   "label": "Reviewed and approved by Authorized Greenphyto",
+   "options": "<b>Reviewed and approved by Authorized Greenphyto</b><br><br>"
+  },
+  {
+   "fieldname": "section_break_lb472",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "column_break_q5lb6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "authorized_signature",
+   "fieldtype": "Signature",
+   "label": "Signature"
+  },
+  {
+   "fieldname": "section_c_tab",
+   "fieldtype": "Tab Break",
+   "label": "Section C (Required)"
+  },
+  {
+   "fieldname": "column_break_hjq4s",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_drj3t",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "information",
+   "fieldtype": "HTML",
+   "label": "Information",
+   "options": "<ul>\n<li>Before start of any contract work, please ensure the permit to work form is submitted and approved.</li>\n<li>This original approved permit to be displayed at all times near place of work.</li>\n<li>Any evacuation will deem this permit as voided and will have to be re-applied.</li>\n</ul>"
+  },
+  {
+   "fieldname": "section_break_zb7hr",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "section_break_tom1l",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "column_break_zjaap",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_k6yik",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-04-02 14:08:57.253916",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Permit to Work",
+ "name_case": "Title Case",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Building Management",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "permlevel": 2,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Building Management",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

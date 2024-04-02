@@ -13,37 +13,91 @@
   "name1",
   "unit_number__office_number",
   "column_break_abbf3",
+  "todays_date",
   "phone_number",
-  "email_address",
   "incident_details_section",
-  "date_and_time_of_incident",
+  "injured_name",
+  "injured_address",
+  "injured_gender",
+  "injured_age",
   "column_break_rsmpv",
-  "location",
+  "injured_phone_number",
+  "injured_connection",
+  "job_title",
+  "connection_specify",
+  "injured_section",
+  "description_of_the_accident_or_incident_eg_a_near_miss_section",
+  "datetime_incident",
+  "column_break_jzcqv",
+  "place",
+  "section_break_i74nq",
+  "describe_what_happened_including_details_of_any_injury",
   "section_break_dbcto",
-  "type_of_incident",
-  "slip_and_fall_accident",
-  "property_damage",
-  "theft",
-  "vandalism",
-  "security_breach",
-  "fire",
-  "spill",
-  "power_outage",
-  "other",
-  "description",
-  "datetime",
-  "witness",
-  "section_break_v5rlo",
-  "witness_list",
+  "treated_by_first_aider",
+  "column_break_j5sqs",
+  "name_of_first_aider",
+  "section_break_dp2fq",
+  "record_what_first_aid_was_given",
+  "reportable_accidents_and_incidents_section",
+  "injury_classification",
+  "fatal_injury",
+  "bone_fracture",
+  "amputation",
+  "blinding",
+  "crush_injuries",
+  "serious_burns",
+  "scalping",
+  "loss_of_consciousness",
+  "injuries_hospitalized",
+  "did_the_injured_person",
+  "unconscious",
+  "resuscitation",
+  "send_to_hospital",
+  "hospital_24_hours",
+  "more_than_7_days",
+  "more_than_3_days",
+  "none_injury",
+  "column_break_wtri3",
+  "incident_classification",
+  "contact_with_electricity",
+  "contact_with_machinery",
+  "drowned_or_asphyxiated",
+  "exposed_to_explosion",
+  "exposed_to_fire",
+  "exposed_to_harmful_substance",
+  "fall_from_height",
+  "height",
+  "animal_injury",
+  "lifting_handling_injuries",
+  "physical_assault",
+  "slipped_trip_fall",
+  "struck_something",
+  "struck_object",
+  "struck_moving",
+  "trapped",
+  "disease",
+  "dangerous_occurrence",
+  "none_incident",
   "section_break_l9u7x",
-  "attachment",
-  "preview",
-  "section_break_psexz",
-  "declaration",
-  "section_break_cvqc3",
-  "signature",
-  "column_break_bwddv",
-  "date",
+  "witness_list",
+  "section_break_jnlvv",
+  "reportable_mom",
+  "mom_signature",
+  "column_break_cinf3",
+  "date_reported",
+  "accident_or_incident_investigation_and_prevention_section",
+  "investigation",
+  "column_break_mkibv",
+  "investigator_name",
+  "section_break_s4jnt",
+  "what_were_the_conclusions",
+  "section_break_t4dlz",
+  "covered_risk_assessment",
+  "column_break_ynddr",
+  "does_the_risk_assessment_need_revising",
+  "is_risk_assessment_needed",
+  "section_break_hnjqi",
+  "management_notes_and_summary_of_further_actions_required",
   "amended_from",
   "section_break_qdnpu",
   "bm_comment",
@@ -54,7 +108,7 @@
   {
    "fieldname": "personal_information_section",
    "fieldtype": "Section Break",
-   "label": "Personal Information"
+   "label": "Details of person filling in this form"
   },
   {
    "fieldname": "name1",
@@ -66,7 +120,7 @@
   {
    "fieldname": "unit_number__office_number",
    "fieldtype": "Data",
-   "label": "Unit Number / Office Number"
+   "label": "Position"
   },
   {
    "fieldname": "column_break_abbf3",
@@ -81,79 +135,10 @@
    "reqd": 1
   },
   {
-   "fieldname": "email_address",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Email Address",
-   "options": "Email",
-   "reqd": 1
-  },
-  {
+   "collapsible": 1,
    "fieldname": "incident_details_section",
    "fieldtype": "Section Break",
-   "label": "Incident Details"
-  },
-  {
-   "fieldname": "date_and_time_of_incident",
-   "fieldtype": "Datetime",
-   "in_list_view": 1,
-   "label": "Date and Time of Incident",
-   "reqd": 1
-  },
-  {
-   "default": "Plumbing",
-   "fieldname": "slip_and_fall_accident",
-   "fieldtype": "Check",
-   "label": "Slip and fall accident"
-  },
-  {
-   "fieldname": "other",
-   "fieldtype": "Data",
-   "label": "Other (please specify)"
-  },
-  {
-   "fieldname": "description",
-   "fieldtype": "Text",
-   "label": "Detailed Description of the Incident",
-   "reqd": 1
-  },
-  {
-   "fieldname": "location",
-   "fieldtype": "Data",
-   "label": "Location of the Issue (e.g., room number, floor, common area)",
-   "reqd": 1
-  },
-  {
-   "fieldname": "datetime",
-   "fieldtype": "Datetime",
-   "label": "Preferred Date and Time for Maintenance Visit (if applicable)",
-   "reqd": 1
-  },
-  {
-   "fieldname": "attachment",
-   "fieldtype": "Attach",
-   "label": "Please attach any relevant photos or documents to help illustrate the issue (optional)"
-  },
-  {
-   "fieldname": "section_break_psexz",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "signature",
-   "fieldtype": "Signature",
-   "label": "Signature",
-   "reqd": 1
-  },
-  {
-   "fieldname": "column_break_bwddv",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "Now",
-   "fieldname": "date",
-   "fieldtype": "Datetime",
-   "label": "Date",
-   "reqd": 1
+   "label": "Details of any injured (if no one was injured, go straight to next section)"
   },
   {
    "fieldname": "column_break_rsmpv",
@@ -161,65 +146,14 @@
   },
   {
    "fieldname": "section_break_dbcto",
-   "fieldtype": "Section Break"
-  },
-  {
-   "default": "No",
-   "fieldname": "witness",
-   "fieldtype": "Select",
-   "label": "Were there any witnesses to the incident?",
-   "options": "Yes (please provide their names and contact information below)\nNo",
-   "reqd": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "property_damage",
-   "fieldtype": "Check",
-   "label": "Property damage"
-  },
-  {
-   "default": "0",
-   "fieldname": "theft",
-   "fieldtype": "Check",
-   "label": "Theft"
-  },
-  {
-   "default": "0",
-   "fieldname": "vandalism",
-   "fieldtype": "Check",
-   "label": "Vandalism"
-  },
-  {
-   "default": "0",
-   "fieldname": "security_breach",
-   "fieldtype": "Check",
-   "label": "Security breach"
-  },
-  {
-   "default": "0",
-   "fieldname": "fire",
-   "fieldtype": "Check",
-   "label": "Fire or smoke-related incident"
-  },
-  {
-   "default": "0",
-   "fieldname": "spill",
-   "fieldtype": "Check",
-   "label": "Hazardous material spill or leak"
-  },
-  {
-   "default": "0",
-   "fieldname": "power_outage",
-   "fieldtype": "Check",
-   "label": "Power outage"
-  },
-  {
-   "fieldname": "section_break_v5rlo",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "First Aid Treatment"
   },
   {
    "fieldname": "section_break_l9u7x",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "hide_border": 1
   },
   {
    "fieldname": "amended_from",
@@ -233,36 +167,13 @@
   {
    "fieldname": "incident_report_form",
    "fieldtype": "Heading",
-   "label": "Incident Report Form"
+   "label": "Accident/Incident Report Form"
   },
   {
    "fieldname": "form_description",
    "fieldtype": "HTML",
    "label": "Description",
-   "options": "Please complete this form to report any incidents or accidents that occurred within the building. Providing detailed and accurate information will help our management team take appropriate action and implement measures to prevent similar incidents in the future."
-  },
-  {
-   "fieldname": "type_of_incident",
-   "fieldtype": "HTML",
-   "label": "Type of Incident",
-   "options": "Type of Incident (please check one or more as applicable)<br><br>"
-  },
-  {
-   "fieldname": "declaration",
-   "fieldtype": "HTML",
-   "label": "Declaration",
-   "options": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge."
-  },
-  {
-   "fieldname": "section_break_cvqc3",
-   "fieldtype": "Section Break"
-  },
-  {
-   "depends_on": "eval:doc.witness != 'No';",
-   "fieldname": "witness_list",
-   "fieldtype": "Table",
-   "label": "Witness",
-   "options": "Person"
+   "options": "Use this form for reporting accidents, incidents or hazards which have occurred either on Company premises or whilst engaged on Company business.<br><br>\nIf the accident/incident has resulted in someone suffering <b>serious injury</b> (e.g. broken bones) please report it <b>immediately</b> to a Senior Manager."
   },
   {
    "depends_on": "eval: doc.workflow_state == 'Accepted' || doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Rejected'",
@@ -271,14 +182,12 @@
    "label": "Building Management Comment"
   },
   {
-   "depends_on": "",
    "fieldname": "bm_comment",
    "fieldtype": "Text Editor",
    "label": "Comment",
    "permlevel": 2
   },
   {
-   "depends_on": "",
    "fieldname": "bm_attachment",
    "fieldtype": "Attach Image",
    "label": "Attachment",
@@ -293,16 +202,476 @@
    "permlevel": 2
   },
   {
-   "depends_on": "attachment",
-   "fieldname": "preview",
-   "fieldtype": "Image",
-   "label": "Preview"
+   "default": "Today",
+   "fieldname": "todays_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Today's Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "injured_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name"
+  },
+  {
+   "fieldname": "injured_address",
+   "fieldtype": "Data",
+   "label": "Address"
+  },
+  {
+   "fieldname": "injured_section",
+   "fieldtype": "Data",
+   "label": "Section"
+  },
+  {
+   "default": "Male",
+   "fieldname": "injured_gender",
+   "fieldtype": "Select",
+   "label": "Gender",
+   "options": "Male\nFemale"
+  },
+  {
+   "fieldname": "injured_age",
+   "fieldtype": "Data",
+   "label": "Age"
+  },
+  {
+   "fieldname": "injured_phone_number",
+   "fieldtype": "Data",
+   "label": "Phone Number",
+   "options": "Phone"
+  },
+  {
+   "default": "Staff",
+   "fieldname": "injured_connection",
+   "fieldtype": "Select",
+   "label": "Connections",
+   "options": "Staff\nVisitor\nContractor\nPublic\nOther"
+  },
+  {
+   "depends_on": "eval:doc.injured_connection == 'Staff'",
+   "fieldname": "job_title",
+   "fieldtype": "Data",
+   "label": "Job Title"
+  },
+  {
+   "depends_on": "eval:doc.injured_connection == 'Other'",
+   "fieldname": "connection_specify",
+   "fieldtype": "Data",
+   "label": "Please Specify"
+  },
+  {
+   "fieldname": "description_of_the_accident_or_incident_eg_a_near_miss_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Description of the Accident or Incident (e.g. a near miss)"
+  },
+  {
+   "default": "Now",
+   "fieldname": "datetime_incident",
+   "fieldtype": "Datetime",
+   "label": "Datetime"
+  },
+  {
+   "fieldname": "column_break_jzcqv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "place",
+   "fieldtype": "Data",
+   "label": "Place"
+  },
+  {
+   "fieldname": "section_break_i74nq",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "describe_what_happened_including_details_of_any_injury",
+   "fieldtype": "Text Editor",
+   "label": "Describe what happened including details of any injury"
+  },
+  {
+   "default": "Yes",
+   "fieldname": "treated_by_first_aider",
+   "fieldtype": "Select",
+   "label": "Was the person treated by a First Aider",
+   "options": "Yes\nNo\nDon't Know\nNot Application"
+  },
+  {
+   "depends_on": "eval:doc.treated_by_first_aider == 'Yes'",
+   "fieldname": "name_of_first_aider",
+   "fieldtype": "Data",
+   "label": "Name of First Aider"
+  },
+  {
+   "depends_on": "eval:doc.treated_by_first_aider == 'Yes'",
+   "fieldname": "record_what_first_aid_was_given",
+   "fieldtype": "Text Editor",
+   "label": "Record what First Aid was given"
+  },
+  {
+   "fieldname": "column_break_j5sqs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_dp2fq",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "reportable_accidents_and_incidents_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Reportable Accidents and Incidents"
+  },
+  {
+   "fieldname": "injury_classification",
+   "fieldtype": "HTML",
+   "label": "Injury Classification",
+   "options": "<b>HSE Injury Classification</b><br><br>"
+  },
+  {
+   "default": "Plumbing",
+   "fieldname": "fatal_injury",
+   "fieldtype": "Check",
+   "label": "Fatal Injury"
+  },
+  {
+   "default": "0",
+   "fieldname": "bone_fracture",
+   "fieldtype": "Check",
+   "label": "Bone fracture excluding finger, thumb or toe"
+  },
+  {
+   "default": "0",
+   "fieldname": "amputation",
+   "fieldtype": "Check",
+   "label": "Amputation of arm, hand, finger, thumb, leg, foot, or toe"
+  },
+  {
+   "default": "0",
+   "fieldname": "blinding",
+   "fieldtype": "Check",
+   "label": "Blinding or permanent sight reduction"
+  },
+  {
+   "fieldname": "column_break_wtri3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "incident_classification",
+   "fieldtype": "HTML",
+   "label": "Incident Classification",
+   "options": "<b>HSE Incident Classification</b><br><br>"
+  },
+  {
+   "default": "0",
+   "fieldname": "crush_injuries",
+   "fieldtype": "Check",
+   "label": "Crush injuries leading to brain damage or organ damage"
+  },
+  {
+   "default": "0",
+   "fieldname": "serious_burns",
+   "fieldtype": "Check",
+   "label": "Serious burns"
+  },
+  {
+   "default": "0",
+   "fieldname": "scalping",
+   "fieldtype": "Check",
+   "label": "Scalping requiring hospital treatment"
+  },
+  {
+   "default": "0",
+   "fieldname": "loss_of_consciousness",
+   "fieldtype": "Check",
+   "label": "Loss of consciousness caused by head injury or asphyxia"
+  },
+  {
+   "default": "0",
+   "description": "hospitalization for over 24 hours",
+   "fieldname": "injuries_hospitalized",
+   "fieldtype": "Check",
+   "label": "Injuries associated with working in an enclosed space leading to hypothermia or heat-induced illness resuscitation "
+  },
+  {
+   "fieldname": "did_the_injured_person",
+   "fieldtype": "HTML",
+   "label": "Did the injured person",
+   "options": "Did the injured person...<br><br>"
+  },
+  {
+   "default": "0",
+   "fieldname": "unconscious",
+   "fieldtype": "Check",
+   "label": "become unconscious?"
+  },
+  {
+   "default": "0",
+   "fieldname": "resuscitation",
+   "fieldtype": "Check",
+   "label": "need resuscitation?"
+  },
+  {
+   "default": "0",
+   "fieldname": "send_to_hospital",
+   "fieldtype": "Check",
+   "label": "sustain an injury which required them being taken straight to hospital?"
+  },
+  {
+   "default": "0",
+   "fieldname": "hospital_24_hours",
+   "fieldtype": "Check",
+   "label": "remain in hospital for more than 24 hours?"
+  },
+  {
+   "default": "0",
+   "description": "RIDDOR reportable",
+   "fieldname": "more_than_7_days",
+   "fieldtype": "Check",
+   "label": "due to the incident become unable to work for more than 7 days?"
+  },
+  {
+   "default": "0",
+   "description": "NB: just for the record, not RIDDOR reportable",
+   "fieldname": "more_than_3_days",
+   "fieldtype": "Check",
+   "label": "due to the incident become unable to work for more than 3 days?"
+  },
+  {
+   "default": "0",
+   "fieldname": "none_injury",
+   "fieldtype": "Check",
+   "label": "None of the above"
+  },
+  {
+   "default": "0",
+   "fieldname": "contact_with_electricity",
+   "fieldtype": "Check",
+   "label": "Contact with electricity"
+  },
+  {
+   "default": "0",
+   "fieldname": "contact_with_machinery",
+   "fieldtype": "Check",
+   "label": "Contact with machinery"
+  },
+  {
+   "default": "0",
+   "fieldname": "drowned_or_asphyxiated",
+   "fieldtype": "Check",
+   "label": "Drowned or asphyxiated"
+  },
+  {
+   "default": "0",
+   "fieldname": "exposed_to_explosion",
+   "fieldtype": "Check",
+   "label": "Exposed to explosion"
+  },
+  {
+   "default": "0",
+   "fieldname": "exposed_to_fire",
+   "fieldtype": "Check",
+   "label": "Exposed to fire"
+  },
+  {
+   "default": "0",
+   "fieldname": "exposed_to_harmful_substance",
+   "fieldtype": "Check",
+   "label": "Exposed to a harmful substance"
+  },
+  {
+   "default": "0",
+   "fieldname": "fall_from_height",
+   "fieldtype": "Check",
+   "label": "Fall from height (if so, how far?)"
+  },
+  {
+   "depends_on": "eval:doc.fall_from_height == 1",
+   "fieldname": "height",
+   "fieldtype": "Data",
+   "label": "Height"
+  },
+  {
+   "default": "0",
+   "fieldname": "animal_injury",
+   "fieldtype": "Check",
+   "label": "Injured by an animal"
+  },
+  {
+   "default": "0",
+   "fieldname": "lifting_handling_injuries",
+   "fieldtype": "Check",
+   "label": "Lifting and handling injuries"
+  },
+  {
+   "default": "0",
+   "fieldname": "physical_assault",
+   "fieldtype": "Check",
+   "label": "Physical assault"
+  },
+  {
+   "default": "0",
+   "fieldname": "slipped_trip_fall",
+   "fieldtype": "Check",
+   "label": "Slipped, trip or fall on the same level"
+  },
+  {
+   "default": "0",
+   "fieldname": "struck_something",
+   "fieldtype": "Check",
+   "label": "Struck against something"
+  },
+  {
+   "default": "0",
+   "fieldname": "struck_object",
+   "fieldtype": "Check",
+   "label": "Struck by an object"
+  },
+  {
+   "default": "0",
+   "fieldname": "struck_moving",
+   "fieldtype": "Check",
+   "label": "Struck by a moving vehicle, by something moving, flying or falling"
+  },
+  {
+   "default": "0",
+   "fieldname": "trapped",
+   "fieldtype": "Check",
+   "label": "Trapped by something collapsing"
+  },
+  {
+   "default": "0",
+   "description": "ALL: Refer to guidance on RIDDOR",
+   "fieldname": "disease",
+   "fieldtype": "Check",
+   "label": "An occupational disease arising out of work (e.g. dermatitis)"
+  },
+  {
+   "default": "0",
+   "description": "ALL: Refer to guidance on RIDDOR",
+   "fieldname": "dangerous_occurrence",
+   "fieldtype": "Check",
+   "label": "A dangerous occurrence (e.g. a near miss) which could have been serious"
+  },
+  {
+   "default": "0",
+   "fieldname": "none_incident",
+   "fieldtype": "Check",
+   "label": "None of the above"
+  },
+  {
+   "fieldname": "witness_list",
+   "fieldtype": "Table",
+   "label": "Witness",
+   "options": "Person"
+  },
+  {
+   "default": "Yes",
+   "description": "any ticked boxes above - if in doubt, read guidance",
+   "fieldname": "reportable_mom",
+   "fieldtype": "Select",
+   "label": "Is the accident/incident reportable under MOM?",
+   "options": "Yes\nNo"
+  },
+  {
+   "depends_on": "eval:doc.reportable_mom == 'Yes'",
+   "fieldname": "mom_signature",
+   "fieldtype": "Data",
+   "label": "Signature"
+  },
+  {
+   "fieldname": "column_break_cinf3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.reportable_mom == 'Yes'",
+   "fieldname": "date_reported",
+   "fieldtype": "Datetime",
+   "label": "Date reported"
+  },
+  {
+   "fieldname": "section_break_jnlvv",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "accident_or_incident_investigation_and_prevention_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Accident or Incident Investigation and Prevention"
+  },
+  {
+   "fieldname": "investigation",
+   "fieldtype": "Select",
+   "label": "Has an investigation been carried out?",
+   "options": "Yes\nNo\nDon't Know\nNot Applicable"
+  },
+  {
+   "depends_on": "eval:doc.reportable_mom == 'Yes'",
+   "fieldname": "investigator_name",
+   "fieldtype": "Data",
+   "label": "By whom"
+  },
+  {
+   "fieldname": "what_were_the_conclusions",
+   "fieldtype": "Long Text",
+   "label": "What were the conclusions"
+  },
+  {
+   "description": "detail in management action below",
+   "fieldname": "covered_risk_assessment",
+   "fieldtype": "Select",
+   "label": "Was the activity covered by a Risk Assessment?",
+   "options": "Yes\nNo\nDon't Know\nNot Applicable"
+  },
+  {
+   "depends_on": "eval:doc.covered_risk_assessment == 'Yes'",
+   "fieldname": "does_the_risk_assessment_need_revising",
+   "fieldtype": "Select",
+   "label": "Does the Risk Assessment need revising?",
+   "options": "Yes\nNo"
+  },
+  {
+   "depends_on": "eval:doc.reportable_mom == 'No'",
+   "description": "detail in management action below",
+   "fieldname": "is_risk_assessment_needed",
+   "fieldtype": "Select",
+   "label": "Is Risk Assessment needed?",
+   "options": "Yes\nNo"
+  },
+  {
+   "fieldname": "management_notes_and_summary_of_further_actions_required",
+   "fieldtype": "Text Editor",
+   "label": "Management Notes and Summary of Further Actions Required"
+  },
+  {
+   "fieldname": "column_break_mkibv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_s4jnt",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "section_break_t4dlz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_ynddr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_hnjqi",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-01-03 15:24:13.565654",
+ "modified": "2024-04-02 17:50:58.943235",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Incident Report",
