@@ -685,6 +685,31 @@ def fix_against_party_in_gl():
 	""", as_dict=1)
 
 
+def remove_account_number():
+	data = frappe.db.sql("select name, against_account from `tabGL Entry` where against_account is not null limit 99999", as_dict=1)
+	account = frappe.db.sql("select name, account_name from `tabAccount`", as_dict=1)
+	account_map = {}
+	for d in account:
+		account_map[d.name] = d.account_name + " - GPL"
+
+	idx = 0
+	print(len(data))
+	for d in data:
+		dt = d.against_account.replace("GPL, ", "GPL|`|")
+		dt = dt.split("|`|")
+		idx+=1
+		res = []
+		for x in dt:
+			new_name = account_map.get(x) or x
+			if new_name not in res:
+				res.append(new_name)
+		
+		new_value = ", ".join(res)
+		frappe.db.set_value("GL Entry", d.name, "against_account", new_value)
+		if idx & 100 == 0:
+			print("Index",idx, dt, new_value)
+			frappe.db.commit()
+		
 
 
 
