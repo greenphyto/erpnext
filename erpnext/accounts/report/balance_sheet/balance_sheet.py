@@ -12,7 +12,7 @@ from erpnext.accounts.report.financial_statements import (
 	get_filtered_list_for_consolidated_report,
 	get_period_list,
 )
-
+from six import string_types
 from erpnext.accounts.utils import remove_account_number
 from erpnext.accounts.report.utils import convert_wrap_report_data
 from erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement import execute as pl_report
@@ -235,13 +235,14 @@ def get_report_summary(
 	for period in period_list:
 		key = period if consolidated else period.key
 		if asset:
-			net_asset += asset[-2].get(key)
+			net_asset += convert_bracket_number(asset[-2].get(key))
 		if liability:
-			net_liability += liability[-2].get(key)
+			net_liability += convert_bracket_number(liability[-2].get(key))
 		if equity:
-			net_equity += equity[-2].get(key)
+			net_equity += convert_bracket_number(equity[-2].get(key))
 		if provisional_profit_loss:
-			net_provisional_profit_loss += provisional_profit_loss.get(key)
+			print(244, provisional_profit_loss)
+			net_provisional_profit_loss += convert_bracket_number(provisional_profit_loss.get(key))
 
 	return [
 		{"value": net_asset, "label": _("Total Asset"), "datatype": "Currency", "currency": currency},
@@ -261,6 +262,13 @@ def get_report_summary(
 		},
 	]
 
+def convert_bracket_number(data):
+	if isinstance(data, string_types):
+		value = data.replace("(", "")
+		value = value.replace(")", "")
+		return flt(value)
+	else:
+		return data
 
 def get_chart_data(filters, columns, asset, liability, equity):
 	labels = [d.get("label") for d in columns[2:]]
