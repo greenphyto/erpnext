@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "INC-.#####",
+ "autoname": "AIR-.#####",
  "creation": "2023-05-12 17:48:26.959550",
  "default_view": "List",
  "doctype": "DocType",
@@ -160,7 +160,7 @@
    "fieldtype": "Link",
    "label": "Amended From",
    "no_copy": 1,
-   "options": "Incident Report",
+   "options": "Accident or Incident Report",
    "print_hide": 1,
    "read_only": 1
   },
@@ -616,7 +616,7 @@
   },
   {
    "fieldname": "what_were_the_conclusions",
-   "fieldtype": "Long Text",
+   "fieldtype": "Small Text",
    "label": "What were the conclusions"
   },
   {
@@ -671,10 +671,10 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-02 17:50:58.943235",
+ "modified": "2024-04-03 14:10:27.685851",
  "modified_by": "Administrator",
  "module": "Smart FM",
- "name": "Incident Report",
+ "name": "Accident or Incident Report",
  "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [

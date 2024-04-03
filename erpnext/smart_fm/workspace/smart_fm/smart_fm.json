@@ -6,7 +6,7 @@
    "label": "Request Report"
   }
  ],
- "content": "[{\"id\":\"ec1F-jIO5A\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Smart FM</span>\",\"col\":12}},{\"id\":\"dhi2td2O7b\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Request Report\",\"col\":12}},{\"id\":\"KwQzTV_xhR\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Your Shortcuts</b></span>\",\"col\":12}},{\"id\":\"kRElbJGgi-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Maintenance Request\",\"col\":3}},{\"id\":\"T_ELHHUDFO\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Incident Report\",\"col\":3}},{\"id\":\"AgmTrpMCu0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Access Request\",\"col\":3}},{\"id\":\"sQwP2Ln4-Z\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inspection Checklist\",\"col\":3}},{\"id\":\"RWvULbK__5\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Calendar</b></span>\",\"col\":12}},{\"id\":\"PJHWO3mD8P\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ToDo Calendar\",\"col\":3}},{\"id\":\"Ca02m-kfPg\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"zvBL_ORvId\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports and Masters</b></span>\",\"col\":12}},{\"id\":\"aZ_aYZfJAK\",\"type\":\"card\",\"data\":{\"card_name\":\"Requests\",\"col\":4}},{\"id\":\"ZZ9XJ0Eg0e\",\"type\":\"card\",\"data\":{\"card_name\":\"Form\",\"col\":4}},{\"id\":\"KJP0ulpGyr\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}},{\"id\":\"WabTf_FsBf\",\"type\":\"card\",\"data\":{\"card_name\":\"Master\",\"col\":4}}]",
+ "content": "[{\"id\":\"ec1F-jIO5A\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Smart FM</span>\",\"col\":12}},{\"id\":\"dhi2td2O7b\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Request Report\",\"col\":12}},{\"id\":\"KwQzTV_xhR\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Your Shortcuts</b></span>\",\"col\":12}},{\"id\":\"kRElbJGgi-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Maintenance Request\",\"col\":3}},{\"id\":\"T_ELHHUDFO\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Accident or Incident Report\",\"col\":3}},{\"id\":\"AgmTrpMCu0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Access Request\",\"col\":3}},{\"id\":\"sQwP2Ln4-Z\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inspection Checklist\",\"col\":3}},{\"id\":\"RWvULbK__5\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Calendar</b></span>\",\"col\":12}},{\"id\":\"PJHWO3mD8P\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ToDo Calendar\",\"col\":3}},{\"id\":\"Ca02m-kfPg\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"zvBL_ORvId\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports and Masters</b></span>\",\"col\":12}},{\"id\":\"aZ_aYZfJAK\",\"type\":\"card\",\"data\":{\"card_name\":\"Requests\",\"col\":4}},{\"id\":\"ZZ9XJ0Eg0e\",\"type\":\"card\",\"data\":{\"card_name\":\"Form\",\"col\":4}},{\"id\":\"KJP0ulpGyr\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}},{\"id\":\"WabTf_FsBf\",\"type\":\"card\",\"data\":{\"card_name\":\"Master\",\"col\":4}}]",
  "creation": "2023-05-17 14:02:00.454211",
  "docstatus": 0,
  "doctype": "Workspace",
@@ -17,64 +17,6 @@
  "is_hidden": 0,
  "label": "Smart FM",
  "links": [
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Requests",
-   "link_count": 3,
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Maintenance Request",
-   "link_count": 0,
-   "link_to": "Maintenance Request",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Access Request",
-   "link_count": 0,
-   "link_to": "Access Request",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Key Control",
-   "link_count": 0,
-   "link_to": "Key Control",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Reports",
-   "link_count": 1,
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Incident Report",
-   "link_count": 0,
-   "link_to": "Incident Report",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
   {
    "hidden": 0,
    "is_query_report": 0,
@@ -160,9 +102,105 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Requests",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Maintenance Request",
+   "link_count": 0,
+   "link_to": "Maintenance Request",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Access Request",
+   "link_count": 0,
+   "link_to": "Access Request",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Key Control",
+   "link_count": 0,
+   "link_to": "Key Control",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Permit to Work",
+   "link_count": 0,
+   "link_to": "Permit to Work",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reports",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Accident or Incident Report",
+   "link_count": 0,
+   "link_to": "Accident or Incident Report",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Spill or Incident Report",
+   "link_count": 0,
+   "link_to": "Spill or Incident Report",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Physical Security Incident Report",
+   "link_count": 0,
+   "link_to": "Physical Security Incident Report",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Information Security Incident Report",
+   "link_count": 0,
+   "link_to": "Information Security Incident Report",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2023-11-15 16:42:46.412419",
+ "modified": "2024-04-03 14:25:57.168583",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Smart FM",
@@ -175,20 +213,19 @@
  "sequence_id": 2.0,
  "shortcuts": [
   {
+   "color": "Red",
+   "doc_view": "List",
+   "format": "{} Issued",
+   "label": "Accident or Incident Report",
+   "link_to": "Accident or Incident Report",
+   "type": "DocType"
+  },
+  {
    "color": "Yellow",
    "doc_view": "List",
    "format": "{} Issued",
    "label": "Maintenance Request",
    "link_to": "Maintenance Request",
-   "stats_filter": "{\"workflow_state\":[\"=\",\"Issued\"]}",
-   "type": "DocType"
-  },
-  {
-   "color": "Red",
-   "doc_view": "List",
-   "format": "{} Issued",
-   "label": "Incident Report",
-   "link_to": "Incident Report",
    "stats_filter": "{\"workflow_state\":[\"=\",\"Issued\"]}",
    "type": "DocType"
   },

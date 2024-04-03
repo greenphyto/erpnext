@@ -1,0 +1,433 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "SIR-.#####",
+ "creation": "2024-04-03 11:52:21.269576",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "instructions",
+  "personnel_involved_in_spill_reporting_section",
+  "project_office",
+  "section_break_mr9c1",
+  "project_office_name",
+  "column_break_omrox",
+  "project_office_title",
+  "column_break_xbuba",
+  "project_office_phone",
+  "section_break_2cl6s",
+  "regional_environment_office",
+  "section_break_0cu8o",
+  "regional_office_name",
+  "column_break_kacks",
+  "regional_office_title",
+  "column_break_tznfl",
+  "regional_office_phone",
+  "contractor_section",
+  "responsible",
+  "section_break_qexpj",
+  "contractor_name",
+  "column_break_hyb2n",
+  "contractor_title",
+  "column_break_pez9y",
+  "contractor_phone",
+  "general_spill_information_section",
+  "common_name_of_spilled_substance",
+  "describe_concentration_of_material_estimate",
+  "column_break_rthpc",
+  "quantity_spilled_estimate",
+  "date_of_spill",
+  "time_spill_started",
+  "time_spill_ended",
+  "spill_location_and_conditions_section",
+  "project_title",
+  "address",
+  "column_break_lqhlm",
+  "weather_conditions",
+  "section_break_n0c6f",
+  "water_html",
+  "name_of_water_body",
+  "identify_the_discharge_point",
+  "column_break_xdssm",
+  "space",
+  "estimate_the_depth_and_width_of_the_water_body",
+  "estimate_flow_rate",
+  "section_break_zgnhj",
+  "environmental_damage",
+  "actions_taken_section",
+  "to_contain_spill_or_impact_of_incident",
+  "to_cleanup_spill_or_recover_from_incident",
+  "to_remove_cleanup_material",
+  "to_document_disposal",
+  "to_prevent_reoccurrence",
+  "reporting_the_spill_section",
+  "agencies_contacted",
+  "section_break",
+  "managing_name",
+  "managing_address",
+  "column_break_zibxc",
+  "managing_phone",
+  "managing_fax",
+  "additional_notesinformation_if_applicable",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "instructions",
+   "fieldtype": "HTML",
+   "label": "Instructions",
+   "options": "<b>Instructions: </b>Complete for any type of petroleum product or hazardous materials/waste spill or incident. Provide a copy of this report to management."
+  },
+  {
+   "fieldname": "personnel_involved_in_spill_reporting_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Personnel Involved in Spill Reporting"
+  },
+  {
+   "fieldname": "project_office",
+   "fieldtype": "HTML",
+   "label": "Project Office",
+   "options": "Project Office"
+  },
+  {
+   "fieldname": "section_break_mr9c1",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "project_office_name",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "column_break_omrox",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "project_office_title",
+   "fieldtype": "Data",
+   "label": "Title"
+  },
+  {
+   "fieldname": "column_break_xbuba",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "project_office_phone",
+   "fieldtype": "Data",
+   "label": "Phone Number",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "section_break_2cl6s",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "regional_environment_office",
+   "fieldtype": "HTML",
+   "label": "Regional Environment Office",
+   "options": "Regional Environment Office"
+  },
+  {
+   "fieldname": "section_break_0cu8o",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "regional_office_name",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "column_break_kacks",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "regional_office_title",
+   "fieldtype": "Data",
+   "label": "Title"
+  },
+  {
+   "fieldname": "column_break_tznfl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "regional_office_phone",
+   "fieldtype": "Data",
+   "label": "Phone Number",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "contractor_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Contractor"
+  },
+  {
+   "fieldname": "responsible",
+   "fieldtype": "HTML",
+   "label": "Responsible",
+   "options": "Person Responsible for Spill Response"
+  },
+  {
+   "fieldname": "section_break_qexpj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "contractor_name",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "column_break_hyb2n",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "contractor_title",
+   "fieldtype": "Data",
+   "label": "Title"
+  },
+  {
+   "fieldname": "column_break_pez9y",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "contractor_phone",
+   "fieldtype": "Data",
+   "label": "Phone Number",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "general_spill_information_section",
+   "fieldtype": "Section Break",
+   "label": "General Spill Information"
+  },
+  {
+   "fieldname": "common_name_of_spilled_substance",
+   "fieldtype": "Data",
+   "label": "Common Name of Spilled Substance"
+  },
+  {
+   "fieldname": "describe_concentration_of_material_estimate",
+   "fieldtype": "Small Text",
+   "label": "Describe Concentration of Material (Estimate)"
+  },
+  {
+   "fieldname": "date_of_spill",
+   "fieldtype": "Date",
+   "label": "Date of Spill"
+  },
+  {
+   "fieldname": "column_break_rthpc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "quantity_spilled_estimate",
+   "fieldtype": "Data",
+   "label": "Quantity Spilled (Estimate)"
+  },
+  {
+   "fieldname": "time_spill_started",
+   "fieldtype": "Time",
+   "label": "Time Spill Started"
+  },
+  {
+   "fieldname": "time_spill_ended",
+   "fieldtype": "Time",
+   "label": "Time Spill Ended"
+  },
+  {
+   "fieldname": "spill_location_and_conditions_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Spill Location and Conditions"
+  },
+  {
+   "fieldname": "project_title",
+   "fieldtype": "Data",
+   "label": "Project Title"
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Data",
+   "label": "Address"
+  },
+  {
+   "fieldname": "column_break_lqhlm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "weather_conditions",
+   "fieldtype": "Data",
+   "label": "Weather Conditions"
+  },
+  {
+   "fieldname": "section_break_n0c6f",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "water_html",
+   "fieldtype": "HTML",
+   "label": "Water HTML",
+   "options": "If Spill to Water,"
+  },
+  {
+   "description": "if ditch or culvert, identify the water body that the structure discharges to",
+   "fieldname": "name_of_water_body",
+   "fieldtype": "Data",
+   "label": "Name of Water Body"
+  },
+  {
+   "fieldname": "identify_the_discharge_point",
+   "fieldtype": "Data",
+   "label": "Identify the Discharge Point"
+  },
+  {
+   "fieldname": "column_break_xdssm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "estimate_the_depth_and_width_of_the_water_body",
+   "fieldtype": "Data",
+   "label": "Estimate the Depth and Width of the Water Body"
+  },
+  {
+   "description": "i.e. slow, moderate, or fast",
+   "fieldname": "estimate_flow_rate",
+   "fieldtype": "Data",
+   "label": "Estimate Flow Rate"
+  },
+  {
+   "fieldname": "section_break_zgnhj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "environmental_damage",
+   "fieldtype": "Small Text",
+   "label": "Describe Environmental Damage (i.e. fish kill?)"
+  },
+  {
+   "fieldname": "actions_taken_section",
+   "fieldtype": "Section Break",
+   "label": "Actions Taken"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Spill or Incident Report",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "space",
+   "fieldtype": "HTML",
+   "label": "space",
+   "options": "<br>"
+  },
+  {
+   "fieldname": "to_contain_spill_or_impact_of_incident",
+   "fieldtype": "Small Text",
+   "label": "To Contain Spill or Impact of Incident"
+  },
+  {
+   "fieldname": "to_cleanup_spill_or_recover_from_incident",
+   "fieldtype": "Small Text",
+   "label": "To Cleanup Spill or Recover from Incident"
+  },
+  {
+   "fieldname": "to_remove_cleanup_material",
+   "fieldtype": "Small Text",
+   "label": "To Remove Cleanup Material"
+  },
+  {
+   "fieldname": "to_document_disposal",
+   "fieldtype": "Small Text",
+   "label": "To Document Disposal"
+  },
+  {
+   "fieldname": "to_prevent_reoccurrence",
+   "fieldtype": "Small Text",
+   "label": "To Prevent Reoccurrence"
+  },
+  {
+   "fieldname": "reporting_the_spill_section",
+   "fieldtype": "Section Break",
+   "label": "Reporting the Spill"
+  },
+  {
+   "fieldname": "agencies_contacted",
+   "fieldtype": "Table",
+   "label": "Agencies Contacted",
+   "options": "Person"
+  },
+  {
+   "fieldname": "section_break",
+   "fieldtype": "Section Break",
+   "label": "Person Responsible for Managing Termination/Closure of Incident or Spill"
+  },
+  {
+   "fieldname": "additional_notesinformation_if_applicable",
+   "fieldtype": "Text Editor",
+   "label": "Additional Notes/Information (if applicable)"
+  },
+  {
+   "fieldname": "managing_name",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "managing_address",
+   "fieldtype": "Data",
+   "label": "Address"
+  },
+  {
+   "fieldname": "column_break_zibxc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "managing_phone",
+   "fieldtype": "Data",
+   "label": "Phone",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "managing_fax",
+   "fieldtype": "Data",
+   "label": "Fax"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-04-03 13:44:34.232437",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Spill or Incident Report",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

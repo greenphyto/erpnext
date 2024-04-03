@@ -16,7 +16,6 @@ class Report:
 		self.chart = []
 		self.list_type = [
 			"Maintenance Request",
-			"Incident Report", 
 			"Access Request",
 			"Inspection Checklist",
 			"Vendor Registration",

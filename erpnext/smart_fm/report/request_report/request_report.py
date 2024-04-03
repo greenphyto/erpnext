@@ -16,7 +16,6 @@ class Report:
 		self.chart = []
 		self.list_type = [
 			"Maintenance Request",
-			"Incident Report", 
 			"Access Request",
 			"Inspection Checklist",
 			"Vendor Registration",
@@ -78,7 +77,7 @@ class Report:
 		labels = []
 		datasets = []
 		data_dict = {}
-		list_type = ['Issued', 'Started']
+		list_type = ['Issued', 'Started', 'Resolved', 'Rejected']
 
 		for t in list_type:
 			data_dict[t] = []
@@ -105,7 +104,7 @@ class Report:
 				"labels": labels, 
 				"datasets": datasets,
 			}, 
-			"colors": ['yellow', "orange"],
+			"colors": ['yellow', "blue", "green", "red"],
 			"type": "bar"
 		}
 

@@ -1,0 +1,317 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "ISIR-.#####",
+ "creation": "2024-04-03 10:59:58.455689",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "reported_by",
+  "reporter_role",
+  "column_break_uqjri",
+  "date_of_report",
+  "incident_no",
+  "information_security_incident_information_section",
+  "date_of_incident",
+  "incident_manager",
+  "phone",
+  "column_break_9r6kr",
+  "time_of_incident",
+  "manager_role",
+  "email",
+  "section_break_89qi2",
+  "location",
+  "specific_area_of_location",
+  "incident_type",
+  "section_break_xjoso",
+  "no_of_hosts_affected",
+  "ip_address",
+  "operating_system",
+  "column_break_bpwxl",
+  "source_ip_address",
+  "computerhost",
+  "other_applications",
+  "section_break_bqtzm",
+  "incident_description",
+  "impact_assessment",
+  "resulting_damage",
+  "immediate_action_taken",
+  "planned_action_and_resulting_preventive_measures",
+  "additional_information",
+  "department_list",
+  "section_break_zwvwt",
+  "reporting_staff_name",
+  "column_break_qwyab",
+  "reporting_staff_signature",
+  "column_break_ghmht",
+  "reporting_date",
+  "section_break_pfkbb",
+  "supervisor_name",
+  "column_break_6xexj",
+  "supervisor_signature",
+  "column_break_6skbi",
+  "supervisor_date",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "reported_by",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Reported By",
+   "reqd": 1
+  },
+  {
+   "fieldname": "reporter_role",
+   "fieldtype": "Data",
+   "label": "Title/Role"
+  },
+  {
+   "fieldname": "column_break_uqjri",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "date_of_report",
+   "fieldtype": "Date",
+   "label": "Date of Report"
+  },
+  {
+   "fieldname": "incident_no",
+   "fieldtype": "Data",
+   "label": "Incident No."
+  },
+  {
+   "fieldname": "information_security_incident_information_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Information Security Incident Information"
+  },
+  {
+   "fieldname": "date_of_incident",
+   "fieldtype": "Date",
+   "label": "Date of Incident"
+  },
+  {
+   "fieldname": "incident_manager",
+   "fieldtype": "Data",
+   "label": "Incident Manager"
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Phone",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "column_break_9r6kr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "time_of_incident",
+   "fieldtype": "Time",
+   "label": "Time of Incident"
+  },
+  {
+   "fieldname": "manager_role",
+   "fieldtype": "Data",
+   "label": "Title/Role"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "section_break_89qi2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Small Text",
+   "label": "Location"
+  },
+  {
+   "fieldname": "specific_area_of_location",
+   "fieldtype": "Small Text",
+   "label": "Specific Area of Location (if applicable)"
+  },
+  {
+   "fieldname": "incident_type",
+   "fieldtype": "Small Text",
+   "label": "Incident Type"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Information Security Incident Report",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_xjoso",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "no_of_hosts_affected",
+   "fieldtype": "Int",
+   "label": "No. of Hosts Affected"
+  },
+  {
+   "fieldname": "ip_address",
+   "fieldtype": "Data",
+   "label": "IP Address"
+  },
+  {
+   "fieldname": "operating_system",
+   "fieldtype": "Data",
+   "label": "Operating System"
+  },
+  {
+   "fieldname": "column_break_bpwxl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "source_ip_address",
+   "fieldtype": "Data",
+   "label": "Source IP Address"
+  },
+  {
+   "fieldname": "computerhost",
+   "fieldtype": "Data",
+   "label": "Computer/Host"
+  },
+  {
+   "fieldname": "other_applications",
+   "fieldtype": "Data",
+   "label": "Other Applications"
+  },
+  {
+   "fieldname": "section_break_bqtzm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "incident_description",
+   "fieldtype": "Small Text",
+   "label": "Incident Description"
+  },
+  {
+   "fieldname": "impact_assessment",
+   "fieldtype": "Small Text",
+   "label": "Impact Assessment"
+  },
+  {
+   "fieldname": "resulting_damage",
+   "fieldtype": "Small Text",
+   "label": "Resulting Damage"
+  },
+  {
+   "fieldname": "immediate_action_taken",
+   "fieldtype": "Small Text",
+   "label": "Immediate Action Taken"
+  },
+  {
+   "fieldname": "planned_action_and_resulting_preventive_measures",
+   "fieldtype": "Small Text",
+   "label": "Planned Action and Resulting Preventive Measures"
+  },
+  {
+   "fieldname": "additional_information",
+   "fieldtype": "Small Text",
+   "label": "Additional Information"
+  },
+  {
+   "fieldname": "department_list",
+   "fieldtype": "Table",
+   "label": "Information Security Incident Information Sharing",
+   "options": "Notifying Department"
+  },
+  {
+   "fieldname": "section_break_zwvwt",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "reporting_staff_name",
+   "fieldtype": "Data",
+   "label": "Reporting Staff Name"
+  },
+  {
+   "fieldname": "column_break_qwyab",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reporting_staff_signature",
+   "fieldtype": "Signature",
+   "label": "Reporting Staff Signature"
+  },
+  {
+   "fieldname": "column_break_ghmht",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reporting_date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "fieldname": "section_break_pfkbb",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "supervisor_name",
+   "fieldtype": "Data",
+   "label": "Supervisor Name"
+  },
+  {
+   "fieldname": "column_break_6xexj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supervisor_signature",
+   "fieldtype": "Signature",
+   "label": "Supervisor Signature"
+  },
+  {
+   "fieldname": "column_break_6skbi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supervisor_date",
+   "fieldtype": "Date",
+   "label": "Date"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-04-03 11:09:40.984474",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Information Security Incident Report",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

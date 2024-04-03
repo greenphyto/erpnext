@@ -1,0 +1,268 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "PSIR-.#####",
+ "creation": "2024-04-03 11:20:46.598951",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "reported_by",
+  "reporter_role",
+  "column_break_uqjri",
+  "date_of_report",
+  "incident_no",
+  "information_security_incident_information_section",
+  "incident_type",
+  "column_break_9r6kr",
+  "date_of_incident",
+  "section_break_89qi2",
+  "location",
+  "section_break_ybxu5",
+  "city",
+  "column_break_8f6q4",
+  "state",
+  "column_break_izypj",
+  "zip_code",
+  "section_break_zdlo9",
+  "specific_area_of_location",
+  "section_break_bqtzm",
+  "incident_description",
+  "involved_list",
+  "witness_list",
+  "section_break_koplu",
+  "police_report_filed",
+  "reporting_officer",
+  "column_break_iav8r",
+  "precinct",
+  "officer_phone",
+  "section_break_pfkbb",
+  "supervisor_name",
+  "column_break_6xexj",
+  "supervisor_signature",
+  "column_break_6skbi",
+  "supervisor_date",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "reported_by",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Reported By",
+   "reqd": 1
+  },
+  {
+   "fieldname": "reporter_role",
+   "fieldtype": "Data",
+   "label": "Title/Role"
+  },
+  {
+   "fieldname": "column_break_uqjri",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "date_of_report",
+   "fieldtype": "Date",
+   "label": "Date of Report"
+  },
+  {
+   "fieldname": "incident_no",
+   "fieldtype": "Data",
+   "label": "Incident No."
+  },
+  {
+   "fieldname": "information_security_incident_information_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Incident Information"
+  },
+  {
+   "fieldname": "incident_type",
+   "fieldtype": "Small Text",
+   "label": "Incident Type"
+  },
+  {
+   "fieldname": "column_break_9r6kr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date_of_incident",
+   "fieldtype": "Date",
+   "label": "Date of Incident"
+  },
+  {
+   "fieldname": "section_break_89qi2",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Small Text",
+   "label": "Location"
+  },
+  {
+   "fieldname": "section_break_ybxu5",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "column_break_8f6q4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "column_break_izypj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "zip_code",
+   "fieldtype": "Data",
+   "label": "ZIP Code"
+  },
+  {
+   "fieldname": "section_break_zdlo9",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "specific_area_of_location",
+   "fieldtype": "Small Text",
+   "label": "Specific Area of Location (if applicable)"
+  },
+  {
+   "fieldname": "section_break_bqtzm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "incident_description",
+   "fieldtype": "Small Text",
+   "label": "Incident Description"
+  },
+  {
+   "fieldname": "section_break_pfkbb",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "supervisor_name",
+   "fieldtype": "Data",
+   "label": "Supervisor Name"
+  },
+  {
+   "fieldname": "column_break_6xexj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supervisor_signature",
+   "fieldtype": "Signature",
+   "label": "Supervisor Signature"
+  },
+  {
+   "fieldname": "column_break_6skbi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supervisor_date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Physical Security Incident Report",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Physical Security Incident Report",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "involved_list",
+   "fieldtype": "Table",
+   "label": "Parties Involved",
+   "options": "Person"
+  },
+  {
+   "fieldname": "witness_list",
+   "fieldtype": "Table",
+   "label": "Witnesses",
+   "options": "Person"
+  },
+  {
+   "fieldname": "section_break_koplu",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "police_report_filed",
+   "fieldtype": "Select",
+   "label": "Police Report Filed",
+   "options": "Yes\nNo"
+  },
+  {
+   "fieldname": "reporting_officer",
+   "fieldtype": "Data",
+   "label": "Reporting Officer"
+  },
+  {
+   "fieldname": "column_break_iav8r",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "precinct",
+   "fieldtype": "Data",
+   "label": "Precinct"
+  },
+  {
+   "fieldname": "officer_phone",
+   "fieldtype": "Data",
+   "label": "Phone",
+   "options": "Phone"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-04-03 11:28:28.146753",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Physical Security Incident Report",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
