@@ -9,6 +9,7 @@
   "posting_date",
   "transaction_date",
   "account",
+  "account_name",
   "party_type",
   "party",
   "cost_center",
@@ -267,13 +268,18 @@
    "fieldtype": "Data",
    "label": "Against Account",
    "length": 500
+  },
+  {
+   "fieldname": "account_name",
+   "fieldtype": "Data",
+   "label": "Account"
   }
  ],
  "icon": "fa fa-list",
  "idx": 1,
  "in_create": 1,
  "links": [],
- "modified": "2024-03-05 11:05:07.795984",
+ "modified": "2024-04-03 14:57:36.112599",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "GL Entry",
