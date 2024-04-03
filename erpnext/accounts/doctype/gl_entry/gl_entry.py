@@ -115,6 +115,8 @@ class GLEntry(Document):
 		against_party = []
 		for against in against_list:
 			if acc_flags in against:
+				account_name = frappe.db.get_value("Account", against, "account_name")
+				against  = account_name + acc_flags
 				against_account.append(against)
 			else:
 				against_party.append(against)
