@@ -363,6 +363,7 @@ class ExchangeRateRevaluation(Document):
 		journal_entry.company = self.company
 		journal_entry.posting_date = self.posting_date
 		journal_entry.multi_currency = 1
+		journal_entry.title = "Zero Revaluation Entry"
 
 		journal_entry_accounts = []
 		for d in accounts:
@@ -572,6 +573,7 @@ class ExchangeRateRevaluation(Document):
 		journal_entry.company = self.company
 		journal_entry.posting_date = self.posting_date
 		journal_entry.multi_currency = 1
+		journal_entry.title = "Non-Zero Revaluation Entry"
 
 		adj_row = []
 
