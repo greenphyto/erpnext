@@ -48,7 +48,12 @@ frappe.treeview_settings["Cost Center"] = {
 		treeview.page.add_inner_button(__("Budget Variance Report"), function() {
 			frappe.set_route('query-report', 'Budget Variance Report', {company: get_company()});
 		}, __('Budget'));
-
+	},
+	node_onload: function(dialog){
+		setTimeout(()=>{
+			var data = dialog.get_values(1);
+			dialog.set_value("abbreviation", data.parent_cost_center);
+		}, 500);
 	}
 
 }
