@@ -185,7 +185,7 @@ def get_gl_entries(filters, accounting_dimensions):
 	gl_entries = frappe.db.sql(
 		"""
 		select
-			name as gl_entry, posting_date, account_name as account, party_type, party,
+			name as gl_entry, posting_date, account_number, account_name as account, party_type, party,
 			voucher_type, voucher_no, {dimension_fields}
 			cost_center, project,
 			against_voucher_type, against_voucher, account_currency,
@@ -524,12 +524,16 @@ def get_columns(filters):
 			"options": "GL Entry",
 			"hidden": 1,
 		},
-		{"label": _("Posting Date"), "fieldname": "posting_date", "fieldtype": "Date", "width": 90},
+		{"label": _("Posting Date"), "fieldname": "posting_date", "fieldtype": "Date", "width": 100},
 		{
+			"label": _("Acc. Number"),
+			"fieldname": "account_number",
+			"fieldtype": "Data",
+			"width": 80,
+		},{
 			"label": _("Account"),
 			"fieldname": "account",
 			"fieldtype": "Data",
-			"options": "Account",
 			"width": 180,
 		},
 		{
