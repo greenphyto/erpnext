@@ -345,10 +345,8 @@ def add_user_permissions(doc, method=""):
 	if adds:
 		if employee_user_permission_exists:
 			return
-
 		add_user_permission("User", doc.name, doc.name)
 	else:
 		if not employee_user_permission_exists:
 			return
-		
 		remove_user_permission("User", doc.name, doc.name)
