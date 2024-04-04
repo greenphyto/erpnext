@@ -22,8 +22,8 @@ frappe.treeview_settings["Cost Center"] = {
 		{fieldtype:'Data', fieldname:'cost_center_name', label:__('New Cost Center Name'), reqd:true},
 		{fieldtype:'Check', fieldname:'is_group', label:__('Is Group'),
 			description:__('Further cost centers can be made under Groups but entries can be made against non-Groups')},
-		{fieldtype:'Data', fieldname:'cost_center_number', label:__('Cost Center Number'),
-			description: __("Number of new Cost Center, it will be included in the cost center name as a prefix")}
+		{fieldtype:'Data', fieldname:'abbreviation', label:__('Abbreviation'),
+			description: __("The last Company abbreviation")}
 	],
 	ignore_fields:["parent_cost_center"],
 	onload: function(treeview) {
