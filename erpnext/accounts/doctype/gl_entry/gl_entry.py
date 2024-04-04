@@ -113,16 +113,20 @@ class GLEntry(Document):
 		
 		against_account = []
 		against_party = []
+		against_account_number = []
 		for against in against_list:
 			if acc_flags in against:
-				account_name = frappe.db.get_value("Account", against, "account_name")
+				account_name, account_number  = frappe.db.get_value("Account", against, ["account_name", "account_number"]) or ["", 0]
 				against  = account_name + acc_flags
 				against_account.append(against)
+				against_account_number.append(account_number)
 			else:
 				against_party.append(against)
 
 		self.against_account = ", ".join(against_account)
 		self.against_party =  ", ".join(against_party)
+		self.against_account_number = ", ".join(against_account_number)
+		self.account_number = frappe.get_value("Account", self.account, "account_number")
 
 	def check_mandatory(self):
 	 
@@ -717,7 +721,8 @@ def add_account_number():
 	account = frappe.db.sql("select name, account_name, account_number from `tabAccount`", as_dict=1)
 	account_map = {}
 	for d in account:
-		account_map[d.name] = d.account_number
+		key = f"{d.account_name} - GPL"
+		account_map[key] = d.account_number
 
 	idx = 0
 	print(len(data))
@@ -732,7 +737,8 @@ def add_account_number():
 				res.append(new_name)
 		
 		new_value = ", ".join(res)
-		frappe.db.set_value("GL Entry", d.name, "againts_account_number", new_value)
+		frappe.db.set_value("GL Entry", d.name, "against_account_number", new_value)
+
 		if idx & 100 == 0:
 			print("Index",idx, dt, new_value)
 			frappe.db.commit()
