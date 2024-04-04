@@ -135,5 +135,25 @@ frappe.ui.form.on('Cost Center', {
 				frm.refresh();
 			}
 		});
+	},
+
+	company(frm){
+		frm.events.set_abbreviation(frm);
+	},
+
+	parent_cost_center(frm){
+		frm.events.set_abbreviation(frm, 1);
+	}, 
+
+	set_abbreviation(frm, force=0){
+		if (!frm.doc.abbreviation || force){
+			if (!frm.doc.parent_cost_center){
+				frappe.db.get_value("Company", frm.doc.company, "abbr").then(r=>{
+					frm.set_value("abbreviation", r.message.abbr);
+				})
+			}if ((frm.doc.parent_cost_center || "").length < 8){
+				frm.set_value("abbreviation", frm.doc.parent_cost_center);
+			}
+		}
 	}
 });
