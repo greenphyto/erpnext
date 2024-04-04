@@ -19,7 +19,11 @@
   "key_or_access_card_request_details_section",
   "request_access",
   "reason",
+  "section_break_pikoh",
   "datetime",
+  "column_break_iplgx",
+  "return_datetime",
+  "section_break_pz9oq",
   "declaration",
   "section_break_psexz",
   "signature",
@@ -72,6 +76,7 @@
   {
    "fieldname": "key_or_access_card_request_details_section",
    "fieldtype": "Section Break",
+   "hide_border": 1,
    "label": "Key or Access Card Request Details"
   },
   {
@@ -152,14 +157,12 @@
    "label": "Building Management Comment"
   },
   {
-   "depends_on": "",
    "fieldname": "bm_comment",
    "fieldtype": "Text Editor",
    "label": "Comment",
    "permlevel": 2
   },
   {
-   "depends_on": "",
    "fieldname": "bm_attachment",
    "fieldtype": "Attach Image",
    "label": "Attachment",
@@ -172,12 +175,32 @@
    "label": "BM Preview",
    "options": "bm_attachment",
    "permlevel": 2
+  },
+  {
+   "fieldname": "section_break_pikoh",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_iplgx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.workflow_state == 'Started'",
+   "fieldname": "return_datetime",
+   "fieldtype": "Datetime",
+   "label": "Return Date and Time",
+   "mandatory_depends_on": "eval:doc.workflow_state == 'Started'"
+  },
+  {
+   "fieldname": "section_break_pz9oq",
+   "fieldtype": "Section Break",
+   "hide_border": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-01-03 15:23:00.606879",
+ "modified": "2024-04-04 10:42:35.988379",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Key Control",
