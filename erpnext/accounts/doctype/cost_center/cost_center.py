@@ -18,7 +18,10 @@ class CostCenter(NestedSet):
 		# self.name = get_autoname_with_number(
 		# 	self.cost_center_number, self.cost_center_name, self.company
 		# )
-		self.name = f"{self.cost_center_name} ({self.abbreviation})"
+		if self.abbreviation:
+			self.name = f"{self.cost_center_name} ({self.abbreviation})"
+		else:
+			self.name = self.cost_center_name
 
 	def validate(self):
 		self.validate_mandatory()

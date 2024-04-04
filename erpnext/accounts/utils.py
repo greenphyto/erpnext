@@ -1041,7 +1041,11 @@ def update_cost_center(docname, cost_center_name, abbreviation, company, merge):
 	frappe.db.set_value("Cost Center", docname, "abbreviation", abbreviation)
 	frappe.db.set_value("Cost Center", docname, "cost_center_name", cost_center_name.strip())
 
-	new_name = f"{cost_center_name} ({abbreviation})"
+	if abbreviation:
+		new_name = f"{cost_center_name} ({abbreviation})"
+	else:
+		new_name = cost_center_name
+
 	if frappe.db.exists("Cost Center", {"name":new_name}):
 		frappe.throw(_(f"New name <b>{new_name}</b> already exist"))
 
