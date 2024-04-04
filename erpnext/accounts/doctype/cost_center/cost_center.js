@@ -57,10 +57,10 @@ frappe.ui.form.on('Cost Center', {
 					"default": frm.doc.cost_center_name
 				},
 				{
-					"label": "Cost Center Number",
-					"fieldname": "cost_center_number",
+					"label": "Abbreviation",
+					"fieldname": "abbreviation",
 					"fieldtype": "Data",
-					"default": frm.doc.cost_center_number
+					"default": frm.doc.abbreviation
 				},
 				{
 					"label": __("Merge with existing"),
@@ -71,7 +71,7 @@ frappe.ui.form.on('Cost Center', {
 			],
 			primary_action: function() {
 				var data = d.get_values();
-				if(data.cost_center_name === frm.doc.cost_center_name && data.cost_center_number === frm.doc.cost_center_number) {
+				if(data.cost_center_name === frm.doc.cost_center_name && data.abbreviation === frm.doc.abbreviation) {
 					d.hide();
 					return;
 				}
@@ -81,7 +81,7 @@ frappe.ui.form.on('Cost Center', {
 					args: {
 						docname: frm.doc.name,
 						cost_center_name: data.cost_center_name,
-						cost_center_number: cstr(data.cost_center_number),
+						abbreviation: data.abbreviation,
 						company: frm.doc.company,
 						merge: data.merge
 					},
@@ -92,7 +92,7 @@ frappe.ui.form.on('Cost Center', {
 								frappe.set_route("Form", "Cost Center", r.message);
 							} else {
 								me.frm.set_value("cost_center_name", data.cost_center_name);
-								me.frm.set_value("cost_center_number", data.cost_center_number);
+								me.frm.set_value("abbreviation", data.abbreviation);
 							}
 							d.hide();
 						}

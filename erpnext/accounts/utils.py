@@ -1032,21 +1032,19 @@ def create_payment_gateway_account(gateway, payment_channel="Email"):
 
 
 @frappe.whitelist()
-def update_cost_center(docname, cost_center_name, cost_center_number, company, merge):
+def update_cost_center(docname, cost_center_name, abbreviation, company, merge):
 	"""
 	Renames the document by adding the number as a prefix to the current name and updates
 	all transaction where it was present.
 	"""
-	validate_field_number("Cost Center", docname, cost_center_number, company, "cost_center_number")
-
-	if cost_center_number:
-		frappe.db.set_value("Cost Center", docname, "cost_center_number", cost_center_number.strip())
-	else:
-		frappe.db.set_value("Cost Center", docname, "cost_center_number", "")
-
+	print(1040, docname, cost_center_name, abbreviation)
+	frappe.db.set_value("Cost Center", docname, "abbreviation", abbreviation)
 	frappe.db.set_value("Cost Center", docname, "cost_center_name", cost_center_name.strip())
 
-	new_name = get_autoname_with_number(cost_center_number, cost_center_name, company)
+	new_name = f"{cost_center_name} ({abbreviation})"
+	if frappe.db.exists("Cost Center", {"name":new_name}):
+		frappe.throw(_(f"New name <b>{new_name}</b> already exist"))
+
 	if docname != new_name:
 		frappe.rename_doc("Cost Center", docname, new_name, force=1, merge=merge)
 		return new_name

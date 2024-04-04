@@ -84,46 +84,46 @@ class CostCenter(NestedSet):
 			"Cost Center Allocation Percentage", filters={"cost_center": self.name, "docstatus": 1}
 		)
 
-	def before_rename(self, olddn, newdn, merge=False):
-		# Add company abbr if not provided
-		from erpnext.setup.doctype.company.company import get_name_with_abbr
+	# def before_rename(self, olddn, newdn, merge=False):
+	# 	# Add company abbr if not provided
+	# 	from erpnext.setup.doctype.company.company import get_name_with_abbr
 
-		new_cost_center = get_name_with_abbr(newdn, self.company)
+	# 	new_cost_center = get_name_with_abbr(newdn, self.company)
 
-		# Validate properties before merging
-		super(CostCenter, self).before_rename(olddn, new_cost_center, merge, "is_group")
-		if not merge:
-			new_cost_center = get_name_with_number(new_cost_center, self.cost_center_number)
+	# 	# Validate properties before merging
+	# 	super(CostCenter, self).before_rename(olddn, new_cost_center, merge, "is_group")
+	# 	if not merge:
+	# 		new_cost_center = get_name_with_number(new_cost_center, self.cost_center_number)
 
-		return new_cost_center
+	# 	return new_cost_center
 
-	def after_rename(self, olddn, newdn, merge=False):
-		super(CostCenter, self).after_rename(olddn, newdn, merge)
+	# def after_rename(self, olddn, newdn, merge=False):
+	# 	super(CostCenter, self).after_rename(olddn, newdn, merge)
 
-		if not merge:
-			new_cost_center = frappe.db.get_value(
-				"Cost Center", newdn, ["cost_center_name", "cost_center_number"], as_dict=1
-			)
+	# 	if not merge:
+	# 		new_cost_center = frappe.db.get_value(
+	# 			"Cost Center", newdn, ["cost_center_name", "cost_center_number"], as_dict=1
+	# 		)
 
-			# exclude company abbr
-			new_parts = newdn.split(" - ")[:-1]
-			# update cost center number and remove from parts
-			if new_parts[0][0].isdigit():
-				if len(new_parts) == 1:
-					new_parts = newdn.split(" ")
-				if new_cost_center.cost_center_number != new_parts[0]:
-					validate_field_number(
-						"Cost Center", self.name, new_parts[0], self.company, "cost_center_number"
-					)
-					self.cost_center_number = new_parts[0]
-					self.db_set("cost_center_number", new_parts[0])
-				new_parts = new_parts[1:]
+	# 		# exclude company abbr
+	# 		new_parts = newdn.split(" - ")[:-1]
+	# 		# update cost center number and remove from parts
+	# 		if new_parts[0][0].isdigit():
+	# 			if len(new_parts) == 1:
+	# 				new_parts = newdn.split(" ")
+	# 			if new_cost_center.cost_center_number != new_parts[0]:
+	# 				validate_field_number(
+	# 					"Cost Center", self.name, new_parts[0], self.company, "cost_center_number"
+	# 				)
+	# 				self.cost_center_number = new_parts[0]
+	# 				self.db_set("cost_center_number", new_parts[0])
+	# 			new_parts = new_parts[1:]
 
-			# update cost center name
-			cost_center_name = " - ".join(new_parts)
-			if new_cost_center.cost_center_name != cost_center_name:
-				self.cost_center_name = cost_center_name
-				self.db_set("cost_center_name", cost_center_name)
+	# 		# update cost center name
+	# 		cost_center_name = " - ".join(new_parts)
+	# 		if new_cost_center.cost_center_name != cost_center_name:
+	# 			self.cost_center_name = cost_center_name
+	# 			self.db_set("cost_center_name", cost_center_name)
 
 
 def on_doctype_update():
