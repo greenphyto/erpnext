@@ -6,9 +6,30 @@ from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 
 class AccessRequest(Document):
-  pass
-	# def autoname(self):
-	# 	self.name = make_autoname(self.company[0:3].upper() + "-.#####") 
+	def validate(self):
+
+		if self.workflow_state == "Started":
+			self.update_todo(start=1)
+		elif self.workflow_state == "Resolved":
+			self.update_todo(start=2)
+	
+	def update_todo(self, start=0):
+		# start = 1 for yes, 2 for stop
+		filters = {
+			"reference_type": self.doctype,
+			"reference_name": self.name,
+			"status": "Planned",
+			# "allocated_to": assign_to, # temporary all assign
+		}
+		data = frappe.get_all("ToDo", filters=filters)
+		if data:
+			for d in data:
+				todo = frappe.get_doc("ToDo", d.name)
+				if start == 1:
+					todo.set_working_time(1)
+				else:
+					todo.set_working_time(0)
+				todo.db_update()
 
 @frappe.whitelist()
 def create_to_do(name):
