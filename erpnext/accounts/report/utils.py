@@ -165,8 +165,16 @@ def convert_wrap_report_data(column, data, precision=0):
 
 	for d in data:
 		for field, val in d.items():
-			if flt(val) and field in currency_cols and val < 0:
-				d[field] = f"({ flt(abs(val), precision) })"
+			if flt(val):
+				val = flt(val, 2)
+				if field in currency_cols and val < 0:
+					d[field] = f"({ flt(abs(val), precision) })"
+				else:
+					d[field] = val
+				
 
 	return data
+
+def make_two_digit(value):
+	return flt(value, 2)
 
