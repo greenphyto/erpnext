@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "account",
+  "account_code",
   "account_type",
   "balance",
   "gst_input_tax",
@@ -302,12 +303,19 @@
    "fieldtype": "Link",
    "label": "GST Type",
    "options": "Purchase Taxes and Charges Template"
+  },
+  {
+   "fetch_from": "account.account_number",
+   "fieldname": "account_code",
+   "fieldtype": "Data",
+   "label": "Account Code",
+   "read_only": 1
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-02-02 18:52:57.268397",
+ "modified": "2024-04-09 14:21:02.727088",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry Account",
