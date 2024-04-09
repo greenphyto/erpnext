@@ -14,7 +14,7 @@ from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 	get_accounting_dimensions,
 	get_dimension_with_children,
 )
-from erpnext.accounts.report.utils import convert_to_presentation_currency, get_currency, make_two_digit
+from erpnext.accounts.report.utils import convert_to_presentation_currency, get_currency
 from erpnext.accounts.utils import get_fiscal_year
 
 
@@ -229,11 +229,6 @@ def get_data(
 	if out and total:
 		add_total_row(out, root_type, balance_must_be, period_list, company_currency)
 
-	for d in out:
-		for field, val in d.items():
-			if flt(val):
-				d[field] = flt(val, 2)
-
 	return out
 
 
@@ -320,12 +315,12 @@ def prepare_data(accounts, balance_must_be, period_list, company_currency):
 				# change sign based on Debit or Credit, since calculation is done using (debit - credit)
 				d[period.key] *= -1
 
-			row[period.key] = make_two_digit(flt(d.get(period.key, 0.0), 3))
+			row[period.key] = flt(d.get(period.key, 0.0), 3)
 
 			if abs(row[period.key]) >= 0.005:
 				# ignore zero values
 				has_value = True
-				total += make_two_digit(row[period.key])
+				total += flt(row[period.key])
 
 		row["has_value"] = has_value
 		row["total"] = total
@@ -490,11 +485,6 @@ def set_gl_entries_by_account(
 			gl_filters,
 			as_dict=True,
 		)
-
-		for d in gl_entries:
-			for field, val in d.items():
-				if flt(val):
-					d[field] = flt(val, 2)
 
 		if filters and filters.get("presentation_currency"):
 			convert_to_presentation_currency(gl_entries, get_currency(filters), filters.get("company"))

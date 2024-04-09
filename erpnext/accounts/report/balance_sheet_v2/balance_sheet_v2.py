@@ -14,7 +14,7 @@ from erpnext.accounts.report.financial_statements import (
 )
 
 from erpnext.accounts.utils import remove_account_number
-from erpnext.accounts.report.utils import convert_wrap_report_data, make_two_digit
+from erpnext.accounts.report.utils import convert_wrap_report_data
 
 
 def execute(filters=None):
