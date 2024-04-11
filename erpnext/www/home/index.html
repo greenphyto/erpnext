@@ -1,0 +1,57 @@
+{% from "erpnext/templates/includes/macros.html" import attribute_filter_section, field_filter_section, discount_range_filters %}
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _('All Products') }}{% endblock %}
+
+{% block style %}
+  <style>
+		.container {
+			position: relative;
+		}
+    .content::before {
+			position: absolute;
+      content: "";
+			background-image: url("/assets/erpnext/images/smartfm/greenphyto-building.jpg");
+      background-size: cover;
+			opacity: 0.7;
+      top: 0px;
+      right: 0px;
+      bottom: 0px;
+      left: 0px;
+		}
+    .content {
+			position: relative;
+		}
+		.title-container {
+			position: relative;
+			margin-right: 70px;
+			padding-bottom: 80px;
+			height: 80vh;
+			display: flex;
+			align-items: center;
+			justify-content: flex-end;
+			text-align: right;
+		}
+		.title {
+			margin-bottom: 20px;
+			font-weight: 700;
+		}
+  </style>
+{% endblock %}
+
+{% block page_content %}
+<div class="container">
+	<div class="content">
+		<!-- <img class="image" src="/assets/erpnext/images/smartfm/greenphyto-building.jpg" alt="Empty Cart"> -->
+		<div class="title-container">
+			<div>
+				<h3 class="title">{{ _("Welcome to Smart FM") }}</h3>
+				<button class="btn btn-primary" onclick="location.href = '/home/visitor-registration';">
+					{{ _("Visitor Management") }}
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
