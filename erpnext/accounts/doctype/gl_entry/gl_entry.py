@@ -118,10 +118,14 @@ class GLEntry(Document):
 			if acc_flags in against:
 				account_name, account_number  = frappe.db.get_value("Account", against, ["account_name", "account_number"]) or ["", 0]
 				against  = account_name + acc_flags
-				against_account.append(against)
-				against_account_number.append(account_number)
+				if against:
+					against_account.append(against)
+				if account_number:
+					against_account_number.append(account_number)
 			else:
-				against_party.append(against)
+				if against:
+					against_account.append(against)
+					against_party.append(against)
 
 		self.against_account = ", ".join(against_account)
 		self.against_party =  ", ".join(against_party)
