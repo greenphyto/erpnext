@@ -697,7 +697,7 @@ class JournalEntry(AccountsController):
 				d.exchange_rate = 1
 			elif (
 				not d.exchange_rate
-				or d.exchange_rate == 1
+				# or d.exchange_rate == 1
 				or (
 					d.reference_type in ("Sales Invoice", "Purchase Invoice")
 					and d.reference_name
