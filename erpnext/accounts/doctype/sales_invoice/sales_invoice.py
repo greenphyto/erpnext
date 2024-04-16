@@ -1690,6 +1690,11 @@ class SalesInvoice(SellingController):
 
 		if update:
 			self.db_set("status", self.status, update_modified=update_modified)
+	
+	def finish_delete(self):
+		log = frappe.db.get_value("Deleted Document", {"deleted_name":self.name, "deleted_doctype": self.doctype})
+		if log:
+			frappe.db.set_value("Deleted Document", log, "document_date", self.posting_date)
 
 
 def get_total_in_party_account_currency(doc):

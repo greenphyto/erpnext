@@ -1667,6 +1667,11 @@ class PurchaseInvoice(BuyingController):
 
 		if update:
 			self.db_set("status", self.status, update_modified=update_modified)
+			
+	def finish_delete(self):
+		log = frappe.db.get_value("Deleted Document", {"deleted_name":self.name, "deleted_doctype": self.doctype})
+		if log:
+			frappe.db.set_value("Deleted Document", log, "document_date", self.posting_date)
 
 
 # to get details of purchase invoice/receipt from which this doc was created for exchange rate difference handling
