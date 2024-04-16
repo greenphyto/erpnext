@@ -28,7 +28,7 @@ class VATAuditReport(object):
 		self.get_columns()
 		gftotal_net = gstotal_net = gptotal_net = 0
 		totalsstr = "Output Tax Due"
-		totalpstr = "Less:Input Tax and Redunds claimed"
+		totalpstr = "Less:Input Tax and Refunds claimed"
 		totalfstr = "Equals: Net GST to be paid by you or <br>Net GST to be claimed by you"
 		for doctype in self.doctypes:
 			self.select_columns = """
