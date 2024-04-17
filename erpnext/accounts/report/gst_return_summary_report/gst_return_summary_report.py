@@ -25,11 +25,12 @@ class VATAuditReport(object):
 
 	def run(self):
 		#self.get_sa_vat_accounts()
+		self.invoice_items = frappe._dict()
 		self.get_columns()
 		gftotal_net = gstotal_net = gptotal_net = 0
 		totalsstr = "Output Tax Due"
 		totalpstr = "Less:Input Tax and Refunds claimed"
-		totalfstr = "Equals: Net GST to be paid by you or <br>Net GST to be claimed by you"
+		totalfstr = "Equals: Net GST to be paid by you or Net GST to be claimed by you"
 		for doctype in self.doctypes:
 			self.select_columns = """
 			name as voucher_no,
@@ -118,14 +119,14 @@ class VATAuditReport(object):
 			debug=0
 		)
 
-		# add cancelled
-
 		for d in invoice_data:
 			self.invoices.setdefault(d.voucher_no, d)
 
+		# add deleted
+		self.get_deleted_data(doctype)
+
 	def get_invoice_items(self, doctype):
-		self.invoice_items = frappe._dict()
-#, is_zero_rated
+		#, is_zero_rated
 		items = frappe.db.sql(
 			"""
 			SELECT
@@ -148,7 +149,7 @@ class VATAuditReport(object):
 		tax_doctype = (
 			"Purchase Taxes and Charges" if doctype == "Purchase Invoice" else "Sales Taxes and Charges"
 		)
-#, is_zero_rated
+		#, is_zero_rated
 		items = frappe.db.sql(
 			"""
 			SELECT
@@ -172,7 +173,7 @@ class VATAuditReport(object):
 			"Purchase Taxes and Charges" if doctype == "Purchase Invoice" else "Sales Taxes and Charges"
 		)
 
-		self.tax_details = frappe.db.sql(
+		self.tax_details = list(frappe.db.sql(
 			"""
 			SELECT
 				parent, account_head, item_wise_tax_detail, parenttype
@@ -185,8 +186,11 @@ class VATAuditReport(object):
 				account_head
 			"""
 			% (self.tax_doctype, "%s", ", ".join(["%s"] * len(self.invoices.keys()))),
-			tuple([doctype] + list(self.invoices.keys())),
-		)
+			tuple([doctype] + list(self.invoices.keys())), 
+		))
+
+		self.tax_details += self.tax_detail_on_deleted 
+
 
 		for parent, account, item_wise_tax_detail, parenttype in self.tax_details:
 			if item_wise_tax_detail:
@@ -212,16 +216,12 @@ class VATAuditReport(object):
 								rate_based_dict.append(item_code)
 				except ValueError:
 					continue
-		
-		# for inv, d in self.invoices.items():
-		# 	if inv not in self.items_based_on_tax_rate:
-		# 		self.items_based_on_tax_rate.setdefault(parent, {}).setdefault(tax_rate, [])
 
 	def get_item_amount_map(self, parent, parenttype, item_code, taxes):
-		net_amount =self.invoice_items.get(parent).get(item_code).get("net_amount")
+		net_amount = flt(self.invoice_items.get(parent).get(item_code).get("net_amount"))
 		gst_item = False
 		if not net_amount and parent and parenttype == "Purchase Invoice":
-			net_amount = frappe.get_value("Purchase Invoice", parent, "base_value_for_gst_input")
+			net_amount = flt(frappe.get_value("Purchase Invoice", parent, "base_value_for_gst_input"))
 			gst_item = True
 
 		tax_rate = taxes[0]
@@ -265,11 +265,6 @@ class VATAuditReport(object):
 
 	def get_data(self, doctype):
 		consolidated_data = self.get_consolidated_data(doctype)
-		# pi_cancel = self.get_cancelled_data("Purchase Invoice")
-		# si_cancel = self.get_cancelled_data("Sales Invoice")
-		# pi_cancel_idx = 0
-		# si_cancel_idx = 0
-
 		isloop = False
 		section_name = _("Input tax/ Purchase tax") if doctype == "Purchase Invoice" else _("Output tax/ Sales tax")
 
@@ -329,43 +324,57 @@ class VATAuditReport(object):
 			}
 		self.data.append(gtotal)
 		self.data.append({}) #if doctype == "Purchase Invoice" else _void
-	
-	def get_cancelled_data(self, doctype):
-		conditions = self.get_conditions()
-		invoices = []
 
-		invoice_data = frappe.db.sql(
-			"""
-			SELECT
-				docstatus,
-				name as Invoice_No,
-				name as invoice_no,
-				posting_date as inv_date,
-				"Cancelled" as posting_date
+	def get_deleted_data(self, doctype):
+		self.deleted_data = frappe._dict({})
+		self.tax_detail_on_deleted = []
+		conditions = ""
+		for opts in (
+			("from_date", " and document_date>=%(from_date)s"),
+			("to_date", " and document_date<=%(to_date)s"),
+		):
+			if self.filters.get(opts[0]):
+				conditions += opts[1]
+		data = frappe.db.sql("""
+			SELECT 
+				name, document_date, data
 			FROM
-				`tab{doctype}`
+				`tabDeleted Document`
 			WHERE
-				docstatus = 2 
-				and is_opening = 'No'
+				deleted_doctype = "{doctype}" 
 				{where_conditions}
-			ORDER BY
-				posting_date DESC
-			""".format(
-				doctype=doctype, where_conditions=conditions
-			),
-			self.filters,
-			as_dict=1,
-			debug=0
-		)
+					   
+		""".format(
+			where_conditions=conditions, doctype=doctype
+		), self.filters, as_dict=1, debug=1)
 
+		for d in data:
+			dt = frappe._dict(json.loads(d.data))
 
-		for d in invoice_data:
-			invoices.append(d)
+			if dt.docstatus == 0:
+				continue
 
-		return invoices
+			# overide data
+			dt.voucher_no = dt.name
+			dt.docstatus = 3
+			if doctype == "Purchase Invoice":
+				dt.Invoice_No = dt.bill_no
+				dt.party = dt.supplier
+				dt.account = dt.credit_to
+			else:
+				dt.Invoice_No = dt.name
+				dt.party = dt.customer
+				dt.account = dt.debit_to
 
-	def get_deleted_data(self):
-		pass
+			self.deleted_data.setdefault(dt.name, dt)
+			self.invoices.setdefault(dt.voucher_no, dt)
+			for row in dt.get("items"):
+				row = frappe._dict(row)
+				self.invoice_items.setdefault(row.parent, {}).setdefault(row.item_code, {"net_amount": 0.0})
+
+			for row in dt.get("taxes"):
+				row = frappe._dict(row)
+				self.tax_detail_on_deleted.append((row.parent, row.account_head, row.item_wise_tax_detail, row.parenttype))
 
 	def get_consolidated_data(self, doctype):
 		consolidated_data_map = {}
@@ -380,7 +389,6 @@ class VATAuditReport(object):
 					taxType = docprefix + taxdata
 					consolidated_data_map.setdefault(taxType, {"data": []})
 					key = inv
-					print(379, key)
 					if key not in self.already_add:
 						self.already_add.append(key)
 					else:
@@ -388,11 +396,7 @@ class VATAuditReport(object):
 
 					for item in items:
 						item_details = self.item_tax_rate.get(inv).get(item)
-						if inv_data.docstatus == 2:
-							print("cancel")
-							row["Invoice_No"]= inv_data.get("Invoice_No")
-							row['posting_date'] = "Cancelled"
-							continue
+
 
 
 						row['inv_date'] = inv_data.get("posting_date")
@@ -406,6 +410,14 @@ class VATAuditReport(object):
 						row["party_type"] = "Customer" if doctype == "Sales Invoice" else "Supplier"
 						row["party"] = inv_data.get("party")
 						row["remarks"] = inv_data.get("remarks")
+
+						if inv_data.docstatus == 2:
+							row['posting_date'] = f"{inv} - Cancelled"
+							continue
+
+						if inv_data.docstatus == 3:
+							row['posting_date'] = f"{inv} - Deleted"
+							continue
 					 
 						rowgross_amount = 0.0 if item_details.get("gross_amount") =="" else item_details.get("gross_amount")
 
