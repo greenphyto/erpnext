@@ -11,7 +11,7 @@
   "form_description",
   "personal_information_section",
   "name1",
-  "unit_number__office_number",
+  "position",
   "column_break_abbf3",
   "todays_date",
   "phone_number",
@@ -116,11 +116,6 @@
    "in_list_view": 1,
    "label": "Name",
    "reqd": 1
-  },
-  {
-   "fieldname": "unit_number__office_number",
-   "fieldtype": "Data",
-   "label": "Position"
   },
   {
    "fieldname": "column_break_abbf3",
@@ -666,12 +661,17 @@
   {
    "fieldname": "section_break_hnjqi",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "position",
+   "fieldtype": "Data",
+   "label": "Position"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-03 14:10:27.685851",
+ "modified": "2024-04-16 10:31:21.620512",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Accident or Incident Report",

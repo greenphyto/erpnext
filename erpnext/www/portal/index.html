@@ -1,0 +1,60 @@
+{% from "erpnext/templates/includes/macros.html" import attribute_filter_section, field_filter_section, discount_range_filters %}
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _('Portal') }}{% endblock %}
+
+{% block style %}
+  <style>
+		.container {
+			position: relative;
+		}
+		.title-container {
+			position: relative;
+			height: 80vh;
+		}
+		.title {
+			margin-bottom: 20px;
+			font-weight: 700;
+		}
+		.nav-btn {
+			/* display: none; */
+		}
+  </style>
+{% endblock %}
+
+{% block page_content %}
+<div class="container">
+	<div class="content">
+		<!-- <img class="image" src="/assets/erpnext/images/smartfm/greenphyto-building.jpg" alt="Empty Cart"> -->
+		<div class="title-container">
+			<h3 class="title">{{ _("Welcome to Smart FM") }}</h3>
+			<div class="row">
+				<div class="col-sm-3 col-xs-3">
+					<button class="btn btn-primary nav-btn" onclick="location.href = '/smart-fm';">
+						{{ _("Smart FM Checklists") }}
+					</button>
+				</div>
+				<div class="col-sm-3 col-xs-3">
+					<button class="btn btn-primary nav-btn" onclick="location.href = '/requests';">
+						{{ _("Requests from 3rd Party") }}
+					</button>
+				</div>
+				<div class="col-sm-3 col-xs-3">
+					<button class="btn btn-primary nav-btn" onclick="location.href = '/menu';">
+						{{ _("Menu") }}
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	frappe.ready(() => {
+		if (frappe.user_roles.includes("Employee")) {
+
+		};
+	});
+</script>
+{% endblock %}
+
