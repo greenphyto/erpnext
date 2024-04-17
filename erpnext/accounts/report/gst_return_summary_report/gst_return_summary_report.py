@@ -119,11 +119,13 @@ class VATAuditReport(object):
 			debug=0
 		)
 
+		self.get_deleted_data(doctype)
+
+		invoice_data += self.deleted_data
+		invoice_data.sort(key=lambda x: x.posting_date, reverse=True)
+
 		for d in invoice_data:
 			self.invoices.setdefault(d.voucher_no, d)
-
-		# add deleted
-		self.get_deleted_data(doctype)
 
 	def get_invoice_items(self, doctype):
 		#, is_zero_rated
@@ -176,23 +178,23 @@ class VATAuditReport(object):
 		self.tax_details = list(frappe.db.sql(
 			"""
 			SELECT
-				parent, account_head, item_wise_tax_detail, parenttype
+				t.parent, t.account_head, t.item_wise_tax_detail, t.parenttype, s.posting_date
 			FROM
-				`tab%s`
+				`tab%s` t, `tab%s` s
 			WHERE
-				parenttype = %s and docstatus in (1, 2)
-				and parent in (%s)
+				s.name = t.parent
+				and t.parenttype = %s and t.docstatus in (1, 2)
+				and t.parent in (%s)
 			ORDER BY
-				account_head
+				t.account_head
 			"""
-			% (self.tax_doctype, "%s", ", ".join(["%s"] * len(self.invoices.keys()))),
-			tuple([doctype] + list(self.invoices.keys())), 
+			% (self.tax_doctype,doctype, "%s", ", ".join(["%s"] * len(self.invoices.keys()))),
+			tuple([doctype] + list(self.invoices.keys()))
 		))
 
 		self.tax_details += self.tax_detail_on_deleted 
 
-
-		for parent, account, item_wise_tax_detail, parenttype in self.tax_details:
+		for parent, account, item_wise_tax_detail, parenttype, posting_date in self.tax_details:
 			if item_wise_tax_detail:
 				try:
 					# if account in self.sa_vat_accounts:
@@ -248,7 +250,6 @@ class VATAuditReport(object):
 			self.item_tax_rate[parent][item_code]["net_amount"] = net_amount
 			self.item_tax_rate[parent][item_code]["gross_amount"] = gross_amount
 
-		#print(tax_rate)
 		return tax_rate
 
 	def get_conditions(self):
@@ -326,7 +327,7 @@ class VATAuditReport(object):
 		self.data.append({}) #if doctype == "Purchase Invoice" else _void
 
 	def get_deleted_data(self, doctype):
-		self.deleted_data = frappe._dict({})
+		self.deleted_data = []
 		self.tax_detail_on_deleted = []
 		conditions = ""
 		for opts in (
@@ -346,7 +347,7 @@ class VATAuditReport(object):
 					   
 		""".format(
 			where_conditions=conditions, doctype=doctype
-		), self.filters, as_dict=1, debug=1)
+		), self.filters, as_dict=1)
 
 		for d in data:
 			dt = frappe._dict(json.loads(d.data))
@@ -357,6 +358,7 @@ class VATAuditReport(object):
 			# overide data
 			dt.voucher_no = dt.name
 			dt.docstatus = 3
+			dt.posting_date = getdate(dt.posting_date)
 			if doctype == "Purchase Invoice":
 				dt.Invoice_No = dt.bill_no
 				dt.party = dt.supplier
@@ -366,7 +368,7 @@ class VATAuditReport(object):
 				dt.party = dt.customer
 				dt.account = dt.debit_to
 
-			self.deleted_data.setdefault(dt.name, dt)
+			self.deleted_data.append(dt)
 			self.invoices.setdefault(dt.voucher_no, dt)
 			for row in dt.get("items"):
 				row = frappe._dict(row)
@@ -374,7 +376,7 @@ class VATAuditReport(object):
 
 			for row in dt.get("taxes"):
 				row = frappe._dict(row)
-				self.tax_detail_on_deleted.append((row.parent, row.account_head, row.item_wise_tax_detail, row.parenttype))
+				self.tax_detail_on_deleted.append((row.parent, row.account_head, row.item_wise_tax_detail, row.parenttype, getdate(dt.posting_date)))
 
 	def get_consolidated_data(self, doctype):
 		consolidated_data_map = {}
