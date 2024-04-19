@@ -4,7 +4,7 @@
 
 import frappe
 from frappe import _
-from frappe.utils import cint, flt
+from frappe.utils import cint, flt, cstr
 
 from erpnext.accounts.report.financial_statements import (
 	get_columns,
@@ -88,6 +88,7 @@ def execute(filters=None):
 			if d.get("is_group"):
 				d['account_name'] = remove_account_number(d['account_name'])
 				if frappe.flags.in_export:
+					d['account_origin'] = cstr(d['account'])
 					d['account'] = d['account_name']
 					if not d.get('parent_account'):
 						for key, val in d.items():
@@ -129,7 +130,47 @@ def execute(filters=None):
 	if frappe.flags.in_export:
 		convert_wrap_report_data(columns, data, precision=2)
 
+	data = validate_report_result(data, period_list)
+
 	return columns, data, message, chart, report_summary
+
+def validate_report_result(data, period_list):
+	parent_map = {}
+	for d in reversed(data):
+		parent = d.get("parent_account")
+		account = d.get("account_origin") or d.get("account")
+		parent_account = d.get("parent_account")
+		if not account:
+			continue
+
+		# overide value based on parent calculation
+		if account in parent_map:
+			for period in period_list:
+				if not get_column_period(period.key):
+					dt = parent_map[account] or {}
+					value = flt(dt.get(period.key), 2)
+					d[period.key] = value
+
+		if parent not in parent_map:
+			parent_map[parent] = {}
+			for period in period_list:
+				if not get_column_period(period.key):
+					value = flt(d.get(period.key), 2)
+					parent_map[parent][period.key] = value
+
+		else:
+			for period in period_list:
+				if not get_column_period(period.key):
+					value = flt(d.get(period.key), 2)
+					parent_map[parent][period.key] += value
+	
+	return data
+
+def get_column_period(column):
+	if "2023" in column or "2022" in column:
+		return True
+	else:
+		return False
 
 
 def get_provisional_profit_loss(
