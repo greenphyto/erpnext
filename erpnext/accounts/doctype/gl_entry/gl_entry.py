@@ -634,12 +634,12 @@ def get_comma_in_name_account():
 def fix_against_account_in_party_gl():
 	data = frappe.db.sql("""
 		SELECT 
-			against, name, against_account, against_party, voucher_no, voucher_type
+			against, name, against_account, against_party, voucher_no, voucher_type, party
 		FROM
 			`tabGL Entry`
 		WHERE
-			against IS NOT NULL
-			and (against_account = "" or against_account is NULL)
+			
+			(against_account = "" or against_account is NULL)
 		ORDER BY voucher_type asc;
 	""", as_dict=1)
 
@@ -669,7 +669,7 @@ def fix_against_account_in_party_gl():
 			elif cdt == "Journal Entry":
 				acc = []
 				doc = frappe.get_doc(cdt, cdn)
-				party = d.against_party or d.against
+				party = d.against_party or d.against or d.party
 				for x in doc.get("accounts"):
 					if x.party and x.party in party and x.account not in acc:
 						acc.append(x.account)
@@ -747,6 +747,50 @@ def add_account_number():
 			print("Index",idx, dt, new_value)
 			frappe.db.commit()
 
+def regrenerate_against_account():
+	# find missing against account
+	data = frappe.db.sql("""
+		SELECT 
+			against, name, against_account, against_party, voucher_no, voucher_type, party, debit, credit, debit_in_account_currency, credit_in_account_currency
+		FROM
+			`tabGL Entry`
+		WHERE
+			voucher_type != "Period Closing Voucher" and
+			((against_account = "" or against_account is NULL) or (against_account_number = "" or against_account_number is NULL))
+		ORDER BY voucher_type asc limit 99999;
+	""", as_dict=1)
+
+
+	for i,d in enumerate(data):
+		cdt = d.voucher_type
+		cdn = d.voucher_no
+		find_debit=False
+		print("Working on ", cdt, cdn, d.name)
+
+		dt = []
+		debit = d.debit or d.debit_in_account_currency
+		credit = d.credit or d.credit_in_account_currency
+		if flt(debit) > 0:
+			dt = frappe.db.sql("select account, party from`tabGL Entry` where (credit > 0 or credit_in_account_currency > 0) and voucher_type = %s and voucher_no = %s", (cdt, cdn), as_dict=1)
+		if flt(credit) > 0:
+			dt = frappe.db.sql("select account, party from`tabGL Entry` where (debit > 0 or debit_in_account_currency > 0) and voucher_type = %s and voucher_no = %s", (cdt, cdn), as_dict=1)
+		ags = []
+		ags_num = []
+		for x in dt:
+			temp = frappe.get_value("Account", x.account, ["account_name", "account_number"], as_dict=1)
+			against_name, against_number = temp.account_name + " - GPL", temp.account_number
+			ags.append(against_name)
+			ags_num.append(against_number)
+		
+		if ags:
+			res = ", ".join(ags)
+			frappe.db.set_value("GL Entry", d.name, "against_account", res)
+		if ags_num:
+			res = ", ".join(ags_num)
+			frappe.db.set_value("GL Entry", d.name, "against_account_number", res)
+
+		if i % 100 == 0:
+			frappe.db.commit()
 
 
 	
