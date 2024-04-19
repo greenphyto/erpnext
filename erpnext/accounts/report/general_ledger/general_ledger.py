@@ -185,13 +185,14 @@ def get_gl_entries(filters, accounting_dimensions):
 	gl_entries = frappe.db.sql(
 		"""
 		select
-			name as gl_entry, posting_date, account_number, account_name as account, against_account_number, party_type, party,
-			voucher_type, voucher_no, {dimension_fields}
+			gl.name as gl_entry, posting_date, account_number, account_name as account, against_account_number, party_type, party,
+			voucher_type, voucher_no,c.cost_center_name, c.cost_center_number, {dimension_fields}
 			cost_center, project,
 			against_voucher_type, against_voucher, account_currency,
-			remarks, against,against_account,against_party, is_opening, creation {select_fields}
-		from `tabGL Entry`
-		where company=%(company)s {conditions}
+			remarks, against,against_account,against_party, is_opening, gl.creation {select_fields}
+		from `tabGL Entry` gl
+			left join `tabCost Center` c on c.name = gl.cost_center
+		where gl.company=%(company)s {conditions}
 		{order_by_statement}
 	""".format(
 			dimension_fields=dimension_fields,
@@ -576,7 +577,10 @@ def get_columns(filters):
 				{"label": _(dim.label), "options": dim.label, "fieldname": dim.fieldname, "width": 100}
 			)
 		columns.append(
-			{"label": _("Cost Center"), "options": "Cost Center", "fieldname": "cost_center", "width": 100}
+			{"label": _("Co. No"), "fieldname": "cost_center_number", "width": 70},
+		)
+		columns.append(
+			{"label": _("Cost Center"), "fieldname": "cost_center_name", "width": 120},
 		)
 
 	columns.extend(
