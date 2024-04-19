@@ -223,14 +223,12 @@
    "label": "Building Management Comment"
   },
   {
-   "depends_on": "",
    "fieldname": "bm_comment",
    "fieldtype": "Text Editor",
    "label": "Comment",
    "permlevel": 2
   },
   {
-   "depends_on": "",
    "fieldname": "bm_attachment",
    "fieldtype": "Attach Image",
    "label": "Attachment",
@@ -248,13 +246,24 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-01-03 15:22:32.105320",
+ "modified": "2024-04-19 09:48:00.178211",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Access Request",
  "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "role": "Guest",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
   {
    "create": 1,
    "delete": 1,

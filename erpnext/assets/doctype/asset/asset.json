@@ -23,6 +23,7 @@
   "asset_name",
   "asset_category",
   "location",
+  "location_code",
   "model_number",
   "serial_number",
   "split_from",
@@ -93,7 +94,7 @@
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Naming Series",
-   "options": "ACC-ASS-.YYYY.-"
+   "options": "ACC-ASS-.YYYY.-\nGPYTO-SG2Ka1-1-.{item_code}.-.{location_code}.-.###"
   },
   {
    "depends_on": "item_code",
@@ -612,6 +613,11 @@
    "fieldtype": "Check",
    "label": "Is Mirroring",
    "read_only": 1
+  },
+  {
+   "fieldname": "location_code",
+   "fieldtype": "Data",
+   "label": "Location Code"
   }
  ],
  "idx": 72,
@@ -641,7 +647,7 @@
    "table_fieldname": "accounts"
   }
  ],
- "modified": "2024-02-27 12:18:31.780724",
+ "modified": "2024-04-18 16:09:27.878061",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",

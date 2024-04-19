@@ -33,6 +33,8 @@ class Report:
 			{ "fieldname": "source" , "label": "Source", "fieldtype": "Data", "width": 200, "options": ""},
 			{ "fieldname": "issued" , "label": "Issued", "fieldtype": "Int", "width": 100, "options": ""},
 			{ "fieldname": "started" , "label": "Started", "fieldtype": "Int", "width": 100, "options": ""},
+			{ "fieldname": "resolved" , "label": "Resolved", "fieldtype": "Int", "width": 100, "options": ""},
+			{ "fieldname": "rejected" , "label": "Rejected", "fieldtype": "Int", "width": 100, "options": ""},
 		]
 
 	def get_data(self):
@@ -49,7 +51,7 @@ class Report:
 				FROM
 					`tab{}` as d
 				WHERE
-					d.workflow_state IN ('Issued' , 'Started')
+					d.workflow_state IN ('Issued' , 'Started', 'Resolved', 'Rejected')
 		       		{}
 				GROUP BY d.workflow_state
 			""".format(doctype, self.conditions), self.filters, as_dict=1, debug=0)
