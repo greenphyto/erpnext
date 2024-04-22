@@ -59,9 +59,21 @@ def create_work_order(FomsWorkOrderID, FomsLotID, productID, qty, uom):
 		"workOrderNo":FomsWorkOrderID,
 		"FomsLotID":FomsLotID,
 	})
-	result = _create_work_order(log, item_code, bom_no, qty, submit)
+	doc = _create_work_order(log, item_code, bom_no, qty, submit, return_doc=1)
+	seeding_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(1)})
+	transplanting_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(2)})
+	harvesting_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(3)})
+	res = {
+		"ERPWorkOrderID":doc.name,
+		"ERPBOMId":doc.bom_no,
+		"JobCards":{
+			1:seeding_jc,
+			2:transplanting_jc,
+			3:harvesting_jc
+		}
+	}
 
-	return {"ERPWorkOrderID":result}
+	return res
 
 @frappe.whitelist()
 def start_work_order(ERPWorkOrderID):

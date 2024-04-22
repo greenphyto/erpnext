@@ -576,7 +576,7 @@ def get_work_order(show_progress=False, work_order=""):
 		show_progress=show_progress
 	).run()
 
-def create_work_order(log, item_code, bom_no, qty=1, submit=False):
+def create_work_order(log, item_code, bom_no, qty=1, submit=False, return_doc=False):
 	
 	doc = make_work_order(bom_no, item_code, qty)
 	doc.foms_work_order = log.workOrderNo
@@ -586,6 +586,8 @@ def create_work_order(log, item_code, bom_no, qty=1, submit=False):
 	if submit:
 		doc.submit()
 
+	if return_doc:
+		return doc
 	return doc.name
 
 def get_item_foms(item_id="", item_code=""):
