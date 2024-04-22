@@ -545,7 +545,8 @@ def get_bom_for_work_order2(item_code):
 	return frappe.get_value("BOM", {
 		"item":item_code,
 		"operation_no":"",
-		"docstatus":1
+		"docstatus":1,
+		"is_default":1
 	}, "name", order_by="foms_recipe_version")
 	
 # WORK ORDER (GET)
