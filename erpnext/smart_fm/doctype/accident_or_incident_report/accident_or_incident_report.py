@@ -13,5 +13,5 @@ class AccidentorIncidentReport(Document):
 @frappe.whitelist()
 def create_to_do(name):
 	todo = frappe.new_doc("ToDo")
-	todo.update({"reference_type": "Incident Report", "reference_name": name})
+	todo.update({"reference_type": "Accidentor Incident Report", "reference_name": name})
 	return todo

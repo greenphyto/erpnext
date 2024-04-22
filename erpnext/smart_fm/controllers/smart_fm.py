@@ -220,7 +220,7 @@ def close_todo(doc, method=""):
 		"Inspection Checklist":"Resolved",
 		"Emergency Contact Flow":"Resolved",
 		"Key Control":"Resolved",
-		"Incident Report Flow":"Resolved",
+		"Accident or Incident Report Flow":"Resolved",
 		"Access Request Flow":"Resolved",
 		"Maintenance Request":"Resolved",
 		"Vendor Registration": "Resolved",
