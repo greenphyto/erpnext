@@ -113,16 +113,24 @@ class GLEntry(Document):
 		
 		against_account = []
 		against_party = []
+		against_account_number = []
 		for against in against_list:
 			if acc_flags in against:
-				account_name = frappe.db.get_value("Account", against, "account_name")
+				account_name, account_number  = frappe.db.get_value("Account", against, ["account_name", "account_number"]) or ["", 0]
 				against  = account_name + acc_flags
-				against_account.append(against)
+				if against:
+					against_account.append(against)
+				if account_number:
+					against_account_number.append(account_number)
 			else:
-				against_party.append(against)
+				if against:
+					against_account.append(against)
+					against_party.append(against)
 
 		self.against_account = ", ".join(against_account)
 		self.against_party =  ", ".join(against_party)
+		self.against_account_number = ", ".join(against_account_number)
+		self.account_number = frappe.get_value("Account", self.account, "account_number")
 
 	def check_mandatory(self):
 	 
@@ -626,12 +634,12 @@ def get_comma_in_name_account():
 def fix_against_account_in_party_gl():
 	data = frappe.db.sql("""
 		SELECT 
-			against, name, against_account, against_party, voucher_no, voucher_type
+			against, name, against_account, against_party, voucher_no, voucher_type, party
 		FROM
 			`tabGL Entry`
 		WHERE
-			against IS NOT NULL
-			and (against_account = "" or against_account is NULL)
+			
+			(against_account = "" or against_account is NULL)
 		ORDER BY voucher_type asc;
 	""", as_dict=1)
 
@@ -661,7 +669,7 @@ def fix_against_account_in_party_gl():
 			elif cdt == "Journal Entry":
 				acc = []
 				doc = frappe.get_doc(cdt, cdn)
-				party = d.against_party or d.against
+				party = d.against_party or d.against or d.party
 				for x in doc.get("accounts"):
 					if x.party and x.party in party and x.account not in acc:
 						acc.append(x.account)
@@ -712,9 +720,77 @@ def remove_account_number():
 			print("Index",idx, dt, new_value)
 			frappe.db.commit()
 		
+def add_account_number():
+	data = frappe.db.sql("select name, against_account from `tabGL Entry` where against_account is not null limit 99999", as_dict=1)
+	account = frappe.db.sql("select name, account_name, account_number from `tabAccount`", as_dict=1)
+	account_map = {}
+	for d in account:
+		key = f"{d.account_name} - GPL"
+		account_map[key] = d.account_number
+
+	idx = 0
+	print(len(data))
+	for d in data:
+		dt = d.against_account.replace("GPL, ", "GPL|`|")
+		dt = dt.split("|`|")
+		idx+=1
+		res = []
+		for x in dt:
+			new_name = account_map.get(x)
+			if new_name and new_name not in res:
+				res.append(new_name)
+		
+		new_value = ", ".join(res)
+		frappe.db.set_value("GL Entry", d.name, "against_account_number", new_value)
+
+		if idx & 100 == 0:
+			print("Index",idx, dt, new_value)
+			frappe.db.commit()
+
+def regrenerate_against_account():
+	# find missing against account
+	data = frappe.db.sql("""
+		SELECT 
+			against, name, against_account, against_party, voucher_no, voucher_type, party, debit, credit, debit_in_account_currency, credit_in_account_currency
+		FROM
+			`tabGL Entry`
+		WHERE
+			voucher_type != "Period Closing Voucher" and
+			((against_account = "" or against_account is NULL) or (against_account_number = "" or against_account_number is NULL))
+		ORDER BY voucher_type asc limit 99999;
+	""", as_dict=1)
 
 
+	for i,d in enumerate(data):
+		cdt = d.voucher_type
+		cdn = d.voucher_no
+		find_debit=False
+		print("Working on ", cdt, cdn, d.name)
 
+		dt = []
+		debit = d.debit or d.debit_in_account_currency
+		credit = d.credit or d.credit_in_account_currency
+		if flt(debit) > 0:
+			dt = frappe.db.sql("select account, party from`tabGL Entry` where (credit > 0 or credit_in_account_currency > 0) and voucher_type = %s and voucher_no = %s", (cdt, cdn), as_dict=1)
+		if flt(credit) > 0:
+			dt = frappe.db.sql("select account, party from`tabGL Entry` where (debit > 0 or debit_in_account_currency > 0) and voucher_type = %s and voucher_no = %s", (cdt, cdn), as_dict=1)
+		ags = []
+		ags_num = []
+		for x in dt:
+			temp = frappe.get_value("Account", x.account, ["account_name", "account_number"], as_dict=1)
+			against_name, against_number = temp.account_name + " - GPL", temp.account_number
+			ags.append(against_name)
+			ags_num.append(against_number)
+		
+		if ags:
+			res = ", ".join(ags)
+			frappe.db.set_value("GL Entry", d.name, "against_account", res)
+		if ags_num:
+			res = ", ".join(ags_num)
+			frappe.db.set_value("GL Entry", d.name, "against_account_number", res)
+
+		if i % 100 == 0:
+			frappe.db.commit()
 
 
 	

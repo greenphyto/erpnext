@@ -16,8 +16,11 @@ from six import string_types
 from erpnext.accounts.utils import remove_account_number
 from erpnext.accounts.report.utils import convert_wrap_report_data
 from erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement import execute as pl_report
+from erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2 import execute as bs_report_v2
 
 def execute(filters=None):
+	return bs_report_v2(filters)
+
 	period_list = get_period_list(
 		filters.from_fiscal_year,
 		filters.to_fiscal_year,
@@ -241,7 +244,6 @@ def get_report_summary(
 		if equity:
 			net_equity += convert_bracket_number(equity[-2].get(key))
 		if provisional_profit_loss:
-			print(244, provisional_profit_loss)
 			net_provisional_profit_loss += convert_bracket_number(provisional_profit_loss.get(key))
 
 	return [

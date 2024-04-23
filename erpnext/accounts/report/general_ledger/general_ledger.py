@@ -185,13 +185,15 @@ def get_gl_entries(filters, accounting_dimensions):
 	gl_entries = frappe.db.sql(
 		"""
 		select
-			name as gl_entry, posting_date, account_name as account, party_type, party,
-			voucher_type, voucher_no, {dimension_fields}
+			gl.name as gl_entry, posting_date, a.account_number, a.account_name as account, against_account_number, party_type, party,
+			voucher_type, voucher_no,c.cost_center_name, c.cost_center_number, {dimension_fields}
 			cost_center, project,
-			against_voucher_type, against_voucher, account_currency,
-			remarks, against,against_account,against_party, is_opening, creation {select_fields}
-		from `tabGL Entry`
-		where company=%(company)s {conditions}
+			against_voucher_type, against_voucher, gl.account_currency,
+			remarks, against,against_account,against_party, is_opening, gl.creation {select_fields}
+		from `tabGL Entry` gl
+			left join `tabCost Center` c on c.name = gl.cost_center
+			left join `tabAccount` a on a.name = gl.account
+		where gl.company=%(company)s {conditions}
 		{order_by_statement}
 	""".format(
 			dimension_fields=dimension_fields,
@@ -524,12 +526,16 @@ def get_columns(filters):
 			"options": "GL Entry",
 			"hidden": 1,
 		},
-		{"label": _("Posting Date"), "fieldname": "posting_date", "fieldtype": "Date", "width": 90},
+		{"label": _("Posting Date"), "fieldname": "posting_date", "fieldtype": "Date", "width": 100},
 		{
+			"label": _("Acc. Number"),
+			"fieldname": "account_number",
+			"fieldtype": "Data",
+			"width": 80,
+		},{
 			"label": _("Account"),
 			"fieldname": "account",
 			"fieldtype": "Data",
-			"options": "Account",
 			"width": 180,
 		},
 		{
@@ -560,6 +566,7 @@ def get_columns(filters):
 		},
 		{"label": _("Against"), "fieldname": "against", "width": 120, "hidden":1},
 		{"label": _("Against Account"), "fieldname": "against_account", "width": 120, "hidden":0},
+		{"label": _("Ag Acc. Number"), "fieldname": "against_account_number", "width": 100, "hidden":0},
 		{"label": _("Party Type"), "fieldname": "party_type", "width": 100},
 		{"label": _("Party"), "fieldname": "party", "width": 100},
 		{"label": _("Project"), "options": "Project", "fieldname": "project", "width": 100},
@@ -571,7 +578,10 @@ def get_columns(filters):
 				{"label": _(dim.label), "options": dim.label, "fieldname": dim.fieldname, "width": 100}
 			)
 		columns.append(
-			{"label": _("Cost Center"), "options": "Cost Center", "fieldname": "cost_center", "width": 100}
+			{"label": _("Co. No"), "fieldname": "cost_center_number", "width": 70},
+		)
+		columns.append(
+			{"label": _("Cost Center"), "fieldname": "cost_center_name", "width": 120},
 		)
 
 	columns.extend(
