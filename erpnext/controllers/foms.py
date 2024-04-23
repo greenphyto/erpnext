@@ -1,7 +1,7 @@
 import frappe
 from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
 from frappe.core.doctype.sync_log.sync_log import get_pending_log
-from frappe.utils import cint, flt
+from frappe.utils import cint, flt, cstr
 from erpnext.accounts.party import get_party_details
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
@@ -264,7 +264,7 @@ def create_raw_material(log):
 	name = frappe.get_value("Item", log.get("rawMaterialRefNo"))
 	types = "Raw Material"
 	log = frappe._dict(log)
-
+	
 	if not name:
 		doc = frappe.new_doc("Item")
 		doc.item_code = log.rawMaterialRefNo
@@ -277,7 +277,7 @@ def create_raw_material(log):
 		doc.has_expiry_date = 1
 		doc.has_batch_no = 1
 		if doc.has_batch_no:
-			doc.batch_number_series = log.RawMaterialRefNo + "-" + "BN.#####"
+			doc.batch_number_series = log.rawMaterialRefNo + "-" + "BN.#####"
 
 		doc.lead_time_days = cint(log.RequestLeadTime)
 		doc.min_order_qty = flt(log.MinimumOrderQuantity)
@@ -288,6 +288,11 @@ def create_raw_material(log):
 		doc.insert()
 		name = doc.name
 	else:
+		# validate_id
+		exists_id = frappe.db.get_value("Item", {"item_code":['!=', log.rawMaterialRefNo], "foms_id":cstr(log.id)}, "name")
+		print(293, exists_id)
+		if exists_id:
+			frappe.throw(_(f"ID {log.id} already use by another item ({exists_id})!"))
 		doc = frappe.get_doc("Item", name)
 		doc.item_name = log.productName
 		doc.description = log.productDesc or log.productDetail or log.productName

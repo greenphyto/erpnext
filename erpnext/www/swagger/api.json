@@ -362,7 +362,7 @@
     "/erpnext.controllers.erp_api.create_raw_material": {
       "post": {
         "summary": "Create/update raw material",
-        "description": "Create raw material from FOMS to ERP",
+        "description": "Create raw material from FOMS to ERP.<br>ID should be <b>unique</b> every item",
         "operationId": "create raw material",
         "requestBody": {
           "description": "-",
