@@ -12,7 +12,7 @@ class AccessRequest(Document):
 			self.update_todo(start=1)
 		elif self.workflow_state == "Resolved":
 			self.update_todo(start=2)
-	
+
 	def update_todo(self, start=0):
 		# start = 1 for yes, 2 for stop
 		filters = {
@@ -25,11 +25,9 @@ class AccessRequest(Document):
 		if data:
 			for d in data:
 				todo = frappe.get_doc("ToDo", d.name)
-				if start == 1:
-					todo.set_working_time(1)
-				else:
-					todo.set_working_time(0)
-				todo.db_update()
+				if start == 2:
+					todo.set_complete()
+					todo.db_update()
 
 @frappe.whitelist()
 def create_to_do(name):

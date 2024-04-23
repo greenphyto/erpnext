@@ -15,3 +15,18 @@ class SmartFM_ToDo(ToDo):
 		super().validate()
 		if self.status == "Completed":
 			update_request(self, "Resolve")
+		
+		self.check_navix_ticket()
+
+	def set_complete(self):
+		self.status = "Completed"
+		self.check_navix_ticket()
+	
+	def check_navix_ticket(self):
+		if not self.navix_ticket:
+			return
+		
+		if self.status == "Planned":
+			self.set_working_time(start=1)
+		elif self.status == "Completed":
+			self.set_working_time(stop=1)
