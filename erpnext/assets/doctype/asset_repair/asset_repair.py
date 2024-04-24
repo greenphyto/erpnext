@@ -3,7 +3,7 @@
 
 import frappe
 from frappe import _
-from frappe.utils import add_months, cint, flt, getdate, time_diff_in_hours
+from frappe.utils import add_months, cint, flt, getdate, time_diff_in_hours, time_diff_in_seconds
 
 import erpnext
 from erpnext.accounts.general_ledger import make_gl_entries
@@ -20,6 +20,7 @@ class AssetRepair(AccountsController):
 		if self.get("stock_items"):
 			self.set_stock_items_cost()
 		self.calculate_total_repair_cost()
+		self.calculate_working_time()
 
 	def update_status(self):
 		if self.repair_status == "Pending":
@@ -340,6 +341,10 @@ class AssetRepair(AccountsController):
 
 		if asset.to_date < schedule_date:
 			row.total_number_of_depreciations -= 1
+	
+	def calculate_working_time(self):
+		if self.completion_date:
+			self.working_time = time_diff_in_seconds(self.completion_date, self.failure_date)
 
 
 @frappe.whitelist()

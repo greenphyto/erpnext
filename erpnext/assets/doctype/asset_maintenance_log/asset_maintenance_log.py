@@ -23,6 +23,8 @@ class AssetMaintenanceLog(Document):
 		if self.maintenance_status != "Completed" and self.completion_date:
 			frappe.throw(_("Please select Maintenance Status as Completed or remove Completion Date"))
 
+		self.calculate_working_time()
+
 	def on_submit(self):
 		if self.maintenance_status not in ["Completed", "Cancelled"]:
 			frappe.throw(_("Maintenance Status has to be Cancelled or Completed to Submit"))
@@ -54,6 +56,10 @@ class AssetMaintenanceLog(Document):
 			asset_maintenance_doc.save()
 		asset_maintenance_doc = frappe.get_doc("Asset Maintenance", self.asset_maintenance)
 		asset_maintenance_doc.save()
+
+	def calculate_working_time(self):
+		if self.completion_date:
+			self.working_time = (getdate(self.completion_date) - getdate(self.due_date)).days * 86400
 
 
 @frappe.whitelist()

@@ -1,5 +1,4 @@
 {
- "_comments": "[{\"comment\": \"<div class=\\\"ql-editor read-mode\\\"><p>tes here</p></div>\", \"by\": \"Administrator\", \"name\": \"a565e90150\"}]",
  "actions": [],
  "autoname": "naming_series:",
  "creation": "2017-10-23 11:38:54.004355",
@@ -20,6 +19,7 @@
   "column_break_6",
   "due_date",
   "completion_date",
+  "working_time",
   "accounting_dimensions_section",
   "cost_center",
   "column_break_14",
@@ -276,12 +276,18 @@
    "fieldname": "due_date",
    "fieldtype": "Date",
    "label": "Due Date"
+  },
+  {
+   "fieldname": "working_time",
+   "fieldtype": "Duration",
+   "label": "Working Time",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-12-12 11:12:53.828078",
+ "modified": "2024-04-24 11:24:32.742368",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset Repair",

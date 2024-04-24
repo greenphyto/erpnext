@@ -26,6 +26,7 @@
   "assign_to_name",
   "due_date",
   "completion_date",
+  "working_time",
   "description",
   "column_break_9",
   "actions_performed",
@@ -176,12 +177,18 @@
    "fieldtype": "Link",
    "label": "Request ID",
    "options": "Maintenance Request"
+  },
+  {
+   "fieldname": "working_time",
+   "fieldtype": "Duration",
+   "label": "Working Time",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-12-12 10:54:20.166471",
+ "modified": "2024-04-24 11:25:20.591269",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset Maintenance Log",
