@@ -249,11 +249,12 @@ def close_todo(doc, method=""):
 		if d.status == "Cancelled":
 			continue
 
+		todo = frappe.get_doc("ToDo", d.name)
 		if close:
-			frappe.db.set_value("ToDo", d.name, 'status', 'Completed')
+			todo.status = "Completed"
 		else:
-			frappe.db.set_value("ToDo", d.name, 'status', 'Planned')
-
+			todo.status = "Planned"
+		todo.save()
 def update_request(reff_doc, state):
 	# from Asset Repair' and Asset Maintenance Log
 	if reff_doc.doctype not in ('Asset Repair', 'Asset Maintenance Log', 'ToDo'):
