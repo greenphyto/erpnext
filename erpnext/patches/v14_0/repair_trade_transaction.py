@@ -5,6 +5,11 @@ def fix_shenzen():
     # PLE
     frappe.db.set_value("Payment Ledger Entry", "adaab9bf2e", "against_voucher_type", "Purchase Invoice")
     frappe.db.set_value("Payment Ledger Entry", "adaab9bf2e", "against_voucher_no", "PI00477/2024-1")
+
+    # GL
+    frappe.db.set_value("GL Entry", "ACC-GLE-2022-02429", "against_voucher_type", "Purchase Invoice")
+    frappe.db.set_value("GL Entry", "ACC-GLE-2022-02429", "against_voucher", "PI00477/2024-1")
+
     # PI
     # this hardcoded to paid and remove the left outstanding (CNY 235.13)
     frappe.db.set_value("Purchase Invoice", "PI00477/2024-1", "status", "Paid")
@@ -51,7 +56,7 @@ def fix_pauline():
     frappe.db.set_value("Sales Invoice", "INV006/12/2021", "outstanding_amount", 0)
 
 """
-bench --site test3 execute erpnext.patches.v14_0.repair_trade_transaction.execute
+bench --site erp.greenphyto.com execute erpnext.patches.v14_0.repair_trade_transaction.fix_shenzen
 """
 def execute():
     fix_pauline()
