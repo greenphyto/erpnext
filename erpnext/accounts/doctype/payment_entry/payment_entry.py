@@ -154,6 +154,12 @@ class PaymentEntry(AccountsController):
 					frappe.throw(
 						_("Row #{0}: Allocated Amount cannot be greater than outstanding amount.").format(d.idx)
 					)
+		
+		if flt(self.unallocated_amount) > 0.01:
+			if self.payment_type == "Pay":
+				frappe.throw(_(f"The amount paid is not equal to the total allocated amount. Please check the allocated amount on each invoice is correct."))
+			else:
+				frappe.throw(_(f"The amount received is not equal to the total allocated amount. Please check the allocated amount on each invoice is correct."))
 
 	def delink_advance_entry_references(self):
 		for reference in self.references:
