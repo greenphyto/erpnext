@@ -10,6 +10,7 @@
  "field_order": [
   "location_name",
   "parent_location",
+  "location_code",
   "cb_details",
   "is_container",
   "is_group",
@@ -137,15 +138,21 @@
    "no_copy": 1,
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "location_code",
+   "fieldtype": "Data",
+   "label": "Location Code"
   }
  ],
  "is_tree": 1,
  "links": [],
- "modified": "2020-05-08 16:11:11.375701",
+ "modified": "2024-04-29 13:00:16.021350",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Location",
  "name_case": "Title Case",
+ "naming_rule": "By fieldname",
  "nsm_parent_field": "parent_location",
  "owner": "Administrator",
  "permissions": [
@@ -224,5 +231,6 @@
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

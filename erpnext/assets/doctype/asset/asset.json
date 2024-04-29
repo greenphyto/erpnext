@@ -22,6 +22,8 @@
   "naming_series",
   "asset_name",
   "asset_category",
+  "equipment_type",
+  "equipment_code",
   "location",
   "location_code",
   "model_number",
@@ -615,9 +617,24 @@
    "read_only": 1
   },
   {
+   "fetch_from": "location.location_code",
    "fieldname": "location_code",
    "fieldtype": "Data",
-   "label": "Location Code"
+   "label": "Location Code",
+   "read_only": 1
+  },
+  {
+   "fieldname": "equipment_type",
+   "fieldtype": "Link",
+   "label": "Equipment Type",
+   "options": "Equipment Type"
+  },
+  {
+   "fetch_from": "equipment_type.abbr",
+   "fieldname": "equipment_code",
+   "fieldtype": "Data",
+   "label": "Equipment Code",
+   "read_only": 1
   }
  ],
  "idx": 72,
@@ -647,7 +664,7 @@
    "table_fieldname": "accounts"
   }
  ],
- "modified": "2024-04-18 16:09:27.878061",
+ "modified": "2024-04-29 13:00:37.125153",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",
