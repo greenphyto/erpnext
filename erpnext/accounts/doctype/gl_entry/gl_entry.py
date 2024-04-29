@@ -87,7 +87,6 @@ class GLEntry(Document):
 		
 		if self.against_party:
 			self.against_account = self.against
-			return
 
 		if "," in self.against:
 			comma_account = get_comma_in_name_account()
