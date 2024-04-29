@@ -226,10 +226,51 @@ def get_data(
 	out = prepare_data(accounts, balance_must_be, period_list, company_currency)
 	out = filter_out_zero_value_rows(out, parent_children_map)
 
+	#smooth result
+	out = validate_report_result(out, period_list)
+
 	if out and total:
 		add_total_row(out, root_type, balance_must_be, period_list, company_currency)
 
 	return out
+
+def validate_report_result(data, period_list):
+	parent_map = {}
+	for d in reversed(data):
+		parent = d.get("parent_account")
+		account = d.get("account_origin") or d.get("account")
+		parent_account = d.get("parent_account")
+		if not account:
+			continue
+
+		# overide value based on parent calculation
+		if account in parent_map:
+			for period in period_list:
+				if not get_column_period(period.key):
+					dt = parent_map[account] or {}
+					value = flt(dt.get(period.key), 2)
+					d[period.key] = value
+
+		if parent not in parent_map:
+			parent_map[parent] = {}
+			for period in period_list:
+				if not get_column_period(period.key):
+					value = flt(d.get(period.key), 2)
+					parent_map[parent][period.key] = value
+
+		else:
+			for period in period_list:
+				if not get_column_period(period.key):
+					value = flt(d.get(period.key), 2)
+					parent_map[parent][period.key] += value
+	
+	return data
+
+def get_column_period(column):
+	if "2023" in column or "2022" in column:
+		return True
+	else:
+		return False
 
 
 def get_appropriate_currency(company, filters=None):
