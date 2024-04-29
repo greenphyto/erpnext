@@ -96,7 +96,7 @@
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Naming Series",
-   "options": "ACC-ASS-.YYYY.-\nGPYTO-SG2Ka1-1-.{item_code}.-.{location_code}.-.###"
+   "options": "ACC-ASS-.YYYY.-\nGPYTO-SG2Ka1-1-.{equipment_code}.-.{location_code}.-.###"
   },
   {
    "depends_on": "item_code",
@@ -664,7 +664,7 @@
    "table_fieldname": "accounts"
   }
  ],
- "modified": "2024-04-29 13:00:37.125153",
+ "modified": "2024-04-29 14:30:33.720874",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",
