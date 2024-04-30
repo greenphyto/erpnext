@@ -28,7 +28,7 @@ frappe.ui.form.on('Visitor Registration', {
 			args: {
 				"name": frm.doc.name,
       },
-			method: "erpnext.smart_fm.doctype.access_request.access_request.create_to_do",
+			method: "erpnext.smart_fm.doctype.visitor_registration.visitor_registration.create_to_do",
 			callback: function(r) {
 				var doclist = frappe.model.sync(r.message);
 				frappe.set_route("Form", doclist[0].doctype, doclist[0].name);

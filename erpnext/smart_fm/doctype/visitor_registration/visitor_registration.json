@@ -7,7 +7,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "access_request_form",
+  "visitor_registration_form",
   "form_description",
   "personal_information_section",
   "name1",
@@ -16,7 +16,7 @@
   "column_break_abbf3",
   "phone_number",
   "email_address",
-  "access_request_details_section",
+  "visitor_registration_details_section",
   "area_resource",
   "reason",
   "datetime",
@@ -107,7 +107,7 @@
    "reqd": 1
   },
   {
-   "fieldname": "access_request_details_section",
+   "fieldname": "visitor_registration_details_section",
    "fieldtype": "Section Break",
    "label": "Visitor Registration Details"
   },
@@ -149,7 +149,7 @@
    "read_only": 1
   },
   {
-   "fieldname": "access_request_form",
+   "fieldname": "visitor_registration_form",
    "fieldtype": "Heading",
    "label": "Visitor Registration Form"
   },
@@ -246,7 +246,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-19 09:48:00.178211",
+ "modified": "2024-04-19 09:48:00.178212",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Visitor Registration",
