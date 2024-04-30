@@ -13,6 +13,8 @@ class VisitorRegistration(Document):
 		elif self.workflow_state == "Resolved":
 			self.update_todo(start=2)
 
+		self.set_status()
+
 	def update_todo(self, start=0):
 		# start = 1 for yes, 2 for stop
 		filters = {
@@ -28,6 +30,17 @@ class VisitorRegistration(Document):
 				if start == 2:
 					todo.set_complete()
 					todo.db_update()
+	
+	def set_status(self):
+		if self.docstatus == 0:
+			if self.check_in:
+				self.sattus = "Sign In"
+			elif self.check_out:
+				self.sattus = "Sign Out"
+			else:
+				self.sattus = "Draft"
+		else:
+			self.status = "Submitted"
 
 @frappe.whitelist()
 def create_to_do(name):

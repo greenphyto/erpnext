@@ -40,7 +40,16 @@
   "section_break_666cu",
   "bm_comment",
   "bm_attachment",
-  "bm_preview"
+  "bm_preview",
+  "more_information_section",
+  "get_sign_in",
+  "check_in",
+  "signature_in",
+  "status",
+  "column_break_mss0a",
+  "get_sign_out",
+  "check_out",
+  "signature_out"
  ],
  "fields": [
   {
@@ -241,12 +250,64 @@
    "label": "BM Preview",
    "options": "bm_attachment",
    "permlevel": 2
+  },
+  {
+   "depends_on": "eval:frappe.session.user != \"Guest\"",
+   "fieldname": "more_information_section",
+   "fieldtype": "Section Break",
+   "label": "More Information"
+  },
+  {
+   "fieldname": "check_in",
+   "fieldtype": "Datetime",
+   "label": "Check In",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mss0a",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "check_out",
+   "fieldtype": "Datetime",
+   "label": "Check Out",
+   "read_only": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nSubmitted\nSign In\nSign Out",
+   "read_only": 1
+  },
+  {
+   "fieldname": "get_sign_in",
+   "fieldtype": "Button",
+   "label": "Sign In"
+  },
+  {
+   "fieldname": "get_sign_out",
+   "fieldtype": "Button",
+   "label": "Sign Out"
+  },
+  {
+   "depends_on": "eval:doc.check_in",
+   "fieldname": "signature_in",
+   "fieldtype": "Signature",
+   "label": "Signature In"
+  },
+  {
+   "depends_on": "eval:doc.check_out",
+   "fieldname": "signature_out",
+   "fieldtype": "Signature",
+   "label": "Signature Out"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-19 09:48:00.178212",
+ "modified": "2024-04-30 16:36:07.688091",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Visitor Registration",
