@@ -6,16 +6,16 @@
  "days_in_advance": 0,
  "docstatus": 0,
  "doctype": "Notification",
- "document_type": "Access Request",
+ "document_type": "Visitor Registration",
  "enabled": 1,
  "event": "New",
  "idx": 0,
  "is_standard": 1,
  "message": "<h3>{{doc.doctype}}</h3>\n\n<p>A new request ({{doc.name}}) has been made.</p>\n<p>We will inform you if any further updates</p>\n\n{{ frappe.render_template(\"templates/end_support.html\", {}) }}",
- "modified": "2023-12-07 15:32:20.121461",
+ "modified": "2023-12-07 15:32:20.121462",
  "modified_by": "Administrator",
  "module": "Smart FM",
- "name": "New Access Request",
+ "name": "New Visitor Registration",
  "owner": "Administrator",
  "recipients": [
   {
@@ -29,6 +29,6 @@
  "send_to_all_assignees": 0,
  "sender": "Smart FM",
  "sender_email": "foms@greenphyto.com",
- "subject": "New Access Request: {{doc.name}}",
+ "subject": "New Visitor Registration: {{doc.name}}",
  "value_changed": "workflow_state"
 }

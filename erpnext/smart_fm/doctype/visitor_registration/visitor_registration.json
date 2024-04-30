@@ -109,7 +109,7 @@
   {
    "fieldname": "access_request_details_section",
    "fieldtype": "Section Break",
-   "label": "Access Request Details"
+   "label": "Visitor Registration Details"
   },
   {
    "fieldname": "area_resource",
@@ -144,14 +144,14 @@
    "fieldtype": "Link",
    "label": "Amended From",
    "no_copy": 1,
-   "options": "Access Request",
+   "options": "Visitor Registration",
    "print_hide": 1,
    "read_only": 1
   },
   {
    "fieldname": "access_request_form",
    "fieldtype": "Heading",
-   "label": "Access Request Form"
+   "label": "Visitor Registration Form"
   },
   {
    "fieldname": "form_description",

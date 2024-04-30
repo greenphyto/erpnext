@@ -32,5 +32,5 @@ class VisitorRegistration(Document):
 @frappe.whitelist()
 def create_to_do(name):
 	todo = frappe.new_doc("ToDo")
-	todo.update({"reference_type": "Access Request", "reference_name": name})
+	todo.update({"reference_type": "Visitor Registration", "reference_name": name})
 	return todo

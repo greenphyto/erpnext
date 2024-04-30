@@ -221,7 +221,7 @@ def close_todo(doc, method=""):
 		"Emergency Contact Flow":"Resolved",
 		"Key Control":"Resolved",
 		"Accident or Incident Report Flow":"Resolved",
-		"Access Request Flow":"Resolved",
+		"Visitor Registration Flow":"Resolved",
 		"Maintenance Request":"Resolved",
 		"Vendor Registration": "Resolved",
 		"Smart FM Work Order": "Resolved",

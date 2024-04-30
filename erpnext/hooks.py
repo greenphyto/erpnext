@@ -392,7 +392,7 @@ doc_events = {
         "on_update_after_submit": "erpnext.smart_fm.controllers.smart_fm.create_asset_qrcode",
         "on_cancel": "erpnext.assets.doctype.asset.asset.remove_sync_map"
 	},
-    ("Maintenance Request", "Tenant Feedback", "Access Request", "Emergency Contact Information", "Key Control", "Vendor Registration", "Tenant Feedback"):{
+    ("Maintenance Request", "Tenant Feedback", "Visitor Registration", "Emergency Contact Information", "Key Control", "Vendor Registration", "Tenant Feedback"):{
         "after_insert": "erpnext.smart_fm.controllers.smart_fm.directly_workflow_from_webform"
 	}
 }

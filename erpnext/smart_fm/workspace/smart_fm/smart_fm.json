@@ -6,7 +6,7 @@
    "label": "Request Report"
   }
  ],
- "content": "[{\"id\":\"ec1F-jIO5A\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Smart FM</span>\",\"col\":12}},{\"id\":\"dhi2td2O7b\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Request Report\",\"col\":12}},{\"id\":\"KwQzTV_xhR\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Your Shortcuts</b></span>\",\"col\":12}},{\"id\":\"kRElbJGgi-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Maintenance Request\",\"col\":3}},{\"id\":\"T_ELHHUDFO\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Accident or Incident Report\",\"col\":3}},{\"id\":\"AgmTrpMCu0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Access Request\",\"col\":3}},{\"id\":\"sQwP2Ln4-Z\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inspection Checklist\",\"col\":3}},{\"id\":\"RWvULbK__5\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Calendar</b></span>\",\"col\":12}},{\"id\":\"PJHWO3mD8P\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ToDo Calendar\",\"col\":3}},{\"id\":\"Ca02m-kfPg\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"zvBL_ORvId\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports and Masters</b></span>\",\"col\":12}},{\"id\":\"aZ_aYZfJAK\",\"type\":\"card\",\"data\":{\"card_name\":\"Requests\",\"col\":4}},{\"id\":\"ZZ9XJ0Eg0e\",\"type\":\"card\",\"data\":{\"card_name\":\"Form\",\"col\":4}},{\"id\":\"KJP0ulpGyr\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}},{\"id\":\"WabTf_FsBf\",\"type\":\"card\",\"data\":{\"card_name\":\"Master\",\"col\":4}}]",
+ "content": "[{\"id\":\"ec1F-jIO5A\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Smart FM</span>\",\"col\":12}},{\"id\":\"dhi2td2O7b\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Request Report\",\"col\":12}},{\"id\":\"KwQzTV_xhR\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Your Shortcuts</b></span>\",\"col\":12}},{\"id\":\"kRElbJGgi-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Maintenance Request\",\"col\":3}},{\"id\":\"T_ELHHUDFO\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Accident or Incident Report\",\"col\":3}},{\"id\":\"AgmTrpMCu0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Visitor Registration\",\"col\":3}},{\"id\":\"sQwP2Ln4-Z\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inspection Checklist\",\"col\":3}},{\"id\":\"RWvULbK__5\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Calendar</b></span>\",\"col\":12}},{\"id\":\"PJHWO3mD8P\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ToDo Calendar\",\"col\":3}},{\"id\":\"Ca02m-kfPg\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"zvBL_ORvId\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports and Masters</b></span>\",\"col\":12}},{\"id\":\"aZ_aYZfJAK\",\"type\":\"card\",\"data\":{\"card_name\":\"Requests\",\"col\":4}},{\"id\":\"ZZ9XJ0Eg0e\",\"type\":\"card\",\"data\":{\"card_name\":\"Form\",\"col\":4}},{\"id\":\"KJP0ulpGyr\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}},{\"id\":\"WabTf_FsBf\",\"type\":\"card\",\"data\":{\"card_name\":\"Master\",\"col\":4}}]",
  "creation": "2023-05-17 14:02:00.454211",
  "docstatus": 0,
  "doctype": "Workspace",
@@ -124,9 +124,9 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Access Request",
+   "label": "Visitor Registration",
    "link_count": 0,
-   "link_to": "Access Request",
+   "link_to": "Visitor Registration",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -233,8 +233,8 @@
    "color": "Yellow",
    "doc_view": "List",
    "format": "{} Issued",
-   "label": "Access Request",
-   "link_to": "Access Request",
+   "label": "Visitor Registration",
+   "link_to": "Visitor Registration",
    "stats_filter": "{\"workflow_state\":[\"=\",\"Issued\"]}",
    "type": "DocType"
   },

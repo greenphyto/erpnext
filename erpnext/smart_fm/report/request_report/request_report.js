@@ -12,7 +12,7 @@ frappe.query_reports["Request Report"] = {
 			"options": [
 				"All",
 				"Maintenance Request",
-				"Access Request",
+				"Visitor Registration",
 				"Inspection Checklist",
 				"Vendor Registration",
 				"Key Control",

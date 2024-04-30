@@ -6,16 +6,16 @@
  "days_in_advance": 0,
  "docstatus": 0,
  "doctype": "Notification",
- "document_type": "Access Request",
+ "document_type": "Visitor Registration",
  "enabled": 1,
  "event": "Value Change",
  "idx": 0,
  "is_standard": 1,
  "message": "<h3>{{ doc.doctype }}</h3>\n\n<p>The request ({{ frappe.utils.get_link_to_form(doc.doctype, doc.name) }}) has been {{doc.workflow_state}} by building management.</p>\n\n{% if doc.bm_comment %}\n<p>BM's Comment:</p>\n<img src=\"{{ frappe.utils.get_url(doc.bm_attachment) }}\" style=\"max-width:400px;\">\n<p>{{doc.bm_comment}}</p>\n{% endif %}\n\n{{ frappe.render_template(\"templates/end_support.html\", {}) }}",
- "modified": "2023-12-07 16:27:59.663646",
+ "modified": "2023-12-07 16:27:59.663647",
  "modified_by": "Administrator",
  "module": "Smart FM",
- "name": "Access Request",
+ "name": "Visitor Registration",
  "owner": "Administrator",
  "recipients": [
   {
@@ -30,6 +30,6 @@
  "send_to_all_assignees": 0,
  "sender": "Smart FM",
  "sender_email": "foms@greenphyto.com",
- "subject": "Access Request: {{doc.name}} {{doc.workflow_state}}",
+ "subject": "Visitor Registration: {{doc.name}} {{doc.workflow_state}}",
  "value_changed": "workflow_state"
 }
