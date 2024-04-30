@@ -1,0 +1,34 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "",
+ "creation": "2023-07-26 14:12:44.019377",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Visitor Registration",
+ "enabled": 1,
+ "event": "New",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<h3>{{doc.doctype}}</h3>\n\n<p>A new request ({{doc.name}}) has been made.</p>\n<p>We will inform you if any further updates</p>\n\n{{ frappe.render_template(\"templates/end_support.html\", {}) }}",
+ "modified": "2024-04-30 10:37:56.019036",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "New Visitor Registration",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_document_field": "owner"
+  },
+  {
+   "receiver_by_document_field": "email_address"
+  }
+ ],
+ "send_system_notification": 1,
+ "send_to_all_assignees": 0,
+ "sender": "Smart FM",
+ "sender_email": "foms@greenphyto.com",
+ "subject": "New Visitor Registration: {{doc.name}}",
+ "value_changed": "workflow_state"
+}

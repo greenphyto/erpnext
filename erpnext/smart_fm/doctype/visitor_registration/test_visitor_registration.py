@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestAccessRequest(FrappeTestCase):
+class TestVisitorRegistration(FrappeTestCase):
 	pass

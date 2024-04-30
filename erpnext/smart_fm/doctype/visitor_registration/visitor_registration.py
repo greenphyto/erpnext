@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 
-class AccessRequest(Document):
+class VisitorRegistration(Document):
 	def validate(self):
 
 		if self.workflow_state == "Started":
