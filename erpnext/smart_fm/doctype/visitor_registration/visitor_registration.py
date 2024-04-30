@@ -33,12 +33,12 @@ class VisitorRegistration(Document):
 	
 	def set_status(self):
 		if self.docstatus == 0:
-			if self.check_in:
-				self.sattus = "Sign In"
+			if self.check_in and not self.check_out:
+				self.status = "Sign In"
 			elif self.check_out:
-				self.sattus = "Sign Out"
+				self.status = "Sign Out"
 			else:
-				self.sattus = "Draft"
+				self.status = "Draft"
 		else:
 			self.status = "Submitted"
 

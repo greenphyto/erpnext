@@ -33,11 +33,21 @@
    "fieldname": "date",
    "fieldtype": "Date",
    "label": "Date"
+  },
+  {
+   "fieldname": "check_in",
+   "fieldtype": "Datetime",
+   "label": "Check In"
+  },
+  {
+   "fieldname": "check_out",
+   "fieldtype": "Datetime",
+   "label": "Check Out"
   }
  ],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2024-04-30 16:48:50.233366",
+ "modified": "2024-04-30 17:09:55.040797",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "visitor-registration",
