@@ -9,17 +9,34 @@ discount_range_filters %}
 	.container {
 		position: relative;
 	}
-
+	.content::before {
+		position: absolute;
+		content: "";
+		background-image: url("/assets/erpnext/images/smartfm/greenphyto-building.jpg");
+		background-size: cover;
+		opacity: 0.7;
+		top: 0px;
+		right: 0px;
+		bottom: 0px;
+		left: 0px;
+	}
 	.title-container {
 		position: relative;
+		margin-right: 70px;
+		padding-bottom: 80px;
 		height: 80vh;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		text-align: right;
 	}
-
 	.title {
 		margin-bottom: 20px;
 		font-weight: 700;
 	}
-
+	.btn {
+		margin-bottom: 20px;
+	}
 	.hidden {
 		display: none;
 	}
@@ -31,19 +48,19 @@ discount_range_filters %}
 	<div class="content">
 		<!-- <img class="image" src="/assets/erpnext/images/smartfm/greenphyto-building.jpg" alt="Empty Cart"> -->
 		<div class="title-container">
-			<h3 class="title">{{ _("Welcome to Smart FM") }}</h3>
-			<div class="row">
-				<div class="col-md-3 col-sm-6 my-sm-5 btn-smart-fm">
+			<div>
+				<h3 class="title">{{ _("Welcome to Smart FM") }}</h3>
+				<div class="btn-smart-fm">
 					<button class="btn btn-primary" onclick="location.href = '/smart-fm';">
 						{{ _("Smart FM Checklists") }}
 					</button>
 				</div>
-				<div class="col-md-3 col-sm-6 my-sm-5 btn-requests">
+				<div class="btn-requests">
 					<button class="btn btn-primary" onclick="location.href = '/requests';">
 						{{ _("Requests from 3rd Party") }}
 					</button>
 				</div>
-				<div class="col-md-3 col-sm-6 my-sm-5 btn-menu">
+				<div class="btn-menu">
 					<button class="btn btn-primary" onclick="location.href = '/menu';">
 						{{ _("Menu") }}
 					</button>
