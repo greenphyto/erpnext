@@ -35,10 +35,14 @@ class VisitorRegistration(Document):
 		if self.docstatus == 0:
 			if self.check_in and not self.check_out:
 				self.status = "Sign In"
-			elif self.check_out:
+				self.check_out_time = ""
+			elif self.check_in and self.check_out:
 				self.status = "Sign Out"
 			else:
 				self.status = "Draft"
+				self.check_in_time = ""
+				self.check_out_time = ""
+
 		else:
 			self.status = "Submitted"
 

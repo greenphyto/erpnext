@@ -28,11 +28,11 @@ frappe.ui.form.on('Visitor Registration', {
 	},
 
 	get_sign_in: function(frm){
-		frm.set_value("check_in", frappe.datetime.now_datetime());
+		frm.set_value("check_in_time", frappe.datetime.now_datetime());
 	},
 
 	get_sign_out: function(frm){
-		frm.set_value("check_out", frappe.datetime.now_datetime());
+		frm.set_value("check_out_time", frappe.datetime.now_datetime());
 	}
 });
 

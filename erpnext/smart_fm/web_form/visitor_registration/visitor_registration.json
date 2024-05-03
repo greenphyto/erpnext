@@ -16,7 +16,7 @@
  "docstatus": 0,
  "doctype": "Web Form",
  "idx": 0,
- "introduction_text": "<div class=\"ql-editor read-mode\"><p>Please complete the following form to request access to restricted areas or resources within the building. Providing accurate information will help our management team evaluate your request and grant access as needed.</p></div>",
+ "introduction_text": "<div class=\"ql-editor read-mode\"><p>Please complete the following form to request access to restricted areas or resources within the building. Providing accurate information will help our management team evaluate your request and grant access as needed. </p></div>",
  "is_standard": 1,
  "list_columns": [
   {
@@ -35,19 +35,19 @@
    "label": "Date"
   },
   {
-   "fieldname": "check_in",
+   "fieldname": "check_in_time",
    "fieldtype": "Datetime",
-   "label": "Check In"
+   "label": "Check In Time"
   },
   {
-   "fieldname": "check_out",
+   "fieldname": "check_out_time",
    "fieldtype": "Datetime",
-   "label": "Check Out"
+   "label": "Check Out Time"
   }
  ],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2024-04-30 17:09:55.040797",
+ "modified": "2024-05-03 18:07:41.716813",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "visitor-registration",
@@ -400,10 +400,25 @@
   },
   {
    "allow_read_on_all_link_options": 0,
+   "default": "0",
    "fieldname": "check_in",
-   "fieldtype": "Datetime",
+   "fieldtype": "Check",
    "hidden": 0,
    "label": "Check In",
+   "max_length": 0,
+   "max_value": 0,
+   "read_only": 0,
+   "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "default": "Now",
+   "depends_on": "eval:doc.check_in",
+   "fieldname": "check_in_time",
+   "fieldtype": "Datetime",
+   "hidden": 0,
+   "label": "Check In Time",
    "max_length": 0,
    "max_value": 0,
    "read_only": 0,
@@ -438,10 +453,25 @@
   },
   {
    "allow_read_on_all_link_options": 0,
+   "default": "0",
    "fieldname": "check_out",
-   "fieldtype": "Datetime",
+   "fieldtype": "Check",
    "hidden": 0,
    "label": "Check Out",
+   "max_length": 0,
+   "max_value": 0,
+   "read_only": 0,
+   "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "default": "Now",
+   "depends_on": "eval:doc.check_out",
+   "fieldname": "check_out_time",
+   "fieldtype": "Datetime",
+   "hidden": 0,
+   "label": "Check Out Time",
    "max_length": 0,
    "max_value": 0,
    "read_only": 0,

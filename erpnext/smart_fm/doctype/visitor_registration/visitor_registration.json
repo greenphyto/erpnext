@@ -44,11 +44,13 @@
   "more_information_section",
   "get_sign_in",
   "check_in",
+  "check_in_time",
   "signature_in",
   "status",
   "column_break_mss0a",
   "get_sign_out",
   "check_out",
+  "check_out_time",
   "signature_out"
  ],
  "fields": [
@@ -258,20 +260,20 @@
    "label": "More Information"
   },
   {
+   "default": "0",
    "fieldname": "check_in",
-   "fieldtype": "Datetime",
-   "label": "Check In",
-   "read_only": 1
+   "fieldtype": "Check",
+   "label": "Check In"
   },
   {
    "fieldname": "column_break_mss0a",
    "fieldtype": "Column Break"
   },
   {
+   "default": "0",
    "fieldname": "check_out",
-   "fieldtype": "Datetime",
-   "label": "Check Out",
-   "read_only": 1
+   "fieldtype": "Check",
+   "label": "Check Out"
   },
   {
    "default": "Draft",
@@ -302,12 +304,26 @@
    "fieldname": "signature_out",
    "fieldtype": "Signature",
    "label": "Signature Out"
+  },
+  {
+   "default": "Now",
+   "depends_on": "eval:doc.check_in",
+   "fieldname": "check_in_time",
+   "fieldtype": "Datetime",
+   "label": "Check In Time"
+  },
+  {
+   "default": "Now",
+   "depends_on": "eval:doc.check_out",
+   "fieldname": "check_out_time",
+   "fieldtype": "Datetime",
+   "label": "Check Out Time"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-30 16:36:07.688091",
+ "modified": "2024-05-03 18:05:02.529144",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Visitor Registration",
