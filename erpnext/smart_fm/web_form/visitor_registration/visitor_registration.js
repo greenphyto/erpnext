@@ -19,4 +19,4 @@ frappe.ready(function() {
 	if (check_out_field && check_out==0){
 		check_out_field.set_value(frappe.datetime.now_datetime())
 	}
-})
+});
