@@ -45,13 +45,11 @@
   "get_sign_in",
   "check_in",
   "check_in_time",
-  "signature_in",
   "status",
   "column_break_mss0a",
   "get_sign_out",
   "check_out",
-  "check_out_time",
-  "signature_out"
+  "check_out_time"
  ],
  "fields": [
   {
@@ -294,18 +292,6 @@
    "label": "Sign Out"
   },
   {
-   "depends_on": "eval:doc.check_in",
-   "fieldname": "signature_in",
-   "fieldtype": "Signature",
-   "label": "Signature In"
-  },
-  {
-   "depends_on": "eval:doc.check_out",
-   "fieldname": "signature_out",
-   "fieldtype": "Signature",
-   "label": "Signature Out"
-  },
-  {
    "default": "Now",
    "depends_on": "eval:doc.check_in",
    "fieldname": "check_in_time",
@@ -323,7 +309,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-03 18:05:02.529144",
+ "modified": "2024-05-06 15:17:53.292799",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Visitor Registration",
