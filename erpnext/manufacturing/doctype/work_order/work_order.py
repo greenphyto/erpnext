@@ -1016,29 +1016,43 @@ class WorkOrder(Document):
 		Update consumed qty from submitted stock entries
 		against a work order for each stock item
 		"""
-
+		qty_map = {}
+		
 		for item in self.required_items:
-			consumed_qty = frappe.db.sql(
-				"""
-				SELECT
-					SUM(qty)
-				FROM
-					`tabStock Entry` entry,
-					`tabStock Entry Detail` detail
-				WHERE
-					entry.work_order = %(name)s
-						AND (entry.purpose = "Material Consumption for Manufacture"
-							OR entry.purpose = "Manufacture")
-						AND entry.docstatus = 1
-						AND detail.parent = entry.name
-						AND detail.s_warehouse IS NOT null
-						AND (detail.item_code = %(item)s
-							OR detail.original_item = %(item)s)
-				""",
-				{"name": self.name, "item": item.item_code},
-			)[0][0]
+			if not item.item_code in qty_map:
+				consumed_qty = frappe.db.sql(
+					"""
+					SELECT
+						SUM(qty)
+					FROM
+						`tabStock Entry` entry,
+						`tabStock Entry Detail` detail
+					WHERE
+						entry.work_order = %(name)s
+							AND (entry.purpose = "Material Consumption for Manufacture"
+								OR entry.purpose = "Manufacture")
+							AND entry.docstatus = 1
+							AND detail.parent = entry.name
+							AND detail.s_warehouse IS NOT null
+							AND (detail.item_code = %(item)s
+								OR detail.original_item = %(item)s)
+					""",
+					{"name": self.name, "item": item.item_code},
+				)[0][0]
+				qty_map[item.item_code] = consumed_qty
+			else:
+				consumed_qty = qty_map[item.item_code]
 
-			item.db_set("consumed_qty", flt(consumed_qty), update_modified=False)
+			update_qty = 0
+			if consumed_qty:
+				if item.transferred_qty >= consumed_qty:
+					update_qty = consumed_qty
+					qty_map[item.item_code] = 0
+				else:
+					update_qty = item.transferred_qty
+					qty_map[item.item_code] = consumed_qty - item.transferred_qty
+
+			item.db_set("consumed_qty", flt(update_qty), update_modified=False)
 
 	@frappe.whitelist()
 	def make_bom(self):
