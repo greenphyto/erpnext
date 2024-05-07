@@ -123,8 +123,21 @@ class GLEntry(Document):
 					against_account_number.append(account_number)
 			else:
 				if against:
-					against_account.append(against)
 					against_party.append(against)
+
+				# find pair
+				accounts = frappe.db.get_all("GL Entry",{
+					"voucher_type":self.voucher_type, 
+					"voucher_no":self.voucher_no, 
+					"name":['!=', self.name]}, "account")
+				
+				for acc in accounts:
+					account_name, account_number  = frappe.db.get_value("Account", acc.account, ["account_name", "account_number"]) or ["", 0]
+					against  = account_name + acc_flags
+					if against:
+						against_account.append(against)
+					if account_number:
+						against_account_number.append(account_number)
 
 		self.against_account = ", ".join(against_account)
 		self.against_party =  ", ".join(against_party)

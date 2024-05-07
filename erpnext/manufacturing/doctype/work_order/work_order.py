@@ -106,7 +106,7 @@ class WorkOrder(Document):
 			if self.foms_work_order:
 				series = self.foms_work_order + "-.###"
 			else:
-				series = self.naming_series
+				series = self.naming_series + ".###"
 
 		self.name = parse_naming_series(series, doc=self)
 
@@ -929,6 +929,7 @@ class WorkOrder(Document):
 					if not d.operation:
 						d.operation = operation
 			else:
+				print(932)
 				for item in sorted(item_dict.values(), key=lambda d: d["idx"] or float("inf")):
 					self.append(
 						"required_items",
@@ -963,6 +964,7 @@ class WorkOrder(Document):
 				ste_child.item_code,
 				ste_child.original_item,
 				fn.Sum(ste_child.qty).as_("qty"),
+				ste.operation
 			)
 			.where(
 				(ste.docstatus == 1)
@@ -970,15 +972,15 @@ class WorkOrder(Document):
 				& (ste.purpose == "Material Transfer for Manufacture")
 				& (ste.is_return == 0)
 			)
-			.groupby(ste_child.item_code)
+			.groupby(ste_child.item_code, ste.operation)
 		)
 
 		data = query.run(as_dict=1) or []
-		transferred_items = frappe._dict({d.original_item or d.item_code: d.qty for d in data})
+		transferred_items = frappe._dict({(d.original_item or d.item_code, d.operation): d.qty for d in data})
 
 		for row in self.required_items:
 			row.db_set(
-				"transferred_qty", (transferred_items.get(row.item_code) or 0.0), update_modified=False
+				"transferred_qty", (transferred_items.get((row.item_code, row.operation)) or 0.0), update_modified=False
 			)
 
 	def update_returned_qty(self):
@@ -1014,29 +1016,43 @@ class WorkOrder(Document):
 		Update consumed qty from submitted stock entries
 		against a work order for each stock item
 		"""
-
+		qty_map = {}
+		
 		for item in self.required_items:
-			consumed_qty = frappe.db.sql(
-				"""
-				SELECT
-					SUM(qty)
-				FROM
-					`tabStock Entry` entry,
-					`tabStock Entry Detail` detail
-				WHERE
-					entry.work_order = %(name)s
-						AND (entry.purpose = "Material Consumption for Manufacture"
-							OR entry.purpose = "Manufacture")
-						AND entry.docstatus = 1
-						AND detail.parent = entry.name
-						AND detail.s_warehouse IS NOT null
-						AND (detail.item_code = %(item)s
-							OR detail.original_item = %(item)s)
-				""",
-				{"name": self.name, "item": item.item_code},
-			)[0][0]
+			if not item.item_code in qty_map:
+				consumed_qty = frappe.db.sql(
+					"""
+					SELECT
+						SUM(qty)
+					FROM
+						`tabStock Entry` entry,
+						`tabStock Entry Detail` detail
+					WHERE
+						entry.work_order = %(name)s
+							AND (entry.purpose = "Material Consumption for Manufacture"
+								OR entry.purpose = "Manufacture")
+							AND entry.docstatus = 1
+							AND detail.parent = entry.name
+							AND detail.s_warehouse IS NOT null
+							AND (detail.item_code = %(item)s
+								OR detail.original_item = %(item)s)
+					""",
+					{"name": self.name, "item": item.item_code},
+				)[0][0]
+				qty_map[item.item_code] = consumed_qty
+			else:
+				consumed_qty = qty_map[item.item_code]
 
-			item.db_set("consumed_qty", flt(consumed_qty), update_modified=False)
+			update_qty = 0
+			if consumed_qty:
+				if item.transferred_qty >= consumed_qty:
+					update_qty = consumed_qty
+					qty_map[item.item_code] = 0
+				else:
+					update_qty = item.transferred_qty
+					qty_map[item.item_code] = consumed_qty - item.transferred_qty
+
+			item.db_set("consumed_qty", flt(update_qty), update_modified=False)
 
 	@frappe.whitelist()
 	def make_bom(self):

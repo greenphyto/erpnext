@@ -1868,11 +1868,12 @@ class StockEntry(StockController):
 			):
 				# "No need for transfer but qty still pending to transfer" case can occur
 				# when transferring multiple RM in different Stock Entries
-				item_dict[item]["qty"] = desire_to_transfer if (desire_to_transfer > 0) else pending_to_issue
+				qty = desire_to_transfer if (desire_to_transfer > 0) else pending_to_issue
 			elif pending_to_issue > 0:
-				item_dict[item]["qty"] = pending_to_issue
+				qty = pending_to_issue
 			else:
-				item_dict[item]["qty"] = 0
+				qty = 0
+			item_dict[item]["qty"] = qty
 
 		# delete items with 0 qty
 		list_of_items = list(item_dict.keys())
@@ -1913,7 +1914,7 @@ class StockEntry(StockController):
 
 			if not can_transfer:
 				continue
-
+			
 			if d.include_item_in_manufacturing:
 				item_row = d.as_dict()
 				item_row["idx"] = len(item_dict) + 1
@@ -1931,7 +1932,14 @@ class StockEntry(StockController):
 				if item_row["allow_alternative_item"]:
 					item_row["allow_alternative_item"] = work_order.allow_alternative_item
 
-				item_dict.setdefault(d.item_code, item_row)
+				# item_dict.setdefault(d.item_code, item_row)
+				if d.item_code not in item_dict:
+					item_dict[d.item_code] = item_row
+				else:
+					item_dict[d.item_code].required_qty += item_row.required_qty
+					item_dict[d.item_code].consumed_qty += item_row.consumed_qty
+					item_dict[d.item_code].transferred_qty += item_row.transferred_qty
+					item_dict[d.item_code].returned_qty += item_row.returned_qty
 
 		return item_dict
 

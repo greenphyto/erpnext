@@ -73,6 +73,7 @@
   "per_transferred",
   "total_amount",
   "job_card",
+  "operation",
   "amended_from",
   "credit_note",
   "is_return"
@@ -621,6 +622,13 @@
    "no_copy": 1,
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fetch_from": "job_card.operation",
+   "fieldname": "operation",
+   "fieldtype": "Data",
+   "label": "Operation",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -628,7 +636,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-10-07 14:39:51.943770",
+ "modified": "2024-05-03 15:41:27.958428",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",
