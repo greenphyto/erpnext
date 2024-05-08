@@ -37,10 +37,6 @@
   "column_break_bwddv",
   "date",
   "amended_from",
-  "section_break_666cu",
-  "bm_comment",
-  "bm_attachment",
-  "bm_preview",
   "more_information_section",
   "get_sign_in",
   "check_in",
@@ -144,7 +140,7 @@
    "default": "No",
    "fieldname": "person",
    "fieldtype": "Select",
-   "label": "Will anyone else be accompanying you during the access period",
+   "label": "Any Greenphyto staff escorting you during the access period",
    "options": "Yes\nNo",
    "reqd": 1
   },
@@ -226,32 +222,6 @@
    "label": "Company"
   },
   {
-   "depends_on": "eval: doc.workflow_state == 'Accepted' || doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Rejected'",
-   "fieldname": "section_break_666cu",
-   "fieldtype": "Section Break",
-   "label": "Building Management Comment"
-  },
-  {
-   "fieldname": "bm_comment",
-   "fieldtype": "Text Editor",
-   "label": "Comment",
-   "permlevel": 2
-  },
-  {
-   "fieldname": "bm_attachment",
-   "fieldtype": "Attach Image",
-   "label": "Attachment",
-   "permlevel": 2
-  },
-  {
-   "depends_on": "bm_attachment",
-   "fieldname": "bm_preview",
-   "fieldtype": "Image",
-   "label": "BM Preview",
-   "options": "bm_attachment",
-   "permlevel": 2
-  },
-  {
    "depends_on": "eval:frappe.session.user != \"Guest\"",
    "fieldname": "more_information_section",
    "fieldtype": "Section Break",
@@ -307,7 +277,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-30 16:36:07.688091",
+ "modified": "2024-05-08 08:49:50.718394",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Visitor Registration",
@@ -316,11 +286,13 @@
  "permissions": [
   {
    "create": 1,
+   "delete": 1,
    "email": 1,
    "export": 1,
    "print": 1,
+   "read": 1,
    "report": 1,
-   "role": "Guest",
+   "role": "Security",
    "share": 1,
    "submit": 1,
    "write": 1
@@ -330,41 +302,12 @@
    "delete": 1,
    "email": 1,
    "export": 1,
-   "if_owner": 1,
    "print": 1,
    "read": 1,
    "report": 1,
    "role": "All",
    "share": 1,
    "submit": 1,
-   "write": 1
-  },
-  {
-   "amend": 1,
-   "cancel": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Building Management",
-   "select": 1,
-   "share": 1,
-   "submit": 1,
-   "write": 1
-  },
-  {
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "permlevel": 2,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Building Management",
-   "share": 1,
    "write": 1
   }
  ],

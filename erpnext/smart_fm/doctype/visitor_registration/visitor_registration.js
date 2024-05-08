@@ -19,7 +19,11 @@ frappe.ui.form.on('Visitor Registration', {
 		if (frm.doc.person!="No"){
 			// add child based on user login
 			if ( is_null(frm.doc.person_list) ){
-        frm.set_value("person_list", [{}]);
+				frappe.db.get_value("User", frappe.session.user, ["email", "full_name", "phone", "mobile_no"])
+				.then(r => {
+					let values = r.message;
+					frm.set_value("person_list", [{name1: values.full_name, phone_number: values.phone, email: values.email}]);
+				});
 			}
 		}else{
 			frm.set_value("person_list", []);
