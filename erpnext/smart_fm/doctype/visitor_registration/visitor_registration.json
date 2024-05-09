@@ -82,8 +82,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Email Address",
-   "options": "Email",
-   "reqd": 1
+   "options": "Email"
   },
   {
    "fieldname": "datetime",
@@ -279,7 +278,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-09 09:27:30.705300",
+ "modified": "2024-05-09 14:09:29.339218",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Visitor Registration",
