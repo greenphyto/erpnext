@@ -213,7 +213,7 @@
    "depends_on": "eval:doc.person != 'No'",
    "fieldname": "person_list",
    "fieldtype": "Table",
-   "label": "Person",
+   "label": "Key in the hosts from Greenphyto",
    "options": "Person"
   },
   {
@@ -277,7 +277,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-08 08:49:50.718394",
+ "modified": "2024-05-09 09:27:30.705300",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Visitor Registration",
