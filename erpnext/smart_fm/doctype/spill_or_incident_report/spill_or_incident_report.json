@@ -70,6 +70,7 @@
   "column_break_zibxc",
   "managing_phone",
   "managing_fax",
+  "section_break_f5wzy",
   "additional_notesinformation_if_applicable",
   "amended_from"
  ],
@@ -370,6 +371,7 @@
   {
    "fieldname": "section_break",
    "fieldtype": "Section Break",
+   "hide_border": 1,
    "label": "Person Responsible for Managing Termination/Closure of Incident or Spill"
   },
   {
@@ -401,12 +403,16 @@
    "fieldname": "managing_fax",
    "fieldtype": "Data",
    "label": "Fax"
+  },
+  {
+   "fieldname": "section_break_f5wzy",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-03 13:44:34.232437",
+ "modified": "2024-05-10 13:41:35.627393",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Spill or Incident Report",
