@@ -229,6 +229,8 @@ frappe.ui.form.on("Item", {
 	},
 
 	asset_code: function(frm){
+		var me = this;
+		console.log("here");
 		if (frm.doc.asset_code){
 			frappe.call({
 				method:"erpnext.assets.doctype.asset.asset.get_default_asset_code_data",
@@ -238,11 +240,29 @@ frappe.ui.form.on("Item", {
 				callback: function(r){
 					frm.set_value("asset_category", r.message.asset_category);
 					frm.set_value("asset_naming_series", r.message.series);
+					var company = r.message.company || frappe.defaults.get_default('company');
+					frm.events.add_default_expense_asset(frm, company, r.message.account);
 				}
 			})
 		}else{
 			frm.set_value("asset_category", "");
 		}
+	},
+
+	add_default_expense_asset: function(frm, company, expense_account){
+		// find row match with company
+		// set/remove data
+		var row = $.grep(frm.doc.item_defaults, (r)=>{if (r.company == "Greenphyto Pte Ltd") return r});
+		if (row){
+			row = row[0];
+			frappe.model.set_value(row.doctype, row.name, "expense_account", expense_account);
+		}
+		else{
+			row = frm.add_child("item_defaults");
+			row.company = company;
+			row.expense_account = expense_account;
+		}
+		frm.refresh_field("item_defaults");
 	},
 
 	page_name: frappe.utils.warn_page_name_change,

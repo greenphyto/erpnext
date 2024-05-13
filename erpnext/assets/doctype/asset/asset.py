@@ -1301,7 +1301,7 @@ def get_default_asset_code_data(asset_code):
 		"account":asset_code,
 		"parent": 'Accounts Settings',
 		"parentfield": "asset_code_map",
-	}, ["default_asset_category as asset_category", "series"], as_dict=1)
+	}, ["default_asset_category as asset_category","company","account", "series"], as_dict=1)
 
 from frappe.core.doctype.sync_log.sync_log import delete_log, create_log
 def asset_trigger(doc, method=""):

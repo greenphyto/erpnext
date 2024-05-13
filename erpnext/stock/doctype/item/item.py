@@ -131,6 +131,7 @@ class Item(Document):
 		self.insert_department()
 		self.set_material_number()
 		self.validate_debit_note_item()
+		self.set_asset_category()
 
 		set_item_tax_from_hsn_code(self)
 
@@ -253,6 +254,32 @@ class Item(Document):
 				frappe.throw(
 					_('"Is Fixed Asset" cannot be unchecked, as Asset record exists against the item')
 				)
+	
+	def set_asset_category(self):
+		if not self.asset_code:
+			return
+		
+		from erpnext.assets.doctype.asset.asset import get_default_asset_code_data
+		data = get_default_asset_code_data(self.asset_code) or {}
+		if not self.asset_category:
+			self.asset_category = data.get("asset_category")
+		
+		# set expense
+		company = data.get("company") or erpnext.get_default_company()
+		do_set = False
+		for d in self.get("item_defaults"):
+			if d.company == company:
+				do_set = True
+				d.expense_account = data.get("account")
+
+		if not do_set:
+			self.append(
+				"item_defaults",
+					{"company": company, "expense_account": data.get("account")},
+			)
+			
+		
+
 
 	def validate_retain_sample(self):
 		if self.retain_sample and not frappe.db.get_single_value(
