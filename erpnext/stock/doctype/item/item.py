@@ -260,7 +260,7 @@ class Item(Document):
 			return
 		
 		from erpnext.assets.doctype.asset.asset import get_default_asset_code_data
-		data = get_default_asset_code_data(self.asset_code)
+		data = get_default_asset_code_data(self.asset_code) or {}
 		if not self.asset_category:
 			self.asset_category = data.get("asset_category")
 		
