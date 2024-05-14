@@ -388,7 +388,8 @@ cur_frm.cscript.update_totals = function(doc) {
 	doc.total_debit_in_currency_base = tdb;
 	doc.total_credit_in_currency_base = tcb;
 	doc.difference = flt((td - tc), precision("difference"));
-	refresh_many(['total_debit','total_credit','total_debit_in_currency_base','total_credit_in_currency_base','difference']);
+	doc.difference_in_currency_base = flt((tdb - tcb), precision("difference_in_currency_base"));
+	refresh_many(['total_debit','total_credit','total_debit_in_currency_base','total_credit_in_currency_base','difference', 'difference_in_currency_base']);
 }
 
 cur_frm.cscript.get_balance = function(doc,dt,dn) {
@@ -487,6 +488,8 @@ $.extend(erpnext.journal_entry, {
 			"total_credit_in_currency_base": "Total Credit",
 			"total_debit": "Total Debit",
 			"total_credit": "Total Credit",
+			"difference": "Difference (Dr - Cr)",
+			"difference_in_currency_base": "Difference (Dr - Cr)",
 		};
 
 		$.each(origin_fields, (i,f)=>{
@@ -509,7 +512,7 @@ $.extend(erpnext.journal_entry, {
 			}
 		});
 
-		$.each(["total_debit_in_currency_base", "total_credit_in_currency_base", "total_debit", "total_credit"], (i,f)=>{
+		$.each(["total_debit_in_currency_base", "total_credit_in_currency_base", "total_debit", "total_credit", "difference_in_currency_base", "difference"], (i,f)=>{
 			if (f.includes('currency_base')){
 				frm.set_df_property(f, "label", field_label_map[f] + " (" + frm.doc.currency_base + ")")
 			}else{

@@ -41,6 +41,7 @@
   "column_for_currency_base_column",
   "total_debit_in_currency_base",
   "total_credit_in_currency_base",
+  "difference_in_currency_base",
   "reference",
   "clearance_date",
   "remark",
@@ -574,13 +575,19 @@
    "fieldtype": "Currency",
    "label": "Total Credit in Currency Base",
    "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.multi_currency&&doc.difference_in_currency_base",
+   "fieldname": "difference_in_currency_base",
+   "fieldtype": "Currency",
+   "label": "Difference (Dr - Cr)"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 176,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-14 16:51:29.846651",
+ "modified": "2024-05-14 17:17:27.502518",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",
