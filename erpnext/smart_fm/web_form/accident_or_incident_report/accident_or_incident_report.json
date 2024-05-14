@@ -1,20 +1,16 @@
 {
- "accept_payment": 0,
  "allow_comments": 0,
  "allow_delete": 1,
  "allow_edit": 1,
  "allow_incomplete": 0,
  "allow_multiple": 1,
  "allow_print": 0,
- "amount": 0.0,
- "amount_based_on_field": 0,
  "anonymous": 0,
  "apply_document_permissions": 1,
  "breadcrumbs": "[\n    {\"label\": \"Home\", \"route\":\"/\"},\n    {\"label\": \"Smart FM\", \"route\":\"smart-fm\"},\n]",
  "button_label": "Save",
  "client_script": "frappe.set_default_web_form([\r\n    \"email as email_address\", \r\n    \"full_name as name1\", \r\n    \"phone as phone_number\"\r\n])",
  "creation": "2024-04-17 18:21:22.777724",
- "currency": "SGD",
  "custom_css": ":root {\n    --error-border: var(--red-400);\n}",
  "doc_type": "Accident or Incident Report",
  "docstatus": 0,
@@ -41,12 +37,11 @@
  ],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2024-05-10 10:57:12.674525",
+ "modified": "2024-05-14 14:45:13.847718",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "accident-or-incident-report",
  "owner": "Administrator",
- "payment_button_label": "Buy Now",
  "published": 1,
  "route": "smart-fm/accident-or-incident-report",
  "show_attachments": 0,
@@ -1203,5 +1198,5 @@
    "show_in_filter": 0
   }
  ],
- "website_sidebar": "Request from 3rd Party"
+ "website_sidebar": "Smart FM"
 }
