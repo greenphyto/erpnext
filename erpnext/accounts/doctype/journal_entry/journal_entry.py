@@ -887,9 +887,12 @@ class JournalEntry(AccountsController):
 				if diff > 0:
 					blank_row.credit_in_account_currency = diff
 					blank_row.credit = diff
+					blank_row.credit_in_currency_base = flt(diff / self.exchange_rate, 5)
+
 				elif diff < 0:
 					blank_row.debit_in_account_currency = abs(diff)
 					blank_row.debit = abs(diff)
+					blank_row.debit_in_currency_base = flt(abs(diff) / self.exchange_rate, 5)
 
 			self.validate_total_debit_and_credit()
 
