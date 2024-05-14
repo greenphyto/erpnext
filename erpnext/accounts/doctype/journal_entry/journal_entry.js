@@ -478,6 +478,10 @@ $.extend(erpnext.journal_entry, {
 			"credit_in_currency_base": "Credit",
 			"debit": "Debit",
 			"credit": "Credit",
+			"total_debit_in_currency_base": "Total Debit",
+			"total_credit_in_currency_base": "Total Credit",
+			"total_debit": "Total Debit",
+			"total_credit": "Total Credit",
 		};
 
 		$.each(origin_fields, (i,f)=>{
@@ -497,6 +501,14 @@ $.extend(erpnext.journal_entry, {
 				field.label = field_label_map[f] + " (" + frm.doc.currency_base + ")";
 			}else{
 				field.in_list_view = 0;
+			}
+		});
+
+		$.each(["total_debit_in_currency_base", "total_credit_in_currency_base", "total_debit", "total_credit"], (i,f)=>{
+			if (f.includes('currency_base')){
+				frm.set_df_property(f, "label", field_label_map[f] + " (" + frm.doc.currency_base + ")")
+			}else{
+				frm.set_df_property(f, "label", field_label_map[f] + " (" + frappe.defaults.get_default("currency") + ")")
 			}
 		});
 
