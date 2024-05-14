@@ -431,9 +431,17 @@ frappe.ui.form.on("Journal Entry Account", {
 	debit: function(frm, dt, dn) {
 		cur_frm.cscript.update_totals(frm.doc);
 	},
-
+	
 	credit: function(frm, dt, dn) {
 		cur_frm.cscript.update_totals(frm.doc);
+	},
+	
+	debit_in_currency_base: function(frm,cdt,cdn){
+		erpnext.journal_entry.calculate_from_currency_base(frm, cdt, cdn);
+	},
+	
+	credit_in_currency_base: function(frm,cdt,cdn){
+		erpnext.journal_entry.calculate_from_currency_base(frm, cdt, cdn);
 	},
 
 	exchange_rate: function(frm, cdt, cdn) {
@@ -493,6 +501,24 @@ $.extend(erpnext.journal_entry, {
 		});
 
 		table.grid.reset_grid();
+	},
+
+	calculate_from_currency_base: function(frm, cdt, cdn){
+		 var d = locals[cdt][cdn];
+		 var debit, credit = 0;
+		 if (frm.doc.multi_currency){
+			 if (d.account_currency != frm.doc.currency_base){
+				var debit = d.debit_in_currency_base * frm.doc.exchange_rate;
+				var credit = d.credit_in_currency_base * frm.doc.exchange_rate;
+			}else{
+				var debit = d.debit_in_currency_base;
+				var credit = d.credit_in_currency_base;
+			}
+			frappe.model.set_value(cdt,cdn, 'debit_in_account_currency', debit);
+			frappe.model.set_value(cdt,cdn, 'credit_in_account_currency', credit);
+		 }else{
+
+		 }
 	},
 
 	set_debit_credit_in_company_currency: function(frm, cdt, cdn) {
