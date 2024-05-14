@@ -33,6 +33,8 @@
   "difference",
   "get_balance",
   "multi_currency",
+  "currency_base",
+  "exchange_rate",
   "total_amount_currency",
   "total_amount",
   "total_amount_in_words",
@@ -533,13 +535,30 @@
    "label": "Process Deferred Accounting",
    "options": "Process Deferred Accounting",
    "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.multi_currency",
+   "fieldname": "currency_base",
+   "fieldtype": "Link",
+   "label": "Currency Base",
+   "mandatory_depends_on": "eval:doc.multi_currency",
+   "options": "Currency"
+  },
+  {
+   "default": "1",
+   "depends_on": "eval:doc.multi_currency",
+   "fieldname": "exchange_rate",
+   "fieldtype": "Float",
+   "label": "Exchange Rate",
+   "mandatory_depends_on": "eval:doc.multi_currency",
+   "precision": "4"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 176,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-09-21 16:05:50.860173",
+ "modified": "2024-05-14 10:59:43.375704",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",
