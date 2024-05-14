@@ -162,7 +162,6 @@
    "columns": 2,
    "fieldname": "debit_in_account_currency",
    "fieldtype": "Currency",
-   "in_list_view": 1,
    "label": "Debit",
    "options": "account_currency",
    "print_hide_if_no_value": 1
@@ -188,7 +187,6 @@
    "columns": 2,
    "fieldname": "credit_in_account_currency",
    "fieldtype": "Currency",
-   "in_list_view": 1,
    "label": "Credit",
    "options": "account_currency",
    "print_hide_if_no_value": 1
@@ -347,14 +345,18 @@
    "label": "Currency Amount View"
   },
   {
+   "bold": 1,
    "fieldname": "debit_in_currency_base",
    "fieldtype": "Currency",
-   "label": "Debit in Currency Base"
+   "label": "Debit in Currency Base",
+   "options": "currency_base"
   },
   {
+   "bold": 1,
    "fieldname": "credit_in_currency_base",
    "fieldtype": "Currency",
-   "label": "Credit in Currency Base"
+   "label": "Credit in Currency Base",
+   "options": "currency_base"
   },
   {
    "fieldname": "column_break_26",
@@ -364,7 +366,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-05-14 11:09:56.351951",
+ "modified": "2024-05-14 15:47:45.930550",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry Account",

@@ -171,6 +171,10 @@ frappe.ui.form.on("Journal Entry", {
 					update_jv_details(frm.doc, doc.accounts);
 				});
 		}
+	},
+
+	currency_base: function(frm){
+		erpnext.journal_entry.toggle_fields_based_on_currency(frm);
 	}
 });
 
@@ -450,24 +454,45 @@ frappe.ui.form.on("Journal Entry Account", "accounts_remove", function(frm) {
 
 $.extend(erpnext.journal_entry, {
 	toggle_fields_based_on_currency: function(frm) {
-		var fields = ["currency_section", "account_currency", "exchange_rate", "debit", "credit"];
+		var origin_fields = ["debit", "credit"];
+		var new_fields = ["debit_in_currency_base", "credit_in_currency_base"];
 
-		var grid = frm.get_field("accounts").grid;
-		if(grid) grid.set_column_disp(fields, frm.doc.multi_currency);
+		// var grid = frm.get_field("accounts").grid;
+		// if(grid) grid.set_column_disp(fields, frm.doc.multi_currency);
 
-		// dynamic label
+		const item_table = "accounts";
+		var table = frm.fields_dict[item_table];
+
+		var show = frm.doc.multi_currency;
+
 		var field_label_map = {
-			"debit_in_account_currency": "Debit",
-			"credit_in_account_currency": "Credit"
+			"debit_in_currency_base": "Debit",
+			"credit_in_currency_base": "Credit",
+			"debit": "Debit",
+			"credit": "Credit",
 		};
 
-		$.each(field_label_map, function (fieldname, label) {
-			frm.fields_dict.accounts.grid.update_docfield_property(
-				fieldname,
-				'label',
-				frm.doc.multi_currency ? (label + " in Account Currency") : label
-			);
-		})
+		$.each(origin_fields, (i,f)=>{
+			var field = table.grid.fields_map[f];
+			if (show) {
+				field.in_list_view = 0;
+			}else{
+				field.in_list_view = 1;
+				field.label = field_label_map[f] + " (" + frappe.defaults.get_default("currency") + ")";
+			}
+		});
+		
+		$.each(new_fields, (i,f)=>{
+			var field = table.grid.fields_map[f];
+			if (show) {
+				field.in_list_view = 1;
+				field.label = field_label_map[f] + " (" + frm.doc.currency_base + ")";
+			}else{
+				field.in_list_view = 0;
+			}
+		});
+
+		table.grid.reset_grid();
 	},
 
 	set_debit_credit_in_company_currency: function(frm, cdt, cdn) {
