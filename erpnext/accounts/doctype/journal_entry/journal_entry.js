@@ -374,16 +374,21 @@ cur_frm.script_manager.make(erpnext.accounts.JournalEntry);
 
 cur_frm.cscript.update_totals = function(doc) {
 	var td=0.0; var tc =0.0;
+	var tdb=0.0; var tcb =0.0;
 	var accounts = doc.accounts || [];
 	for(var i in accounts) {
 		td += flt(accounts[i].debit, precision("debit", accounts[i]));
 		tc += flt(accounts[i].credit, precision("credit", accounts[i]));
+		tdb += flt(accounts[i].debit_in_currency_base, precision("debit_in_currency_base", accounts[i]));
+		tcb += flt(accounts[i].credit_in_currency_base, precision("credit_in_currency_base", accounts[i]));
 	}
 	var doc = locals[doc.doctype][doc.name];
 	doc.total_debit = td;
 	doc.total_credit = tc;
+	doc.total_debit_in_currency_base = tdb;
+	doc.total_credit_in_currency_base = tcb;
 	doc.difference = flt((td - tc), precision("difference"));
-	refresh_many(['total_debit','total_credit','difference']);
+	refresh_many(['total_debit','total_credit','total_debit_in_currency_base','total_credit_in_currency_base','difference']);
 }
 
 cur_frm.cscript.get_balance = function(doc,dt,dn) {
