@@ -174,6 +174,7 @@ frappe.ui.form.on("Journal Entry", {
 	},
 
 	currency_base: function(frm){
+		erpnext.journal_entry.set_exchange_rate_on_parent(frm);
 		erpnext.journal_entry.toggle_fields_based_on_currency(frm);
 	}
 });
@@ -585,6 +586,50 @@ $.extend(erpnext.journal_entry, {
 			erpnext.journal_entry.set_debit_credit_in_company_currency(frm, cdt, cdn);
 		}
 		refresh_field("exchange_rate", cdn, "accounts");
+	},
+
+	get_exchange_rate: async function(frm, from_currency, to_currency, transaction_date){
+		if (
+			frm.exchange_rates
+			&& frm.exchange_rates[from_currency]
+			&& frm.exchange_rates[from_currency][to_currency]
+		) {
+			return {message:frm.exchange_rates[from_currency][to_currency]};
+		}
+
+		return frappe.call({
+			method: "erpnext.setup.utils.get_exchange_rate",
+			args: {
+				from_currency,
+				to_currency,
+				transaction_date
+			},
+			callback: function(r) {
+				if (r.message) {
+					// cache exchange rates
+					frm.exchange_rates = frm.exchange_rates || {};
+					frm.exchange_rates[from_currency] = frm.exchange_rates[from_currency] || {};
+					frm.exchange_rates[from_currency][to_currency] = r.message;
+				}
+			}
+		});
+	},
+
+	set_exchange_rate_on_parent: async function(frm){
+		if (!frm.doc.currency_base) return frm.set_value("exchange_rate", 1);;
+		var ex_rate = await erpnext.journal_entry.get_exchange_rate(frm, frm.doc.currency_base, frappe.defaults.get_default("currency"), frm.doc.posting_date);
+		frm.set_value("exchange_rate", ex_rate.message || 1);
+		erpnext.journal_entry.validate_account_currency(frm);
+	},
+
+	validate_account_currency: function(frm){
+		var comp_currency = frappe.defaults.get_default("currency");
+		var allowed_currency = [comp_currency, frm.doc.currency_base];
+		$.each(frm.doc.accounts, (i,row)=>{
+			if (!allowed_currency.includes(row.account_currency)){
+				frappe.msgprint(__(`Row ${row.idx}, is not account with currency <b>${comp_currency}</b> or <b>${frm.doc.currency_base}</b>`));
+			}
+		});
 	},
 
 	quick_entry: function(frm) {
