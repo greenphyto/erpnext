@@ -10,13 +10,13 @@ from frappe.utils import get_datetime
 class VisitorRegistration(Document):
 	def validate(self):
 
-		if self.workflow_state == "Started":
-			self.update_todo(start=1)
-		elif self.workflow_state == "Resolved":
-			self.update_todo(start=2)
+		# if self.workflow_state == "Started":
+		# 	self.update_todo(start=1)
+		# elif self.workflow_state == "Resolved":
+		# 	self.update_todo(start=2)
 
-		# self.set_status()
 		self.set_checkout_time()
+		self.set_status()
 
 	def update_todo(self, start=0):
 		# start = 1 for yes, 2 for stop
@@ -43,19 +43,20 @@ class VisitorRegistration(Document):
 			self.check_out = 1
 	
 	def set_status(self):
-		if self.docstatus == 0:
+		if self.docstatus == 0 and self.status in ("Sign In", "Accepted"):
 			if self.check_in and not self.check_out:
-				self.status = "Sign In"
+				status = "Sign In"
 				self.check_out_time = ""
 			elif self.check_in and self.check_out:
-				self.status = "Sign Out"
+				status = "Sign Out"
+				self.db_set("docstatus", 1)
 			else:
-				self.status = "Draft"
+				status = "Accepted"
 				self.check_in_time = ""
 				self.check_out_time = ""
+		
+			self.db_set("status", status)
 
-		else:
-			self.status = "Submitted"
 
 def process_workflow(self, method=""):
 	if self.status == "Draft":
