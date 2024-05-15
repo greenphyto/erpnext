@@ -700,6 +700,11 @@ $.extend(erpnext.journal_entry, {
 			$.extend(filters, {
 				account_currency: frappe.get_doc(":Company", frm.doc.company).default_currency
 			});
+		}else{
+			$.extend(filters, {
+				account_currency: ['in', [frappe.get_doc(":Company", frm.doc.company).default_currency, frm.doc.currency_base]],
+				account_type: 'Bank'
+			});
 		}
 		return { filters: filters };
 	},
