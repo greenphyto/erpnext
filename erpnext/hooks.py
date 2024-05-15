@@ -394,6 +394,9 @@ doc_events = {
 	},
     ("Maintenance Request", "Tenant Feedback", "Visitor Registration", "Emergency Contact Information", "Key Control", "Vendor Registration", "Tenant Feedback"):{
         "after_insert": "erpnext.smart_fm.controllers.smart_fm.directly_workflow_from_webform"
+	}, 
+    "Visitor Registration": {
+        "after_insert": "erpnext.smart_fm.doctype.visitor_registration.visitor_registration.process_workflow"
 	}
 }
 

@@ -4,6 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
+from frappe.model.workflow import apply_workflow
 
 class VisitorRegistration(Document):
 	def validate(self):
@@ -13,7 +14,7 @@ class VisitorRegistration(Document):
 		elif self.workflow_state == "Resolved":
 			self.update_todo(start=2)
 
-		self.set_status()
+		# self.set_status()
 
 	def update_todo(self, start=0):
 		# start = 1 for yes, 2 for stop
@@ -45,6 +46,10 @@ class VisitorRegistration(Document):
 
 		else:
 			self.status = "Submitted"
+
+def process_workflow(self, method=""):
+	if self.status == "Draft":
+		apply_workflow(self, "Review")
 
 @frappe.whitelist()
 def create_to_do(name):

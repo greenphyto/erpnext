@@ -1763,7 +1763,6 @@ class CreateAsset():
 			frappe.get_doc({"doctype": "Location", "location_name": self.source.location}).insert()
 
 class UpdateExistingAsset():
-	print(1767)
 	def __init__(self, asset, log, source_doc):
 		self.asset = asset
 		self.log = log
