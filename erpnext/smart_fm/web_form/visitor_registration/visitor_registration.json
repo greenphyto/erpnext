@@ -45,11 +45,6 @@
    "label": "ID"
   },
   {
-   "fieldname": "check_in",
-   "fieldtype": "Datetime",
-   "label": "Check In"
-  },
-  {
    "fieldname": "check_in_time",
    "fieldtype": "Datetime",
    "label": "Check In Time"
@@ -62,7 +57,7 @@
  ],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2024-05-10 16:09:30.438721",
+ "modified": "2024-05-15 11:42:43.947004",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "visitor-registration",
