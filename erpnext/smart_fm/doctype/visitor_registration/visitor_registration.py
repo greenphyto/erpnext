@@ -5,6 +5,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 from frappe.model.workflow import apply_workflow
+from frappe.utils import get_datetime
 
 class VisitorRegistration(Document):
 	def validate(self):
@@ -15,6 +16,7 @@ class VisitorRegistration(Document):
 			self.update_todo(start=2)
 
 		# self.set_status()
+		self.set_checkout_time()
 
 	def update_todo(self, start=0):
 		# start = 1 for yes, 2 for stop
@@ -31,6 +33,14 @@ class VisitorRegistration(Document):
 				if start == 2:
 					todo.set_complete()
 					todo.db_update()
+
+	def set_checkout_time(self):
+		if self.status == "Sign In" and not self.check_in:
+			self.check_in_time = get_datetime()
+			self.check_in = 1
+		elif self.status == "Sign Out" and not self.check_out:
+			self.check_out_time = get_datetime()
+			self.check_out = 1
 	
 	def set_status(self):
 		if self.docstatus == 0:

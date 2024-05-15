@@ -37,15 +37,16 @@
   "column_break_bwddv",
   "date",
   "amended_from",
-  "more_information_section",
+  "check_in_details_section",
   "get_sign_in",
   "check_in",
   "check_in_time",
-  "status",
   "column_break_mss0a",
   "get_sign_out",
   "check_out",
-  "check_out_time"
+  "check_out_time",
+  "more_information_section",
+  "status"
  ],
  "fields": [
   {
@@ -230,7 +231,8 @@
    "default": "0",
    "fieldname": "check_in",
    "fieldtype": "Check",
-   "label": "Check In"
+   "label": "Check In",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_mss0a",
@@ -240,7 +242,8 @@
    "default": "0",
    "fieldname": "check_out",
    "fieldtype": "Check",
-   "label": "Check Out"
+   "label": "Check Out",
+   "read_only": 1
   },
   {
    "default": "Draft",
@@ -253,11 +256,13 @@
   {
    "fieldname": "get_sign_in",
    "fieldtype": "Button",
+   "hidden": 1,
    "label": "Sign In"
   },
   {
    "fieldname": "get_sign_out",
    "fieldtype": "Button",
+   "hidden": 1,
    "label": "Sign Out"
   },
   {
@@ -265,20 +270,27 @@
    "depends_on": "eval:doc.check_in",
    "fieldname": "check_in_time",
    "fieldtype": "Datetime",
-   "label": "Check In Time"
+   "label": "Check In Time",
+   "read_only": 1
   },
   {
    "default": "Now",
    "depends_on": "eval:doc.check_out",
    "fieldname": "check_out_time",
    "fieldtype": "Datetime",
-   "label": "Check Out Time"
+   "label": "Check Out Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "check_in_details_section",
+   "fieldtype": "Section Break",
+   "label": "Check in Details"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-15 16:03:30.922659",
+ "modified": "2024-05-15 16:13:13.835139",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Visitor Registration",
