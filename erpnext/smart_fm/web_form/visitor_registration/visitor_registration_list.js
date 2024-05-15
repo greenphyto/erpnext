@@ -1,7 +1,6 @@
 console.log("Here")
 
 frappe.custom_formatter_for_list = (fieldname, value)=>{
-    console.log(fieldname, value);
     if (fieldname!="status") return value;
 
     var place = $(value).find('p');
