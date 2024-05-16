@@ -502,13 +502,24 @@ $.extend(erpnext.journal_entry, {
 				field.label = field_label_map[f] + " (" + frappe.defaults.get_default("currency") + ")";
 			}
 		});
+
+		$.each(["debit", "credit", "credit_in_account_currency", "debit_in_account_currency"], (i,f)=>{
+			var field = table.grid.fields_map[f];
+			if (show) {
+				field.read_only = 1;
+			}else{
+				field.read_only = 0;
+			}
+		})
 		
 		$.each(new_fields, (i,f)=>{
 			var field = table.grid.fields_map[f];
 			if (show) {
 				field.in_list_view = 1;
+				field.read_only = 0;
 				field.label = field_label_map[f] + " (" + frm.doc.currency_base + ")";
 			}else{
+				field.read_only = 1;
 				field.in_list_view = 0;
 			}
 		});
