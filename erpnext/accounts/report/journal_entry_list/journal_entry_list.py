@@ -2,10 +2,21 @@ import frappe, json
 from frappe import _
 
 def execute(filters=None):
+    # set filters
+    order = ""
+    cond = ""
+    if filters.get("order_by") == "Date":
+        order = "a.posting_date DESC"
+    else:
+        order = "a.name DESC"
+
+    if filters.get("name"):
+        cond += " and a.name like '%"+filters.get("name")+"%' "
+
 
     # get column
     column = [
-        {"label": _("Name"),            "fieldtype":"Data",    "fieldname": "name",             "width": 160},
+        {"label": _("Name"),            "fieldtype":"Data",    "fieldname": "name",             "width": 180},
 		{"label": _("Date"),            "fieldtype":"Date",    "fieldname": "posting_date",     "width": 100},
         {"label": _("Status"),          "fieldtype":"Data",    "fieldname": "docstatus",        "width": 100},
         {"label": _("Entry Type"),      "fieldtype":"Data",    "fieldname": "voucher_type",     "width": 110},
@@ -16,9 +27,6 @@ def execute(filters=None):
     ]
 
     # get data
-    requested_column = [
-
-    ]
     data = frappe.db.sql("""
         SELECT 
             a.*
@@ -42,8 +50,9 @@ def execute(filters=None):
                 `tabDeleted Document` d
             WHERE
                 d.deleted_doctype = 'Journal Entry') a
-        ORDER BY a.name DESC
-    """, as_dict=1)
+        where a.name is not null {}
+                         ORDER BY {}
+    """.format(cond, order), as_dict=1)
 
     # process
     final_data = []
