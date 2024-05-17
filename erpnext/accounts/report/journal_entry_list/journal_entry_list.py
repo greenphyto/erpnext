@@ -5,14 +5,19 @@ def execute(filters=None):
 
     # get column
     column = [
-        {"label": _("Name"),    "fieldtype":"Data",    "fieldname": "name",            "width": 100},
-		{"label": _("Date"),    "fieldtype":"Date",    "fieldname": "posting_date",    "width": 100},
-        {"label": _("Status"),  "fieldtype":"Data",    "fieldname": "docstatus",       "width": 100}
+        {"label": _("Name"),            "fieldtype":"Data",    "fieldname": "name",             "width": 160},
+		{"label": _("Date"),            "fieldtype":"Date",    "fieldname": "posting_date",     "width": 100},
+        {"label": _("Status"),          "fieldtype":"Data",    "fieldname": "docstatus",        "width": 100},
+        {"label": _("Entry Type"),      "fieldtype":"Data",    "fieldname": "voucher_type",     "width": 110},
+        {"label": _("Company"),         "fieldtype":"Data",    "fieldname": "company",          "width": 150},
+        {"label": _("Reference Number"),"fieldtype":"Data",    "fieldname": "cheque_no",      "width": 150},
+        {"label": _("Total Debit"),     "fieldtype":"Currency",    "fieldname": "total_debit",      "width": 120},
+        {"label": _("Remark"),     "fieldtype":"Data",    "fieldname": "remark",     "width": 200}
     ]
 
     # get data
     requested_column = [
-        
+
     ]
     data = frappe.db.sql("""
         SELECT 
@@ -22,13 +27,17 @@ def execute(filters=None):
                 j.name,
                     j.posting_date,
                     IF(j.docstatus = 0, 'Draft', IF(j.docstatus = 1, 'Submitted', 'Cancelled')) as docstatus,
-                    j.voucher_type
+                    j.voucher_type,
+                    j.company,
+                    j.cheque_no,
+                    j.total_debit,
+                    j.remark         
             FROM
                 `tabJournal Entry` j UNION ALL SELECT 
                 d.deleted_name,
                     d.document_date,
                     'Deleted' AS docstatus,
-                    d.data
+                    d.data, d.name,d.name,d.name,d.name
             FROM
                 `tabDeleted Document` d
             WHERE
