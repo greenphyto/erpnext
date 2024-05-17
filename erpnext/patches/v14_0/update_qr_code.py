@@ -12,10 +12,10 @@ def execute():
 
 """
 bench --site erp.greenphyto.com execute erpnext.patches.v14_0.update_qr_code.update_deleted_date_docuemnt
-bench --site test4 execute erpnext.patches.v14_0.update_qr_code.update_deleted_date_docuemnt
+bench --site test6 execute erpnext.patches.v14_0.update_qr_code.update_deleted_date_docuemnt
 """
 def update_deleted_date_docuemnt():
-    data = frappe.db.sql("select name, data from `tabDeleted Document` where deleted_doctype in ('Purchase Invoice', 'Sales Invoice')", as_dict=1)
+    data = frappe.db.sql("select name, data from `tabDeleted Document` where deleted_doctype in ('Journal Entry', 'Payment Entry')", as_dict=1)
     for d in data:
         dt = frappe._dict(json.loads(d.data))
         print(d.name, dt.name, dt.posting_date)

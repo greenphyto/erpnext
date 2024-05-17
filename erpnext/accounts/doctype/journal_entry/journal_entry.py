@@ -993,6 +993,11 @@ class JournalEntry(AccountsController):
 			d.account_balance = account_balance[d.account]
 			d.party_balance = party_balance[(d.party_type, d.party)]
 
+	def finish_delete(self):
+		log = frappe.db.get_value("Deleted Document", {"deleted_name":self.name, "deleted_doctype": self.doctype})
+		if log:
+			frappe.db.set_value("Deleted Document", log, "document_date", self.posting_date)
+
 
 @frappe.whitelist()
 def get_default_bank_cash_account(company, account_type=None, mode_of_payment=None, account=None):
