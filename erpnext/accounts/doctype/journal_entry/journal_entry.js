@@ -436,10 +436,14 @@ frappe.ui.form.on("Journal Entry Account", {
 	},
 
 	debit: function(frm, dt, dn) {
+		var d = locals[dt][dn];
+		if (!frm.doc.multi_currency) frappe.model.set_value(dt, dn, "debit_in_account_currency", d.debit);
 		cur_frm.cscript.update_totals(frm.doc);
 	},
 	
 	credit: function(frm, dt, dn) {
+		var d = locals[dt][dn];
+		if (!frm.doc.multi_currency) frappe.model.set_value(dt, dn, "credit_in_account_currency", d.credit);
 		cur_frm.cscript.update_totals(frm.doc);
 	},
 	
