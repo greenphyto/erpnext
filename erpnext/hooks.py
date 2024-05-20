@@ -368,6 +368,9 @@ doc_events = {
 	},
     "Warehouse":{
         "validate":"erpnext.controllers.foms.update_warehouse"
+	},
+    "Purchase Receipt": {
+        "on_submit":"erpnext.controllers.foms.update_stock_recipe"
 	}
 }
 
