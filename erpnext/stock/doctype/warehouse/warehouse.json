@@ -9,6 +9,7 @@
  "field_order": [
   "warehouse_detail",
   "warehouse_name",
+  "foms_id",
   "column_break_3",
   "warehouse_type",
   "parent_warehouse",
@@ -246,13 +247,19 @@
    "fieldname": "is_wip_warehouse",
    "fieldtype": "Check",
    "label": "Is WIP Warehouse"
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-building",
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2023-10-24 15:10:34.593031",
+ "modified": "2024-05-20 17:53:14.261020",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Warehouse",
