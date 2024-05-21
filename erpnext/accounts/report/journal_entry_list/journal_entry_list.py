@@ -35,6 +35,7 @@ def execute(filters=None):
                 j.name,
                     j.posting_date,
                     IF(j.docstatus = 0, 'Draft', IF(j.docstatus = 1, 'Submitted', 'Cancelled')) as docstatus,
+                    "{{}}" as data,
                     j.voucher_type,
                     j.company,
                     j.cheque_no,
@@ -42,23 +43,24 @@ def execute(filters=None):
                     j.remark         
             FROM
                 `tabJournal Entry` j UNION ALL SELECT 
-                d.deleted_name,
+                    d.deleted_name,
                     d.document_date,
                     'Deleted' AS docstatus,
-                    d.data, d.name,d.name,d.name,d.name
+                    d.data, d.name, d.name,d.name,d.name,d.name
             FROM
                 `tabDeleted Document` d
             WHERE
                 d.deleted_doctype = 'Journal Entry') a
-        where a.name is not null {}
+        where a.name is not null {} 
                          ORDER BY {}
     """.format(cond, order), as_dict=1)
 
     # process
     final_data = []
     for d in data:
-        if d.docstatus == 3:
-            dt = json.loads(d.voucher_type)
+        if d.docstatus == "Deleted":
+            dt = json.loads(d.data)
+            dt["docstatus"] = "Deleted"
             final_data.append(dt)
         else:
             final_data.append(d)
