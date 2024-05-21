@@ -13,13 +13,19 @@
   "column_break_3",
   "workstation_type",
   "over_heads",
+  "calculation_type",
+  "section_break_11",
   "hour_rate_electricity",
   "hour_rate_consumable",
   "column_break_11",
   "hour_rate_rent",
   "hour_rate_labour",
-  "section_break_11",
   "hour_rate",
+  "cost_based_quantity_section",
+  "per_qty_rate_electricity",
+  "per_qty_rate_wages",
+  "per_qty_rate_machinery",
+  "per_qty_rate",
   "workstaion_description",
   "description",
   "working_hours_section",
@@ -143,14 +149,50 @@
    "options": "Workstation Type"
   },
   {
+   "depends_on": "eval:doc.calculation_type==\"Per Hour\"",
    "fieldname": "section_break_11",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Cost based Hours"
+  },
+  {
+   "default": "Per Qty",
+   "fieldname": "calculation_type",
+   "fieldtype": "Select",
+   "label": "Calculation Type",
+   "options": "Per Qty\nPer Hour"
+  },
+  {
+   "depends_on": "eval:doc.calculation_type==\"Per Qty\"",
+   "fieldname": "cost_based_quantity_section",
+   "fieldtype": "Section Break",
+   "label": "Cost based Quantity"
+  },
+  {
+   "fieldname": "per_qty_rate_electricity",
+   "fieldtype": "Currency",
+   "label": "Electricity Cost"
+  },
+  {
+   "fieldname": "per_qty_rate_wages",
+   "fieldtype": "Currency",
+   "label": "Wages Cost"
+  },
+  {
+   "fieldname": "per_qty_rate_machinery",
+   "fieldtype": "Currency",
+   "label": "Machinery Cost"
+  },
+  {
+   "fieldname": "per_qty_rate",
+   "fieldtype": "Currency",
+   "label": "Net Hour Rate",
+   "read_only": 1
   }
  ],
  "icon": "icon-wrench",
  "idx": 1,
  "links": [],
- "modified": "2022-11-04 17:39:01.549346",
+ "modified": "2024-05-21 17:14:34.404801",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Workstation",
