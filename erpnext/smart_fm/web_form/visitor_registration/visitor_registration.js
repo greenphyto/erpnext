@@ -4,20 +4,26 @@ frappe.ready(function() {
 		if (value=="Yes"){
 			// add child based on user login
 			if ( is_null(frappe.web_form.doc.person_list) ){
-				frappe.db.get_value("User", frappe.session.user, [
-					'full_name as name1', 
-					'email',
-					'phone as phone_number'])
-				.then(r=>{ 
-					frappe.web_form.doc.person_list = [r.message]
-					frappe.web_form.refresh_fields([{
-						fieldname:'person_list'
-					}]);
-				});
+				// because same as inputted user
+				// frappe.db.get_value("User", frappe.session.user, [
+				// 	'full_name as name1', 
+				// 	'email',
+				// 	'phone as phone_number'])
+				// .then(r=>{ 
+				// });
+
+				frappe.web_form.doc.person_list = [{
+					"name1":frappe.web_form.doc.name1,
+					"email":frappe.web_form.doc.email,
+					"phone_number":frappe.web_form.doc.phone_number,
+				}]
 			}
 		}else{
 			frappe.web_form.doc.person_list = []
 		}
+		frappe.web_form.refresh_fields([{
+			fieldname:'person_list'
+		}]);
 	})
 
 	frappe.validate_phone_field(['phone_number']);
