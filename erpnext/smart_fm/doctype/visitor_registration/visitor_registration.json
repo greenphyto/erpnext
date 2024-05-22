@@ -46,7 +46,9 @@
   "check_out",
   "check_out_time",
   "more_information_section",
-  "status"
+  "status",
+  "column_break_frxdc",
+  "attachment"
  ],
  "fields": [
   {
@@ -285,12 +287,21 @@
    "fieldname": "check_in_details_section",
    "fieldtype": "Section Break",
    "label": "Check in Details"
+  },
+  {
+   "fieldname": "column_break_frxdc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-22 16:16:24.643736",
+ "modified": "2024-05-22 17:40:46.790412",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Visitor Registration",
