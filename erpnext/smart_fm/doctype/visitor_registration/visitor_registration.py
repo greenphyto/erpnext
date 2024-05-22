@@ -43,7 +43,7 @@ class VisitorRegistration(Document):
 			self.check_out = 1
 	
 	def set_status(self):
-		if self.docstatus == 0 and self.status in ("Sign In", "Accepted"):
+		if self.docstatus == 0 and self.status in ("Sign In", "Accepted", "Draft"):
 			if self.check_in and not self.check_out:
 				status = "Sign In"
 				self.check_out_time = ""
