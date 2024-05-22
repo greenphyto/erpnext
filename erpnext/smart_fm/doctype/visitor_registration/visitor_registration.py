@@ -4,7 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
-from frappe.model.workflow import apply_workflow
+from frappe.model.workflow import apply_workflow, get_workflow
 from frappe.utils import get_datetime
 
 class VisitorRegistration(Document):
@@ -59,6 +59,12 @@ class VisitorRegistration(Document):
 
 
 def process_workflow(self, method=""):
+	workflow = frappe.db.get_value(
+		"Workflow", {"document_type": self.doctype, "is_active": 1}, "name"
+	)
+	if not workflow:
+		return
+	
 	if self.status == "Draft":
 		apply_workflow(self, "Review")
 
