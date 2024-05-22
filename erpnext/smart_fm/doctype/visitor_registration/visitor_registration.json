@@ -290,7 +290,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-15 16:13:13.835139",
+ "modified": "2024-05-22 16:16:24.643736",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Visitor Registration",
@@ -361,7 +361,9 @@
    "read": 1,
    "report": 1,
    "role": "Employee",
+   "select": 1,
    "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],
