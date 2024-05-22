@@ -27,11 +27,16 @@
    "fieldname": "date_time_apply",
    "fieldtype": "Datetime",
    "label": "Date/Time Apply"
+  },
+  {
+   "fieldname": "description_purpose_of_activities",
+   "fieldtype": "Small Text",
+   "label": "Description/Purpose of Activities"
   }
  ],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2024-05-22 12:36:56.444002",
+ "modified": "2024-05-22 12:38:10.447189",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "permit-to-work",
