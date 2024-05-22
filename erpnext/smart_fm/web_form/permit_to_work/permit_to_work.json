@@ -1,20 +1,16 @@
 {
- "accept_payment": 0,
  "allow_comments": 0,
  "allow_delete": 1,
  "allow_edit": 1,
  "allow_incomplete": 0,
  "allow_multiple": 1,
  "allow_print": 0,
- "amount": 0.0,
- "amount_based_on_field": 0,
  "anonymous": 0,
  "apply_document_permissions": 1,
  "breadcrumbs": "[\n    {\"label\": \"Home\", \"route\":\"/\"},\n    {\"label\": \"Requests\", \"route\":\"requests\"},\n    {\"label\": \"Permit to Work\", \"route\":\"requests/permit-to-work\"}\n]",
  "button_label": "Save",
  "creation": "2024-05-10 10:22:15.625863",
- "currency": "SGD",
- "custom_css": ":root {\n    --error-border: var(--red-400);\n}\n\n[data-doctype=\"Web Form\"] .page_content {\n    max-width: 100% !important;\n    margin: auto;\n}",
+ "custom_css": ":root {\n    --error-border: var(--red-400);\n}",
  "doc_type": "Permit to Work",
  "docstatus": 0,
  "doctype": "Web Form",
@@ -31,16 +27,25 @@
    "fieldname": "date_time_apply",
    "fieldtype": "Datetime",
    "label": "Date/Time Apply"
+  },
+  {
+   "fieldname": "workflow_state",
+   "fieldtype": "Select",
+   "label": "Status"
+  },
+  {
+   "fieldname": "description_purpose_of_activities",
+   "fieldtype": "Small Text",
+   "label": "Description/Purpose of Activities"
   }
  ],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2024-05-16 11:58:46.547426",
+ "modified": "2024-05-22 13:31:12.210097",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "permit-to-work",
  "owner": "Administrator",
- "payment_button_label": "Buy Now",
  "published": 1,
  "route": "requests/permit-to-work",
  "show_attachments": 0,
@@ -48,18 +53,6 @@
  "show_sidebar": 1,
  "title": "Permit to Work",
  "web_form_fields": [
-  {
-   "allow_read_on_all_link_options": 0,
-   "fieldname": "permit_to_work_number",
-   "fieldtype": "Data",
-   "hidden": 0,
-   "label": "Permit-To-Work No.",
-   "max_length": 0,
-   "max_value": 0,
-   "read_only": 0,
-   "reqd": 1,
-   "show_in_filter": 0
-  },
   {
    "allow_read_on_all_link_options": 0,
    "fieldname": "",
@@ -87,6 +80,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
+   "default": "Now",
    "fieldname": "date_time_apply",
    "fieldtype": "Datetime",
    "hidden": 0,
@@ -112,6 +106,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
+   "default": "Now",
    "fieldname": "date_time_work_start",
    "fieldtype": "Datetime",
    "hidden": 0,
