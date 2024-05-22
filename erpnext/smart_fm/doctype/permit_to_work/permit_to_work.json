@@ -115,6 +115,7 @@
   "authorized_signature",
   "section_break_zb7hr",
   "information",
+  "workflow_state",
   "amended_from"
  ],
  "fields": [
@@ -710,12 +711,19 @@
    "fieldname": "section_break_k6yik",
    "fieldtype": "Section Break",
    "hide_border": 1
+  },
+  {
+   "default": "Submitted",
+   "fieldname": "workflow_state",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Submitted\nApproved\nRejected\nCancelled"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-22 12:36:37.201942",
+ "modified": "2024-05-22 13:30:16.361625",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",

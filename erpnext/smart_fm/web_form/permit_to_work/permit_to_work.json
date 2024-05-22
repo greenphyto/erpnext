@@ -29,6 +29,11 @@
    "label": "Date/Time Apply"
   },
   {
+   "fieldname": "workflow_state",
+   "fieldtype": "Select",
+   "label": "Status"
+  },
+  {
    "fieldname": "description_purpose_of_activities",
    "fieldtype": "Small Text",
    "label": "Description/Purpose of Activities"
@@ -36,7 +41,7 @@
  ],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2024-05-22 12:38:10.447189",
+ "modified": "2024-05-22 13:31:12.210097",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "permit-to-work",
@@ -75,6 +80,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
+   "default": "Now",
    "fieldname": "date_time_apply",
    "fieldtype": "Datetime",
    "hidden": 0,
@@ -100,6 +106,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
+   "default": "Now",
    "fieldname": "date_time_work_start",
    "fieldtype": "Datetime",
    "hidden": 0,
