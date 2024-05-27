@@ -1,4 +1,5 @@
 frappe.ready(function() {
+	console.log("from here")
 	// bind events here
 	frappe.web_form.on("person", (frm, value)=>{
 		if (value=="Yes"){
@@ -24,9 +25,28 @@ frappe.ready(function() {
 		frappe.web_form.refresh_fields([{
 			fieldname:'person_list'
 		}]);
-	})
+	});
 
-	frappe.validate_phone_field(['phone_number']);
+	frappe.web_form.on("phone_number", (frm, value)=>{
+		if (!frappe.utils.validate_type( value, 'phone')){
+			frappe.web_form.set_value("phone_number", "")
+		}
+
+		if (value && is_null(frappe.web_form.doc.area_resource)){
+			frappe.call({
+				method:"erpnext.smart_fm.doctype.visitor_registration.visitor_registration.find_data_by_phone_number",
+				args:{
+					number:frappe.web_form.doc.phone_number
+				},
+				callback: res=>{
+					res = res.message;
+					frappe.web_form.set_values(res);
+				}
+			})
+		}
+	});
+
+	// frappe.validate_phone_field(['phone_number']);
 	frappe.validate_email_field(['email_address']);
 
 	frappe.validate_phone_field_table('person_list', 'phone_number');

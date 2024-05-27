@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 from frappe.model.workflow import apply_workflow, get_workflow
-from frappe.utils import get_datetime
+from frappe.utils import get_datetime, cstr
 
 class VisitorRegistration(Document):
 	def validate(self):
@@ -102,3 +102,20 @@ def create_to_do(name):
 	todo = frappe.new_doc("ToDo")
 	todo.update({"reference_type": "Visitor Registration", "reference_name": name})
 	return todo
+
+@frappe.whitelist()
+def find_data_by_phone_number(number):
+	number = cstr(number)
+	fields = [
+		"name1",
+		"unit_number__office_number",
+		"company",
+		"email_address",
+		"area_resource",
+		"reason",
+		"duration",
+		"person"
+	]
+	data = frappe.db.get_value("Visitor Registration", {"phone_number":number}, fields, as_dict=1)
+
+	return data
