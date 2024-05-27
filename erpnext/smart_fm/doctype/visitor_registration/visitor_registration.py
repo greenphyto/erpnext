@@ -15,9 +15,8 @@ class VisitorRegistration(Document):
 		# elif self.workflow_state == "Resolved":
 		# 	self.update_todo(start=2)
 
-		self.set_checkout_time()
 		self.set_status()
-		self.add_time_logs()
+		self.set_checkout_time()
 
 	def update_todo(self, start=0):
 		# start = 1 for yes, 2 for stop
@@ -34,15 +33,30 @@ class VisitorRegistration(Document):
 				if start == 2:
 					todo.set_complete()
 					todo.db_update()
+	
+	def set_status(self):
+		old_doc = self.get_doc_before_save()
+		if not old_doc:
+			return
+		
+		# by workflow 
+		if old_doc.get("status") != self.get("status"):
+			self.add_time_logs()
+		# by web form
+		elif old_doc.get("check_out") != self.get("check_out") and self.get("check_out") == 1:
+			self.status = "Sign Out"
+			self.add_time_logs()
+		elif old_doc.get("check_in") != self.get("check_in") and self.get("check_in") == 1:
+			self.status = "Sign In"
+			self.add_time_logs()
+
 
 	def set_checkout_time(self):
-		if self.duration == "One-time access":
-			if self.status == "Sign In" and not self.check_in:
-				self.check_in_time = get_now()
-				self.check_in = 1
-			elif self.status == "Sign Out" and not self.check_out:
-				self.check_out_time = get_now()
-				self.check_out = 1
+		if self.status not in ("Sign In", "Sign Out"):
+			self.check_in_time = None
+			self.check_in = 0
+			self.check_out_time = None
+			self.check_out = 0
 		else:
 			if self.status == "Sign In":
 				self.check_in_time = get_now()
@@ -52,21 +66,10 @@ class VisitorRegistration(Document):
 			elif self.status == "Sign Out":
 				self.check_out_time = get_now()
 				self.check_out = 1
+				if self.duration != "One-time access":
+					self.check_in_time = None
+					self.check_in = 0
 
-	
-	def set_status(self):
-		if self.docstatus == 0 and self.status in ("Sign In", "Accepted", "Draft"):
-			if self.duration == "One-time access":
-				if self.check_in and not self.check_out:
-					status = "Sign In"
-					self.check_out_time = ""
-					self.db_set("status", status)
-				elif self.check_in and self.check_out:
-					status = "Sign Out"
-					self.db_set("status", status)
-				else:
-					self.check_in_time = ""
-					self.check_out_time = ""
 		
 	def add_time_logs(self):
 		if self.duration == "One-time access":
