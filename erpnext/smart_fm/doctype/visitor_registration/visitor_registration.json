@@ -45,8 +45,12 @@
   "get_sign_out",
   "check_out",
   "check_out_time",
+  "time_log_section",
+  "time_log",
   "more_information_section",
-  "status"
+  "status",
+  "column_break_frxdc",
+  "attachment"
  ],
  "fields": [
   {
@@ -285,12 +289,34 @@
    "fieldname": "check_in_details_section",
    "fieldtype": "Section Break",
    "label": "Check in Details"
+  },
+  {
+   "fieldname": "time_log_section",
+   "fieldtype": "Section Break",
+   "label": "Time Log"
+  },
+  {
+   "depends_on": "eval:[\"Short-term access\", \"Long-term access\"].includes(doc.duration)",
+   "fieldname": "time_log",
+   "fieldtype": "Table",
+   "label": "Time Log",
+   "options": "Visitor Registration Log",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_frxdc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-22 16:16:24.643736",
+ "modified": "2024-05-27 12:58:39.321585",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Visitor Registration",
