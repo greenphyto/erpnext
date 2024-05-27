@@ -292,6 +292,7 @@
    "label": "Check in Details"
   },
   {
+<<<<<<< HEAD
    "fieldname": "time_log_section",
    "fieldtype": "Section Break",
    "label": "Time Log"
@@ -305,6 +306,8 @@
    "read_only": 1
   },
   {
+=======
+>>>>>>> gp-version-14-prod
    "fieldname": "column_break_frxdc",
    "fieldtype": "Column Break"
   },
@@ -317,7 +320,11 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
+<<<<<<< HEAD
  "modified": "2024-05-27 14:58:50.942353",
+=======
+ "modified": "2024-05-22 17:40:46.790412",
+>>>>>>> gp-version-14-prod
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Visitor Registration",
