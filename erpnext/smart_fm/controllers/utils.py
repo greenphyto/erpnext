@@ -63,3 +63,13 @@ def get_qr_svg_code(totp_uri):
 	finally:
 		stream.close()
 	return svg
+
+def get_approver_name(doc, state, user_field="name"):
+	status = doc.get("workflow_state") or doc.get("status")
+	user = frappe.get_value("Comment", {"reference_name":doc.name, "reference_doctype":doc.doctype, "content":status, "comment_type":"Workflow"}, "Owner")
+	print(69, status, user)
+	if user:
+		res = frappe.get_value("User", user, user_field)
+		return res
+	else:
+		return 
