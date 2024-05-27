@@ -17,6 +17,7 @@ class VisitorRegistration(Document):
 
 		self.set_checkout_time()
 		self.set_status()
+		self.add_time_logs()
 
 	def update_todo(self, start=0):
 		# start = 1 for yes, 2 for stop
@@ -66,6 +67,19 @@ class VisitorRegistration(Document):
 				else:
 					self.check_in_time = ""
 					self.check_out_time = ""
+		
+	def add_time_logs(self):
+		if self.duration == "One-time access":
+			return
+	
+		if self.status not in ("Sign In", "Sign Out"):
+			return
+	
+		row = self.append("time_log")
+		row.log = "In" if self.status == "Sign In" else "Out"
+		row.datetime = get_datetime()
+
+
 		
 
 
