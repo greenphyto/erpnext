@@ -35,27 +35,38 @@ class VisitorRegistration(Document):
 					todo.db_update()
 
 	def set_checkout_time(self):
-		if self.status == "Sign In" and not self.check_in:
-			self.check_in_time = get_datetime()
-			self.check_in = 1
-		elif self.status == "Sign Out" and not self.check_out:
-			self.check_out_time = get_datetime()
-			self.check_out = 1
+		if self.duration == "One-time access":
+			if self.status == "Sign In" and not self.check_in:
+				self.check_in_time = get_datetime()
+				self.check_in = 1
+			elif self.status == "Sign Out" and not self.check_out:
+				self.check_out_time = get_datetime()
+				self.check_out = 1
+		else:
+			if self.status == "Sign In":
+				self.check_in_time = get_datetime()
+				self.check_in = 1
+				self.check_out_time = None
+				self.check_out = 0
+			elif self.status == "Sign Out":
+				self.check_out_time = get_datetime()
+				self.check_out = 1
+
 	
 	def set_status(self):
 		if self.docstatus == 0 and self.status in ("Sign In", "Accepted", "Draft"):
-			if self.check_in and not self.check_out:
-				status = "Sign In"
-				self.check_out_time = ""
-			elif self.check_in and self.check_out:
-				status = "Sign Out"
-				self.db_set("docstatus", 1)
-			else:
-				status = "Accepted"
-				self.check_in_time = ""
-				self.check_out_time = ""
+			if self.duration == "One-time access":
+				if self.check_in and not self.check_out:
+					status = "Sign In"
+					self.check_out_time = ""
+					self.db_set("status", status)
+				elif self.check_in and self.check_out:
+					status = "Sign Out"
+					self.db_set("status", status)
+				else:
+					self.check_in_time = ""
+					self.check_out_time = ""
 		
-			self.db_set("status", status)
 
 
 def process_workflow(self, method=""):

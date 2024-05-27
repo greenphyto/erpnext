@@ -254,6 +254,7 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
+   "no_copy": 1,
    "options": "Draft\nSubmitted\nAccepted\nPending\nRejected\nSign In\nSign Out",
    "read_only": 1
   },
@@ -316,7 +317,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-27 12:58:39.321585",
+ "modified": "2024-05-27 14:58:50.942353",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Visitor Registration",
