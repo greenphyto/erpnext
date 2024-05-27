@@ -12,7 +12,7 @@
  "idx": 0,
  "is_standard": 1,
  "message": "<h3>{{ doc.doctype }}</h3>\n\n<p>The request ({{ frappe.utils.get_link_to_form(doc.doctype, doc.name) }}) has been {{doc.workflow_state}} by {{doc.modified_by}}.</p>\n\n{% if doc.bm_comment %}\n<p>BM's Comment:</p>\n<img src=\"{{ frappe.utils.get_url(doc.bm_attachment) }}\" style=\"max-width:400px;\">\n<p>{{doc.bm_comment}}</p>\n{% endif %}\n\n{{ frappe.render_template(\"templates/end_support.html\", {}) }}\n",
- "modified": "2024-05-27 12:12:00.779788",
+ "modified": "2024-05-27 12:15:19.547926",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit To Work (Inform Approval)",
@@ -30,6 +30,6 @@
  "send_to_all_assignees": 0,
  "sender": "Smart FM",
  "sender_email": "foms@greenphyto.com",
- "subject": "Permit To Work {{doc.name}} {{doc.workflow_state}} (Approved)",
+ "subject": "Permit To Work {{doc.name}} {{doc.workflow_state}}",
  "value_changed": "workflow_state"
 }
