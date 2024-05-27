@@ -38,19 +38,19 @@ class VisitorRegistration(Document):
 	def set_checkout_time(self):
 		if self.duration == "One-time access":
 			if self.status == "Sign In" and not self.check_in:
-				self.check_in_time = get_datetime()
+				self.check_in_time = get_now()
 				self.check_in = 1
 			elif self.status == "Sign Out" and not self.check_out:
-				self.check_out_time = get_datetime()
+				self.check_out_time = get_now()
 				self.check_out = 1
 		else:
 			if self.status == "Sign In":
-				self.check_in_time = get_datetime()
+				self.check_in_time = get_now()
 				self.check_in = 1
 				self.check_out_time = None
 				self.check_out = 0
 			elif self.status == "Sign Out":
-				self.check_out_time = get_datetime()
+				self.check_out_time = get_now()
 				self.check_out = 1
 
 	
@@ -77,10 +77,11 @@ class VisitorRegistration(Document):
 	
 		row = self.append("time_log")
 		row.log = "In" if self.status == "Sign In" else "Out"
-		row.datetime = get_datetime()
+		row.datetime = get_now()
 
 
-		
+def get_now():
+	return get_datetime().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def process_workflow(self, method=""):
