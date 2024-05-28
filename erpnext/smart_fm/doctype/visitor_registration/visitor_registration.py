@@ -135,3 +135,21 @@ def find_data_by_phone_number(number):
 	data = frappe.db.get_value("Visitor Registration", {"phone_number":number}, fields, as_dict=1)
 
 	return data
+
+@frappe.whitelist()
+def update_checkin(name, types):
+	name = frappe.db.exists("Visitor Registration", name)
+	if name:
+		doc = frappe.get_doc("Visitor Registration", name)
+		enable = 0
+		if doc.duration != "One-time access":
+			enable = 1
+		if types == "IN":
+			apply_workflow(doc, "Check In")
+			return {"status":doc.status, "time":doc.check_in_time, "enable_out":enable}
+		else:
+			apply_workflow(doc, "Check Out")
+			return {"status":doc.status, "time":doc.check_out_time, "enable_in":enable}
+		
+
+
