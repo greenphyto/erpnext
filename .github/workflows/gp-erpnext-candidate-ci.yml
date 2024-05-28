@@ -45,7 +45,7 @@ jobs:
         # Required mail server password:
         password: ${{secrets.MAIL_PASSWORD}}
         # Required mail subject:
-        subject: ERPNext Production Deployment Done
+        subject: ERPNext Candidate Deployment Done
         # Required recipients' addresses:
         to: weiquan@greenphyto.com,myo@greenphyto.com,rizky@greenphyto.com
         # Required sender full name (address can be skipped):
