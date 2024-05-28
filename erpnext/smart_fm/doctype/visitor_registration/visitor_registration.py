@@ -9,6 +9,10 @@ from frappe.utils import get_datetime, cstr
 from frappe import _
 
 class VisitorRegistration(Document):
+	def before_save(self):
+		if self.person == "No":
+			self.person_list = []
+
 	def validate(self):
 
 		# if self.workflow_state == "Started":
