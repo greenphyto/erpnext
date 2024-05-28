@@ -6,6 +6,7 @@ from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 from frappe.model.workflow import apply_workflow, get_workflow
 from frappe.utils import get_datetime, cstr
+from frappe import _
 
 class VisitorRegistration(Document):
 	def validate(self):
@@ -44,9 +45,13 @@ class VisitorRegistration(Document):
 			self.add_time_logs()
 		# by web form
 		elif old_doc.get("check_out") != self.get("check_out") and self.get("check_out") == 1:
+			if not is_security_user():
+				frappe.throw(_("Only <b>Security</b> can change checkin status!"))
 			self.status = "Sign Out"
 			self.add_time_logs()
 		elif old_doc.get("check_in") != self.get("check_in") and self.get("check_in") == 1:
+			if not is_security_user():
+				frappe.throw(_("Only <b>Security</b> can change checkin status!"))
 			self.status = "Sign In"
 			self.add_time_logs()
 
@@ -72,6 +77,9 @@ class VisitorRegistration(Document):
 
 		
 	def add_time_logs(self):
+		if not self.meta.get_field("time_log"):
+			return
+		
 		if self.duration == "One-time access":
 			return
 	
@@ -82,6 +90,10 @@ class VisitorRegistration(Document):
 		row.log = "In" if self.status == "Sign In" else "Out"
 		row.datetime = get_now()
 
+
+def is_security_user(user=""):
+	roles = frappe.get_roles(user)
+	return "Security" in roles
 
 def get_now():
 	return get_datetime().strftime("%Y-%m-%d %H:%M:%S")
