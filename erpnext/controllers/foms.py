@@ -632,6 +632,9 @@ def create_delivery_order(log):
 
 # update stock from receipt:
 def update_stock_recipe(doc, cancel=False):
+	if not is_enable_integration():
+		return 
+	
 	api = FomsAPI()
 	for d in doc.get("items"):
 		expiry_date = frappe.get_value("Batch", d.batch_no, "expiry_date")
