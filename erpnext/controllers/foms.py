@@ -637,7 +637,7 @@ def update_stock_recipe(doc, cancel=False):
 		expiry_date = frappe.get_value("Batch", d.batch_no, "expiry_date")
 		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id")
 		supplier_id = frappe.get_value("Supplier", doc.supplier, "foms_id")
-		raw_id = frappe.get_value("Item", doc.item_code, "foms_id")
+		raw_id = frappe.get_value("Item", d.item_code, "foms_id")
 		params = {
 			"id": 0,
 			"rawMaterialId": raw_id,
@@ -648,4 +648,4 @@ def update_stock_recipe(doc, cancel=False):
 			"supplierId": supplier_id,
 			"quantity": d.qty
 		}
-		res = api.req(method="/userportal/ERPNextIntegration/RawMaterialReceipt", data=json.dumps(params))
+		res = api.req(method="/userportal/ERPNextIntegration/RawMaterialReceipt", data=json.dumps(params, default=str))
