@@ -45,8 +45,6 @@
   "get_sign_out",
   "check_out",
   "check_out_time",
-  "time_log_section",
-  "time_log",
   "more_information_section",
   "status",
   "column_break_frxdc",
@@ -62,6 +60,7 @@
    "fieldname": "name1",
    "fieldtype": "Data",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Name",
    "reqd": 1
   },
@@ -77,7 +76,6 @@
   {
    "fieldname": "phone_number",
    "fieldtype": "Data",
-   "in_list_view": 1,
    "label": "Phone Number",
    "options": "Phone",
    "reqd": 1
@@ -85,7 +83,6 @@
   {
    "fieldname": "email_address",
    "fieldtype": "Data",
-   "in_list_view": 1,
    "label": "Email Address",
    "options": "Email"
   },
@@ -112,6 +109,7 @@
    "default": "Now",
    "fieldname": "date",
    "fieldtype": "Datetime",
+   "in_list_view": 1,
    "label": "Date",
    "reqd": 1
   },
@@ -123,7 +121,6 @@
   {
    "fieldname": "area_resource",
    "fieldtype": "Text",
-   "in_list_view": 1,
    "label": "Area/Resource Requesting Access To (please be specific)",
    "reqd": 1
   },
@@ -136,6 +133,8 @@
   {
    "fieldname": "duration",
    "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Duration of Access Required",
    "options": "One-time access\nShort-term access\nLong-term access",
    "reqd": 1
@@ -254,7 +253,6 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "no_copy": 1,
    "options": "Draft\nSubmitted\nAccepted\nPending\nRejected\nSign In\nSign Out",
    "read_only": 1
   },
@@ -292,19 +290,6 @@
    "label": "Check in Details"
   },
   {
-   "fieldname": "time_log_section",
-   "fieldtype": "Section Break",
-   "label": "Time Log"
-  },
-  {
-   "depends_on": "eval:[\"Short-term access\", \"Long-term access\"].includes(doc.duration)",
-   "fieldname": "time_log",
-   "fieldtype": "Table",
-   "label": "Time Log",
-   "options": "Visitor Registration Log",
-   "read_only": 1
-  },
-  {
    "fieldname": "column_break_frxdc",
    "fieldtype": "Column Break"
   },
@@ -317,7 +302,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-27 14:58:50.942353",
+ "modified": "2024-05-28 11:23:06.205154",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Visitor Registration",
