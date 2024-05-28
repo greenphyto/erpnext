@@ -1,9 +1,9 @@
 on:
   push:
     branches:
-      - gpprod.v14.3.1
+      - gpcandidate.v14.3.1
 
-name: Deploy to ERPNext Production Environment
+name: Deploy to ERPNext Candidate Environment
 
 jobs:
   deploy:
@@ -17,7 +17,7 @@ jobs:
     - name: executing remote ssh commands using ssh key
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.PROD_HOST }}
+        host: ${{ secrets.CANDIDATE_HOST }}
         username: ${{ secrets.PROD_USERNAME }}
         key: ${{ secrets.PROD_KEY }}
         port: ${{ secrets.PORT }}
@@ -47,11 +47,11 @@ jobs:
         # Required mail subject:
         subject: ERPNext Production Deployment Done
         # Required recipients' addresses:
-        to: weiquan@greenphyto.com,myo@greenphyto.com,aunt.maung@greenphyto.com
+        to: weiquan@greenphyto.com,myo@greenphyto.com,rizky@greenphyto.com
         # Required sender full name (address can be skipped):
         from: Info@greenphyto.com # <user@example.com>
         # Optional whether this connection use TLS (default is true if server_port is 465)
         secure: true
         # Optional plain body:
-        body: ERPNext deployment done for production env! Branch - gpprod.v14.3.1, Commit Description - ${{github.event.head_commit.message}} URL-https://erp.greenphyto.com
+        body: ERPNext deployment done for candidate env! Branch - gpcandidate.v14.3.1, Commit Description - ${{github.event.head_commit.message}} URL-https://erp-candidate-01.greenphyto.com
        
