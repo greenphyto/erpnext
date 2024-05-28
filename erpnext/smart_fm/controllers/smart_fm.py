@@ -351,3 +351,26 @@ def add_user_permissions(doc, method=""):
 		if not employee_user_permission_exists:
 			return
 		remove_user_permission("User", doc.name, doc.name)
+
+def revert_workflow(doc, cur_state, old_state, status_field="workflow_state"):
+	# update action
+	old_action = frappe.db.exists("Workflow Action", {
+		"reference_name":doc.name, 
+		"reference_doctype":doc.doctype, 
+		"workflow_state":old_state
+	})
+	if old_action:
+		frappe.db.set_value("Workflow Action", old_action, "status", "Open")
+		frappe.db.set_value("Workflow Action", old_action, "completed_by_role", "")
+		frappe.db.set_value("Workflow Action", old_action, "completed_by", "")
+	
+	new_action = frappe.db.exists("Workflow Action", {
+		"reference_name":doc.name, 
+		"reference_doctype":doc.doctype, 
+		"workflow_state":cur_state
+	})
+	if new_action:
+		frappe.delete_doc("Workflow Action", new_action)
+	
+	doc.db_set(status_field, old_state)
+
