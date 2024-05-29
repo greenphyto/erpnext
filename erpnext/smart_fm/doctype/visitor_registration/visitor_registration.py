@@ -132,7 +132,7 @@ def process_workflow(self, method=""):
 	if self.status == "Draft":
 		apply_workflow(self, "Review")
 	
-	if is_bm_manager():
+	if is_bm_manager() and self.duration != "One-time access":
 		apply_workflow(self, "Accept")
 
 
