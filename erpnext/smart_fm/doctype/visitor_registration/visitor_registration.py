@@ -114,6 +114,10 @@ def is_security_user(user=""):
 	roles = frappe.get_roles(user)
 	return "Security" in roles
 
+def is_bm_manager(user=""):
+	roles = frappe.get_roles(user)
+	return "Building Management (Manager)" in roles
+
 def get_now():
 	return get_datetime().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -127,6 +131,10 @@ def process_workflow(self, method=""):
 	
 	if self.status == "Draft":
 		apply_workflow(self, "Review")
+	
+	if is_bm_manager():
+		apply_workflow(self, "Accept")
+
 
 @frappe.whitelist()
 def create_to_do(name):
