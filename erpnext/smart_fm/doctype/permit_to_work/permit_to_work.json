@@ -609,12 +609,14 @@
   {
    "fieldname": "contractor_safety_assessor",
    "fieldtype": "Data",
-   "label": "Contractor Safety Assessor"
+   "label": "Contractor Safety Assessor",
+   "mandatory_depends_on": "eval:doc.conductor_signature"
   },
   {
    "fieldname": "permit_to_work_applicant",
    "fieldtype": "Data",
-   "label": "Permit to Work Applicant"
+   "label": "Permit to Work Applicant",
+   "mandatory_depends_on": "eval:doc.ptw_signature"
   },
   {
    "fieldname": "column_break_n0bwj",
@@ -664,7 +666,8 @@
   {
    "fieldname": "name1",
    "fieldtype": "Data",
-   "label": "Name"
+   "label": "Name",
+   "mandatory_depends_on": "eval:doc.authorized_signature"
   },
   {
    "fieldname": "column_break_q5lb6",
@@ -739,7 +742,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-28 17:53:00.412077",
+ "modified": "2024-05-29 11:46:57.274596",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",
