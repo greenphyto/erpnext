@@ -51,7 +51,7 @@ class VisitorRegistration(Document):
 		if old_doc.get("status") not in ("Accepted", "Sign Out", "Sign In") and (self.get("status") == "Sign In" or self.get("status") == "Sign Out"):
 			frappe.throw(_("Check in/out is disabled before document has approved"))
 
-		if old_doc.get("status") == "Accepted" and self.status == "Check Out":
+		if old_doc.get("status") == "Accepted" and self.status == "Sign Out":
 			frappe.throw(_("Cannot Sign out before Sign in"))
 	
 	def set_status(self):
