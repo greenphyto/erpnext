@@ -41,7 +41,7 @@
  ],
  "login_required": 1,
  "max_attachment_size": 2,
- "modified": "2024-05-28 15:31:20.871236",
+ "modified": "2024-05-29 11:17:28.899223",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "permit-to-work",
@@ -1000,14 +1000,14 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "default": "UNSAFE for Entry",
+   "default": "",
    "fieldname": "state_of_entry",
    "fieldtype": "Select",
    "hidden": 0,
    "label": "State of Entry",
    "max_length": 0,
    "max_value": 0,
-   "options": "UNSAFE for Entry\nSAFE for Entry",
+   "options": "\nUNSAFE for Entry\nSAFE for Entry",
    "read_only": 0,
    "reqd": 0,
    "show_in_filter": 0
@@ -1390,6 +1390,20 @@
    "read_only": 0,
    "reqd": 0,
    "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "default": "Submitted",
+   "fieldname": "workflow_state",
+   "fieldtype": "Select",
+   "hidden": 0,
+   "label": "Status",
+   "max_length": 0,
+   "max_value": 0,
+   "options": "Submitted\nApproved\nRejected\nCancelled",
+   "read_only": 1,
+   "reqd": 0,
+   "show_in_filter": 1
   }
  ],
  "website_sidebar": "Request from 3rd Party"
