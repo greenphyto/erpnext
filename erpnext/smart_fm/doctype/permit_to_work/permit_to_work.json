@@ -718,11 +718,11 @@
    "hide_border": 1
   },
   {
-   "default": "Submitted",
+   "default": "Draft",
    "fieldname": "workflow_state",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "Submitted\nApproved\nRejected\nCancelled",
+   "options": "Draft\nIssued\nAccepted\nStarted\nRejected\nResolved",
    "read_only": 1
   },
   {
@@ -742,7 +742,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-29 11:46:57.274596",
+ "modified": "2024-05-29 17:38:31.793949",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",
