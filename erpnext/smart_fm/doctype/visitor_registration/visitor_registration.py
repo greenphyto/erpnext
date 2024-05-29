@@ -12,6 +12,7 @@ class VisitorRegistration(Document):
 	def before_save(self):
 		if self.person == "No":
 			self.person_list = []
+		self.validate_workflow_state()
 
 	def validate(self):
 
@@ -38,6 +39,20 @@ class VisitorRegistration(Document):
 				if start == 2:
 					todo.set_complete()
 					todo.db_update()
+
+	def validate_workflow_state(self):
+		old_doc = self.get_doc_before_save()
+		if not old_doc:
+			return
+
+		if old_doc.get("status") == self.get("status"):
+			return
+		
+		if old_doc.get("status") not in ("Accepted", "Sign Out", "Sign In") and (self.get("status") == "Sign In" or self.get("status") == "Sign Out"):
+			frappe.throw(_("Check in/out is disabled before document has approved"))
+
+		if old_doc.get("status") == "Accepted" and self.status == "Check Out":
+			frappe.throw(_("Cannot Sign out before Sign in"))
 	
 	def set_status(self):
 		old_doc = self.get_doc_before_save()
@@ -50,12 +65,12 @@ class VisitorRegistration(Document):
 		# by web form
 		elif old_doc.get("check_out") != self.get("check_out") and self.get("check_out") == 1:
 			if not is_security_user():
-				frappe.throw(_("Only <b>Security</b> can change checkin status!"))
+				frappe.throw(_("Only <b>Security</b> can change check in/out!"))
 			self.status = "Sign Out"
 			self.add_time_logs()
 		elif old_doc.get("check_in") != self.get("check_in") and self.get("check_in") == 1:
 			if not is_security_user():
-				frappe.throw(_("Only <b>Security</b> can change checkin status!"))
+				frappe.throw(_("Only <b>Security</b> can change check in/out!"))
 			self.status = "Sign In"
 			self.add_time_logs()
 
