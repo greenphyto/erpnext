@@ -1,5 +1,4 @@
 frappe.ready(function() {
-	console.log("from here")
 	// bind events here
 	frappe.web_form.on("person", (frm, value)=>{
 		if (value=="Yes"){

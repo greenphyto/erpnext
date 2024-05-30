@@ -1,4 +1,4 @@
-console.log("Here")
+
 
 frappe.custom_formatter_for_list = (fieldname, cell, value, doc)=>{
 
@@ -6,7 +6,6 @@ frappe.custom_formatter_for_list = (fieldname, cell, value, doc)=>{
         cell.addClass("status-cell");
         return change_status_field(cell, value);
     }else if(fieldname=='check_in_time'){
-        console.log(cell);
         
         cell.addClass("checkin checkin-cell");
         if (!value && ["Sign In", "Sign Out", "Accepted"].includes(doc.status) ){
@@ -14,7 +13,6 @@ frappe.custom_formatter_for_list = (fieldname, cell, value, doc)=>{
         }
         return cell
     }else if(fieldname=='check_out_time'){
-        console.log(cell);
         
         cell.addClass("checkout checkin-cell");
         if (!value && ["Sign In", "Sign Out", "Accepted"].includes(doc.status)){
@@ -56,7 +54,6 @@ function change_status_field(cell, status){
 }
 
 function update_checkin_direct(cell, name, types){
-    console.log("Update cell ", cell, types);
     // call and edit
     frappe.call({
         method:"erpnext.smart_fm.doctype.visitor_registration.visitor_registration.update_checkin",
@@ -66,7 +63,6 @@ function update_checkin_direct(cell, name, types){
         },
         btn:cell.find(".btn"),
         callback:(r)=>{
-            console.log("Result", r);
 
             // update cell
             cell.find(".btn-wrapper").remove();
