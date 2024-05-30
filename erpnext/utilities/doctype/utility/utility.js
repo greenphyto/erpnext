@@ -65,6 +65,4 @@ function set_meter_id(frm, force=0){
 		frm.set_value("meter_id", cstr(1) );
 	  }
 	}})
-
-  console.log("here")
 }

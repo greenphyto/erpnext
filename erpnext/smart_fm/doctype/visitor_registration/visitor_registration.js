@@ -39,6 +39,3 @@ frappe.ui.form.on('Visitor Registration', {
 		frm.set_value("check_out_time", frappe.datetime.now_datetime());
 	}
 });
-
-
-console.log("123")
