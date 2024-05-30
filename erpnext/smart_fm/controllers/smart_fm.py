@@ -374,3 +374,19 @@ def revert_workflow(doc, cur_state, old_state, status_field="workflow_state"):
 	
 	doc.db_set(status_field, old_state)
 
+def force_get_building_management(doc, method=""):
+	is_bm_user = False
+	info = True
+	bm_other_role = ['Building Management (Manager)', 'Building Management (Team)', 'Building Management (Master)']
+	for d in doc.get("roles"):
+		if d.role in bm_other_role:
+			is_bm_user = True
+			
+		if d.role == 'Building Management':
+			info = False
+
+	if is_bm_user:
+		row = doc.append("roles")
+		row.role = "Building Management"
+		if info:
+			frappe.msgprint("<b>Building Management</b> base role is auto added if user is the Building Management")
