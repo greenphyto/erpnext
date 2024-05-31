@@ -308,7 +308,8 @@ doc_events = {
 		],
 		"validate": [
 			"erpnext.setup.doctype.employee.employee.validate_employee_role",
-            "erpnext.smart_fm.controllers.smart_fm.add_user_permissions"
+            "erpnext.smart_fm.controllers.smart_fm.add_user_permissions",
+            "erpnext.smart_fm.controllers.smart_fm.force_get_building_management"
 		],
 		"on_update": [
 			"erpnext.setup.doctype.employee.employee.update_user_permissions",

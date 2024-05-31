@@ -29,6 +29,7 @@
   "signature",
   "column_break_bwddv",
   "date",
+  "attachment",
   "amended_from",
   "section_break_o4hd2",
   "bm_comment",
@@ -195,12 +196,17 @@
    "fieldname": "section_break_pz9oq",
    "fieldtype": "Section Break",
    "hide_border": 1
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-04 10:42:35.988379",
+ "modified": "2024-05-29 12:44:35.794515",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Key Control",
@@ -231,7 +237,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Building Management",
+   "role": "Building Management (Manager)",
    "select": 1,
    "share": 1,
    "submit": 1,
@@ -245,7 +251,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Building Management",
+   "role": "Building Management (Manager)",
    "share": 1,
    "write": 1
   }

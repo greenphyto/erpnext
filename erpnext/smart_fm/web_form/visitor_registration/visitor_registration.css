@@ -266,3 +266,9 @@
   .indicator-pill-round.light-blue::after {
     background: var(--text-on-light-blue);
   }
+
+.checkin-cell > .btn-wrapper{
+  width: 100%;
+  text-align: center;
+  color: white;
+}

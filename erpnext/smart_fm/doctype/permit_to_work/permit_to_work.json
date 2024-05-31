@@ -115,8 +115,11 @@
   "authorized_signature",
   "section_break_zb7hr",
   "information",
+  "section_break_vojz0",
   "workflow_state",
-  "amended_from"
+  "amended_from",
+  "column_break_azt3p",
+  "attachment"
  ],
  "fields": [
   {
@@ -569,11 +572,10 @@
    "label": "Hydrogen Sulfide (ppm)"
   },
   {
-   "default": "UNSAFE for Entry",
    "fieldname": "state_of_entry",
    "fieldtype": "Select",
    "label": "State of Entry",
-   "options": "UNSAFE for Entry\nSAFE for Entry"
+   "options": "\nUNSAFE for Entry\nSAFE for Entry"
   },
   {
    "fieldname": "toolbox_meeting_conducted_at_worksite",
@@ -607,12 +609,14 @@
   {
    "fieldname": "contractor_safety_assessor",
    "fieldtype": "Data",
-   "label": "Contractor Safety Assessor"
+   "label": "Contractor Safety Assessor",
+   "mandatory_depends_on": "eval:doc.conductor_signature"
   },
   {
    "fieldname": "permit_to_work_applicant",
    "fieldtype": "Data",
-   "label": "Permit to Work Applicant"
+   "label": "Permit to Work Applicant",
+   "mandatory_depends_on": "eval:doc.ptw_signature"
   },
   {
    "fieldname": "column_break_n0bwj",
@@ -662,7 +666,8 @@
   {
    "fieldname": "name1",
    "fieldtype": "Data",
-   "label": "Name"
+   "label": "Name",
+   "mandatory_depends_on": "eval:doc.authorized_signature"
   },
   {
    "fieldname": "column_break_q5lb6",
@@ -717,13 +722,27 @@
    "fieldname": "workflow_state",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "Submitted\nApproved\nRejected\nCancelled"
+   "options": "Submitted\nApproved\nRejected\nCancelled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_azt3p",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment"
+  },
+  {
+   "fieldname": "section_break_vojz0",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-22 13:30:16.361625",
+ "modified": "2024-05-30 11:48:13.238538",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",

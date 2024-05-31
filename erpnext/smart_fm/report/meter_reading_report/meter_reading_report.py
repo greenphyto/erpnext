@@ -104,8 +104,6 @@ class Report:
 			last_date = dates[1]
 			filters.update({"reading_date": last_date})
 			data = get_last_meter_data(filters)
-			print(filters)
-			print(109, data)
 			for d in data:
 				key_name = d.get(self.key_id)
 				if key_name not in self.data_dict:

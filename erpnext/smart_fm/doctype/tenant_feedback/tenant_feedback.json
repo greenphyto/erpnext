@@ -29,8 +29,9 @@
   "comments",
   "section_break_psexz",
   "null",
-  "amended_from",
-  "submission_date"
+  "submission_date",
+  "attachment",
+  "amended_from"
  ],
  "fields": [
   {
@@ -167,12 +168,17 @@
    "hidden": 1,
    "label": "Date",
    "read_only": 1
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-01-02 12:06:57.574417",
+ "modified": "2024-05-29 12:45:46.209256",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Tenant Feedback",
@@ -204,7 +210,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Building Management",
+   "role": "Building Management (Manager)",
    "select": 1,
    "share": 1,
    "submit": 1,
