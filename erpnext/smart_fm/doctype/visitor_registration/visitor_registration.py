@@ -121,32 +121,6 @@ def is_bm_manager(user=""):
 def get_now():
 	return get_datetime().strftime("%Y-%m-%d %H:%M:%S")
 
-
-	def set_checkout_time(self):
-		if self.status not in ("Sign In", "Sign Out"):
-			self.check_in_time = None
-			self.check_in = 0
-			self.check_out_time = None
-			self.check_out = 0
-		else:
-			if self.status == "Sign In":
-				self.check_in_time = get_now()
-				self.check_in = 1
-				self.check_out_time = None
-				self.check_out = 0
-			elif self.status == "Sign Out":
-				self.check_out_time = get_now()
-				self.check_out = 1
-				if self.duration != "One-time access":
-					self.check_in_time = None
-					self.check_in = 0
-
-	def add_time_logs(self):
-		pass
-
-def get_now():
-	return get_datetime().strftime("%Y-%m-%d %H:%M:%S")
-
 def process_workflow(self, method=""):
 	workflow = frappe.db.get_value(
 		"Workflow", {"document_type": self.doctype, "is_active": 1}, "name"
