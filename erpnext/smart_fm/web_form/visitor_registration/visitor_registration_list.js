@@ -27,6 +27,13 @@ frappe.custom_formatter_for_list = (fieldname, cell, value, doc)=>{
     }
 }
 
+frappe.filter_controllers = {
+    duration: function(web_form_list, field, value){
+        if (value == 'All Access') return "";
+        else return value;
+    }
+}
+
 function add_button(cell, btn_name, btn_class, name, types){
     var btn = $(`<div class="btn-wrapper"><a class="btn ${btn_class} btn-sm" >${btn_name}</a></div>`);
     btn.on("click", ()=>{
