@@ -47,6 +47,8 @@ function change_status_field(cell, status){
         place.addClass("green");
     }else if (status=="Sign Out"){
         place.addClass("red");
+    }else if (status=="Pending"){
+        place.addClass("orange");
     }else{
         place.addClass("blue");
     }
