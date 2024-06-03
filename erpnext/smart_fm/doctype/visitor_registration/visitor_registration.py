@@ -78,17 +78,18 @@ class VisitorRegistration(Document):
 	def set_checkout_time(self):
 		if self.status not in ("Sign In", "Sign Out"):
 			self.check_in_time = None
-			self.check_in = 0
+			if self.duration != "One-time access":
+				self.check_in = 0
 			self.check_out_time = None
 			self.check_out = 0
 		else:
 			if self.status == "Sign In":
-				self.check_in_time = get_now()
+				self.check_in_time = get_now(self.check_in_time)
 				self.check_in = 1
 				self.check_out_time = None
 				self.check_out = 0
 			elif self.status == "Sign Out":
-				self.check_out_time = get_now()
+				self.check_out_time = get_now(self.check_out_time)
 				self.check_out = 1
 				if self.duration != "One-time access":
 					self.check_in_time = None
@@ -118,8 +119,8 @@ def is_bm_manager(user=""):
 	roles = frappe.get_roles(user)
 	return "Building Management (Manager)" in roles
 
-def get_now():
-	return get_datetime().strftime("%Y-%m-%d %H:%M:%S")
+def get_now(reff_time=""):
+	return get_datetime(reff_time).strftime("%Y-%m-%d %H:%M:%S")
 
 def process_workflow(self, method=""):
 	workflow = frappe.db.get_value(
@@ -131,8 +132,8 @@ def process_workflow(self, method=""):
 	if self.status == "Draft":
 		apply_workflow(self, "Review")
 	
-	# if is_bm_manager() and self.duration != "One-time access":
-	# 	apply_workflow(self, "Accept")
+	if self.check_in and self.duration == "One-time access":
+		apply_workflow(self, "Check In")
 
 
 @frappe.whitelist()
