@@ -119,10 +119,6 @@ class GetData():
 		total_count = len(data)
 		for i in range(total_count):
 			do_create(i)
-			# try:
-			# 	do_create(i)
-			# except:
-			# 	continue
 
 
 # RAW MATERIAL (GET)
