@@ -174,4 +174,22 @@ def update_checkin(name, types):
 			return {"status":doc.status, "time":doc.check_out_time, "enable_in":enable}
 		
 
+def update_context(context):
+	if not context.in_edit_mode:
+		return
+	
+	context.web_form_doc.title = "HELLOW"
+	doc = context.reference_doc
+
+	if doc.status in ['Draft']:
+		return
+	
+	for d in context.web_form_doc.get("web_form_fields"):
+		d.read_only = 1
+
+		if doc.status in ['Accepted', 'Sign In', 'Sign Out']:
+			if d.fieldname in ['check_in', 'check_out']:
+				d.read_only = 0
+
+	return
 

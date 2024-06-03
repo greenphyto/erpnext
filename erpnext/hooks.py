@@ -669,3 +669,7 @@ has_permission = {
 permission_query_conditions = {
 	"Asset": "erpnext.assets.doctype.asset.asset.get_permission_query_conditions",
 }
+
+update_web_form_context = {
+    "visitor-registration": "erpnext.smart_fm.doctype.visitor_registration.visitor_registration.update_context"
+}
