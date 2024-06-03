@@ -190,6 +190,9 @@ def update_context(context):
 		if doc.status in ['Accepted', 'Sign In', 'Sign Out']:
 			if d.fieldname in ['check_in', 'check_out']:
 				d.read_only = 0
+		
+		if doc.status == "Sign Out" and doc.duration == 'One-time access':
+			d.read_only = 1
 
 	return
 
