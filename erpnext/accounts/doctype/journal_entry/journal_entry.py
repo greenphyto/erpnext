@@ -1361,7 +1361,7 @@ def get_account_balance_and_party_type(
 		"account_currency": account_details.account_currency or company_currency,
 		# The date used to retreive the exchange rate here is the date passed in
 		# as an argument to this function. It is assumed to be the date on which the balance is sought
-		"exchange_rate": get_exchange_rate(
+		"exchange_rate_value": get_exchange_rate(
 			date,
 			account,
 			account_details.account_currency,

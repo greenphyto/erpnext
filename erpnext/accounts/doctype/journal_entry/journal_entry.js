@@ -748,6 +748,11 @@ $.extend(erpnext.journal_entry, {
 				callback: function(r) {
 					if(r.message) {
 						$.extend(d, r.message);
+						if (frm.doc.multi_currency && frm.doc.exchange_rate!=1 && frm.doc.exchange_rate){
+							d.exchange_rate = frm.doc.exchange_rate;
+						}else{
+							d.exchange_rate = r.message.exchange_rate_value
+						}
 						erpnext.journal_entry.set_debit_credit_in_company_currency(frm, dt, dn);
 						refresh_field('accounts');
 					}
