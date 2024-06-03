@@ -41,6 +41,7 @@ UOM_MAP = {
 TRANFER_AGAIN = 'Work Order'
 
 def get_uom(uom_foms):
+	uom_foms = uom_foms or 'kg'
 	uom = UOM_MAP.get(uom_foms)
 
 	if not uom:
@@ -99,9 +100,7 @@ class GetData():
 
 		data = self.get_data(self)
 
-		
-		total_count = len(data)
-		for i in range(total_count):
+		def do_create(i):
 			d = frappe._dict(data[i])
 
 			# pull to foms data mapping
@@ -115,6 +114,15 @@ class GetData():
 			percent = (i+1)/total_count*100
 			if i % 10 == 0:
 				show_progress_bar(percent)
+
+		
+		total_count = len(data)
+		for i in range(total_count):
+			do_create(i)
+			# try:
+			# 	do_create(i)
+			# except:
+			# 	continue
 
 
 # RAW MATERIAL (GET)
@@ -278,6 +286,7 @@ def create_raw_material(log):
 		doc.has_expiry_date = 1
 		doc.has_batch_no = 1
 		if doc.has_batch_no:
+			doc.create_new_batch = 1
 			doc.batch_number_series = log.rawMaterialRefNo + "-" + "BN.#####"
 
 		doc.lead_time_days = cint(log.RequestLeadTime)
@@ -285,13 +294,12 @@ def create_raw_material(log):
 		doc.safety_stock = log.safetyLevel
 		doc.shelf_life_in_days = 365
 		doc.valuation_method = "FIFO"
-		doc.foms_id = log.id
+		doc.foms_raw_id = log.id
 		doc.insert()
 		name = doc.name
 	else:
 		# validate_id
-		exists_id = frappe.db.get_value("Item", {"item_code":['!=', log.rawMaterialRefNo], "foms_id":cstr(log.id)}, "name")
-		print(293, exists_id)
+		exists_id = frappe.db.get_value("Item", {"item_code":['!=', log.rawMaterialRefNo], "foms_raw_id":cstr(log.id)}, "name")
 		if exists_id:
 			frappe.throw(_(f"ID {log.id} already use by another item ({exists_id})!"))
 		doc = frappe.get_doc("Item", name)
@@ -302,6 +310,8 @@ def create_raw_material(log):
 		doc.min_order_qty = flt(log.MinimumOrderQuantity)
 		doc.safety_stock = log.safetyLevel
 		doc.shelf_life_in_days = 365
+		if not doc.foms_raw_id:
+			doc.foms_raw_id = log.id
 		doc.db_update()
 
 	return name
@@ -320,7 +330,7 @@ def create_products(log):
 		doc.description = log.productDesc or log.productDetail or log.productName
 		doc.stock_uom = get_uom(log.unitOfMeasurement)
 		doc.item_group = types
-		doc.foms_id = log.id
+		doc.foms_product_id = log.id
 		doc.insert()
 		name = doc.name
 	else:
@@ -328,7 +338,8 @@ def create_products(log):
 		doc.item_name = log.productName
 		doc.description = log.productDesc or log.productDetail or log.productName
 		doc.item_group = types
-		doc.foms_id = log.id
+		if not doc.foms_product_id:
+			doc.foms_product_id = log.id
 		doc.db_update()
 
 	return name
@@ -344,7 +355,7 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 # https://b83cw27ro1.larksuite.com/docx/FhH4dGmEZor3z2xQouEuNG9GsKp?from=from_copylink
 def create_bom_products_version_1(log, product_id, submit=False):
 	log = frappe._dict(log)
-	item_name = frappe.get_value("Item", {"foms_id":product_id})
+	item_name = frappe.get_value("Item", {"foms_product_id":product_id})
 	name = None
 	bom_map = {}
 	# find existing
@@ -434,7 +445,7 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 	log = frappe._dict(log)
 	if not product_id:
 		frappe.throw(_(f"Missing Item with Product ID {product_id}"), frappe.DoesNotExistError)
-	item_name = frappe.get_value("Item", {"foms_id":product_id})
+	item_name = frappe.get_value("Item", {"foms_product_id":product_id})
 
 	name = None
 	bom = None
@@ -597,9 +608,9 @@ def create_work_order(log, item_code, bom_no, qty=1, submit=False, return_doc=Fa
 		return doc
 	return doc.name
 
-def get_item_foms(item_id="", item_code=""):
+def get_raw_item_foms(item_id="", item_code=""):
 	if item_id:
-		item = frappe.get_value("Item", {"foms_id":1})
+		item = frappe.get_value("Item", {"foms_raw_id":1})
 	
 	if not item and item_code:
 		item = frappe.get_value("Item", item_code)
@@ -640,7 +651,7 @@ def update_stock_recipe(doc, cancel=False):
 		expiry_date = frappe.get_value("Batch", d.batch_no, "expiry_date")
 		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id")
 		supplier_id = frappe.get_value("Supplier", doc.supplier, "foms_id")
-		raw_id = frappe.get_value("Item", d.item_code, "foms_id")
+		raw_id = frappe.get_value("Item", d.item_code, "foms_raw_id")
 		params = {
 			"id": 0,
 			"rawMaterialId": raw_id,
