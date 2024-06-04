@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "maintenance_request_form",
+  "sub_title",
   "section_a_please_provide_the_necessary_information",
   "permit_applicant_name",
   "date_time_apply",
@@ -20,6 +21,8 @@
   "section_break_ldwox",
   "description_purpose_of_activities",
   "person_list",
+  "sic_completion",
+  "sic_completed",
   "area_location_equipment_unit",
   "section_break_numjs",
   "type_of_work",
@@ -609,14 +612,18 @@
   {
    "fieldname": "contractor_safety_assessor",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Contractor Safety Assessor",
-   "mandatory_depends_on": "eval:doc.conductor_signature"
+   "mandatory_depends_on": "eval:doc.conductor_signature",
+   "reqd": 1
   },
   {
    "fieldname": "permit_to_work_applicant",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Permit to Work Applicant",
-   "mandatory_depends_on": "eval:doc.ptw_signature"
+   "mandatory_depends_on": "eval:doc.ptw_signature",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_n0bwj",
@@ -625,12 +632,16 @@
   {
    "fieldname": "conductor_signature",
    "fieldtype": "Signature",
-   "label": "Signature"
+   "in_list_view": 1,
+   "label": "Signature",
+   "reqd": 1
   },
   {
    "fieldname": "ptw_signature",
    "fieldtype": "Signature",
-   "label": "Signature"
+   "in_list_view": 1,
+   "label": "Signature",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_4mkju",
@@ -718,11 +729,11 @@
    "hide_border": 1
   },
   {
-   "default": "Submitted",
+   "default": "Draft",
    "fieldname": "workflow_state",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "Submitted\nApproved\nRejected\nCancelled",
+   "options": "Draft\nIssued\nAccepted\nStarted\nRejected\nResolved\nSubmitted\nCancelled\nApproved",
    "read_only": 1
   },
   {
@@ -737,12 +748,29 @@
   {
    "fieldname": "section_break_vojz0",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "sic_completion",
+   "fieldtype": "Section Break",
+   "label": "SIC Completion"
+  },
+  {
+   "default": "0",
+   "fieldname": "sic_completed",
+   "fieldtype": "Check",
+   "label": "SIC Completed"
+  },
+  {
+   "fieldname": "sub_title",
+   "fieldtype": "HTML",
+   "label": "sub_title",
+   "options": "Please submit PTW 3 days in advance from the actual date of work. Late entries will not be entertained."
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-30 11:48:13.238538",
+ "modified": "2024-06-04 14:41:35.513363",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",
