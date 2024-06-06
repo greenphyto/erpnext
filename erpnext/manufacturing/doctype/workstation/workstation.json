@@ -23,8 +23,10 @@
   "hour_rate",
   "cost_based_quantity_section",
   "per_qty_rate_electricity",
-  "per_qty_rate_wages",
+  "per_qty_rate_consumable",
+  "column_break_17",
   "per_qty_rate_machinery",
+  "per_qty_rate_wages",
   "per_qty_rate",
   "workstaion_description",
   "description",
@@ -168,16 +170,19 @@
    "label": "Cost based Quantity"
   },
   {
+   "description": "per qty",
    "fieldname": "per_qty_rate_electricity",
    "fieldtype": "Currency",
    "label": "Electricity Cost"
   },
   {
+   "description": "per qty",
    "fieldname": "per_qty_rate_wages",
    "fieldtype": "Currency",
    "label": "Wages Cost"
   },
   {
+   "description": "per qty",
    "fieldname": "per_qty_rate_machinery",
    "fieldtype": "Currency",
    "label": "Machinery Cost"
@@ -186,13 +191,24 @@
    "fieldname": "per_qty_rate",
    "fieldtype": "Currency",
    "label": "Net Hour Rate",
-   "read_only": 1
+   "read_only": 1,
+   "description": "per qty"
+  },
+  {
+   "fieldname": "column_break_17",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "per qty",
+   "fieldname": "per_qty_rate_consumable",
+   "fieldtype": "Currency",
+   "label": "Consumable Cost"
   }
  ],
  "icon": "icon-wrench",
  "idx": 1,
  "links": [],
- "modified": "2024-05-21 17:14:34.404801",
+ "modified": "2024-06-06 11:35:55.854395",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Workstation",
