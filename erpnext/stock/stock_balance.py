@@ -204,6 +204,9 @@ def get_planned_qty(item_code, warehouse):
 
 def update_bin_qty(item_code, warehouse, qty_dict=None):
 	from erpnext.stock.utils import get_bin
+	from erpnext.stock.doctype.bin.bin import validate_warehouse_restriction
+
+	validate_warehouse_restriction(item_code, warehouse)
 
 	bin = get_bin(item_code, warehouse)
 	mismatch = False
