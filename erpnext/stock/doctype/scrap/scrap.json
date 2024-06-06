@@ -2,13 +2,14 @@
  "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
- "autoname": "format:{item}-#####",
+ "autoname": "format:{item_code}-{#####}",
  "creation": "2024-05-29 14:48:59.653308",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "item",
+  "item_code",
+  "warehouse",
   "inventory_quantity",
   "amount_to_scrap",
   "reason",
@@ -16,19 +17,11 @@
  ],
  "fields": [
   {
-   "fieldname": "item",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Item",
-   "options": "Item",
-   "reqd": 1
-  },
-  {
    "fieldname": "inventory_quantity",
-   "fieldtype": "Float",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Inventory Quantity",
-   "reqd": 1
+   "read_only": 1
   },
   {
    "fieldname": "amount_to_scrap",
@@ -52,12 +45,27 @@
    "options": "Scrap",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-29 15:06:20.861359",
+ "modified": "2024-06-05 11:20:46.690648",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Scrap",
