@@ -929,7 +929,6 @@ class WorkOrder(Document):
 					if not d.operation:
 						d.operation = operation
 			else:
-				print(932)
 				for item in sorted(item_dict.values(), key=lambda d: d["idx"] or float("inf")):
 					self.append(
 						"required_items",
