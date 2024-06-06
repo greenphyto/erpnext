@@ -176,6 +176,22 @@ frappe.ui.form.on("Journal Entry", {
 	currency_base: function(frm){
 		erpnext.journal_entry.set_exchange_rate_on_parent(frm);
 		erpnext.journal_entry.toggle_fields_based_on_currency(frm);
+	},
+
+	exchange_rate: function(frm){
+		$.each(frm.doc.accounts, (i, row)=>{
+			if (row.account_currency == frm.doc.currency_base){
+				row.exchange_rate = frm.doc.exchange_rate;
+				frappe.model.set_value(row.doctype, row.name, "debit",
+					flt(flt(row.debit_in_account_currency)*row.exchange_rate, precision("debit", row)));
+
+				frappe.model.set_value(row.doctype, row.name, "credit",
+					flt(flt(row.credit_in_account_currency)*row.exchange_rate, precision("credit", row)));
+			};
+		});
+
+		frm.cscript.update_totals(frm.doc);
+		frm.refresh_field("accounts");
 	}
 });
 
@@ -460,7 +476,7 @@ frappe.ui.form.on("Journal Entry Account", {
 		var row = locals[cdt][cdn];
 
 		if(row.account_currency == company_currency || !frm.doc.multi_currency) {
-			frappe.model.set_value(cdt, cdn, "exchange_rate", 1);
+			d.exchange_rate = 1;
 		}
 
 		erpnext.journal_entry.set_debit_credit_in_company_currency(frm, cdt, cdn);
@@ -748,6 +764,11 @@ $.extend(erpnext.journal_entry, {
 				callback: function(r) {
 					if(r.message) {
 						$.extend(d, r.message);
+						if (frm.doc.multi_currency && frm.doc.exchange_rate!=1 && frm.doc.exchange_rate){
+							d.exchange_rate = frm.doc.exchange_rate;
+						}else{
+							d.exchange_rate = r.message.exchange_rate_value
+						}
 						erpnext.journal_entry.set_debit_credit_in_company_currency(frm, dt, dn);
 						refresh_field('accounts');
 					}
