@@ -7,7 +7,7 @@ from erpnext.controllers.foms import (
 	get_foms_settings,
 	create_work_order as _create_work_order,
 	OPERATION_MAP_NAME,
-	get_item_foms,
+	get_raw_item_foms,
 	get_uom,
 	create_raw_material as _create_raw_material,
 	create_products as _create_products,
@@ -46,7 +46,7 @@ def create_bom(data):
 @frappe.whitelist()
 def create_work_order(FomsWorkOrderID, FomsLotID, productID, qty, uom):
 	submit = get_foms_settings("auto_submit_work_order")
-	item_code = frappe.get_value("Item", {"foms_id":productID})
+	item_code = frappe.get_value("Item", {"foms_product_id":productID})
 	if not item_code or productID==0:
 		frappe.throw(_(f"Missing Item with Product ID {productID}"), frappe.DoesNotExistError)
 
@@ -180,7 +180,7 @@ def create_raw_material_reserve(ERPWorkOrderID, status, items):
 	for d in items:
 		d = frappe._dict(d)
 		row = se_doc.append("items")
-		row.item_code = get_item_foms(d.rawMaterialId, d.rawMaterialRefNo)
+		row.item_code = get_raw_item_foms(d.rawMaterialId, d.rawMaterialRefNo)
 		row.batch_no = d.rawMaterialBatchRefNo
 		row.qty = d.qtyReserve
 		row.uom = get_uom(d.uom)

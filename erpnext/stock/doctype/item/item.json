@@ -19,7 +19,8 @@
   "stock_uom",
   "material_group",
   "material_number",
-  "foms_id",
+  "foms_product_id",
+  "foms_raw_id",
   "column_break0",
   "disabled",
   "allow_alternative_item",
@@ -38,8 +39,6 @@
   "over_delivery_receipt_allowance",
   "over_billing_allowance",
   "image",
-  "unit_of_measure_conversion",
-  "uoms",
   "section_break_11",
   "description",
   "brand",
@@ -59,6 +58,8 @@
   "barcodes",
   "reorder_section",
   "reorder_levels",
+  "unit_of_measure_conversion",
+  "uoms",
   "serial_nos_and_batches",
   "has_batch_no",
   "create_new_batch",
@@ -909,6 +910,7 @@
    "show_dashboard": 1
   },
   {
+   "depends_on": "eval:!doc.is_fixed_asset",
    "fieldname": "accounting",
    "fieldtype": "Tab Break",
    "label": "Accounting"
@@ -950,17 +952,25 @@
    "read_only": 1
   },
   {
-   "description": "Product ID from FOMS",
-   "fieldname": "foms_id",
-   "fieldtype": "Int",
-   "label": "FOMS ID",
-   "read_only": 1
-  },
-  {
    "default": "0",
    "fieldname": "debit_note_item",
    "fieldtype": "Check",
    "label": "Debit Note Item"
+  },
+  {
+   "depends_on": "eval:doc.foms_product_id",
+   "description": "Product ID from FOMS",
+   "fieldname": "foms_product_id",
+   "fieldtype": "Int",
+   "label": "FOMS Product ID",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.foms_raw_id",
+   "fieldname": "foms_raw_id",
+   "fieldtype": "Int",
+   "label": "FOMS Raw ID",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-tag",
@@ -969,7 +979,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2024-05-21 10:43:50.714811",
+ "modified": "2024-06-03 16:27:10.068754",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",
