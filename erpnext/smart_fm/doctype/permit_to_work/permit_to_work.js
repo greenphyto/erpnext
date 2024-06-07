@@ -3,6 +3,7 @@
 
 frappe.ui.form.on('Permit to Work', {
 	onload: function(frm) {
+		frm.cscript.set_min_date(frm);
 		frm.cscript.update_max_date(frm);
 	},
 	date_time_work_start: function(frm){
@@ -15,6 +16,12 @@ $.extend(cur_frm.cscript, {
 	set_max_date: function(frm){
 		var to_field = frm.fields_dict.date_time_work_complete.custom_options = {
 			maxDate: new Date("2024-06-15")
+		}
+	},
+	set_min_date: function(frm){
+		var start_field = frm.fields_dict.date_time_work_start;
+		start_field.custom_options = {
+			minDate: new Date()
 		}
 	},
 	update_max_date: function(frm){
