@@ -4,9 +4,13 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from frappe.utils import getdate
+
+MAX_DURATION = 7
 
 class PermittoWork(Document):
 	def before_save(self):
+		self.validate_max_duration()
 		self.validate_signature()
 
 	def validate_signature(self):
@@ -16,4 +20,10 @@ class PermittoWork(Document):
 			frappe.throw(_("Please set name to <b>Permit to Work Applicant</b>"))
 		if self.authorized_signature and not self.name1:
 			frappe.throw(_("Please set name to <b>Section D</b>"))
+
+	def validate_max_duration(self):
+		days = (getdate(self.date_time_work_complete) - getdate(self.date_time_work_start)).days
+		if days > 7:
+			frappe.throw(_("Cannot more than 7 days"))
+
 		
