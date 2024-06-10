@@ -34,10 +34,24 @@ class PermittoWork(Document):
 		if old_doc.get("workflow_state") != self.workflow_state and self.workflow_state == 'Approved':
 			self.attach_approved()
 
+	def get_print_format(self):
+		default_print_format = frappe.db.get_value(
+			"Property Setter",
+			dict(property="default_print_format", doc_type=self.doctype),
+			"value",
+		)
+		if default_print_format:
+			print_format = default_print_format
+		else:
+			print_format = "Standard"
+
+		return print_format
+
 	def attach_approved(self, force = False, print_format=None):
 		if self.approved_print and not force:
 			return 
 		
+		print_format = print_format or self.get_print_format()
 
 		files = frappe.attach_print(self.doctype, self.name, print_format=print_format, file_name=self.name, doc=self)
 
