@@ -27,7 +27,9 @@ $.extend(cur_frm.cscript, {
 		var max_date = moment(start_date).add(max_allowed_days, 'days').toDate();
 
 		if (!cur_comp_date || new Date(cur_comp_date)<start_date || new Date(cur_comp_date)>max_date){
-			frm.set_value("date_time_work_complete", "");
+			if (frm.is_dirty()){
+				frm.set_value("date_time_work_complete", "");
+			}
 		}
 
 		if (!to_field.datepicker){
