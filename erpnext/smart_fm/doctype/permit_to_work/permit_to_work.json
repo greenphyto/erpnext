@@ -787,12 +787,18 @@
   {
    "fieldname": "section_break_oaqzb",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "approved_print",
+   "fieldtype": "Attach",
+   "label": "Approved Print",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-10 14:09:25.874390",
+ "modified": "2024-06-10 19:05:19.695700",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",
