@@ -44,7 +44,7 @@
  ],
  "login_required": 1,
  "max_attachment_size": 2,
- "modified": "2024-06-10 11:19:38.371408",
+ "modified": "2024-06-10 15:59:53.043462",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "permit-to-work",
@@ -449,6 +449,18 @@
   },
   {
    "allow_read_on_all_link_options": 0,
+   "fieldname": "supervisor_name",
+   "fieldtype": "Data",
+   "hidden": 0,
+   "label": "Supervisor Name",
+   "max_length": 0,
+   "max_value": 0,
+   "read_only": 0,
+   "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
    "fieldname": "signature",
    "fieldtype": "Signature",
    "hidden": 0,
@@ -740,7 +752,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "fieldname": "reqcue_equipments_others",
+   "fieldname": "rescue_equipments_others",
    "fieldtype": "Data",
    "hidden": 0,
    "label": "Other (please specify)",
