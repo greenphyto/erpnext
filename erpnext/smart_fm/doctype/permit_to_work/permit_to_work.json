@@ -121,6 +121,7 @@
   "section_break_vojz0",
   "workflow_state",
   "amended_from",
+  "approved_print",
   "column_break_azt3p",
   "attachment"
  ],
@@ -765,12 +766,18 @@
    "fieldtype": "HTML",
    "label": "sub_title",
    "options": "Please submit PTW 3 days in advance from the actual date of work. Late entries will not be entertained."
+  },
+  {
+   "fieldname": "approved_print",
+   "fieldtype": "Attach",
+   "label": "Approved Print",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-04 14:41:35.513363",
+ "modified": "2024-06-10 12:09:00.557081",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",
