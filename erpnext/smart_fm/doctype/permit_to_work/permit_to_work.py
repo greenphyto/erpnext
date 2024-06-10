@@ -30,7 +30,7 @@ class PermittoWork(Document):
 			frappe.throw(_("Cannot more than 7 days"))
 
 	def add_approved_print(self):
-		old_doc = self.get_doc_before_save()
+		old_doc = self.get_doc_before_save() or {}
 		if old_doc.get("workflow_state") != self.workflow_state and self.workflow_state == 'Approved':
 			self.attach_approved()
 
