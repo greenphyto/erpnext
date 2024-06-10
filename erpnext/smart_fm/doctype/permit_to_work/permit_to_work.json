@@ -11,7 +11,9 @@
   "sub_title",
   "section_a_please_provide_the_necessary_information",
   "permit_applicant_name",
-  "date_time_apply",
+  "date_apply",
+  "column_break_h36xy",
+  "safety_designation",
   "section_break_tom1l",
   "date_time_work_start",
   "column_break_zjaap",
@@ -21,8 +23,6 @@
   "section_break_ldwox",
   "description_purpose_of_activities",
   "person_list",
-  "sic_completion",
-  "sic_completed",
   "area_location_equipment_unit",
   "section_break_numjs",
   "type_of_work",
@@ -42,11 +42,6 @@
   "piling_work",
   "hot_work",
   "section_break_kvwr7",
-  "declaration",
-  "section_break_450yx",
-  "signature",
-  "column_break_vo7eg",
-  "date",
   "safety_provisionmeasure_tab",
   "section_b_to_be_completed_by_permit_to_work_applicant_section",
   "safety_precaution_required",
@@ -68,7 +63,7 @@
   "safety_line",
   "safety_watcher",
   "scba",
-  "reqcue_equipments_others",
+  "rescue_equipments_others",
   "column_break_s01eo",
   "ppes_required",
   "head_protection",
@@ -98,6 +93,7 @@
   "datetime",
   "evaluated_and_endorsed_by",
   "column_break_tcmkg",
+  "space4",
   "conducted_by",
   "section_break_t3bri",
   "contractor_safety_assessor",
@@ -111,8 +107,15 @@
   "special_instructionsprecautions",
   "section_d_tab",
   "section_d",
-  "reviewed_and_approved",
+  "declaration",
   "section_break_lb472",
+  "supervisor_name",
+  "signature",
+  "column_break_vo7eg",
+  "date",
+  "section_break_ipnt3",
+  "reviewed_and_approved",
+  "section_break_oaqzb",
   "name1",
   "column_break_q5lb6",
   "authorized_signature",
@@ -152,11 +155,6 @@
    "label": "Permit Applicant Name"
   },
   {
-   "fieldname": "date_time_apply",
-   "fieldtype": "Datetime",
-   "label": "Date/Time Apply"
-  },
-  {
    "fieldname": "date_time_work_start",
    "fieldtype": "Datetime",
    "label": "Date/Time Work Start"
@@ -180,7 +178,7 @@
    "fieldname": "person_list",
    "fieldtype": "Table",
    "label": "Name of Workers",
-   "options": "Person"
+   "options": "PTW Person"
   },
   {
    "fieldname": "area_location_equipment_unit",
@@ -292,11 +290,6 @@
    "fieldtype": "HTML",
    "label": "Declaration",
    "options": "I, the Supervisor for the above work activities hereby take responsibility to supervise full time and ensure all workers comply with the safe work procedure and work in a safe manner."
-  },
-  {
-   "fieldname": "section_break_450yx",
-   "fieldtype": "Section Break",
-   "hide_border": 1
   },
   {
    "fieldname": "signature",
@@ -440,11 +433,6 @@
    "label": "SCBA"
   },
   {
-   "fieldname": "reqcue_equipments_others",
-   "fieldtype": "Data",
-   "label": "Other (please specify)"
-  },
-  {
    "fieldname": "column_break_s01eo",
    "fieldtype": "Column Break"
   },
@@ -534,18 +522,21 @@
    "description": "Permissible Entry Level",
    "fieldname": "testing_number",
    "fieldtype": "Data",
-   "label": "Testing Number"
+   "label": "Testing Number",
+   "mandatory_depends_on": "eval:doc.gas_check == 1"
   },
   {
    "fieldname": "time_of_testing",
    "fieldtype": "Datetime",
-   "label": "Time of Testing"
+   "label": "Time of Testing",
+   "mandatory_depends_on": "eval:doc.gas_check == 1"
   },
   {
    "description": "19.5% to 23%",
    "fieldname": "oxygen",
    "fieldtype": "Data",
-   "label": "Oxygen (%)"
+   "label": "Oxygen (%)",
+   "mandatory_depends_on": "eval:doc.gas_check == 1"
   },
   {
    "fieldname": "column_break_s4odm",
@@ -561,24 +552,28 @@
    "description": "Less than 10% LEL",
    "fieldname": "flammable_gas__lel",
    "fieldtype": "Data",
-   "label": "Flammable Gas (% LEL)"
+   "label": "Flammable Gas (% LEL)",
+   "mandatory_depends_on": "eval:doc.gas_check == 1"
   },
   {
    "description": "Less than 25ppm",
    "fieldname": "carbon_monoxide_ppm",
    "fieldtype": "Data",
-   "label": "Carbon Monoxide (ppm)"
+   "label": "Carbon Monoxide (ppm)",
+   "mandatory_depends_on": "eval:doc.gas_check == 1"
   },
   {
    "description": "Less than 10ppm",
    "fieldname": "hydrogen_sulfide_ppm",
    "fieldtype": "Data",
-   "label": "Hydrogen Sulfide (ppm)"
+   "label": "Hydrogen Sulfide (ppm)",
+   "mandatory_depends_on": "eval:doc.gas_check == 1"
   },
   {
    "fieldname": "state_of_entry",
    "fieldtype": "Select",
    "label": "State of Entry",
+   "mandatory_depends_on": "eval:doc.gas_check == 1",
    "options": "\nUNSAFE for Entry\nSAFE for Entry"
   },
   {
@@ -672,8 +667,7 @@
   },
   {
    "fieldname": "section_break_lb472",
-   "fieldtype": "Section Break",
-   "hide_border": 1
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "name1",
@@ -712,8 +706,7 @@
   },
   {
    "fieldname": "section_break_zb7hr",
-   "fieldtype": "Section Break",
-   "hide_border": 1
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "section_break_tom1l",
@@ -751,33 +744,55 @@
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "sic_completion",
-   "fieldtype": "Section Break",
-   "label": "SIC Completion"
-  },
-  {
-   "default": "0",
-   "fieldname": "sic_completed",
-   "fieldtype": "Check",
-   "label": "SIC Completed"
-  },
-  {
    "fieldname": "sub_title",
    "fieldtype": "HTML",
    "label": "sub_title",
    "options": "Please submit PTW 3 days in advance from the actual date of work. Late entries will not be entertained."
   },
   {
-   "fieldname": "approved_print",
-   "fieldtype": "Attach",
-   "label": "Approved Print",
-   "read_only": 1
+   "fieldname": "date_apply",
+   "fieldtype": "Date",
+   "label": "Date Apply"
+  },
+  {
+   "fieldname": "column_break_h36xy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "safety_designation",
+   "fieldtype": "Data",
+   "label": "Safety Designation"
+  },
+  {
+   "fieldname": "rescue_equipments_others",
+   "fieldtype": "Data",
+   "label": "Other (please specify)"
+  },
+  {
+   "fieldname": "space4",
+   "fieldtype": "HTML",
+   "label": "space4",
+   "options": "<br><br>"
+  },
+  {
+   "fieldname": "supervisor_name",
+   "fieldtype": "Data",
+   "label": "Supervisor Name"
+  },
+  {
+   "fieldname": "section_break_ipnt3",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "section_break_oaqzb",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-10 12:09:00.557081",
+ "modified": "2024-06-10 14:09:25.874390",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",

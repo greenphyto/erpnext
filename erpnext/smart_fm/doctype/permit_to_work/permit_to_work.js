@@ -43,5 +43,15 @@ $.extend(cur_frm.cscript, {
 			to_field.datepicker_options.minDate = start_date;
 			to_field.set_datepicker();
 		}
-	}
+	},
+	set_date: function(frm){
+		var field = frm.fields_dict.date;
+		field.custom_options = {
+			minDate: new Date(frm.doc.date_time_work_start || new Date())
+		}
+		var field2 = frm.fields_dict.datetime;
+		field2.custom_options = {
+			minDate: new Date(frm.doc.date_time_work_start || new Date())
+		}
+	},
 })
