@@ -14,6 +14,7 @@
   "item_name",
   "image",
   "foms_work_order",
+  "foms_lot_name",
   "foms_lot_id",
   "bom_no",
   "operation_no",
@@ -575,7 +576,8 @@
   {
    "fieldname": "foms_work_order",
    "fieldtype": "Data",
-   "label": "FOMS Work Order"
+   "label": "FOMS Work Order",
+   "read_only": 1
   },
   {
    "fetch_from": "bom_no.operation_no",
@@ -587,6 +589,13 @@
   {
    "fieldname": "foms_lot_id",
    "fieldtype": "Data",
+   "hidden": 1,
+   "label": "FOMS Lot ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_lot_name",
+   "fieldtype": "Data",
    "label": "FOMS Lot ID",
    "read_only": 1
   }
@@ -596,7 +605,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2024-03-18 15:45:11.761554",
+ "modified": "2024-06-10 17:35:30.271937",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",

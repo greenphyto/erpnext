@@ -568,14 +568,24 @@ def get_work_order(show_progress=False, work_order=""):
 		return data
 
 	def post_process(gd, log):
+		detail_log = gd.api.get_work_order_detail(gd.farm_id, work_order=log.id)
+		if not detail_log:
+			return
+
+		
 		submit = get_foms_settings("auto_submit_work_order")
-		for d in log.get("products"):
+		for d in detail_log:
+			d = frappe._dict(d)
+			# update data
+			d.workOrderNo = log.get("workOrderNo")
+			d.id = log.get("id")
+
 			item_code = d.get("productRefNo")
 			bom_no = get_bom_for_work_order(item_code)
 			qty = 1
 
 			if bom_no:
-				create_work_order(log, item_code, bom_no, qty, submit)
+				create_work_order(d, item_code, bom_no, qty, submit)
 
 	def get_key_name(log):
 		return log.get("workOrderNo")
@@ -593,7 +603,8 @@ def create_work_order(log, item_code, bom_no, qty=1, submit=False, return_doc=Fa
 	doc = make_work_order(bom_no, item_code, qty)
 	validate_operation(doc)
 	doc.foms_work_order = log.workOrderNo
-	doc.foms_lot_id = log.lotID
+	doc.foms_lot_id = log.id
+	doc.foms_lot_name = log.lotId
 	doc.use_multi_level_bom = 0 #if use multi level bom it will use exploed items as raw material, but if not it will use bom items
 	doc.insert()
 
