@@ -142,6 +142,7 @@
   {
    "fieldname": "bom_no",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "BOM No",
    "oldfieldname": "bom_no",
    "oldfieldtype": "Link",
@@ -189,6 +190,7 @@
    "default": "1.0",
    "fieldname": "qty",
    "fieldtype": "Float",
+   "in_list_view": 1,
    "label": "Qty To Manufacture",
    "oldfieldname": "qty",
    "oldfieldtype": "Currency",
@@ -576,6 +578,8 @@
   {
    "fieldname": "foms_work_order",
    "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "FOMS Work Order",
    "read_only": 1
   },
@@ -596,6 +600,8 @@
   {
    "fieldname": "foms_lot_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "FOMS Lot ID",
    "read_only": 1
   }
@@ -605,7 +611,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-10 17:35:30.271937",
+ "modified": "2024-06-10 18:10:52.881903",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",
