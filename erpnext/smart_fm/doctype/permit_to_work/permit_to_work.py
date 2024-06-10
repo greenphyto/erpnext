@@ -63,7 +63,7 @@ class PermittoWork(Document):
 				"attached_to_name": self.name,
 				"attached_to_field": "approved_print",
 				"is_private": True,
-				"content": files['fname'],
+				"content": files['fcontent'],
 			}
 		)
 
