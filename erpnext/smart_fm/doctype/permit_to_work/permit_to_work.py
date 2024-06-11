@@ -13,6 +13,13 @@ class PermittoWork(Document):
 	def before_save(self):
 		self.validate_max_duration()
 		self.validate_signature()
+		self.validate_date()
+
+	def validate_date(self):
+		if self.check_in_time == "Now":
+			self.check_in_time = ""
+		if self.check_out_time == "Now":
+			self.check_out_time = ""
 
 	def validate(self):
 		self.add_approved_print()
