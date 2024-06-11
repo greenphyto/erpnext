@@ -8,7 +8,18 @@ frappe.ui.form.on('Permit to Work', {
 	},
 	date_time_work_start: function(frm){
 		frm.cscript.update_max_date(frm);
-	}
+		frm.cscript.set_date(frm);
+	},
+	on_submit: function(frm) {
+		if (frm.doc.approved_name && !frm.doc.approved_email) {
+      frappe.db.get_value("User", frappe.session.user, ["email", "full_name", "phone", "mobile_no"])
+      .then(r => {
+        let values = r.message;
+        frm.set_value("approved_name", values.full_name);
+        frm.set_value("approved_email", values.email);
+      });
+    }
+	},
 });
 
 frappe.provide("cur_frm.cscript");
@@ -45,7 +56,7 @@ $.extend(cur_frm.cscript, {
 		}
 	},
 	set_date: function(frm){
-		var field = frm.fields_dict.date;
+		var field = frm.fields_dict.supervisor_date;
 		field.custom_options = {
 			minDate: new Date(frm.doc.date_time_work_start || new Date())
 		}
