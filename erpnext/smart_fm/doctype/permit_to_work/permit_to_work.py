@@ -26,8 +26,6 @@ class PermittoWork(Document):
 			frappe.throw(_("Please set name to <b>Contractor Safety Assessor</b>"))
 		if self.ptw_signature and not self.permit_to_work_applicant:
 			frappe.throw(_("Please set name to <b>Permit to Work Applicant</b>"))
-		if self.authorized_signature and not self.name1:
-			frappe.throw(_("Please set name to <b>Section D</b>"))
 
 	def validate_max_duration(self):
 		days = (getdate(self.date_time_work_complete) - getdate(self.date_time_work_start)).days
