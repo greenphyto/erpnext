@@ -823,7 +823,7 @@
    "fieldname": "approved_name",
    "fieldtype": "Data",
    "label": "Name",
-   "mandatory_depends_on": "eval:doc.authorized_signature"
+   "mandatory_depends_on": ""
   },
   {
    "default": "Now",
