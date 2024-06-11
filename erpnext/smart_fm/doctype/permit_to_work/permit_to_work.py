@@ -94,6 +94,7 @@ class PermittoWork(Document):
 				frappe.throw(_("Only <b>Security</b> can change check in/out!"))
 			self.workflow_state = "Sign In"
 
+		self.db_set("workflow_state", self.workflow_state)
 
 	def set_checkout_time(self):
 		if self.workflow_state not in ("Sign In", "Sign Out"):
