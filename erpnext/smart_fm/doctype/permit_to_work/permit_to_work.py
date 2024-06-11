@@ -5,6 +5,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import getdate
+from erpnext.smart_fm.doctype.visitor_registration.visitor_registration import is_security_user, get_now
 
 MAX_DURATION = 7
 
@@ -15,6 +16,10 @@ class PermittoWork(Document):
 
 	def validate(self):
 		self.add_approved_print()
+
+	def on_update_after_submit(self):
+		self.set_status()
+		self.set_checkout_time()
 
 	def validate_signature(self):
 		if self.conductor_signature and not self.contractor_safety_assessor:
@@ -70,6 +75,41 @@ class PermittoWork(Document):
 		_file.save()
 		file_url = _file.file_url
 		self.approved_print = file_url
+	
+	def set_status(self):
+		old_doc = self.get_doc_before_save()
+		if not old_doc:
+			return
+		
+		# by workflow 
+		if old_doc.get("workflow_state") != self.get("workflow_state"):
+			pass
+		# by web form
+		elif old_doc.get("check_out") != self.get("check_out") and self.get("check_out") == 1:
+			if not is_security_user():
+				frappe.throw(_("Only <b>Security</b> can change check in/out!"))
+			self.workflow_state = "Sign Out"
+		elif old_doc.get("check_in") != self.get("check_in") and self.get("check_in") == 1:
+			if not is_security_user():
+				frappe.throw(_("Only <b>Security</b> can change check in/out!"))
+			self.workflow_state = "Sign In"
+
+
+	def set_checkout_time(self):
+		if self.workflow_state not in ("Sign In", "Sign Out"):
+			self.check_in_time = None
+			self.check_out_time = None
+			self.check_out = 0
+			self.check_in = 0
+		else:
+			if self.workflow_state == "Sign In":
+				self.check_in_time = get_now(self.check_in_time)
+				self.check_in = 1
+				self.check_out_time = None
+				self.check_out = 0
+			elif self.workflow_state == "Sign Out":
+				self.check_out_time = get_now(self.check_out_time)
+				self.check_out = 1
 
 # erpnext.smart_fm.doctype.permit_to_work.permit_to_work.update_old_doc
 def update_old_doc():

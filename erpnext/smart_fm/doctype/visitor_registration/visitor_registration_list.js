@@ -13,5 +13,3 @@ frappe.listview_settings['Visitor Registration'] = {
 	},
     has_indicator_for_draft:1
 };
-
-frappe.help.youtube_id["BOM"] = "hDV0c1OeWLo";

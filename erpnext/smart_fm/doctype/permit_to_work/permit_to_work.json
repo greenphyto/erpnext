@@ -126,7 +126,13 @@
   "amended_from",
   "approved_print",
   "column_break_azt3p",
-  "attachment"
+  "attachment",
+  "checkin_details_section",
+  "check_in",
+  "check_in_time",
+  "column_break_mss0a",
+  "check_out",
+  "check_out_time"
  ],
  "fields": [
   {
@@ -793,12 +799,58 @@
    "fieldtype": "Attach",
    "label": "Approved Print",
    "read_only": 1
+  },
+  {
+   "fieldname": "checkin_details_section",
+   "fieldtype": "Section Break",
+   "label": "Checkin Details",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Now",
+   "depends_on": "eval:doc.check_in",
+   "fieldname": "check_in_time",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Check In Time",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Now",
+   "depends_on": "eval:doc.check_out",
+   "fieldname": "check_out_time",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Check Out Time",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "check_in",
+   "fieldtype": "Check",
+   "label": "Check In",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mss0a",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "check_out",
+   "fieldtype": "Check",
+   "label": "Check Out",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-10 19:05:19.695700",
+ "modified": "2024-06-11 14:57:48.842037",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",
