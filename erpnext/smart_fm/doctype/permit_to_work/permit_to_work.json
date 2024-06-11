@@ -13,7 +13,7 @@
   "permit_applicant_name",
   "date_apply",
   "column_break_h36xy",
-  "safety_designation",
+  "designation",
   "section_break_tom1l",
   "date_time_work_start",
   "column_break_zjaap",
@@ -48,7 +48,7 @@
   "access_ladder",
   "scaffold",
   "log_outtag_out",
-  "barriers",
+  "safety_barriers",
   "electrical_check",
   "no_hot_work_at_vicinity",
   "sufficient_lighting",
@@ -110,15 +110,15 @@
   "declaration",
   "section_break_lb472",
   "supervisor_name",
-  "signature",
+  "supervisor_signature",
   "column_break_vo7eg",
-  "date",
+  "supervisor_date",
   "section_break_ipnt3",
   "reviewed_and_approved",
   "section_break_oaqzb",
-  "name1",
+  "approved_name",
   "column_break_q5lb6",
-  "authorized_signature",
+  "approved_email",
   "section_break_zb7hr",
   "information",
   "section_break_vojz0",
@@ -298,19 +298,8 @@
    "options": "I, the Supervisor for the above work activities hereby take responsibility to supervise full time and ensure all workers comply with the safe work procedure and work in a safe manner."
   },
   {
-   "fieldname": "signature",
-   "fieldtype": "Signature",
-   "label": "Signature"
-  },
-  {
    "fieldname": "column_break_vo7eg",
    "fieldtype": "Column Break"
-  },
-  {
-   "default": "Now",
-   "fieldname": "date",
-   "fieldtype": "Datetime",
-   "label": "Date"
   },
   {
    "fieldname": "safety_provisionmeasure_tab",
@@ -350,12 +339,6 @@
    "fieldname": "log_outtag_out",
    "fieldtype": "Check",
    "label": "Log out/Tag out"
-  },
-  {
-   "default": "0",
-   "fieldname": "barriers",
-   "fieldtype": "Check",
-   "label": "Barriers"
   },
   {
    "default": "0",
@@ -676,19 +659,8 @@
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "name1",
-   "fieldtype": "Data",
-   "label": "Name",
-   "mandatory_depends_on": "eval:doc.authorized_signature"
-  },
-  {
    "fieldname": "column_break_q5lb6",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "authorized_signature",
-   "fieldtype": "Signature",
-   "label": "Signature"
   },
   {
    "fieldname": "section_c_tab",
@@ -765,11 +737,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "safety_designation",
-   "fieldtype": "Data",
-   "label": "Safety Designation"
-  },
-  {
    "fieldname": "rescue_equipments_others",
    "fieldtype": "Data",
    "label": "Other (please specify)"
@@ -783,7 +750,8 @@
   {
    "fieldname": "supervisor_name",
    "fieldtype": "Data",
-   "label": "Supervisor Name"
+   "label": "Supervisor Name",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_ipnt3",
@@ -845,12 +813,46 @@
    "fieldtype": "Check",
    "label": "Check Out",
    "read_only": 1
+  },
+  {
+   "fieldname": "designation",
+   "fieldtype": "Data",
+   "label": "Designation"
+  },
+  {
+   "fieldname": "approved_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "mandatory_depends_on": "eval:doc.authorized_signature"
+  },
+  {
+   "default": "Now",
+   "fieldname": "supervisor_date",
+   "fieldtype": "Datetime",
+   "label": "Date"
+  },
+  {
+   "fieldname": "approved_email",
+   "fieldtype": "Data",
+   "label": "Email"
+  },
+  {
+   "default": "0",
+   "fieldname": "safety_barriers",
+   "fieldtype": "Check",
+   "label": "Safety Barriers"
+  },
+  {
+   "fieldname": "supervisor_signature",
+   "fieldtype": "Signature",
+   "label": "Signature",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-11 14:57:48.842037",
+ "modified": "2024-06-11 14:57:49.842037",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",
