@@ -10,14 +10,15 @@ frappe.ui.form.on('Permit to Work', {
 		frm.cscript.update_max_date(frm);
 		frm.cscript.set_date(frm);
 	},
-	on_submit: function(frm) {
-		if (frm.doc.approved_name && !frm.doc.approved_email) {
-      frappe.db.get_value("User", frappe.session.user, ["email", "full_name", "phone", "mobile_no"])
-      .then(r => {
-        let values = r.message;
-        frm.set_value("approved_name", values.full_name);
-        frm.set_value("approved_email", values.email);
-      });
+	validate: function(frm) {
+		if(frm.doc.workflow_state === 'Approved'){
+      frm.doc.quote_reviewed_by = frappe.session.user
+			frappe.db.get_value("User", frappe.session.user, ["email", "full_name", "phone", "mobile_no"])
+			.then(r => {
+				let values = r.message;
+				frm.set_value("approved_name", values.full_name);
+				frm.set_value("approved_email", values.email);
+			});
     }
 	},
 });

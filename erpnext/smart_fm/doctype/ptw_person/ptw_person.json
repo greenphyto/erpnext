@@ -42,13 +42,14 @@
    "fieldname": "sic",
    "fieldtype": "Check",
    "in_list_view": 1,
-   "label": "SIC"
+   "label": "SIC",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-06-10 09:08:19.016857",
+ "modified": "2024-06-12 09:12:36.261507",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "PTW Person",
