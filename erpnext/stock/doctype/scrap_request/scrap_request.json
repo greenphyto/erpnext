@@ -17,6 +17,21 @@
  ],
  "fields": [
   {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse",
+   "reqd": 1
+  },
+  {
    "fieldname": "inventory_quantity",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -42,33 +57,18 @@
    "fieldtype": "Link",
    "label": "Amended From",
    "no_copy": 1,
-   "options": "Scrap",
+   "options": "Scrap Request",
    "print_hide": 1,
    "read_only": 1
-  },
-  {
-   "fieldname": "warehouse",
-   "fieldtype": "Link",
-   "label": "Warehouse",
-   "options": "Warehouse",
-   "reqd": 1
-  },
-  {
-   "fieldname": "item_code",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Item",
-   "options": "Item",
-   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-06 09:50:42.366092",
+ "modified": "2024-06-12 16:14:47.786385",
  "modified_by": "Administrator",
  "module": "Stock",
- "name": "Scrap",
+ "name": "Scrap Request",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
