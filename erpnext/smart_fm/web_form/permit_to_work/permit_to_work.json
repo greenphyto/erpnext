@@ -1,10 +1,13 @@
 {
+ "accept_payment": 0,
  "allow_comments": 0,
  "allow_delete": 1,
  "allow_edit": 1,
  "allow_incomplete": 0,
  "allow_multiple": 1,
  "allow_print": 0,
+ "amount": 0.0,
+ "amount_based_on_field": 0,
  "anonymous": 0,
  "apply_document_permissions": 1,
  "breadcrumbs": "[\n    {\"label\": \"Home\", \"route\":\"/\"},\n    {\"label\": \"Requests\", \"route\":\"requests\"},\n    {\"label\": \"Permit to Work\", \"route\":\"requests/permit-to-work\"}\n]",
@@ -25,9 +28,9 @@
    "label": "ID"
   },
   {
-   "fieldname": "date_time_apply",
-   "fieldtype": "Datetime",
-   "label": "Date/Time Apply"
+   "fieldname": "date_apply",
+   "fieldtype": "Date",
+   "label": "Date Apply"
   },
   {
    "fieldname": "workflow_state",
@@ -42,7 +45,7 @@
  ],
  "login_required": 1,
  "max_attachment_size": 2,
- "modified": "2024-06-11 17:27:33.014455",
+ "modified": "2024-06-12 09:10:36.113774",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "permit-to-work",
@@ -1351,6 +1354,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
+   "depends_on": "eval:doc.workflow_state == 'Approved'",
    "fieldtype": "HTML",
    "hidden": 0,
    "max_length": 0,
@@ -1362,6 +1366,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
+   "depends_on": "eval:doc.workflow_state == 'Approved'",
    "fieldname": "",
    "fieldtype": "Section Break",
    "hidden": 0,
@@ -1375,6 +1380,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
+   "depends_on": "eval:doc.workflow_state == 'Approved'",
    "fieldname": "approved_name",
    "fieldtype": "Data",
    "hidden": 0,
@@ -1388,6 +1394,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
+   "depends_on": "eval:doc.workflow_state == 'Approved'",
    "fieldname": "",
    "fieldtype": "Column Break",
    "hidden": 0,
@@ -1401,6 +1408,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
+   "depends_on": "eval:doc.workflow_state == 'Approved'",
    "fieldname": "approved_email",
    "fieldtype": "Data",
    "hidden": 0,
@@ -1460,87 +1468,6 @@
    "read_only": 1,
    "reqd": 0,
    "show_in_filter": 1
-  },
-  {
-   "allow_read_on_all_link_options": 0,
-   "fieldname": "",
-   "fieldtype": "Section Break",
-   "hidden": 0,
-   "label": "Checkin Details",
-   "max_length": 0,
-   "max_value": 0,
-   "options": "",
-   "read_only": 0,
-   "reqd": 0,
-   "show_in_filter": 0
-  },
-  {
-   "allow_read_on_all_link_options": 0,
-   "default": "0",
-   "fieldname": "check_in",
-   "fieldtype": "Check",
-   "hidden": 0,
-   "label": "Check In",
-   "max_length": 0,
-   "max_value": 0,
-   "read_only": 0,
-   "reqd": 0,
-   "show_in_filter": 0
-  },
-  {
-   "allow_read_on_all_link_options": 0,
-   "default": "Now",
-   "depends_on": "eval:doc.check_in",
-   "fieldname": "check_in_time",
-   "fieldtype": "Datetime",
-   "hidden": 0,
-   "label": "Check In Time",
-   "max_length": 0,
-   "max_value": 0,
-   "read_only": 0,
-   "reqd": 0,
-   "show_in_filter": 0
-  },
-  {
-   "allow_read_on_all_link_options": 0,
-   "fieldname": "",
-   "fieldtype": "Column Break",
-   "hidden": 0,
-   "label": "",
-   "max_length": 0,
-   "max_value": 0,
-   "options": "",
-   "read_only": 0,
-   "reqd": 0,
-   "show_in_filter": 0
-  },
-  {
-   "allow_read_on_all_link_options": 0,
-   "default": "0",
-   "depends_on": "eval:doc.check_in==1",
-   "fieldname": "check_out",
-   "fieldtype": "Check",
-   "hidden": 0,
-   "label": "Check Out",
-   "max_length": 0,
-   "max_value": 0,
-   "read_only": 0,
-   "reqd": 0,
-   "show_in_filter": 0
-  },
-  {
-   "allow_read_on_all_link_options": 0,
-   "default": "Now",
-   "depends_on": "eval:doc.check_in==1 && doc.check_out==1",
-   "fieldname": "check_out_time",
-   "fieldtype": "Datetime",
-   "hidden": 0,
-   "label": "Check Out Time",
-   "max_length": 0,
-   "max_value": 0,
-   "read_only": 0,
-   "reqd": 0,
-   "show_in_filter": 0
   }
  ],
  "website_sidebar": "Request from 3rd Party"

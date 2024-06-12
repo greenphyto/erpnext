@@ -643,6 +643,7 @@
    "label": "Please ensure the form is properly filled and seek approval before any work start"
   },
   {
+   "depends_on": "eval:doc.workflow_state == 'Approved'",
    "fieldname": "reviewed_and_approved",
    "fieldtype": "HTML",
    "label": "Reviewed and approved by Authorized Greenphyto",
@@ -653,6 +654,7 @@
    "fieldtype": "Section Break"
   },
   {
+   "depends_on": "eval:doc.workflow_state == 'Approved'",
    "fieldname": "column_break_q5lb6",
    "fieldtype": "Column Break"
   },
@@ -753,6 +755,7 @@
    "hide_border": 1
   },
   {
+   "depends_on": "eval:doc.workflow_state == 'Approved'",
    "fieldname": "section_break_oaqzb",
    "fieldtype": "Section Break"
   },
@@ -768,10 +771,11 @@
    "label": "Designation"
   },
   {
+   "depends_on": "eval:doc.workflow_state == 'Approved'",
    "fieldname": "approved_name",
    "fieldtype": "Data",
    "label": "Name",
-   "mandatory_depends_on": ""
+   "read_only": 1
   },
   {
    "default": "Now",
@@ -780,9 +784,11 @@
    "label": "Date"
   },
   {
+   "depends_on": "eval:doc.workflow_state == 'Approved'",
    "fieldname": "approved_email",
    "fieldtype": "Data",
-   "label": "Email"
+   "label": "Email",
+   "read_only": 1
   },
   {
    "default": "0",
@@ -800,7 +806,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-11 14:57:50.842037",
+ "modified": "2024-06-12 09:12:04.550848",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",
