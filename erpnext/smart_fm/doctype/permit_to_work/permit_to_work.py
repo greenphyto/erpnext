@@ -14,6 +14,7 @@ class PermittoWork(Document):
 		self.validate_signature()
 
 	def validate(self):
+		self.add_approved_user()
 		self.add_approved_print()
 
 	def on_update_after_submit(self):
@@ -30,6 +31,13 @@ class PermittoWork(Document):
 		days = (getdate(self.date_time_work_complete) - getdate(self.date_time_work_start)).days
 		if days > 7:
 			frappe.throw(_("Cannot more than 7 days"))
+
+	def add_approved_user(self):
+		old_doc = self.get_doc_before_save() or {}
+		if old_doc.get("workflow_state") != self.workflow_state and self.workflow_state == 'Approved':
+			self.approved_name = frappe.db.get_value("User", frappe.session.user, "full_name")
+			self.approved_email = frappe.db.get_value("User", frappe.session.user, "email")
+			
 
 	def add_approved_print(self):
 		old_doc = self.get_doc_before_save() or {}
