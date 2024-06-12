@@ -42,7 +42,7 @@
  ],
  "login_required": 1,
  "max_attachment_size": 2,
- "modified": "2024-06-11 17:27:32.014455",
+ "modified": "2024-06-11 17:27:33.014455",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "permit-to-work",
@@ -1456,7 +1456,7 @@
    "label": "Status",
    "max_length": 0,
    "max_value": 0,
-   "options": "Draft\nRejected\nSubmitted\nCancelled\nApproved\nSign In\nSign Out",
+   "options": "Draft\nRejected\nSubmitted\nCancelled\nApproved",
    "read_only": 1,
    "reqd": 0,
    "show_in_filter": 1
