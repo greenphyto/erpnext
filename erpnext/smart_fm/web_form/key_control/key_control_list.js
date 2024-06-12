@@ -25,6 +25,10 @@ function change_status_field(cell, status){
         place.addClass("red");
     }else if (status=="Approved"){
         place.addClass("green");
+    }else if (status=="Returned"){
+        place.addClass("blue");
+    }else if (status=="Issued"){
+        place.addClass("purple");
     }else{
         place.addClass("gray");
     }
