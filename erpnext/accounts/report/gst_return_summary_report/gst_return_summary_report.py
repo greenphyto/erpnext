@@ -55,7 +55,6 @@ class VATAuditReport(object):
 					gptotal_net = taxdata[-2]["tax_amount"]
 				if doctype == "Sales Invoice" :
 					gstotal_net = taxdata[-2]["tax_amount"]
-				#print(test[-2]["tax_amount"])
 		gftotal_net=( 0.0 if flt(gstotal_net) =="" else flt(gstotal_net)  )- ( 0.0 if flt(gptotal_net) =="" else flt(gptotal_net)  )  
 		gstotal = {
 				"posting_date":  totalsstr,
@@ -132,7 +131,7 @@ class VATAuditReport(object):
 		items = frappe.db.sql(
 			"""
 			SELECT
-				item_code, parent, base_net_amount
+				ifnull(item_code, item_name) as item_code, parent, base_net_amount
 			FROM
 				`tab%s Item`
 			WHERE
@@ -202,7 +201,6 @@ class VATAuditReport(object):
 					# else:
 					# 	continue
 					item_wise_tax_detail = json.loads(item_wise_tax_detail)
-					#print(item_wise_tax_detail)
 					for item_code, taxes in item_wise_tax_detail.items():
 						is_zero_rated = 0# self.invoice_items.get(parent).get(item_code).get("is_zero_rated")
 						# to skip items with non-zero tax rate in multiple rows gf
@@ -220,7 +218,7 @@ class VATAuditReport(object):
 					continue
 
 	def get_item_amount_map(self, parent, parenttype, item_code, taxes):
-		net_amount = flt(self.invoice_items.get(parent).get(item_code).get("net_amount"))
+		net_amount = flt(self.invoice_items.get(parent, {}).get(item_code, {}).get("net_amount"))
 		gst_item = False
 		if not net_amount and parent and parenttype == "Purchase Invoice":
 			net_amount = flt(frappe.get_value("Purchase Invoice", parent, "base_value_for_gst_input"))
@@ -382,7 +380,6 @@ class VATAuditReport(object):
 		consolidated_data_map = {}
 		self.already_add = []
 		for inv, inv_data in self.invoices.items():
-			print(370, inv_data.voucher_no, inv_data.docstatus)
 			if self.items_based_on_tax_rate.get(inv):
 				for rate, items in self.items_based_on_tax_rate.get(inv).items():
 					row = {"tax_amount": 0.0, "gross_amount": 0.0, "net_amount": 0.0}
