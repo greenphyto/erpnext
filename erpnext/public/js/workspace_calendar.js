@@ -34,7 +34,6 @@ class CustomCalendar extends frappe.views.CalendarView{
     setup_page(){
         this.can_create = 0;
         super.setup_page();
-        console.log(this.wrapper)
     }
 
     before_render() {
