@@ -279,6 +279,7 @@ def create_raw_material(log):
 		doc.item_group = types
 		doc.is_purchase_item = 1
 		doc.is_sales_item = 0
+		doc.is_stock_item = 1
 		doc.has_expiry_date = 1
 		doc.has_batch_no = 1
 		if doc.has_batch_no:
@@ -306,9 +307,10 @@ def create_raw_material(log):
 		doc.min_order_qty = flt(log.MinimumOrderQuantity)
 		doc.safety_stock = log.safetyLevel
 		doc.shelf_life_in_days = 365
+		doc.is_stock_item = 1
 		if not doc.foms_raw_id:
 			doc.foms_raw_id = log.id
-		doc.db_update()
+		doc.save()
 
 	return name
 
@@ -327,16 +329,18 @@ def create_products(log):
 		doc.stock_uom = get_uom(log.unitOfMeasurement)
 		doc.item_group = types
 		doc.foms_product_id = log.id
+		doc.is_stock_item = 1
 		doc.insert()
 		name = doc.name
 	else:
 		doc = frappe.get_doc("Item", name)
 		doc.item_name = log.productName
 		doc.description = log.productDesc or log.productDetail or log.productName
+		doc.is_stock_item = 1
 		doc.item_group = types
 		if not doc.foms_product_id:
 			doc.foms_product_id = log.id
-		doc.db_update()
+		doc.save()
 
 	return name
 
