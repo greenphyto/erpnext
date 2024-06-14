@@ -253,7 +253,6 @@ def _update_foms_supplier(api, log):
 def _update_foms_customer(api, log):
 	customer = frappe.get_doc("Customer", log.name)
 	details = get_party_details(customer.name, party_type="Customer")
-	# print(details)
 	farm_id = get_farm_id()
 	address = details.address_display or details.company_address_display
 	shipping_address = details.get("shipping_address") or address
@@ -375,7 +374,6 @@ def create_bom_products_version_1(log, product_id, submit=False):
 		# 	return name
 		
 		# join process Preharvest and PostHarvest
-		print(303, log)
 		if "process" in log:
 			all_process = log.process
 		else:
