@@ -13,6 +13,7 @@
   "permit_applicant_name",
   "date_apply",
   "column_break_h36xy",
+  "contact_no",
   "designation",
   "section_break_tom1l",
   "date_time_work_start",
@@ -801,12 +802,18 @@
    "fieldtype": "Signature",
    "label": "Signature",
    "reqd": 1
+  },
+  {
+   "fieldname": "contact_no",
+   "fieldtype": "Data",
+   "label": "Contact No.",
+   "options": "Phone"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-12 09:12:04.550848",
+ "modified": "2024-06-14 17:32:49.591447",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",
