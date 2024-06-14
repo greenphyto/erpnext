@@ -16,3 +16,14 @@ def delete_all_item():
 
     for d in frappe.get_all("Item"):
         _delete(d.name)
+
+"""
+bench --site test4 execute erpnext.patches.v14_0.foms_pacthes.delete_all_bom
+"""
+def delete_all_bom():
+    for d in frappe.db.get_all("FOMS Data Mapping", {"doc_type":"BOM", "doc_name":['is', 'set']}, ['name', 'doc_name']):
+        if frappe.db.exists("BOM", d.doc_name):
+            print("Delete", d.doc_name)
+            frappe.delete_doc("BOM", d.doc_name)
+        else:
+            frappe.delete_doc("FOMS Data Mapping", d.name)

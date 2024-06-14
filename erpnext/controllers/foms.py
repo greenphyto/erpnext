@@ -169,11 +169,16 @@ def get_products(show_progress=False):
 # Pending
 
 # RECIPE (GET)
-def get_recipe(show_progress=False):
+def get_recipe(show_progress=False, item_code=""):
 	submit = get_foms_settings("auto_submit_bom")
 
 	def get_data(gd):
-		data = gd.api.get_product_list_for_recipe(gd.farm_id)
+		if not item_code:
+			data = gd.api.get_product_list_for_recipe(gd.farm_id)
+		else:
+			product_id = frappe.get_value("Item", item_code, "foms_product_id")
+			data = [frappe._dict({'id':product_id})]
+		
 		return data
 
 	def post_process(gd, log):
