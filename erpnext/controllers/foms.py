@@ -76,12 +76,13 @@ def update_foms_customer():
 			_update_foms_customer(api, log) 
 
 class GetData():
-	def __init__(self, data_type, get_data, get_key_name, post_process, doc_type="Item", show_progress=False):
+	def __init__(self, data_type, get_data, get_key_name, post_process, doc_type="Item", show_progress=False, manual_save_log=False):
 		self.data_type = data_type
 		self.show_progress = show_progress
 		self.get_data = get_data
 		self.get_key_name = get_key_name
 		self.post_process = post_process
+		self.manual_save_log = manual_save_log
 		self.doc_type = doc_type
 	
 	def setup(self):
@@ -104,12 +105,10 @@ class GetData():
 			d = frappe._dict(data[i])
 
 			# pull to foms data mapping
-			key_name = self.get_key_name(d)
-			map_doc = create_foms_data(self.data_type, key_name, d)
 			result = self.post_process(self, d)
-			map_doc.doc_type = self.doc_type
-			map_doc.doc_name = result
-			map_doc.save()
+			if not self.manual_save_log:
+				key_name = self.get_key_name(d)
+				save_log(self.doc_type, result, key_name, d)
 
 			percent = (i+1)/total_count*100
 			if i % 10 == 0:
@@ -120,7 +119,6 @@ class GetData():
 		for i in range(total_count):
 			do_create(i)
 
-
 # RAW MATERIAL (GET)
 def get_raw_material(show_progress=False):
 	def get_data(gd):
@@ -129,7 +127,8 @@ def get_raw_material(show_progress=False):
 		return data
 
 	def post_process(gd, log):
-		return create_raw_material(log) 
+		result = create_raw_material(log) 
+		return result
 
 	def get_key_name(log):
 		return log.get("rawMaterialRefNo")
@@ -221,6 +220,12 @@ def update_warehouse(doc, method=""):
 	res = api.update_warehouse(data)
 	return res
 
+
+def save_log(doc_type, data_name, key_name, data):
+	map_doc = create_foms_data(doc_type, key_name, data)
+	map_doc.doc_type = doc_type
+	map_doc.doc_name = data_name
+	map_doc.save()
 
 def _update_foms_supplier(api, log):
 	supplier = frappe.get_doc("Supplier", log.name)
@@ -593,8 +598,11 @@ def get_work_order(show_progress=False, work_order=""):
 			bom_no = get_bom_for_work_order(item_code)
 			qty = 1
 
+			result = None
 			if bom_no:
-				create_work_order(d, item_code, bom_no, qty, submit)
+				result = create_work_order(d, item_code, bom_no, qty, submit)
+			
+			save_log("Work Order", result, d.get("lotId"), log)
 
 	def get_key_name(log):
 		return log.get("workOrderNo")
@@ -605,7 +613,8 @@ def get_work_order(show_progress=False, work_order=""):
 		get_data=get_data,
 		get_key_name = get_key_name,
 		post_process=post_process,
-		show_progress=show_progress
+		show_progress=show_progress,
+		manual_save_log=1
 	).run()
 
 def create_work_order(log, item_code, bom_no, qty=1, submit=False, return_doc=False):
