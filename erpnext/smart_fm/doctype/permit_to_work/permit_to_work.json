@@ -153,7 +153,8 @@
   {
    "fieldname": "permit_applicant_name",
    "fieldtype": "Data",
-   "label": "Permit Applicant Name"
+   "label": "Permit Applicant Name",
+   "reqd": 1
   },
   {
    "fieldname": "date_time_work_start",
@@ -813,7 +814,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-14 17:32:49.591447",
+ "modified": "2024-06-18 10:31:23.518491",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",
