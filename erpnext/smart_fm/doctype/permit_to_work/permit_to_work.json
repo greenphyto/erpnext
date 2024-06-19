@@ -13,6 +13,7 @@
   "permit_applicant_name",
   "date_apply",
   "column_break_h36xy",
+  "contact_no",
   "designation",
   "section_break_tom1l",
   "date_time_work_start",
@@ -155,7 +156,8 @@
   {
    "fieldname": "permit_applicant_name",
    "fieldtype": "Data",
-   "label": "Permit Applicant Name"
+   "label": "Permit Applicant Name",
+   "reqd": 1
   },
   {
    "fieldname": "date_time_work_start",
@@ -822,6 +824,12 @@
    "fieldname": "attachment4",
    "fieldtype": "Attach",
    "label": "Attachment 4"
+  },
+  {
+   "fieldname": "contact_no",
+   "fieldtype": "Data",
+   "label": "Contact No.",
+   "options": "Phone"
   }
  ],
  "index_web_pages_for_search": 1,

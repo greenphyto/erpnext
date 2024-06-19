@@ -12,6 +12,7 @@ class PermittoWork(Document):
 	def before_save(self):
 		self.validate_max_duration()
 		self.validate_signature()
+		self.validate_sic()
 
 	def validate(self):
 		self.add_approved_user()
@@ -20,6 +21,11 @@ class PermittoWork(Document):
 	def on_update_after_submit(self):
 		self.set_status()
 		self.set_checkout_time()
+
+	def validate_sic(self):
+		for person in self.person_list:
+			if (person.sic == 0):
+				frappe.throw(_("Worker SIC must be checked"))
 
 	def validate_signature(self):
 		if self.conductor_signature and not self.contractor_safety_assessor:
