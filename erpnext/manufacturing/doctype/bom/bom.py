@@ -256,7 +256,8 @@ class BOM(WebsiteGenerator):
 				"batch_size",
 				"operating_cost",
 				"idx",
-				"hour_rate",
+				"calculation_type",
+				"operation_rate",
 				"set_cost_based_on_bom_qty",
 				"fixed_time",
 			]
@@ -268,7 +269,7 @@ class BOM(WebsiteGenerator):
 				order_by="sequence_id, idx",
 			):
 				child = self.append("operations", row)
-				child.hour_rate = flt(row.hour_rate / self.conversion_rate, child.precision("hour_rate"))
+				child.operation_rate = flt(row.operation_rate / self.conversion_rate, child.precision("operation_rate"))
 
 	def set_bom_material_details(self):
 		for item in self.get("items"):
@@ -644,17 +645,25 @@ class BOM(WebsiteGenerator):
 			self.base_operating_cost += flt(base_operating_cost)
 
 	def update_rate_and_time(self, row, update_hour_rate=False):
-		if not row.hour_rate or update_hour_rate:
-			hour_rate = flt(frappe.get_cached_value("Workstation", row.workstation, "hour_rate"))
+		operation_rate = 0
+		if not row.operation_rate or update_hour_rate:
+				if row.calculation_type == "Per Qty":
+					operation_rate = flt(frappe.get_cached_value("Workstation", row.workstation, "per_qty_rate"))
+				else:
+					operation_rate = flt(frappe.get_cached_value("Workstation", row.workstation, "hour_rate"))
 
-			if hour_rate:
-				row.hour_rate = (
-					hour_rate / flt(self.conversion_rate) if self.conversion_rate and hour_rate else hour_rate
-				)
+		if operation_rate:
+			row.operation_rate = (
+				operation_rate / flt(self.conversion_rate) if self.conversion_rate and operation_rate else operation_rate
+			)
 
-		if row.hour_rate and row.time_in_mins:
-			row.base_hour_rate = flt(row.hour_rate) * flt(self.conversion_rate)
-			row.operating_cost = flt(row.hour_rate) * flt(row.time_in_mins) / 60.0
+		if row.operation_rate and row.time_in_mins:
+			row.base_hour_rate = flt(row.operation_rate) * flt(self.conversion_rate)
+			if row.calculation_type == "Per Qty":
+				row.operating_cost = flt(row.operation_rate) * flt(self.quantity)
+			else:
+				row.operating_cost = flt(row.operation_rate) * flt(row.time_in_mins) / 60.0
+				
 			row.base_operating_cost = flt(row.operating_cost) * flt(self.conversion_rate)
 			row.cost_per_unit = row.operating_cost / (row.batch_size or 1.0)
 			row.base_cost_per_unit = row.base_operating_cost / (row.batch_size or 1.0)
