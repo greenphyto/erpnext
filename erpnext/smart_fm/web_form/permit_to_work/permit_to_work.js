@@ -11,6 +11,24 @@ frappe.ready(function() {
 		$(".edit-button").hide();
 	}
 
+	frappe.web_form.on("attachment", (frm, value)=>{
+		frappe.web_form.set_df_property("attachment2", "hidden", 0)
+	});
+
+	frappe.web_form.on("attachment2", (frm, value)=>{
+		frappe.web_form.set_df_property("attachment3", "hidden", 0)
+	});
+
+	frappe.web_form.on("attachment3", (frm, value)=>{
+		frappe.web_form.set_df_property("attachment4", "hidden", 0)
+	});
+
+	// init
+	var doc = frappe.web_form.doc;
+	frappe.web_form.set_df_property("attachment2", "hidden", !doc.attachment ? 1 : 0 );
+	frappe.web_form.set_df_property("attachment3", "hidden", !doc.attachment2 ? 1 : 0 );
+	frappe.web_form.set_df_property("attachment4", "hidden", !doc.attachment3 ? 1 : 0 );
+
 })
 
 frappe.update_max_date = function(frm){

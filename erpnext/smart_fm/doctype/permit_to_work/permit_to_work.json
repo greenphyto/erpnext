@@ -126,7 +126,10 @@
   "amended_from",
   "approved_print",
   "column_break_azt3p",
-  "attachment"
+  "attachment",
+  "attachment2",
+  "attachment3",
+  "attachment4"
  ],
  "fields": [
   {
@@ -801,12 +804,30 @@
    "fieldtype": "Signature",
    "label": "Signature",
    "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.attachment",
+   "fieldname": "attachment2",
+   "fieldtype": "Attach",
+   "label": "Attachment 2"
+  },
+  {
+   "depends_on": "eval:doc.attachment2",
+   "fieldname": "attachment3",
+   "fieldtype": "Attach",
+   "label": "Attachment 3"
+  },
+  {
+   "depends_on": "eval:doc.attachment3",
+   "fieldname": "attachment4",
+   "fieldtype": "Attach",
+   "label": "Attachment 4"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-12 09:12:04.550848",
+ "modified": "2024-06-19 11:05:34.217600",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",
