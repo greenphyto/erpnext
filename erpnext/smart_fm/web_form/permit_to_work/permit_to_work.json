@@ -1,10 +1,13 @@
 {
+ "accept_payment": 0,
  "allow_comments": 0,
  "allow_delete": 1,
  "allow_edit": 1,
  "allow_incomplete": 0,
  "allow_multiple": 1,
  "allow_print": 0,
+ "amount": 0.0,
+ "amount_based_on_field": 0,
  "anonymous": 0,
  "apply_document_permissions": 1,
  "breadcrumbs": "[\n    {\"label\": \"Home\", \"route\":\"/\"},\n    {\"label\": \"Requests\", \"route\":\"requests\"},\n    {\"label\": \"Permit to Work\", \"route\":\"requests/permit-to-work\"}\n]",
@@ -42,7 +45,7 @@
  ],
  "login_required": 1,
  "max_attachment_size": 5,
- "modified": "2024-06-19 11:28:40.278286",
+ "modified": "2024-06-19 16:01:14.441428",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "permit-to-work",
@@ -76,7 +79,7 @@
    "max_length": 0,
    "max_value": 0,
    "read_only": 0,
-   "reqd": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {
@@ -102,6 +105,19 @@
    "options": "",
    "read_only": 0,
    "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "fieldname": "contact_no",
+   "fieldtype": "Data",
+   "hidden": 0,
+   "label": "Contact No.",
+   "max_length": 0,
+   "max_value": 0,
+   "options": "Phone",
+   "read_only": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {
