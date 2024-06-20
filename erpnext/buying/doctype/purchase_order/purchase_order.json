@@ -13,6 +13,7 @@
   "naming_series",
   "supplier",
   "supplier_name",
+  "material_request_type",
   "order_confirmation_no",
   "order_confirmation_date",
   "get_items_from_open_material_requests",
@@ -1232,13 +1233,21 @@
    "no_copy": 1,
    "oldfieldname": "ref_sq",
    "oldfieldtype": "Data"
+  },
+  {
+   "fieldname": "material_request_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Purpose",
+   "options": "Purchase\nMaterial Transfer\nMaterial Issue\nManufacture\nCustomer Provided\nServices"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-12-29 13:55:18.072035",
+ "modified": "2024-06-20 15:08:43.185279",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order",
