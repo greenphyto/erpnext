@@ -199,7 +199,7 @@ class Asset(AccountsController):
 			error_message += _("Please do not book expense of multiple assets against one single Asset.")
 			frappe.throw(error_message, title=_("Invalid Gross Purchase Amount"))
 
-	def make_asset_movement(self):
+	def get_asset_movement_data(self):
 		reference_doctype = "Purchase Receipt" if self.purchase_receipt else "Purchase Invoice"
 		reference_docname = self.purchase_receipt or self.purchase_invoice
 		transaction_date = getdate(self.purchase_date)
@@ -216,9 +216,8 @@ class Asset(AccountsController):
 				"to_employee": self.custodian,
 			}
 		]
-		asset_movement = frappe.get_doc(
-			{
-				"doctype": "Asset Movement",
+
+		return {
 				"assets": assets,
 				"purpose": "Receipt",
 				"company": self.company,
@@ -226,8 +225,15 @@ class Asset(AccountsController):
 				"reference_doctype": reference_doctype,
 				"reference_name": reference_docname,
 			}
-		).insert()
-		asset_movement.submit()
+
+
+	def make_asset_movement(self):
+		data = self.get_asset_movement_data()
+		exist = frappe.db.get_value("Asset Movement Item", {"asset":self.name}, "parent")
+		if not exist:
+			data['doctype'] = "Asset Movement"
+			asset_movement = frappe.get_doc(data).insert()
+			asset_movement.submit()
 
 	def set_depreciation_rate(self):
 		for d in self.get("finance_books"):
@@ -266,6 +272,8 @@ class Asset(AccountsController):
 		skip_row = False
 
 		depreciation_start_date = finance_book.depreciation_start_date
+
+		schedule_date = depreciation_start_date
 
 		should_get_last_day = is_last_day_of_the_month(depreciation_start_date)
 
