@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "REQ.####./.YYYY",
  "creation": "2024-06-12 11:19:02.204816",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -14,18 +15,22 @@
   "quantity",
   "packaging_size",
   "weight",
-  "amended_from"
+  "section_break_9",
+  "amended_from",
+  "workflow_state"
  ],
  "fields": [
   {
    "fieldname": "department",
-   "fieldtype": "Data",
-   "label": "Department"
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department"
   },
   {
    "fieldname": "type_of_vegetable",
-   "fieldtype": "Data",
-   "label": "Type of Vegetable"
+   "fieldtype": "Link",
+   "label": "Type of Vegetable",
+   "options": "Item"
   },
   {
    "fieldname": "date_of_request",
@@ -49,8 +54,9 @@
   },
   {
    "fieldname": "weight",
-   "fieldtype": "Int",
+   "fieldtype": "Float",
    "label": "Weight (kg)",
+   "precision": "2",
    "read_only": 1
   },
   {
@@ -65,15 +71,26 @@
   {
    "fieldname": "column_break_5",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_9",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "workflow_state",
+   "fieldtype": "Data",
+   "label": "Workflow State",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-12 11:38:51.938802",
+ "modified": "2024-06-20 11:33:25.029381",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {
