@@ -19,7 +19,7 @@ def get_month(date):
 def get_year(date):
 	return getdate(date).year
 
-def post_depreciation_entries(date=None, commit=True):
+def post_depreciation_entries(date=None, commit=True, asset_category=[]):
 	# Return if automatic booking of asset depreciation is disabled
 	if not cint(
 		frappe.db.get_value("Accounts Settings", None, "book_asset_depreciation_entry_automatically")
@@ -31,7 +31,7 @@ def post_depreciation_entries(date=None, commit=True):
 
 	date = get_last_day( add_months(date, -1) )
 		
-	data = get_depreciable_assets(date)
+	data = get_depreciable_assets(date, asset_category)
 	data_map = {}
 	for d in data:
 		use_date = get_last_day( d.schedule_date )
@@ -50,7 +50,10 @@ def post_depreciation_entries(date=None, commit=True):
 			frappe.db.commit()
 
 
-def get_depreciable_assets(date):
+def get_depreciable_assets(date, asset_category=[]):
+	cond = ""
+	if asset_category:
+		cond += " and a.asset_category in %(asset_category)s"
 	return frappe.db.sql(
 		"""
 		select 
@@ -64,14 +67,15 @@ def get_depreciable_assets(date):
 		where 
 			a.name = ds.parent 
 			and a.docstatus=1 
-			and DATE_FORMAT(ds.schedule_date, "%%m %%Y") = %s 
+			and DATE_FORMAT(ds.schedule_date, "%%m %%Y") = %(date)s 
 			and a.calculate_depreciation = 1
 			and a.status in ('Submitted', 'Partially Depreciated')
 			and ifnull(ds.journal_entry, '')=''
+			{}
 		order by 
 			ds.schedule_date asc
-		""",
-		get_month_year(date), as_dict=1, debug=0
+		""".format(cond),
+		{"date":get_month_year(date), "asset_category":asset_category}, as_dict=1, debug=0
 	)
 
 # must be have criteria in asset to be combined:
