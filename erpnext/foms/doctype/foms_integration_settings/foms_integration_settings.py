@@ -156,7 +156,15 @@ class FomsAPI():
 		}
 		res = self.req("GET", "/userportal/CommonLookup/GetWorkOrderList", params=params )
 		return res
-	
+
+	def get_work_order_detail(self, farm_id, work_order=""):
+		params = {
+			"FarmId":farm_id,
+			"workOrderId":work_order
+		}
+		res = self.req("GET", "/userportal/Operation/GetOperationTimeLineByWorkOrderId", params=params)
+		return res
+
 	def update_warehouse(self, data):
 		data = json.dumps(data)
 		res = self.req("POST", "/Warehouse/CreateOrUpdateWarehouse", data=data )

@@ -76,12 +76,13 @@ def update_foms_customer():
 			_update_foms_customer(api, log) 
 
 class GetData():
-	def __init__(self, data_type, get_data, get_key_name, post_process, doc_type="Item", show_progress=False):
+	def __init__(self, data_type, get_data, get_key_name, post_process, doc_type="Item", show_progress=False, manual_save_log=False):
 		self.data_type = data_type
 		self.show_progress = show_progress
 		self.get_data = get_data
 		self.get_key_name = get_key_name
 		self.post_process = post_process
+		self.manual_save_log = manual_save_log
 		self.doc_type = doc_type
 	
 	def setup(self):
@@ -104,12 +105,10 @@ class GetData():
 			d = frappe._dict(data[i])
 
 			# pull to foms data mapping
-			key_name = self.get_key_name(d)
-			map_doc = create_foms_data(self.data_type, key_name, d)
 			result = self.post_process(self, d)
-			map_doc.doc_type = self.doc_type
-			map_doc.doc_name = result
-			map_doc.save()
+			if not self.manual_save_log:
+				key_name = self.get_key_name(d)
+				save_log(self.doc_type, result, key_name, d)
 
 			percent = (i+1)/total_count*100
 			if i % 10 == 0:
@@ -119,11 +118,6 @@ class GetData():
 		total_count = len(data)
 		for i in range(total_count):
 			do_create(i)
-			# try:
-			# 	do_create(i)
-			# except:
-			# 	continue
-
 
 # RAW MATERIAL (GET)
 def get_raw_material(show_progress=False):
@@ -133,7 +127,8 @@ def get_raw_material(show_progress=False):
 		return data
 
 	def post_process(gd, log):
-		return create_raw_material(log) 
+		result = create_raw_material(log) 
+		return result
 
 	def get_key_name(log):
 		return log.get("rawMaterialRefNo")
@@ -173,11 +168,16 @@ def get_products(show_progress=False):
 # Pending
 
 # RECIPE (GET)
-def get_recipe(show_progress=False):
+def get_recipe(show_progress=False, item_code=""):
 	submit = get_foms_settings("auto_submit_bom")
 
 	def get_data(gd):
-		data = gd.api.get_product_list_for_recipe(gd.farm_id)
+		if not item_code:
+			data = gd.api.get_product_list_for_recipe(gd.farm_id)
+		else:
+			product_id = frappe.get_value("Item", item_code, "foms_product_id")
+			data = [frappe._dict({'id':product_id})]
+		
 		return data
 
 	def post_process(gd, log):
@@ -221,6 +221,12 @@ def update_warehouse(doc, method=""):
 	return res
 
 
+def save_log(doc_type, data_name, key_name, data):
+	map_doc = create_foms_data(doc_type, key_name, data)
+	map_doc.doc_type = doc_type
+	map_doc.doc_name = data_name
+	map_doc.save()
+
 def _update_foms_supplier(api, log):
 	supplier = frappe.get_doc("Supplier", log.name)
 	details = get_party_details(supplier.name, party_type="Supplier")
@@ -247,7 +253,6 @@ def _update_foms_supplier(api, log):
 def _update_foms_customer(api, log):
 	customer = frappe.get_doc("Customer", log.name)
 	details = get_party_details(customer.name, party_type="Customer")
-	# print(details)
 	farm_id = get_farm_id()
 	address = details.address_display or details.company_address_display
 	shipping_address = details.get("shipping_address") or address
@@ -283,6 +288,7 @@ def create_raw_material(log):
 		doc.item_group = types
 		doc.is_purchase_item = 1
 		doc.is_sales_item = 0
+		doc.is_stock_item = 1
 		doc.has_expiry_date = 1
 		doc.has_batch_no = 1
 		if doc.has_batch_no:
@@ -310,9 +316,10 @@ def create_raw_material(log):
 		doc.min_order_qty = flt(log.MinimumOrderQuantity)
 		doc.safety_stock = log.safetyLevel
 		doc.shelf_life_in_days = 365
+		doc.is_stock_item = 1
 		if not doc.foms_raw_id:
 			doc.foms_raw_id = log.id
-		doc.db_update()
+		doc.save()
 
 	return name
 
@@ -331,16 +338,18 @@ def create_products(log):
 		doc.stock_uom = get_uom(log.unitOfMeasurement)
 		doc.item_group = types
 		doc.foms_product_id = log.id
+		doc.is_stock_item = 1
 		doc.insert()
 		name = doc.name
 	else:
 		doc = frappe.get_doc("Item", name)
 		doc.item_name = log.productName
 		doc.description = log.productDesc or log.productDetail or log.productName
+		doc.is_stock_item = 1
 		doc.item_group = types
 		if not doc.foms_product_id:
 			doc.foms_product_id = log.id
-		doc.db_update()
+		doc.save()
 
 	return name
 
@@ -365,7 +374,6 @@ def create_bom_products_version_1(log, product_id, submit=False):
 		# 	return name
 		
 		# join process Preharvest and PostHarvest
-		print(303, log)
 		if "process" in log:
 			all_process = log.process
 		else:
@@ -551,17 +559,16 @@ def get_operation_name(operation):
 	
 	return name
 
-def get_bom_for_work_order(item_code):
+def get_bom_for_work_order2(item_code):
 	return frappe.get_value("BOM", {
 		"item":item_code,
 		"operation_no":1,
 		"docstatus":1
 	}, "name", order_by="foms_recipe_version")
 
-def get_bom_for_work_order2(item_code):
+def get_bom_for_work_order(item_code):
 	return frappe.get_value("BOM", {
 		"item":item_code,
-		"operation_no":"",
 		"docstatus":1,
 		"is_default":1
 	}, "name", order_by="foms_recipe_version")
@@ -573,13 +580,27 @@ def get_work_order(show_progress=False, work_order=""):
 		return data
 
 	def post_process(gd, log):
+		detail_log = gd.api.get_work_order_detail(gd.farm_id, work_order=log.id)
+		if not detail_log:
+			return
+
+		
 		submit = get_foms_settings("auto_submit_work_order")
-		for d in log.get("products"):
+		for d in detail_log:
+			d = frappe._dict(d)
+			# update data
+			d.workOrderNo = log.get("workOrderNo")
+			d.id = log.get("id")
+
 			item_code = d.get("productRefNo")
 			bom_no = get_bom_for_work_order(item_code)
 			qty = 1
 
-			create_work_order(log, item_code, bom_no, qty, submit)
+			result = None
+			if bom_no:
+				result = create_work_order(d, item_code, bom_no, qty, submit)
+			
+			save_log("Work Order", result, d.get("lotId"), log)
 
 	def get_key_name(log):
 		return log.get("workOrderNo")
@@ -590,14 +611,16 @@ def get_work_order(show_progress=False, work_order=""):
 		get_data=get_data,
 		get_key_name = get_key_name,
 		post_process=post_process,
-		show_progress=show_progress
+		show_progress=show_progress,
+		manual_save_log=1
 	).run()
 
 def create_work_order(log, item_code, bom_no, qty=1, submit=False, return_doc=False):
-	
 	doc = make_work_order(bom_no, item_code, qty)
+	validate_operation(doc)
 	doc.foms_work_order = log.workOrderNo
-	doc.foms_lot_id = log.lotID
+	doc.foms_lot_id = log.id
+	doc.foms_lot_name = log.lotId
 	doc.use_multi_level_bom = 0 #if use multi level bom it will use exploed items as raw material, but if not it will use bom items
 	doc.insert()
 
@@ -607,6 +630,13 @@ def create_work_order(log, item_code, bom_no, qty=1, submit=False, return_doc=Fa
 	if return_doc:
 		return doc
 	return doc.name
+
+def validate_operation(doc):
+	# use default
+	workstation_warehouse = get_foms_settings("workstation")
+	for d in doc.operations:
+		if not d.get("workstation"):
+			d.workstation = workstation_warehouse
 
 def get_raw_item_foms(item_id="", item_code=""):
 	if item_id:

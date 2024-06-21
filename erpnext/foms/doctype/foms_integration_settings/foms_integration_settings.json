@@ -27,7 +27,10 @@
   "section_break_9",
   "get_foms_raw_material",
   "get_foms_products",
-  "get_foms_recipe"
+  "get_foms_recipe",
+  "testing_section",
+  "enable_testing",
+  "testing_products"
  ],
  "fields": [
   {
@@ -152,12 +155,29 @@
    "fieldtype": "Select",
    "label": "Purpose for Material Request",
    "options": "Purchase\nMaterial Transfer\nMaterial Issue\nManufacture\nCustomer Provided"
+  },
+  {
+   "fieldname": "testing_section",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "label": "Testing"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_testing",
+   "fieldtype": "Check",
+   "label": "Enable Testing"
+  },
+  {
+   "fieldname": "testing_products",
+   "fieldtype": "Small Text",
+   "label": "Testing Products"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-03-21 12:41:21.111705",
+ "modified": "2024-06-06 16:32:47.436635",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",
