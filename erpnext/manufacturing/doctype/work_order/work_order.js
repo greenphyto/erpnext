@@ -531,7 +531,12 @@ frappe.ui.form.on("Work Order Operation", {
 					name: d.workstation
 				},
 				callback: function (data) {
-					frappe.model.set_value(d.doctype, d.name, "hour_rate", data.message.hour_rate);
+					if (data.calculation_type == "Per Hour"){
+						frappe.model.set_value(d.doctype, d.name, "operation_rate", data.message.hour_rate);
+					}else{
+						frappe.model.set_value(d.doctype, d.name, "operation_rate", data.message.per_qty_rate);
+
+					}
 					erpnext.work_order.calculate_cost(frm.doc);
 					erpnext.work_order.calculate_total_cost(frm);
 				}
@@ -657,7 +662,13 @@ erpnext.work_order = {
 			var op = doc.operations;
 			doc.planned_operating_cost = 0.0;
 			for(var i=0;i<op.length;i++) {
-				var planned_operating_cost = flt(flt(op[i].hour_rate) * flt(op[i].time_in_mins) / 60, 2);
+
+				var planned_operating_cost = 0;
+				if (op[1].calculation_type=="Per Qty"){
+					planned_operating_cost = flt(flt(op[i].operation_rate) * doc.qty, 2);
+				}else{
+					planned_operating_cost = flt(flt(op[i].operation_rate) * flt(op[i].time_in_mins) / 60, 2);
+				}
 				frappe.model.set_value('Work Order Operation', op[i].name,
 					"planned_operating_cost", planned_operating_cost);
 				doc.planned_operating_cost += planned_operating_cost;

@@ -189,8 +189,12 @@ class WorkOrder(Document):
 	def calculate_operating_cost(self):
 		self.planned_operating_cost, self.actual_operating_cost = 0.0, 0.0
 		for d in self.get("operations"):
-			d.planned_operating_cost = flt(d.hour_rate) * (flt(d.time_in_mins) / 60.0)
-			d.actual_operating_cost = flt(d.hour_rate) * (flt(d.actual_operation_time) / 60.0)
+			if d.calculation_type == "Per Qty":
+				d.planned_operating_cost = flt(d.operation_rate) * (flt(self.qty))
+				d.actual_operating_cost = flt(d.operation_rate) * (flt(d.completed_qty))
+			else:
+				d.planned_operating_cost = flt(d.operation_rate) * (flt(d.time_in_mins) / 60.0)
+				d.actual_operating_cost = flt(d.operation_rate) * (flt(d.actual_operation_time) / 60.0)
 
 			self.planned_operating_cost += flt(d.planned_operating_cost)
 			self.actual_operating_cost += flt(d.actual_operating_cost)
@@ -682,7 +686,7 @@ class WorkOrder(Document):
 					"workstation",
 					"idx",
 					"workstation_type",
-					"base_hour_rate as hour_rate",
+					"base_operation_rate as operation_rate",
 					"time_in_mins",
 					"parent as bom",
 					"batch_size",
@@ -1446,7 +1450,7 @@ def create_job_card(work_order, row, enable_capacity_planning=False, auto_create
 			"company": work_order.company,
 			"sequence_id": row.get("sequence_id"),
 			"wip_warehouse": work_order.wip_warehouse,
-			"hour_rate": row.get("hour_rate"),
+			"operation_rate": row.get("operation_rate"),
 			"serial_no": row.get("serial_no"),
 		}
 	)
