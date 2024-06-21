@@ -45,7 +45,7 @@
  ],
  "login_required": 1,
  "max_attachment_size": 5,
- "modified": "2024-06-19 16:01:14.441428",
+ "modified": "2024-06-21 10:01:41.020264",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "permit-to-work",
@@ -1461,11 +1461,11 @@
    "fieldname": "attachment",
    "fieldtype": "Attach",
    "hidden": 0,
-   "label": "Attachment",
+   "label": "Attachment (Please upload Risk Assessment & Method of Statement for this job)",
    "max_length": 0,
    "max_value": 0,
    "read_only": 0,
-   "reqd": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {

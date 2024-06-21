@@ -716,7 +716,8 @@
   {
    "fieldname": "attachment",
    "fieldtype": "Attach",
-   "label": "Attachment"
+   "label": "Attachment (Please upload Risk Assessment & Method of Statement for this job)",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_vojz0",
@@ -836,7 +837,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-19 16:00:28.112189",
+ "modified": "2024-06-21 10:01:18.828233",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",
