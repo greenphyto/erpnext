@@ -201,7 +201,7 @@ def create_material_request(
 		items=[],
 		cancel=False,
 	):
-
+	print(204)
 	# find draft
 	doc_name = frappe.get_value("Material Request", {"requested_by":requestedBy, "workflow_state":"Draft"})
 	if doc_name:
@@ -225,6 +225,7 @@ def create_material_request(
 		row.item_code = d.rawMaterialRefNo
 		row.qty = d.qtyRequest
 		row.uom = get_uom(d.uom)
+		row.schedule_date = getdate(d.requestDate)
 	
 	doc.flags.ignore_mandatory = 1
 	doc.save()
