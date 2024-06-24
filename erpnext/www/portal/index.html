@@ -86,8 +86,9 @@ discount_range_filters %}
 				type: "GET",
 				callback: function (r) {
 					let roles = r.message.map(({ role }) => role);
-					$('.btn-smart-fm').toggleClass('hidden', !roles.includes('Employee'));
-					$('.btn-requests').toggleClass('hidden', !roles.includes('Employee') && !roles.includes('Vendor'));
+					console.log(roles.includes('Employee'))
+					$('.btn-smart-fm').toggleClass('hidden', !roles.includes('Building Management'));
+					$('.btn-requests').toggleClass('hidden', !roles.includes('Employee') && !roles.includes('Vendor') && !roles.includes('Security'));
 					$('.btn-menu').toggleClass('hidden', !roles.includes('Employee'));
 				},
 			});
