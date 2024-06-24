@@ -265,9 +265,9 @@ class Asset(AccountsController):
 			self.number_of_depreciations_booked
 		)
 
-		has_pro_rata = self.check_is_pro_rata(finance_book)
-		if has_pro_rata:
-			number_of_pending_depreciations += 1
+		has_pro_rata = False # self.check_is_pro_rata(finance_book)
+		# if has_pro_rata:
+		# 	number_of_pending_depreciations += 1
 
 		skip_row = False
 
@@ -283,7 +283,6 @@ class Asset(AccountsController):
 				continue
 
 			depreciation_amount = get_depreciation_amount(self, value_after_depreciation, finance_book)
-
 			if not has_pro_rata or n < cint(number_of_pending_depreciations) - 1:
 				schedule_date = add_months(
 					depreciation_start_date, n * cint(finance_book.frequency_of_depreciation)
@@ -635,8 +634,8 @@ class Asset(AccountsController):
 							"Depreciation Row {0}: Expected value after useful life must be greater than or equal to {1}"
 						).format(row.idx, asset_value_after_full_schedule)
 					)
-				elif not row.expected_value_after_useful_life:
-					row.expected_value_after_useful_life = asset_value_after_full_schedule
+				# elif not row.expected_value_after_useful_life:
+				# 	row.expected_value_after_useful_life = asset_value_after_full_schedule
 
 	def validate_cancellation(self):
 		if self.status in ("In Maintenance", "Out of Order"):
