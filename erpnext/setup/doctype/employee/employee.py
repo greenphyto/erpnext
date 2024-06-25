@@ -255,6 +255,7 @@ class Employee(NestedSet):
 
 
 def validate_employee_role(doc, method):
+	return
 	# called via User hook
 	if "Employee" in [d.role for d in doc.get("roles")]:
 		if not frappe.db.get_value("Employee", {"user_id": doc.name}):
@@ -268,6 +269,8 @@ def update_user_permissions(doc, method):
 		if not has_permission("User Permission", ptype="write", raise_exception=False):
 			return
 		employee = frappe.get_doc("Employee", {"user_id": doc.name})
+		if not employee:
+			return
 		employee.update_user_permissions()
 
 
