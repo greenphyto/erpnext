@@ -120,9 +120,9 @@ class GetData():
 			do_create(i)
 
 # RAW MATERIAL (GET)
-def get_raw_material(show_progress=False):
+def get_raw_material(show_progress=False, reff_no=""):
 	def get_data(gd):
-		raw = gd.api.get_raw_material(gd.farm_id)
+		raw = gd.api.get_raw_material(gd.farm_id, reff_no=reff_no)
 		data = raw.get("items")
 		return data
 
@@ -220,6 +220,32 @@ def update_warehouse(doc, method=""):
 	res = api.update_warehouse(data)
 	return res
 
+
+# RAW MATERIAL RECEIPT
+def update_stock_recipe(doc, cancel=False):
+	if not is_enable_integration():
+		return 
+	
+	api = FomsAPI()
+	for d in doc.get("items"):
+		expiry_date = frappe.get_value("Batch", d.batch_no, "expiry_date")
+		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id") or 38
+		supplier_id = frappe.get_value("Supplier", doc.supplier, "foms_id") or 5
+		raw_id = frappe.get_value("Item", d.item_code, "foms_raw_id")
+		# need convert current PR receive to item default
+		data = {
+			"id": 0,
+			"rawMaterialId": raw_id,
+			"batchRefNo": d.batch_no,
+			"dateOfCreation": doc.creation,
+			"expiryDate": expiry_date,
+			"warehouseId": warehouse_id,
+			"supplierId": supplier_id,
+			"quantity": d.qty
+		}
+		res = api.update_raw_material_receipt(data)
+
+# send_raw_material_receipt
 
 def save_log(doc_type, data_name, key_name, data):
 	map_doc = create_foms_data(doc_type, key_name, data)
@@ -670,26 +696,3 @@ def create_delivery_order(log):
 	doc.save()
 
 	return doc.name
-
-# update stock from receipt:
-def update_stock_recipe(doc, cancel=False):
-	if not is_enable_integration():
-		return 
-	
-	api = FomsAPI()
-	for d in doc.get("items"):
-		expiry_date = frappe.get_value("Batch", d.batch_no, "expiry_date")
-		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id")
-		supplier_id = frappe.get_value("Supplier", doc.supplier, "foms_id")
-		raw_id = frappe.get_value("Item", d.item_code, "foms_raw_id")
-		params = {
-			"id": 0,
-			"rawMaterialId": raw_id,
-			"batchRefNo": d.batch_no,
-			"dateOfCreation": doc.creation,
-			"expiryDate": expiry_date,
-			"warehouseId": warehouse_id,
-			"supplierId": supplier_id,
-			"quantity": d.qty
-		}
-		res = api.req(method="/userportal/ERPNextIntegration/RawMaterialReceipt", data=json.dumps(params, default=str))

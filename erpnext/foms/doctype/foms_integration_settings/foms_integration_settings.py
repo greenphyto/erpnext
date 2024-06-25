@@ -69,6 +69,9 @@ class FomsAPI():
 				})
 
 			return data
+
+	def convert_data(self, data):
+		return json.dumps(data, default=str)
 	
 	def req(self, req="POST", method="", data={}, params={}):
 		url = self.get_url(method)
@@ -110,10 +113,11 @@ class FomsAPI():
 
 		return res
 	
-	def get_raw_material(self, farm_id):
+	def get_raw_material(self, farm_id, reff_no=""):
 		params = {
 			"FarmId":farm_id,
-			"MaxResultCount":99999
+			"MaxResultCount":99999,
+			"RawMaterialRefNo": reff_no
 		}
 		res = self.req("GET", "/RawMaterial/GetAllRawMaterial", params=params )
 		return res.get("rawMaterialFinishList") or {}
@@ -166,8 +170,12 @@ class FomsAPI():
 		return res
 
 	def update_warehouse(self, data):
-		data = json.dumps(data)
+		data = self.convert_data(data)
 		res = self.req("POST", "/Warehouse/CreateOrUpdateWarehouse", data=data )
 		return res
 
+	def update_raw_material_receipt(self, data):
+		data = self.convert_data(data)
+		res = self.req("POST", "/userportal/ERPNextIntegration/RawMaterialReceipt", data=data )
+		return res
 		
