@@ -61,9 +61,9 @@ def save_widget_settings(user, data):
 
 	doc.settings = json.dumps(data)
 	if doc.is_new():
-		doc.insert()
+		doc.insert(ignore_permissions=1)
 	else:
-		doc.save()
+		doc.save(ignore_permissions=1)
 
 
 	return "Success"
