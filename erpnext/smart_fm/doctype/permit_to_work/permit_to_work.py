@@ -96,3 +96,4 @@ def update_old_doc():
 		doc.attach_approved(force=1, print_format=print_format)
 		doc.db_update()
 		print("Update for ", doc.name)
+		
