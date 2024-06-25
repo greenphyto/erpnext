@@ -24,5 +24,23 @@ frappe.ui.form.on('FOMS Integration Settings', {
 			"doc": frm.doc,
 			"method":"get_recipe"
 		})
-	}	
+	},
+	sync_customer: function(frm) {
+		frappe.call({
+			"doc": frm.doc,
+			"method":"sync_customer"
+		})
+	},
+	sync_supplier: function(frm) {
+		frappe.call({
+			"doc": frm.doc,
+			"method":"sync_supplier"
+		})
+	},
+	sync_warehouse: function(frm) {
+		frappe.call({
+			"doc": frm.doc,
+			"method":"sync_warehouse"
+		})
+	},
 });

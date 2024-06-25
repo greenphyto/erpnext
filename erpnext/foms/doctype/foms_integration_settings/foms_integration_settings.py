@@ -21,6 +21,18 @@ class FOMSIntegrationSettings(Document):
 	def get_recipe(self):
 		frappe.enqueue("erpnext.controllers.foms.get_recipe", show_progress=True)
 
+	@frappe.whitelist()
+	def sync_supplier(self):
+		frappe.enqueue("erpnext.controllers.foms.sync_all_supplier", show_progress=True)
+
+	@frappe.whitelist()
+	def sync_customer(self):
+		frappe.enqueue("erpnext.controllers.foms.sync_all_customer", show_progress=True)
+
+	@frappe.whitelist()
+	def sync_warehouse(self):
+		frappe.enqueue("erpnext.controllers.foms.sync_all_warehouse", show_progress=True)
+
 def is_enable_integration():
 	return cint(frappe.db.get_single_value('FOMS Integration Settings', "enable"))
 

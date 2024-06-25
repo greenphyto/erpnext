@@ -64,6 +64,9 @@ def update_foms_supplier():
 		if log.update_type == "Update":
 			_update_foms_supplier(api, log) 
 
+def sync_all_supplier():
+	pass
+
 # CUSTOMER (POST)
 def update_foms_customer():
 	if not is_enable_integration():
@@ -74,6 +77,9 @@ def update_foms_customer():
 	for log in logs:
 		if log.update_type == "Update":
 			_update_foms_customer(api, log) 
+
+def sync_all_customer():
+	pass
 
 class GetData():
 	def __init__(self, data_type, get_data, get_key_name, post_process, doc_type="Item", show_progress=False, manual_save_log=False):
@@ -220,6 +226,8 @@ def update_warehouse(doc, method=""):
 	res = api.update_warehouse(data)
 	return res
 
+def sync_all_warehouse():
+	pass
 
 # RAW MATERIAL RECEIPT
 def update_stock_recipe(doc, cancel=False):

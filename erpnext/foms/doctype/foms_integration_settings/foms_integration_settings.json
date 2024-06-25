@@ -28,6 +28,10 @@
   "get_foms_raw_material",
   "get_foms_products",
   "get_foms_recipe",
+  "column_break_23",
+  "sync_supplier",
+  "sync_customer",
+  "sync_warehouse",
   "testing_section",
   "enable_testing",
   "testing_products"
@@ -172,12 +176,31 @@
    "fieldname": "testing_products",
    "fieldtype": "Small Text",
    "label": "Testing Products"
+  },
+  {
+   "fieldname": "column_break_23",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sync_supplier",
+   "fieldtype": "Button",
+   "label": "Sync Supplier"
+  },
+  {
+   "fieldname": "sync_customer",
+   "fieldtype": "Button",
+   "label": "Sync Customer"
+  },
+  {
+   "fieldname": "sync_warehouse",
+   "fieldtype": "Button",
+   "label": "Sync Warehouse"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-06-06 16:32:47.436635",
+ "modified": "2024-06-25 17:56:38.079890",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",
