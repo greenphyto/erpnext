@@ -8,13 +8,16 @@
  "engine": "InnoDB",
  "field_order": [
   "department",
-  "date_of_request",
+  "foms_order_id",
   "column_break_3",
-  "transaction_posting_date",
+  "posting_date",
+  "delivery_date",
   "section_break_5",
   "items",
-  "weight",
+  "section_break_8",
   "total_price",
+  "column_break_10",
+  "total_weight",
   "section_break_9",
   "amended_from",
   "workflow_state"
@@ -25,24 +28,6 @@
    "fieldtype": "Link",
    "label": "Department",
    "options": "Department"
-  },
-  {
-   "fieldname": "date_of_request",
-   "fieldtype": "Date",
-   "label": "Date of Request"
-  },
-  {
-   "fieldname": "transaction_posting_date",
-   "fieldtype": "Date",
-   "label": "Transaction Posting Date (Delivery Date)"
-  },
-  {
-   "fieldname": "weight",
-   "fieldtype": "Float",
-   "in_list_view": 1,
-   "label": "Total Weight (Kg)",
-   "precision": "2",
-   "read_only": 1
   },
   {
    "fieldname": "amended_from",
@@ -75,7 +60,8 @@
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Items",
-   "options": "Request Items"
+   "options": "Request Items",
+   "reqd": 1
   },
   {
    "fieldname": "total_price",
@@ -83,12 +69,48 @@
    "in_list_view": 1,
    "label": "Total Price",
    "read_only": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "delivery_date",
+   "fieldtype": "Date",
+   "label": "Delivery Date",
+   "reqd": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Total Weight (Kg)",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_order_id",
+   "fieldtype": "Data",
+   "label": "FOMS Order ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_8",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-26 15:56:02.830368",
+ "modified": "2024-06-26 16:42:46.709886",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request",
