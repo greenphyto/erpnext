@@ -8,13 +8,13 @@
  "engine": "InnoDB",
  "field_order": [
   "department",
-  "type_of_vegetable",
   "date_of_request",
+  "column_break_3",
   "transaction_posting_date",
-  "column_break_5",
-  "quantity",
-  "packaging_size",
+  "section_break_5",
+  "items",
   "weight",
+  "total_price",
   "section_break_9",
   "amended_from",
   "workflow_state"
@@ -27,12 +27,6 @@
    "options": "Department"
   },
   {
-   "fieldname": "type_of_vegetable",
-   "fieldtype": "Link",
-   "label": "Type of Vegetable",
-   "options": "Item"
-  },
-  {
    "fieldname": "date_of_request",
    "fieldtype": "Date",
    "label": "Date of Request"
@@ -43,19 +37,10 @@
    "label": "Transaction Posting Date (Delivery Date)"
   },
   {
-   "fieldname": "quantity",
-   "fieldtype": "Int",
-   "label": "Quantity (unit)"
-  },
-  {
-   "fieldname": "packaging_size",
-   "fieldtype": "Int",
-   "label": "Packaging Size (g)"
-  },
-  {
    "fieldname": "weight",
    "fieldtype": "Float",
-   "label": "Weight (kg)",
+   "in_list_view": 1,
+   "label": "Total Weight (Kg)",
    "precision": "2",
    "read_only": 1
   },
@@ -69,10 +54,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "column_break_5",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "section_break_9",
    "fieldtype": "Section Break"
   },
@@ -81,12 +62,33 @@
    "fieldtype": "Data",
    "label": "Workflow State",
    "read_only": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Request Items"
+  },
+  {
+   "fieldname": "total_price",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total Price",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-20 11:33:25.029381",
+ "modified": "2024-06-26 15:56:02.830368",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request",
