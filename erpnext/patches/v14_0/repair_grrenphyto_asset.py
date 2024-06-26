@@ -1,5 +1,5 @@
 import frappe
-from frappe.utils import getdate, get_last_day,add_months
+from frappe.utils import getdate, get_last_day,add_months, add_days
 from erpnext.assets.doctype.asset.depreciation import post_depreciation_entries
 """
 bench --site test4 execute erpnext.patches.v14_0.repair_grrenphyto_asset.fix_asset_gp
@@ -20,8 +20,14 @@ def fix_asset_gp():
 		doc.db_set("docstatus", 0)
 		doc.available_for_use_date = start_date
 		doc.purchase_date = start_date
+		if doc.name == "710011":
+			doc.opening_accumulated_depreciation = 1513.57
+			doc.number_of_depreciations_booked = 22
 		for d in doc.get("finance_books"):
-			d.depreciation_start_date = start_date
+			if doc.name == "710011":
+				d.depreciation_start_date = get_last_day("2023-01-31")
+			else:
+				d.depreciation_start_date = get_last_day(start_date)
 		doc.schedules = []
 		doc.save()
 		doc.submit()
@@ -56,13 +62,13 @@ def fix_asset_gp():
 			frappe.db.set_value("Asset Movement", exist, "transaction_date", data['transaction_date'])
 
 
-	update_asset("720005-2", "2021-03-31" )
+	# update_asset("720005-2", "2021-03-31" )
 	update_asset("710011", "2021-05-19" )
 	update_asset("710015", "2022-03-14" )
 	# frappe.throw("OKE")
 
 	# regenereate journal after fix start date
-	assets = ['720005-2', '710011', '710015']
+	assets = ['710011', '710015']
 	regen_days = []
 	regen_jv = []
 	asset_category = []
@@ -90,10 +96,20 @@ def fix_asset_gp():
 				regen_jv.append(jv.name)
 				if jv.posting_date not in regen_days:
 					regen_days.append(jv.posting_date)
+
+			# if posting date not end date
+			if getdate(jv.posting_date).day < add_days(get_last_day(jv.posting_date), -1).day and jv.name not in regen_jv:
+				regen_jv.append(jv.name)
+				if jv.posting_date not in regen_days:
+					regen_days.append(jv.posting_date)
+
+				print(100, jv.name, jv.posting_date)
 	
 	print("Need regen")
 	print(regen_jv)
 	print(regen_days)
+
+	# return
 
 	for d in regen_jv:
 		doc = frappe.get_doc("Journal Entry", d)
@@ -101,6 +117,6 @@ def fix_asset_gp():
 	
 	# 2. regenerate others
 	for d in regen_days:
-		post_depreciation_entries(date=add_months(d, 1), asset_category=asset_category)
+		post_depreciation_entries(date=get_last_day(add_months(d, 1)), asset_category=asset_category)
 
 	# post_depreciation_entries(date="2023-11-30", asset_category=asset_category)
