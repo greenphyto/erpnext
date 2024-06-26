@@ -396,3 +396,32 @@ def create_material_consume(data):
 	return {
 		"StockEntryNo":result
 	}
+
+from erpnext.buying.doctype.request.request import create_request_form as _create_request_form
+@frappe.whitelist()
+def create_request_form(data):
+	"""
+		data = {
+			"department": "",
+			"postingDate":"",
+			"deliveryDate":"",
+			"FOMSOrderID:"",
+			"items":[
+				{
+					"itemCode":"",
+					"qty":1,
+					"uom":"",
+					"packaging":"",
+					"rate":"",
+					"unitUOM":"",
+					"unitWeight":1,
+					"weight":1
+				}
+			]
+		}	
+	"""
+	data = frappe._dict(data)
+	result = _create_request_form(data)
+	return {
+		"RequestNo": result
+	}

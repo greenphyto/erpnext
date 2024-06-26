@@ -924,6 +924,71 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.create_request_form": {
+      "post": {
+        "summary": "Create Request Form",
+        "description": "Create request from FOMS's order, internal transaction",
+        "operationId": "create request form",
+        "requestBody": {
+          "description": {
+            "test":123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data" : {
+                    "department": "Sales",
+                    "posting_date":"2024-05-26",
+                    "delivery_date":"2024-05-30",
+                    "foms_order_id":"12",
+                    "items":[
+                      {
+                        "item_code":"PR-AV-KLL",
+                        "qty":2,
+                        "uom":"Package",
+                        "packaging":"Package (200g) - GP Type A",
+                        "rate":1.2,
+                        "unit_qty":200,
+                        "unit_uom":"g",
+                        "unit_weight":0.20,
+                        "weight":0.40
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "RequestNo":""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
     }
   },
   "components": {
