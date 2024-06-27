@@ -20,6 +20,7 @@
   "debit_note_enable",
   "customer_code",
   "foms_id",
+  "foms_name",
   "column_break0",
   "territory",
   "gender",
@@ -590,6 +591,12 @@
    "fieldname": "debit_note_enable",
    "fieldtype": "Check",
    "label": "Debit Note enable"
+  },
+  {
+   "fieldname": "foms_name",
+   "fieldtype": "Data",
+   "label": "FOMS Name",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-user",
@@ -603,7 +610,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-03-04 15:02:30.424674",
+ "modified": "2024-06-27 12:49:34.163716",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

@@ -305,6 +305,7 @@ def _update_foms_supplier(api, log):
 	print(287, res)
 	if 'id' in res:
 		supplier.db_set("foms_id", res['id'])
+		supplier.db_set("foms_name", res['supplierID'])
 		update_success(log)
 
 
@@ -331,7 +332,8 @@ def _update_foms_customer(api, log):
 	}
 	res = api.create_or_update_customer(data)
 	if 'customerRefNo' in res:
-		customer.db_set("foms_id", res['customerRefNo'])
+		customer.db_set("foms_id", res['id'])
+		customer.db_set("foms_name", res['customerRefNo'])
 		update_success(log)
 
 def create_raw_material(log):

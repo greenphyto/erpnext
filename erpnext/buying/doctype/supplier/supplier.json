@@ -16,6 +16,7 @@
   "supplier_code_series",
   "supplier_code",
   "foms_id",
+  "foms_name",
   "column_break0",
   "supplier_group",
   "supplier_type",
@@ -473,6 +474,12 @@
    "fieldtype": "Data",
    "label": "FOMS ID",
    "read_only": 1
+  },
+  {
+   "fieldname": "foms_name",
+   "fieldtype": "Data",
+   "label": "FOMS Name",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-user",
@@ -485,7 +492,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-01-24 16:51:50.818129",
+ "modified": "2024-06-27 12:49:07.992055",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",
