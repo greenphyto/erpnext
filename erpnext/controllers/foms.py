@@ -238,16 +238,19 @@ def _update_warehouse(api, log):
 		"farmId": farm_id,
 		"warehouseID": wh_id,
 		"warehouseName": doc.warehouse_name,
-		"countryCode": "SG",
+		"countryCode": "SG", # not yet
 		"capacity": 0,
-		"uom": "Kg",
+		"uom": "Kg", # not yet
 		"address": "",
 		"noRackRow": 0,
 		"noRackLevel": 0,
 		"noOfLane": 0,
-		"isFromERP": True,
-		"id": doc.foms_id
+		"isFromERP": True
 	}
+
+	if doc.foms_id:
+		data["id"] = doc.foms_id
+
 	api = FomsAPI()
 	api.log = log
 	res = api.update_warehouse(data)
@@ -255,7 +258,16 @@ def _update_warehouse(api, log):
 	return res
 
 def sync_all_warehouse():
-	pass
+	# find not exist foms id 
+	docs = frappe.db.get_all("Warehouse", {"foms_id": ['is', 'not set']})
+	for d in docs:
+		# generate log
+		create_log("Warehouse", d.name)
+
+	# push the log
+	update_warehouse()
+
+	return True
 
 # RAW MATERIAL RECEIPT
 def update_stock_recipe():
