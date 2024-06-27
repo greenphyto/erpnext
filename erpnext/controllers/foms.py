@@ -301,8 +301,10 @@ def _update_foms_supplier(api, log):
 		"rmDeviceId":  [],
 	}
 
+	if supplier.foms_id:
+		data['Id'] = supplier.foms_id
+
 	res = api.create_or_update_supplier(data)
-	print(287, res)
 	if 'id' in res:
 		supplier.db_set("foms_id", res['id'])
 		supplier.db_set("foms_name", res['supplierID'])
@@ -330,6 +332,10 @@ def _update_foms_customer(api, log):
 		"countryCode": frappe.db.get_single_value('FOMS Integration Settings', "country_id"),
 		"deliveryAddress": shipping_address,
 	}
+
+	if customer.foms_id:
+		data['Id'] = customer.foms_id
+
 	res = api.create_or_update_customer(data)
 	if 'customerRefNo' in res:
 		customer.db_set("foms_id", res['id'])
