@@ -99,9 +99,14 @@ class FomsAPI():
 		self.request_detail = {
 			"host":self.settings.foms_url,
 			"url":url,
-			"data": json.loads(data),
 			"method":req
 		}
+
+		try:
+			self.request_detail['data'] = json.loads(data)
+		except:
+			pass
+
 		self.update_log()
 
 		if frappe.flags.in_test:
@@ -116,7 +121,7 @@ class FomsAPI():
 		return result.get("result") or {}
 	
 	def update_log(self):
-		if not self.log:
+		if not hasattr(self, "log") or not self.log:
 			return
 		
 		if self.last_result.status_code == 200:
@@ -216,5 +221,12 @@ class FomsAPI():
 	def update_raw_material_receipt(self, data):
 		data = self.convert_data(data)
 		res = self.req("POST", "/userportal/ERPNextIntegration/RawMaterialReceipt", data=data )
+		return res
+
+	def get_all_warehouse(self, farm_id):
+		params = {
+			"FarmId":farm_id
+		}
+		res = self.req("GET", "/Warehouse/GetAllWarehouses", params=params )
 		return res
 		

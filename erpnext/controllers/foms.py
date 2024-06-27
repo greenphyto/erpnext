@@ -264,10 +264,22 @@ def sync_all_warehouse():
 		# generate log
 		create_log("Warehouse", d.name)
 
-	# push the log
+	# from erp to foms
 	update_warehouse()
 
+	# foms to erp
+	foms_all_warehouses()
+
+
 	return True
+
+def foms_all_warehouses():
+	farm_id = get_farm_id()
+	api = FomsAPI()
+	data = api.get_all_warehouse(farm_id)
+	for d in data.get("items", []):
+		# not yet finish
+		pass
 
 # RAW MATERIAL RECEIPT
 def update_stock_recipe():

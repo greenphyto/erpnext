@@ -410,6 +410,7 @@ scheduler_events = {
 		"erpnext.erpnext_integrations.doctype.plaid_settings.plaid_settings.automatic_synchronization",
 		"erpnext.projects.doctype.project.project.hourly_reminder",
 		"erpnext.projects.doctype.project.project.collect_project_status",
+        "erpnext.controllers.foms.update_stock_recipe",
 	],
 	"hourly_long": [
 		"erpnext.accounts.doctype.subscription.subscription.process_all",
@@ -442,7 +443,6 @@ scheduler_events = {
         # "erpnext.setup.doctype.currency_exchange.currency_exchange.save_main_currency_rate",
         "erpnext.controllers.foms.update_foms_supplier",
         "erpnext.controllers.foms.update_foms_customer",
-        "erpnext.controllers.foms.update_stock_recipe",
         "erpnext.controllers.foms.get_raw_material",
         "erpnext.controllers.foms.get_products",
         "erpnext.controllers.foms.get_recipe",
