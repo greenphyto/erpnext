@@ -7,6 +7,7 @@ from urllib.parse import urljoin
 from six import string_types
 from frappe.model.document import Document
 from frappe.utils import cint
+from frappe.core.doctype.sync_log.sync_log import update_success, update_error
 
 class FOMSIntegrationSettings(Document):
 	@frappe.whitelist()
@@ -94,6 +95,15 @@ class FomsAPI():
 		else:
 			res = self.session.get(url, data=data, params=params)
 
+		self.last_result = res
+		self.request_detail = {
+			"host":self.settings.foms_url,
+			"url":url,
+			"data": json.loads(data),
+			"method":req
+		}
+		self.update_log()
+
 		if frappe.flags.in_test:
 			print(data)
 			print(res.status_code)
@@ -104,6 +114,20 @@ class FomsAPI():
 			print("ERROR: ", result['error'])
 
 		return result.get("result") or {}
+	
+	def update_log(self):
+		if not self.log:
+			return
+		
+		if self.last_result.status_code == 200:
+			update_success([self.log.name])
+		else:
+			update_error([{
+				"log":self.log.name,
+				"error":self.last_result.text,
+				"status_code":self.last_result.status_code,
+				"request":self.request_detail
+			}])
 	
 	def get_all_customer(self):
 		res = self.req("GET", "/Customer/GetAllCustomer", params={

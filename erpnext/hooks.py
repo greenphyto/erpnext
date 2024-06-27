@@ -370,7 +370,8 @@ doc_events = {
         "validate":"erpnext.controllers.foms.update_warehouse"
 	},
     "Purchase Receipt": {
-        "on_submit":"erpnext.controllers.foms.update_stock_recipe"
+        "on_submit":"erpnext.controllers.foms.log_stock_recipe",
+        "on_cancel":"erpnext.controllers.foms.log_stock_recipe",
 	}
 }
 
@@ -441,6 +442,7 @@ scheduler_events = {
         # "erpnext.setup.doctype.currency_exchange.currency_exchange.save_main_currency_rate",
         "erpnext.controllers.foms.update_foms_supplier",
         "erpnext.controllers.foms.update_foms_customer",
+        "erpnext.controllers.foms.update_stock_recipe",
         "erpnext.controllers.foms.get_raw_material",
         "erpnext.controllers.foms.get_products",
         "erpnext.controllers.foms.get_recipe",

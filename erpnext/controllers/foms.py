@@ -6,7 +6,7 @@ from erpnext.accounts.party import get_party_details
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
 from frappe import _
-from frappe.core.doctype.sync_log.sync_log import update_success, create_log
+from frappe.core.doctype.sync_log.sync_log import update_success, create_log, delete_log
 import json
 
 """
@@ -250,15 +250,42 @@ def sync_all_warehouse():
 	pass
 
 # RAW MATERIAL RECEIPT
-def update_stock_recipe(doc, cancel=False):
+def log_stock_recipe(doc, cancel=False):
+	if not cancel:
+		create_log("Purchase Receipt", doc.name)
+	else:
+		# not yet update to FOMS
+		if delete_log(doc.doctype, doc.name):
+			return
+		# yet updated to FOMS
+		else:
+			# [unfinish] create cancel transaction when alr submit receipt item
+			# quick check on foms when allow/disallow to cancel
+			# and really prohibit the user if really cannot cancelling
+			pass
+
+def update_stock_recipe():
 	if not is_enable_integration():
 		return 
 	
 	api = FomsAPI()
+
+	logs = get_pending_log({"doctype":"Purchase Receipt"})
+	for log in logs:
+		# create new if not have
+		if log.update_type == "Update":
+			_update_stock_recipe(api, log)
+
+
+def _update_stock_recipe(api, log):
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Purchase Receipt", log.docname)
 	for d in doc.get("items"):
 		expiry_date = frappe.get_value("Batch", d.batch_no, "expiry_date")
-		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id") or 38
-		supplier_id = frappe.get_value("Supplier", doc.supplier, "foms_id") or 5
+		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id")
+		supplier_id = frappe.get_value("Supplier", doc.supplier, "foms_id")
 		raw_id = frappe.get_value("Item", d.item_code, "foms_raw_id")
 		# need convert current PR receive to item default
 		data = {
@@ -271,9 +298,9 @@ def update_stock_recipe(doc, cancel=False):
 			"supplierId": supplier_id,
 			"quantity": d.qty
 		}
-		res = api.update_raw_material_receipt(data)
 
-# send_raw_material_receipt
+		api.log = log  # working with log
+		res = api.update_raw_material_receipt(data)
 
 def save_log(doc_type, data_name, key_name, data):
 	map_doc = create_foms_data(doc_type, key_name, data)
