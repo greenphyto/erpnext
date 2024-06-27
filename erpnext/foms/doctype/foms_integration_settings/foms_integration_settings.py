@@ -83,7 +83,8 @@ class FomsAPI():
 			return data
 
 	def convert_data(self, data):
-		return json.dumps(data, default=str)
+		res = json.dumps(data, default=str)
+		return res
 	
 	def req(self, req="POST", method="", data={}, params={}):
 		url = self.get_url(method)
@@ -114,14 +115,16 @@ class FomsAPI():
 	def create_or_update_supplier(self, data={}):
 		data['isFromERP'] = True
 
-		res = self.req("POST", "/Supplier/CreateOrUpdateSupplier", data= json.dumps(data) )
+		data = self.convert_data(data)
+		res = self.req("POST", "/Supplier/CreateOrUpdateSupplier", data= data )
 
 		return res
 
 	def create_or_update_customer(self, data={}):
 		data['isFromERP'] = True
 
-		res = self.req("POST", "/Customer/CreateOrUpdateCustomer", data= json.dumps(data) )
+		data = self.convert_data(data)
+		res = self.req("POST", "/Customer/CreateOrUpdateCustomer", data= data )
 
 		return res
 	

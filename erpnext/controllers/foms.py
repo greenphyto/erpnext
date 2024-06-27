@@ -6,6 +6,7 @@ from erpnext.accounts.party import get_party_details
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
 from frappe import _
+from frappe.core.doctype.sync_log.sync_log import update_success
 import json
 
 """
@@ -62,6 +63,7 @@ def update_foms_supplier():
 	for log in logs:
 		# create new supplier if not have
 		if log.update_type == "Update":
+			print(log)
 			_update_foms_supplier(api, log) 
 
 def sync_all_supplier():
@@ -262,7 +264,7 @@ def save_log(doc_type, data_name, key_name, data):
 	map_doc.save()
 
 def _update_foms_supplier(api, log):
-	supplier = frappe.get_doc("Supplier", log.name)
+	supplier = frappe.get_doc("Supplier", log.docname)
 	details = get_party_details(supplier.name, party_type="Supplier")
 	farm_id = get_farm_id()
 	data = {
@@ -280,12 +282,17 @@ def _update_foms_supplier(api, log):
 		"rmDeviceIds": "",
 		"rmDeviceId":  [],
 	}
+
 	res = api.create_or_update_supplier(data)
-	if 'supplierID' in res:
-		supplier.db_set("foms_id", res['supplierID'])
+	print(287, res)
+	if 'id' in res:
+		supplier.db_set("foms_id", res['id'])
+		update_success(log)
+
+
 
 def _update_foms_customer(api, log):
-	customer = frappe.get_doc("Customer", log.name)
+	customer = frappe.get_doc("Customer", log.docname)
 	details = get_party_details(customer.name, party_type="Customer")
 	farm_id = get_farm_id()
 	address = details.address_display or details.company_address_display
