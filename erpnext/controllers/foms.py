@@ -6,7 +6,7 @@ from erpnext.accounts.party import get_party_details
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
 from frappe import _
-from frappe.core.doctype.sync_log.sync_log import update_success
+from frappe.core.doctype.sync_log.sync_log import update_success, create_log
 import json
 
 """
@@ -67,7 +67,16 @@ def update_foms_supplier():
 			_update_foms_supplier(api, log) 
 
 def sync_all_supplier():
-	pass
+	# find not exist foms id 
+	suppliers = frappe.db.get_all("Supplier", {"foms_id": ['is', 'not set']})
+	for d in suppliers:
+		# generate log
+		create_log("Supplier", d.name)
+
+	# push the log
+	update_foms_supplier()
+
+	return True
 
 # CUSTOMER (POST)
 def update_foms_customer():
@@ -81,7 +90,16 @@ def update_foms_customer():
 			_update_foms_customer(api, log) 
 
 def sync_all_customer():
-	pass
+	# find not exist foms id 
+	customers = frappe.db.get_all("Customer", {"foms_id": ['is', 'not set']})
+	for d in customers:
+		# generate log
+		create_log("Customer", d.name)
+
+	# push the log
+	update_foms_customer()
+
+	return True
 
 class GetData():
 	def __init__(self, data_type, get_data, get_key_name, post_process, doc_type="Item", show_progress=False, manual_save_log=False):
@@ -314,6 +332,7 @@ def _update_foms_customer(api, log):
 	res = api.create_or_update_customer(data)
 	if 'customerRefNo' in res:
 		customer.db_set("foms_id", res['customerRefNo'])
+		update_success(log)
 
 def create_raw_material(log):
 	name = frappe.get_value("Item", log.get("rawMaterialRefNo"))
