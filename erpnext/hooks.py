@@ -367,11 +367,11 @@ doc_events = {
         "on_trash": "erpnext.assets.doctype.asset.asset.asset_trigger",
 	},
     "Warehouse":{
-        "validate":"erpnext.controllers.foms.update_warehouse"
+        "validate":"erpnext.controllers.foms.sync_log"
 	},
     "Purchase Receipt": {
-        "on_submit":"erpnext.controllers.foms.log_stock_recipe",
-        "on_cancel":"erpnext.controllers.foms.log_stock_recipe",
+        "on_submit":"erpnext.controllers.foms.sync_log",
+        "on_cancel":"erpnext.controllers.foms.sync_log",
 	}
 }
 

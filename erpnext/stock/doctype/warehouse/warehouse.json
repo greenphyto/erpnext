@@ -10,6 +10,7 @@
   "warehouse_detail",
   "warehouse_name",
   "foms_id",
+  "foms_name",
   "column_break_3",
   "warehouse_type",
   "parent_warehouse",
@@ -261,13 +262,19 @@
    "fieldtype": "Link",
    "label": "Only for Item",
    "options": "Item"
+  },
+  {
+   "fieldname": "foms_name",
+   "fieldtype": "Data",
+   "label": "FOMS Name",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-building",
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-06-06 14:44:44.247915",
+ "modified": "2024-06-27 16:14:15.533026",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Warehouse",

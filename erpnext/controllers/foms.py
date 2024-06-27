@@ -145,6 +145,40 @@ class GetData():
 		for i in range(total_count):
 			do_create(i)
 
+# for create one-by-obe log, based on doctype and name
+def sync_log(doc, method=""):
+	cancel = doc.docstatus == 2
+
+	if not cancel:
+		create_log(doc.doctype, doc.name)
+	else:
+		# not yet update to FOMS
+		if delete_log(doc.doctype, doc.name):
+			return
+		# yet updated to FOMS
+		else:
+			# [unfinish] create cancel transaction when alr submit receipt item
+			# quick check on foms when allow/disallow to cancel
+			# and really prohibit the user if really cannot cancelling
+			pass
+
+def sync_controller(doctype, controller):
+	if not is_enable_integration():
+			return 
+		
+	api = FomsAPI()
+
+	logs = get_pending_log({"doctype": doctype})
+	for log in logs:
+		# create new if not have
+		if log.update_type == "Update":
+			controller(api, log)
+
+def update_reff_id(res, doc, key_name):
+	if res and 'id' in res:
+		doc.db_set("foms_id", res['id'])
+		doc.db_set("foms_name", res.get(key_name))
+
 # RAW MATERIAL (GET)
 def get_raw_material(show_progress=False, reff_no=""):
 	def get_data(gd):
@@ -225,9 +259,14 @@ def get_recipe(show_progress=False, item_code=""):
 	
 
 # WAREHOUSE
-def update_warehouse(doc, method=""):
+def update_warehouse():
+	sync_controller("Warehouse", _update_warehouse)
+
+def _update_warehouse(api, log):
 	farm_id = get_foms_settings("farm_id")
+	doc = frappe.get_doc("Warehouse", log.docname)
 	wh_id = doc.name.replace(" ", "")[:12]
+	# wh_id = doc.name
 	data = {
 		"farmId": farm_id,
 		"warehouseID": wh_id,
@@ -240,47 +279,22 @@ def update_warehouse(doc, method=""):
 		"noRackLevel": 0,
 		"noOfLane": 0,
 		"isFromERP": True,
-		"id": 0
+		"id": doc.foms_id
 	}
 	api = FomsAPI()
+	api.log = log
 	res = api.update_warehouse(data)
+	update_reff_id(res, doc, "warehouseID")
 	return res
 
 def sync_all_warehouse():
 	pass
 
 # RAW MATERIAL RECEIPT
-def log_stock_recipe(doc, cancel=False):
-	if not cancel:
-		create_log("Purchase Receipt", doc.name)
-	else:
-		# not yet update to FOMS
-		if delete_log(doc.doctype, doc.name):
-			return
-		# yet updated to FOMS
-		else:
-			# [unfinish] create cancel transaction when alr submit receipt item
-			# quick check on foms when allow/disallow to cancel
-			# and really prohibit the user if really cannot cancelling
-			pass
-
 def update_stock_recipe():
-	if not is_enable_integration():
-		return 
-	
-	api = FomsAPI()
-
-	logs = get_pending_log({"doctype":"Purchase Receipt"})
-	for log in logs:
-		# create new if not have
-		if log.update_type == "Update":
-			_update_stock_recipe(api, log)
-
+	sync_controller("Purchase Receipt", _update_stock_recipe)
 
 def _update_stock_recipe(api, log):
-	if not api:
-		api = FomsAPI()
-
 	doc = frappe.get_doc("Purchase Receipt", log.docname)
 	for d in doc.get("items"):
 		expiry_date = frappe.get_value("Batch", d.batch_no, "expiry_date")
