@@ -53,53 +53,9 @@ def get_uom(uom_foms):
 	
 	return uom
 
-# SUPPLIER (POST)
-def update_foms_supplier():
-	if not is_enable_integration():
-		return 
-	
-	logs = get_pending_log({"doctype":"Supplier"})
-	api = FomsAPI()
-	for log in logs:
-		# create new supplier if not have
-		if log.update_type == "Update":
-			print(log)
-			_update_foms_supplier(api, log) 
+def get_foms_settings(field):
+	return frappe.db.get_single_value("FOMS Integration Settings", field)
 
-def sync_all_supplier():
-	# find not exist foms id 
-	suppliers = frappe.db.get_all("Supplier", {"foms_id": ['is', 'not set']})
-	for d in suppliers:
-		# generate log
-		create_log("Supplier", d.name)
-
-	# push the log
-	update_foms_supplier()
-
-	return True
-
-# CUSTOMER (POST)
-def update_foms_customer():
-	if not is_enable_integration():
-		return 
-	
-	logs = get_pending_log({"doctype":"Customer"})
-	api = FomsAPI()
-	for log in logs:
-		if log.update_type == "Update":
-			_update_foms_customer(api, log) 
-
-def sync_all_customer():
-	# find not exist foms id 
-	customers = frappe.db.get_all("Customer", {"foms_id": ['is', 'not set']})
-	for d in customers:
-		# generate log
-		create_log("Customer", d.name)
-
-	# push the log
-	update_foms_customer()
-
-	return True
 
 class GetData():
 	def __init__(self, data_type, get_data, get_key_name, post_process, doc_type="Item", show_progress=False, manual_save_log=False):
@@ -145,6 +101,8 @@ class GetData():
 		for i in range(total_count):
 			do_create(i)
 
+# ###### TOOLS ###### #
+
 # for create one-by-obe log, based on doctype and name
 def sync_log(doc, method=""):
 	cancel = doc.docstatus == 2
@@ -178,6 +136,15 @@ def update_reff_id(res, doc, key_name):
 	if res and 'id' in res:
 		doc.db_set("foms_id", res['id'])
 		doc.db_set("foms_name", res.get(key_name))
+
+def save_log(doc_type, data_name, key_name, data):
+	map_doc = create_foms_data(doc_type, key_name, data)
+	map_doc.doc_type = doc_type
+	map_doc.doc_name = data_name
+	map_doc.save()
+
+# ###### ***** ##### #
+
 
 # RAW MATERIAL (GET)
 def get_raw_material(show_progress=False, reff_no=""):
@@ -316,11 +283,22 @@ def _update_stock_recipe(api, log):
 		api.log = log  # working with log
 		res = api.update_raw_material_receipt(data)
 
-def save_log(doc_type, data_name, key_name, data):
-	map_doc = create_foms_data(doc_type, key_name, data)
-	map_doc.doc_type = doc_type
-	map_doc.doc_name = data_name
-	map_doc.save()
+# SUPPLIER (POST)
+def sync_all_supplier():
+	# find not exist foms id 
+	suppliers = frappe.db.get_all("Supplier", {"foms_id": ['is', 'not set']})
+	for d in suppliers:
+		# generate log
+		create_log("Supplier", d.name)
+
+	# push the log
+	update_foms_supplier()
+
+	return True
+
+def update_foms_supplier():
+	sync_controller("Supplier", _update_foms_supplier)
+
 
 def _update_foms_supplier(api, log):
 	supplier = frappe.get_doc("Supplier", log.docname)
@@ -345,13 +323,26 @@ def _update_foms_supplier(api, log):
 	if supplier.foms_id:
 		data['Id'] = supplier.foms_id
 
+	api.log = log
 	res = api.create_or_update_supplier(data)
-	if 'id' in res:
-		supplier.db_set("foms_id", res['id'])
-		supplier.db_set("foms_name", res['supplierID'])
-		update_success(log)
+	update_reff_id(res, supplier, "supplierID")
 
 
+# CUSTOMER (POST)
+def sync_all_customer():
+	# find not exist foms id 
+	customers = frappe.db.get_all("Customer", {"foms_id": ['is', 'not set']})
+	for d in customers:
+		# generate log
+		create_log("Customer", d.name)
+
+	# push the log
+	update_foms_customer()
+
+	return True
+
+def update_foms_customer():
+	sync_controller("Customer", _update_foms_customer)
 
 def _update_foms_customer(api, log):
 	customer = frappe.get_doc("Customer", log.docname)
@@ -377,11 +368,10 @@ def _update_foms_customer(api, log):
 	if customer.foms_id:
 		data['Id'] = customer.foms_id
 
+	api.log = log
 	res = api.create_or_update_customer(data)
-	if 'customerRefNo' in res:
-		customer.db_set("foms_id", res['id'])
-		customer.db_set("foms_name", res['customerRefNo'])
-		update_success(log)
+	update_reff_id(res, customer, "customerRefNo" )
+
 
 def create_raw_material(log):
 	name = frappe.get_value("Item", log.get("rawMaterialRefNo"))
@@ -431,9 +421,6 @@ def create_raw_material(log):
 		doc.save()
 
 	return name
-
-def get_foms_settings(field):
-	return frappe.db.get_single_value("FOMS Integration Settings", field)
 
 def create_products(log):
 	name = frappe.get_value("Item", log.get("productID"))
