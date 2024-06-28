@@ -127,10 +127,16 @@ def sync_controller(doctype, controller):
 	api = FomsAPI()
 
 	logs = get_pending_log({"doctype": doctype})
+	count = len(logs)
+	i = 0
 	for log in logs:
 		# create new if not have
 		if log.update_type == "Update":
 			controller(api, log)
+		
+		show_progress(i, count)
+		i+=1
+	show_progress(i, count)
 
 def update_reff_id(res, doc, key_name):
 	if res and 'id' in res:
@@ -142,6 +148,17 @@ def save_log(doc_type, data_name, key_name, data):
 	map_doc.doc_type = doc_type
 	map_doc.doc_name = data_name
 	map_doc.save()
+
+def show_progress(current=0, total=100):
+	percent = current/total*100
+	frappe.publish_progress(percent, title="Sync FOMS data..")
+	frappe.publish_realtime(
+		event="foms_sync_progress",
+		message={
+			"percent":percent
+		}
+	)
+
 
 # ###### ***** ##### #
 

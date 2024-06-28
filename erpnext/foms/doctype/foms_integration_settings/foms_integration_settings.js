@@ -6,6 +6,10 @@ frappe.ui.form.on('FOMS Integration Settings', {
 		frappe.realtime.on("progress_foms_download", data=>{
 			console.log(data)
 		})
+
+		frappe.realtime.on('foms_sync_progress', data => {
+			console.log(11, data);
+		});
 	},
 	get_foms_raw_material: function(frm) {
 		frappe.call({
