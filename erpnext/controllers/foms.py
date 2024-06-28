@@ -297,7 +297,7 @@ def sync_all_warehouse():
 	docs = frappe.db.get_all("Warehouse", {"foms_id": ['is', 'not set']})
 	for d in docs:
 		# generate log
-		create_log("Warehouse", d.name)
+		create_log("Warehouse", d.name, method=METHOD_MAP.get("Warehouse"))
 
 	# from erp to foms
 	update_warehouse()
@@ -353,7 +353,7 @@ def sync_all_supplier():
 	suppliers = frappe.db.get_all("Supplier", {"foms_id": ['is', 'not set']})
 	for d in suppliers:
 		# generate log
-		create_log("Supplier", d.name)
+		create_log("Supplier", d.name, method=METHOD_MAP.get("Supplier"))
 
 	# push the log
 	update_foms_supplier()
@@ -384,7 +384,7 @@ def _update_foms_supplier(log, api=None):
 	data = {
 		"farmId": farm_id,
 		"supplierID": supplier.foms_id,
-		"supplierRefNo": supplier.name,
+		# "supplierRefNo": supplier.name,
 		"supplierName": supplier.supplier_name,
 		"address": details.address_display or details.company_address_display or "",
 		"contact": supplier.mobile_no or  details.contact_mobile or "",
@@ -407,16 +407,28 @@ def _update_foms_supplier(log, api=None):
 
 # CUSTOMER (POST)
 def sync_all_customer():
+	foms_all_customer()
+
 	# find not exist foms id 
 	customers = frappe.db.get_all("Customer", {"foms_id": ['is', 'not set']})
 	for d in customers:
 		# generate log
-		create_log("Customer", d.name)
+		create_log("Customer", d.name, method=METHOD_MAP.get("Customer"))
 
 	# push the log
 	update_foms_customer()
 
 	return True
+
+def foms_all_customer():
+	farm_id = get_farm_id()
+	api = FomsAPI()
+	data = api.get_all_customer(farm_id)
+	for d in data.get("items", []):
+		# not yet finish
+		name = d.get("customerName")
+		frappe.db.set_value("Customer", {"customer_name": name}, "foms_id", d['id'])
+		frappe.db.set_value("Customer", {"customer_name": name}, "foms_name", d['customerRefNo'])
 
 def update_foms_customer():
 	sync_controller("Customer", _update_foms_customer)
@@ -433,7 +445,7 @@ def _update_foms_customer(log, api=None):
 
 	data = {
 		"farmId": farm_id,
-		"customerRefNo": customer.name,
+		# "customerRefNo": customer.name,
 		"customerName": customer.customer_name,
 		"address": address,
 		"contact": customer.mobile_no or  details.contact_mobile or "" ,
