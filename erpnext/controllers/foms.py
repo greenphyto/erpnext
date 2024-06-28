@@ -39,6 +39,14 @@ UOM_MAP = {
 	"ml":"Millilitre",
 }
 
+# see on hooks.py on sync_log_method
+METHOD_MAP = {
+	"Supplier":1,
+	"Customer":2,
+	"Warehouse":3,
+	"Purchase Receipt":4,
+}
+
 TRANFER_AGAIN = 'Work Order'
 
 def get_uom(uom_foms):
@@ -107,8 +115,10 @@ class GetData():
 def sync_log(doc, method=""):
 	cancel = doc.docstatus == 2
 
+	method_id = METHOD_MAP.get(doc.doctype)
+
 	if not cancel:
-		create_log(doc.doctype, doc.name)
+		create_log(doc.doctype, doc.name, method=method_id)
 	else:
 		# not yet update to FOMS
 		if delete_log(doc.doctype, doc.name):
@@ -132,7 +142,7 @@ def sync_controller(doctype, controller):
 	for log in logs:
 		# create new if not have
 		if log.update_type == "Update":
-			controller(api, log)
+			controller(log, api=None)
 		
 		show_progress(i, count)
 		i+=1
@@ -246,7 +256,10 @@ def get_recipe(show_progress=False, item_code=""):
 def update_warehouse():
 	sync_controller("Warehouse", _update_warehouse)
 
-def _update_warehouse(api, log):
+def _update_warehouse(log, api=None):
+	if not api:
+		api = FomsAPI()
+
 	farm_id = get_foms_settings("farm_id")
 	doc = frappe.get_doc("Warehouse", log.docname)
 	wh_id = doc.name.replace(" ", "")[:12]
@@ -268,7 +281,6 @@ def _update_warehouse(api, log):
 	if doc.foms_id:
 		data["id"] = doc.foms_id
 
-	api = FomsAPI()
 	api.log = log
 	res = api.update_warehouse(data)
 	update_reff_id(res, doc, "warehouseID")
@@ -302,7 +314,10 @@ def foms_all_warehouses():
 def update_stock_recipe():
 	sync_controller("Purchase Receipt", _update_stock_recipe)
 
-def _update_stock_recipe(api, log):
+def _update_stock_recipe(log, api=None):
+	if not api:
+		api = FomsAPI()
+
 	doc = frappe.get_doc("Purchase Receipt", log.docname)
 	for d in doc.get("items"):
 		expiry_date = frappe.get_value("Batch", d.batch_no, "expiry_date")
@@ -341,7 +356,9 @@ def update_foms_supplier():
 	sync_controller("Supplier", _update_foms_supplier)
 
 
-def _update_foms_supplier(api, log):
+def _update_foms_supplier(log, api=None):
+	if not api:
+		api = FomsAPI()
 	supplier = frappe.get_doc("Supplier", log.docname)
 	details = get_party_details(supplier.name, party_type="Supplier")
 	farm_id = get_farm_id()
@@ -385,7 +402,10 @@ def sync_all_customer():
 def update_foms_customer():
 	sync_controller("Customer", _update_foms_customer)
 
-def _update_foms_customer(api, log):
+def _update_foms_customer(log, api=None):
+	if not api:
+		api = FomsAPI()
+
 	customer = frappe.get_doc("Customer", log.docname)
 	details = get_party_details(customer.name, party_type="Customer")
 	farm_id = get_farm_id()

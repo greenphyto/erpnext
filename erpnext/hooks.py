@@ -654,3 +654,10 @@ quick_entry_js = {
 validate_workflow = {
     "Material Request": "erpnext.stock.doctype.material_request.material_request.validate_purchase_request"
 }
+
+sync_log_method = {
+    1:"erpnext.controllers.foms._update_foms_supplier",
+    2:"erpnext.controllers.foms._update_foms_customer",
+    3:"erpnext.controllers.foms._update_warehouse",
+    4:"erpnext.controllers.foms._update_stock_recipe",
+}
