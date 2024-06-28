@@ -225,7 +225,8 @@ class FomsAPI():
 
 	def get_all_warehouse(self, farm_id):
 		params = {
-			"FarmId":farm_id
+			"FarmId":farm_id,
+			"MaxResultCount":9999
 		}
 		res = self.req("GET", "/Warehouse/GetAllWarehouses", params=params )
 		return res

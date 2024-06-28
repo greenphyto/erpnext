@@ -160,6 +160,9 @@ def save_log(doc_type, data_name, key_name, data):
 	map_doc.save()
 
 def show_progress(current=0, total=100):
+	if not current:
+		return
+	
 	percent = current/total*100
 	frappe.publish_progress(percent, title="Sync FOMS data..")
 	frappe.publish_realtime(
@@ -287,6 +290,9 @@ def _update_warehouse(log, api=None):
 	return res
 
 def sync_all_warehouse():
+	# foms to erp
+	foms_all_warehouses()
+
 	# find not exist foms id 
 	docs = frappe.db.get_all("Warehouse", {"foms_id": ['is', 'not set']})
 	for d in docs:
@@ -296,10 +302,6 @@ def sync_all_warehouse():
 	# from erp to foms
 	update_warehouse()
 
-	# foms to erp
-	foms_all_warehouses()
-
-
 	return True
 
 def foms_all_warehouses():
@@ -308,7 +310,9 @@ def foms_all_warehouses():
 	data = api.get_all_warehouse(farm_id)
 	for d in data.get("items", []):
 		# not yet finish
-		pass
+		wh_name = d.get("warehouseName")
+		frappe.db.set_value("Warehouse", {"warehouse_name": wh_name}, "foms_id", d['id'])
+		frappe.db.set_value("Warehouse", {"warehouse_name": wh_name}, "foms_name", d['warehouseID'])
 
 # RAW MATERIAL RECEIPT
 def update_stock_recipe():
