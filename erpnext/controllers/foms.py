@@ -118,7 +118,11 @@ def sync_log(doc, method=""):
 	method_id = METHOD_MAP.get(doc.doctype)
 
 	if not cancel:
-		create_log(doc.doctype, doc.name, method=method_id)
+		log_name = create_log(doc.doctype, doc.name, method=method_id)
+
+		# start enquee individually, if fail, it will try again with scheduler itself
+		frappe.enqueue("erpnext.controllers.foms.start_sync_enquee", log_name=log_name)
+		
 	else:
 		# not yet update to FOMS
 		if delete_log(doc.doctype, doc.name):
@@ -129,6 +133,10 @@ def sync_log(doc, method=""):
 			# quick check on foms when allow/disallow to cancel
 			# and really prohibit the user if really cannot cancelling
 			pass
+
+def start_sync_enquee(log_name):
+	log = frappe.get_doc("Sync Log", log_name)
+	log.sync()
 
 def sync_controller(doctype, controller):
 	if not is_enable_integration():
