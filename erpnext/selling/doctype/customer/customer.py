@@ -25,6 +25,7 @@ from erpnext.accounts.party import (  # noqa
 )
 from erpnext.utilities.transaction_base import TransactionBase
 from frappe.core.doctype.sync_log.sync_log import create_log
+from erpnext.controllers.foms import sync_log
 
 
 class Customer(TransactionBase):
@@ -114,7 +115,7 @@ class Customer(TransactionBase):
 			if sum(member.allocated_percentage or 0 for member in self.sales_team) != 100:
 				frappe.throw(_("Total contribution percentage should be equal to 100"))
 		
-		create_log(self.doctype, self.name)
+		sync_log(self)
 
 
 	@frappe.whitelist()
@@ -311,6 +312,9 @@ class Customer(TransactionBase):
 		delete_contact_and_address("Customer", self.name)
 		if self.lead_name:
 			frappe.db.sql("update `tabLead` set status='Interested' where name=%s", self.lead_name)
+
+		create_log(self.doctype, self.name, "Delete")
+
 
 	def after_rename(self, olddn, newdn, merge=False):
 		if frappe.defaults.get_global_default("cust_master_name") == "Customer Name":

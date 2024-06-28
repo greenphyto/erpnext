@@ -345,6 +345,10 @@ def _update_stock_recipe(log, api=None):
 
 # SUPPLIER (POST)
 def sync_all_supplier():
+
+	# matching existing first
+	foms_all_supplier()
+	
 	# find not exist foms id 
 	suppliers = frappe.db.get_all("Supplier", {"foms_id": ['is', 'not set']})
 	for d in suppliers:
@@ -355,6 +359,17 @@ def sync_all_supplier():
 	update_foms_supplier()
 
 	return True
+
+def foms_all_supplier():
+	farm_id = get_farm_id()
+	api = FomsAPI()
+	data = api.get_all_supplier(farm_id)
+	for d in data.get("items", []):
+		# not yet finish
+		name = d.get("supplierName")
+		print("Renaming", name, d['id'])
+		frappe.db.set_value("Supplier", {"supplier_name": name}, "foms_id", d['id'])
+		frappe.db.set_value("Supplier", {"supplier_name": name}, "foms_name", d['supplierRefNo'])
 
 def update_foms_supplier():
 	sync_controller("Supplier", _update_foms_supplier)
