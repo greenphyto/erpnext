@@ -17,11 +17,22 @@ class Report:
 		self.list_type = [
 			"Maintenance Request",
 			"Visitor Registration",
+			"Permit to Work",
 			"Inspection Checklist",
 			"Vendor Registration",
 			"Key Control",
 			"Work Order"
 		]
+		self.states = [
+			'Issued' , 'Started', 'Resolved', 'Rejected'
+		]
+
+		self.state_map = {
+			"Permit to Work":{
+				"Submitted":"Issued",
+				"Approved":"Resolved",
+			}
+		}
 
 	def setup_conditions(self):
 		self.conditions = ""
@@ -40,6 +51,14 @@ class Report:
 	def get_data(self):
 		pass
 
+	def get_state_map(self, doctype, state):
+		maps = self.state_map.get(doctype)
+		if not maps:
+			return state
+		
+		state = maps.get(state) or state
+
+		return state
 
 	def get_data_detail(self, doctype):
 		if not frappe.get_meta(doctype).get_field("workflow_state"):
@@ -51,15 +70,20 @@ class Report:
 				FROM
 					`tab{}` as d
 				WHERE
-					d.workflow_state IN ('Issued' , 'Started', 'Resolved', 'Rejected')
+					d.workflow_state IN ('Issued' , 'Started', 'Resolved', 'Rejected', 'Approved', 'Submitted' )
 		       		{}
 				GROUP BY d.workflow_state
 			""".format(doctype, self.conditions), self.filters, as_dict=1, debug=0)
 		dt = {
 			"source": doctype
 		}
+		state_map = {}
 		for d in data:
-			dt[ frappe.scrub(d.state) ] = d.cnt
+			state = state_map.get(d.state)
+			if not state:
+				state = self.get_state_map(doctype, d.state)
+				state_map[d.state] = state
+			dt[ frappe.scrub(state) ] = d.cnt
 
 		return dt
 
