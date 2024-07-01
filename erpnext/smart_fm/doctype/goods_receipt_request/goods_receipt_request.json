@@ -1,0 +1,176 @@
+{
+ "actions": [],
+ "autoname": "GRR-.#####",
+ "creation": "2024-06-28 13:50:57.703546",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_qyttx",
+  "item_description",
+  "section_break_vglbi",
+  "size",
+  "supplier_contact_name",
+  "column_break_zxmto",
+  "weight",
+  "supplier_contact_phone",
+  "section_break_kgttb",
+  "handling_method",
+  "storage_criteria_and_location",
+  "estimated_delivery_time",
+  "section_break_tkaya",
+  "forwarder_contact_name",
+  "column_break_s9vzi",
+  "forwarder_contact_phone",
+  "section_break_idah8",
+  "attachment",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_description",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Item Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "size",
+   "fieldtype": "Data",
+   "label": "Size"
+  },
+  {
+   "fieldname": "weight",
+   "fieldtype": "Data",
+   "label": "Weight"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Goods Receipt Request",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "supplier_contact_name",
+   "fieldtype": "Data",
+   "label": "Supplier Contact/Greenphyto PIC Name"
+  },
+  {
+   "fieldname": "supplier_contact_phone",
+   "fieldtype": "Data",
+   "label": "Supplier Contact/Greenphyto PIC No.",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "handling_method",
+   "fieldtype": "Small Text",
+   "label": "Handling Method"
+  },
+  {
+   "fieldname": "storage_criteria_and_location",
+   "fieldtype": "Small Text",
+   "label": "Storage Criteria and Location"
+  },
+  {
+   "fieldname": "estimated_delivery_time",
+   "fieldtype": "Date",
+   "label": "Estimated Delivery Time"
+  },
+  {
+   "fieldname": "forwarder_contact_name",
+   "fieldtype": "Data",
+   "label": "Forwarder Contact Name"
+  },
+  {
+   "fieldname": "forwarder_contact_phone",
+   "fieldtype": "Data",
+   "label": "Forwarder Contact No.",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment"
+  },
+  {
+   "fieldname": "section_break_vglbi",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "column_break_zxmto",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_kgttb",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "section_break_tkaya",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "column_break_s9vzi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_idah8",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "section_break_qyttx",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-06-28 14:00:52.496588",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Goods Receipt Request",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Warehouse Manager",
+   "select": 1,
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee",
+   "select": 1,
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
