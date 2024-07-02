@@ -1,13 +1,14 @@
 import frappe
 from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
 from frappe.core.doctype.sync_log.sync_log import get_pending_log
-from frappe.utils import cint, flt, cstr
+from frappe.utils import cint, flt, cstr, get_time, getdate
 from erpnext.accounts.party import get_party_details
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
 from frappe import _
 from frappe.core.doctype.sync_log.sync_log import update_success, create_log, delete_log
 import json
+from erpnext import get_company_currency, get_default_company
 
 """
 Make Supplier from ERP to FOMS
@@ -866,3 +867,82 @@ def create_delivery_order(log):
 	doc.save()
 
 	return doc.name
+
+def create_finish_goods_stock(data):
+	"""
+	reff:
+	https://docs.erpnext.com/docs/user/manual/en/manufacturing-without-creating-bom
+
+	question:
+	- how to select account no when add cost
+
+	data = {
+		"material_reff":"",
+		"posting_date":"2024-01-12 08:12:32",
+		"company":"", // opt
+		"bom":"",
+		"id":"",
+		"item_code":"",
+		"qty":"",
+		"uom":"",
+		"batch":"",
+		"batch_exp":"", // opt if not set, it will created from erp
+		"batch_mfg":"", // opt
+		"warehouse":""
+		"materials":[{  // material consumed at end of process
+			"item_code":"",
+			"qty":"",
+			"uom":"",
+			"batch":"",
+			"warehouse":""
+		}],
+		"additional_cost":[{
+			"expense_account":"",
+			"description":"",
+			"amount":0
+		}]
+	}
+	"""
+	data = frappe._dict(data)
+
+	# optional if find exist 
+
+	doc = frappe.new_doc("Stock Entry")
+	doc.foms_id = data.id
+	doc.material_reff = data.material_reff
+	doc.posting_date = getdate(data.posting_date)
+	doc.posting_time = get_time(data.posting_date)
+	doc.stock_entry_type = "Manufacture"
+	doc.company = data.company or get_default_company()
+	if data.bom:
+		doc.from_bom = 1
+	doc.bom_no = data.bom
+
+	# material issue
+	for d in data.get("materials"):
+		d = frappe._dict(d)
+		row = doc.append("items")
+		row.item_code = d.item_code
+		row.qty = d.qty
+		row.uom = d.uom
+		row.s_warehouse = d.warehouse
+
+	# finish goods
+	row = doc.append("items")
+	row.item_code = data.item_code
+	row.qty = data.qty
+	row.uom = data.uom
+	row.t_warehouse = data.warehouse
+	row.is_finished_item = 1
+
+	# add cost
+	for d in data.get("additional_cost"):
+		row = doc.append("additional_costs")
+		row.update(d)
+
+	doc.insert(ignore_permissions=1)
+	doc.submit()
+
+	return {
+		"StockEntryNo":doc.name
+	}

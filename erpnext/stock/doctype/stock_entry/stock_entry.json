@@ -20,6 +20,7 @@
   "sales_invoice_no",
   "pick_list",
   "purchase_receipt_no",
+  "foms_id",
   "col2",
   "company",
   "posting_date",
@@ -31,6 +32,7 @@
   "sb1",
   "bom_no",
   "fg_completed_qty",
+  "material_reff",
   "cb1",
   "use_multi_level_bom",
   "get_items",
@@ -629,6 +631,19 @@
    "fieldtype": "Data",
    "label": "Operation",
    "read_only": 1
+  },
+  {
+   "fieldname": "material_reff",
+   "fieldtype": "Link",
+   "label": "Material Reff",
+   "options": "Stock Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -636,7 +651,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-03 15:41:27.958428",
+ "modified": "2024-07-02 12:15:53.147749",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",
