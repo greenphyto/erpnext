@@ -44,6 +44,10 @@ class FacilityCalendar{
       events: (opts, callback)=>{
         me.get_events(opts, callback)
       },
+      eventDidMount: (info)=>{
+        const title = info.el.querySelector('.fc-event-title');
+        title.innerHTML = info.event.title;
+      },
 			selectable: true,
   
     });
@@ -75,14 +79,23 @@ class FacilityCalendar{
   }
 
   prepare_events(events){
+    const style_map = {
+      Issued: "orange",
+      Accepted: "blue",
+      Started: "green",
+      Finished: "purple",
+      Cancelled: "grey",
+      Rejected: "red",
+    };
     $.each(events, (i,d)=>{
-      d.title = d.service;
+      d.title = d.service+"<br/>Booked by " + d.full_name;
       d.start = d.from_time;
       d.end = d.to_time;
       d.allDay = d.all_day; 
-      d.id = d.name
+      d.id = d.name;
+      d.description = "Booked by " + d.full_name;
+      d.backgroundColor = style_map[d.status];
     });
-
     return events
   }
 
