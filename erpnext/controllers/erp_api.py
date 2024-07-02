@@ -12,7 +12,8 @@ from erpnext.controllers.foms import (
 	create_raw_material as _create_raw_material,
 	create_products as _create_products,
 	create_delivery_order as _create_delivery_order,
-	get_operation_map_name
+	get_operation_map_name,
+	create_finish_goods_stock as _create_finish_goods_stock
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
@@ -425,3 +426,7 @@ def create_request_form(data):
 	return {
 		"RequestNo": result
 	}
+
+@frappe.whitelist()
+def create_finish_goods_stock(data):
+	return _create_finish_goods_stock(data)

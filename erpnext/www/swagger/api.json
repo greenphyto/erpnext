@@ -989,6 +989,90 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.create_finish_goods_stock": {
+      "post": {
+        "summary": "Create Finish Goods Stock",
+        "description": "Submit finish goods stock without use BOM-Work Order process, so it will directly submit new stock to warehouse by stock entry",
+        "operationId": "create finish goods stock",
+        "requestBody": {
+          "description": {
+            "test":123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data":{
+                    "material_reff":"MAT-STE-2024-00001",
+                    "posting_date":"2024-07-02 08:12:32",
+                    "company":"optional",
+                    "bom":"optional or u can also refer to existing BOM",
+                    "id":1,
+                    "item_code":"PR-AV-KL",
+                    "qty":2,
+                    "uom":"kg",
+                    "batch":"optional | if not set it will generated from ERP side",
+                    "batch_exp":"optional", 
+                    "batch_mfg":"optional", 
+                    "warehouse":"Finished Goods - GPL",
+                    "materials":[
+                      {
+                        "warehouse": "Raw Materials - GPL",   
+                        "item_code": "RM-NS-NSA",
+                        "qty": 1240,
+                        "uom": "g"
+                      },
+                      {
+                        "warehouse": "Raw Materials - GPL",
+                        "item_code": "RM-SD-KL",
+                        "qty": 1.5,
+                        "uom": "g"
+                      },
+                      {
+                        "item_code":"RM-NS-NSB",
+                        "warehouse": "Raw Materials - GPL",
+                        "qty": 990,
+                        "uom": "g"
+                      }
+                    ],
+                    "additional_cost":[{
+                      "description":"Wages",
+                      "amount":5
+                    }]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "RequestNo":""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
     }
   },
   "components": {
