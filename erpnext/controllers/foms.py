@@ -918,6 +918,10 @@ def create_finish_goods_stock(data):
 		doc.from_bom = 1
 	doc.bom_no = data.bom
 
+	default_expense = frappe.db.get_single_value("Manufacturing Settings", "default_expense_account") 
+	if not default_expense:
+		frappe.throw(_("Please set <b>Default Expense Account</b> on Manufacturing Settings!"))
+
 	# material issue
 	for d in data.get("materials"):
 		d = frappe._dict(d)
@@ -939,6 +943,7 @@ def create_finish_goods_stock(data):
 	for d in data.get("additional_cost"):
 		row = doc.append("additional_costs")
 		row.update(d)
+		row.expense_account = default_expense
 
 	doc.insert(ignore_permissions=1)
 	doc.submit()
