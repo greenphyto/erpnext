@@ -16,6 +16,11 @@
   "weight",
   "supplier_contact_phone",
   "section_break_kgttb",
+  "storage_duration",
+  "usage_date",
+  "column_break_yhgjh",
+  "last_day_to_clear",
+  "section_break_yenj6",
   "handling_method",
   "storage_criteria_and_location",
   "estimated_delivery_time",
@@ -42,7 +47,7 @@
   },
   {
    "fieldname": "weight",
-   "fieldtype": "Data",
+   "fieldtype": "Float",
    "label": "Weight"
   },
   {
@@ -53,17 +58,6 @@
    "options": "Goods Receipt Request",
    "print_hide": 1,
    "read_only": 1
-  },
-  {
-   "fieldname": "supplier_contact_name",
-   "fieldtype": "Data",
-   "label": "Supplier Contact/Greenphyto PIC Name"
-  },
-  {
-   "fieldname": "supplier_contact_phone",
-   "fieldtype": "Data",
-   "label": "Supplier Contact/Greenphyto PIC No.",
-   "options": "Phone"
   },
   {
    "fieldname": "handling_method",
@@ -108,7 +102,8 @@
   {
    "fieldname": "section_break_kgttb",
    "fieldtype": "Section Break",
-   "hide_border": 1
+   "hide_border": 1,
+   "label": "Storage"
   },
   {
    "fieldname": "section_break_tkaya",
@@ -127,13 +122,49 @@
   {
    "fieldname": "section_break_qyttx",
    "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Description"
+  },
+  {
+   "fieldname": "storage_duration",
+   "fieldtype": "Data",
+   "label": "Storage Duration (Estimated)"
+  },
+  {
+   "fieldname": "usage_date",
+   "fieldtype": "Date",
+   "label": "Usage Date (Estimated)"
+  },
+  {
+   "fieldname": "last_day_to_clear",
+   "fieldtype": "Date",
+   "label": "Last Day to Clear (Estimated)"
+  },
+  {
+   "fieldname": "supplier_contact_name",
+   "fieldtype": "Data",
+   "label": "Supplier Contact/ Greenphyto PIC Name"
+  },
+  {
+   "fieldname": "supplier_contact_phone",
+   "fieldtype": "Data",
+   "label": "Supplier Contact/ Greenphyto PIC No.",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "column_break_yhgjh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_yenj6",
+   "fieldtype": "Section Break",
    "hide_border": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-28 14:00:52.496588",
+ "modified": "2024-07-02 10:43:32.391990",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Goods Receipt Request",
@@ -162,7 +193,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Employee",
+   "role": "All",
    "select": 1,
    "share": 1,
    "submit": 1,

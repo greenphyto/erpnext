@@ -23,7 +23,7 @@
  "list_columns": [],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2024-05-16 12:00:04.237695",
+ "modified": "2024-07-02 10:12:31.198457",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "facilities-service-reservation",
@@ -100,7 +100,7 @@
    "show_in_filter": 0
   },
   {
-   "allow_read_on_all_link_options": 0,
+   "allow_read_on_all_link_options": 1,
    "fieldname": "service",
    "fieldtype": "Link",
    "hidden": 0,
