@@ -272,6 +272,10 @@ class FacilitiesServiceReservation(Document):
 		elif self.status == "Finished":
 			self.process_return()
 
+def set_auto_acept(doc, method=""):
+	if doc.status == "Issued" and cint(frappe.get_value("Facility Service", doc.service, "auto_accept")):
+		doc.flags.autorun = 1
+		apply_workflow(doc, "Accept")
 
 def set_booking_to_rented():
 	until_time = get_datetime() + timedelta(minutes=15)
@@ -283,7 +287,7 @@ def set_booking_to_rented():
 	for d in data:
 		doc = frappe.get_doc("Facilities Service Reservation", d.name)
 		doc.flags.autorun = 1
-		apply_workflow("Start", doc)
+		apply_workflow(doc, "Start")
 
 @frappe.whitelist()
 def get_events(start, end, user=None, for_reminder=False, filters=None):

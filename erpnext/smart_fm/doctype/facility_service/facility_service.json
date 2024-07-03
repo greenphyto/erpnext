@@ -12,6 +12,7 @@
   "service_name",
   "description",
   "enable",
+  "auto_accept",
   "column_break_xnk1f",
   "image",
   "preview",
@@ -196,11 +197,17 @@
    "fieldname": "reservation_form",
    "fieldtype": "Heading",
    "label": "Reservation Form"
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_accept",
+   "fieldtype": "Check",
+   "label": "Auto Accept"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-12-11 18:30:01.189739",
+ "modified": "2024-07-03 15:57:32.553717",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facility Service",
@@ -237,7 +244,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Building Management",
+   "role": "Building Management (Manager)",
    "share": 1,
    "write": 1
   }
