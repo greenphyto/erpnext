@@ -190,7 +190,7 @@ class FacilitiesServiceReservation(Document):
 		doc = frappe.get_doc("Facility Service", self.service)
 		if state[0] == "Started":
 			# validate 
-			if not self.flags.autorun:
+			if not self.flags.autorun and self.status == "Issued":
 				self.validate_force_start()
 
 			doc.set_rented(qty=self.qty)
@@ -278,7 +278,7 @@ def set_auto_acept(doc, method=""):
 		apply_workflow(doc, "Accept")
 
 def set_booking_to_rented():
-	until_time = get_datetime() + timedelta(minutes=15)
+	until_time = get_datetime() + timedelta(minutes=15) # 15 minute tolerance
 	data = frappe.db.get_list("Facilities Service Reservation", {
 		"processed": 0,
 		"from_time":['<=', until_time],
@@ -288,6 +288,18 @@ def set_booking_to_rented():
 		doc = frappe.get_doc("Facilities Service Reservation", d.name)
 		doc.flags.autorun = 1
 		apply_workflow(doc, "Start")
+
+def set_finish_rent():
+	until_time = get_datetime() - timedelta(minutes=15) # 15 minute tolerance
+	data = frappe.db.get_list("Facilities Service Reservation", {
+		"processed": 0,
+		"from_time":['>=', until_time],
+		"status":"Accepted"
+	}, "name")
+	for d in data:
+		doc = frappe.get_doc("Facilities Service Reservation", d.name)
+		doc.flags.autorun = 1
+		apply_workflow(doc, "Finish")
 
 @frappe.whitelist()
 def get_events(start, end, user=None, for_reminder=False, filters=None):

@@ -432,7 +432,8 @@ scheduler_events = {
             "erpnext.smart_fm.controllers.smart_fm.send_due_date_notification_task"
 		],
         "*/15 * * * *":[
-            "erpnext.smart_fm.doctype.facilities_service_reservation.facilities_service_reservation.set_booking_to_rented"
+            "erpnext.smart_fm.doctype.facilities_service_reservation.facilities_service_reservation.set_booking_to_rented",
+            "erpnext.smart_fm.doctype.facilities_service_reservation.facilities_service_reservation.set_finish_rent"
 		]
 	},
 	"all": [
