@@ -123,7 +123,7 @@
    "fieldname": "section_break_qyttx",
    "fieldtype": "Section Break",
    "hide_border": 1,
-   "label": "Description"
+   "label": "Details"
   },
   {
    "fieldname": "storage_duration",
@@ -164,7 +164,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-02 10:43:32.391990",
+ "modified": "2024-07-02 16:36:45.595839",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Goods Receipt Request",
