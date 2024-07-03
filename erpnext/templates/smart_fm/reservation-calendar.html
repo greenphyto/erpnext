@@ -1,1 +1,62 @@
 <div id='calendar'></div>
+<style>
+    .color-info{
+        td:first-child{
+            width: 95px;
+        }
+        td:nth-child(2){
+            font-size: 0.92em;
+        }
+        h4{
+            font-size: 1.2em !important;
+        }
+        .status-tag{
+            background-color: orange;
+            color: black;
+            text-align: center;
+            margin: 2px 8px;
+            font-size: 0.8em;
+            padding: 3px 10px;
+            width: 100px;
+            border-radius: 20px;
+        }
+        .issued { background-color: orange;}
+        .accepted { background-color: blue; color: white;}
+        .start { background-color: green; color: white;}
+        .finished { background-color: purple; color: white;}
+        .cancelled { background-color: grey; color: white;}
+        .rejected { background-color: red; color: white;}
+
+    }
+</style>
+<div id='calendar-info'>
+    <div class="color-info">
+        <h4>Colour information:</h4>
+        <table class="color-detail">
+            <tr>
+                <td><div class="status-tag issued">Issued</div></td>
+                <td>Registered request and waiting for approval</td>
+            </tr>
+            <tr>
+                <td><div class="status-tag accepted">Accepted</div></td>
+                <td>Request already accepted</td>
+            </tr>
+            <tr>
+                <td><div class="status-tag start">Start</div></td>
+                <td>Start using on requested time</td>
+            </tr>
+            <tr>
+                <td><div class="status-tag finished">Finished</div></td>
+                <td>End of rent period</td>
+            </tr>
+            <tr>
+                <td><div class="status-tag cancelled">Cancelled</div></td>
+                <td>Cancel request</td>
+            </tr>
+            <tr>
+                <td><div class="status-tag rejected">Rejected</div></td>
+                <td>Rejected request</td>
+            </tr>
+        </table>
+    </div>
+</div>
