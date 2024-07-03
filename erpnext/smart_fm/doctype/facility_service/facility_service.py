@@ -92,7 +92,13 @@ class FacilityService(Document):
 
 		return valid
 
-		
+@frappe.whitelist()
+def get_facility(txt=""):
+	filters = {"enable":1}
+	if txt:
+		filters['name'] = ['like', "%"+txt+"%"]
+
+	return frappe.db.get_all("Facility Service", filters, ['name as label', 'name as value'])
 
 
 

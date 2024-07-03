@@ -2,6 +2,7 @@ class FacilityCalendar{
   constructor(class_name){
     this.wrapper = $(class_name);
     this.initial_date = new Date();
+    this.filter_values = [];
     this.run();
   }
 
@@ -33,12 +34,16 @@ class FacilityCalendar{
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
-        right: "newReservation"
+        right: "filterFacilities newReservation"
       },
       customButtons: {
         newReservation: {
           text: 'New Reservation',
           click: me.make_new_reservation
+        },
+        filterFacilities: {
+          text: 'Filter',
+          click: me.filter_facilities
         }
       },
       events: (opts, callback)=>{
@@ -59,6 +64,46 @@ class FacilityCalendar{
     window.location.href = "/menu/facilities-service-reservation/new";
   }
 
+  filter_facilities(){
+    var me = frappe.calendar;
+    if (!this.filters){
+      var d = new frappe.ui.Dialog({
+        title: __(`Filter`),
+        fields: [
+          {
+            "label" : "Facility Service",
+            "fieldname": "facility",
+            "fieldtype": "Autocomplete",
+            "default": '',
+            'get_query':()=>{
+              return {
+                query: "erpnext.smart_fm.doctype.facility_service.facility_service.get_facility",
+              }
+            }
+          }
+        ],
+        primary_action: function(data) {
+          d.hide();
+          if (data.facility){
+            me.filter_values = [['name', '=', data.facility]];
+          }else{
+            me.filter_values = [];
+          }
+          me.calendar.refetchEvents();
+          console.log(data);
+        },
+        primary_action_label: __('Submit'),
+        secondary_action: function(){
+          d.hide();
+        },
+        secondary_action_label: __("Close"),
+      });
+      this.filters = d;
+      // var wrapper = d.fields_dict.img.$wrapper;
+    }
+    this.filters.show();
+  }
+
   get_events(opts, callback){
     var me = this;
     var start = frappe.datetime.get_datetime_as_string(opts.start);
@@ -69,7 +114,7 @@ class FacilityCalendar{
       args:{
         start:start,
         end:end,
-        filters:[]
+        filters:me.filter_values
       },
       callback:(r)=>{
         var events = me.prepare_events(r.message);
