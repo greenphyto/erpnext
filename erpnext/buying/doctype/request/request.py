@@ -1,11 +1,12 @@
 # Copyright (c) 2024, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-import frappe
+import frappe, json
 from frappe.model.document import Document
 from frappe.utils import getdate, flt
 from frappe import _
 from erpnext.controllers.foms import UOM_MAP
+from six import string_types
 class Request(Document):
 	def validate(self):
 		self.calculate_price()
@@ -91,3 +92,39 @@ def create_sales_order(request_name):
 	doc.submit()
 
 	return doc.name
+
+@frappe.whitelist()
+def update_request(request_no, items, delivery_date=""):
+	"""
+	# only can change qty, not for package
+	# can delete or add?
+	items = [
+		{
+			"item_code":"",
+			"qty":0,
+			"uom":"",
+			"packaging":"",
+			"delete":False
+		}
+	]
+	"""
+
+	if isinstance(items, string_types):
+		items = json.loads(items)
+
+	doc = frappe.get_doc("Request", request_no)
+	if delivery_date:
+		doc.delivery_date = getdate(delivery_date)
+	
+	for d in items:
+		d = frappe._dict(d)
+		items = doc.get("items", {"item_code":d.item_code})
+		if items:
+			item = items[0]
+			item.qty = d.qty
+			item.db_update()
+
+	doc.validate()
+	doc.db_update()
+
+	return request_no
