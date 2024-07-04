@@ -99,9 +99,14 @@ class FacilityCalendar{
         secondary_action_label: __("Close"),
       });
       this.filters = d;
-      // var wrapper = d.fields_dict.img.$wrapper;
+      // modal-dialog-scrollable
+      this.filters.show();
+      // remove scrollable class
+      this.filters.$wrapper.find(".modal-dialog").removeClass("modal-dialog-scrollable");
+      console.log(d);
+    }else{
+      this.filters.show();
     }
-    this.filters.show();
   }
 
   get_events(opts, callback){
