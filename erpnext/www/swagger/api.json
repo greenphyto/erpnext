@@ -1073,6 +1073,60 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.update_request_data": {
+      "post": {
+        "summary": "Update Request Data",
+        "description": "Update selected Request to new qty or delivery date",
+        "operationId": "Update request data",
+        "requestBody": {
+          "description": {
+            "test":123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data":{
+                    "request_no":"REQ0001/2024", 
+                    "items":[{
+                      "item_code":"PR-AV-KLL",
+                      "qty":6
+                    }], 
+                    "delivery_date": "2024-08-25"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "RequestNo":""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
     }
   },
   "components": {

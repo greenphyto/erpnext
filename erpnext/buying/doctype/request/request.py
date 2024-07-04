@@ -35,13 +35,13 @@ class Request(Document):
 			return
 		
 		doc = frappe.get_doc("Sales Order", so_name)
-		doc.delivery_date = self.delivery_date
-
+		doc.delivery_date = getdate(self.delivery_date)
 		update_list = []
 		for d in self.get("items"):
 			items = doc.get("items", {"item_code":d.item_code})
 			if items:
 				item = items[0]
+				item.delivery_date = getdate(self.delivery_date)
 				item.qty = d.qty
 				update_list.append(d)
 

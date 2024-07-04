@@ -398,7 +398,7 @@ def create_material_consume(data):
 		"StockEntryNo":result
 	}
 
-from erpnext.buying.doctype.request.request import create_request_form as _create_request_form
+from erpnext.buying.doctype.request.request import create_request_form as _create_request_form, update_request
 @frappe.whitelist()
 def create_request_form(data):
 	"""
@@ -430,3 +430,7 @@ def create_request_form(data):
 @frappe.whitelist()
 def create_finish_goods_stock(data):
 	return _create_finish_goods_stock(data)
+
+@frappe.whitelist()
+def update_request_data(data):
+	return update_request(data.get("request_no"), data.get("items"), data.get("delivery_date"))
