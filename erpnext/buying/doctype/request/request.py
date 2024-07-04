@@ -69,3 +69,11 @@ def get_packaging_name(packaging, qty, uom, total_weight):
 		doc.insert(ignore_permissions=1)
 		return doc.name
 
+@frappe.whitelist()
+def create_sales_order(request_name):
+	doc = frappe.get_doc("Request", request_name)
+	# new doc
+	# set value
+	# internal customer
+
+	return 'SO010/05/2023'

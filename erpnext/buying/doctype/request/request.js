@@ -25,9 +25,33 @@ frappe.ui.form.on("Request", {
 				}
 			}
 		})
+
 	},
+	refresh:function(frm){
+		if (frm.doc.docstatus == 1){
+			frm.add_custom_button(__('Sales Order'), ()=>{
+				frm.cscript.make_sales_order(frm);
+			}, __('Create'));
+		}
+	}
 });
 
 function update_weight(frm) {
 	frm.set_value("weight", flt(frm.doc.quantity * frm.doc.packaging_size));
 }
+
+frappe.provide("cur_frm.cscript")
+$.extend(cur_frm.cscript, {
+	make_sales_order: function(frm){
+		frappe.call({
+			method:"erpnext.buying.doctype.request.request.create_sales_order",
+			args:{
+				request_name:frm.doc.name
+			},
+			callback:(r)=>{
+				frappe.set_route("Form", "Sales Order", r.message);
+			}
+		})
+		console.log("hello", frm)
+	}
+})
