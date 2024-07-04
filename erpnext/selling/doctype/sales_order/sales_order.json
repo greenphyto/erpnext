@@ -157,6 +157,7 @@
   "select_print_heading",
   "language",
   "additional_info_section",
+  "request_no",
   "is_internal_customer",
   "represents_company",
   "column_break_152",
@@ -1624,13 +1625,20 @@
   {
    "fieldname": "column_break_152",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "request_no",
+   "fieldtype": "Link",
+   "label": "Request No",
+   "options": "Request",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-15 11:01:43.597696",
+ "modified": "2024-07-04 19:15:01.518015",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

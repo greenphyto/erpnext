@@ -29,6 +29,27 @@ class Request(Document):
 			d.weight = flt(d.unit_weight) * flt(d.qty)
 			self.total_weight += d.weight
 
+	def sync_request_so(self):
+		so_name = frappe.db.exists("Sales Order", {"request_no":self.name, "docstatus":1})
+		if not so_name:
+			return
+		
+		doc = frappe.get_doc("Sales Order", so_name)
+		doc.delivery_date = self.delivery_date
+
+		update_list = []
+		for d in self.get("items"):
+			items = doc.get("items", {"item_code":d.item_code})
+			if items:
+				item = items[0]
+				item.qty = d.qty
+				update_list.append(d)
+
+		doc.validate()
+		for item in doc.get("items"):
+			item.db_update()
+		doc.db_update()
+
 
 def create_request_form(data):
 
@@ -77,6 +98,7 @@ def create_sales_order(request_name):
 	doc = frappe.new_doc("Sales Order")
 	doc.customer = "Internal Customer"
 	doc.delivery_date = getdate(req.delivery_date)
+	doc.request_no = req.name
 
 	# set value
 	for d in req.get("items"):
@@ -125,6 +147,7 @@ def update_request(request_no, items, delivery_date=""):
 			item.db_update()
 
 	doc.validate()
+	doc.sync_request_so()
 	doc.db_update()
 
 	return request_no
