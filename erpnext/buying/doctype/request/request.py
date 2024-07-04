@@ -71,9 +71,23 @@ def get_packaging_name(packaging, qty, uom, total_weight):
 
 @frappe.whitelist()
 def create_sales_order(request_name):
-	doc = frappe.get_doc("Request", request_name)
+	req = frappe.get_doc("Request", request_name)
 	# new doc
-	# set value
-	# internal customer
+	doc = frappe.new_doc("Sales Order")
+	doc.customer = "Internal Customer"
+	doc.delivery_date = getdate(req.delivery_date)
 
-	return 'SO010/05/2023'
+	# set value
+	for d in req.get("items"):
+		row = doc.append("items")
+		row.item_code = d.item_code
+
+		# need convertion from package vs stock qty
+		row.qty = d.qty
+		row.uom = d.uom
+
+	# internal customer
+	doc.insert(ignore_permissions=1)
+	doc.submit()
+
+	return doc.name
