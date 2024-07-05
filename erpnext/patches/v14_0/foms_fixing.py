@@ -1,4 +1,4 @@
-import frappe
+import frappe, json
 from erpnext.controllers.foms import (
 	get_raw_material, create_raw_material, get_products, get_recipe,create_foms_data,
 	create_bom_products, get_work_order, create_work_order,get_bom_for_work_order
@@ -17,3 +17,17 @@ def re_sync_foms_work_order():
 
     # resync
     get_work_order()
+
+"""
+bench --site test4 execute erpnext.patches.v14_0.foms_fixing.fix_raw_material_name
+"""
+def fix_raw_material_name():
+    # renew item name based on log
+    logs = frappe.db.get_all("FOMS Data Mapping", {"data_type":"Raw Material"}, ['raw_data', 'doc_name'])
+    # if item name not match, renew
+    for log in logs:
+        data = json.loads(log.raw_data)
+        item_name = frappe.get_value("Item", log.doc_name, "item_name")
+        if data.get('rawMaterialName') and item_name != data['rawMaterialName']:
+            print("rename", log['doc_name'], "to", data['rawMaterialName'])
+            frappe.db.set_value("Item", log['doc_name'], "item_name", data['rawMaterialName'])
