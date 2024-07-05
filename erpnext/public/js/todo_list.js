@@ -17,13 +17,13 @@ $.extend(frappe.listview_settings["ToDo"], {
 
 		me.todo_sidebar_setup = true;
 	},
-    get_form_link: function(doc){
-        if (doc.reference_type && doc.reference_name){
-            return frappe.utils.get_form_link(doc.reference_type, doc.reference_name)
-        }else{
-            return `/app/todo/${encodeURIComponent(cstr(doc.name))}`;
-        }
-    },
+    // get_form_link: function(doc){
+    //     if (doc.reference_type && doc.reference_name){
+    //         return frappe.utils.get_form_link(doc.reference_type, doc.reference_name)
+    //     }else{
+    //         return `/app/todo/${encodeURIComponent(cstr(doc.name))}`;
+    //     }
+    // },
     button: {
 		show: function (doc) {
 			return doc.reference_name;
