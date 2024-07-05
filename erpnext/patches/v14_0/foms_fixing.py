@@ -35,7 +35,7 @@ def fix_raw_material_name():
 """
 bench --site test3 execute erpnext.patches.v14_0.foms_fixing.refetch_item_name
 """
-def refetch_item_name(item_code=""):
+def refetch_item_name(item_code="", debug=0):
     # BOM
     # Work Order
     table_name = {
@@ -56,7 +56,9 @@ def refetch_item_name(item_code=""):
 
     for key, val in table_name.items():
         for table in val:
-            print("Update to ", table)
+            if debug:
+                print("Update to ", table)
+                
             frappe.db.sql("""
             UPDATE `tab{}` b
                     LEFT JOIN
@@ -66,4 +68,4 @@ def refetch_item_name(item_code=""):
             WHERE 
                 b.item_code is not null 
                 {}
-            """.format(table, cond), {"item_code":item_code}, debug=1)
+            """.format(table, cond), {"item_code":item_code}, debug=debug)
