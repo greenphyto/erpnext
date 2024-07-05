@@ -31,3 +31,24 @@ def fix_raw_material_name():
         if data.get('rawMaterialName') and item_name != data['rawMaterialName']:
             print("rename", log['doc_name'], "to", data['rawMaterialName'])
             frappe.db.set_value("Item", log['doc_name'], "item_name", data['rawMaterialName'])
+
+"""
+bench --site test3 execute erpnext.patches.v14_0.foms_fixing.refetch_item_name
+"""
+def refetch_item_name():
+    # BOM
+    # Work Order
+    table_name = {
+        "BOM":["BOM Item"],
+        "Work Order":["Work Order Item"]
+    }
+
+    for key, val in table_name.items():
+        for table in val:
+            frappe.db.sql("""
+            UPDATE `tab{}` b
+                    LEFT JOIN
+                `tabItem` i ON i.name = b.item_code 
+            SET 
+                b.item_name = i.item_name           
+            """.format(table), debug=1)
