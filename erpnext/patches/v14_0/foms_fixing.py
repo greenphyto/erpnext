@@ -35,20 +35,35 @@ def fix_raw_material_name():
 """
 bench --site test3 execute erpnext.patches.v14_0.foms_fixing.refetch_item_name
 """
-def refetch_item_name():
+def refetch_item_name(item_code=""):
     # BOM
     # Work Order
     table_name = {
         "BOM":["BOM Item"],
-        "Work Order":["Work Order Item"]
+        "Work Order":["Work Order Item"],
+        "Sales Order":["Sales Order Item"],
+        "Sales Invoice":["Sales Invoice Item"],
+        "Delivery Note":["Delivery Note Item"],
+        "Purchase Order":["Purchase Order Item"],
+        "Purchase Invoice":["Purchase Invoice Item"],
+        "Purchase Receipt":["Purchase Receipt Item"],
+        "Material Request":["Material Request Item"],
     }
+
+    cond = ""
+    if item_code:
+        cond = "and b.item_code = %(item_code)s"
 
     for key, val in table_name.items():
         for table in val:
+            print("Update to ", table)
             frappe.db.sql("""
             UPDATE `tab{}` b
                     LEFT JOIN
                 `tabItem` i ON i.name = b.item_code 
             SET 
-                b.item_name = i.item_name           
-            """.format(table), debug=1)
+                b.item_name = i.item_name 
+            WHERE 
+                b.item_code is not null 
+                {}
+            """.format(table, cond), {"item_code":item_code}, debug=1)
