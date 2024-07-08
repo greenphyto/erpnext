@@ -19,6 +19,7 @@
   "key_or_access_card_request_details_section",
   "request_access",
   "reason",
+  "key_issued",
   "section_break_pikoh",
   "datetime",
   "column_break_iplgx",
@@ -88,14 +89,14 @@
   },
   {
    "fieldname": "request_access",
-   "fieldtype": "Text",
+   "fieldtype": "Small Text",
    "in_list_view": 1,
    "label": "Area/Door/Resource Requesting Access To (please be specific)",
    "reqd": 1
   },
   {
    "fieldname": "reason",
-   "fieldtype": "Text",
+   "fieldtype": "Small Text",
    "label": "Reason for Requesting Key or Access Card",
    "reqd": 1
   },
@@ -253,12 +254,18 @@
    "fieldtype": "Check",
    "label": "Returned",
    "read_only": 1
+  },
+  {
+   "fieldname": "key_issued",
+   "fieldtype": "Link",
+   "label": "Key Issued",
+   "options": "Key"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-12 12:16:56.028608",
+ "modified": "2024-07-08 14:28:27.809372",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Key Control",
