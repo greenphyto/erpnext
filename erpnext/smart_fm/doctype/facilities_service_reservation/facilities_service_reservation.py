@@ -121,7 +121,7 @@ class FacilitiesServiceReservation(Document):
 			"from_time":self.from_time,
 			"to_time":self.to_time,
 			"name":self.name
-		}, as_dict=1, debug=1)
+		}, as_dict=1, debug=0)
 
 		if data:
 			return cint(data[0].get("qty"))
@@ -292,12 +292,11 @@ def set_booking_to_rented():
 		apply_workflow(doc, "Start")
 
 def set_finish_rent():
-	until_time = get_datetime() - timedelta(minutes=15) # 15 minute tolerance
+	until_time = get_datetime() + timedelta(minutes=15) # 15 minute tolerance
 	data = frappe.db.get_list("Facilities Service Reservation", {
-		"processed": 0,
-		"from_time":['>=', until_time],
-		"status":"Accepted"
-	}, "name")
+		"to_time":['<=', until_time],
+		"status":"Started"
+	}, "name", debug=1)
 	for d in data:
 		doc = frappe.get_doc("Facilities Service Reservation", d.name)
 		doc.flags.autorun = 1
