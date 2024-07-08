@@ -105,12 +105,14 @@ class FacilitiesServiceReservation(Document):
 				and 
 					( 
 						( 
-							from_time >= %(from_time)s and from_time <= %(to_time)s
+							from_time > %(from_time)s and from_time < %(to_time)s
 						) or (
-							to_time >= %(from_time)s and to_time <= %(to_time)s
+							to_time > %(from_time)s and to_time < %(to_time)s
 						) or (
-							from_time <= %(from_time)s and to_time >= %(to_time)s
-						)
+							from_time < %(from_time)s and to_time > %(to_time)s
+						) or (
+					   		from_time = %(from_time)s and to_time = %(to_time)s
+					    )
 					)
 				and service = %(service)s
 					   and name != %(name)s
@@ -119,7 +121,7 @@ class FacilitiesServiceReservation(Document):
 			"from_time":self.from_time,
 			"to_time":self.to_time,
 			"name":self.name
-		}, as_dict=1, debug=0)
+		}, as_dict=1, debug=1)
 
 		if data:
 			return cint(data[0].get("qty"))
