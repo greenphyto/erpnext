@@ -12,10 +12,11 @@
   "column_break_rid2v",
   "datetime",
   "section_break_lncqi",
-  "device_id",
-  "location",
+  "description",
   "section_break_zkku3",
-  "description"
+  "device_id",
+  "column_break_ir65k",
+  "location"
  ],
  "fields": [
   {
@@ -43,6 +44,7 @@
    "fieldtype": "Datetime",
    "in_list_view": 1,
    "label": "Datetime",
+   "read_only": 1,
    "reqd": 1
   },
   {
@@ -68,11 +70,15 @@
    "fieldtype": "Small Text",
    "label": "Description",
    "reqd": 1
+  },
+  {
+   "fieldname": "column_break_ir65k",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-08 16:06:46.819897",
+ "modified": "2024-07-08 16:21:07.347193",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Alarm",

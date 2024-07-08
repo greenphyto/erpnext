@@ -1,6 +1,6 @@
 import frappe, json
 from six import string_types
-from frappe.utils import get_url
+from frappe.utils import get_url, flt
 
 @frappe.whitelist(allow_guest=0)
 def qrcode():
@@ -67,3 +67,34 @@ def save_widget_settings(user, data):
 
 
 	return "Success"
+
+@frappe.whitelist()
+def create_alram_signal(data):
+	"""
+	data = {
+		"title":"",
+		"priority":"Minor",
+		"datetime":"2024-06-01 23:09",
+		"description":"fire signal",
+		"device_id":"",
+		"location":"",
+		"id":"0",
+	}
+	"""
+	if isinstance(data, string_types):
+		data = frappe._dict(json.loads(data))
+
+	name = frappe.db.exists("FOMS Alarm", {"ref_id":flt(data.get("id"))})
+	if name:
+		pass
+	else:
+		doc = frappe.new_doc("FOMS Alarm")
+		data['ref_id'] = data['id']
+		doc.update(data)
+		doc.insert(ignore_permissions=1)
+		name = doc.name
+
+	return {
+		"AlarmNo":name
+	}
+		
