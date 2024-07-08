@@ -1,0 +1,100 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2024-07-08 16:04:07.350434",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "priority",
+  "column_break_rid2v",
+  "datetime",
+  "section_break_lncqi",
+  "device_id",
+  "location",
+  "section_break_zkku3",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title"
+  },
+  {
+   "default": "Minor",
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Priority",
+   "options": "Critical\nMajor\nMinor",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_rid2v",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Now",
+   "fieldname": "datetime",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Datetime",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_lncqi",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "device_id",
+   "fieldtype": "Data",
+   "label": "Device ID"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location"
+  },
+  {
+   "fieldname": "section_break_zkku3",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-07-08 16:06:46.819897",
+ "modified_by": "Administrator",
+ "module": "FOMS",
+ "name": "FOMS Alarm",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "title",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title"
+}
