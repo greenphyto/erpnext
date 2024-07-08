@@ -81,6 +81,7 @@
    "fieldname": "service",
    "fieldtype": "Link",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Facility Service",
    "options": "Facility Service",
    "reqd": 1
@@ -163,8 +164,10 @@
    "allow_on_submit": 1,
    "default": "Draft",
    "fieldname": "status",
-   "fieldtype": "Data",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
    "label": "Status",
+   "options": "Draft\nIssued\nAccepted\nStarted\nRejected\nFinished\nCancelled",
    "read_only": 1
   },
   {
@@ -270,7 +273,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-02 10:16:46.802203",
+ "modified": "2024-07-08 11:25:33.030089",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facilities Service Reservation",
