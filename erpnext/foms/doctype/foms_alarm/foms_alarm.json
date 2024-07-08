@@ -16,7 +16,8 @@
   "section_break_zkku3",
   "device_id",
   "column_break_ir65k",
-  "location"
+  "location",
+  "ref_id"
  ],
  "fields": [
   {
@@ -74,11 +75,17 @@
   {
    "fieldname": "column_break_ir65k",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ref_id",
+   "fieldtype": "Data",
+   "label": "Ref ID",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-08 16:21:07.347193",
+ "modified": "2024-07-08 16:35:59.418309",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Alarm",
