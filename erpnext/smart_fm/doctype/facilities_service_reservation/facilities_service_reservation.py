@@ -50,6 +50,7 @@ class FacilitiesServiceReservation(Document):
 		self.validate_time_service()
 		self.validate_service()
 		self.update_booking()
+		self.check_scheduler_change_needed()
 
 	def on_update_after_submit(self):
 		self.update_booking()
@@ -284,9 +285,29 @@ class FacilitiesServiceReservation(Document):
 		elif self.status == "Finished":
 			self.process_return()
 
+	def check_scheduler_change_needed(self):
+		old_doc = self.get_doc_before_save()
+		generate = False
+		if old_doc:
+			watch_field = ["from_date", "to_date", "end_time", "start_time"]
+			for field in watch_field:
+				print(294, old_doc.get(field),  self.get(field))
+				if get_datetime(old_doc.get(field)) != get_datetime(self.get(field)):
+					print("generate")
+					generate = True
+					break
+					
+				if old_doc.get("repeat_data") != self.get("repeat_data"):
+					generate = True
+		else:
+			generate = True
+
+		if generate:
+			self.make_schedule()
+
 	# log create
 	def make_schedule(self):
-		day_count = (getdate(self.to_date) - getdate(self.from_date)).days # escape for the last day (to date)
+		day_count = (getdate(self.to_date) - getdate(self.from_date)).days + 1 
 		start_date = getdate(self.from_date)
 		print(day_count)
 		delete_log(self.name)
