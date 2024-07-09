@@ -9,6 +9,7 @@ from datetime import timedelta
 from frappe.desk.reportview import get_filters_cond
 from frappe.model.workflow import apply_workflow
 from six import string_types
+from datetime import datetime
 
 WEEKDAY = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 WEEKDAY_BY_NAME = {
@@ -327,7 +328,12 @@ class FacilitiesServiceReservation(Document):
 						return True
 			_run_date(cond=cond)
 		elif "anually_on_month_date" in self.repeat_data:
-			pass
+			temp = self.repeat_data.split(":")[-1]
+			use_date = datetime.strptime(f"{temp} 2000", "%B %d %Y") #2000 is just for helper
+			def cond(date):
+				if date.month == use_date.month and date.day == use_date.day:
+					return True
+			_run_date(cond=cond)
 
 # log delete
 def delete_log(reff):
