@@ -10,12 +10,15 @@
   "date",
   "start",
   "end",
-  "reservation_no"
+  "reservation_no",
+  "facility_service"
  ],
  "fields": [
   {
    "fieldname": "date",
    "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Date"
   },
   {
@@ -30,13 +33,25 @@
   },
   {
    "fieldname": "reservation_no",
-   "fieldtype": "Data",
-   "label": "Reservation No"
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Reservation No",
+   "options": "Facilities Service Reservation"
+  },
+  {
+   "fetch_from": "reservation_no.service",
+   "fieldname": "facility_service",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Facility Service",
+   "options": "Facility Service"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-09 11:44:52.256072",
+ "modified": "2024-07-09 15:46:11.723193",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Reservation Time Log",

@@ -78,19 +78,19 @@ class FacilitiesServiceReservation(Document):
 	def validate_time_service(self):
 		self.get_service_detail()
 		# validate date
-		diff = getdate(self.to_date) - getdate(self.from_date)
-		current = getdate(self.from_date)
-		valid_days = self.service_doc.get_valid_days()
-		for d in range(diff.days or 1):
-			current = add_days(current, d)
-			day_name = current.strftime("%A")
-			if day_name not in valid_days:
-				frappe.throw("This service only available on <b>{}</b>.".format(", ".join(valid_days)))
+		# diff = getdate(self.to_date) - getdate(self.from_date)
+		# current = getdate(self.from_date)
+		# valid_days = self.service_doc.get_valid_days()
+		# for d in range(diff.days or 1):
+		# 	current = add_days(current, d)
+		# 	day_name = current.strftime("%A")
+		# 	if day_name not in valid_days:
+		# 		frappe.throw("This service only available on <b>{}</b>.".format(", ".join(valid_days)))
 
 		# validate time
 		start = get_time(self.service_doc.time_start or "")
 		ends = get_time(self.service_doc.time_end or "")
-		if get_time(self.start_time) < start or get_time(self.end_time) > ends:
+		if (get_time(self.start_time) < start or get_time(self.end_time) > ends) and not self.all_day:
 			frappe.throw("This service only available at <b>{}-{}</b>.".format(start, ends))
 
 	def get_qty_at_time(self):
@@ -275,10 +275,50 @@ class FacilitiesServiceReservation(Document):
 			self.process_return()
 
 	# log create
-	# log delete
+	def make_schedule(self):
+		day_count = (getdate(self.to_date) - getdate(self.from_date)).days
+		start_date = getdate(self.from_date)
+		print(day_count)
+		delete_log(self.name)
+		def _run_date(cond):
+			for i in range(day_count):
+				date = add_days(start_date, i)
+				if cond(date):
+					create_log(date, self.from_time, self.to_time, self.name, self.service)
+
+		if self.repeat_data == "daily":
+			def cond(date):
+				return True
+			_run_date(cond=cond)
+		elif self.repeat_data == "every_weekday":
+			def cond(date):
+				if date.weekday() in [0,1,2,3,4]:
+					return True
+			_run_date(cond=cond)
+		elif "weekly_on_day_name" in self.repeat_data:
+			pass
+		elif "monthly_on_nth_day" in self.repeat_data:
+			pass
+		elif "anually_on_month_date" in self.repeat_data:
+			pass
+
+# log delete
+def delete_log(reff):
+	frappe.db.sql("delete from `tabReservation Time Log` where reservation_no=%s", reff)
+
+def create_log(date, from_time, to_time, reff, facility_service):
+	doc = frappe.new_doc("Reservation Time Log")
+	date = getdate(date)
+	doc.start = get_datetime(from_time).replace(day=date.day, month=date.month, year=date.year)
+	doc.end = get_datetime(to_time).replace(day=date.day, month=date.month, year=date.year)
+	doc.date = date
+	doc.reservation_no = reff
+	doc.facility_service = facility_service
+	doc.insert(ignore_permissions=1)
+	return doc.name
 
 # delete log more than 2 years old
-# generate log for next 3 years, if end forever but the log left only to this year
+# generate log for next 2 years, if end forever but the log left only to this year
 
 def set_auto_acept(doc, method=""):
 	if doc.status == "Issued" and cint(frappe.get_value("Facility Service", doc.service, "auto_accept")):
