@@ -11,6 +11,15 @@ from frappe.model.workflow import apply_workflow
 from six import string_types
 
 WEEKDAY = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+WEEKDAY_BY_NAME = {
+	"Monday":0, 
+	"Tuesday":1, 
+	"Wednesday":2, 
+	"Thursday":3, 
+	"Friday":4, 
+	"Saturday":5, 
+	"Sunday":6
+}
 
 COLOR_MAP = {
 	"primary": "#007BFF",
@@ -112,7 +121,7 @@ class FacilitiesServiceReservation(Document):
 							from_time < %(from_time)s and to_time > %(to_time)s
 						) or (
 					   		from_time = %(from_time)s and to_time = %(to_time)s
-					    )
+						)
 					)
 				and service = %(service)s
 					   and name != %(name)s
@@ -276,7 +285,7 @@ class FacilitiesServiceReservation(Document):
 
 	# log create
 	def make_schedule(self):
-		day_count = (getdate(self.to_date) - getdate(self.from_date)).days
+		day_count = (getdate(self.to_date) - getdate(self.from_date)).days # escape for the last day (to date)
 		start_date = getdate(self.from_date)
 		print(day_count)
 		delete_log(self.name)
@@ -296,9 +305,27 @@ class FacilitiesServiceReservation(Document):
 					return True
 			_run_date(cond=cond)
 		elif "weekly_on_day_name" in self.repeat_data:
-			pass
+			day_name = self.repeat_data.split(":")[-1]
+			selected_day = WEEKDAY_BY_NAME[day_name]
+			def cond(date):
+				if date.weekday() == selected_day:
+					return True
+			_run_date(cond=cond)
 		elif "monthly_on_nth_day" in self.repeat_data:
-			pass
+			temp = self.repeat_data.split(":")
+			nth_week = {
+				"first":1,
+				"second":2,
+				"third":3,
+				"fourth":4,
+				"fifth":5,
+			}.get(temp[1])
+			selected_day = WEEKDAY_BY_NAME.get(temp[2])
+			def cond(date):
+				if date.weekday() == selected_day:
+					if get_nth_week_of_date(date)==nth_week:
+						return True
+			_run_date(cond=cond)
 		elif "anually_on_month_date" in self.repeat_data:
 			pass
 
@@ -317,10 +344,22 @@ def create_log(date, from_time, to_time, reff, facility_service):
 	doc.insert(ignore_permissions=1)
 	return doc.name
 
+
 # delete log more than 2 years old
 # generate log for next 2 years, if end forever but the log left only to this year
 
-def set_auto_acept(doc, method=""):
+def get_nth_week_of_date(date):
+	first_date = date.replace(day=1)
+	first_weekday = first_date.weekday()
+	use_weekday = first_weekday + 1
+	if use_weekday == 7:
+		use_weekday = 0
+
+	diff = use_weekday + date.day
+	res = diff // 7 + 1
+	return res
+
+def set_auto_accept(doc, method=""):
 	if doc.status == "Issued" and cint(frappe.get_value("Facility Service", doc.service, "auto_accept")):
 		doc.flags.autorun = 1
 		apply_workflow(doc, "Accept")

@@ -400,7 +400,7 @@ doc_events = {
         "after_insert": "erpnext.smart_fm.doctype.visitor_registration.visitor_registration.process_workflow"
 	},
     "Facilities Service Reservation": {
-        "after_insert": "erpnext.smart_fm.doctype.facilities_service_reservation.facilities_service_reservation.set_auto_acept"
+        "after_insert": "erpnext.smart_fm.doctype.facilities_service_reservation.facilities_service_reservation.set_auto_accept"
 	}
 }
 
