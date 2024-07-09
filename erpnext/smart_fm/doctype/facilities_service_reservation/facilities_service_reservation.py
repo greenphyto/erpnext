@@ -290,11 +290,15 @@ class FacilitiesServiceReservation(Document):
 		start_date = getdate(self.from_date)
 		print(day_count)
 		delete_log(self.name)
+		max_year = start_date.year + 2
 		def _run_date(cond):
 			for i in range(day_count):
 				date = add_days(start_date, i)
 				if cond(date):
 					create_log(date, self.from_time, self.to_time, self.name, self.service)
+				
+				if date.year > max_year:
+					break
 
 		if self.repeat_data == "daily":
 			def cond(date):
@@ -306,6 +310,7 @@ class FacilitiesServiceReservation(Document):
 					return True
 			_run_date(cond=cond)
 		elif "weekly_on_day_name" in self.repeat_data:
+			max_year = start_date.year + 2
 			day_name = self.repeat_data.split(":")[-1]
 			selected_day = WEEKDAY_BY_NAME[day_name]
 			def cond(date):
@@ -313,6 +318,7 @@ class FacilitiesServiceReservation(Document):
 					return True
 			_run_date(cond=cond)
 		elif "monthly_on_nth_day" in self.repeat_data:
+			max_year = start_date.year + 5
 			temp = self.repeat_data.split(":")
 			nth_week = {
 				"first":1,
@@ -328,6 +334,7 @@ class FacilitiesServiceReservation(Document):
 						return True
 			_run_date(cond=cond)
 		elif "anually_on_month_date" in self.repeat_data:
+			max_year = start_date.year + 20
 			temp = self.repeat_data.split(":")[-1]
 			use_date = datetime.strptime(f"{temp} 2000", "%B %d %Y") #2000 is just for helper
 			def cond(date):
