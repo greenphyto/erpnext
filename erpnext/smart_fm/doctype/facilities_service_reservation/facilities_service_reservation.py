@@ -54,9 +54,9 @@ class FacilitiesServiceReservation(Document):
 			self.status = "Issued"
 
 	def before_validate(self):
-		if (self.all_day and not self.multi_days):
+		if (self.all_day and not self.repeat_data):
 			self.to_date = self.from_date
-		elif not self.all_day and not self.multi_days:
+		elif not self.all_day and not self.repeat_data:
 			self.to_date = self.from_date
 		
 		# setup datetime

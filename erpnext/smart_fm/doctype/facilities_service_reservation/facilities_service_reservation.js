@@ -39,17 +39,17 @@ frappe.ui.form.on('Facilities Service Reservation', {
 		frm.cscript.setup_preview();
 		frm.cscript.setup_value();
 	},
-	multi_days:function(frm){
-		frm.cscript.setup_value();
-		frm.cscript.setup_preview();
-	},
 	service: function(frm){
 		frm.cscript.set_time_option();
 	},
 	repeat: function(frm){
 
 		frm.cscript.open_repeat_selector();
-	}
+	},
+	repeat_data:function(frm){
+		frm.cscript.setup_value();
+		frm.cscript.setup_preview();
+	},
 });
 
 var START_TIME = '09:00';
@@ -69,7 +69,7 @@ $.extend(cur_frm.cscript, {
 		var to_date = me.frm.fields_dict.to_date;
 		var from_time = me.frm.fields_dict.from_time;
 		var to_time = me.frm.fields_dict.to_time;
-		if (me.frm.doc.all_day || me.frm.doc.multi_days){
+		if (me.frm.doc.all_day){
 			me.frm.set_df_property("end_time", "hidden", 1);
 			me.frm.set_df_property("start_time", "hidden", 1);
 		}else{
@@ -78,7 +78,7 @@ $.extend(cur_frm.cscript, {
 		}
 		
 		// if multi days: hide time
-		if (me.frm.doc.multi_days){
+		if (me.frm.doc.repeat_data){
 			me.frm.set_df_property("to_date", "hidden", 0);
 			from_date.df.label = "From Date";
 			from_date.refresh();
@@ -94,12 +94,12 @@ $.extend(cur_frm.cscript, {
 
 		var time_list = me.frm.fields_dict.start_time.df.options.split("\n");
 
-		if (me.frm.doc.all_day || me.frm.doc.multi_days){
+		if (me.frm.doc.all_day || me.frm.doc.repeat_data){
 			me.frm.set_value("start_time", time_list[0]);
 			me.frm.set_value("end_time", time_list[time_list.length-1]);
 			
 		}
-		if (!me.frm.doc.multi_days){
+		if (!me.frm.doc.repeat_data){
 			me.frm.set_value("to_date", me.frm.doc.from_date);
 		}
 	},
@@ -198,12 +198,13 @@ $.extend(cur_frm.cscript, {
 		}
 
 		var cur_date = me.frm.doc.from_date;
+		var to_date = me.frm.doc.to_date;
 		var opts = get_options(cur_date);
 		var d = new frappe.ui.Dialog({
 			title: __('Select schedule'),
 			fields: [
 				{
-					"label" : "Date",
+					"label" : "From Date",
 					"fieldname": "date",
 					"fieldtype": "Date",
 					"reqd": 1,
@@ -214,6 +215,21 @@ $.extend(cur_frm.cscript, {
 						opts = get_options(date);
 						d.set_df_property("repeat_on", "options", opts);
 					}
+				},
+				{
+					"fieldname": "column_break_ymsww",
+					"fieldtype": "Column Break"
+				},
+				{
+					"label" : "To Date",
+					"fieldname": "to_date",
+					"fieldtype": "Date",
+					"reqd": 1,
+					"default": to_date
+				},
+				{
+					"fieldname": "section_break_a46we",
+					"fieldtype": "Section Break",
 				},
 				{
 					"label" : "Repeat on",
@@ -228,6 +244,7 @@ $.extend(cur_frm.cscript, {
 				var data = d.get_values();
 				me.frm.do_not_reset_repeat_on = 1;
 				me.frm.set_value("from_date", data.date);
+				me.frm.set_value("to_date", data.to_date);
 				if (data.repeat_on=="no_repeat"){
 					me.frm.set_value("repeat_data", "");
 					me.frm.set_value("repeat_on", "");

@@ -32,7 +32,6 @@
   "total_duration",
   "column_break_ymsww",
   "all_day",
-  "multi_days",
   "repeat_on",
   "repeat",
   "repeat_data",
@@ -241,13 +240,6 @@
    "label": "All Day"
   },
   {
-   "default": "0",
-   "fieldname": "multi_days",
-   "fieldtype": "Check",
-   "hidden": 1,
-   "label": "Multi Days"
-  },
-  {
    "fieldname": "column_break_ymsww",
    "fieldtype": "Column Break"
   },
@@ -294,7 +286,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-09 12:46:14.928853",
+ "modified": "2024-07-09 14:41:13.197139",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facilities Service Reservation",
