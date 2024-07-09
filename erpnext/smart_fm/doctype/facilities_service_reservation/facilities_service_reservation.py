@@ -274,6 +274,12 @@ class FacilitiesServiceReservation(Document):
 		elif self.status == "Finished":
 			self.process_return()
 
+	# log create
+	# log delete
+
+# delete log more than 2 years old
+# generate log for next 3 years, if end forever but the log left only to this year
+
 def set_auto_acept(doc, method=""):
 	if doc.status == "Issued" and cint(frappe.get_value("Facility Service", doc.service, "auto_accept")):
 		doc.flags.autorun = 1
