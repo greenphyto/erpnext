@@ -273,6 +273,7 @@
   {
    "fieldname": "repeat_data",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Repeat data",
    "read_only": 1
   },
@@ -286,7 +287,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-09 14:41:13.197139",
+ "modified": "2024-07-10 15:14:32.917942",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facilities Service Reservation",

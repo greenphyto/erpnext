@@ -55,13 +55,16 @@ frappe.ready(function() {
 	})
 
 	// multi_days
-	frappe.web_form.on("multi_days", (frm, value)=>{
-		frappe.web_form.setup_value();
-		frappe.web_form.setup_preview();
-	})
+	// frappe.web_form.on("multi_days", (frm, value)=>{
+	// 	frappe.web_form.setup_value();
+	// 	frappe.web_form.setup_preview();
+	// })
+
+	setup_repeat_button(frappe.web_form);
 
 })
 
+console.log("from controller")
 
 function setup(){
 	frappe.provide("frappe.web_form")
@@ -165,3 +168,120 @@ function setup(){
 		}
 	})
 }
+
+function setup_repeat_button(frm){
+	var wrapper = frm.fields_dict.repeat.$wrapper;
+	var btn_wrapper = $(wrapper.find(".control-input"));
+	wrapper.empty().append(`<div class="btn btn-secondary btn-repeat">Repeat</div>`);
+	wrapper.on("click", ".btn-repeat", ()=>{
+		open_repeat_selector(frm);
+	})
+	console.log(174, btn_wrapper);
+}
+
+
+function open_repeat_selector(frm){
+	var me = {
+		frm:frm
+	}
+	var use_date, day_no, day_name, nth_day, date_name;
+	function get_options(date){
+		use_date = date;
+		day_no = new Date(use_date).getDay();
+		day_name = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][day_no];
+		nth_day = nthDate(use_date);
+		date_name = moment(use_date).format("MMMM D");
+
+		return [
+			{label:"Does not repeat", 	value:"no_repeat"},
+			{label:"Daily", 			value:"daily"},
+			{label:`Weekly on ${day_name}`, value:`weekly_on_day_name:${day_name}`},
+			{label:`Monthly on the ${nth_day} ${day_name}`, value:`monthly_on_nth_day:${nth_day}:${day_name}`},
+			{label:`Annually on ${date_name}`, value:`anually_on_month_date:${date_name}`},
+			{label:`Every weekday (Monday to Friday)`, value:"every_weekday"},
+			{label:`Custom`, value:"custom"}
+		]
+	}
+
+	function get_cur_default(opts){
+		var cur_select = me.frm.doc.repeat_data;
+		if (!cur_select) return "no_repeat";
+
+		var def = $.map(opts, r=>{ if (r.value==me.frm.doc.repeat_data) return r.value})[0] || "no_repeat";
+
+		return def;
+	}
+
+	var cur_date = me.frm.doc.from_date;
+	var to_date = me.frm.doc.to_date;
+	var opts = get_options(cur_date);
+	var d = new frappe.ui.Dialog({
+		title: __('Select schedule'),
+		fields: [
+			{
+				"label" : "From Date",
+				"fieldname": "date",
+				"fieldtype": "Date",
+				"reqd": 1,
+				"default": cur_date,
+				"onchange": function(){
+					var date = d.get_value("date");
+					// change options
+					opts = get_options(date);
+					d.set_df_property("repeat_on", "options", opts);
+				}
+			},
+			{
+				"fieldname": "column_break_ymsww",
+				"fieldtype": "Column Break"
+			},
+			{
+				"label" : "To Date",
+				"fieldname": "to_date",
+				"fieldtype": "Date",
+				"reqd": 1,
+				"default": to_date
+			},
+			{
+				"fieldname": "section_break_a46we",
+				"fieldtype": "Section Break",
+			},
+			{
+				"label" : "Repeat on",
+				"fieldname": "repeat_on",
+				"fieldtype": "Select",
+				"reqd": 1,
+				"default": get_cur_default(opts),
+				"options": opts
+			},
+		],
+		primary_action: function() {
+			var data = d.get_values();
+			me.frm.do_not_reset_repeat_on = 1;
+			me.frm.set_value("from_date", data.date);
+			me.frm.set_value("to_date", data.to_date);
+			if (data.repeat_on=="no_repeat"){
+				me.frm.set_value("repeat_data", "");
+				me.frm.set_value("repeat_on", "");
+			}else{
+				me.frm.set_value("repeat_data", data.repeat_on);
+				var label = $.map(opts, r=>{ if (r.value==data.repeat_on) return r.label})[0] || "";
+				me.frm.set_value("repeat_on", label);
+				setTimeout(()=>{
+					me.frm.do_not_reset_repeat_on = 0;
+				}, 200);
+			}
+
+			d.hide();
+		},
+		primary_action_label: __('Submit')
+	})
+	d.show();
+}
+
+function nthDate(date) {
+	date = new Date(date);
+	let nth = Math.ceil(date.getDate() / 7);
+	nth = ["first", "second", "third", "fourth", "fifth"][((nth + 90) % 100 - 10) % 10 - 1];
+	return `${nth}`;
+  }
