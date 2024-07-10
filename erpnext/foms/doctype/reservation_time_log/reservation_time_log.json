@@ -11,7 +11,8 @@
   "start",
   "end",
   "reservation_no",
-  "facility_service"
+  "facility_service",
+  "qty"
  ],
  "fields": [
   {
@@ -23,12 +24,14 @@
   },
   {
    "fieldname": "start",
-   "fieldtype": "Datetime",
+   "fieldtype": "Time",
+   "in_list_view": 1,
    "label": "Start"
   },
   {
    "fieldname": "end",
-   "fieldtype": "Datetime",
+   "fieldtype": "Time",
+   "in_list_view": 1,
    "label": "End"
   },
   {
@@ -47,11 +50,17 @@
    "in_standard_filter": 1,
    "label": "Facility Service",
    "options": "Facility Service"
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Qty"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-09 15:46:11.723193",
+ "modified": "2024-07-10 12:41:13.902848",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Reservation Time Log",

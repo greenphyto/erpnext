@@ -3,7 +3,7 @@
 
 import frappe, json
 from frappe.model.document import Document
-from frappe.utils import getdate, get_datetime, cint, add_days, get_time
+from frappe.utils import getdate, get_datetime, cint, add_days, get_time, format_date, format_time
 from frappe import _
 from datetime import timedelta
 from frappe.desk.reportview import get_filters_cond
@@ -48,9 +48,10 @@ class FacilitiesServiceReservation(Document):
 	def validate(self):
 		self.validate_time()
 		self.validate_time_service()
+		self.check_scheduler_change_needed()
 		self.validate_service()
 		self.update_booking()
-		self.check_scheduler_change_needed()
+		self.submit_log()
 
 	def on_update_after_submit(self):
 		self.update_booking()
@@ -108,54 +109,58 @@ class FacilitiesServiceReservation(Document):
 		if (get_time(self.start_time) < start or get_time(self.end_time) > ends) and not self.all_day:
 			frappe.throw("This service only available at <b>{}-{}</b>.".format(start, ends))
 
-	def get_qty_at_time(self):
-		data = frappe.db.sql("""
-			select 
-				sum(qty) as qty, service
-			from 
-				`tabFacilities Service Reservation`
-			where 
-				docstatus != 2
-				and status not in ("Rejected", "Cancelled")
-				and 
-					( 
-						( 
-							from_time > %(from_time)s and from_time < %(to_time)s
-						) or (
-							to_time > %(from_time)s and to_time < %(to_time)s
-						) or (
-							from_time < %(from_time)s and to_time > %(to_time)s
-						) or (
-					   		from_time = %(from_time)s and to_time = %(to_time)s
-						)
-					)
-				and service = %(service)s
-					   and name != %(name)s
-		""", {
-			"service":self.service,
-			"from_time":self.from_time,
-			"to_time":self.to_time,
-			"name":self.name
-		}, as_dict=1, debug=0)
-
-		if data:
-			return cint(data[0].get("qty"))
-		else:
-			return 0
-
-	def validate_service(self):
+	def validate_qty_at_time(self):
 		quantity_available = frappe.get_value("Facility Service", self.service, "available_qty")
 		if self.qty > quantity_available:
 			frappe.throw(_("This service is not avilable at your qty"))
 
-		# validate overlap
-		qty = self.get_qty_at_time()		
-		if qty:
-			available_qty_at_date = quantity_available - qty
-			if available_qty_at_date < self.qty:
-				frappe.throw(_("This service only available <b>{}</b> quantity at selected time".format( cint(available_qty_at_date) )))
+		data = frappe.db.sql("""
+			select 
+				reservation_no, qty, date, start, end
+			from 
+				`tabReservation Time Log`
+			where 
+				docstatus != 2
+				and date in %(date_list)s
+				and 
+					( 
+						( 
+							start > %(start_time)s and start < %(end_time)s
+						) or (
+							end > %(start_time)s and end < %(end_time)s
+						) or (
+							start < %(start_time)s and end > %(end_time)s
+						) or (
+					   		start = %(start_time)s and end = %(end_time)s
+						)
+					)
+				and facility_service = %(service)s
+				and reservation_no != %(name)s
+		""", {
+			"service":self.service,
+			"start_time":self.start_time,
+			"end_time":self.end_time,
+			"name":self.name,
+			"date_list": self.time_logs
+		}, as_dict=1, debug=0)
 
-			self.quantity_available = available_qty_at_date
+		error_msg = ""
+		if data:
+			error_msg += "<p>Not available service at this date:</p><ol>"
+			for d in data:
+				start_time = format_time(d.start, "HH:mm")
+				end_time = format_time(d.end, "HH:mm")
+				error_msg += f"<li><b>{format_date(d.date)}</b>, {start_time}-{end_time} available {quantity_available-cint(d.qty)} unit</li>"
+			error_msg+= "</ol>"
+
+		if error_msg:
+			frappe.throw(error_msg)
+
+	def validate_service(self):
+		
+
+		# validate overlap
+		self.validate_qty_at_time()
 
 	def on_submit(self):
 		pass
@@ -207,8 +212,8 @@ class FacilitiesServiceReservation(Document):
 		doc = frappe.get_doc("Facility Service", self.service)
 		if state[0] == "Started":
 			# validate 
-			if not self.flags.autorun and self.status == "Issued":
-				self.validate_force_start()
+			# if not self.flags.autorun and self.status == "Issued":
+				# self.validate_force_start()
 
 			doc.set_rented(qty=self.qty)
 			doc.set_booking(add_qty=self.qty * -1)
@@ -231,13 +236,13 @@ class FacilitiesServiceReservation(Document):
 		doc.db_update()
 
 
-	def validate_force_start(self):
-		self.from_time = getdate()
-		quantity_available = frappe.get_value("Facility Service", self.service, "available_qty")
-		qty = self.get_qty_at_time()
-		available_qty_at_date = quantity_available - qty
-		if available_qty_at_date < self.qty:
-			frappe.throw(_("Cannot rent at selected time"))
+	# def validate_force_start(self):
+	# 	self.from_time = getdate()
+	# 	quantity_available = frappe.get_value("Facility Service", self.service, "available_qty")
+	# 	qty = self.get_qty_at_time()
+	# 	available_qty_at_date = quantity_available - qty
+	# 	if available_qty_at_date < self.qty:
+	# 		frappe.throw(_("Cannot rent at selected time"))
 
 	def process_return(self, cancel=False):
 		self.return_date = get_datetime()
@@ -291,13 +296,12 @@ class FacilitiesServiceReservation(Document):
 
 	def check_scheduler_change_needed(self):
 		old_doc = self.get_doc_before_save()
+		self.time_logs = []
 		generate = False
 		if old_doc:
 			watch_field = ["from_date", "to_date", "end_time", "start_time"]
 			for field in watch_field:
-				print(294, old_doc.get(field),  self.get(field))
 				if get_datetime(old_doc.get(field)) != get_datetime(self.get(field)):
-					print("generate")
 					generate = True
 					break
 					
@@ -313,19 +317,22 @@ class FacilitiesServiceReservation(Document):
 	def make_schedule(self):
 		day_count = (getdate(self.to_date) - getdate(self.from_date)).days + 1 
 		start_date = getdate(self.from_date)
-		print(day_count)
 		delete_log(self.name)
 		max_year = start_date.year + 2
 		def _run_date(cond):
 			for i in range(day_count):
 				date = add_days(start_date, i)
 				if cond(date):
-					create_log(date, self.start_time, self.end_time, self.name, self.service)
+					self.time_logs.append(date)
 				
 				if date.year > max_year:
 					break
 
-		if self.repeat_data == "daily":
+		if not self.repeat_data:
+			def cond(date):
+				return True
+			_run_date(cond=cond)
+		elif self.repeat_data == "daily":
 			def cond(date):
 				return True
 			_run_date(cond=cond)
@@ -367,16 +374,23 @@ class FacilitiesServiceReservation(Document):
 					return True
 			_run_date(cond=cond)
 
+	def submit_log(self):
+		if self.time_logs:
+			for date in self.time_logs:
+				create_log(date, self.start_time, self.end_time, self.name, self.service, self.qty)
+
+
 # log delete
 def delete_log(reff):
 	frappe.db.sql("delete from `tabReservation Time Log` where reservation_no=%s", reff)
 
-def create_log(date, from_time, to_time, reff, facility_service):
+def create_log(date, from_time, to_time, reff, facility_service, qty):
 	doc = frappe.new_doc("Reservation Time Log")
 	date = getdate(date)
-	doc.start = get_datetime(from_time).replace(day=date.day, month=date.month, year=date.year)
-	doc.end = get_datetime(to_time).replace(day=date.day, month=date.month, year=date.year)
+	doc.start = get_time(from_time)
+	doc.end = get_time(to_time)
 	doc.date = date
+	doc.qty = qty
 	doc.reservation_no = reff
 	doc.facility_service = facility_service
 	doc.insert(ignore_permissions=1)
