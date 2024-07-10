@@ -452,11 +452,22 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 
 	filter_condition = get_filters_cond("Facilities Service Reservation", filters, [])
 
+	print(455, filters)
 	events = frappe.db.sql("""
-		select * 
-		from `tabFacilities Service Reservation` 
-		where docstatus != 2 {}
-	""".format(filter_condition), as_dict=1)
+		SELECT 
+			`tabFacilities Service Reservation`.name,
+			`tabFacilities Service Reservation`.full_name,
+			`tabFacilities Service Reservation`.service,
+			`tabFacilities Service Reservation`.status,
+			`tabFacilities Service Reservation`.all_day,
+			TIMESTAMP(`tabReservation Time Log`.date, `tabReservation Time Log`.start) as from_time,
+			TIMESTAMP(`tabReservation Time Log`.date, `tabReservation Time Log`.end) as to_time
+		FROM
+			`tabFacilities Service Reservation`
+				LEFT JOIN
+			`tabReservation Time Log` ON `tabReservation Time Log`.reservation_no = `tabFacilities Service Reservation`.name
+		where `tabFacilities Service Reservation`.docstatus != 2 {}
+	""".format(filter_condition), as_dict=1, debug=0)
 
 	style_map = {
 		"Issued": "warning",

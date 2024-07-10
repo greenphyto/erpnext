@@ -85,12 +85,11 @@ class FacilityCalendar{
         primary_action: function(data) {
           d.hide();
           if (data.facility){
-            me.filter_values = [['name', '=', data.facility]];
+            me.filter_values = [['service', '=', data.facility]];
           }else{
             me.filter_values = [];
           }
           me.calendar.refetchEvents();
-          console.log(data);
         },
         primary_action_label: __('Submit'),
         secondary_action: function(){
@@ -103,7 +102,6 @@ class FacilityCalendar{
       this.filters.show();
       // remove scrollable class
       this.filters.$wrapper.find(".modal-dialog").removeClass("modal-dialog-scrollable");
-      console.log(d);
     }else{
       this.filters.show();
     }
