@@ -89,14 +89,18 @@ class FacilitiesServiceReservation(Document):
 	def validate_time_service(self):
 		self.get_service_detail()
 		# validate date
-		# diff = getdate(self.to_date) - getdate(self.from_date)
-		# current = getdate(self.from_date)
-		# valid_days = self.service_doc.get_valid_days()
-		# for d in range(diff.days or 1):
-		# 	current = add_days(current, d)
-		# 	day_name = current.strftime("%A")
-		# 	if day_name not in valid_days:
-		# 		frappe.throw("This service only available on <b>{}</b>.".format(", ".join(valid_days)))
+		diff = getdate(self.to_date) - getdate(self.from_date)
+		current = getdate(self.from_date)
+		valid_days = self.service_doc.get_valid_days()
+		if diff.days < 7:
+			warn = True
+			for d in range(diff.days or 1):
+				current = add_days(current, d)
+				day_name = current.strftime("%A")
+				if day_name in valid_days:
+					warn = False
+			if warn:
+				frappe.throw("This service only available on <b>{}</b>.".format(", ".join(valid_days)))
 
 		# validate time
 		start = get_time(self.service_doc.time_start or "")
@@ -316,7 +320,7 @@ class FacilitiesServiceReservation(Document):
 			for i in range(day_count):
 				date = add_days(start_date, i)
 				if cond(date):
-					create_log(date, self.from_time, self.to_time, self.name, self.service)
+					create_log(date, self.start_time, self.end_time, self.name, self.service)
 				
 				if date.year > max_year:
 					break
