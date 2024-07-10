@@ -51,6 +51,9 @@ class FacilitiesServiceReservation(Document):
 		self.check_scheduler_change_needed()
 		self.validate_service()
 		self.update_booking()
+	
+	def on_submit(self):
+		self.make_schedule()
 		self.submit_log()
 
 	def on_update_after_submit(self):
@@ -141,7 +144,7 @@ class FacilitiesServiceReservation(Document):
 			"start_time":self.start_time,
 			"end_time":self.end_time,
 			"name":self.name,
-			"date_list": self.time_logs
+			"date_list": self.time_logs or ['']
 		}, as_dict=1, debug=0)
 
 		error_msg = ""
@@ -167,12 +170,10 @@ class FacilitiesServiceReservation(Document):
 		# validate overlap
 		self.validate_qty_at_time()
 
-	def on_submit(self):
-		pass
-
 	def on_cancel(self):
 		# if cancel at rented so minus the qty
 		# if cancel at returned so add the qty
+		self.delete_log()
 		if self.is_backdate():
 			return
 		
@@ -322,6 +323,7 @@ class FacilitiesServiceReservation(Document):
 	def make_schedule(self):
 		day_count = (getdate(self.to_date) - getdate(self.from_date)).days + 1 
 		start_date = getdate(self.from_date)
+		self.time_logs = []
 		delete_log(self.name)
 		max_year = start_date.year + 2
 		def _run_date(cond):

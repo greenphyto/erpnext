@@ -43,7 +43,9 @@ frappe.ui.form.on('Facilities Service Reservation', {
 		frm.cscript.set_time_option();
 	},
 	repeat: function(frm){
-		frm.cscript.open_repeat_selector();
+		if (frm.doc.docstatus==0){
+			frm.cscript.open_repeat_selector();
+		}
 	},
 	repeat_data:function(frm){
 		frm.cscript.setup_value();
@@ -183,7 +185,7 @@ $.extend(cur_frm.cscript, {
 				{label:`Monthly on the ${nth_day} ${day_name}`, value:`monthly_on_nth_day:${nth_day}:${day_name}`},
 				{label:`Annually on ${date_name}`, value:`anually_on_month_date:${date_name}`},
 				{label:`Every weekday (Monday to Friday)`, value:"every_weekday"},
-				{label:`Custom`, value:"custom"}
+				// {label:`Custom`, value:"custom"}
 			]
 		}
 

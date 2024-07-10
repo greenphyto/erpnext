@@ -175,7 +175,9 @@ function setup_repeat_button(frm){
 	var btn_wrapper = $(wrapper.find(".control-input"));
 	wrapper.empty().append(`<div class="btn btn-secondary btn-repeat">Repeat</div>`);
 	wrapper.on("click", ".btn-repeat", ()=>{
-		open_repeat_selector(frm);
+		if (frm.doc.docstatus==0){
+			open_repeat_selector(frm);
+		}
 	})
 }
 
@@ -199,7 +201,7 @@ function open_repeat_selector(frm){
 			{label:`Monthly on the ${nth_day} ${day_name}`, value:`monthly_on_nth_day:${nth_day}:${day_name}`},
 			{label:`Annually on ${date_name}`, value:`anually_on_month_date:${date_name}`},
 			{label:`Every weekday (Monday to Friday)`, value:"every_weekday"},
-			{label:`Custom`, value:"custom"}
+			// {label:`Custom`, value:"custom"}
 		]
 	}
 
