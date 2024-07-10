@@ -67,8 +67,6 @@ frappe.ready(function() {
 
 })
 
-console.log("from controller")
-
 function setup(){
 	frappe.provide("frappe.web_form")
 	$.extend(frappe.web_form, {
@@ -90,7 +88,7 @@ function setup(){
 			// if all day: hide time
 			var me = this;
 			var from_date = me.fields_dict.from_date;
-			if (me.doc.all_day || me.doc.repeat_data){
+			if (me.doc.all_day){
 				me.set_df_property("end_time", "hidden", 1);
 				me.set_df_property("start_time", "hidden", 1);
 			}else{
@@ -179,7 +177,6 @@ function setup_repeat_button(frm){
 	wrapper.on("click", ".btn-repeat", ()=>{
 		open_repeat_selector(frm);
 	})
-	console.log(174, btn_wrapper);
 }
 
 

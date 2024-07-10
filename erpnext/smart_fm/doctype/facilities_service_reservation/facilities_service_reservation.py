@@ -145,9 +145,14 @@ class FacilitiesServiceReservation(Document):
 		}, as_dict=1, debug=0)
 
 		error_msg = ""
+		i = 0
 		if data:
 			error_msg += "<p>Not available service at this date:</p><ol>"
 			for d in data:
+				if i >= 10:
+					error_msg+="<li>etc.</li>"
+					break
+				i += 1
 				start_time = format_time(d.start, "HH:mm")
 				end_time = format_time(d.end, "HH:mm")
 				error_msg += f"<li><b>{format_date(d.date)}</b>, {start_time}-{end_time} available {quantity_available-cint(d.qty)} unit</li>"
@@ -452,7 +457,6 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 
 	filter_condition = get_filters_cond("Facilities Service Reservation", filters, [])
 
-	print(455, filters)
 	events = frappe.db.sql("""
 		SELECT 
 			`tabFacilities Service Reservation`.name,
