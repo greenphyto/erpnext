@@ -52,13 +52,16 @@ frappe.ready(function() {
 	frappe.web_form.on("all_day", (frm, value)=>{
 		frappe.web_form.setup_preview();
 		frappe.web_form.setup_value();
+		frappe.web_form.set_total_duration();
 	})
 
-	// multi_days
-	// frappe.web_form.on("multi_days", (frm, value)=>{
-	// 	frappe.web_form.setup_value();
-	// 	frappe.web_form.setup_preview();
-	// })
+	// repeat_data
+	frappe.web_form.on("repeat_data", (frm, value)=>{
+		frappe.web_form.setup_value();
+		frappe.web_form.setup_preview();
+		frappe.web_form.set_total_duration();
+
+	})
 
 	setup_repeat_button(frappe.web_form);
 
@@ -72,7 +75,7 @@ function setup(){
 		set_total_duration(){
 			var me = this;
 			var seconds = 0;
-			if (me.doc.multi_days){
+			if (me.doc.repeat_data){
 				seconds = (moment(me.doc.to_date, 'YYYY-MM-DD') - moment(me.doc.from_date, 'YYYY-MM-DD')) / 1000 + 24 * 3600
 			}else{
 				seconds = (moment(me.doc.end_time, 'HH:mm') - moment(me.doc.start_time, 'HH:mm')) / 1000
@@ -87,7 +90,7 @@ function setup(){
 			// if all day: hide time
 			var me = this;
 			var from_date = me.fields_dict.from_date;
-			if (me.doc.all_day || me.doc.multi_days){
+			if (me.doc.all_day || me.doc.repeat_data){
 				me.set_df_property("end_time", "hidden", 1);
 				me.set_df_property("start_time", "hidden", 1);
 			}else{
@@ -96,7 +99,7 @@ function setup(){
 			}
 			
 			// if multi days: hide time
-			if (me.doc.multi_days){
+			if (me.doc.repeat_data){
 				me.set_df_property("to_date", "hidden", 0);
 				from_date.df.label = "From Date";
 				from_date.refresh();
@@ -112,12 +115,12 @@ function setup(){
 	
 			var time_list = me.fields_dict.start_time.df.options.split("\n");
 	
-			if (me.doc.all_day || me.doc.multi_days){
+			if (me.doc.all_day || me.doc.repeat_data){
 				me.set_value("start_time", time_list[0]);
 				me.set_value("end_time", time_list[time_list.length-1]);
 				
 			}
-			if (!me.doc.multi_days){
+			if (!me.doc.repeat_data){
 				me.set_value("to_date", me.doc.from_date);
 			}
 		},

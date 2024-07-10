@@ -43,7 +43,6 @@ frappe.ui.form.on('Facilities Service Reservation', {
 		frm.cscript.set_time_option();
 	},
 	repeat: function(frm){
-
 		frm.cscript.open_repeat_selector();
 	},
 	repeat_data:function(frm){
