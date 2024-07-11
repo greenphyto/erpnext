@@ -175,7 +175,7 @@ function setup_repeat_button(frm){
 	var btn_wrapper = $(wrapper.find(".control-input"));
 	wrapper.empty().append(`<div class="btn btn-secondary btn-repeat">Repeat</div>`);
 	wrapper.on("click", ".btn-repeat", ()=>{
-		if (frm.doc.docstatus==0){
+		if (cint(frm.doc.docstatus)==0){
 			open_repeat_selector(frm);
 		}
 	})
