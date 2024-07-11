@@ -611,7 +611,7 @@ def create_bom_products_version_1(log, product_id, submit=False):
 					row = bom.append("items")
 					row.item_code = rm.rawMaterialRefNo
 					row.uom = get_uom(rm.uomrm)
-					row.qty = rm.qtyrm
+					row.qty = rm.qtyrmInKg
 
 				bom.insert()
 				name = bom.name
@@ -630,7 +630,7 @@ def create_bom_products_version_1(log, product_id, submit=False):
 					row = bom.append("items")
 					row.item_code = rm.rawMaterialRefNo
 					row.uom = get_uom(rm.uomrm)
-					row.qty = rm.qtyrm
+					row.qty = rm.qtyrmInKg
 
 				bom.save()
 			
@@ -692,7 +692,7 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 						row = bom.append("items")
 						row.item_code = rm.rawMaterialRefNo
 						row.uom = get_uom(rm.uomrm)
-						row.qty = rm.qtyrm
+						row.qty = rm.qtyrmInKg
 						row.operation = operation_name
 			bom.save()
 			name = bom.name
