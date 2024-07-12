@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "RSV.####./.YYYY",
+ "autoname": "RSV.####.-.YYYY",
  "creation": "2023-11-15 14:17:38.141163",
  "default_view": "List",
  "doctype": "DocType",
@@ -32,7 +32,9 @@
   "total_duration",
   "column_break_ymsww",
   "all_day",
-  "multi_days",
+  "repeat_on",
+  "repeat",
+  "repeat_data",
   "column_break_ytwep",
   "purpose",
   "participants",
@@ -81,6 +83,7 @@
    "fieldname": "service",
    "fieldtype": "Link",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Facility Service",
    "options": "Facility Service",
    "reqd": 1
@@ -163,8 +166,10 @@
    "allow_on_submit": 1,
    "default": "Draft",
    "fieldname": "status",
-   "fieldtype": "Data",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
    "label": "Status",
+   "options": "Draft\nIssued\nAccepted\nStarted\nRejected\nFinished\nCancelled",
    "read_only": 1
   },
   {
@@ -232,13 +237,8 @@
    "default": "0",
    "fieldname": "all_day",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "All Day"
-  },
-  {
-   "default": "0",
-   "fieldname": "multi_days",
-   "fieldtype": "Check",
-   "label": "Multi Days"
   },
   {
    "fieldname": "column_break_ymsww",
@@ -265,12 +265,30 @@
    "fieldname": "preview",
    "fieldtype": "Image",
    "options": "preview_link"
+  },
+  {
+   "fieldname": "repeat_on",
+   "fieldtype": "Data",
+   "label": "Repeat On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "repeat",
+   "fieldtype": "Button",
+   "label": "Repeat"
+  },
+  {
+   "fieldname": "repeat_data",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Repeat data",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-02 10:16:46.802203",
+ "modified": "2024-07-12 11:28:06.354890",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facilities Service Reservation",
