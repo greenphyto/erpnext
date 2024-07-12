@@ -128,13 +128,11 @@ class FacilitiesServiceReservation(Document):
 				and 
 					( 
 						( 
-							start > %(start_time)s and start < %(end_time)s
+							start >= %(start_time)s and start < %(end_time)s
 						) or (
-							end > %(start_time)s and end < %(end_time)s
+							end > %(start_time)s and end <= %(end_time)s
 						) or (
-							start < %(start_time)s and end > %(end_time)s
-						) or (
-					   		start = %(start_time)s and end = %(end_time)s
+							start >= %(start_time)s and end <= %(end_time)s
 						)
 					)
 				and facility_service = %(service)s
@@ -301,6 +299,8 @@ class FacilitiesServiceReservation(Document):
 			self.process_return()
 
 	def check_scheduler_change_needed(self):
+		return self.make_schedule()
+	
 		old_doc = self.get_doc_before_save()
 		self.time_logs = []
 		generate = False
@@ -313,6 +313,7 @@ class FacilitiesServiceReservation(Document):
 					
 				if old_doc.get("repeat_data") != self.get("repeat_data"):
 					generate = True
+					break
 		else:
 			generate = True
 
@@ -329,7 +330,9 @@ class FacilitiesServiceReservation(Document):
 		def _run_date(cond):
 			for i in range(day_count):
 				date = add_days(start_date, i)
+				print(332, date)
 				if cond(date):
+					print(0000, date)
 					self.time_logs.append(date)
 				
 				if date.year > max_year:
