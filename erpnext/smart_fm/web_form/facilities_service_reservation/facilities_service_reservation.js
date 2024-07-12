@@ -49,11 +49,11 @@ frappe.ready(function() {
 	// })
 
 	// all_day
-	frappe.web_form.on("all_day", (frm, value)=>{
-		frappe.web_form.setup_preview();
-		frappe.web_form.setup_value();
-		frappe.web_form.set_total_duration();
-	})
+	// frappe.web_form.on("all_day", (frm, value)=>{
+	// 	frappe.web_form.setup_preview();
+	// 	frappe.web_form.setup_value();
+	// 	frappe.web_form.set_total_duration();
+	// })
 
 	// repeat_data
 	frappe.web_form.on("repeat_data", (frm, value)=>{
