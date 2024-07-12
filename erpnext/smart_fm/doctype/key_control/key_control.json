@@ -258,6 +258,8 @@
   {
    "fieldname": "key_issued",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Key Issued",
    "options": "Key"
   }
@@ -265,7 +267,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-08 14:28:27.809372",
+ "modified": "2024-07-12 09:29:11.261577",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Key Control",
