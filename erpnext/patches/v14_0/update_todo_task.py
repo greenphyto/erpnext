@@ -37,3 +37,13 @@ def update_force_bm_role():
             row.role = "Building Management"
             doc.save()
 
+"""
+bench --site smart-fm.arber.ai execute erpnext.patches.v14_0.update_todo_task.rename_reservation_doc
+"""
+def rename_reservation_doc():
+    for d in frappe.db.get_all("Facilities Service Reservation"):
+        name = d.name
+        if "/" in name:
+            new_name = name.replace("/", "-")
+            frappe.rename_doc("Facilities Service Reservation", name, new_name)
+            print("Renaming", name, new_name)
