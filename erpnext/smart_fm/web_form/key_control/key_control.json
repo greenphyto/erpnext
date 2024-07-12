@@ -1,10 +1,13 @@
 {
+ "accept_payment": 0,
  "allow_comments": 0,
  "allow_delete": 1,
  "allow_edit": 1,
  "allow_incomplete": 0,
  "allow_multiple": 1,
  "allow_print": 0,
+ "amount": 0.0,
+ "amount_based_on_field": 0,
  "anonymous": 0,
  "apply_document_permissions": 1,
  "breadcrumbs": "[\n    {\"label\": \"Home\", \"route\":\"/\"},\n    {\"label\": \"Requests\", \"route\":\"requests\"},\n    {\"label\": \"Key Control\", \"route\":\"requests/key-control\"}\n]",
@@ -37,7 +40,7 @@
  ],
  "login_required": 1,
  "max_attachment_size": 2,
- "modified": "2024-06-12 12:20:53.493261",
+ "modified": "2024-07-12 09:30:56.106483",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "key-control",
@@ -140,7 +143,7 @@
   {
    "allow_read_on_all_link_options": 0,
    "fieldname": "request_access",
-   "fieldtype": "Text",
+   "fieldtype": "Small Text",
    "hidden": 0,
    "label": "Area/Door/Resource Requesting Access To (please be specific)",
    "max_length": 0,
@@ -152,13 +155,39 @@
   {
    "allow_read_on_all_link_options": 0,
    "fieldname": "reason",
-   "fieldtype": "Text",
+   "fieldtype": "Small Text",
    "hidden": 0,
    "label": "Reason for Requesting Key or Access Card",
    "max_length": 0,
    "max_value": 0,
    "read_only": 0,
    "reqd": 1,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "fieldname": "key_issued",
+   "fieldtype": "Link",
+   "hidden": 0,
+   "label": "Key Issued",
+   "max_length": 0,
+   "max_value": 0,
+   "options": "Key",
+   "read_only": 0,
+   "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "fieldname": "",
+   "fieldtype": "Section Break",
+   "hidden": 0,
+   "label": "",
+   "max_length": 0,
+   "max_value": 0,
+   "options": "",
+   "read_only": 0,
+   "reqd": 0,
    "show_in_filter": 0
   },
   {
@@ -176,11 +205,27 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "fieldtype": "HTML",
+   "fieldname": "",
+   "fieldtype": "Column Break",
    "hidden": 0,
+   "label": "",
    "max_length": 0,
    "max_value": 0,
-   "options": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and agree to follow all building policies and regulations related to key and access card usage. I understand that I am responsible for the security of the key or access card issued to me and agree to return it upon termination of my access rights or upon request by Building Management.",
+   "options": "",
+   "read_only": 0,
+   "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "depends_on": "eval:doc.workflow_state == 'Started'",
+   "fieldname": "return_datetime",
+   "fieldtype": "Datetime",
+   "hidden": 0,
+   "label": "Return Date and Time",
+   "mandatory_depends_on": "eval:doc.workflow_state == 'Started'",
+   "max_length": 0,
+   "max_value": 0,
    "read_only": 0,
    "reqd": 0,
    "show_in_filter": 0
@@ -194,6 +239,17 @@
    "max_length": 0,
    "max_value": 0,
    "options": "",
+   "read_only": 0,
+   "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "fieldtype": "HTML",
+   "hidden": 0,
+   "max_length": 0,
+   "max_value": 0,
+   "options": "By submitting this form, I acknowledge that I have provided accurate information to the best of my knowledge and agree to follow all building policies and regulations related to key and access card usage. I understand that I am responsible for the security of the key or access card issued to me and agree to return it upon termination of my access rights or upon request by Building Management.",
    "read_only": 0,
    "reqd": 0,
    "show_in_filter": 0
@@ -345,15 +401,15 @@
   {
    "allow_read_on_all_link_options": 0,
    "fieldname": "workflow_state",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "hidden": 0,
    "label": "Workflow State",
    "max_length": 0,
    "max_value": 0,
-   "options": "\nDraft\nSubmitted\nApproved\nRejected\nIssued\nReturned",
-   "read_only": 1,
+   "options": "Workflow State",
+   "read_only": 0,
    "reqd": 0,
-   "show_in_filter": 1
+   "show_in_filter": 0
   }
  ],
  "website_sidebar": "Request from 3rd Party"
