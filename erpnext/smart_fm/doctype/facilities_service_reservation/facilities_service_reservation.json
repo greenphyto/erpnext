@@ -105,7 +105,7 @@
    "fetch_if_empty": 1,
    "fieldname": "quantity_available",
    "fieldtype": "Int",
-   "label": "Quantity Available",
+   "label": "Current Available",
    "read_only": 1
   },
   {
@@ -288,7 +288,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-12 11:28:07.354890",
+ "modified": "2024-07-15 15:52:05.470117",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Facilities Service Reservation",
