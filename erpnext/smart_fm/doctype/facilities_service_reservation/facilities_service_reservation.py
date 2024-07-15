@@ -121,9 +121,9 @@ class FacilitiesServiceReservation(Document):
 			frappe.throw("This service only available at <b>{}-{}</b>.".format(start, ends))
 
 	def validate_qty_at_time(self):
-		quantity_available = frappe.get_value("Facility Service", self.service, "available_qty")
-		if self.qty > quantity_available:
-			frappe.throw(_("This service is not avilable at your qty"))
+		# quantity_available = frappe.get_value("Facility Service", self.service, "available_qty")
+		# if self.qty > quantity_available:
+		# 	frappe.throw(_("This service is not avilable at your qty"))
 
 		data = frappe.db.sql("""
 			select 
