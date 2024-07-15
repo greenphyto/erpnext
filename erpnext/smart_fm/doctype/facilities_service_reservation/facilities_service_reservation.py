@@ -51,10 +51,16 @@ class FacilitiesServiceReservation(Document):
 		self.check_scheduler_change_needed()
 		self.validate_service()
 		self.update_booking()
+		self.make_reservation()
 	
-	def on_submit(self):
-		self.make_schedule()
-		self.submit_log()
+	def make_reservation(self):
+		state_flow = self.detect_workflow()
+		if not state_flow:
+			return
+		
+		if state_flow[0] == "Accepted":
+			self.make_schedule()
+			self.submit_log()
 
 	def on_update_after_submit(self):
 		self.update_booking()
@@ -171,7 +177,13 @@ class FacilitiesServiceReservation(Document):
 	def on_cancel(self):
 		# if cancel at rented so minus the qty
 		# if cancel at returned so add the qty
-		self.delete_log()
+		self.process_resv_return()
+
+	def on_trash(self):
+		self.process_resv_return()
+	
+	def process_resv_return(self):
+		delete_log(self.name)
 		if self.is_backdate():
 			return
 		
