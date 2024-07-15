@@ -53,12 +53,14 @@ class FacilitiesServiceReservation(Document):
 		self.update_booking()
 		self.make_reservation()
 	
-	def make_reservation(self):
+	def make_reservation(self, force=False):
+		return
+	
 		state_flow = self.detect_workflow()
-		if not state_flow:
+		if not state_flow and not force:
 			return
 		
-		if state_flow[0] == "Accepted":
+		if state_flow[0] == "Accepted" or force:
 			self.make_schedule()
 			self.submit_log()
 
@@ -311,26 +313,31 @@ class FacilitiesServiceReservation(Document):
 			self.process_return()
 
 	def check_scheduler_change_needed(self):
-		return self.make_schedule()
-	
 		old_doc = self.get_doc_before_save()
 		self.time_logs = []
 		generate = False
 		if old_doc:
-			watch_field = ["from_date", "to_date", "end_time", "start_time"]
-			for field in watch_field:
+			watch_time_field = ["from_date", "to_date", "end_time", "start_time"]
+			watch_field = ['service', 'qty', "repeat_data"]
+			for field in watch_time_field:
 				if get_datetime(old_doc.get(field)) != get_datetime(self.get(field)):
 					generate = True
 					break
-					
-				if old_doc.get("repeat_data") != self.get("repeat_data"):
+			
+			for field in watch_field:
+				if old_doc.get(field) != self.get(field):
 					generate = True
 					break
+				
+			if self.get("status") == 'Accepted' and old_doc.get("status") != self.get("status"):
+				generate = True
+
 		else:
 			generate = True
 
 		if generate:
 			self.make_schedule()
+			self.submit_log()
 
 	# log create
 	def make_schedule(self):

@@ -1,7 +1,7 @@
 {
  "allow_comments": 0,
- "allow_delete": 0,
- "allow_edit": 0,
+ "allow_delete": 1,
+ "allow_edit": 1,
  "allow_incomplete": 0,
  "allow_multiple": 1,
  "allow_print": 0,
@@ -20,7 +20,7 @@
  "list_columns": [],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2024-07-12 11:28:32.241113",
+ "modified": "2024-07-15 12:52:11.180442",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "facilities-service-reservation",
