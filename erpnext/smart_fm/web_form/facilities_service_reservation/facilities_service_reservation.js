@@ -31,6 +31,7 @@ frappe.ready(function() {
 
 	// // from_time
 	frappe.web_form.on("from_date", (frm, value)=>{
+		reset_repeat_on(frm);
 		frappe.web_form.set_total_duration();
 	})
 	frappe.web_form.on("to_date", (frm, value)=>{
@@ -66,6 +67,11 @@ frappe.ready(function() {
 	setup_repeat_button(frappe.web_form);
 
 })
+
+function reset_repeat_on(frm){
+	frappe.web_form.fields_dict.repeat_on.set_value("", true)
+	frappe.web_form.fields_dict.repeat_data.set_value("", true)
+}
 
 function setup(){
 	frappe.provide("frappe.web_form")
