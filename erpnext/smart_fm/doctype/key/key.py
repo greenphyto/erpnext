@@ -10,4 +10,4 @@ class Key(Document):
 
 @frappe.whitelist()
 def get_key():
-	return frappe.db.sql("select name as value, concat(name,' (',room,')') as label from `tabKey`", as_dict=True)
+	return frappe.db.sql("select name as value, concat(name,' (',room,')') as label from `tabKey` order by name", as_dict=True)

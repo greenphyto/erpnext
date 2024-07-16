@@ -5,6 +5,12 @@
 // {% include "erpnext/public/js/controllers/request_doc.js" %}
 
 frappe.ui.form.on('Key Control', {
+  setup(frm) {
+    frm.set_query("key_issued", () => {
+      return { page_length: 50 };
+    });
+  },
+
   onload: function (frm) {
     if (frm.is_new()) {
       frappe.db.get_value("User", frappe.session.user, ["email", "full_name", "phone", "mobile_no"])
