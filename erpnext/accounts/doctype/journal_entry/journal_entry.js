@@ -177,8 +177,9 @@ frappe.ui.form.on("Journal Entry", {
 		erpnext.journal_entry.set_exchange_rate_on_parent(frm);
 		erpnext.journal_entry.toggle_fields_based_on_currency(frm);
 	},
-
+	
 	exchange_rate: function(frm){
+		var company_currency = frappe.get_doc(":Company", frm.doc.company).default_currency;
 		$.each(frm.doc.accounts, (i, row)=>{
 			if (row.account_currency == frm.doc.currency_base){
 				row.exchange_rate = frm.doc.exchange_rate;
@@ -187,7 +188,22 @@ frappe.ui.form.on("Journal Entry", {
 
 				frappe.model.set_value(row.doctype, row.name, "credit",
 					flt(flt(row.credit_in_account_currency)*row.exchange_rate, precision("credit", row)));
-			};
+			}else if (row.account_currency == company_currency){
+				var credit = row.credit_in_currency_base;
+				var debit = row.debit_in_currency_base;
+				var exchange_rate = frm.doc.exchange_rate;
+				frappe.model.set_value(row.doctype, row.name, "debit",
+					flt(flt(debit)*exchange_rate, precision("debit", row)));
+
+				frappe.model.set_value(row.doctype, row.name, "credit",
+					flt(flt(credit)*exchange_rate, precision("credit", row)));
+
+				frappe.model.set_value(row.doctype, row.name, "debit_in_account_currency",
+					flt(flt(debit)*exchange_rate, precision("debit", row)));
+
+				frappe.model.set_value(row.doctype, row.name, "credit_in_account_currency",
+					flt(flt(credit)*exchange_rate, precision("credit", row)));
+			}
 		});
 
 		frm.cscript.update_totals(frm.doc);
