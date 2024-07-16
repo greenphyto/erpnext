@@ -199,7 +199,7 @@ class Asset(AccountsController):
 			error_message += _("Please do not book expense of multiple assets against one single Asset.")
 			frappe.throw(error_message, title=_("Invalid Gross Purchase Amount"))
 
-	def make_asset_movement(self):
+	def get_asset_movement_data(self):
 		reference_doctype = "Purchase Receipt" if self.purchase_receipt else "Purchase Invoice"
 		reference_docname = self.purchase_receipt or self.purchase_invoice
 		transaction_date = getdate(self.purchase_date)
@@ -216,9 +216,8 @@ class Asset(AccountsController):
 				"to_employee": self.custodian,
 			}
 		]
-		asset_movement = frappe.get_doc(
-			{
-				"doctype": "Asset Movement",
+
+		return {
 				"assets": assets,
 				"purpose": "Receipt",
 				"company": self.company,
@@ -226,8 +225,15 @@ class Asset(AccountsController):
 				"reference_doctype": reference_doctype,
 				"reference_name": reference_docname,
 			}
-		).insert()
-		asset_movement.submit()
+
+
+	def make_asset_movement(self):
+		data = self.get_asset_movement_data()
+		exist = frappe.db.get_value("Asset Movement Item", {"asset":self.name}, "parent")
+		if not exist:
+			data['doctype'] = "Asset Movement"
+			asset_movement = frappe.get_doc(data).insert()
+			asset_movement.submit()
 
 	def set_depreciation_rate(self):
 		for d in self.get("finance_books"):
@@ -259,13 +265,15 @@ class Asset(AccountsController):
 			self.number_of_depreciations_booked
 		)
 
-		has_pro_rata = self.check_is_pro_rata(finance_book)
-		if has_pro_rata:
-			number_of_pending_depreciations += 1
+		has_pro_rata = False # self.check_is_pro_rata(finance_book)
+		# if has_pro_rata:
+		# 	number_of_pending_depreciations += 1
 
 		skip_row = False
 
 		depreciation_start_date = finance_book.depreciation_start_date
+
+		schedule_date = depreciation_start_date
 
 		should_get_last_day = is_last_day_of_the_month(depreciation_start_date)
 
@@ -275,7 +283,6 @@ class Asset(AccountsController):
 				continue
 
 			depreciation_amount = get_depreciation_amount(self, value_after_depreciation, finance_book)
-
 			if not has_pro_rata or n < cint(number_of_pending_depreciations) - 1:
 				schedule_date = add_months(
 					depreciation_start_date, n * cint(finance_book.frequency_of_depreciation)
@@ -627,8 +634,8 @@ class Asset(AccountsController):
 							"Depreciation Row {0}: Expected value after useful life must be greater than or equal to {1}"
 						).format(row.idx, asset_value_after_full_schedule)
 					)
-				elif not row.expected_value_after_useful_life:
-					row.expected_value_after_useful_life = asset_value_after_full_schedule
+				# elif not row.expected_value_after_useful_life:
+				# 	row.expected_value_after_useful_life = asset_value_after_full_schedule
 
 	def validate_cancellation(self):
 		if self.status in ("In Maintenance", "Out of Order"):

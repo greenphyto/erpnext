@@ -336,6 +336,7 @@
    "fieldname": "target_exchange_rate",
    "fieldtype": "Float",
    "label": "Exchange Rate",
+   "precision": "5",
    "print_hide": 1,
    "reqd": 1
   },
@@ -734,7 +735,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-03 11:15:08.305020",
+ "modified": "2024-06-24 14:44:44.349580",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry",
