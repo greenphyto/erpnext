@@ -40,7 +40,7 @@
  ],
  "login_required": 1,
  "max_attachment_size": 2,
- "modified": "2024-07-12 09:30:56.106483",
+ "modified": "2024-07-16 09:58:41.231905",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "key-control",
@@ -165,7 +165,7 @@
    "show_in_filter": 0
   },
   {
-   "allow_read_on_all_link_options": 0,
+   "allow_read_on_all_link_options": 1,
    "fieldname": "key_issued",
    "fieldtype": "Link",
    "hidden": 0,
