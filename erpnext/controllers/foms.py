@@ -493,7 +493,7 @@ def create_raw_material(log):
 		doc.has_batch_no = 1
 		if doc.has_batch_no:
 			doc.create_new_batch = 1
-			doc.batch_number_series = log.rawMaterialRefNo + "-" + "BN.#####"
+			doc.batch_number_series = doc.item_code + "-" + "BN.#####"
 
 		doc.lead_time_days = cint(log.RequestLeadTime)
 		doc.min_order_qty = flt(log.MinimumOrderQuantity)
@@ -501,7 +501,8 @@ def create_raw_material(log):
 		doc.shelf_life_in_days = 365
 		doc.valuation_method = "FIFO"
 		doc.foms_raw_id = log.id
-		doc.insert()
+		doc.get_item_material_group(set_data=1)
+		doc.insert(ignore_permissions=1)
 		name = doc.name
 	else:
 		# validate_id
@@ -536,7 +537,8 @@ def create_products(log):
 		doc.item_group = types
 		doc.foms_product_id = log.id
 		doc.is_stock_item = 1
-		doc.insert()
+		doc.get_item_material_group(set_data=1)
+		doc.insert(ignore_permissions=1)
 		name = doc.name
 	else:
 		doc = frappe.get_doc("Item", name)
@@ -546,6 +548,7 @@ def create_products(log):
 		doc.item_group = types
 		if not doc.foms_product_id:
 			doc.foms_product_id = log.id
+		doc.get_item_material_group(set_data=1)
 		doc.save()
 
 	return name

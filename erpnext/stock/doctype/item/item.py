@@ -1057,6 +1057,23 @@ class Item(Document):
 		else:
 			self.material_number = ""
 
+	def get_item_material_group(self, set_data=False):
+		group_name = ""
+		if "RM-SD" in self.item_code:
+			group_name = "Seeds"
+		elif "RM-MS" in self.item_code:
+			group_name = ""
+		elif "RM-NS" in self.item_code:
+			group_name = "Nutrition"
+		elif "PR-AV" in self.item_code:
+			group_name = "Vegetables (Asian Vegetables)"
+		elif "PR-LV" in self.item_code:
+			group_name = "Vegetables (Lettuce)"
+		
+		if set_data and not self.get("material_group"):
+			self.material_group = group_name
+		
+		return group_name
 
 def make_item_price(item, price_list_name, item_price):
 	frappe.get_doc(
