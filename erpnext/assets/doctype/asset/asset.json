@@ -400,7 +400,7 @@
    "in_standard_filter": 1,
    "label": "Status",
    "no_copy": 1,
-   "options": "Draft\nSubmitted\nPartially Depreciated\nFully Depreciated\nSold\nScrapped\nIn Maintenance\nOut of Order\nIssue\nReceipt\nCapitalized\nDecapitalized",
+   "options": "Draft\nSubmitted\nPartially Depreciated\nFully Depreciated\nSold\nScrap Requestped\nIn Maintenance\nOut of Order\nIssue\nReceipt\nCapitalized\nDecapitalized",
    "read_only": 1
   },
   {
@@ -525,6 +525,7 @@
    "fieldname": "accumulated_depreciation_amount",
    "fieldtype": "Currency",
    "label": "Accumulated Depreciation Amount",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -583,7 +584,7 @@
    "link_fieldname": "asset"
   }
  ],
- "modified": "2024-01-09 16:34:29.176903",
+ "modified": "2024-07-17 12:28:34.537260",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",
