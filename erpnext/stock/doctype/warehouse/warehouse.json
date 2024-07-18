@@ -22,6 +22,10 @@
   "only_for_item",
   "company",
   "disabled",
+  "rack_details_section",
+  "row_no",
+  "level_no",
+  "lane_no",
   "address_and_contact",
   "address_html",
   "column_break_10",
@@ -268,13 +272,33 @@
    "fieldtype": "Data",
    "label": "FOMS Name",
    "read_only": 1
+  },
+  {
+   "fieldname": "rack_details_section",
+   "fieldtype": "Section Break",
+   "label": "Rack Details"
+  },
+  {
+   "fieldname": "row_no",
+   "fieldtype": "Data",
+   "label": "Row No"
+  },
+  {
+   "fieldname": "level_no",
+   "fieldtype": "Data",
+   "label": "Level No"
+  },
+  {
+   "fieldname": "lane_no",
+   "fieldtype": "Data",
+   "label": "Lane No"
   }
  ],
  "icon": "fa fa-building",
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-06-27 16:14:15.533026",
+ "modified": "2024-07-18 12:48:06.329826",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Warehouse",
