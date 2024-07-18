@@ -1,7 +1,7 @@
 import frappe
 from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
 from frappe.core.doctype.sync_log.sync_log import get_pending_log
-from frappe.utils import cint, flt, cstr, get_time, getdate
+from frappe.utils import cint, flt, cstr, get_time, getdate,add_days
 from erpnext.accounts.party import get_party_details
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
@@ -46,6 +46,7 @@ METHOD_MAP = {
 	"Customer":2,
 	"Warehouse":3,
 	"Purchase Receipt":4,
+	"Sales Order":5,
 }
 
 TRANFER_AGAIN = 'Work Order'
@@ -473,6 +474,72 @@ def _update_foms_customer(log, api=None):
 	res = api.create_or_update_customer(data)
 	update_reff_id(res, customer, "customerRefNo" )
 
+# SALES ORDER (POST)
+# _update_sales_order
+def update_foms_sales_order():
+	sync_controller("Sales Order", _update_foms_sales_order)
+
+def _update_foms_sales_order(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Sales Order", log.docname)
+	customer = frappe.get_doc("Customer", doc.customer)
+	farm_id = get_farm_id()
+
+	products = []
+	
+	for d in doc.get("items"):
+		item = {
+			"productId": 0,
+			"subSaleOrderNumber": "string",
+			"versionId": 0,
+			"customerOrderId": 0,
+			"saleOrderId": 0,
+			"isMixProduct": True,
+			"packageId": 0,
+			"quantity": 0,
+			"totalGrossWeight": 0,
+			"totalNetWeight": 0,
+			"weightAfterLoss": 0,
+			"unitPrice": 0,
+			"uom": "string",
+			"isRootInclude": True,
+			"workOrderId": 0,
+			"status": "string",
+			"noOfTray": 0,
+			"isWeightOrder": True,
+			"id": 0
+		}
+		products.append(item)
+
+	data = {
+		"customerId": customer.foms_id,
+		"purchaseOrderNumber": doc.po_no,
+		"farmId": farm_id,
+		"orderType": "string",
+		"source": "string",
+		"deliveryDate": get_foms_format(doc.delivery_date),
+		"startDeliveryDate": get_foms_format(doc.delivery_date),
+		"endDeliveryDate": get_foms_format(add_days(doc.delivery_date,1)),
+		"saleOrder": {
+			"purchaseOrderId": 0,
+			"farmId": 0,
+			"saleOrderNumber": doc.name,
+			"deliveryDate": get_foms_format(doc.delivery_date),
+			"subSaleOrders": products,
+			"id": 0
+		},
+		"id": 0
+	}
+
+	api.log = log
+	res = api.create_customer_order(data)
+	print(538, res)
+	# update_reff_id(res, customer, "customerRefNo" )
+
+def get_foms_format(date):
+	return getdate(date).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
 
 def create_raw_material(log):
 	name = frappe.get_value("Item", log.get("rawMaterialRefNo"))

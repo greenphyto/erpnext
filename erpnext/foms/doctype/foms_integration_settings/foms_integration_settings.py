@@ -246,4 +246,9 @@ class FomsAPI():
 		}
 		res = self.req("GET", "/Customer/GetAllCustomer", params=params )
 		return res
-		
+	
+	def create_customer_order(self, data):
+		data = self.convert_data(data)
+		res = self.req("POST", "/userportal/CustomerOrder/CreateOrUpdateCustomerOrder", data=data)
+
+		return res
