@@ -225,6 +225,16 @@ class VATAuditReport(object):
 								rate_based_dict.append(item_code)
 				except ValueError:
 					continue
+			else:
+				items = []
+				for item, detail in self.invoice_items.get(parent).items():
+					items.append(item)
+					taxes = [0, 0]
+					self.get_item_amount_map(parent, parenttype, item, taxes)
+
+				self.items_based_on_tax_rate.setdefault(parent, {}).setdefault(
+					0, items
+				)
 
 	def get_item_amount_map(self, parent, parenttype, item_code, taxes):
 		net_amount = flt(self.invoice_items.get(parent, {}).get(item_code, {}).get("net_amount"))
@@ -411,8 +421,6 @@ class VATAuditReport(object):
 						detail = self.item_tax_rate.get(inv) or {}
 						item_details = detail.get(item)
 
-
-
 						row['inv_date'] = inv_data.get("posting_date")
 						row["account"] = inv_data.get("account")
 						row["Invoice_No"]= inv_data.get("Invoice_No")
@@ -435,7 +443,7 @@ class VATAuditReport(object):
 
 						if inv_data.get("debit_note_transaction"):
 							row['posting_date'] = f"{inv} - Debit Note"
-							continue
+							# continue
 
 						if not item_details:
 							continue
