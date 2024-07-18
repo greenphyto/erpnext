@@ -18,6 +18,7 @@
   "is_wip_warehouse",
   "column_break_4",
   "account",
+  "only_for_item",
   "company",
   "disabled",
   "address_and_contact",
@@ -253,13 +254,20 @@
    "fieldtype": "Data",
    "label": "FOMS ID",
    "read_only": 1
+  },
+  {
+   "description": "If set, item stored to this warehouse will restricted",
+   "fieldname": "only_for_item",
+   "fieldtype": "Link",
+   "label": "Only for Item",
+   "options": "Item"
   }
  ],
  "icon": "fa fa-building",
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-05-20 17:53:14.261020",
+ "modified": "2024-06-06 14:44:44.247915",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Warehouse",

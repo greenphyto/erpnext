@@ -119,10 +119,6 @@ class GetData():
 		total_count = len(data)
 		for i in range(total_count):
 			do_create(i)
-			# try:
-			# 	do_create(i)
-			# except:
-			# 	continue
 
 
 # RAW MATERIAL (GET)
@@ -551,17 +547,16 @@ def get_operation_name(operation):
 	
 	return name
 
-def get_bom_for_work_order(item_code):
+def get_bom_for_work_order2(item_code):
 	return frappe.get_value("BOM", {
 		"item":item_code,
 		"operation_no":1,
 		"docstatus":1
 	}, "name", order_by="foms_recipe_version")
 
-def get_bom_for_work_order2(item_code):
+def get_bom_for_work_order(item_code):
 	return frappe.get_value("BOM", {
 		"item":item_code,
-		"operation_no":"",
 		"docstatus":1,
 		"is_default":1
 	}, "name", order_by="foms_recipe_version")
@@ -579,7 +574,8 @@ def get_work_order(show_progress=False, work_order=""):
 			bom_no = get_bom_for_work_order(item_code)
 			qty = 1
 
-			create_work_order(log, item_code, bom_no, qty, submit)
+			if bom_no:
+				create_work_order(log, item_code, bom_no, qty, submit)
 
 	def get_key_name(log):
 		return log.get("workOrderNo")
@@ -594,8 +590,8 @@ def get_work_order(show_progress=False, work_order=""):
 	).run()
 
 def create_work_order(log, item_code, bom_no, qty=1, submit=False, return_doc=False):
-	
 	doc = make_work_order(bom_no, item_code, qty)
+	validate_operation(doc)
 	doc.foms_work_order = log.workOrderNo
 	doc.foms_lot_id = log.lotID
 	doc.use_multi_level_bom = 0 #if use multi level bom it will use exploed items as raw material, but if not it will use bom items
@@ -607,6 +603,13 @@ def create_work_order(log, item_code, bom_no, qty=1, submit=False, return_doc=Fa
 	if return_doc:
 		return doc
 	return doc.name
+
+def validate_operation(doc):
+	# use default
+	workstation_warehouse = get_foms_settings("workstation")
+	for d in doc.operations:
+		if not d.get("workstation"):
+			d.workstation = workstation_warehouse
 
 def get_raw_item_foms(item_id="", item_code=""):
 	if item_id:
