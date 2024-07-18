@@ -39,7 +39,7 @@ class VATAuditReport(object):
 			columns = (
 				", supplier as party, credit_to as account, bill_no as Invoice_No"
 				if doctype == "Purchase Invoice"
-				else ", customer as party, debit_to as account, name as Invoice_No"
+				else ", customer as party, debit_to as account, name as Invoice_No, debit_note_transaction"
 			)
 			self.select_columns += columns
 
@@ -162,7 +162,7 @@ class VATAuditReport(object):
 			""".format(
 				  doc_type=tax_doctype
 			),
-			as_dict=1,
+			as_dict=1,debug=0
 		)
 	 
 		return items	
@@ -177,18 +177,27 @@ class VATAuditReport(object):
 		self.tax_details = list(frappe.db.sql(
 			"""
 			SELECT
-				t.parent, t.account_head, t.item_wise_tax_detail, t.parenttype, s.posting_date
+				s.name as parent,
+				t.account_head,
+				t.item_wise_tax_detail,
+				%(doctype)s as parenttype,
+				s.posting_date
 			FROM
-				`tab%s` t, `tab%s` s
+				`tab{}` s
+			LEFT JOIN 
+				`tab{}` t on t.parent = s.name
 			WHERE
-				s.name = t.parent
-				and t.parenttype = %s and t.docstatus in (1, 2)
-				and t.parent in (%s)
+				s.docstatus in (1, 2)
+				and s.name in %(invoices)s
 			ORDER BY
 				t.account_head
-			"""
-			% (self.tax_doctype,doctype, "%s", ", ".join(["%s"] * len(self.invoices.keys()))),
-			tuple([doctype] + list(self.invoices.keys()))
+			""".format(doctype, self.tax_doctype),
+			{
+				"doctype":doctype,
+				"tax_doctype":self.tax_doctype,
+				"invoices": [x for x in self.invoices.keys()]
+			}
+			, debug=0
 		))
 
 		self.tax_details += self.tax_detail_on_deleted 
@@ -379,12 +388,17 @@ class VATAuditReport(object):
 	def get_consolidated_data(self, doctype):
 		consolidated_data_map = {}
 		self.already_add = []
+		tax_doctype = (
+			"Purchase Taxes and Charges Template" if doctype == "Purchase Invoice" else "Sales Taxes and Charges Template"
+		)
+		default_for_zero_tax = frappe.get_value(tax_doctype, {"default_for_zero":1}) or ""
 		for inv, inv_data in self.invoices.items():
-			if self.items_based_on_tax_rate.get(inv):
-				for rate, items in self.items_based_on_tax_rate.get(inv).items():
+			if True:
+				data = self.items_based_on_tax_rate.get(inv) or {0: ['']}
+				for rate, items in data.items():
 					row = {"tax_amount": 0.0, "gross_amount": 0.0, "net_amount": 0.0}
 					docprefix = _("purchases ") if doctype == "Purchase Invoice" else _("sales ")
-					taxdata ="" if  inv_data.get("taxes_and_charges") is None else inv_data.get("taxes_and_charges")
+					taxdata = default_for_zero_tax if inv_data.get("taxes_and_charges") is None else inv_data.get("taxes_and_charges")
 					taxType = docprefix + taxdata
 					consolidated_data_map.setdefault(taxType, {"data": []})
 					key = inv
@@ -394,7 +408,8 @@ class VATAuditReport(object):
 						continue
 
 					for item in items:
-						item_details = self.item_tax_rate.get(inv).get(item)
+						detail = self.item_tax_rate.get(inv) or {}
+						item_details = detail.get(item)
 
 
 
@@ -416,6 +431,13 @@ class VATAuditReport(object):
 
 						if inv_data.docstatus == 3:
 							row['posting_date'] = f"{inv} - Deleted"
+							continue
+
+						if inv_data.get("debit_note_transaction"):
+							row['posting_date'] = f"{inv} - Debit Note"
+							continue
+
+						if not item_details:
 							continue
 					 
 						rowgross_amount = 0.0 if item_details.get("gross_amount") =="" else item_details.get("gross_amount")
