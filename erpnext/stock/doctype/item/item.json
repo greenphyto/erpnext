@@ -100,6 +100,9 @@
   "column_break_59",
   "customs_tariff_number",
   "sales_details",
+  "packaging_details_section",
+  "packaging",
+  "sales_details_section",
   "sales_uom",
   "grant_commission",
   "is_sales_item",
@@ -941,7 +944,7 @@
    "fieldname": "material_group",
    "fieldtype": "Select",
    "label": "Material Group",
-   "options": "\nSeeds\nNutrition\nOther Packaging\nVegetables (Lettuce)\nVegetables (Asian Vegetables)\nLED\nGataway\nDimmer Controller (DMC01)\nFG - Systems"
+   "options": "\nSeeds\nNutrition\nOther Packaging\nVegetables (Lettuce)\nVegetables (Asian Vegetables)\nLED\nGataway\nDimmer Controller\nFG - Systems"
   },
   {
    "fieldname": "material_number",
@@ -971,6 +974,22 @@
    "fieldtype": "Int",
    "label": "FOMS Raw ID",
    "read_only": 1
+  },
+  {
+   "fieldname": "packaging_details_section",
+   "fieldtype": "Section Break",
+   "label": "Packaging Details"
+  },
+  {
+   "fieldname": "packaging",
+   "fieldtype": "Table",
+   "label": "Packaging",
+   "options": "Packaging List Available"
+  },
+  {
+   "fieldname": "sales_details_section",
+   "fieldtype": "Section Break",
+   "label": "Sales Details"
   }
  ],
  "icon": "fa fa-tag",
@@ -979,7 +998,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2024-07-17 10:47:34.681706",
+ "modified": "2024-07-18 15:36:43.243800",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",
