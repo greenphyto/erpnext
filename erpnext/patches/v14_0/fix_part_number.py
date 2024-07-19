@@ -1,9 +1,8 @@
 import frappe
 from frappe.utils import cstr
 
-def execute():
-    # Seeds
-    do_sync({
+PART_NUMBER_FIX = {
+    "Seeds":{
         "RM-SD-CR": "100000",
         "RM-SD-CS": "100001",
         "RM-SD-WC": "100002",
@@ -14,60 +13,74 @@ def execute():
         "RM-SD-NB": "100007",
         "RM-SD-PC": "100008",
         "RM-SD-KL": "100009"
-    }, "Seeds", 10, 10)
-
-    # Veg (AV)
-    do_sync({
+    },
+    "Nutrition":{
+        "RM-NS-NSA":"110000",
+        "RM-NS-NSB":"110001",
+    },
+    "Other Packaging":{
+        "ZOT01":"130000",
+        "ZOT02":"130001",
+        "ZOT03":"130002",
+    },
+    "Vegetables (Lettuce)":{
+        "PR-LV-CR":"140000",
+        "PR-LV-CC":"140001",
+        "PR-LV-GM":"140002",
+        "PR-LV-RB":"140003",
+    },
+    "Vegetables (Asian Vegetables)":{
         "PR-AV-CS":"150000",
         "PR-AV-WC":"150001",
         "PR-AV-GN":"150002",
         "PR-AV-NB":"150003",
         "PR-AV-PC":"150004",
         "PR-AV-KL":"150005",
-    }, "Vegetables (Asian Vegetables)", 15, 6)
-
-    # Veg (LV)
-    do_sync({
-        "PR-LV-CR":"140000",
-        "PR-LV-CC":"140001",
-        "PR-LV-GM":"140002",
-        "PR-LV-RB":"140003",
-    }, "Vegetables (Lettuce)", 14, 4)
-
-    # Nutrient
-    do_sync({
-        "RM-NS-NSA":"110000",
-        "RM-NS-NSB":"110001",
-    }, "Nutrition", 11, 2)
-
-    # Other Packaging
-    do_sync({
-        "ZOT01":"130000",
-        "ZOT02":"130001",
-        "ZOT03":"130002",
-    }, "Other Packaging", 13, 3)
-
-    # LED
-    do_sync({
+    },
+    "LED":{
         "PDLED01":"200000",
         "PDLED02":"200001",
-    }, "LED", 20, 2)
+    },
+    "Gateway":{
+        "ZGW01":"210000"
+    },
+    "Dimmer Controller":{
+        "DMC01":"220000"
+    },
+    "FG - Systems":{
+        "ZMSC01":"260000",
+        "ZMSC02":"260001",
+    }
+}
+
+def execute():
+    # Seeds
+    do_sync(PART_NUMBER_FIX['Seeds'], "Seeds", 10, 10)
+
+    # Veg (AV)
+    do_sync(PART_NUMBER_FIX['Vegetables (Asian Vegetables)'], 
+            "Vegetables (Asian Vegetables)", 15, 6)
+
+    # Veg (LV)
+    do_sync(PART_NUMBER_FIX['Vegetables (Lettuce)'], "Vegetables (Lettuce)", 14, 4)
+
+    # Nutrient
+    do_sync(PART_NUMBER_FIX['Nutrition'], "Nutrition", 11, 2)
+
+    # Other Packaging
+    do_sync(PART_NUMBER_FIX['Other Packaging'], "Other Packaging", 13, 3)
+
+    # LED
+    do_sync(PART_NUMBER_FIX['LED'], "LED", 20, 2)
 
     # Gateway
-    do_sync({
-        "ZGW01 ":"210000"
-    }, "Gateway", 21, 1)
+    do_sync(PART_NUMBER_FIX['Gateway'], "Gateway", 21, 1)
 
     # Dimmer Controller
-    do_sync({
-        "DMC01 ":"220000"
-    }, "Gateway", 22, 1)
+    do_sync(PART_NUMBER_FIX['Dimmer Controller'], "Dimmer Controller", 22, 1)
 
     # FG Systems
-    do_sync({
-        "ZMSC01 ":"260000",
-        "ZMSC02 ":"260001",
-    }, "Gateway", 22, 2)
+    do_sync(PART_NUMBER_FIX['FG - Systems'], "FG - Systems", 22, 2)
 
 
 def do_sync(data, material_group, series_key, start_from):
