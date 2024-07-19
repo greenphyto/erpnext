@@ -63,6 +63,13 @@ def get_uom(uom_foms):
 	
 	return uom
 
+def convert_uom(uom):
+	for key, val in UOM_MAP.items():
+		if val == uom:
+			return key
+	
+	return 'kg'
+
 def get_foms_settings(field):
 	return frappe.db.get_single_value("FOMS Integration Settings", field)
 
@@ -490,47 +497,31 @@ def _update_foms_sales_order(log, api=None):
 	products = []
 	
 	for d in doc.get("items"):
+		product_id = frappe.get_value("Item", d.item_code, "foms_id")
+		package_id = frappe.get_value("Packaging", d.item_code, "foms_id")
 		item = {
-			"productId": 0,
-			"subSaleOrderNumber": "string",
-			"versionId": 0,
-			"customerOrderId": 0,
-			"saleOrderId": 0,
-			"isMixProduct": True,
-			"packageId": 0,
-			"quantity": 0,
-			"totalGrossWeight": 0,
-			"totalNetWeight": 0,
-			"weightAfterLoss": 0,
-			"unitPrice": 0,
-			"uom": "string",
-			"isRootInclude": True,
-			"workOrderId": 0,
-			"status": "string",
-			"noOfTray": 0,
-			"isWeightOrder": True,
-			"id": 0
+			"isWeightOrder": False,
+			"packageId": package_id,
+			"productId": product_id,
+			"quantity": d.qty_order,
+			"uom": convert_uom(d.stock_uom),
+			"totalNetWeight": d.stock_qty,
+			"isRootInclude": "false",
+			"unitPrice": d.rate
 		}
 		products.append(item)
 
 	data = {
+		"orderType": "One-off",
+		"deliveryDate": getdate(doc.delivery_date),
 		"customerId": customer.foms_id,
 		"purchaseOrderNumber": doc.po_no,
-		"farmId": farm_id,
-		"orderType": "string",
-		"source": "string",
-		"deliveryDate": get_foms_format(doc.delivery_date),
-		"startDeliveryDate": get_foms_format(doc.delivery_date),
-		"endDeliveryDate": get_foms_format(add_days(doc.delivery_date,1)),
 		"saleOrder": {
-			"purchaseOrderId": 0,
-			"farmId": 0,
-			"saleOrderNumber": doc.name,
-			"deliveryDate": get_foms_format(doc.delivery_date),
+			"farmId": farm_id,
 			"subSaleOrders": products,
 			"id": 0
 		},
-		"id": 0
+		"farmId": farm_id
 	}
 
 	api.log = log
