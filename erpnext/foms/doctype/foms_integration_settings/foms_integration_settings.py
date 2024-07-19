@@ -34,6 +34,10 @@ class FOMSIntegrationSettings(Document):
 	def sync_warehouse(self):
 		frappe.enqueue("erpnext.controllers.foms.sync_all_warehouse", show_progress=True)
 
+	@frappe.whitelist()
+	def get_packaging(self):
+		frappe.enqueue("erpnext.controllers.foms.get_packaging", show_progress=True)
+
 def is_enable_integration():
 	return cint(frappe.db.get_single_value('FOMS Integration Settings', "enable"))
 
@@ -173,6 +177,14 @@ class FomsAPI():
 		}
 		res = self.req("GET", "/Product/GetAllProducts", params=params )
 		return res.get("productFinishedList") or {}
+	
+	def get_packaging(self, farm_id):
+		params = {
+			"FarmId":farm_id,
+			"MaxResultCount":99999
+		}
+		res = self.req("GET", "/Product/GetAllPackagingType", params=params )
+		return res.get("items") or {}
 
 	def get_recipe(self, farm_id, product_id):
 		params = {

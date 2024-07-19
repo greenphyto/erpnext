@@ -421,7 +421,6 @@ def _update_foms_supplier(log, api=None):
 	res = api.create_or_update_supplier(data)
 	update_reff_id(res, supplier, "supplierID")
 
-
 # CUSTOMER (POST)
 def sync_all_customer():
 	foms_all_customer()
@@ -436,6 +435,7 @@ def sync_all_customer():
 	update_foms_customer()
 
 	return True
+
 
 def foms_all_customer():
 	farm_id = get_farm_id()
@@ -480,6 +480,48 @@ def _update_foms_customer(log, api=None):
 	api.log = log
 	res = api.create_or_update_customer(data)
 	update_reff_id(res, customer, "customerRefNo" )
+
+# PACKAGING (GET)
+def get_packaging(show_progress=False):
+	def get_data(gd):
+		data = gd.api.get_packaging(gd.farm_id)
+		return data
+
+	def post_process(gd, log):
+		return create_packaging(log) 
+
+	def get_key_name(log):
+		return log.get("packageID")
+	
+	GetData(
+		data_type = "Packaging",
+		get_data=get_data,
+		get_key_name = get_key_name,
+		post_process=post_process,
+		show_progress=show_progress
+	).run()
+
+def create_packaging(log):
+	name = frappe.get_value("Packaging", log.get("packagingType"))
+	log = frappe._dict(log)
+	if not name:
+		doc = frappe.new_doc("Packaging")
+		doc.title = log.packagingType
+		doc.description = log.packagingType
+		doc.foms_id = log.id
+		# dummy
+		doc.quantity = 1
+		doc.uom = "Kg"
+		doc.total_weight = 1
+		
+		doc.insert(ignore_permissions=1)
+		name = doc.name
+	else:
+		doc = frappe.get_doc("Packaging", name)
+		doc.description = log.packagingType
+		doc.save()
+
+	return name
 
 # SALES ORDER (POST)
 # _update_sales_order

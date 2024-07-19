@@ -47,4 +47,10 @@ frappe.ui.form.on('FOMS Integration Settings', {
 			"method":"sync_warehouse"
 		})
 	},
+	sync_packaging: function(frm) {
+		frappe.call({
+			"doc": frm.doc,
+			"method":"get_packaging"
+		})
+	},
 });

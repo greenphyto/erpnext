@@ -32,6 +32,7 @@
   "sync_supplier",
   "sync_customer",
   "sync_warehouse",
+  "sync_packaging",
   "testing_section",
   "enable_testing",
   "testing_products"
@@ -195,12 +196,17 @@
    "fieldname": "sync_warehouse",
    "fieldtype": "Button",
    "label": "Sync Warehouse"
+  },
+  {
+   "fieldname": "sync_packaging",
+   "fieldtype": "Button",
+   "label": "Sync Packaging"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-06-25 17:56:38.079890",
+ "modified": "2024-07-19 18:50:26.619134",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",
