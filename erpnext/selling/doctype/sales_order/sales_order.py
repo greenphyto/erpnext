@@ -74,6 +74,19 @@ class SalesOrder(SellingController):
 
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
 
+	def before_validate(self):
+		self.validate_packaging()
+
+	def validate_packaging(self):
+		for d in self.get("items"):
+			if not cint(d.weight_order):
+				if not d.package:
+					frappe.throw(_(f"Row {d.idx}, Package is mandatory!"))
+				d.weight_in_kg = frappe.get_value("Packaging", d.package, "total_weight")
+				d.qty = d.qty_order * d.weight_in_kg
+			else:
+				d.qty = flt(d.qty_order)
+
 	def validate_po(self):
 		# validate p.o date v/s delivery date
 		if self.po_date and not self.skip_delivery_note:

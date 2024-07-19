@@ -21,12 +21,17 @@
   "image",
   "image_view",
   "quantity_and_rate",
+  "qty_order",
   "qty",
   "stock_uom",
   "col_break2",
   "uom",
   "conversion_factor",
   "stock_qty",
+  "packaging_section",
+  "package",
+  "weight_in_kg",
+  "weight_order",
   "section_break_16",
   "price_list_rate",
   "base_price_list_rate",
@@ -166,7 +171,7 @@
   },
   {
    "allow_on_submit": 1,
-   "columns": 2,
+   "columns": 1,
    "depends_on": "eval: !parent.skip_delivery_note",
    "fieldname": "delivery_date",
    "fieldtype": "Date",
@@ -195,8 +200,10 @@
   },
   {
    "columns": 1,
+   "default": "1",
    "fieldname": "qty",
    "fieldtype": "Float",
+   "hidden": 1,
    "in_list_view": 1,
    "label": "Quantity",
    "oldfieldname": "qty",
@@ -342,7 +349,7 @@
    "precision": "2"
   },
   {
-   "columns": 2,
+   "columns": 1,
    "depends_on": "eval: doc.type != \"\"",
    "fieldname": "rate",
    "fieldtype": "Currency",
@@ -861,12 +868,47 @@
    "fieldname": "material_request_item",
    "fieldtype": "Data",
    "label": "Material Request Item"
+  },
+  {
+   "fieldname": "packaging_section",
+   "fieldtype": "Section Break",
+   "label": "Packaging"
+  },
+  {
+   "columns": 1,
+   "fieldname": "package",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Package",
+   "options": "Packaging"
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "weight_order",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is weight order?"
+  },
+  {
+   "fetch_from": "package.total_weight",
+   "fieldname": "weight_in_kg",
+   "fieldtype": "Float",
+   "label": "Weight in Kg",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "qty_order",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Qty Order"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-04-28 15:31:54.535565",
+ "modified": "2024-07-19 15:25:45.065099",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

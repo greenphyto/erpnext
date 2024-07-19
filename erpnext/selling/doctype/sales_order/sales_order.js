@@ -154,7 +154,17 @@ frappe.ui.form.on("Sales Order Item", {
 		if(!frm.doc.delivery_date) {
 			erpnext.utils.copy_value_in_all_rows(frm.doc, cdt, cdn, "items", "delivery_date");
 		}
+	},
+	package: function(frm, cdt,cdn){
+		frm.cscript.calcaulate_packaging(frm,cdt,cdn);
+	},
+	weight_order: function(frm,cdt,cdn){
+		frm.cscript.calcaulate_packaging(frm,cdt,cdn);
+	},
+	qty_order: function(frm,cdt,cdn){
+		frm.cscript.calcaulate_packaging(frm,cdt,cdn);
 	}
+
 });
 
 erpnext.selling.SalesOrderController = class SalesOrderController extends erpnext.selling.SellingController {
@@ -298,6 +308,18 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 		}
 
 		this.order_type(doc);
+	}
+
+	calcaulate_packaging(frm,cdt,cdn){
+		var d = locals[cdt][cdn]
+		if (!d.weight_order){
+			if (d.uom!="Kg") frappe.model.set_value(cdt,cdn,"uom", 'Kg');
+			var weight = flt(d.weight_in_kg);
+			var new_qty = weight * flt(d.qty_order);
+			frappe.model.set_value(cdt,cdn,"qty",new_qty);
+		}else{
+			frappe.model.set_value(cdt,cdn,"qty",d.qty_order);
+		}
 	}
 
 	create_pick_list() {
