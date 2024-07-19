@@ -11,6 +11,7 @@
   "title",
   "is_default",
   "disabled",
+  "default_for_zero",
   "column_break_3",
   "company",
   "tax_category",
@@ -74,12 +75,18 @@
    "fieldtype": "Link",
    "label": "Tax Category",
    "options": "Tax Category"
+  },
+  {
+   "default": "0",
+   "fieldname": "default_for_zero",
+   "fieldtype": "Check",
+   "label": "Default for Zero Tax"
   }
  ],
  "icon": "fa fa-money",
  "idx": 1,
  "links": [],
- "modified": "2022-05-16 16:14:52.061672",
+ "modified": "2024-07-18 18:22:13.853098",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Taxes and Charges Template",
