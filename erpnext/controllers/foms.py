@@ -526,8 +526,23 @@ def _update_foms_sales_order(log, api=None):
 
 	api.log = log
 	res = api.create_customer_order(data)
-	print(538, res)
-	# update_reff_id(res, customer, "customerRefNo" )
+	if res:
+		so_id = res['saleOrder']['id']
+		doc.foms_id = so_id
+		for d in res['saleOrder']['subSaleOrders']:
+			item_code = frappe.get_value("Item", {"foms_id":d['productId']})
+			packaging = frappe.get_value("Packaging", {"foms_id":d['packageId']})
+
+			# key on product id, package id, uom, quantity, unit price
+			for d in doc.get("items", {
+				"item_code":item_code,
+				"package":packaging,
+				"stock_uom":d['uom'],
+				"rate":d['unitPrice']
+			}):
+				if not d.foms_id:
+					d.foms_id = d['id']
+		doc.db_update()
 
 def get_foms_format(date):
 	return getdate(date).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
