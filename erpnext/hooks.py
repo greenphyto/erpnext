@@ -376,6 +376,9 @@ doc_events = {
     "Sales Order": {
         "on_submit":"erpnext.controllers.foms.sync_log",
         "on_cancel":"erpnext.controllers.foms.sync_log",
+	},
+    "Item": {
+        "before_validate":"erpnext.patches.v14_0.fix_part_number.set_part_number"
 	}
 }
 

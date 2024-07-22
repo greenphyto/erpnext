@@ -53,6 +53,12 @@ PART_NUMBER_FIX = {
     }
 }
 
+def set_part_number(doc, method=""):
+    if doc.material_group in PART_NUMBER_FIX:
+        mat_group = PART_NUMBER_FIX[doc.material_group]
+        part_number = mat_group.get(doc.item_code)
+        doc.material_number = part_number
+
 def execute():
     # Seeds
     do_sync(PART_NUMBER_FIX['Seeds'], "Seeds", 10, 10)

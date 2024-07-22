@@ -40,7 +40,7 @@ MATERIAL_MAP = {
 	"Vegetables (Lettuce)"			:"14.####",
 	"Vegetables (Asian Vegetables)"	:"15.####",
 	"LED"							:"20.####",
-	"Gataway"						:"21.####",
+	"Gateway"						:"21.####",
 	"Dimmer Controller (DMC01)"		:"22.####",
 	"FG - Systems"					:"26.####"
 }
