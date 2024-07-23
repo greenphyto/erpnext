@@ -76,14 +76,14 @@ def get_foms_settings(field):
 
 
 class GetData():
-	def __init__(self, data_type, get_data, get_key_name, post_process, doc_type="Item", show_progress=False, manual_save_log=False):
+	def __init__(self, data_type, get_data, get_key_name, post_process, doc_type="", show_progress=False, manual_save_log=False):
 		self.data_type = data_type
 		self.show_progress = show_progress
 		self.get_data = get_data
 		self.get_key_name = get_key_name
 		self.post_process = post_process
 		self.manual_save_log = manual_save_log
-		self.doc_type = doc_type
+		self.doc_type = doc_type or data_type
 	
 	def setup(self):
 		self.api = FomsAPI()
@@ -172,6 +172,9 @@ def update_reff_id(res, doc, key_name):
 		doc.db_set("foms_name", res.get(key_name))
 
 def save_log(doc_type, data_name, key_name, data):
+	if doc_type == "Item":
+		p+=1
+	print(175, doc_type)
 	map_doc = create_foms_data(doc_type, key_name, data)
 	map_doc.doc_type = doc_type
 	map_doc.doc_name = data_name
