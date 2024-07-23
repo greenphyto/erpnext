@@ -369,6 +369,10 @@ doc_events = {
     "Warehouse":{
         "validate":"erpnext.controllers.foms.sync_log"
 	},
+	"Stock Reconciliation":{
+        "on_submit":"erpnext.controllers.foms.sync_log",
+        "on_cancel":"erpnext.controllers.foms.sync_log",
+	},
     "Purchase Receipt": {
         "on_submit":"erpnext.controllers.foms.sync_log",
         "on_cancel":"erpnext.controllers.foms.sync_log",
@@ -451,6 +455,7 @@ scheduler_events = {
         "erpnext.controllers.foms.update_foms_supplier",
         "erpnext.controllers.foms.update_foms_customer",
         "erpnext.controllers.foms.update_foms_sales_order",
+        "erpnext.controllers.foms.update_foms_stock_recon",
         "erpnext.controllers.foms.get_raw_material",
         "erpnext.controllers.foms.get_products",
         "erpnext.controllers.foms.get_recipe",
@@ -669,4 +674,5 @@ sync_log_method = {
     3:"erpnext.controllers.foms._update_warehouse",
     4:"erpnext.controllers.foms._update_stock_recipe",
     5:"erpnext.controllers.foms._update_foms_sales_order",
+    6:"erpnext.controllers.foms._update_foms_stock_recon",
 }

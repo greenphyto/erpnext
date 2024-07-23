@@ -47,6 +47,7 @@ METHOD_MAP = {
 	"Warehouse":3,
 	"Purchase Receipt":4,
 	"Sales Order":5,
+	"Stock Reconciliation":6,
 }
 
 TRANFER_AGAIN = 'Work Order'
@@ -524,7 +525,6 @@ def create_packaging(log):
 	return name
 
 # SALES ORDER (POST)
-# _update_sales_order
 def update_foms_sales_order():
 	sync_controller("Sales Order", _update_foms_sales_order)
 
@@ -588,6 +588,47 @@ def _update_foms_sales_order(log, api=None):
 
 def get_foms_format(date):
 	return getdate(date).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+
+# SALES RECONCILLIATION (POST)
+def update_foms_stock_recon():
+	sync_controller("Stock Reconciliation", _update_foms_stock_recon)
+
+def _update_foms_stock_recon(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Stock Reconciliation", log.docname)
+	farm_id = get_farm_id()
+
+	success = 0
+	for d in doc.get("items"):
+		if cint(d.foms_sync):
+			success += 1
+			continue
+
+		item_id = frappe.get_value("Item", d.item_code, "foms_id")
+		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id")
+		batch_id = frappe.get_value("Batch", d.batch_no, "foms_id")
+		data = {
+			"rawMaterialId": item_id,
+			"batchRefNo": d.batch_no,
+			"warehouseId": warehouse_id,
+			"quantity": flt(d.qty),
+			"FarmId": farm_id,
+			"id": cint(batch_id)
+		}
+		api.log = log
+		try:
+			res = api.update_raw_material_batch_qty(data)
+			if res:
+				d.foms_sync = 1
+				success += 1
+				d.db_update()
+		except:
+			pass
+	
+	doc.sync_percent = success/len(doc.get("items"))*100
+	doc.db_update()
 
 def create_raw_material(log):
 	name = frappe.get_value("Item", log.get("rawMaterialRefNo"))

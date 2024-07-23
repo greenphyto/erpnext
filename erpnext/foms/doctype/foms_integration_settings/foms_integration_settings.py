@@ -264,3 +264,26 @@ class FomsAPI():
 		res = self.req("POST", "/userportal/CustomerOrder/CreateOrUpdateCustomerOrder", data=data)
 
 		return res
+	
+	def update_raw_material_batch_qty(self, data):
+		data = self.convert_data(data)
+		res = self.req("POST", "/userportal/RawMaterialUP/CreateOrUpdateRawMaterialBatch", data=data)
+
+		return res
+	
+"""
+TODO:
+update batch qty to userportal/RawMaterialUP/CreateOrUpdateRawMaterialBatch
+{
+  "rawMaterialId": 72,
+  "batchRefNo": "RM-SD-KOM-BN00001",
+  "quantityUOM": "g",
+  "warehouseName": "Warehouse",
+  "warehouseId": 4,
+  "warehouseRefId": "WH-SG-00001",
+  "id": 236,
+  "quantity": 7,
+  "FarmId": 15
+}
+"""
+

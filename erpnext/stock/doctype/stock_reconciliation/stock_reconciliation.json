@@ -29,7 +29,9 @@
   "amended_from",
   "accounting_dimensions_section",
   "cost_center",
-  "dimension_col_break"
+  "dimension_col_break",
+  "foms_section",
+  "sync_percent"
  ],
  "fields": [
   {
@@ -177,13 +179,25 @@
   {
    "fieldname": "column_break_12",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "foms_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS"
+  },
+  {
+   "default": "0",
+   "fieldname": "sync_percent",
+   "fieldtype": "Percent",
+   "label": "% Sync",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-upload-alt",
  "idx": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-05-11 09:10:26.327652",
+ "modified": "2024-07-22 17:34:25.244435",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Reconciliation",

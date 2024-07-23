@@ -29,7 +29,9 @@
   "section_break_14",
   "quantity_difference",
   "column_break_16",
-  "amount_difference"
+  "amount_difference",
+  "foms_section",
+  "foms_sync"
  ],
  "fields": [
   {
@@ -39,7 +41,7 @@
    "print_hide": 1
   },
   {
-   "columns": 3,
+   "columns": 2,
    "fieldname": "item_code",
    "fieldtype": "Link",
    "in_global_search": 1,
@@ -58,7 +60,7 @@
    "read_only": 1
   },
   {
-   "columns": 3,
+   "columns": 2,
    "fieldname": "warehouse",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -71,14 +73,14 @@
    "fieldtype": "Column Break"
   },
   {
-   "columns": 2,
+   "columns": 1,
    "fieldname": "qty",
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Quantity"
   },
   {
-   "columns": 2,
+   "columns": 1,
    "fieldname": "valuation_rate",
    "fieldtype": "Currency",
    "in_list_view": 1,
@@ -112,9 +114,11 @@
    "label": "Before reconciliation"
   },
   {
+   "columns": 1,
    "default": "0",
    "fieldname": "current_qty",
    "fieldtype": "Float",
+   "in_list_view": 1,
    "label": "Current Qty",
    "read_only": 1
   },
@@ -165,10 +169,13 @@
    "read_only": 1
   },
   {
+   "columns": 2,
    "fieldname": "batch_no",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Batch No",
-   "options": "Batch"
+   "options": "Batch",
+   "reqd": 1
   },
   {
    "default": "0",
@@ -185,11 +192,22 @@
    "fieldtype": "Data",
    "label": "Has Item Scanned",
    "read_only": 1
+  },
+  {
+   "fieldname": "foms_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS"
+  },
+  {
+   "default": "0",
+   "fieldname": "foms_sync",
+   "fieldtype": "Check",
+   "label": "FOMS Sync"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2022-11-02 13:01:23.580937",
+ "modified": "2024-07-22 17:31:36.700631",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Reconciliation Item",
