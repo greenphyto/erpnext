@@ -257,7 +257,7 @@ class FomsAPI():
 
 	def get_all_batch(self):
 		params = {
-			"MaxResultCount":5
+			"MaxResultCount":9999
 		}
 		res = self.req("GET", "/userportal/RawMaterialUP/GetAllRawMaterialBatch", params=params )
 		return res
