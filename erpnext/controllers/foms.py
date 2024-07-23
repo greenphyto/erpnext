@@ -524,6 +524,48 @@ def create_packaging(log):
 
 	return name
 
+# BATCH (GET)
+def get_batch(show_progress=False):
+	def get_data(gd):
+		data = gd.api.get_all_batch()
+		if "items" in data:
+			return data.get("items")
+		return {}
+
+	def post_process(gd, log):
+		return create_batch(log) 
+
+	def get_key_name(log):
+		return log.get("batchRefNo")
+	
+	GetData(
+		data_type = "Batch",
+		get_data=get_data,
+		get_key_name = get_key_name,
+		post_process=post_process,
+		show_progress=show_progress
+	).run()
+
+def create_batch(log):
+	log = frappe._dict(log)
+	name = frappe.get_value("Batch", log.batchRefNo)
+	if not name:
+		doc = frappe.new_doc("Batch")
+		doc.batch_id = log.batchRefNo
+		item_code = frappe.get_value("Item", {"foms_id":log.rawMaterialId})
+		if not item_code:
+			return ""
+		doc.item = item_code
+		shelf_life_in_days = frappe.db.get_value(
+			"Item", doc.item, ["shelf_life_in_days"]
+		) or 0
+		doc.manufacturing_date = getdate(log.dateOfCreation) or getdate()
+		doc.expiry_date = getdate(log.expiryDate) or add_days(getdate(), shelf_life_in_days)
+		doc.insert(ignore_permissions=1)
+		name = doc.name
+
+	return name
+
 # SALES ORDER (POST)
 def update_foms_sales_order():
 	sync_controller("Sales Order", _update_foms_sales_order)

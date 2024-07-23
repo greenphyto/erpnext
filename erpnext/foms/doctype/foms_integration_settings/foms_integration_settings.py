@@ -38,6 +38,10 @@ class FOMSIntegrationSettings(Document):
 	def get_packaging(self):
 		frappe.enqueue("erpnext.controllers.foms.get_packaging", show_progress=True)
 
+	@frappe.whitelist()
+	def get_batch(self):
+		frappe.enqueue("erpnext.controllers.foms.get_batch", show_progress=True)
+
 def is_enable_integration():
 	return cint(frappe.db.get_single_value('FOMS Integration Settings', "enable"))
 
@@ -249,6 +253,13 @@ class FomsAPI():
 			"MaxResultCount":9999
 		}
 		res = self.req("GET", "/Supplier/GetAll", params=params )
+		return res
+
+	def get_all_batch(self):
+		params = {
+			"MaxResultCount":9999
+		}
+		res = self.req("GET", "/userportal/RawMaterialUP/GetAllRawMaterialBatch", params=params )
 		return res
 	
 	def get_all_customer(self, farm_id):

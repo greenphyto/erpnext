@@ -28,6 +28,7 @@
   "get_foms_raw_material",
   "get_foms_products",
   "get_foms_recipe",
+  "get_batch",
   "column_break_23",
   "sync_supplier",
   "sync_customer",
@@ -201,12 +202,17 @@
    "fieldname": "sync_packaging",
    "fieldtype": "Button",
    "label": "Sync Packaging"
+  },
+  {
+   "fieldname": "get_batch",
+   "fieldtype": "Button",
+   "label": "Get Batch"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-07-19 18:50:26.619134",
+ "modified": "2024-07-23 17:28:59.948361",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",
