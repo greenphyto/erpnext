@@ -23,9 +23,13 @@
   "company",
   "disabled",
   "rack_details_section",
+  "store",
+  "position",
+  "colour",
+  "column_break_18",
   "row_no",
-  "level_no",
   "lane_no",
+  "level_no",
   "address_and_contact",
   "address_html",
   "column_break_10",
@@ -279,26 +283,53 @@
    "label": "Rack Details"
   },
   {
+   "description": "<b>A-Z</b> column",
    "fieldname": "row_no",
    "fieldtype": "Data",
    "label": "Row No"
   },
   {
+   "description": "<b>A-Z</b>",
    "fieldname": "level_no",
    "fieldtype": "Data",
    "label": "Level No"
   },
   {
+   "description": "<b>1-99</b>",
    "fieldname": "lane_no",
    "fieldtype": "Data",
    "label": "Lane No"
+  },
+  {
+   "description": "Store locator: <b>Main (1), Cold room (2), Sub-store (3)</b>\n\n",
+   "fieldname": "store",
+   "fieldtype": "Select",
+   "label": "Store",
+   "options": "\n1\n2\n3"
+  },
+  {
+   "fieldname": "column_break_18",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Visual aid",
+   "fieldname": "colour",
+   "fieldtype": "Color",
+   "label": "Colour"
+  },
+  {
+   "description": "Position: <b>Left (1), Middle (2), Right (3)</b>",
+   "fieldname": "position",
+   "fieldtype": "Select",
+   "label": "Position",
+   "options": "\n1\n2\n3"
   }
  ],
  "icon": "fa fa-building",
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-07-18 12:48:06.329826",
+ "modified": "2024-07-24 12:43:01.334932",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Warehouse",

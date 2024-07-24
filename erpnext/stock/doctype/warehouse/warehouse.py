@@ -18,6 +18,19 @@ class Warehouse(NestedSet):
 	nsm_parent_field = "parent_warehouse"
 
 	def autoname(self):
+		if any(self.get(f) for f in ['row_no', 'lane_no', 'level_no']):
+			field_empty = []
+			for d in ['row_no', 'lane_no', 'level_no', 'colour', 'store', 'position']:
+				if not self.get(d):
+					field = self.meta.get_field(d)
+					field_empty.append(field.label)
+			if field_empty:
+				temp = ", ".join(field_empty)
+				frappe.throw(_(f"<b>{temp}</b> must be set."))
+				
+			self.name = f"{self.store}-{self.row_no}{self.lane_no}{self.level_no}{self.position}"
+			return
+		
 		if self.company:
 			suffix = " - " + frappe.get_cached_value("Company", self.company, "abbr")
 			if not self.warehouse_name.endswith(suffix):
