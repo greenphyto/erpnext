@@ -78,8 +78,9 @@
   },
   {
    "fieldname": "packaging_material",
-   "fieldtype": "Data",
-   "label": "Packaging material"
+   "fieldtype": "Link",
+   "label": "Packaging material",
+   "options": "Packaging Material"
   },
   {
    "fieldname": "foms_id",
@@ -90,7 +91,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-19 17:04:08.911338",
+ "modified": "2024-07-24 15:30:09.661333",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Packaging",
