@@ -10,6 +10,7 @@
   "title",
   "description",
   "packaging_material",
+  "package_type",
   "foms_id",
   "column_break_3",
   "disable",
@@ -87,11 +88,16 @@
    "fieldtype": "Data",
    "label": "FOMS ID",
    "read_only": 1
+  },
+  {
+   "fieldname": "package_type",
+   "fieldtype": "Data",
+   "label": "Package Type"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-24 15:30:09.661333",
+ "modified": "2024-07-24 15:48:25.809371",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Packaging",

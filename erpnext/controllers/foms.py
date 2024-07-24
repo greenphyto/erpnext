@@ -50,10 +50,16 @@ METHOD_MAP = {
 	"Stock Reconciliation":6,
 }
 
+UOM_KG_CONVERTION = {
+	"Gram":1000,
+	"Litre":1,
+	"Millilitre":1000
+}
+
 TRANFER_AGAIN = 'Work Order'
 
-def get_uom(uom_foms):
-	uom_foms = uom_foms or 'kg'
+def get_uom(uom_foms, default=""):
+	uom_foms = uom_foms or default or'kg'
 	uom = UOM_MAP.get(uom_foms)
 
 	if not uom:
@@ -486,45 +492,42 @@ def _update_foms_customer(log, api=None):
 
 # PACKAGING (GET)
 def get_packaging(show_progress=False):
-	def get_data(gd):
-		data = gd.api.get_packaging(gd.farm_id)
-		return data
-
-	def post_process(gd, log):
-		return create_packaging(log) 
-
-	def get_key_name(log):
-		return log.get("packageID")
-	
-	GetData(
-		data_type = "Packaging",
-		get_data=get_data,
-		get_key_name = get_key_name,
-		post_process=post_process,
-		show_progress=show_progress
-	).run()
+	api = FomsAPI()
+	data = frappe.db.get_all("Item", {"foms_product_id":['!=', 0]}, ['name', 'foms_product_id'])
+	for d in data:
+		packs = api.get_packaging(d.foms_product_id)
+		doc = frappe.get_doc("Item", d.name)
+		doc.packaging = []
+		for d in packs or []:
+			pack_name = create_packaging(d)
+			row = doc.append("packaging")
+			row.packaging = pack_name
+		doc.save()
 
 def create_packaging(log):
-	name = frappe.get_value("Packaging", log.get("packagingType"))
+	name = frappe.get_value("Packaging", log.get("packageName"))
 	log = frappe._dict(log)
 	if not name:
 		doc = frappe.new_doc("Packaging")
-		doc.title = log.packagingType
-		doc.description = log.packagingType
-		doc.foms_id = log.id
-		# dummy
-		doc.quantity = 1
-		doc.uom = "Kg"
-		doc.total_weight = 1
-		
-		doc.insert(ignore_permissions=1)
-		name = doc.name
+		doc.title = log.packageName
+		doc.description = log.packageName
+		doc.package_type = log.packageType
+		doc.foms_id = log.id		
 	else:
 		doc = frappe.get_doc("Packaging", name)
-		doc.description = log.packagingType
+		doc.description = log.packageName
+
+	doc.quantity = log.packageWeight
+	doc.uom = get_uom(log.uom, "g")
+	factor = UOM_KG_CONVERTION.get(doc.uom) or 1
+	doc.total_weight = flt(doc.quantity/factor)
+
+	if doc.is_new():
+		doc.insert(ignore_permissions=1)
+	else:
 		doc.save()
 
-	return name
+	return doc.name
 
 # BATCH (GET)
 def get_batch(show_progress=False):

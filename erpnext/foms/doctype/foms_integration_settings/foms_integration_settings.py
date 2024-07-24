@@ -182,13 +182,13 @@ class FomsAPI():
 		res = self.req("GET", "/Product/GetAllProducts", params=params )
 		return res.get("productFinishedList") or {}
 	
-	def get_packaging(self, farm_id):
+	def get_packaging(self, product_id):
 		params = {
-			"FarmId":farm_id,
+			"ProductId":product_id,
 			"MaxResultCount":99999
 		}
-		res = self.req("GET", "/Product/GetAllPackagingType", params=params )
-		return res.get("items") or {}
+		res = self.req("GET", "/userportal/CustomerOrder/GetPackageList", params=params )
+		return res
 
 	def get_recipe(self, farm_id, product_id):
 		params = {
