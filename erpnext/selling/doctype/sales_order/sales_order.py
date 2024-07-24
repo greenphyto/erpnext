@@ -1250,6 +1250,24 @@ def make_raw_material_request(items, company, sales_order, project=None):
 
 
 @frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_packaging_available(doctype, txt, searchfield, start, page_len, filters):
+	item = filters.get("item")
+	if txt:
+		text = " and packaging like {} ".format(frappe.db.escape("%{0}%".format(txt)))
+	else:
+		text = ""
+	query = """select packaging from `tabPackaging List Available`
+			where parent = {item}
+			{txt}""".format(
+		txt=text,
+		item=frappe.db.escape(item)
+	)
+
+	res = frappe.db.sql(query, filters, debug=1, as_list = 1)
+	return res
+
+@frappe.whitelist()
 def make_inter_company_purchase_order(source_name, target_doc=None):
 	from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_inter_company_transaction
 

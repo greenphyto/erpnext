@@ -44,6 +44,19 @@ frappe.ui.form.on("Sales Order", {
 			}
 		});
 
+		frm.set_query("package", "items", function(doc, cdt, cdn) {
+			var row = locals[cdt][cdn];
+			if (!row.item_code){
+				frappe.throw(__("Select item first"))
+			}
+			return {
+				filters: {
+					"item": row.item_code
+				},
+				query:"erpnext.selling.doctype.sales_order.sales_order.get_packaging_available"
+			}
+		});
+
 		frm.set_df_property('packed_items', 'cannot_add_rows', true);
 		frm.set_df_property('packed_items', 'cannot_delete_rows', true);
 	},
