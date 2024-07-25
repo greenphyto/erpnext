@@ -55,7 +55,11 @@
   "stock_frozen_upto_days",
   "column_break_26",
   "role_allowed_to_create_edit_back_dated_transactions",
-  "stock_auth_role"
+  "stock_auth_role",
+  "scrap_tab",
+  "scrap_settings_section",
+  "enable_auto_collect_expired_items",
+  "expiry_days"
  ],
  "fields": [
   {
@@ -347,6 +351,28 @@
    "fieldname": "force_to_non_stock_item",
    "fieldtype": "Check",
    "label": "Force to non-stock item"
+  },
+  {
+   "fieldname": "scrap_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Scrap Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_auto_collect_expired_items",
+   "fieldtype": "Check",
+   "label": "Enable auto collect expired Items"
+  },
+  {
+   "depends_on": "eval:doc.enable_auto_collect_expired_items",
+   "fieldname": "expiry_days",
+   "fieldtype": "Int",
+   "label": "Expiry within (days)"
+  },
+  {
+   "fieldname": "scrap_tab",
+   "fieldtype": "Tab Break",
+   "label": "Scrap"
   }
  ],
  "icon": "icon-cog",
@@ -354,7 +380,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-10-12 12:09:24.234372",
+ "modified": "2024-07-25 17:47:34.413665",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Settings",

@@ -52,7 +52,7 @@ function update_quantity(cdt,cdn) {
 			},
 			callback: function(r) {
 				if(r.message) {
-					frappe.model.set_value(cdt,cdn, "cur_qty", r.message)
+					frappe.model.set_value(cdt,cdn, "cur_qty", r.message[0])
 				}
 			}
 		});
