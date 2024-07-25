@@ -65,7 +65,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-12 16:14:47.786385",
+ "modified": "2024-07-25 17:17:08.859274",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Scrap Request",
@@ -81,6 +81,19 @@
    "read": 1,
    "report": 1,
    "role": "Stock Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Master Manager",
    "share": 1,
    "submit": 1,
    "write": 1
@@ -128,6 +141,17 @@
    "read": 1,
    "report": 1,
    "role": "Stock Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "permlevel": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Master Manager",
    "share": 1,
    "write": 1
   }

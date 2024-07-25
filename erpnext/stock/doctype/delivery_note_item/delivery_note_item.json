@@ -331,7 +331,6 @@
   {
    "fieldname": "rate",
    "fieldtype": "Currency",
-   "in_list_view": 1,
    "label": "Rate",
    "oldfieldname": "export_rate",
    "oldfieldtype": "Currency",
@@ -342,7 +341,6 @@
   {
    "fieldname": "amount",
    "fieldtype": "Currency",
-   "in_list_view": 1,
    "label": "Amount",
    "oldfieldname": "export_amount",
    "oldfieldtype": "Currency",
@@ -837,7 +835,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-11-09 12:17:50.850142",
+ "modified": "2024-07-25 14:40:58.831088",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note Item",
