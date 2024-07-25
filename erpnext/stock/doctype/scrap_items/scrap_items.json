@@ -7,8 +7,8 @@
  "engine": "InnoDB",
  "field_order": [
   "item_code",
-  "warehouse",
   "batch",
+  "warehouse",
   "qty",
   "uom",
   "cur_qty"
@@ -55,7 +55,8 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Batch",
-   "options": "Batch"
+   "options": "Batch",
+   "reqd": 1
   },
   {
    "columns": 1,
@@ -69,7 +70,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-07-25 15:39:23.230274",
+ "modified": "2024-07-25 16:13:19.789904",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Scrap Items",

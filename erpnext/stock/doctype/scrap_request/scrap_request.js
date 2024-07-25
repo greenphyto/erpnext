@@ -18,6 +18,17 @@ frappe.ui.form.on('Scrap Request', {
 				query:"erpnext.stock.doctype.scrap_request.scrap_request.get_batch_numbers"
 			}
 		})
+
+		frm.set_query("warehouse", "items", (doc, cdt,cdn)=>{
+			var d = locals[cdt][cdn];
+			return {
+				filters:{
+					item:d.item_code,
+					batch:d.batch
+				},
+				query:"erpnext.stock.doctype.scrap_request.scrap_request.get_warehouse"
+			}
+		})
 	}
 });
 
