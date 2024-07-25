@@ -104,6 +104,12 @@ def create_sales_order(request_name):
 	for d in req.get("items"):
 		row = doc.append("items")
 		row.item_code = d.item_code
+		if d.uom == "Package":
+			row.weight_order = 0
+		else:
+			row.weight_order = 1
+		row.package = d.packaging
+		row.qty_order = d.qty
 
 		# need convertion from package vs stock qty
 		row.qty = d.qty
