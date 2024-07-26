@@ -28,6 +28,7 @@ class FOMSIntegrationSettings(Document):
 
 	@frappe.whitelist()
 	def sync_customer(self):
+		frappe.msgprint("Get customer running..")
 		frappe.enqueue("erpnext.controllers.foms.sync_all_customer", show_progress=True)
 
 	@frappe.whitelist()

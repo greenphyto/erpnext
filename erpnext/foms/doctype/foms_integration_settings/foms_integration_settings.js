@@ -30,6 +30,7 @@ frappe.ui.form.on('FOMS Integration Settings', {
 		})
 	},
 	sync_customer: function(frm) {
+		console.log("Running now..")
 		frappe.call({
 			"doc": frm.doc,
 			"method":"sync_customer"
