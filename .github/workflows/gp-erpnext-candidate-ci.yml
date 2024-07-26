@@ -8,12 +8,33 @@ name: Deploy to ERPNext Candidate Environment
 jobs:
   deploy:
     name: Deploy
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     defaults:
       run:
         working-directory: .
 
     steps:
+    - name: executing remote ssh to build server and upload docker image
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.ON_PREMISE_HOST }}
+        username: ${{ secrets.ON_PREMISE_USERNAME }}
+        key: ${{ secrets.ON_PREMISE_KEY }}
+        port: ${{ secrets.ON_PREMISE_PORT }}
+        command_timeout: 30m
+        script_stop: true
+        script: |
+          cd greenphyto/erpnextbuild/candidate01/frappe_docker/
+          export FRAPPE_VERSION=gp.v14.12.0
+          docker builder prune -a -f
+          docker image prune -a -f
+          docker buildx bake --load -f docker-bake.hcl 
+          aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com
+          docker tag frappe/erpnext-nginx:gpcandidate.v14.3.1 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext:latest
+          docker push 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext:latest
+          docker tag frappe/erpnext-worker:gpcandidate.v14.3.1 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext.worker:latest
+          docker push 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext.worker:latest
+          echo 'upload finished'
     - name: executing remote ssh commands using ssh key
       uses: appleboy/ssh-action@master
       with:
@@ -25,12 +46,14 @@ jobs:
         script_stop: true
         script: |
           cd greenphyto_docker/frappe_docker/
-          docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto.yaml down
-          docker ps
           docker builder prune -a -f
           docker image prune -a -f
-          docker buildx bake --load
-          docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto.yaml up -d
+          aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com
+          docker pull 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext:latest
+          docker pull 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext.worker:latest
+          docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto-aws.yaml down
+          docker ps
+          docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto-aws.yaml up -d
           docker ps
           echo 'finished deployment'
     - name: Send mail
