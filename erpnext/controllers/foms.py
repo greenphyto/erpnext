@@ -603,8 +603,8 @@ def _update_foms_sales_order(log, api=None):
 	data = {
 		"orderType": "One-off",
 		"deliveryDate": getdate(doc.delivery_date),
-		"customerId": customer.foms_id,
-		"purchaseOrderNumber": doc.po_no,
+		"customerId": customer.foms_id or "",
+		"purchaseOrderNumber": doc.po_no or "",
 		"saleOrder": {
 			"farmId": farm_id,
 			"subSaleOrders": products,

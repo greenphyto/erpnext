@@ -1,7 +1,7 @@
 # Copyright (c) 2024, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-import frappe, requests, json
+import frappe, requests, json, copy
 from frappe.model.document import Document
 from urllib.parse import urljoin
 from six import string_types
@@ -92,7 +92,18 @@ class FomsAPI():
 			return data
 
 	def convert_data(self, data):
-		res = json.dumps(data, default=str)
+		def scrub(x):
+			ret = copy.deepcopy(x)
+			# Handle dictionaries. Scrub all values
+			if isinstance(x, dict):
+				for k,v in ret.items():
+					ret[k] = scrub(v)
+			# Handle None
+			if x == None:
+				ret = ''
+			# Finished scrubbing
+			return ret
+		res = json.dumps(scrub(data), default=str)
 		return res
 	
 	def req(self, req="POST", method="", data={}, params={}):
