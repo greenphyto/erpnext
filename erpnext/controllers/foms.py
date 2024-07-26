@@ -315,7 +315,7 @@ def _update_warehouse(log, api=None):
 	update_reff_id(res, doc, "warehouseID")
 	return res
 
-def sync_all_warehouse():
+def sync_all_warehouse(show_progress=False):
 	# foms to erp
 	foms_all_warehouses()
 
@@ -370,7 +370,7 @@ def _update_stock_recipe(log, api=None):
 		res = api.update_raw_material_receipt(data)
 
 # SUPPLIER (POST)
-def sync_all_supplier():
+def sync_all_supplier(show_progress=False):
 
 	# matching existing first
 	foms_all_supplier()
@@ -431,7 +431,7 @@ def _update_foms_supplier(log, api=None):
 	update_reff_id(res, supplier, "supplierID")
 
 # CUSTOMER (POST)
-def sync_all_customer():
+def sync_all_customer(show_progress=False):
 	foms_all_customer()
 
 	# find not exist foms id 
@@ -446,7 +446,7 @@ def sync_all_customer():
 	return True
 
 
-def foms_all_customer():
+def foms_all_customer(show_progress=False):
 	farm_id = get_farm_id()
 	api = FomsAPI()
 	data = api.get_all_customer(farm_id)
@@ -586,11 +586,10 @@ def _update_foms_sales_order(log, api=None):
 	products = []
 	
 	for d in doc.get("items"):
-		product_id = frappe.get_value("Item", d.item_code, "foms_id")
+		product_id = frappe.get_value("Item", d.item_code, "foms_product_id")
 		package_id = frappe.get_value("Packaging", d.item_code, "foms_id")
 		item = {
-			"isWeightOrder": False,
-			"packageId": package_id,
+			"isWeightOrder": True if d.weight_order else False,
 			"productId": product_id,
 			"quantity": d.qty_order,
 			"uom": convert_uom(d.stock_uom),
@@ -598,6 +597,9 @@ def _update_foms_sales_order(log, api=None):
 			"isRootInclude": "false",
 			"unitPrice": d.rate
 		}
+		if package_id:
+			item["packageId"] = cint(package_id)
+
 		products.append(item)
 
 	data = {
