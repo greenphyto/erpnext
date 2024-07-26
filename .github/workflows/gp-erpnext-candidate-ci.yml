@@ -32,6 +32,8 @@ jobs:
           docker push 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext:latest
           docker tag frappe/erpnext-worker:gpcandidate.v14.3.1 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext.worker:latest
           docker push 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext.worker:latest
+          docker tag frappe/frappe-socketio:gp.v14.12.0 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext:socketio-latest
+          docker push 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext:socketio-latest
           echo 'upload finished'
     - name: executing remote ssh commands using ssh key
       uses: appleboy/ssh-action@master
@@ -47,6 +49,7 @@ jobs:
           aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com
           docker pull 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext:latest
           docker pull 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext.worker:latest
+          docker pull 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext:socketio-latest
           docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto-aws.yaml down
           docker ps
           docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto-aws.yaml up -d
