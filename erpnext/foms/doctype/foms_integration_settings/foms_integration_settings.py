@@ -92,18 +92,22 @@ class FomsAPI():
 			return data
 
 	def convert_data(self, data):
-		def scrub(x):
-			ret = copy.deepcopy(x)
-			# Handle dictionaries. Scrub all values
-			if isinstance(x, dict):
-				for k,v in ret.items():
-					ret[k] = scrub(v)
-			# Handle None
-			if x == None:
-				ret = ''
-			# Finished scrubbing
-			return ret
-		res = json.dumps(scrub(data), default=str)
+		def fix_data(data):
+			if type(data) is list:
+				for i, e in enumerate(data):
+					if e is None:
+						data[i] = ''
+					else:
+						fix_data(e)
+
+			elif type(data) is dict:
+				for k, v in data.items():
+					if v is None:
+						data[k] = ''
+					else:
+						fix_data(v)
+		fix_data(data)
+		res = json.dumps(data, default=str)
 		return res
 	
 	def req(self, req="POST", method="", data={}, params={}):
