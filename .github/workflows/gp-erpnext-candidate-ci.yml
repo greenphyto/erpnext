@@ -26,8 +26,6 @@ jobs:
         script: |
           cd greenphyto/erpnextbuild/candidate01/frappe_docker/
           export FRAPPE_VERSION=gp.v14.12.0
-          docker builder prune -a -f
-          docker image prune -a -f
           docker buildx bake --load -f docker-bake.hcl 
           aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com
           docker tag frappe/erpnext-nginx:gpcandidate.v14.3.1 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext:latest
@@ -46,8 +44,6 @@ jobs:
         script_stop: true
         script: |
           cd greenphyto_docker/frappe_docker/
-          docker builder prune -a -f
-          docker image prune -a -f
           aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com
           docker pull 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext:latest
           docker pull 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext.worker:latest
