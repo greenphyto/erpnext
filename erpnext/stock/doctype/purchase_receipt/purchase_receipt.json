@@ -596,6 +596,7 @@
   {
    "fieldname": "taxes_charges_section",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "hide_border": 1,
    "label": "Taxes and Charges",
    "oldfieldtype": "Section Break"
@@ -603,17 +604,20 @@
   {
    "fieldname": "tax_category",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Tax Category",
    "options": "Tax Category",
    "print_hide": 1
   },
   {
    "fieldname": "shipping_col",
-   "fieldtype": "Column Break"
+   "fieldtype": "Column Break",
+   "hidden": 1
   },
   {
    "fieldname": "shipping_rule",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Shipping Rule",
    "options": "Shipping Rule"
   },
@@ -625,6 +629,7 @@
   {
    "fieldname": "taxes_and_charges",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Purchase Taxes and Charges Template",
    "oldfieldname": "purchase_other_charges",
    "oldfieldtype": "Link",
@@ -634,6 +639,7 @@
   {
    "fieldname": "taxes",
    "fieldtype": "Table",
+   "hidden": 1,
    "label": "Purchase Taxes and Charges",
    "oldfieldname": "purchase_tax_details",
    "oldfieldtype": "Table",
@@ -1185,7 +1191,8 @@
   },
   {
    "fieldname": "column_break_53",
-   "fieldtype": "Column Break"
+   "fieldtype": "Column Break",
+   "hidden": 1
   },
   {
    "fieldname": "section_break_98",
@@ -1239,7 +1246,7 @@
  "idx": 261,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-01-02 18:45:38.098761",
+ "modified": "2024-07-25 14:47:38.012460",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Purchase Receipt",
