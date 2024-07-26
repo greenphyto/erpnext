@@ -67,7 +67,6 @@ class MaterialRequest(BuyingController):
 					)
 
 	def validate(self):
-		print(self)
 		super(MaterialRequest, self).validate()
 
 		self.validate_schedule_date()
@@ -132,10 +131,18 @@ class MaterialRequest(BuyingController):
 		self.set_status(update=True)
 
 	def before_submit(self):
-		attachments = get_attachments()
+		attachments = self.get_attachments()
 		if len(attachments) == 0:
 			frappe.throw(_("Attachment is mandatory for submission"))
 		self.set_status(update=True)
+	
+	def get_attachments(self):
+		attachments = frappe.get_all(
+			"File",
+			fields=["name", "file_name", "file_url", "is_private"],
+			filters={"attached_to_name": self.name, "attached_to_doctype": self.doctype},
+		)
+		return attachments
 
 	def before_cancel(self):
 		# if MRQ is already closed, no point saving the document
@@ -363,14 +370,6 @@ def get_list_context(context=None):
 	)
 
 	return list_context
-
-def get_attachments(self):
-		attachments = frappe.get_all(
-			"File",
-			fields=["name", "file_name", "file_url", "is_private"],
-			filters={"attached_to_name": self.name, "attached_to_doctype": self.DOCTYPE},
-		)
-		return attachments
 
 
 @frappe.whitelist()
