@@ -92,7 +92,6 @@ def execute():
 def do_sync(data, material_group, series_key, start_from):
 
     data_reff = list(data.keys())
-    print(data_reff)
 
     idx = start_from
     num_series = series_key * 10000
