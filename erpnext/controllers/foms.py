@@ -1104,6 +1104,10 @@ def create_finish_goods_stock(data):
 		"batch":"",
 		"batch_exp":"", // opt if not set, it will created from erp
 		"batch_mfg":"", // opt
+		"work_order_id":"",
+		"lot_id":"",
+		"rack_no":"",
+		"customer_order_no:":"",
 		"warehouse":""
 		"materials":[{  // material consumed at end of process
 			"item_code":"",
@@ -1125,21 +1129,26 @@ def create_finish_goods_stock(data):
 
 	doc = frappe.new_doc("Stock Entry")
 	doc.foms_id = data.id
-	doc.material_reff = data.material_reff
+	# doc.material_reff = data.material_reff
 	doc.posting_date = getdate(data.posting_date)
 	doc.posting_time = get_time(data.posting_date)
 	doc.stock_entry_type = "Manufacture"
-	doc.company = data.company or get_default_company()
+	doc.company = get_default_company()
+	doc.work_order_id = data.work_order_id
+	doc.lot_id = data.lot_id
+	doc.rack_no = data.rack_no
+	doc.customer_order_no = data.customer_order_no
 	if data.bom:
 		doc.from_bom = 1
-	doc.bom_no = data.bom
+	if not "optional" in data.bom:
+		doc.bom_no = data.bom
 
-	default_expense = frappe.db.get_single_value("Manufacturing Settings", "default_expense_account") 
-	if not default_expense:
-		frappe.throw(_("Please set <b>Default Expense Account</b> on Manufacturing Settings!"))
+	# default_expense = frappe.db.get_single_value("Manufacturing Settings", "default_expense_account") 
+	# if not default_expense:
+	# 	frappe.throw(_("Please set <b>Default Expense Account</b> on Manufacturing Settings!"))
 
 	# material issue
-	for d in data.get("materials"):
+	for d in data.get("materials") or []:
 		d = frappe._dict(d)
 		row = doc.append("items")
 		row.item_code = d.item_code
@@ -1156,10 +1165,14 @@ def create_finish_goods_stock(data):
 	row.is_finished_item = 1
 
 	# add cost
-	for d in data.get("additional_cost"):
+	for d in data.get("additional_cost") or []:
 		row = doc.append("additional_costs")
 		row.update(d)
-		row.expense_account = default_expense
+		# row.expense_account = default_expense
+
+	# temporary
+	doc.flags.ignore_validate = 1
+	doc.flags.ignore_mandatory = 1
 
 	doc.insert(ignore_permissions=1)
 	doc.submit()

@@ -61,7 +61,7 @@ def set_part_number(doc, method=""):
 
 def execute():
     # Seeds
-    do_sync(PART_NUMBER_FIX['Seeds'], "Seeds", 10, 10)
+    # do_sync(PART_NUMBER_FIX['Seeds'], "Seeds", 10, 10)
 
     # Veg (AV)
     do_sync(PART_NUMBER_FIX['Vegetables (Asian Vegetables)'], 
@@ -70,23 +70,23 @@ def execute():
     # Veg (LV)
     do_sync(PART_NUMBER_FIX['Vegetables (Lettuce)'], "Vegetables (Lettuce)", 14, 4)
 
-    # Nutrient
-    do_sync(PART_NUMBER_FIX['Nutrition'], "Nutrition", 11, 2)
+    # # Nutrient
+    # do_sync(PART_NUMBER_FIX['Nutrition'], "Nutrition", 11, 2)
 
-    # Other Packaging
-    do_sync(PART_NUMBER_FIX['Other Packaging'], "Other Packaging", 13, 3)
+    # # Other Packaging
+    # do_sync(PART_NUMBER_FIX['Other Packaging'], "Other Packaging", 13, 3)
 
-    # LED
-    do_sync(PART_NUMBER_FIX['LED'], "LED", 20, 2)
+    # # LED
+    # do_sync(PART_NUMBER_FIX['LED'], "LED", 20, 2)
 
-    # Gateway
-    do_sync(PART_NUMBER_FIX['Gateway'], "Gateway", 21, 1)
+    # # Gateway
+    # do_sync(PART_NUMBER_FIX['Gateway'], "Gateway", 21, 1)
 
-    # Dimmer Controller
-    do_sync(PART_NUMBER_FIX['Dimmer Controller'], "Dimmer Controller", 22, 1)
+    # # Dimmer Controller
+    # do_sync(PART_NUMBER_FIX['Dimmer Controller'], "Dimmer Controller", 22, 1)
 
-    # FG Systems
-    do_sync(PART_NUMBER_FIX['FG - Systems'], "FG - Systems", 22, 2)
+    # # FG Systems
+    # do_sync(PART_NUMBER_FIX['FG - Systems'], "FG - Systems", 22, 2)
 
 
 def do_sync(data, material_group, series_key, start_from):

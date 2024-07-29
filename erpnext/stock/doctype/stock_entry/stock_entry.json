@@ -78,7 +78,12 @@
   "operation",
   "amended_from",
   "credit_note",
-  "is_return"
+  "is_return",
+  "foms_details_section",
+  "work_order_id",
+  "lot_id",
+  "rack_no",
+  "customer_order_no"
  ],
  "fields": [
   {
@@ -644,6 +649,35 @@
    "fieldtype": "Data",
    "label": "FOMS ID",
    "read_only": 1
+  },
+  {
+   "fieldname": "foms_details_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS Details"
+  },
+  {
+   "fieldname": "work_order_id",
+   "fieldtype": "Data",
+   "label": "Work Order ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "lot_id",
+   "fieldtype": "Data",
+   "label": "Lot ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rack_no",
+   "fieldtype": "Data",
+   "label": "Rack No",
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer_order_no",
+   "fieldtype": "Data",
+   "label": "Customer Order No",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -651,7 +685,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-02 12:15:53.147749",
+ "modified": "2024-07-29 12:06:53.183495",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",
