@@ -48,6 +48,7 @@ METHOD_MAP = {
 	"Purchase Receipt":4,
 	"Sales Order":5,
 	"Stock Reconciliation":6,
+	"Scrap Request":7,
 }
 
 UOM_KG_CONVERTION = {
@@ -637,6 +638,13 @@ def _update_foms_sales_order(log, api=None):
 
 def get_foms_format(date):
 	return getdate(date).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+
+# SCRAP REQUEST
+def update_foms_scrap_request():
+	sync_controller("Scrap Request", _update_foms_scrap_request)
+
+def _update_foms_scrap_request(log, api=None):
+	pass
 
 # SALES RECONCILLIATION (POST)
 def update_foms_stock_recon():

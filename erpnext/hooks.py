@@ -383,7 +383,11 @@ doc_events = {
 	},
     "Item": {
         "before_validate":"erpnext.patches.v14_0.fix_part_number.set_part_number"
-	}
+	},
+    "Scrap Request": {
+        "on_submit":"erpnext.controllers.foms.sync_log",
+        "on_cancel":"erpnext.controllers.foms.sync_log",
+	},
 }
 
 # On cancel event Payment Entry will be exempted and all linked submittable doctype will get cancelled.
@@ -675,4 +679,5 @@ sync_log_method = {
     4:"erpnext.controllers.foms._update_stock_recipe",
     5:"erpnext.controllers.foms._update_foms_sales_order",
     6:"erpnext.controllers.foms._update_foms_stock_recon",
+    7:"erpnext.controllers.foms._update_foms_scrap_request",
 }
