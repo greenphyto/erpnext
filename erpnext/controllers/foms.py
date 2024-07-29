@@ -510,7 +510,7 @@ def create_packaging(log):
 	log = frappe._dict(log)
 	if not name:
 		doc = frappe.new_doc("Packaging")
-		doc.title = log.packageName
+		doc.title = log.packageName[:159]
 		doc.description = log.packageName
 		doc.package_type = log.packageType
 		doc.foms_id = log.id		
