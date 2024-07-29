@@ -518,6 +518,8 @@ def create_packaging(log):
 		doc = frappe.get_doc("Packaging", name)
 		doc.description = log.packageName
 
+	print(521, doc.name, doc.title)
+
 	doc.quantity = log.packageWeight
 	doc.uom = get_uom(log.uom, "g")
 	factor = UOM_KG_CONVERTION.get(doc.uom) or 1
