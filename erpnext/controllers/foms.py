@@ -564,13 +564,20 @@ def create_batch(log):
 		if not item_code:
 			return ""
 		doc.item = item_code
-		shelf_life_in_days = frappe.db.get_value(
-			"Item", doc.item, ["shelf_life_in_days"]
-		) or 0
-		doc.manufacturing_date = getdate(log.dateOfCreation) or getdate()
-		doc.expiry_date = getdate(log.expiryDate) or add_days(getdate(), shelf_life_in_days)
+	else:
+		doc = frappe.get_doc("Batch", name)
+	shelf_life_in_days = frappe.db.get_value(
+		"Item", doc.item, ["shelf_life_in_days"]
+	) or 0
+	doc.manufacturing_date = getdate(log.dateOfCreation) or getdate()
+	doc.expiry_date = getdate(log.expiryDate) or add_days(getdate(), shelf_life_in_days)
+	doc.foms_id = log.id
+	if doc.is_new():
 		doc.insert(ignore_permissions=1)
-		name = doc.name
+	else:
+		doc.save()
+
+	name = doc.name
 
 	return name
 
@@ -646,7 +653,17 @@ def update_foms_scrap_request():
 	sync_controller("Scrap Request", _update_foms_scrap_request)
 
 def _update_foms_scrap_request(log, api=None):
-	pass
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Scrap Request", log.docname)
+	api.log = log
+	for d in doc.get("items"):
+		batch_id = frappe.get_value("Batch", d.batch, "foms_id")
+		data = {
+			"RawMaterialBatchID": cint(batch_id)
+		}
+		res = api.post_scrap_issue(data)
 
 # SALES RECONCILLIATION (POST)
 def update_foms_stock_recon():
