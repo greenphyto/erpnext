@@ -231,6 +231,7 @@
                   "FomsWorkOrderID": "FOMS-001",
                   "FomsLotID": "LOT12",
                   "productID": "37",
+                  "submit": true,
                   "qty": 2,
                   "uom": "Kg"
                 }
@@ -301,7 +302,10 @@
               "application/json": {
                 "schema": {
                   "example": {
-                    "message": true
+                    "message": {
+                      "result": true,
+                      "percentage": 10
+                    }
                   }
                 }
               }

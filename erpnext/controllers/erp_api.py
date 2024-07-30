@@ -45,8 +45,8 @@ def create_bom(data):
 	return {"ERPBomId":result}
 
 @frappe.whitelist()
-def create_work_order(FomsWorkOrderID, FomsLotID, productID, qty, uom):
-	submit = get_foms_settings("auto_submit_work_order")
+def create_work_order(FomsWorkOrderID, FomsLotID, productID, qty, uom, submit=False):
+	submit = get_foms_settings("auto_submit_work_order") or submit
 	item_code = frappe.get_value("Item", {"foms_product_id":productID})
 	if not item_code or productID==0:
 		frappe.throw(_(f"Missing Item with Product ID {productID}"), frappe.DoesNotExistError)
@@ -144,7 +144,10 @@ def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0
 		job_card.save()
 
 
-	return True
+	return {
+		"result": True,
+		"percentage": percentage
+	}
 
 @frappe.whitelist()
 def submit_work_order_finish_goods(ERPWorkOrderID, qty):
