@@ -3,7 +3,7 @@ from six import string_types
 from frappe.utils import flt, now_datetime, cint, getdate, cstr
 from erpnext.controllers.foms import (
     create_bom_products, 
-    get_bom_for_work_order2, 
+    get_bom_for_work_order, 
 	get_foms_settings,
 	create_work_order as _create_work_order,
 	OPERATION_MAP_NAME,
@@ -51,7 +51,7 @@ def create_work_order(FomsWorkOrderID, FomsLotID, productID, qty, uom):
 	if not item_code or productID==0:
 		frappe.throw(_(f"Missing Item with Product ID {productID}"), frappe.DoesNotExistError)
 
-	bom_no = get_bom_for_work_order2(item_code)
+	bom_no = get_bom_for_work_order(item_code)
 	if not bom_no:
 		frappe.throw(_(f"Missing BOM for {item_code}"), frappe.DoesNotExistError)
 		
@@ -66,12 +66,7 @@ def create_work_order(FomsWorkOrderID, FomsLotID, productID, qty, uom):
 	harvesting_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(3)})
 	res = {
 		"ERPWorkOrderID":doc.name,
-		"ERPBOMId":doc.bom_no,
-		"JobCards":{
-			1:seeding_jc,
-			2:transplanting_jc,
-			3:harvesting_jc
-		}
+		"ERPBOMId":doc.bom_no
 	}
 
 	return res
