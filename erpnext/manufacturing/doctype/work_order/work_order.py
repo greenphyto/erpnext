@@ -98,13 +98,13 @@ class WorkOrder(Document):
 		if cint(self.operation_no):
 			alpha_map = ["A", "B", "C", "D", "E", "F"]
 			alpha = alpha_map[cint(self.operation_no)-1]
-			if self.foms_work_order:
-				series = self.foms_work_order + "-.###.-{}".format( alpha )
+			if self.foms_lot_id:
+				series = self.foms_lot_id + "-.###.-{}".format( alpha )
 			else:
 				series = self.naming_series + ".###.-{}".format( alpha )
 		else:
-			if self.foms_work_order:
-				series = self.foms_work_order + "-.###"
+			if self.foms_lot_id:
+				series = self.foms_lot_id + "-.###"
 			else:
 				series = self.naming_series + ".###"
 
