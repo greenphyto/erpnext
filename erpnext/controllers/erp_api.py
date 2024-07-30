@@ -58,7 +58,7 @@ def create_work_order(FomsWorkOrderID, FomsLotID, productID, qty, uom):
 	qty = flt(qty) or 1
 	log = frappe._dict({
 		"workOrderNo":FomsWorkOrderID,
-		"FomsLotID":FomsLotID,
+		"lotId":FomsLotID,
 	})
 	doc = _create_work_order(log, item_code, bom_no, qty, submit, return_doc=1)
 	seeding_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(1)})
