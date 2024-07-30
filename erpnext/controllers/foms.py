@@ -723,9 +723,8 @@ def create_raw_material(log):
 		doc.is_stock_item = 1
 		doc.has_expiry_date = 1
 		doc.has_batch_no = 1
-		if doc.has_batch_no:
-			doc.create_new_batch = 1
-			doc.batch_number_series = doc.item_code + "-" + "BN.#####"
+		doc.create_new_batch = 1
+		doc.batch_number_series = doc.item_code + "-" + "BN.#####"
 
 		doc.lead_time_days = cint(log.RequestLeadTime)
 		doc.min_order_qty = flt(log.MinimumOrderQuantity)
@@ -769,6 +768,12 @@ def create_products(log):
 		doc.item_group = types
 		doc.foms_product_id = log.id
 		doc.is_stock_item = 1
+		doc.shelf_life_in_days = 365
+		doc.valuation_method = "FIFO"
+		doc.has_expiry_date = 1
+		doc.has_batch_no = 1
+		doc.create_new_batch = 1
+		doc.batch_number_series = doc.item_code + "-" + "BN.#####"
 		doc.get_item_material_group(set_data=1)
 		doc.insert(ignore_permissions=1)
 		name = doc.name
@@ -778,6 +783,11 @@ def create_products(log):
 		doc.description = log.productDesc or log.productDetail or log.productName
 		doc.is_stock_item = 1
 		doc.item_group = types
+		doc.shelf_life_in_days = 365
+		doc.has_expiry_date = 1
+		doc.has_batch_no = 1
+		doc.create_new_batch = 1
+		doc.batch_number_series = doc.item_code + "-" + "BN.#####"
 		if not doc.foms_product_id:
 			doc.foms_product_id = log.id
 		doc.get_item_material_group(set_data=1)
