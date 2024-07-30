@@ -1029,10 +1029,14 @@ def get_work_order(show_progress=False, work_order=""):
 			qty = 1
 
 			result = None
-			if bom_no:
-				result = create_work_order(d, item_code, bom_no, qty, submit)
-			
-			save_log("Work Order", result, d.get("lotId"), log)
+			try:
+				if bom_no:
+					result = create_work_order(d, item_code, bom_no, qty, submit)
+				
+				save_log("Work Order", result, d.get("lotId"), log)
+			except Exception as e:
+				print("error with ",item_code, d.workOrderNo, d.id)
+				continue
 
 	def get_key_name(log):
 		return log.get("workOrderNo")
