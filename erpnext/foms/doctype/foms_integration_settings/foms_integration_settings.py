@@ -298,6 +298,10 @@ class FomsAPI():
 
 		return res
 	
+	def post_scrap_issue(self, data):
+		res = self.req("POST", "/userportal/RawMaterialUP/UpdateRawMaterialStatusToExpired", params=data)
+		return res
+	
 """
 TODO:
 update batch qty to userportal/RawMaterialUP/CreateOrUpdateRawMaterialBatch
