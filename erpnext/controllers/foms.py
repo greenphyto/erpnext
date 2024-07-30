@@ -598,7 +598,7 @@ def _update_foms_sales_order(log, api=None):
 			"uom": convert_uom(d.stock_uom),
 			"totalNetWeight": d.stock_qty,
 			"isRootInclude": "false",
-			"unitPrice": d.rate
+			"unitPrice": d.rate_package
 		}
 		if package_id:
 			item["packageId"] = cint(package_id)

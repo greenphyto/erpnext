@@ -176,6 +176,9 @@ frappe.ui.form.on("Sales Order Item", {
 	},
 	qty_order: function(frm,cdt,cdn){
 		frm.cscript.calcaulate_packaging(frm,cdt,cdn);
+	},
+	rate_package: function(frm, cdt, cdn){
+		frm.cscript.calcaulate_rate_packaging(frm,cdt,cdn);
 	}
 
 });
@@ -332,6 +335,17 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			frappe.model.set_value(cdt,cdn,"qty",new_qty);
 		}else{
 			frappe.model.set_value(cdt,cdn,"qty",d.qty_order);
+		}
+	}
+
+	calcaulate_rate_packaging(frm,cdt,cdn){
+		var d = locals[cdt][cdn]
+		if (!d.weight_order){
+			var weight = flt(d.weight_in_kg);
+			var rate = d.rate_package / weight;
+			frappe.model.set_value(cdt,cdn,"rate",rate);
+		}else{
+			frappe.model.set_value(cdt,cdn,"rate",d.rate_package);
 		}
 	}
 
