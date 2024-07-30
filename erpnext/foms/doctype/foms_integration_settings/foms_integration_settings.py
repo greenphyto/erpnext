@@ -12,36 +12,44 @@ from frappe.core.doctype.sync_log.sync_log import update_success, update_error
 class FOMSIntegrationSettings(Document):
 	@frappe.whitelist()
 	def get_raw_material(self):
+		frappe.msgprint("Get raw material running..")
 		frappe.enqueue("erpnext.controllers.foms.get_raw_material", show_progress=True)
 	
 	@frappe.whitelist()
 	def get_products(self):
+		frappe.msgprint("Get products running..")
 		frappe.enqueue("erpnext.controllers.foms.get_products", show_progress=True)
 
 	@frappe.whitelist()
 	def get_recipe(self):
+		frappe.msgprint("Get recipe running..")
 		frappe.enqueue("erpnext.controllers.foms.get_recipe", show_progress=True)
 
 	@frappe.whitelist()
 	def sync_supplier(self):
+		frappe.msgprint("Sync supplier running..")
 		frappe.enqueue("erpnext.controllers.foms.sync_all_supplier", show_progress=True)
 
 	@frappe.whitelist()
 	def sync_customer(self):
-		frappe.msgprint("Get customer running..")
+		frappe.msgprint("Sync customer running..")
 		frappe.enqueue("erpnext.controllers.foms.sync_all_customer", show_progress=True)
 
 	@frappe.whitelist()
 	def sync_warehouse(self):
+		frappe.msgprint("Sync warehouse running..")
 		frappe.enqueue("erpnext.controllers.foms.sync_all_warehouse", show_progress=True)
 
 	@frappe.whitelist()
 	def get_packaging(self):
+		frappe.msgprint("Get packaging running..")
 		frappe.enqueue("erpnext.controllers.foms.get_packaging", show_progress=True)
 
 	@frappe.whitelist()
 	def get_batch(self):
+		frappe.msgprint("Get batch running..")
 		frappe.enqueue("erpnext.controllers.foms.get_batch", show_progress=True)
+
 
 def is_enable_integration():
 	return cint(frappe.db.get_single_value('FOMS Integration Settings', "enable"))

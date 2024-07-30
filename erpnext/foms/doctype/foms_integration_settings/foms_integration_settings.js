@@ -54,4 +54,10 @@ frappe.ui.form.on('FOMS Integration Settings', {
 			"method":"get_packaging"
 		})
 	},
+	get_batch: function(frm) {
+		frappe.call({
+			"doc": frm.doc,
+			"method":"get_batch"
+		})
+	},
 });
