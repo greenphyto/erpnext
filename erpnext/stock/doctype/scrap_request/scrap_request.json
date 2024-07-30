@@ -48,7 +48,7 @@
    "fieldname": "workflow_state",
    "fieldtype": "Select",
    "label": "Workflow State",
-   "options": "Pending\nApproved\nRejected",
+   "options": "Pending\nApproved\nRejected\nApproved by Stock Manager",
    "read_only": 1
   },
   {
@@ -66,7 +66,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-29 11:48:00.992760",
+ "modified": "2024-07-30 16:00:58.849266",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Scrap Request",
