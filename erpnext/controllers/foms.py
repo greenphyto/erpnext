@@ -1076,7 +1076,7 @@ def validate_operation(doc):
 
 def get_raw_item_foms(item_id="", item_code=""):
 	if item_id:
-		item = frappe.get_value("Item", {"foms_raw_id":1})
+		item = frappe.get_value("Item", {"foms_raw_id":item_id})
 	
 	if not item and item_code:
 		item = frappe.get_value("Item", item_code)

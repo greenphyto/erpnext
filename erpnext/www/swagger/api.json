@@ -449,48 +449,46 @@
                   }
                 },
                 "example": {
-                  "ERPWorkOrderID": "ERPWorkOrderID",
-                  "status": "Reserved",
+                  "ERPWorkOrderID": "FOMS-123-001",
                   "items": [
-                    {
-                      "workOrderId": 123,
-                      "workOrderNumber": "WO-240315-00001",
-                      "rawMaterialBatchId": 214,
-                      "rawMaterialBatchRefNo": "RM-NS-NSB-BN00009",
-                      "location": "Warehouse (R01-01-01)",
-                      "rawMaterialId": 41,
-                      "rawMaterialRefNo": "RM-NS-NSB",
-                      "rawMaterialName": "Nutrient B",
-                      "isInfinityQty": false,
-                      "isSeed": false,
-                      "currentQty": 170240,
-                      "unitCost": 0,
-                      "lossRatePercent": 0,
-                      "productId": 48,
-                      "productRefNo": "PR-AV-KLL",
-                      "productName": "F1 Hybrid Kailan 2",
-                      "productVersionId": 0,
-                      "productTaskId": 0,
-                      "productGrowthProcessId": 0,
-                      "isMixProduct": false,
-                      "creationDate": "2024-03-14T14:01:38.11067",
-                      "reserveDate": "2024-04-04T00:00:00",
-                      "qtyReserve": 3480,
-                      "uom": "ml",
-                      "reserveByUserId": 0,
-                      "reserveByUserName": "Planning",
-                      "parentProductId": 0,
-                      "status": "Reserved",
-                      "rawMaterialReserveStatus": null,
-                      "issuedTimeStamp": "0001-01-01T00:00:00",
-                      "issuedUserId": 0,
-                      "issuedUser": null,
-                      "unableToIssue": false,
-                      "lotId": "24-0022",
-                      "id": 9558
-                    }
+                      {
+                          "sourceWarehouseId":"48",
+                          "sourceWarehouseRefNo":"Raw Materials - GPL",
+                          "rawMaterialId":"38",
+                          "rawMaterialRefNo":"RM-IN-WW",
+                          "rawMaterialBatchRefNo":"",
+                          "qtyReserve":196,
+                          "uom":"L"
+                      },
+                      {
+                          "sourceWarehouseId":"48",
+                          "sourceWarehouseRefNo":"Raw Materials - GPL",
+                          "rawMaterialId":"41",
+                          "rawMaterialRefNo":"RM-NS-NSB",
+                          "rawMaterialBatchRefNo":"",
+                          "qtyReserve":1980,
+                          "uom":"ml"
+                      },
+                      {
+                          "sourceWarehouseId":"48",
+                          "sourceWarehouseRefNo":"Raw Materials - GPL",
+                          "rawMaterialId":"72",
+                          "rawMaterialRefNo":"RM-NS-NSB",
+                          "rawMaterialBatchRefNo":"",
+                          "qtyReserve":2.57,
+                          "uom":"g"
+                      },  
+                      {
+                          "sourceWarehouseId":"48",
+                          "sourceWarehouseRefNo":"Raw Materials - GPL",
+                          "rawMaterialId":"40",
+                          "rawMaterialRefNo":"RM-NS-NSA",
+                          "rawMaterialBatchRefNo":"",
+                          "qtyReserve":2480,
+                          "uom":"ml"
+                      }
                   ]
-                }
+              }
               }
             }
           },

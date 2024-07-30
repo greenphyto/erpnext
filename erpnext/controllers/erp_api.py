@@ -163,7 +163,7 @@ def submit_work_order_finish_goods(ERPWorkOrderID, qty):
 
 # Create Material Reserve
 @frappe.whitelist()
-def create_raw_material_reserve(ERPWorkOrderID, status, items):
+def create_raw_material_reserve(ERPWorkOrderID, items):
 	work_order_name, qty, source_warehouse = frappe.get_value("Work Order", ERPWorkOrderID, ["name", "qty", "source_warehouse"]) or ("", 1, "")
 	if not work_order_name:
 		frappe.throw(_(f"Work Order {ERPWorkOrderID} not found!"), frappe.DoesNotExistError)
@@ -175,8 +175,18 @@ def create_raw_material_reserve(ERPWorkOrderID, status, items):
 	se_doc.from_warehouse = source_warehouse
 	for d in items:
 		d = frappe._dict(d)
+		item_code = get_raw_item_foms(d.rawMaterialId, d.rawMaterialRefNo)
+		if not item_code:
+			continue
+
+		is_stock_item = frappe.get_value("Item", item_code, "is_stock_item")
+		if not is_stock_item:
+			continue
+		
 		row = se_doc.append("items")
-		row.item_code = get_raw_item_foms(d.rawMaterialId, d.rawMaterialRefNo)
+		src_warehouse = frappe.get_value("Warehouse", {"foms_id":d.sourceWarehouseId})
+		row.s_warehouse = src_warehouse or source_warehouse
+		row.item_code = item_code
 		row.batch_no = d.rawMaterialBatchRefNo
 		row.qty = d.qtyReserve
 		row.uom = get_uom(d.uom)
