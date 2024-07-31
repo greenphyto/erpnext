@@ -21,6 +21,12 @@
   "company",
   "posting_date",
   "apply_tds",
+  "tax_details_section",
+  "transaction_type",
+  "base_value",
+  "column_break_17",
+  "tax_template",
+  "tax_template_based_on",
   "2_add_edit_gl_entries",
   "accounts",
   "section_break99",
@@ -94,7 +100,7 @@
    "label": "Entry Type",
    "oldfieldname": "voucher_type",
    "oldfieldtype": "Select",
-   "options": "Journal Entry\nInter Company Journal Entry\nBank Entry\nCash Entry\nCredit Card Entry\nDebit Note\nCredit Note\nContra Entry\nExcise Entry\nWrite Off Entry\nOpening Entry\nDepreciation Entry\nExchange Rate Revaluation\nExchange Gain Or Loss\nDeferred Revenue\nDeferred Expense",
+   "options": "Journal Entry\nInter Company Journal Entry\nBank Entry\nCash Entry\nCredit Card Entry\nDebit Note\nCredit Note\nContra Entry\nExcise Entry\nWrite Off Entry\nOpening Entry\nDepreciation Entry\nExchange Rate Revaluation\nExchange Gain Or Loss\nDeferred Revenue\nDeferred Expense\nGST Input Tax",
    "reqd": 1,
    "search_index": 1
   },
@@ -581,13 +587,52 @@
    "fieldname": "difference_in_currency_base",
    "fieldtype": "Currency",
    "label": "Difference (Dr - Cr)"
+  },
+  {
+   "fieldname": "base_value",
+   "fieldtype": "Currency",
+   "label": "Base Value",
+   "mandatory_depends_on": "eval: doc.voucher_type == \"GST Input Tax\""
+  },
+  {
+   "depends_on": "eval: doc.voucher_type == \"GST Input Tax\"",
+   "fieldname": "tax_details_section",
+   "fieldtype": "Section Break",
+   "label": "Tax Details"
+  },
+  {
+   "fieldname": "tax_template",
+   "fieldtype": "Dynamic Link",
+   "label": "Tax Template",
+   "mandatory_depends_on": "eval: doc.voucher_type == \"GST Input Tax\"",
+   "options": "tax_template_based_on"
+  },
+  {
+   "default": "Selling",
+   "fieldname": "transaction_type",
+   "fieldtype": "Select",
+   "label": "Transaction Type",
+   "mandatory_depends_on": "eval: doc.voucher_type == \"GST Input Tax\"",
+   "options": "Selling\nBuying"
+  },
+  {
+   "default": "Sales Taxes and Charges Template",
+   "fieldname": "tax_template_based_on",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Tax Template Based On",
+   "options": "Sales Taxes and Charges Template\nPurchase Taxes and Charges Template"
+  },
+  {
+   "fieldname": "column_break_17",
+   "fieldtype": "Column Break"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 176,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-14 17:17:27.502518",
+ "modified": "2024-07-31 18:17:00.204867",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",

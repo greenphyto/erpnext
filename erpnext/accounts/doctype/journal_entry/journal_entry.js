@@ -101,6 +101,17 @@ frappe.ui.form.on("Journal Entry", {
 		erpnext.journal_entry.toggle_fields_based_on_currency(frm);
 	},
 
+	transaction_type: function(frm){
+		var type = frm.doc.transaction_type;
+		if (type == "Selling"){
+			frm.set_value("tax_template_based_on", "Sales Taxes and Charges Template");
+			frm.set_value("tax_template", "");
+		}else{
+			frm.set_value("tax_template_based_on", "Purchase Taxes and Charges Template");
+			frm.set_value("tax_template", "");
+		}
+	},
+
 	posting_date: function(frm) {
 		if(!frm.doc.multi_currency || !frm.doc.posting_date) return;
 
