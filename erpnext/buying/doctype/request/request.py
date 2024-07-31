@@ -94,6 +94,11 @@ def get_packaging_name(packaging, qty, uom, total_weight):
 @frappe.whitelist()
 def create_sales_order(request_name):
 	req = frappe.get_doc("Request", request_name)
+
+	exists = frappe.get_value("Sales Order", {"request_no":req.name})
+	if exists:
+		return exists
+	
 	# new doc
 	doc = frappe.new_doc("Sales Order")
 	doc.customer = "Internal Customer"
