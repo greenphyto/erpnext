@@ -55,8 +55,13 @@ class Customer(TransactionBase):
 	def set_code(self, force=False):
 		cash_sales = "C00008"
 		series = "C.#####"
-		if self.customer_code and not force:
-			return
+		if self.customer_code:
+			if self.customer_code == cash_sales or force:
+				return
+			else:
+				exist = frappe.get_value("Customer", {"customer_code":self.customer_code, "name":['!=', self.name]})
+				if exist:
+					frappe.throw(_(f"<b>{self.customer_code}</b> already use by {exist}"))
 		
 		if self.is_cash_sales:
 			self.customer_code = cash_sales
