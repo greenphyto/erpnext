@@ -105,11 +105,13 @@ frappe.ui.form.on("Journal Entry", {
 		var type = frm.doc.transaction_type;
 		if (type == "Selling"){
 			frm.set_value("tax_template_based_on", "Sales Taxes and Charges Template");
-			frm.set_value("tax_template", "");
+			frm.set_value("invoice_type", "Sales Invoice");
 		}else{
 			frm.set_value("tax_template_based_on", "Purchase Taxes and Charges Template");
-			frm.set_value("tax_template", "");
+			frm.set_value("invoice_type", "Purchase Invoice");
 		}
+		frm.set_value("tax_template", "");
+		frm.set_value("invoice_no", "");
 	},
 
 	posting_date: function(frm) {

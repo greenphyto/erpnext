@@ -23,10 +23,12 @@
   "apply_tds",
   "tax_details_section",
   "transaction_type",
-  "base_value",
+  "invoice_no",
+  "invoice_type",
   "column_break_17",
   "tax_template",
   "tax_template_based_on",
+  "base_value",
   "2_add_edit_gl_entries",
   "accounts",
   "section_break99",
@@ -626,13 +628,27 @@
   {
    "fieldname": "column_break_17",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "invoice_no",
+   "fieldtype": "Dynamic Link",
+   "label": "Invoice No",
+   "options": "invoice_type"
+  },
+  {
+   "default": "Sales Invoice",
+   "fieldname": "invoice_type",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Invoice Type",
+   "options": "Sales Invoice\nPurchase Invoice"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 176,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-31 18:17:00.204867",
+ "modified": "2024-07-31 18:28:42.900533",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",
