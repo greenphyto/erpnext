@@ -41,8 +41,11 @@ MATERIAL_MAP = {
 	"Vegetables (Asian Vegetables)"	:"15.####",
 	"LED"							:"20.####",
 	"Gateway"						:"21.####",
-	"Dimmer Controller (DMC01)"		:"22.####",
-	"FG - Systems"					:"26.####"
+	"Dimmer Controller"				:"22.####",
+	"Power Connector"				:"23.####",
+	"FG - Systems"					:"26.####",
+	"Trays & Boards"				:"27.####",
+	"Tooling & Moulding"			:"28.####",
 }
 
 
