@@ -40,9 +40,12 @@ MATERIAL_MAP = {
 	"Vegetables (Lettuce)"			:"14.####",
 	"Vegetables (Asian Vegetables)"	:"15.####",
 	"LED"							:"20.####",
-	"Gataway"						:"21.####",
+	"Gateway"						:"21.####",
 	"Dimmer Controller"				:"22.####",
-	"FG - Systems"					:"26.####"
+	"Power Connector"				:"23.####",
+	"FG - Systems"					:"26.####",
+	"Trays & Boards"				:"27.####",
+	"Tooling & Moulding"			:"28.####",
 }
 
 

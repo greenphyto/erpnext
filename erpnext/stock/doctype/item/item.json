@@ -946,7 +946,7 @@
    "fieldname": "material_group",
    "fieldtype": "Select",
    "label": "Material Group",
-   "options": "\nSeeds\nNutrition\nOther Packaging\nVegetables (Lettuce)\nVegetables (Asian Vegetables)\nLED\nGateway\nDimmer Controller\nFG - Systems"
+   "options": "\nSeeds\nNutrition\nOther Packaging\nVegetables (Lettuce)\nVegetables (Asian Vegetables)\nLED\nGateway\nDimmer Controller\nPower Connector\nFG - Systems\nTrays & Boards\nTooling & Moulding\nEquipment"
   },
   {
    "fieldname": "material_number",
