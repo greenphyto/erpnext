@@ -31,6 +31,7 @@
   "tax_template",
   "tax_template_based_on",
   "base_value",
+  "is_tax_refund",
   "2_add_edit_gl_entries",
   "accounts",
   "section_break99",
@@ -658,13 +659,19 @@
    "hidden": 1,
    "label": "Party Source",
    "options": "Supplier\nCustomer"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_tax_refund",
+   "fieldtype": "Check",
+   "label": "Is Tax Refund"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 176,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-01 13:09:06.931356",
+ "modified": "2024-08-01 16:26:57.078243",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",
