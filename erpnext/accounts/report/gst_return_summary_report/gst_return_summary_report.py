@@ -413,7 +413,7 @@ class VATAuditReport(object):
 				conditions += opts[1]
 		data = frappe.db.sql("""
 			SELECT 
-				name, transaction_type, total_debit, invoice_no, party_name, base_value, posting_date, is_tax_refund
+				name, transaction_type, tax_template, total_debit, invoice_no, party_name, base_value, posting_date, is_tax_refund
 			FROM
 				`tabJournal Entry`
 			WHERE
@@ -436,6 +436,7 @@ class VATAuditReport(object):
 			dt.posting_date = getdate(d.posting_date)
 			dt.Invoice_No = dt.invoice_no
 			dt.party = dt.party_name
+			dt.taxes_and_charges = dt.tax_template
 			if d.transaction_type == "Buying":
 				invoice_type = "Purchase Invoice"
 				if dt.is_tax_refund:
