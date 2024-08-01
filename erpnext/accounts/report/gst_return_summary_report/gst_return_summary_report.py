@@ -31,8 +31,6 @@ class VATAuditReport(object):
 		totalsstr = "Output Tax Due"
 		totalpstr = "Less:Input Tax and Refunds claimed"
 		totalfstr = "Equals: Net GST to be paid by you or Net GST to be claimed by you"
-		self.setup_data()
-		self.get_journal_entry_data()
 		for doctype in self.doctypes:
 			self.select_columns = """
 			name as voucher_no,
@@ -45,6 +43,8 @@ class VATAuditReport(object):
 			)
 			self.select_columns += columns
 
+			self.setup_data()
+			self.get_journal_entry_data(doctype)
 			self.get_invoice_data(doctype)
 
 			if self.invoices:
@@ -402,9 +402,7 @@ class VATAuditReport(object):
 				# print(2000, row.parent, [row.account_head, row.item_wise_tax_detail, row.parenttype, getdate(dt.posting_date)])
 				self.tax_detail_on_deleted.append((row.parent, row.account_head, row.item_wise_tax_detail, row.parenttype, getdate(dt.posting_date)))
 			
-			print("\n")
-
-	def get_journal_entry_data(self):
+	def get_journal_entry_data(self, doctype):
 		self.tax_detail_on_deleted = []
 		conditions = ""
 		for opts in (
@@ -421,10 +419,11 @@ class VATAuditReport(object):
 			WHERE
 				voucher_type = "GST Input Tax"
 				and docstatus = 1
+				and invoice_type = "{doctype}"
 				{where_conditions}
 					   
 		""".format(
-			where_conditions=conditions
+			where_conditions=conditions, doctype=doctype
 		), self.filters, as_dict=1)
 
 		for d in data:
