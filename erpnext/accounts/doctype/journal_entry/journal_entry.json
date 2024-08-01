@@ -25,6 +25,8 @@
   "transaction_type",
   "invoice_no",
   "invoice_type",
+  "party_name",
+  "party_source",
   "column_break_17",
   "tax_template",
   "tax_template_based_on",
@@ -610,12 +612,12 @@
    "options": "tax_template_based_on"
   },
   {
-   "default": "Selling",
+   "default": "Buying",
    "fieldname": "transaction_type",
    "fieldtype": "Select",
    "label": "Transaction Type",
    "mandatory_depends_on": "eval: doc.voucher_type == \"GST Input Tax\"",
-   "options": "Selling\nBuying"
+   "options": "Buying\nSelling"
   },
   {
    "default": "Sales Taxes and Charges Template",
@@ -636,19 +638,33 @@
    "options": "invoice_type"
   },
   {
-   "default": "Sales Invoice",
+   "default": "Purchase Invoice",
    "fieldname": "invoice_type",
    "fieldtype": "Select",
    "hidden": 1,
    "label": "Invoice Type",
-   "options": "Sales Invoice\nPurchase Invoice"
+   "options": "Purchase Invoice\nSales Invoice"
+  },
+  {
+   "fieldname": "party_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Party Name",
+   "options": "party_source"
+  },
+  {
+   "default": "Supplier",
+   "fieldname": "party_source",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Party Source",
+   "options": "Supplier\nCustomer"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 176,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-31 18:28:42.900533",
+ "modified": "2024-08-01 13:09:06.931356",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",

@@ -104,9 +104,7 @@ class JournalEntry(AccountsController):
 		return self.pay_to_recd_from or self.accounts[0].account
 	
 	def validate_gst_input(self):
-		for d in self.get("accounts"):
-			if d.gst_input_tax and not d.base_value:
-				frappe.msgprint(_("Missing base value for GST Input Tax in row {}".format(d.idx)))
+		pass
 
 	def update_advance_paid(self):
 		advance_paid = frappe._dict()
