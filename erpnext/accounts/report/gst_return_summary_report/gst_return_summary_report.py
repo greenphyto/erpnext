@@ -437,18 +437,14 @@ class VATAuditReport(object):
 			dt.Invoice_No = dt.invoice_no
 			dt.party = dt.party_name
 			dt.taxes_and_charges = dt.tax_template
+			account_head = ''
 			if d.transaction_type == "Buying":
 				invoice_type = "Purchase Invoice"
-				if dt.is_tax_refund:
-					account_head = ''
-				# dt.account = dt.credit_to
 			else:
 				invoice_type = "Sales Invoice"
 				pass
-				# dt.account = dt.debit_to
 
 			item_name = "item"
-			account_head = ''
 			temp = {}
 			total = dt.total_debit * (-1 if dt.is_tax_refund else 1)
 			temp[item_name] = [8, total]
