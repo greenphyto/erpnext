@@ -114,6 +114,7 @@ frappe.ui.form.on("Journal Entry", {
 		}
 		frm.set_value("tax_template", "");
 		frm.set_value("invoice_no", "");
+		frm.set_value("party_name", "");
 	},
 
 	invoice_no: function(frm){
