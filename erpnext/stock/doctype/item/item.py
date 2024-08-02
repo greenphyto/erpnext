@@ -135,6 +135,7 @@ class Item(Document):
 		self.set_material_number()
 		self.validate_debit_note_item()
 		self.set_asset_category()
+		self.validate_package()
 
 		set_item_tax_from_hsn_code(self)
 
@@ -236,6 +237,12 @@ class Item(Document):
 				)
 
 				stock_entry.add_comment("Comment", _("Opening Stock"))
+
+	def validate_package(self):
+		if len(self.get("packaging")):
+			self.is_package_item = 1
+		else:
+			self.is_package_item = 0
 
 	def validate_fixed_asset(self):
 		if self.is_fixed_asset:

@@ -57,6 +57,8 @@ frappe.ui.form.on("Sales Order", {
 			}
 		});
 
+		console.log("here")
+
 		frm.set_df_property('packed_items', 'cannot_add_rows', true);
 		frm.set_df_property('packed_items', 'cannot_delete_rows', true);
 	},
@@ -76,6 +78,17 @@ frappe.ui.form.on("Sales Order", {
 		if (frm.doc.docstatus === 0 && frm.doc.is_internal_customer) {
 			frm.events.get_items_from_internal_purchase_order(frm);
 		}
+
+		frm.set_query("item_code", "items", function(doc, cdt, cdn) {
+			var row = locals[cdt][cdn];
+			var filters = {"is_stock_item": 1, "is_fixed_asset": 0}
+			if (doc.non_package_item){
+				filters['is_package_item']=0;
+			}else{
+				filters['is_package_item']=1;
+			}
+			return erpnext.queries.item(filters);
+		})
 	},
 
 	get_items_from_internal_purchase_order(frm) {

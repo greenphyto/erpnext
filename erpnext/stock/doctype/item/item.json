@@ -102,6 +102,7 @@
   "sales_details",
   "packaging_details_section",
   "packaging",
+  "is_package_item",
   "sales_details_section",
   "sales_uom",
   "grant_commission",
@@ -990,6 +991,13 @@
    "fieldname": "sales_details_section",
    "fieldtype": "Section Break",
    "label": "Sales Details"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_package_item",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Is Package Item"
   }
  ],
  "icon": "fa fa-tag",
@@ -998,7 +1006,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2024-07-22 12:42:14.189055",
+ "modified": "2024-08-02 16:42:33.477809",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",

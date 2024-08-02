@@ -47,6 +47,7 @@
   "column_break_28",
   "set_warehouse",
   "items_section",
+  "non_package_item",
   "items",
   "section_break_31",
   "total_qty",
@@ -1639,13 +1640,19 @@
    "fieldtype": "Data",
    "label": "FOMS ID",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "non_package_item",
+   "fieldtype": "Check",
+   "label": "Non Package Item"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-19 17:06:12.116711",
+ "modified": "2024-08-02 16:19:16.382675",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
