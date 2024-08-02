@@ -410,8 +410,8 @@ def _update_foms_supplier(log, api=None):
 	farm_id = get_farm_id()
 	data = {
 		"farmId": farm_id,
-		"supplierID": supplier.foms_id,
-		# "supplierRefNo": supplier.name,
+		"id": cint(supplier.foms_id),
+		"supplierID": supplier.name,
 		"supplierName": supplier.supplier_name,
 		"address": details.address_display or details.company_address_display or "",
 		"contact": supplier.mobile_no or  details.contact_mobile or "",
@@ -422,6 +422,7 @@ def _update_foms_supplier(log, api=None):
 		"countryCode": frappe.db.get_single_value('FOMS Integration Settings', "country_id"),
 		"rmDeviceIds": "",
 		"rmDeviceId":  [],
+		"isFromErp": True
 	}
 
 	if supplier.foms_id:
@@ -472,7 +473,7 @@ def _update_foms_customer(log, api=None):
 
 	data = {
 		"farmId": farm_id,
-		# "customerRefNo": customer.name,
+		"customerRefNo": customer.name,
 		"customerName": customer.customer_name,
 		"address": address,
 		"contact": customer.mobile_no or  details.contact_mobile or "" ,
