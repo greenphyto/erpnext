@@ -50,3 +50,26 @@ def add_material_number_products():
     
     for d in left_items:
         print("left for", d.name, ",", d.item_name)
+
+
+"""
+bench --site test3 execute erpnext.patches.v14_0.repair_item.set_non_package_item
+"""
+def set_non_package_item():
+    frappe.db.sql("""
+        update
+            `tabItem` i
+                LEFT JOIN
+            `tabPackaging List Available` p ON p.parent = i.name
+        set is_package_item = 1
+        where p.name is not null
+    """)
+
+    frappe.db.sql("""
+        update
+            `tabItem` i
+                LEFT JOIN
+            `tabPackaging List Available` p ON p.parent = i.name
+        set is_package_item = 0
+        where p.name is null
+    """)
