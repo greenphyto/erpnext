@@ -89,6 +89,8 @@ frappe.ui.form.on("Sales Order", {
 			}
 			return erpnext.queries.item(filters);
 		})
+
+		frm.cscript.change_package_display();
 	},
 
 	get_items_from_internal_purchase_order(frm) {
@@ -158,6 +160,10 @@ frappe.ui.form.on("Sales Order", {
 		frm.ignore_doctypes_on_cancel_all = ['Purchase Order'];
 	},
 
+	non_package_item: function(frm){
+		frm.cscript.change_package_display();
+	},
+
 	delivery_date: function(frm) {
 		$.each(frm.doc.items || [], function(i, d) {
 			if(!d.delivery_date) d.delivery_date = frm.doc.delivery_date;
@@ -180,18 +186,6 @@ frappe.ui.form.on("Sales Order Item", {
 		if(!frm.doc.delivery_date) {
 			erpnext.utils.copy_value_in_all_rows(frm.doc, cdt, cdn, "items", "delivery_date");
 		}
-	},
-	package: function(frm, cdt,cdn){
-		frm.cscript.calcaulate_packaging(frm,cdt,cdn);
-	},
-	weight_order: function(frm,cdt,cdn){
-		frm.cscript.calcaulate_packaging(frm,cdt,cdn);
-	},
-	qty_order: function(frm,cdt,cdn){
-		frm.cscript.calcaulate_packaging(frm,cdt,cdn);
-	},
-	rate_package: function(frm, cdt, cdn){
-		frm.cscript.calcaulate_rate_packaging(frm,cdt,cdn);
 	}
 
 });
@@ -339,26 +333,11 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 		this.order_type(doc);
 	}
 
-	calcaulate_packaging(frm,cdt,cdn){
-		var d = locals[cdt][cdn]
-		if (!d.weight_order){
-			if (d.uom!="Kg") frappe.model.set_value(cdt,cdn,"uom", 'Kg');
-			var weight = flt(d.weight_in_kg);
-			var new_qty = weight * flt(d.qty_order);
-			frappe.model.set_value(cdt,cdn,"qty",new_qty);
+	change_package_display(){
+		if (!this.frm.non_package_item){
+			this.frm.cscript.change_package_label(1);
 		}else{
-			frappe.model.set_value(cdt,cdn,"qty",d.qty_order);
-		}
-	}
-
-	calcaulate_rate_packaging(frm,cdt,cdn){
-		var d = locals[cdt][cdn]
-		if (!d.weight_order){
-			var weight = flt(d.weight_in_kg);
-			var rate = d.rate_package / weight;
-			frappe.model.set_value(cdt,cdn,"rate",rate);
-		}else{
-			frappe.model.set_value(cdt,cdn,"rate",d.rate_package);
+			this.frm.cscript.change_package_label(0);
 		}
 	}
 

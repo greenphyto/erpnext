@@ -2459,6 +2459,19 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		table.grid.reset_grid();
 	}
 
+	change_package_label(change=false){
+		const item_table = "items";
+		var table = this.frm.fields_dict[item_table];
+		var uom_field = table.grid.fields_map.uom;
+		if (change){
+			uom_field.label = "Package"
+		}else{
+			uom_field.label = "UOM"
+		}
+
+		table.grid.reset_grid();
+	}
+
 	confirm_reset_item(){
 		var me = this;
 		function confirm_action(){
