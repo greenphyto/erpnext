@@ -582,6 +582,12 @@ def create_batch(log):
 	return name
 
 # SALES ORDER (POST)
+def sync_log_so(doc, method=""):
+	if doc.get("non_package_item"):
+		return
+	else:
+		sync_log(doc)
+		
 def update_foms_sales_order():
 	sync_controller("Sales Order", _update_foms_sales_order)
 
