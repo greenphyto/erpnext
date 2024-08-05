@@ -79,13 +79,7 @@ class SalesOrder(SellingController):
 
 	def validate_packaging(self):
 		for d in self.get("items"):
-			if not cint(d.weight_order):
-				if not d.package:
-					frappe.throw(_(f"Row {d.idx}, Package is mandatory!"))
-				d.weight_in_kg = frappe.get_value("Packaging", d.package, "total_weight")
-				d.qty = d.qty_order * d.weight_in_kg
-			else:
-				d.qty = flt(d.qty_order)
+			pass
 
 	def validate_po(self):
 		# validate p.o date v/s delivery date

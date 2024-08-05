@@ -597,11 +597,11 @@ def _update_foms_sales_order(log, api=None):
 	
 	for d in doc.get("items"):
 		product_id = frappe.get_value("Item", d.item_code, "foms_product_id")
-		package_id = frappe.get_value("Packaging", d.package, "foms_id")
+		package_id = frappe.get_value("Packaging", d.uom, "foms_id")
 		item = {
 			"isWeightOrder": True if d.weight_order else False,
 			"productId": product_id,
-			"quantity": d.qty_order,
+			"quantity": d.qty,
 			"uom": convert_uom(d.stock_uom),
 			"totalNetWeight": d.stock_qty,
 			"isRootInclude": "false",

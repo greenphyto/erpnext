@@ -113,8 +113,8 @@ def create_sales_order(request_name):
 			row.weight_order = 0
 		else:
 			row.weight_order = 1
-		row.package = d.packaging
-		row.qty_order = d.qty
+		row.uom = d.packaging
+		row.qty = d.qty
 
 		# need convertion from package vs stock qty
 		row.qty = d.qty
