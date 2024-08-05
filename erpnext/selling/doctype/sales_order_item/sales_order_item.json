@@ -27,9 +27,8 @@
   "uom",
   "conversion_factor",
   "stock_qty",
-  "packaging_section",
-  "package",
   "weight_in_kg",
+  "packaging_section",
   "weight_order",
   "section_break_16",
   "price_list_rate",
@@ -875,13 +874,6 @@
   },
   {
    "columns": 1,
-   "fieldname": "package",
-   "fieldtype": "Link",
-   "label": "Package",
-   "options": "Packaging"
-  },
-  {
-   "columns": 1,
    "default": "0",
    "fieldname": "weight_order",
    "fieldtype": "Check",
@@ -906,7 +898,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-08-05 14:37:28.222634",
+ "modified": "2024-08-05 16:55:31.358248",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

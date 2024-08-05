@@ -186,9 +186,19 @@ frappe.ui.form.on("Sales Order Item", {
 		if(!frm.doc.delivery_date) {
 			erpnext.utils.copy_value_in_all_rows(frm.doc, cdt, cdn, "items", "delivery_date");
 		}
+	},
+	uom: function(frm, cdt, cdn){
+		fetch_package_weight(frm, cdt,cdn);
 	}
 
 });
+
+function fetch_package_weight(frm,cdt,cdn){
+	var d = locals[cdt][cdn];
+	frappe.db.get_value("Packaging", d.uom, "total_weight").then(r=>{
+		frappe.model.set_value(cdt,cdn, "weight_in_kg", r.message.total_weight);
+	})
+}
 
 erpnext.selling.SalesOrderController = class SalesOrderController extends erpnext.selling.SellingController {
 	onload(doc, dt, dn) {
@@ -334,7 +344,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 	}
 
 	change_package_display(){
-		if (!this.frm.non_package_item){
+		if (!this.frm.doc.non_package_item){
 			this.frm.cscript.change_package_label(1);
 		}else{
 			this.frm.cscript.change_package_label(0);
