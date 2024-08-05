@@ -170,7 +170,11 @@ frappe.ui.form.on("Sales Order", {
 	},
 
 	non_package_item: function(frm){
-		frm.cscript.change_package_display();
+		frm.cscript.confirm_reset_item("non_package_item").then(r=>{
+			if (r){
+				frm.cscript.change_package_display();
+			}
+		});
 	},
 
 	delivery_date: function(frm) {

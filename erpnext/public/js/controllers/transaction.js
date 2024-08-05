@@ -2421,7 +2421,12 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 
 	// make item_code and item_name switchable
 	non_stock_item(){
-		this.confirm_reset_item();
+		var me = this;
+		this.confirm_reset_item("non_stock_item").then(r=>{
+			if (r){
+				me.change_item_preview();
+			}
+		});
 	}
 
 	change_item_preview(){
@@ -2472,7 +2477,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		table.grid.reset_grid();
 	}
 
-	confirm_reset_item(){
+	confirm_reset_item(field_reff){
 		var me = this;
 		function confirm_action(){
 			return new Promise((resolve)=>{
@@ -2493,17 +2498,21 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 			});
 		}
 
-		confirm_action().then((reset)=>{
-			if (reset){
-				this.frm.set_value("items", []);
-				this.change_item_preview();
-			}else{
-				var field = this.frm.fields_dict.non_stock_item;
-				var d = locals[this.frm.doctype][this.frm.doc.name]
-				d.non_stock_item = field.old_value
-				field.refresh();
-			}
+		return new Promise((resolve, reject) => {
+			confirm_action().then((reset)=>{
+				if (reset){
+					this.frm.set_value("items", []);
+					resolve(true)
+				}else{
+					var field = this.frm.fields_dict[field_reff];
+					var d = locals[this.frm.doctype][this.frm.doc.name]
+					d[field_reff] = field.old_value
+					field.refresh();
+					resolve(false);
+				}
+			})
 		})
+
 	}
 
 	add_default_non_stock_item(frm, cdt, cdn){
