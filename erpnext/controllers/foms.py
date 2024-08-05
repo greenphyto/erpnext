@@ -504,6 +504,7 @@ def get_packaging(show_progress=False):
 			pack_name = create_packaging(d)
 			row = doc.append("packaging")
 			row.packaging = pack_name
+
 		doc.save()
 
 def create_packaging(log):
@@ -518,8 +519,6 @@ def create_packaging(log):
 	else:
 		doc = frappe.get_doc("Packaging", name)
 		doc.description = log.packageName
-
-	print(521, doc.name, doc.title)
 
 	doc.quantity = log.packageWeight
 	doc.uom = get_uom(log.uom, "g")

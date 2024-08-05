@@ -244,6 +244,26 @@ class Item(Document):
 		else:
 			self.is_package_item = 0
 
+		self.sync_uom_from_package()
+
+	def sync_uom_from_package(self):
+		for d in self.get("packaging"):
+			row = self.get("uoms", {"uom":d.packaging})
+			if row:
+				row = row[0]
+				row.conversion_factor = flt(d.weight)
+			else:
+				row = self.append("uoms")
+				row.uom = d.packaging
+				row.conversion_factor = flt(d.weight)
+				row.is_packaging = 1
+		
+		# delete
+		for d in list(self.get("uoms", {"is_packaging":1})):
+			row = self.get("packaging", {"packaging":d.uom})
+			if not row:
+				self.remove(d)
+
 	def validate_fixed_asset(self):
 		if self.is_fixed_asset:
 			if self.is_stock_item:
