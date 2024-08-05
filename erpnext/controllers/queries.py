@@ -354,6 +354,31 @@ def bom(doctype, txt, searchfield, start, page_len, filters):
 		},
 	)
 
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def uom(doctype, txt, searchfield, start, page_len, filters):
+	doctype = "UOM Conversion Detail"
+	conditions = []
+
+	return frappe.db.sql(
+		"""
+		SELECT 
+			`tabUOM`.name
+		FROM
+			`tabUOM`
+				LEFT JOIN
+			`tabUOM Conversion Detail` ON `tabUOM Conversion Detail`.uom = `tabUOM`.name
+		where (`tabUOM Conversion Detail`.parent is not null
+			or `tabUOM`.name like %(txt)s)
+			{fcond}
+		group by `tabUOM`.name
+		""".format(
+			key=searchfield,
+			fcond=get_filters_cond(doctype, filters, conditions).replace("%", "%%"),
+		), {
+			"txt": "%(txt)s",
+		}
+	)
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
