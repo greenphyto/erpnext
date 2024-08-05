@@ -321,4 +321,3 @@ erpnext.patches.v14_0.update_tds_fields
 erpnext.patches.v14_0.update_dn_reference_to_si
 erpnext.patches.v14_0.create_non_stock_item
 erpnext.patches.v14_0.make_asset_change_log
-erpnext.patches.v14_0.add_internal_customer
