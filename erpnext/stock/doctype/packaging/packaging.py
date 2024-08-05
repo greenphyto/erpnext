@@ -10,6 +10,9 @@ class Packaging(Document):
 		self.create_uom_packaging()
 		self.enable_disable()
 
+	def after_rename(self, old, new, merge):
+		self.sync_new_name(old, new)
+
 	def on_trash(self):
 		self.delete_uom_packaging()
 
@@ -23,8 +26,9 @@ class Packaging(Document):
 		doc.uom_name = self.name
 		doc.insert(ignore_permissions=1)
 
-	def get_uom_name(self):
-		return frappe.get_value("UOM", self.name)
+	def get_uom_name(self, name=None):
+		uom = name or self.name
+		return frappe.get_value("UOM", uom)
 
 	def delete_uom_packaging(self):
 		exists = self.get_uom_name()
@@ -43,3 +47,9 @@ class Packaging(Document):
 		else:
 			frappe.db.set_value("UOM", exists, "enabled", 1)
 
+	def sync_new_name(self, old, new):
+		exists = self.get_uom_name(old)
+		if not exists:
+			return
+		
+		frappe.rename_doc("UOM", exists, self.name, force=1)
