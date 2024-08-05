@@ -20,3 +20,16 @@ def update_deleted_date_docuemnt():
         dt = frappe._dict(json.loads(d.data))
         print(d.name, dt.name, dt.posting_date)
         frappe.db.set_value("Deleted Document", d.name, "document_date", dt.posting_date)
+"""
+bench --site test6 execute erpnext.patches.v14_0.update_qr_code.update_weight_item
+"""
+def update_weight_item():
+    frappe.db.sql("""
+        UPDATE `tabItem` 
+        SET 
+            weight_per_unit = 1,
+            weight_uom = stock_uom
+        WHERE
+            weight_per_unit != 1
+        AND stock_uom IN ('Kg' , 'Gram', 'Mililitre', 'Litre')
+    """)
