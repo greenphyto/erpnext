@@ -1108,6 +1108,60 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.create_update_packaging": {
+      "post": {
+        "summary": "Create/Update master Packaging data",
+        "description": "Update/create packaging referring to this endpoint /userportal/CustomerOrder/GetPackageList",
+        "operationId": "create packaging data",
+        "requestBody": {
+          "description": {
+            "test":123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data":{
+                    "itemCode":"PR-AV-KOM",
+                    "packageName":"Package (120g) - GP Type A",
+                    "packageType":"GP Type A",
+                    "packageWeight":120,
+                    "uom":"g",
+                    "id":"foms id"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "PackageID":""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
     }
   },
   "components": {

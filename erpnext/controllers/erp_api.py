@@ -13,7 +13,8 @@ from erpnext.controllers.foms import (
 	create_products as _create_products,
 	create_delivery_order as _create_delivery_order,
 	get_operation_map_name,
-	create_finish_goods_stock as _create_finish_goods_stock
+	create_finish_goods_stock as _create_finish_goods_stock,
+	create_packaging,
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
@@ -284,6 +285,23 @@ def create_material_return(data):
 		"purchaseReturnNo":doc.name
 	}
 	
+@frappe.whitelist()
+def create_update_packaging(data):
+	data = frappe._dict(data)
+	item = frappe.get_value("Item", data.itemCode)
+	if not item:
+		frappe.throw(_(f"Missing Item with ID {data.itemCode}"))
+	doc = frappe.get_doc("Item", item)
+	pack_name = create_packaging(data)
+	row = doc.get("packaging", {"packaging":data.packageName})
+	if not row:
+		row = doc.append("packaging")
+		row.packaging = pack_name
+		doc.save()
+
+	return {
+		"PackageID":pack_name
+	}
 
 
 @frappe.whitelist()
