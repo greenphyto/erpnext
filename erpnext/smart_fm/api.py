@@ -89,12 +89,15 @@ def create_alram_signal(data):
 	if isinstance(data, string_types):
 		data = frappe._dict(json.loads(data))
 
-	name = frappe.db.exists("FOMS Alarm", {"ref_id":flt(data.get("id"))})
-	if name:
-		pass
-	else:
+	name = None
+	if data.get("id"):
+		name = frappe.db.exists("FOMS Alarm", {"ref_id":flt(data.get("id"))})
+		if name:
+			pass
+
+	if not name:
 		doc = frappe.new_doc("FOMS Alarm")
-		data['ref_id'] = data['id']
+		data['ref_id'] = data.get("id")
 		doc.update(data)
 		doc.insert(ignore_permissions=1)
 		name = doc.name
