@@ -54,6 +54,12 @@
   "warranty_start",
   "warranty_end",
   "warranty_agreement",
+  "product_warranty_information_section",
+  "product_warranty_coverage",
+  "column_break_wvyj6",
+  "product_warranty_start",
+  "product_warranty_end",
+  "product_warranty_agreement",
   "section_break_36",
   "finance_books",
   "section_break_33",
@@ -579,25 +585,25 @@
    "collapsible_depends_on": "eval:doc.warranty_coverage",
    "fieldname": "warranty_information_section",
    "fieldtype": "Section Break",
-   "label": "Warranty Information"
+   "label": "DLP Warranty Information"
   },
   {
    "allow_on_submit": 1,
    "fieldname": "warranty_start",
    "fieldtype": "Date",
-   "label": "Warranty Start"
+   "label": "DLP Warranty Start"
   },
   {
    "allow_on_submit": 1,
    "fieldname": "warranty_end",
    "fieldtype": "Date",
-   "label": "Warranty End"
+   "label": "DLP Warranty End"
   },
   {
    "allow_on_submit": 1,
    "fieldname": "warranty_coverage",
    "fieldtype": "Text Editor",
-   "label": "Warranty Coverage"
+   "label": "DLP Warranty Coverage"
   },
   {
    "fieldname": "column_break_tmtoe",
@@ -607,7 +613,7 @@
    "allow_on_submit": 1,
    "fieldname": "warranty_agreement",
    "fieldtype": "Attach",
-   "label": "Warranty Agreement"
+   "label": "DLP Warranty Agreement"
   },
   {
    "default": "0",
@@ -635,6 +641,37 @@
    "fieldtype": "Data",
    "label": "Equipment Code",
    "read_only": 1
+  },
+  {
+   "fieldname": "product_warranty_coverage",
+   "fieldtype": "Text Editor",
+   "label": "Product Warranty Coverage"
+  },
+  {
+   "fieldname": "product_warranty_start",
+   "fieldtype": "Date",
+   "label": "Product Warranty Start"
+  },
+  {
+   "fieldname": "product_warranty_end",
+   "fieldtype": "Date",
+   "label": "Product Warranty End"
+  },
+  {
+   "fieldname": "product_warranty_agreement",
+   "fieldtype": "Attach",
+   "label": "Product Warranty Agreement"
+  },
+  {
+   "fieldname": "column_break_wvyj6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:doc.product_warranty_coverage",
+   "fieldname": "product_warranty_information_section",
+   "fieldtype": "Section Break",
+   "label": "Product Warranty Information"
   }
  ],
  "idx": 72,
@@ -664,7 +701,7 @@
    "table_fieldname": "accounts"
   }
  ],
- "modified": "2024-04-29 14:30:33.720874",
+ "modified": "2024-08-06 09:48:28.156674",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",
