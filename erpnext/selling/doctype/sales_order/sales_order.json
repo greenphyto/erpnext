@@ -130,6 +130,7 @@
   "delivery_status",
   "per_delivered",
   "foms_id",
+  "per_working",
   "column_break_81",
   "per_billed",
   "per_picked",
@@ -1646,13 +1647,19 @@
    "fieldname": "non_package_item",
    "fieldtype": "Check",
    "label": "Non Package Item"
+  },
+  {
+   "fieldname": "per_working",
+   "fieldtype": "Percent",
+   "label": "% Working",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-02 16:19:16.382675",
+ "modified": "2024-08-06 17:00:09.447851",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
