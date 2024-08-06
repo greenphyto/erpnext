@@ -13,12 +13,9 @@
   "production_item",
   "item_name",
   "image",
-  "foms_work_order",
-  "foms_lot_name",
-  "foms_lot_id",
   "bom_no",
   "operation_no",
-  "column_break1",
+  "column_break11",
   "company",
   "qty",
   "material_transferred_for_manufacturing",
@@ -26,6 +23,14 @@
   "process_loss_qty",
   "sales_order",
   "project",
+  "foms_detail_section",
+  "foms_work_order",
+  "foms_lot_name",
+  "foms_lot_id",
+  "column_break1",
+  "sales_order_no",
+  "sub_sales_order_no",
+  "sub_sales_order_id",
   "serial_no_and_batch_for_finished_good_section",
   "has_serial_no",
   "has_batch_no",
@@ -604,6 +609,33 @@
    "in_standard_filter": 1,
    "label": "FOMS Lot ID",
    "read_only": 1
+  },
+  {
+   "fieldname": "foms_detail_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS Detail"
+  },
+  {
+   "fieldname": "column_break11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sales_order_no",
+   "fieldtype": "Data",
+   "label": "Sales Order No",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sub_sales_order_no",
+   "fieldtype": "Data",
+   "label": "Sub Sales Order No",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sub_sales_order_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Sub Sales Order ID"
   }
  ],
  "icon": "fa fa-cogs",
@@ -611,7 +643,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-10 18:10:52.881903",
+ "modified": "2024-08-06 18:42:31.747280",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",

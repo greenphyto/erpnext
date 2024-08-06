@@ -1071,6 +1071,9 @@ def create_work_order(log, item_code, bom_no, qty=1, submit=False, return_doc=Fa
 	doc.foms_work_order = log.workOrderNo
 	doc.foms_lot_id = log.id
 	doc.foms_lot_name = log.lotId
+	doc.sales_order_no = log.sales_order_no
+	doc.sub_sales_order_no = log.sub_sales_order_no
+	doc.sub_sales_order_id = log.sub_sales_order_id
 	doc.use_multi_level_bom = 0 #if use multi level bom it will use exploed items as raw material, but if not it will use bom items
 	doc.insert()
 

@@ -231,6 +231,9 @@
                   "FomsWorkOrderID": "FOMS-001",
                   "FomsLotID": "LOT12",
                   "productID": "37",
+                  "SalesOrderNo": "SO-240903-00001",
+                  "subSaleOrderNo": "SO-240903-00001-01",
+                  "subSaleOrderID": "1776",
                   "submit": true,
                   "qty": 2,
                   "uom": "Kg"
