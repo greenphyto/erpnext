@@ -309,6 +309,13 @@ class FomsAPI():
 	def post_scrap_issue(self, data):
 		res = self.req("POST", "/userportal/RawMaterialUP/UpdateRawMaterialStatusToExpired", params=data)
 		return res
+
+	def get_workorder_detail(self, lot_id):
+		params = {
+			"workOrderId":lot_id
+		}
+		res = self.req("GET", "/userportal/Planning/GetWorkOrderPlanningOutcomeList?workOrderId=168", params=params)
+		return res
 	
 """
 TODO:

@@ -560,7 +560,7 @@ def create_batch(log):
 	if not name:
 		doc = frappe.new_doc("Batch")
 		doc.batch_id = log.batchRefNo
-		item_code = frappe.get_value("Item", {"foms_id":log.rawMaterialId})
+		item_code = frappe.get_value("Item", {"foms_id": cstr(log.rawMaterialId)})
 		if not item_code:
 			return ""
 		doc.item = item_code
@@ -637,18 +637,16 @@ def _update_foms_sales_order(log, api=None):
 		so_id = res['saleOrder']['id']
 		doc.foms_id = so_id
 		for d in res['saleOrder']['subSaleOrders']:
-			item_code = frappe.get_value("Item", {"foms_id":d['productId']})
-			packaging = frappe.get_value("Packaging", {"foms_id":d['packageId']})
-
+			item_code = frappe.get_value("Item", {"foms_product_id": cstr(d['productId'])})
+			packaging = frappe.get_value("Packaging", {"foms_id": cstr(d['packageId'])})
 			# key on product id, package id, uom, quantity, unit price
-			for d in doc.get("items", {
+			for row in doc.get("items", {
 				"item_code":item_code,
-				"package":packaging,
-				"stock_uom":d['uom'],
-				"rate":d['unitPrice']
+				"uom":packaging
 			}):
-				if not d.foms_id:
-					d.foms_id = d['id']
+				row.foms_id = d['id']
+				row.db_update()
+		doc.set_working_percent()
 		doc.db_update()
 
 def get_foms_format(date):
@@ -1083,6 +1081,19 @@ def create_work_order(log, item_code, bom_no, qty=1, submit=False, return_doc=Fa
 		return doc
 	return doc.name
 
+def update_so_working(sub_so_id, lot_id):
+	parent = frappe.get_value("Sales Order Item", {"foms_id":cstr(sub_so_id)})
+	if not parent:
+		return
+	
+	doc = frappe.get_doc("Sales Order", parent)
+	for d in doc.get("items"):
+		if d.foms_id == cstr(sub_so_id):
+			d.db_set("lot_id", lot_id)
+	doc.set_working_percent()
+	doc.db_update()
+
+
 def validate_operation(doc):
 	# use default
 	workstation_warehouse = get_foms_settings("workstation")
@@ -1103,7 +1114,7 @@ def create_delivery_order(log):
 	# need to add foms id
 	log = frappe._dict(log)
 	doc = frappe.new_doc("Delivery Note")
-	exists = frappe.get_value("Delivery Note", {"foms_id":log.id})
+	exists = frappe.get_value("Delivery Note", {"foms_id":cstr(log.id)})
 	if exists:
 		return exists
 	
