@@ -69,7 +69,7 @@ def save_widget_settings(user, data):
 	return "Success"
 
 @frappe.whitelist()
-def create_alram_signal(data):
+def create_alarm_signal(data):
 	"""
 	data = {
 		"title":"",
