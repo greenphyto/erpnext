@@ -287,9 +287,38 @@
                   }
                 },
                 "example": {
-                  "ERPWorkOrderID": "FOMS-001-005",
+                  "ERPWorkOrderID": "LOT135-001",
                   "operationNo": 1,
-                  "percentage": 10
+                  "percentage": 100,
+                  "rawMaterials":[
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "41",
+                      "rawMaterialRefNo": "RM-NS-NSB",
+                      "rawMaterialBatchRefNo": "",
+                      "qty": 1520,
+                      "uom": "ml"
+                    },
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "40",
+                      "rawMaterialRefNo": "RM-NS-NSA",
+                      "rawMaterialBatchRefNo": "",
+                      "qty": 1900,
+                      "uom": "ml"
+                    },
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "57",
+                      "rawMaterialRefNo": "RM-SD-SPC",
+                      "rawMaterialBatchRefNo": "",
+                      "qty": 1.5,
+                      "uom": "g"
+                    }
+                  ]
                 }
               }
             }

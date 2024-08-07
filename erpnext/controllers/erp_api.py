@@ -87,14 +87,29 @@ def start_work_order(ERPWorkOrderID):
 		se_doc = make_stock_entry_wo(doc.name, 'Material Transfer for Manufacture', transfer_material)
 		se_doc.submit()	
 
+def make_stock_entry_with_materials(source_name, materials, wip_warehouse):
+	se = make_stock_entry_jc(source_name)
+	se.items = []
+	for d in materials:
+		d = frappe._dict(d)
+		row = se.append("items")
+		warehouse = frappe.get_value("Warehouse", {"foms_id": cstr(d.sourceWarehouseId)}) or d.sourceWarehouseRefNo
+		item_code = frappe.get_value("Item", {"foms_raw_id": cstr(d.rawMaterialId)}) or d.rawMaterialRefNo
+		row.item_code = item_code
+		row.s_warehouse = warehouse
+		row.t_warehouse = wip_warehouse
+		row.qty = flt(d.qty)
+		row.batch_no = d.rawMaterialBatchRefNo
+		row.uom = get_uom(d.uom)
+
+	return se
+
+
 @frappe.whitelist()
-def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0):
+def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0, rawMaterials=[]):
 	operationName = OPERATION_MAP_NAME.get( cint(operationNo) )
-	work_order_name, transfer_material = frappe.db.get_value("Work Order", ERPWorkOrderID, ['name', 'material_transferred_for_manufacturing']) or ("", 0)
-	
-	if not transfer_material:
-		frappe.throw(_(f"Raw Material reserve not found for Work Order {ERPWorkOrderID}, please make Material Reserve first!"), frappe.ValidationError)
-	
+	work_order_name = frappe.db.get_value("Work Order", ERPWorkOrderID)
+		
 	operation_name = frappe.db.get_value("Job Card", {
 		"work_order":work_order_name,
 		"operation": operationName,
@@ -104,23 +119,24 @@ def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0
 	if not operation_name:
 		frappe.throw(_(f"Missing Operation {operationName} for Work Order {ERPWorkOrderID}"), frappe.DoesNotExistError)
 	
-	transferred_qty, job_card_name = frappe.db.get_value("Job Card", operation_name, ["transferred_qty", "name"]) or (0, "")
+	job_card_name = frappe.db.get_value("Job Card", operation_name)
 
-	# temporary stock entry is created based on work order (stright flow)
-	if not transferred_qty and not transfer_material:
-		se_doc = make_stock_entry_jc(job_card_name)
-		se_doc.save()
+	wip_warehouse = frappe.get_value("Job Card", job_card_name, "wip_warehouse")
+
+	# create tsock entry
+	if rawMaterials:
+		se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse)
+		se_doc.insert(ignore_permissions=1)
 		se_doc.submit()
 
 	job_card = frappe.get_doc("Job Card", job_card_name)
+
 	# start job card
 	if not job_card.job_started:
 		employee = frappe.get_value("Employee")
 		args = frappe._dict({
 			"job_card_id": job_card.name,
-			"start_time": now_datetime(),
-			# "employees": [{"name":employee}],
-			# "status": status
+			"start_time": now_datetime()
 		})
 		job_card.validate_sequence_id()
 		job_card.add_time_log(args)
@@ -131,11 +147,9 @@ def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0
 		job_card.percentage = percentage
 		job_card.save()
 	elif percentage == 100:
-		# complete
 		args = frappe._dict({
 			"job_card_id": job_card.name,
 			"complete_time": now_datetime(),
-			# "status": status,
 			"completed_qty": job_card.for_quantity # temporary like job card settings
 		})
 		job_card.validate_sequence_id()
