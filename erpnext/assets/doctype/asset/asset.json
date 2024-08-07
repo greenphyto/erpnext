@@ -643,21 +643,25 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "product_warranty_coverage",
    "fieldtype": "Text Editor",
    "label": "Product Warranty Coverage"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "product_warranty_start",
    "fieldtype": "Date",
    "label": "Product Warranty Start"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "product_warranty_end",
    "fieldtype": "Date",
    "label": "Product Warranty End"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "product_warranty_agreement",
    "fieldtype": "Attach",
    "label": "Product Warranty Agreement"
@@ -701,7 +705,7 @@
    "table_fieldname": "accounts"
   }
  ],
- "modified": "2024-08-06 09:48:28.156674",
+ "modified": "2024-08-07 11:09:28.950693",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",
