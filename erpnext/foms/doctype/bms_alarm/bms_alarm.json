@@ -17,7 +17,11 @@
   "device_id",
   "column_break_ir65k",
   "location",
-  "ref_id"
+  "ref_id",
+  "action_taken_section",
+  "description_of_action_taken",
+  "column_break_zysnn",
+  "status_of_alarm"
  ],
  "fields": [
   {
@@ -81,14 +85,34 @@
    "fieldtype": "Data",
    "label": "Ref ID",
    "read_only": 1
+  },
+  {
+   "fieldname": "action_taken_section",
+   "fieldtype": "Section Break",
+   "label": "Action Taken"
+  },
+  {
+   "fieldname": "description_of_action_taken",
+   "fieldtype": "Small Text",
+   "label": "Description of Action Taken"
+  },
+  {
+   "fieldname": "column_break_zysnn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status_of_alarm",
+   "fieldtype": "Select",
+   "label": "Status of Alarm",
+   "options": "Acknowledge Alarm\nFalse Alarm\nAlarm Closed"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-08 16:35:59.418309",
+ "modified": "2024-08-07 14:38:35.790726",
  "modified_by": "Administrator",
  "module": "FOMS",
- "name": "FOMS Alarm",
+ "name": "BMS Alarm",
  "naming_rule": "Autoincrement",
  "owner": "Administrator",
  "permissions": [

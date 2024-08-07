@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestFOMSAlarm(FrappeTestCase):
+class TestBMSAlarm(FrappeTestCase):
 	pass
