@@ -66,6 +66,7 @@ def create_work_order(FomsWorkOrderID, FomsLotID, productID, SalesOrderNo, qty, 
 	seeding_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(1)})
 	transplanting_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(2)})
 	harvesting_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(3)})
+	
 	res = {
 		"ERPWorkOrderID":doc.name,
 		"ERPBOMId":doc.bom_no

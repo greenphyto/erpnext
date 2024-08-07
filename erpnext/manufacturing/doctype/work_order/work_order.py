@@ -92,7 +92,7 @@ class WorkOrder(Document):
 
 		validate_uom_is_integer(self, "stock_uom", ["qty", "produced_qty"])
 
-		self.set_required_items(reset_only_qty=len(self.get("required_items")))
+		self.set_required_items()
 
 	def autoname(self):
 		if cint(self.operation_no):
