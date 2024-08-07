@@ -91,12 +91,12 @@ def create_alarm_signal(data):
 
 	name = None
 	if data.get("id"):
-		name = frappe.db.exists("FOMS Alarm", {"ref_id":flt(data.get("id"))})
+		name = frappe.db.exists("BMS Alarm", {"ref_id":flt(data.get("id"))})
 		if name:
 			pass
 
 	if not name:
-		doc = frappe.new_doc("FOMS Alarm")
+		doc = frappe.new_doc("BMS Alarm")
 		data['ref_id'] = data.get("id")
 		doc.update(data)
 		doc.insert(ignore_permissions=1)
