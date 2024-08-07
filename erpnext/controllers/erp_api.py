@@ -46,7 +46,7 @@ def create_bom(data):
 	return {"ERPBomId":result}
 
 @frappe.whitelist()
-def create_work_order(FomsWorkOrderID, FomsLotID, productID, SalesOrderNo, subSaleOrderNo, subSaleOrderID, qty, uom, submit=False):
+def create_work_order(FomsWorkOrderID, FomsLotID, productID, SalesOrderNo, qty, uom, submit=False):
 	submit = get_foms_settings("auto_submit_work_order") or submit
 	item_code = frappe.get_value("Item", {"foms_product_id":productID})
 	if not item_code or productID==0:
@@ -60,9 +60,7 @@ def create_work_order(FomsWorkOrderID, FomsLotID, productID, SalesOrderNo, subSa
 	log = frappe._dict({
 		"workOrderNo":FomsWorkOrderID,
 		"lotId":FomsLotID,
-		"sales_order_no":SalesOrderNo,
-		"sub_sales_order_no":subSaleOrderNo,
-		"sub_sales_order_id":subSaleOrderID,
+		"sales_order_no":SalesOrderNo
 	})
 	doc = _create_work_order(log, item_code, bom_no, qty, submit, return_doc=1)
 	seeding_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(1)})
