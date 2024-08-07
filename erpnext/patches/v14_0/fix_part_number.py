@@ -70,7 +70,12 @@ PART_NUMBER_FIX = {
         "TOM04":"280003",
         "TOM05":"280004",
         "TOM06":"280005",
-    }
+    },
+    "Accessories":{
+        "ACC01": "290000",
+        "ACC02": "290001",
+        "ACC03": "290002"
+    } 
 }
 
 def set_part_number(doc, method=""):
