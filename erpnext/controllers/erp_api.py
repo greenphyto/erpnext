@@ -215,7 +215,6 @@ def create_material_request(
 		items=[],
 		cancel=False,
 	):
-	print(204)
 	# find draft
 	doc_name = frappe.get_value("Material Request", {"requested_by":requestedBy, "workflow_state":"Draft"})
 	if doc_name:
