@@ -57,7 +57,7 @@ UOM_KG_CONVERTION = {
 	"Millilitre":1000
 }
 
-TRANFER_AGAIN = 'Work Order'
+TRANFER_AGAIN = 'Job Card'
 
 def get_uom(uom_foms, default=""):
 	uom_foms = uom_foms or default or'kg'
