@@ -104,12 +104,12 @@
    "fieldname": "status_of_alarm",
    "fieldtype": "Select",
    "label": "Status of Alarm",
-   "options": "Acknowledge Alarm\nFalse Alarm\nAlarm Closed"
+   "options": "\nAcknowledge Alarm\nFalse Alarm\nAlarm Closed"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-08-07 14:38:35.790726",
+ "modified": "2024-08-08 09:12:42.924657",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "BMS Alarm",
