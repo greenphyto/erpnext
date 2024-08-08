@@ -59,6 +59,7 @@ PART_NUMBER_FIX = {
         "ZMSC02":"260001",
     },
     "Trays & Boards":{
+        "PD-TR":"270000",
         "PD-A":"270001",
         "PD-B":"270002",
         "PD-C":"270003",
