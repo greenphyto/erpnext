@@ -145,6 +145,7 @@ class StockEntry(StockController):
 		self.set_actual_qty()
 		self.calculate_rate_and_amount()
 		self.validate_putaway_capacity()
+		self.validate_wip_additional_cost()
 
 		if not self.get("purpose") == "Manufacture":
 			# ignore scrap item wh difference and empty source/target wh
@@ -211,6 +212,12 @@ class StockEntry(StockController):
 			self.work_order = data.work_order
 			self.from_bom = 1
 			self.bom_no = data.bom_no
+
+	def validate_wip_additional_cost(self):
+		total = 0
+		for d in self.get("wip_additional_costs"):
+			total += flt(d.base_amount)
+		self.total_wip_additional_costs = total
 
 	def validate_work_order_status(self):
 		pro_doc = frappe.get_doc("Work Order", self.work_order)

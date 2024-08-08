@@ -56,6 +56,9 @@
   "additional_costs_section",
   "additional_costs",
   "total_additional_costs",
+  "additional_cost_temporary_section",
+  "wip_additional_costs",
+  "total_wip_additional_costs",
   "contact_section",
   "supplier",
   "supplier_name",
@@ -417,7 +420,7 @@
   },
   {
    "collapsible": 1,
-   "collapsible_depends_on": "total_additional_costs",
+   "depends_on": "eval:doc.stock_entry_type != \"Material Transfer for Manufacture\"",
    "fieldname": "additional_costs_section",
    "fieldtype": "Section Break",
    "label": "Additional Costs"
@@ -678,6 +681,26 @@
    "fieldtype": "Data",
    "label": "Customer Order No",
    "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.stock_entry_type == \"Material Transfer for Manufacture\"",
+   "description": "This section cost will not creating the accounting ledger entry, it is just for temporary WIP Additional Costs Information",
+   "fieldname": "additional_cost_temporary_section",
+   "fieldtype": "Section Break",
+   "label": "Additional Cost (WIP)"
+  },
+  {
+   "fieldname": "wip_additional_costs",
+   "fieldtype": "Table",
+   "label": "WIP Additional Costs",
+   "options": "Landed Cost Taxes and Charges"
+  },
+  {
+   "fieldname": "total_wip_additional_costs",
+   "fieldtype": "Currency",
+   "label": "Total WIP Additional Costs",
+   "precision": "2",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -685,7 +708,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-29 12:06:53.183495",
+ "modified": "2024-08-08 15:06:37.853542",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",

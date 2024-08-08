@@ -576,6 +576,15 @@ frappe.ui.form.on('Stock Entry', {
 			flt(total_additional_costs, precision("total_additional_costs")));
 	},
 
+	calculate_total_wip_additional_costs: function(frm) {
+		const total = frappe.utils.sum(
+			(frm.doc.wip_additional_costs || []).map(function(c) { return flt(c.base_amount); })
+		);
+
+		frm.set_value("total_wip_additional_costs",
+			flt(total, precision("total_wip_additional_costs")));
+	},
+
 	source_warehouse_address: function(frm) {
 		erpnext.utils.get_address_display(frm, 'source_warehouse_address', 'source_address_display', false);
 	},
@@ -780,11 +789,13 @@ var validate_sample_quantity = function(frm, cdt, cdn) {
 frappe.ui.form.on('Landed Cost Taxes and Charges', {
 	amount: function(frm, cdt, cdn) {
 		frm.events.set_base_amount(frm, cdt, cdn);
-
+		frm.events.calculate_total_wip_additional_costs(frm);
+		
 	},
-
+	
 	expense_account: function(frm, cdt, cdn) {
 		frm.events.set_account_currency(frm, cdt, cdn);
+		frm.events.calculate_total_wip_additional_costs(frm);
 	}
 });
 
