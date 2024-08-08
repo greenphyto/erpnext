@@ -160,6 +160,7 @@ def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0
 	else:
 		job_card.save()
 
+	frappe.db.commit()
 
 	return {
 		"result": True,
