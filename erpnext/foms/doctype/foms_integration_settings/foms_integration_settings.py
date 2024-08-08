@@ -316,6 +316,12 @@ class FomsAPI():
 		}
 		res = self.req("GET", "/userportal/Planning/GetWorkOrderPlanningOutcomeList?workOrderId=168", params=params)
 		return res
+
+	def update_foms_department(self, data):
+		data = self.convert_data(data)
+		res = self.req("POST", "/userportal/CustomerOrder/CreateOrUpdateDepartment", data=data)
+
+		return res
 	
 """
 TODO:

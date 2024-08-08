@@ -49,6 +49,7 @@ METHOD_MAP = {
 	"Sales Order":5,
 	"Stock Reconciliation":6,
 	"Scrap Request":7,
+	"Department":8,
 }
 
 UOM_KG_CONVERTION = {
@@ -668,6 +669,28 @@ def _update_foms_scrap_request(log, api=None):
 			"RawMaterialBatchID": cint(batch_id)
 		}
 		res = api.post_scrap_issue(data)
+
+# DEPARTMENT
+def update_foms_department():
+	sync_controller("Department", _update_foms_department)
+
+def _update_foms_department(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Department", log.docname)
+	api.log = log
+	data = {
+		"name": doc.name,
+		"departmentName": doc.department_name,
+		"parentDepartment": doc.parent_department,
+		"company": doc.company,
+		"id": cint(doc.foms_id)
+	}
+	res = api.update_foms_department(data)
+
+	id = res.get("id")
+	doc.db_set("foms_id", cint(id))
 
 # SALES RECONCILLIATION (POST)
 def update_foms_stock_recon():
