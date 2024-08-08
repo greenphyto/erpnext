@@ -124,7 +124,7 @@ class MaterialRequest(BuyingController):
 	def on_submit(self):
 		self.update_requested_qty()
 		self.update_requested_qty_in_production_plan()
-		if self.material_request_type == "Purchase":
+		if self.material_request_type in ("Purchase", "Services"):
 			self.validate_budget()
 
 	def before_save(self):
@@ -197,7 +197,7 @@ class MaterialRequest(BuyingController):
 		self.update_requested_qty_in_production_plan()
 
 	def update_completed_qty(self, mr_items=None, update_modified=True):
-		if self.material_request_type == "Purchase":
+		if self.material_request_type in ("Purchase", "Services"):
 			return
 
 		if not mr_items:
@@ -425,7 +425,7 @@ def make_purchase_order(source_name, target_doc=None, args=None):
 		{
 			"Material Request": {
 				"doctype": "Purchase Order",
-				"validation": {"docstatus": ["=", 1], "material_request_type": ["=", "Purchase"]},
+				"validation": {"docstatus": ["=", 1], "material_request_type": ["in", ["Purchase", "Services"]]},
 			},
 			"Material Request Item": {
 				"doctype": "Purchase Order Item",
@@ -455,7 +455,7 @@ def make_request_for_quotation(source_name, target_doc=None):
 		{
 			"Material Request": {
 				"doctype": "Request for Quotation",
-				"validation": {"docstatus": ["=", 1], "material_request_type": ["=", "Purchase"]},
+				"validation": {"docstatus": ["=", 1], "material_request_type": ["in", ["Purchase", "Services"]]},
 			},
 			"Material Request Item": {
 				"doctype": "Request for Quotation Item",
@@ -550,7 +550,7 @@ def get_material_requests_based_on_supplier(doctype, txt, searchfield, start, pa
 		from `tabMaterial Request` mr, `tabMaterial Request Item` mr_item
 		where mr.name = mr_item.parent
 			and mr_item.item_code in ({0})
-			and mr.material_request_type = 'Purchase'
+			and mr.material_request_type in ('Purchase', 'Services')
 			and mr.per_ordered < 99.99
 			and mr.docstatus = 1
 			and mr.status != 'Stopped'
@@ -598,7 +598,7 @@ def make_supplier_quotation(source_name, target_doc=None):
 		{
 			"Material Request": {
 				"doctype": "Supplier Quotation",
-				"validation": {"docstatus": ["=", 1], "material_request_type": ["=", "Purchase"]},
+				"validation": {"docstatus": ["=", 1], "material_request_type": ["in", ["Purchase", "Services"]]},
 			},
 			"Material Request Item": {
 				"doctype": "Supplier Quotation Item",
