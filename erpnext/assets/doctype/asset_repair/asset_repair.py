@@ -21,6 +21,14 @@ class AssetRepair(AccountsController):
 			self.set_stock_items_cost()
 		self.calculate_total_repair_cost()
 		self.calculate_working_time()
+		self.force_submit()
+
+	def force_submit(self):
+		if self.docstatus == 0 and self.repair_status == "Completed":
+			self.docstatus = 1
+			self.before_submit()
+			self.on_submit()
+
 
 	def update_status(self):
 		if self.repair_status == "Pending":
@@ -49,7 +57,6 @@ class AssetRepair(AccountsController):
 		self.check_repair_status()
 
 		self.asset_doc.flags.increase_in_asset_value_due_to_repair = False
-
 		if self.get("stock_consumption") or self.get("capitalize_repair_cost"):
 			self.asset_doc.flags.increase_in_asset_value_due_to_repair = True
 

@@ -28,6 +28,7 @@ frappe.ui.form.on('Asset Repair', {
 				}
 			};
 		};
+		frappe.do_submit = false;
 	},
 
 	refresh: function(frm) {
@@ -64,7 +65,28 @@ frappe.ui.form.on('Asset Repair', {
 
 	stock_items_on_form_rendered() {
 		erpnext.setup_serial_or_batch_no();
-	}
+	},
+
+	before_save: function(frm){
+		return new Promise((resolve, reject) => {
+			if (frm.doc.docstatus==0 && frm.doc.repair_status == "Completed"){
+				frappe.confirm(
+				  'Continue submit if complete?',
+				  function(){
+					frappe.validated=true;
+					resolve();
+				  },
+				  function(){
+					frappe.validated=false;
+					reject();
+				  }
+				)
+			}else{
+				frappe.validated=true;
+				resolve();
+			}
+		})
+	  }
 });
 
 frappe.ui.form.on('Asset Repair Consumed Item', {
