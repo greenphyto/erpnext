@@ -81,11 +81,6 @@ def create_alarm_signal(data):
 		"id":"0",
 	}
 	"""
-	priority_map = {
-		"Critical":"High",
-		"Major":"Medium",
-		"Minor":"Low",
-	}
 	if isinstance(data, string_types):
 		data = frappe._dict(json.loads(data))
 
@@ -101,22 +96,6 @@ def create_alarm_signal(data):
 		doc.update(data)
 		doc.insert(ignore_permissions=1)
 		name = doc.name
-
-		priority = priority_map.get(doc.priority)
-
-		# create todo
-		frappe.get_doc(
-			{
-				"doctype": "ToDo",
-				"description": doc.description,
-				"reference_type": doc.doctype,
-				"reference_name": doc.name,
-				"assigned_by": frappe.session.user,
-				"date":doc.datetime,
-				"navix_ticket":1,
-				"priority":priority
-			}
-		).insert(ignore_permissions=True)
 
 	return {
 		"AlarmNo":name

@@ -21,7 +21,7 @@
   "action_taken_section",
   "description_of_action_taken",
   "column_break_zysnn",
-  "status_of_alarm"
+  "alarm_status"
  ],
  "fields": [
   {
@@ -101,7 +101,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "status_of_alarm",
+   "fieldname": "alarm_status",
    "fieldtype": "Select",
    "label": "Status of Alarm",
    "options": "Acknowledge Alarm\nFalse Alarm\nAlarm Closed"
@@ -109,7 +109,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-08-07 14:38:35.790726",
+ "modified": "2024-08-09 14:52:20.630824",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "BMS Alarm",

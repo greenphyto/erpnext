@@ -227,7 +227,11 @@ def close_todo(doc, method=""):
 		"Smart FM Work Order": "Resolved",
 		"Asset Maintenance Log": "Completed",
 		"Asset Repair": "Completed",
+		"BMS Alarm": "Alarm Closed",
 	}
+
+	only_save_action = ['BMS Alarm']
+
 	if doc.doctype not in conplete_status_list:
 		return
 	
@@ -236,11 +240,16 @@ def close_todo(doc, method=""):
 		status = doc.maintenance_status
 	if doc.doctype == "Asset Repair":
 		status = doc.repair_status
+	if doc.doctype == "BMS Alarm":
+		status = doc.alarm_status
 	
-	if doc.docstatus == 1:
-		if conplete_status_list[doc.doctype] == status:
+
+	if conplete_status_list[doc.doctype] == status:
+		if doc.doctype in only_save_action:
 			close = True
-	
+		elif doc.docstatus == 1:
+			close = True
+			
 	todos = frappe.db.get_list("ToDo", {
 		"reference_type": doc.doctype, 
 		"reference_name": doc.name
