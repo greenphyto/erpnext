@@ -1640,6 +1640,7 @@
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -1651,7 +1652,9 @@
   {
    "fieldname": "per_working",
    "fieldtype": "Percent",
-   "label": "% Working",
+   "label": "Working Status",
+   "no_copy": 1,
+   "options": "\nStarted\nHold\nFinished",
    "read_only": 1
   }
  ],
@@ -1659,7 +1662,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-06 17:00:09.447851",
+ "modified": "2024-08-12 15:24:31.758451",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

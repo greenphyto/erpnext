@@ -73,7 +73,6 @@ class SalesOrder(SellingController):
 			self.delivery_status = "Not Delivered"
 
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
-		self.set_working_percent()
 
 	def before_validate(self):
 		self.validate_packaging()
@@ -81,14 +80,6 @@ class SalesOrder(SellingController):
 	def validate_packaging(self):
 		for d in self.get("items"):
 			pass
-
-	def set_working_percent(self):
-		per = 0
-		for d in self.get("items"):
-			if d.lot_id:
-				per += 1
-		percent = per / len( self.get("items") ) * 100
-		self.per_working = percent
 
 	def validate_po(self):
 		# validate p.o date v/s delivery date
