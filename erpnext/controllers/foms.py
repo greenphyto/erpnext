@@ -630,6 +630,7 @@ def _update_foms_sales_order(log, api=None):
 		"customerId": customer.foms_id or "",
 		"purchaseOrderNumber": doc.po_no or "",
 		"saleOrder": {
+			"saleOrderNumber":doc.name, 
 			"farmId": farm_id,
 			"subSaleOrders": products,
 			"id": 0
@@ -652,7 +653,6 @@ def _update_foms_sales_order(log, api=None):
 			}):
 				row.foms_id = d['id']
 				row.db_update()
-		doc.set_working_percent()
 		doc.db_update()
 
 def get_foms_format(date):
@@ -1119,7 +1119,6 @@ def update_so_working(sub_so_id, lot_id):
 	for d in doc.get("items"):
 		if d.foms_id == cstr(sub_so_id):
 			d.db_set("lot_id", lot_id)
-	doc.set_working_percent()
 	doc.db_update()
 
 
