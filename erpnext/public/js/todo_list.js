@@ -17,25 +17,29 @@ $.extend(frappe.listview_settings["ToDo"], {
 
 		me.todo_sidebar_setup = true;
 	},
-    // get_form_link: function(doc){
-    //     if (doc.reference_type && doc.reference_name){
-    //         return frappe.utils.get_form_link(doc.reference_type, doc.reference_name)
-    //     }else{
-    //         return `/app/todo/${encodeURIComponent(cstr(doc.name))}`;
-    //     }
-    // },
+    get_form_link: function(doc){
+        if (doc.reference_type && doc.reference_name){
+            return frappe.utils.get_form_link(doc.reference_type, doc.reference_name)
+        }else{
+            return `/app/todo/${encodeURIComponent(cstr(doc.name))}`;
+        }
+    },
     button: {
 		show: function (doc) {
-			return doc.reference_name;
+			return true;
 		},
 		get_label: function () {
 			return __("Open", null, "Access");
 		},
 		get_description: function (doc) {
-            return __("Open {0}", [`${__(doc.reference_type)}: ${doc.reference_name}`]);
+            return __("Open {0}", [`${__(doc.reference_type || "ToDo")}: ${doc.reference_name || doc.name}`]);
 		},
 		action: function (doc) {
-            frappe.set_route("Form", doc.reference_type, doc.reference_name);
+			if (!doc.reference_name){
+				frappe.set_route("Form", "ToDo", doc.name);
+			}else{
+				frappe.set_route("Form", doc.reference_type, doc.reference_name);
+			}
 		},
 	},
 	get_indicator: function(doc) {
