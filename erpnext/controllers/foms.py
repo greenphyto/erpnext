@@ -412,7 +412,7 @@ def _update_foms_supplier(log, api=None):
 	data = {
 		"farmId": farm_id,
 		"id": cint(supplier.foms_id),
-		"supplierID": supplier.name,
+		"supplierID": supplier.supplier_code,
 		"supplierName": supplier.supplier_name,
 		"address": details.address_display or details.company_address_display or "",
 		"contact": supplier.mobile_no or  details.contact_mobile or "",
