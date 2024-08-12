@@ -472,10 +472,15 @@ def _update_foms_customer(log, api=None):
 	address = details.address_display or details.company_address_display
 	shipping_address = details.get("shipping_address") or address
 
+	customer_name = customer.customer_name
+	cust_id = customer.customer_code
+	if cust_id == "C00008":
+		customer_name = "Cash Sales"
+
 	data = {
 		"farmId": farm_id,
-		"customerRefNo": customer.name,
-		"customerName": customer.customer_name,
+		"customerRefNo": cust_id,
+		"customerName": customer_name,
 		"address": address,
 		"contact": customer.mobile_no or  details.contact_mobile or "" ,
 		"email": customer.email_id or details.contact_email or "user@example.com",
