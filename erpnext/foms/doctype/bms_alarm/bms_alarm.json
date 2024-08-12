@@ -104,7 +104,7 @@
    "fieldname": "alarm_status",
    "fieldtype": "Select",
    "label": "Status of Alarm",
-   "options": "Acknowledge Alarm\nFalse Alarm\nAlarm Closed"
+   "options": "\nAcknowledge Alarm\nFalse Alarm\nAlarm Closed"
   }
  ],
  "index_web_pages_for_search": 1,
