@@ -32,6 +32,9 @@ class OverlapError(frappe.ValidationError):
 
 
 class Workstation(Document):
+	def validate(self):
+		self.validate_per_kg()
+
 	def before_save(self):
 		self.set_data_based_on_workstation_type()
 		self.validate_calculation_type()
@@ -50,6 +53,12 @@ class Workstation(Document):
 			+ flt(self.per_qty_rate_wages)
 			+ flt(self.per_qty_rate_machinery)
 		)
+
+	def validate_per_kg(self):
+		if self.item_code and self.calculation_type == "Per KG":
+			stock_uom = frappe.get_value("Item", self.item_code, "stock_uom")
+			if stock_uom != "Kg":
+				frappe.throw(_("<b>Per KG</b> calculation only for Item with default uom as <b>Kg</b>"))
 
 	def validate_calculation_type(self):
 		if self.calculation_type == "Per Qty":

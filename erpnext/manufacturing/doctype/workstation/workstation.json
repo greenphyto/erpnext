@@ -9,6 +9,11 @@
  "engine": "InnoDB",
  "field_order": [
   "workstation_name",
+  "section_break_2",
+  "item_code",
+  "column_break_4",
+  "operation",
+  "section_break_6",
   "production_capacity",
   "column_break_3",
   "workstation_type",
@@ -127,11 +132,10 @@
    "options": "Holiday List"
   },
   {
-   "default": "1",
+   "default": "100",
    "fieldname": "production_capacity",
    "fieldtype": "Int",
-   "label": "Production Capacity",
-   "reqd": 1
+   "label": "Production Capacity"
   },
   {
    "fieldname": "column_break_3",
@@ -157,14 +161,15 @@
    "label": "Cost based Hours"
   },
   {
-   "default": "Per Qty",
+   "allow_in_quick_entry": 1,
+   "default": "Per KG",
    "fieldname": "calculation_type",
    "fieldtype": "Select",
    "label": "Calculation Type",
-   "options": "Per Qty\nPer Hour"
+   "options": "Per KG\nPer Qty\nPer Hour"
   },
   {
-   "depends_on": "eval:doc.calculation_type==\"Per Qty\"",
+   "depends_on": "eval:doc.calculation_type==\"Per Qty\" || doc.calculation_type==\"Per KG\"",
    "fieldname": "cost_based_quantity_section",
    "fieldtype": "Section Break",
    "label": "Cost based Quantity"
@@ -188,11 +193,11 @@
    "label": "Machinery Cost"
   },
   {
+   "description": "per qty",
    "fieldname": "per_qty_rate",
    "fieldtype": "Currency",
    "label": "Net Hour Rate",
-   "read_only": 1,
-   "description": "per qty"
+   "read_only": 1
   },
   {
    "fieldname": "column_break_17",
@@ -203,12 +208,38 @@
    "fieldname": "per_qty_rate_consumable",
    "fieldtype": "Currency",
    "label": "Consumable Cost"
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "operation",
+   "fieldtype": "Link",
+   "label": "Operation",
+   "options": "Operation"
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break"
   }
  ],
  "icon": "icon-wrench",
  "idx": 1,
  "links": [],
- "modified": "2024-06-06 11:35:55.854395",
+ "modified": "2024-08-13 11:29:55.519767",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Workstation",
