@@ -32,6 +32,14 @@ class OverlapError(frappe.ValidationError):
 
 
 class Workstation(Document):
+	def autoname(self):
+		if self.item_code:
+			if not self.operation:
+				frappe.throw(_("Operation needed if set item code value"))
+			self.name = f"Farm-{self.item_code}-{self.operation}"
+		else:
+			self.name = self.workstation_name
+
 	def validate(self):
 		self.validate_per_kg()
 
