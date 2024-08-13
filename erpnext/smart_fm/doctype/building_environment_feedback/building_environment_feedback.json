@@ -46,13 +46,13 @@
    "fieldname": "full_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Full Name"
+   "label": "Full Name (Optional)"
   },
   {
    "fieldname": "email_address",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Email Address",
+   "label": "Email Address (Optional)",
    "options": "Email"
   },
   {
@@ -201,7 +201,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-08-13 14:00:47.233480",
+ "modified": "2024-08-13 17:24:34.506468",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Building Environment Feedback",
