@@ -18,7 +18,7 @@ from frappe.utils import (
 	get_link_to_form,
 	getdate,
 	nowdate,
-	time_diff_in_hours,
+	time_diff_in_hours,cstr
 )
 from pypika import functions as fn
 
@@ -164,6 +164,25 @@ class WorkOrder(Document):
 			else:
 				frappe.throw(_("Sales Order {0} is not valid").format(self.sales_order))
 
+	def update_sales_order(self, state="Start"):
+		if not self.sales_order_no:
+			return
+		
+		def get_sales_order():
+			data = [ cstr(x).strip() for x in self.sales_order_no.split(",") ]
+			return data
+		
+		so_list = get_sales_order()
+		for d in so_list:
+			doc = frappe.get_doc("Sales Order", d)
+			if state == "Start":
+				doc.update_work_order_reference(self.name, self.production_item)
+			elif state == "Finish":
+				doc.update_work_progress(self.production_item, self.qty)
+				# create draft for single good
+
+			doc.db_update()
+
 	def check_sales_order_on_hold_or_close(self):
 		status = frappe.db.get_value("Sales Order", self.sales_order, "status")
 		if status in ("Closed", "On Hold"):
@@ -285,6 +304,9 @@ class WorkOrder(Document):
 		else:
 			status = "Cancelled"
 
+		if status == "Completed":
+			self.update_sales_order(state="Finish")
+
 		return status
 
 	def update_work_order_qty(self):
@@ -398,6 +420,7 @@ class WorkOrder(Document):
 		self.update_planned_qty()
 		self.update_ordered_qty()
 		self.create_job_card()
+		self.update_sales_order(state="Start")
 
 	def on_cancel(self):
 		self.validate_cancel()

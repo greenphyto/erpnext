@@ -169,7 +169,7 @@ def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0
 
 @frappe.whitelist()
 def submit_work_order_finish_goods(ERPWorkOrderID, qty):
-	work_order_name, so_sub_id, lot_id = frappe.db.get_value("Work Order", ERPWorkOrderID, ['name', 'sub_sales_order', 'foms_lot_id']) or ("", "", "")
+	work_order_name, lot_id = frappe.db.get_value("Work Order", ERPWorkOrderID, ['name', 'foms_lot_id']) or ("", "", "")
 
 	if not work_order_name:
 		frappe.throw(_(f"Work Order {ERPWorkOrderID} not found!"), frappe.DoesNotExistError)
@@ -179,7 +179,7 @@ def submit_work_order_finish_goods(ERPWorkOrderID, qty):
 	se_doc.save()
 	se_doc.submit()
 
-	update_so_working(so_sub_id, lot_id)
+	# update_so_working(so_sub_id, lot_id)
 
 	return {
 		"ERPStockEntry":se_doc.name

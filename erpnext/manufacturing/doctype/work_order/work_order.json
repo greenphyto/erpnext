@@ -29,8 +29,6 @@
   "foms_lot_id",
   "column_break1",
   "sales_order_no",
-  "sub_sales_order_no",
-  "sub_sales_order_id",
   "serial_no_and_batch_for_finished_good_section",
   "has_serial_no",
   "has_batch_no",
@@ -225,6 +223,7 @@
    "allow_on_submit": 1,
    "fieldname": "sales_order",
    "fieldtype": "Link",
+   "hidden": 1,
    "in_global_search": 1,
    "label": "Sales Order",
    "options": "Sales Order"
@@ -624,18 +623,6 @@
    "fieldtype": "Data",
    "label": "Sales Order No",
    "read_only": 1
-  },
-  {
-   "fieldname": "sub_sales_order_no",
-   "fieldtype": "Data",
-   "label": "Sub Sales Order No",
-   "read_only": 1
-  },
-  {
-   "fieldname": "sub_sales_order_id",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Sub Sales Order ID"
   }
  ],
  "icon": "fa fa-cogs",
@@ -643,7 +630,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-06 18:42:31.747280",
+ "modified": "2024-08-12 14:16:56.266580",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",
