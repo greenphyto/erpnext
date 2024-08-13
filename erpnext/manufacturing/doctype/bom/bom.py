@@ -401,6 +401,11 @@ class BOM(WebsiteGenerator):
 
 	@frappe.whitelist()
 	def update_cost(self, update_parent=True, from_child_bom=False, update_hour_rate=True, save=True):
+		if save:
+			frappe.msgprint("Under development")
+			
+		return
+	
 		if self.docstatus == 2:
 			return
 

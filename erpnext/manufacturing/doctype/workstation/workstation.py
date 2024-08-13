@@ -38,15 +38,17 @@ class Workstation(Document):
 				frappe.throw(_("Operation needed if set item code value"))
 			self.name = f"Farm-{self.item_code}-{self.operation}"
 		else:
+			if not self.workstation_name:
+				frappe.throw(_("Please set workstation name"))
 			self.name = self.workstation_name
 
 	def validate(self):
 		self.validate_per_kg()
+		self.validate_calculation_type()
+		self.set_hour_rate()
 
 	def before_save(self):
 		self.set_data_based_on_workstation_type()
-		self.validate_calculation_type()
-		self.set_hour_rate()
 
 	def set_hour_rate(self):
 		self.hour_rate = (
@@ -60,6 +62,7 @@ class Workstation(Document):
 			flt(self.per_qty_rate_electricity)
 			+ flt(self.per_qty_rate_wages)
 			+ flt(self.per_qty_rate_machinery)
+			+ flt(self.per_qty_rate_consumable)
 		)
 
 	def validate_per_kg(self):
@@ -69,7 +72,7 @@ class Workstation(Document):
 				frappe.throw(_("<b>Per KG</b> calculation only for Item with default uom as <b>Kg</b>"))
 
 	def validate_calculation_type(self):
-		if self.calculation_type == "Per Qty":
+		if self.calculation_type in ("Per Qty", "Per KG"):
 			self.hour_rate = 0
 			self.hour_rate_labour = 0
 			self.hour_rate_electricity = 0
