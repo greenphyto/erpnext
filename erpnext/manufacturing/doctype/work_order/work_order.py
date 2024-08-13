@@ -83,6 +83,7 @@ class WorkOrder(Document):
 		self.validate_sales_order()
 		self.set_default_warehouse()
 		self.validate_warehouse_belongs_to_company()
+		self.get_workstation_cost()
 		self.calculate_operating_cost()
 		self.validate_qty()
 		self.validate_transfer_against()
@@ -205,15 +206,32 @@ class WorkOrder(Document):
 		for wh in warehouses:
 			validate_warehouse_company(wh, self.company)
 
+	def get_workstation_cost(self):
+		for d in self.get("operations"):
+			if d.workstation:
+				doc = frappe.get_doc("Workstation", d.workstation)
+				if doc.calculation_type in ("Per KG", "Per Qty"):
+					d.electrical_cost = doc.per_qty_rate_electricity
+					d.consumable_cost = doc.per_qty_rate_consumable
+					d.machinery_cost = doc.per_qty_rate_machinery
+					d.wages_cost = doc.per_qty_rate_wages
+					d.rent_cost = 0
+				else:
+					d.electrical_cost = doc.hour_rate_electricity
+					d.consumable_cost = doc.hour_rate_consumable
+					d.machinery_cost = 0
+					d.wages_cost = doc.hour_rate_labour
+					d.rent_cost = doc.hour_rate_rent
+
 	def calculate_operating_cost(self):
 		self.planned_operating_cost, self.actual_operating_cost = 0.0, 0.0
 		for d in self.get("operations"):
-			if d.calculation_type == "Per Qty":
-				d.planned_operating_cost = flt(d.operation_rate) * (flt(self.qty))
-				d.actual_operating_cost = flt(d.operation_rate) * (flt(d.completed_qty))
-			else:
+			if d.calculation_type == "Per Hour":
 				d.planned_operating_cost = flt(d.operation_rate) * (flt(d.time_in_mins) / 60.0)
 				d.actual_operating_cost = flt(d.operation_rate) * (flt(d.actual_operation_time) / 60.0)
+			else:
+				d.planned_operating_cost = flt(d.operation_rate) * (flt(self.qty))
+				d.actual_operating_cost = flt(d.operation_rate) * (flt(d.completed_qty))
 
 			self.planned_operating_cost += flt(d.planned_operating_cost)
 			self.actual_operating_cost += flt(d.actual_operating_cost)

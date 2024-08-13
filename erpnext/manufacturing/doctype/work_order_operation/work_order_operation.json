@@ -15,9 +15,18 @@
   "sequence_id",
   "section_break_10",
   "description",
+  "section_break_12",
+  "calculation_type",
+  "costing_section",
+  "electrical_cost",
+  "consumable_cost",
+  "column_break_15",
+  "machinery_cost",
+  "wages_cost",
+  "column_break_18",
+  "rent_cost",
   "estimated_time_and_cost",
   "planned_start_time",
-  "calculation_type",
   "operation_rate",
   "time_in_mins",
   "column_break_10",
@@ -115,7 +124,6 @@
    "description": "In Minutes",
    "fieldname": "time_in_mins",
    "fieldtype": "Float",
-   "in_list_view": 1,
    "label": "Operation Time",
    "oldfieldname": "time_in_mins",
    "oldfieldtype": "Currency",
@@ -165,6 +173,7 @@
    "description": "(Hour Rate / 60) * Actual Operation Time",
    "fieldname": "actual_operating_cost",
    "fieldtype": "Currency",
+   "in_list_view": 1,
    "label": "Actual Operating Cost",
    "no_copy": 1,
    "options": "Company:company:default_currency",
@@ -198,12 +207,12 @@
    "options": "Workstation Type"
   },
   {
-   "default": "Per Hour",
+   "default": "Per KG",
    "fetch_from": "workstation.calculation_type",
    "fieldname": "calculation_type",
    "fieldtype": "Select",
    "label": "Calculation Type",
-   "options": "Per Hour\nPer Qty",
+   "options": "Per KG\nPer Qty\nPer Hour",
    "read_only": 1
   },
   {
@@ -213,12 +222,59 @@
    "oldfieldname": "hour_rate",
    "oldfieldtype": "Currency",
    "read_only": 1
+  },
+  {
+   "fieldname": "costing_section",
+   "fieldtype": "Section Break",
+   "label": "Costing"
+  },
+  {
+   "fieldname": "electrical_cost",
+   "fieldtype": "Currency",
+   "label": "Electrical Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "consumable_cost",
+   "fieldtype": "Currency",
+   "label": "Consumable Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_15",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "machinery_cost",
+   "fieldtype": "Currency",
+   "label": "Machinery Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "wages_cost",
+   "fieldtype": "Currency",
+   "label": "Wages Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_18",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rent_cost",
+   "fieldtype": "Currency",
+   "label": "Rent Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_12",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-06-19 14:56:02.447329",
+ "modified": "2024-08-13 16:54:03.749946",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order Operation",
