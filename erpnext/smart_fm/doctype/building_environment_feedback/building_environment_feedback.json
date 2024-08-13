@@ -26,6 +26,12 @@
   "q8",
   "q8_detail",
   "q9",
+  "q11",
+  "q11_detail",
+  "q12",
+  "q12_detail",
+  "q13",
+  "q13_detail",
   "q10",
   "more_information_section",
   "posting_date"
@@ -40,16 +46,14 @@
    "fieldname": "full_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Full Name",
-   "reqd": 1
+   "label": "Full Name"
   },
   {
    "fieldname": "email_address",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Email Address",
-   "options": "Email",
-   "reqd": 1
+   "options": "Email"
   },
   {
    "fieldname": "q1",
@@ -83,7 +87,7 @@
   {
    "fieldname": "q10",
    "fieldtype": "Small Text",
-   "label": "Are there any areas in the building where you feel enhancements could improve your overall comfort? "
+   "label": "Are there any areas in the building where we can improve to enhance your overall comfort?"
   },
   {
    "fieldname": "q3",
@@ -160,11 +164,44 @@
    "fieldtype": "Date",
    "label": "Posting Date",
    "read_only": 1
+  },
+  {
+   "fieldname": "q11",
+   "fieldtype": "Select",
+   "label": "How satisfied are you with the breakout spaces (tables with chairs outside the meeting rooms) in the office?",
+   "options": "\nVery Satisfied\nSatisfied\nNeutral\nUnsatisfied\nVery Unsatisfied"
+  },
+  {
+   "fieldname": "q11_detail",
+   "fieldtype": "Small Text",
+   "label": "Are there specific aspects of the breakout spaces we can improve?"
+  },
+  {
+   "fieldname": "q12",
+   "fieldtype": "Select",
+   "label": "How satisfied are you with the dining seating area in the wet kitchen?",
+   "options": "\nVery Satisfied\nSatisfied\nNeutral\nUnsatisfied\nVery Unsatisfied"
+  },
+  {
+   "fieldname": "q12_detail",
+   "fieldtype": "Small Text",
+   "label": "Are there specific aspects of the dining seating area we can improve?"
+  },
+  {
+   "fieldname": "q13",
+   "fieldtype": "Select",
+   "label": "How would you describe the cleanliness of the toilets?",
+   "options": "\nExcellent\nGood\nAverage\nPoor\nVery Poor"
+  },
+  {
+   "fieldname": "q13_detail",
+   "fieldtype": "Small Text",
+   "label": "Are there specific aspects of the toilets we can improve?"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-12-12 14:50:42.803320",
+ "modified": "2024-08-13 14:00:47.233480",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Building Environment Feedback",
