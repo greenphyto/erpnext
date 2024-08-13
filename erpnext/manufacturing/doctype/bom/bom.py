@@ -432,6 +432,23 @@ class BOM(WebsiteGenerator):
 				msg = "No changes in cost found"
 
 			frappe.msgprint(_(msg), alert=True)
+	
+	def get_workstation_cost(self):
+		for d in self.get("operations"):
+			if d.workstation:
+				doc = frappe.get_doc("Workstation", d.workstation)
+				if doc.calculation_type in ("Per KG", "Per Qty"):
+					d.electrical_cost = doc.per_qty_rate_electricity
+					d.consumable_cost = doc.per_qty_rate_consumable
+					d.machinery_cost = doc.per_qty_rate_machinery
+					d.wages_cost = doc.per_qty_rate_wages
+					d.rent_cost = 0
+				else:
+					d.electrical_cost = doc.hour_rate_electricity
+					d.consumable_cost = doc.hour_rate_consumable
+					d.machinery_cost = 0
+					d.wages_cost = doc.hour_rate_labour
+					d.rent_cost = doc.hour_rate_rent
 
 	def update_parent_cost(self):
 		if self.total_cost:
@@ -898,6 +915,8 @@ class BOM(WebsiteGenerator):
 					d.description = frappe.db.get_value("Operation", d.operation, "description")
 				if not d.batch_size or d.batch_size <= 0:
 					d.batch_size = 1
+		
+		self.get_workstation_cost()
 
 	def get_tree_representation(self) -> BOMTree:
 		"""Get a complete tree representation preserving order of child items."""

@@ -644,15 +644,27 @@ frappe.ui.form.on("BOM Operation", "workstation", function(frm, cdt, cdn) {
 				name: d.workstation
 			},
 			callback: function (data) {
+				var res = data.message;
 				if (data.calculation_type == "Per Hour"){
 					frappe.model.set_value(d.doctype, d.name, "base_operation_rate", data.message.hour_rate);
 					frappe.model.set_value(d.doctype, d.name, "operation_rate",
-						flt(flt(data.message.hour_rate) / flt(frm.doc.conversion_rate)), 2);
+						flt(flt(data.message.hour_rate) / flt(frm.doc.conversion_rate)));
+					d.electrical_cost = res.hour_rate_electricity;
+					d.consumable_cost = res.hour_rate_consumable;
+					d.machinery_cost = 0;
+					d.wages_cost = res.hour_rate_labour;
+					d.rent_cost = res.hour_rate_rent;
 				}else{
 					frappe.model.set_value(d.doctype, d.name, "base_operation_rate", data.message.per_qty_rate);
 					frappe.model.set_value(d.doctype, d.name, "operation_rate",
-						flt(flt(data.message.per_qty_rate) / flt(frm.doc.conversion_rate)), 2);
+						flt(flt(data.message.per_qty_rate) / flt(frm.doc.conversion_rate)));
+					d.electrical_cost = res.per_qty_rate_electricity;
+					d.consumable_cost = res.per_qty_rate_consumable;
+					d.machinery_cost = res.per_qty_rate_machinery;
+					d.wages_cost = res.per_qty_rate_wages;
+					d.rent_cost = 0;
 				}
+				frm.refresh_field("operations");
 	
 				erpnext.bom.calculate_op_cost(frm.doc);
 				erpnext.bom.calculate_total(frm.doc);
