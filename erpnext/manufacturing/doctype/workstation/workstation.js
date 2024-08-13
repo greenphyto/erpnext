@@ -17,6 +17,17 @@ frappe.ui.form.on("Workstation", {
 		}
 	},
 
+	setup: function(frm){
+		frm.set_query("item_code", ()=>{
+			return {
+				filters:{
+					"item_group":"Products",
+					"disabled":0
+				}
+			}
+		})
+	},
+
 	workstation_type(frm) {
 		if (frm.doc.workstation_type) {
 			frm.call({
