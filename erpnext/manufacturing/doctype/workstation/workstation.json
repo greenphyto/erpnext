@@ -176,25 +176,25 @@
    "label": "Cost based Quantity"
   },
   {
-   "description": "per qty",
+   "description": "per KG",
    "fieldname": "per_qty_rate_electricity",
    "fieldtype": "Currency",
    "label": "Electricity Cost"
   },
   {
-   "description": "per qty",
+   "description": "per KG",
    "fieldname": "per_qty_rate_wages",
    "fieldtype": "Currency",
    "label": "Wages Cost"
   },
   {
-   "description": "per qty",
+   "description": "per KG",
    "fieldname": "per_qty_rate_machinery",
    "fieldtype": "Currency",
    "label": "Machinery Cost"
   },
   {
-   "description": "per qty",
+   "description": "per KG",
    "fieldname": "per_qty_rate",
    "fieldtype": "Currency",
    "label": "Net Hour Rate",
@@ -205,7 +205,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "per qty",
+   "description": "per KG",
    "fieldname": "per_qty_rate_consumable",
    "fieldtype": "Currency",
    "label": "Consumable Cost"
@@ -240,7 +240,7 @@
  "icon": "icon-wrench",
  "idx": 1,
  "links": [],
- "modified": "2024-08-13 11:47:41.872705",
+ "modified": "2024-08-13 11:47:42.872705",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Workstation",
