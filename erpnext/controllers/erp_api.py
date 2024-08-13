@@ -88,7 +88,7 @@ def start_work_order(ERPWorkOrderID):
 		se_doc = make_stock_entry_wo(doc.name, 'Material Transfer for Manufacture', transfer_material)
 		se_doc.submit()	
 
-def make_stock_entry_with_materials(source_name, materials, wip_warehouse):
+def make_stock_entry_with_materials(source_name, materials, wip_warehouse, operation_name, work_order_name):
 	se = make_stock_entry_jc(source_name)
 	se.items = []
 	for d in materials:
@@ -102,6 +102,32 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse):
 		row.qty = flt(d.qty)
 		row.batch_no = d.rawMaterialBatchRefNo
 		row.uom = get_uom(d.uom)
+	
+	# additional cost
+	expense_account = frappe.db.get_single_value("Manufacturing Settings", "default_expense_account")
+	if not expense_account:
+		frappe.throw(_("Please set Default Expense Account in Manufacturing Settings"))
+	
+	wo_doc = frappe.get_doc("Work Order", work_order_name)
+	se.wip_additional_costs = []
+	cost_ref = wo_doc.get("operations", {"operation":operation_name})
+	cost_fields = ['electrical_cost', 'consumable_cost', 'machinery_cost', 'wages_cost', 'rent_cost']
+	descriptions = {
+		'electrical_cost':"Electrical Cost", 
+		'consumable_cost':"Consumable Cost", 
+		'machinery_cost': "Machinery Cost", 
+		'wages_cost': 'Wages Cost', 
+		'rent_cost': "Rent Cost"
+	}
+	if cost_ref:
+		cost_ref = cost_ref[0]
+		for field in cost_fields:
+			amount = cost_ref.get(field)
+			if amount:
+				row = se.append("wip_additional_costs")
+				row.expense_account = expense_account
+				row.amount = amount * flt(se.fg_completed_qty)
+				row.description = descriptions[field]
 
 	return se
 
@@ -126,7 +152,7 @@ def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0
 
 	# create tsock entry
 	if rawMaterials:
-		se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse)
+		se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
 		se_doc.insert(ignore_permissions=1)
 		se_doc.submit()
 
