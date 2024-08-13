@@ -202,6 +202,7 @@ def validate_uom_is_integer(doc, uom_field, qty_fields, child_dt=None):
 		return
 
 	for d in doc.get_all_children(parenttype=child_dt):
+		print(204, d.get(uom_field))
 		if d.get(uom_field) in integer_uoms:
 			for f in qty_fields:
 				qty = d.get(f)

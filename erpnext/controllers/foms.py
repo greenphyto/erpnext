@@ -957,19 +957,25 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 				if not operation_name in operation_map:
 					op_row = bom.append("operations")
 					op_row.operation = operation_name
-					op_row.time_in_mins = get_foms_settings("operation_time") or 60*24 #(24 hours)
-					op_row.workstation = get_foms_settings("workstation")
-					op_row.fixed_time = 1
+					op_row.time_in_mins = 60
+					op_row.workstation = get_workstation_name(item_name, operation_name)
 					op_row.description = operation_name
 					operation_map[operation_name] = op_row
 
 				if op.productRawMaterial:
 					for rm in op.productRawMaterial:
 						rm = frappe._dict(rm)
+						item_name = frappe.get_value("Item", rm.rawMaterialRefNo)
+						if not item_name:
+							continue
+
 						row = bom.append("items")
 						row.item_code = rm.rawMaterialRefNo
 						row.uom = get_uom(rm.uomrm)
-						row.qty = rm.qtyrmInKg
+						if row.uom in ['Unit']:
+							row.qty = cint(rm.qtyrmInKg)
+						else:
+							row.qty = rm.qtyrmInKg
 						row.operation = operation_name
 			bom.save()
 			name = bom.name
@@ -983,6 +989,13 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 				bom.submit()
 	
 	return name
+
+def get_workstation_name(item_name, operation_name):
+	name = frappe.get_value("Workstation", {"item_code":item_name, "operation": operation_name})
+	if name:
+		return name
+	else:
+		return get_foms_settings("workstation")
 
 def find_existing_bom(item, foms_version, operation_no):
 	return frappe.get_value("BOM", {
