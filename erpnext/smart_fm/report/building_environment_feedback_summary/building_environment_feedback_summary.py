@@ -132,7 +132,8 @@ class Report:
 				})
 			
 			if msg_field:
-				self.data.append({"question":"Button", "indent":1, "msg_field":msg_field})
+				msg_list = get_message_list(self.filters, msg_field)
+				self.data.append({"question":"Button", "indent":1, "msg_field":msg_field, "msg_list":msg_list})
 
 
 	def process_data(self):
@@ -190,7 +191,7 @@ def get_message_list(filters, field):
 	condition = {"posting_date":['between', [from_date, to_date]]}
 	condition[field] = ['not in', ['', None]]
 	
-	msg = frappe.db.get_list('Building Environment Feedback', condition, ["{} as text".format(field), "full_name", "email_address"], debug=1)
+	msg = frappe.db.get_list('Building Environment Feedback', condition, ["{} as text".format(field), "full_name", "email_address"], debug=0)
 	field = meta.get_field(field.replace("_detail", ""))
 	data = {
 		"question":field.label,
