@@ -401,11 +401,6 @@ class BOM(WebsiteGenerator):
 
 	@frappe.whitelist()
 	def update_cost(self, update_parent=True, from_child_bom=False, update_hour_rate=True, save=True):
-		if save:
-			frappe.msgprint("Under development")
-			
-		return
-	
 		if self.docstatus == 2:
 			return
 
@@ -657,31 +652,35 @@ class BOM(WebsiteGenerator):
 			if d.workstation:
 				self.update_rate_and_time(d, update_hour_rate)
 
-			operating_cost = d.operating_cost
-			base_operating_cost = d.base_operating_cost
-			if d.set_cost_based_on_bom_qty:
-				operating_cost = flt(d.cost_per_unit) * flt(self.quantity)
-				base_operating_cost = flt(d.base_cost_per_unit) * flt(self.quantity)
+			if d.calculation_type == "Per Hour":
+				operating_cost = d.operating_cost
+				base_operating_cost = d.base_operating_cost
+			else:
+				operating_cost = flt(d.operating_cost) * flt(self.quantity)
+				base_operating_cost = flt(d.base_operating_cost) * flt(self.quantity)
 
 			self.operating_cost += flt(operating_cost)
 			self.base_operating_cost += flt(base_operating_cost)
 
 	def update_rate_and_time(self, row, update_hour_rate=False):
 		operation_rate = 0
+		self.get_workstation_cost()
+
 		if not row.operation_rate or update_hour_rate:
-				if row.calculation_type == "Per Qty":
-					operation_rate = flt(frappe.get_cached_value("Workstation", row.workstation, "per_qty_rate"))
-				else:
-					operation_rate = flt(frappe.get_cached_value("Workstation", row.workstation, "hour_rate"))
+			if row.calculation_type in ("Per Qty", "Per KG"):
+				operation_rate = flt(frappe.get_cached_value("Workstation", row.workstation, "per_qty_rate"))
+			else:
+				operation_rate = flt(frappe.get_cached_value("Workstation", row.workstation, "hour_rate"))
 
 		if operation_rate:
 			row.operation_rate = (
 				operation_rate / flt(self.conversion_rate) if self.conversion_rate and operation_rate else operation_rate
 			)
+			row.base_operation_rate = row.operation_rate # temporary
 
 		if row.operation_rate and row.time_in_mins:
 			row.base_hour_rate = flt(row.operation_rate) * flt(self.conversion_rate)
-			if row.calculation_type == "Per Qty":
+			if row.calculation_type in ("Per Qty", "Per KG"):
 				row.operating_cost = flt(row.operation_rate) * flt(self.quantity)
 			else:
 				row.operating_cost = flt(row.operation_rate) * flt(row.time_in_mins) / 60.0
