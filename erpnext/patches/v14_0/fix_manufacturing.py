@@ -12,7 +12,7 @@ def execute():
 def execute2():
     add_workstation()
     update_bom()
-    
+
 
 def update_bom_to_against_job_card():
     frappe.db.sql("""
@@ -61,6 +61,7 @@ def update_bom():
             wk = get_workstation_name(doc.item, op.operation)
             print(wk)
             op.workstation = wk
+        doc.save()
         doc.submit()
         print(49, d)
 
