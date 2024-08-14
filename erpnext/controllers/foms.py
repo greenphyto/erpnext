@@ -820,12 +820,26 @@ def create_products(log):
 	doc.weight_per_unit = 1
 	doc.weight_uom = "Kg"
 
+
 	if doc.is_new():
 		doc.insert(ignore_permissions=1)
 	else:
 		doc.save()
 
+	create_workstation_process(doc.item_code)
+
 	return name
+
+def create_workstation_process(item_code):
+	default = get_foms_settings("workstation")
+	for i,operation in OPERATION_MAP_NAME.items():
+		exists = get_workstation_name(item_code, operation)
+		if not exists or exists == default:
+			doc = frappe.new_doc("Workstation")
+			doc.item_code = item_code
+			doc.operation = operation
+			doc.calculation_type = "Per KG"
+			doc.insert(ignore_permissions=1)
 
 def get_operation_no(operation):
 	return OPERATION_MAP.get(operation) or 1
