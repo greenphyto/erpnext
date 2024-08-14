@@ -12,6 +12,7 @@ def execute():
 def execute2():
     add_workstation()
     update_bom()
+    
 
 def update_bom_to_against_job_card():
     frappe.db.sql("""
