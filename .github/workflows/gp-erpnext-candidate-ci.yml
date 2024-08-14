@@ -48,6 +48,7 @@ jobs:
         script_stop: true
         script: |
           cd greenphyto_docker/frappe_docker/
+          docker image prune -a -f
           aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com
           docker pull 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext:latest
           docker pull 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext.worker:latest
