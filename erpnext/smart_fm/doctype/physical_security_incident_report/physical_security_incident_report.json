@@ -17,6 +17,7 @@
   "incident_type",
   "column_break_9r6kr",
   "date_of_incident",
+  "time_of_incident",
   "section_break_89qi2",
   "location",
   "section_break_ybxu5",
@@ -29,6 +30,7 @@
   "specific_area_of_location",
   "section_break_bqtzm",
   "incident_description",
+  "attachment",
   "involved_list",
   "witness_list",
   "section_break_koplu",
@@ -39,10 +41,9 @@
   "officer_phone",
   "section_break_pfkbb",
   "supervisor_name",
+  "supervisor_date",
   "column_break_6xexj",
   "supervisor_signature",
-  "column_break_6skbi",
-  "supervisor_date",
   "amended_from"
  ],
  "fields": [
@@ -169,10 +170,6 @@
    "label": "Supervisor Signature"
   },
   {
-   "fieldname": "column_break_6skbi",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "supervisor_date",
    "fieldtype": "Date",
    "label": "Date"
@@ -199,7 +196,7 @@
    "fieldname": "involved_list",
    "fieldtype": "Table",
    "label": "Parties Involved",
-   "options": "Person"
+   "options": "Incident Person"
   },
   {
    "fieldname": "witness_list",
@@ -236,12 +233,22 @@
    "fieldtype": "Data",
    "label": "Phone",
    "options": "Phone"
+  },
+  {
+   "fieldname": "time_of_incident",
+   "fieldtype": "Time",
+   "label": "Time of Incident"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-10 14:08:13.902834",
+ "modified": "2024-08-15 09:02:40.449132",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Physical Security Incident Report",
