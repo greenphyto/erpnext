@@ -1,0 +1,234 @@
+ITEM CODE,"ITEM NAME 
+(BRAND/MODEL)","ASSET NAME
+(ASSET DESCRIPTION)"
+"2MVA Oil-Type Transformer 1
+22kV/400V, ONAN, DYN11","Fuji Electric",OIL TRANSFORMER 1
+"2MVA Oil-Type Transformer 2
+22kV/400V, ONAN, DYN11","Fuji Electric",OIL TRANSFORMER 2
+"2MVA Oil-Type Transformer 3
+22kV/400V, ONAN, DYN11","Fuji Electric",OIL TRANSFORMER 3
+22KV HT Switchgear - Transformer No.1 Feeder (2MVA) - JO1,"Schneider Electric",SWG - J01
+"22KV HT Switchgear
+Transformer No.2 Feeder (2MVA) - J02","Schneider Electric",SWG - J02
+"22KV HT Switchgear
+SPPG Incoming Feeder No.1 - J03","Schneider Electric",SWG - J03
+"22KV HT Switchgear
+630A VCB Coupler - J04","Schneider Electric",SWG - J04
+"22KV HT Switchgear
+SPPG Incoming Feeder No.2 - J05","Schneider Electric",SWG - J05
+"22KV HT Switchgear
+Transformer No.3 Feeder (2MVA) - J06","Schneider Electric",SWG - J06
+"22KV HT Switchgear
+Battery Charger","Schneider Electric",BATTERY CHARGER
+"22KV HT Switchgear
+Switchgear Breaker Control Panel","Schneider Electric",CONTROL PANEL
+LT Main Switchboard 1,"Syntech",MSB -1
+LT Main Switchboard 2,"Syntech",MSB -2
+LT Main Switchboard 3,"Syntech",MSB -3
+LT Emergency Main Switchboard,"Syntech",EMSB
+"MSB 1-1
+L5 MCC-CHILLER","Syntech",MCC-CHILLER
+"MSB 1-3
+L1 DB CH 1-1 (300A TPN)","Syntech",300A DB CH 1-1
+"MSB 1-4
+L1 DB CH 2-1 (300A TPN)","Syntech",300A DB CH 2-1
+"MSB 1-5
+L1 DB CH 3-1 (300A TPN)","Syntech",300A DB CH 3-1
+"MSB 1-6
+L1 DB CH 4-1 (300A TPN)","Syntech",300A DB CH 4-1
+"MSB 1-7
+L5 DB AHU (500A TPN)","Syntech",500A DB AHU
+"MSB 1-8
+L1 DB LP-1 (30A TPN)","Syntech",32A DB LP 1
+"MSB 1-8
+L2 DB LP-2 (30A TPN)","Syntech",32A DB LP 2
+"MSB 1-8
+L3 DB LP-3 (30A TPN)","Syntech",32A DB LP 3
+"MSB 1-8
+L4 DB LP-4 (30A TPN)","Syntech",32A DB LP 4
+"MSB 1-8
+L5 DB LP-5 (30A TPN)","Syntech",32A DB LP 5
+"MSB 1-9
+RT ISOLATOR FOR PV SYSTEM (1000A 4P)","Syntech","1000 4P ISOLATOR
+FOR PV SYSTEM"
+"MSB 1-10
+L1 DB PUMP (63A TPN)","Syntech",63A DB PUMP(WP)
+"MSB 2-1
+L1 DB CH 1-2 (300A TPN)","Syntech",300A DB CH 1-2
+"MSB 2-2
+L1 DB CH 2-2 (300A TPN)","Syntech",300A DB CH 2-2
+"MSB 2-3
+L1 DB CH 3-2 (300A TPN)","Syntech",300A DB CH 3-2
+"MSB 2-4
+L1 DB CH 4-2 (300A TPN)","Syntech",300A DB CH 4-2
+"MSB 2-5
+L1 DB AGRI -1 (300A TPN)","Syntech",300A DB ARGI 1
+"MSB 2-5
+L2 DB OFF-2 (100A TPN)","Syntech",100A DB OFF 2
+"MSB 2-5
+L3 DB HARVEST (800A TPN)","Syntech",800A DB HARVEST
+"MSB 2-5
+L4 DB SEED (600A TPN)","Syntech",600A DB SEED
+"MSB 2-5
+L5 DB OFF-5 (300A TPN)","Syntech",300A DB OFF 5
+"MSB 3-1
+L1 DB CH 1-3 (300A TPN)","Syntech",300A DB CH 1-3
+"MSB 3-2
+L1 DB CH 2-3 (300A TPN)","Syntech",300A DB CH 2-3
+"MSB 3-3
+L1 DB CH 3-3 (300A TPN)","Syntech",300A DB CH 3-3
+"MSB 3-4
+L1 DB CH 4-3 (300A TPN)","Syntech",300A DB CH 4-3
+"MSB 3-5
+L1 DB CH 1-4 (300A TPN)","Syntech",300A DB CH 1-4
+"MSB 3-6
+L1 DB CH 2-4 (300A TPN)","Syntech",300A DB CH 2-4
+"MSB 3-7
+L1 DB CH 3-4 (300A TPN)","Syntech",300A DB CH 3-4
+"MSB 3-8
+L1 DB CH 4-4 (300A TPN)","Syntech",300A DB CH 4-4
+"MSB 3-10 
+RT ISOLATOR, PV SYSTEM (1000A 4P)","Syntech","1000 4P ISOLATOR
+FOR PV SYSTEM"
+"EMSB 1
+L1 EDB LP-1 (30A TPN)","Syntech",32A EDB LP 1
+"EMSB 1
+L3 EDB LP-3 (30A TPN)","Syntech",32A EDB LP 3
+"EMSB 1
+L4 EDB LP-4 (30A TPN)","Syntech",32A EDB LP 4
+"EMSB 1
+L5 EDB LP-5 (30A TPN)","Syntech",32A EDB LP 5
+"EMSB 2
+LL EDB FCC (30A TPN)","Syntech",32A EDB FCC
+"EMSB 3
+L1 EDB GH (30A TPN)","Syntech",32A EDB GR
+"EMSB 4
+L1 EDB MDF (40A TPN)","Syntech",40A EDB MDF
+"EMSB 5
+L5 EDB PL (100A TPN)","Syntech",100A EDB PL
+"EMSB 6
+L5 EDB GL (100A TPN)","Syntech",100A EDB GL
+"EMSB 7
+L1 EDB FIRE (400A TPN)","Syntech",400A EDB FIRE
+"EMSB 8
+L1 EDB CSR (30A TPN)","Syntech",32A EDB CSR
+400 KVA Genset (N+0),"Engine - Cummins
+Alternator - MECC ALTE"," "
+Submain cables & busbar,"Taisin Cables"," "
+Switches & Isolator,"Honeywell"," "
+Lighting fixtures - Facilities & Office,"Illumex"," "
+Lighting fixtures - Farm Elect/Production,"Cyclect"," "
+Amelech Lighting,"Amelech Lighting"," "
+Water Cooled Centrifugal Chiller (R-1),"Daikin / WMTCV50BSSB3G",CHILLER 1
+Water Cooled Centrifugal Chiller (R-2),"Daikin / WMTCV50BSSB3G",CHILLER 2
+Water Cooled Centrifugal Chiller (R-3),"Daikin / WMTCV50BSSB3G",CHILLER 3
+Chilled Water Pump (R-1),"Grundfos / LF60123G",CHWP-L5-01
+Chilled Water Pump (R-2),"Grundfos / LF60123G",CHWP-L5-02
+Chilled Water Pump (R-3),"Grundfos / LF60123G",CHWP-L5-03
+"Cooling Towers (Low Noise Type) 
+(CT-R1)","Kuken / SKB-705S",CT-RF-01
+"Cooling Towers (Low Noise Type) 
+(CT-R2)","Kuken / SKB-705S",CT-RF-02
+"Cooling Towers (Low Noise Type) 
+(CT-R3)","Kuken / SKB-705S",CT-RF-03
+Condenser Water Pumps (R-1),"Grundfos / LF60123G",CWP-RF-01
+Condenser Water Pumps (R-2),"Grundfos / LF60123G",CWP-RF-02
+Condenser Water Pumps (R-3),"Grundfos / LF60123G",CWP-RF-03
+Cooling Tower Make-up Tank,"Grundfos / CR 15-4 A-F-A-E-HQQE",Newater Tank 1
+Cooling Tower Make-up Water Pump,"Grundfos / CR 15-4 A-F-A-E-HQQE",MWP-01
+Cooling Tower Make-up Water Pump,"Kurita",MWP-02
+"Water Treatment System - 
+Chemical Dosing Equipment","Daikin / DM2TB-1315B",Chemical Dosing System
+Domestic Water Tank - Ground,"Daikin / DM2TB-0710B"," "
+Domestic Water Tank - Roof Top,"Daikin / DXE2634-B5(PA)"," "
+Domestic Water Booster Pumps 1,"Daikin / DXE2630-B5(PA)"," "
+Domestic Water Booster Pumps 2,"Daikin / DXE2630-B5(PA)"," "
+Domestic Water Booster Pumps 3,"Daikin / DXE2630-B5(PA)"," "
+Pre-AHU - 1 (PAHU-RF-01),"Daikin / DXE2434-B5(PA)",PAHU-RF-01
+Pre-AHU - 2 (PAHU-ASRS-L5-01),"Daikin / DM2TB-2539B",PAHU-ASRS-L5-01
+AHU - ASRS (AHU-L5-ASRS-1),"Daikin / DM2TB-2127B",AHU-L5-ASRS-1
+AHU - ASRS (AHU-L5-ASRS-2),"Daikin / DM2TB-2127B",AHU-L5-ASRS-2
+AHU - ASRS (AHU-L5-ASRS-3),"Daikin / DM2TB-1822B",AHU-L5-ASRS-3
+AHU - ASRS (AHU-L5-ASRS-4),"Daikin / FUW060F-6L",AHU-L5-ASRS-4
+AHU - ASRS (AHU-L5-ASRS-5),"Daikin / FUW020F-4L",AHU-L5-ASRS-5
+AHU (AHU-L1-01),"Daikin / FUW060F-4L",AHU-L1-01
+AHU (AHU-L3-01),"Daikin / FUW060F-4L",AHU-L3-01
+AHU (AHU-L4-01),"Daikin / FUW060F-4L",AHU-L4-01
+AHU (AHU-L5-01),"Daikin / FWW14DAS",AHU-L5-01
+"Water-Cooled FCU 
+(FCU-CANTEEN-L1-01)","Daikin / FWW02DAS",FCU-CANTEEN-L1-01
+"Water-Cooled FCU 
+(FCU-CHANGING-L1-02)","Daikin / FWW02DAS",FCU-CHANGING-L1-02
+"Water-Cooled FCU 
+(FCU-Office-L2-01)","Daikin / FUW020F-4L",FCU-Office-L2-01
+"Water-Cooled FCU 
+(FCU-Office-L2-02)","Daikin / FUW020F-4L",FCU-Office-L2-02
+"Water-Cooled FCU 
+(FCU-Office-L2-03)","Daikin / FUW040F-6L",FCU-Office-L2-03
+"Water-Cooled FCU 
+(FCU-Showcase-L2-04)","Daikin / FUW020F-6L",FCU-Showcase-L2-04
+"Water-Cooled FCU 
+(FCU-Server-L2-05)","Daikin / FUW040F-6L",FCU-Server-L2-05
+"Water-Cooled FCU 
+(FCU-Server-L2-06)","Daikin / FUW040F-6L",FCU-Server-L2-06
+"Water-Cooled FCU 
+(FCU-CHANGING-L3-01)","Daikin / FUW040F-6L",FCU-CHANGING-L3-01
+"Water-Cooled FCU 
+(FCU-CHANGING-L4-01)","Daikin / FWW20DAS",FCU-CHANGING-L4-01
+"Water-Cooled FCU 
+(FCU-DIRECTOR-L5-01)","Daikin / FWW18DAS",FCU-DIRECTOR-L5-01
+"Water-Cooled FCU 
+(FCU-DIRECTOR-L5-02)","Daikin / FUW060F-6L",FCU-DIRECTOR-L5-02
+"Water-Cooled FCU 
+(FCU-BOARDROOM-L5-03)","Daikin / FUW060F-6L",FCU-BOARDROOM-L5-03
+"Water-Cooled FCU 
+(FCU-BOARDROOM-L5-04)","Daikin / FTKM35XVMG",FCU-BOARDROOM-L5-04
+"Water-Cooled FCU 
+(FCU-PANTRY-L5-05)","Daikin / RKM35TVMM",FCU-PANTRY-L5-05
+"Water-Cooled FCU 
+(FCU-MEETING-L5-06)","Daikin /  FTKM35XVMG",FCU-MEETING-L5-06
+"Water-Cooled FCU 
+(FCU-MEETING-L5-07)","Daikin / RKM35TVMM",FCU-MEETING-L5-07
+"Water-Cooled FCU 
+(FCU-R&D-L5-08)","Daikin / FTKM25XVMG 
+",FCU-R&D-L5-08
+"Water-Cooled FCU 
+(FCU-R&D-L5-09)","Daikin / RKM25TVMM ",FCU-R&D-L5-08
+DX-FCU-FCC-1,"Systemair / B 15",FCU-FCC-01
+DX CONDENSER-FCC-1,"Systemair / K 160 XL Sileo",CU-FCC-01
+DX-FCU-FCC-2,"Systemair / K 160 XL Sileo",FCU-FCC-02
+DX CONDENSER-FCC-2,"Systemair / K 160 M Sileo",CU-FCC-02
+DX-FCU-GR,"Systemair / CDRE-400",FCU-GR-L1-01
+DX CONDENSER-GR,"Systemair / K 200 L Sileo",CU-GR-L1-01
+MECHANICAL VENTILATION FAN,"Systemair / K 315 L Sileo",GH - TOILET
+MECHANICAL VENTILATION FAN,"Systemair / CORE-400",FAF-FCC-1A
+MECHANICAL VENTILATION FAN,"Systemair / CORE-400",FAF-FCC-1B
+MECHANICAL VENTILATION FAN,"Systemair/ K 160 M Sileo",FAF-FCC-1C
+MECHANICAL VENTILATION FAN,"Systemair / K 100 XL Sileo",EAF-TOILET-L1-01
+MECHANICAL VENTILATION FAN,"Systemair / K 100 XL Sileo",FAF-CORRIDOR-L1-01
+MECHANICAL VENTILATION FAN,"Systemair/ K 160 M Sileo",EAF-TOILET -L2-01
+MECHANICAL VENTILATION FAN,"Systemair / K 160 XL Sileo",EAF-TOILET- L3-01
+MECHANICAL VENTILATION FAN,"Systemair / K 315 L Sileo",EAF-TOILET- L4-01
+MECHANICAL VENTILATION FAN,"Systemair / K 315 L Sileo",FAF-PALLET LIFTER - L1-01
+MECHANICAL VENTILATION FAN,"MODEL SF22+ 8AP FM",FAF-PALLET LIFTER - L3-01
+MECHANICAL VENTILATION FAN,"VERTICAL - 500 LITRES",FAF-PALLET LIFTER - L4-01
+MECHANICAL VENTILATION FAN,"CD40+",EAF-DIRECTOR TOILET-L5-01
+MECHANICAL VENTILATION FAN,"Schneider Electric",EAF-CHANGING ROOM - L1-02
+MECHANICAL VENTILATION FAN,,FAF-CORRIDOR-L3-02
+MECHANICAL VENTILATION FAN,,FAF-CORRIDOR-L4-02
+AIR COMPRESSOR (OIL FREE SCROLL AIR COOLED),,AIR COMPRESSOR
+VERTICAL AIR RECEIVER (500 LITRES),,AIR RECEIVER
+AIR DRYER (HEATLESS ABSORPTION),,"AIR DRYER "
+BUILDING MANAGEMENT SYSTEM (BMS),,BUILDING MANAGEMENT SYSTEM (BMS)
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,

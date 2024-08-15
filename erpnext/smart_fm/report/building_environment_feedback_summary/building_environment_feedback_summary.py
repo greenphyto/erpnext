@@ -17,7 +17,11 @@ class Report:
 		self.columns = []
 		self.condition = ""
 		self.params = []
-		self.total_quiz = 10
+		self.quiz_field = [
+			"q1", 'q2', 'q3', 'q4', 'q5', 
+			'q6', 'q7', 'q8', 'q9', 'q11', 
+			'q12', 'q13', 'q10'
+		]
 		self.quiz_map = {}
 		self.meta = frappe.get_meta("Building Environment Feedback")
 
@@ -37,8 +41,9 @@ class Report:
 	def get_raw_data(self):
 		self.data
 		cur_label = ""
-		for i in range(self.total_quiz):
-			field = "q{}".format(i+1)
+		i = 0
+		for field in self.quiz_field:
+			i += 1
 			df = self.meta.get_field(field)
 			if not df:
 				continue
@@ -55,7 +60,7 @@ class Report:
 
 					self.data.append({})
 
-				quiz_title = "{}. {}".format(i+1,label)
+				quiz_title = "{}. {}".format(i,label)
 
 				self.data.append({
 					"indent":0,
@@ -132,7 +137,8 @@ class Report:
 				})
 			
 			if msg_field:
-				self.data.append({"question":"Button", "indent":1, "msg_field":msg_field})
+				msg_list = get_message_list(self.filters, msg_field)
+				self.data.append({"question":"Button", "indent":1, "msg_field":msg_field, "msg_list":msg_list})
 
 
 	def process_data(self):
@@ -190,7 +196,7 @@ def get_message_list(filters, field):
 	condition = {"posting_date":['between', [from_date, to_date]]}
 	condition[field] = ['not in', ['', None]]
 	
-	msg = frappe.db.get_list('Building Environment Feedback', condition, ["{} as text".format(field), "full_name", "email_address"], debug=1)
+	msg = frappe.db.get_list('Building Environment Feedback', condition, ["{} as text".format(field), "full_name", "email_address"], debug=0)
 	field = meta.get_field(field.replace("_detail", ""))
 	data = {
 		"question":field.label,

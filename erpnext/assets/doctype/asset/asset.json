@@ -11,6 +11,7 @@
   "company",
   "item_code",
   "item_name",
+  "brand",
   "asset_owner",
   "asset_owner_company",
   "is_existing_asset",
@@ -676,6 +677,14 @@
    "fieldname": "product_warranty_information_section",
    "fieldtype": "Section Break",
    "label": "Product Warranty Information"
+  },
+  {
+   "fetch_from": "item_code.brand",
+   "fieldname": "brand",
+   "fieldtype": "Link",
+   "label": "Brand",
+   "options": "Brand",
+   "read_only": 1
   }
  ],
  "idx": 72,
@@ -705,7 +714,7 @@
    "table_fieldname": "accounts"
   }
  ],
- "modified": "2024-08-07 11:09:28.950693",
+ "modified": "2024-08-15 12:41:19.775099",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",

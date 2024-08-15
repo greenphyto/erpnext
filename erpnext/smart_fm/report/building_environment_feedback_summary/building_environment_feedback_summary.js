@@ -55,19 +55,42 @@ frappe.query_reports["Building Environment Feedback Summary"] = {
 			df.refresh();
 		}
 	}, 
-	"formatter": function(value, row, column, data, default_formatter) {
+	"formatter": function(value, row, column, data, default_formatter, from_print) {
 		value = default_formatter(value, row, column, data);
 		if (data && data.is_group) {
 			value = value.bold();
 		}
+
+		// column.formatter = (value, df, options, doc)=>{
+		// 	console.log("hereeeee", value, df, options, doc)
+		// }
 		if (value=="Button"){
-			return `<div>
-				<a 
-					msg_field="${data.msg_field}"
-					onClick="frappe.report_script.show_messages(this);" 
-					style="font-size: 0.82em;color: #a5a5a5;"
-				>Show Message</a>
-			</div>`
+			if (frappe.from_print_report){
+				var div = "<div><b>Messages:</b></div>";
+				$.each(data.msg_list.messages, (i,msg)=>{
+					div += 
+						`<div class='message-list-card'>
+							<div class="bottom-section">
+								From <span class="sender">${msg.full_name}</span>, <span class="email">email: ${msg.email_address}:</span>
+							</div>
+							<div class="body-section">
+								<div class="content">
+									${msg.text}							
+								</div>
+							</div>
+						<div><br>`
+
+				})
+				return div
+			}else{
+				return `<div>
+					<a 
+						msg_field="${data.msg_field}"
+						onClick="frappe.report_script.show_messages(this);" 
+						style="font-size: 0.82em;color: #a5a5a5;"
+					>Show Message</a>
+				</div>`
+			}
 		}
 		return value;
 	},
