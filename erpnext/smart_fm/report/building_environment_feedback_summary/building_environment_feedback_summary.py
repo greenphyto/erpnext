@@ -138,7 +138,23 @@ class Report:
 			
 			if msg_field:
 				msg_list = get_message_list(self.filters, msg_field)
-				self.data.append({"question":"Button", "indent":1, "msg_field":msg_field, "msg_list":msg_list})
+				if self.filters.show_all_messages:
+					self.data.append({
+						"indent":1,
+						"question":"<b>Messages:</b>",
+					})
+					for d in msg_list.get("messages"):
+						person = d['full_name'] or "Anonim"
+						msg = f"- <i>{ person }</i>: {d['text']}"
+						for i,piece in enumerate(splitter(15, msg)):
+							if i > 0:
+								piece = "&nbsp;&nbsp;&nbsp;"+piece
+							self.data.append({
+								"indent":1,
+								"question":piece,
+							})
+				else:
+					self.data.append({"question":"Button", "indent":1, "msg_field":msg_field, "msg_list":msg_list})
 
 
 	def process_data(self):
@@ -184,6 +200,10 @@ class Report:
 		self.get_chart()
 
 		return self.columns, self.data, None, self.charts
+	
+def splitter(n, s):
+    pieces = s.split()
+    return (" ".join(pieces[i:i+n]) for i in range(0, len(pieces), n))
 
 @frappe.whitelist()
 def get_message_list(filters, field):

@@ -44,7 +44,7 @@ frappe.query_reports["Building Environment Feedback Summary"] = {
 			"fieldname": "show_all_messages",
 			"fieldtype": "Check",
 			"label": "Show all Messages",
-			"default": 0
+			"default": 1
 		}
 	],
 	onload: function(report){
