@@ -25,16 +25,26 @@ def run_update_asset_name():
             # print(asset)
             asset_id = frappe.get_value("Asset",{"item_code":item})
 
-            if not item:
+            if not asset_id:
                 print("Skip for this asset:", item)
                 continue
             
             print("Renaming", item)
             if d[item_name_col]:
                 new_item_name = d[item_name_col].strip()
-                frappe.db.set_value("Asset", asset_id, "item_name", new_item_name)
-                frappe.db.set_value("Item", item, "item_name", new_item_name)
+                brand = get_brand(new_item_name)
+                frappe.db.set_value("Asset", asset_id, "brand", brand)
+                frappe.db.set_value("Item", item, "brand", brand)
 
             if d[asset_name_col]:
                 new_asset_name = d[asset_name_col].strip()
                 frappe.db.set_value("Asset", asset_id, "asset_name", new_asset_name)
+
+def get_brand(brand):
+    exist = frappe.get_value("Brand", brand)
+    if not exist:
+        doc = frappe.new_doc("Brand")
+        doc.brand = brand
+        doc.insert()
+        return doc.name
+    return exist
