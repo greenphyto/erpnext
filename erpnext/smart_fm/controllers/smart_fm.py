@@ -130,9 +130,8 @@ def get_qrcode(data={}, doctype=None, docname=None, get_link=False, commit=False
 		return ''
 	
 	def get_link_detail(doc_name):
-		ids = frappe.generate_hash(length=8)
-		params = "qr={}&id={}".format(doc_name, ids)
-		link = get_url("/api/method/erpnext.smart_fm.api.qrcode?{}".format(params))
+		ids = frappe.generate_hash(length=2)
+		link = get_url("/qr/{}/{}".format(doc_name, ids))
 		return link
 
 	result_name = ""

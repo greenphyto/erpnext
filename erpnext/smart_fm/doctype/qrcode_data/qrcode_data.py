@@ -7,7 +7,14 @@ from frappe import _
 
 class QRCodeData(Document):
 	def autoname(self):
-		self.name = "QR"+frappe.generate_hash(length=8)
+		length = 3
+		for d in range(10):
+			name = "QR"+frappe.generate_hash(length=length)
+			if not frappe.db.exists("QR Code Data", name):
+				self.name = name
+				return self.name
+			else:
+				length += 1
 
 	def validate(self):
 		self.validate_reference()
