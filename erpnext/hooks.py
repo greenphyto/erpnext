@@ -94,6 +94,10 @@ website_context = {
 	"splash_image": "/assets/erpnext/images/erpnext-logo.svg",
 }
 
+website_redirects = [
+	{"source": r"/qr/(.*)/(.*)", "target": r"/api/method/erpnext.smart_fm.api.qrcode?qr=\1&id=\2"}
+]
+
 # nosemgrep
 website_route_rules = [
 	{"from_route": "/orders", "to_route": "Sales Order"},
