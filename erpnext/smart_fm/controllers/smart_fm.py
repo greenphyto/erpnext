@@ -184,7 +184,7 @@ def save_qrcode_image(doctype, name, update_db=False):
 		return
 	
 	url = get_url("/qrcode/{}/{}".format(doctype, name))
-	options = {'width': 400, 'disable-smart-width': ''}
+	options = {'width': 1000, 'disable-smart-width': ''}
 	string_img = imgkit.from_url(url, False, options=options)
 	encoded = base64.b64encode(string_img)
 

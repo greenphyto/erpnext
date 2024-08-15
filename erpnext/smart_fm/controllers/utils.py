@@ -57,7 +57,7 @@ def get_qr_svg_code(totp_uri):
 	svg = ""
 	stream = BytesIO()
 	try:
-		url.svg(stream, scale=4, background="#fff", module_color="#222")
+		url.svg(stream, scale=10, background="#fff", module_color="#222")
 		svg = stream.getvalue().decode().replace("\n", "")
 		svg = b64encode(svg.encode())
 	finally:
