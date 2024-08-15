@@ -39,6 +39,12 @@ frappe.query_reports["Building Environment Feedback Summary"] = {
 			"fieldtype": "Check",
 			"label": "From Dashboard",
 			"default": 0
+		},
+		{
+			"fieldname": "show_all_messages",
+			"fieldtype": "Check",
+			"label": "Show all Messages",
+			"default": 0
 		}
 	],
 	onload: function(report){
