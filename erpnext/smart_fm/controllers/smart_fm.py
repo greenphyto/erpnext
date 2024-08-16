@@ -187,9 +187,11 @@ def save_qrcode_image(doctype, name, update_db=False):
 	options = {'width': 1000, 'disable-smart-width': ''}
 	string_img = imgkit.from_url(url, False, options=options)
 	encoded = base64.b64encode(string_img)
+	code = frappe.generate_hash("", 3),
 
 	# save file
-	filenme= "QR Code - {} - {}.png".format(doctype, name)
+	filenme= "QR Code - {} - {} {}.png".format(doctype, name, code)
+	
 	content = encoded
 	is_private = 0
 	file = frappe.get_doc(
