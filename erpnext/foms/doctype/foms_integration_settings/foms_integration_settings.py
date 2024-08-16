@@ -323,6 +323,12 @@ class FomsAPI():
 
 		return res
 	
+	def create_delivery_note(self, data):
+		data = self.convert_data(data)
+		res = self.req("POST", "/userportal/ERPNextIntegration/CreateOrUpdateDeliveryOrder", data=data)
+
+		return res
+	
 """
 TODO:
 update batch qty to userportal/RawMaterialUP/CreateOrUpdateRawMaterialBatch

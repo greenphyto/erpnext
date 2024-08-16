@@ -388,6 +388,10 @@ doc_events = {
         "on_submit":"erpnext.controllers.foms.sync_log",
         "on_cancel":"erpnext.controllers.foms.sync_log",
 	},
+	"Delivery Note": {
+        "on_submit":"erpnext.controllers.foms.sync_log",
+        "on_cancel":"erpnext.controllers.foms.sync_log",
+	},
     "Department": {
         "validate":"erpnext.controllers.foms.sync_log",
 	},
@@ -687,4 +691,5 @@ sync_log_method = {
     6:"erpnext.controllers.foms._update_foms_stock_recon",
     7:"erpnext.controllers.foms._update_foms_scrap_request",
     8:"erpnext.controllers.foms._update_foms_department",
+    9:"erpnext.controllers.foms._sync_delivery_note",
 }

@@ -50,6 +50,7 @@ METHOD_MAP = {
 	"Stock Reconciliation":6,
 	"Scrap Request":7,
 	"Department":8,
+	"Delivery Note":9,
 }
 
 UOM_KG_CONVERTION = {
@@ -657,6 +658,44 @@ def _update_foms_sales_order(log, api=None):
 
 def get_foms_format(date):
 	return getdate(date).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+
+def update_foms_delivery():
+	sync_controller("Delivery Note", _sync_delivery_note)
+
+def _sync_delivery_note(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Delivery Note", log.docname)
+	customer = frappe.get_doc("Customer", doc.customer)
+	farm_id = get_farm_id()
+
+	data = frappe._dict({
+		"farmId": 0,
+		"deliveryOrderRefNo": doc.name,
+		"erpDeliveryOrderId": doc.name,
+		"erpSaleOrderNo": "",
+		"customer": doc.customer,
+		"customerAddress": doc.address_display,
+		"remarks": doc.instructions,
+		"deliveryOrderDetails": [],
+		"id": 0
+	})
+
+	for d in doc.get("items"):
+		data.deliveryOrderDetails.append({
+			"itemCode": d.item_code,
+			"itemName": d.item_name,
+			"qty": d.qty,
+			"uom": d.uom,
+			"remarks": d.description,
+			"warehouse": d.warehouse,
+			"batchNo": d.batch_no,
+			"id": 0
+		})
+
+	api.log = log
+	res = api.create_delivery_note(data)
 
 # SCRAP REQUEST
 def update_foms_scrap_request():
