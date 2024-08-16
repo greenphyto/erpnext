@@ -132,6 +132,9 @@ class MaterialRequest(BuyingController):
 		self.set_status(update=True)
 
 	def before_submit(self):
+		attachments = get_attachments()
+		if len(attachments) == 0:
+			frappe.throw(_("Attachment is mandatory for submission"))
 		self.set_status(update=True)
 
 	def before_cancel(self):
@@ -360,6 +363,14 @@ def get_list_context(context=None):
 	)
 
 	return list_context
+
+def get_attachments(self):
+		attachments = frappe.get_all(
+			"File",
+			fields=["name", "file_name", "file_url", "is_private"],
+			filters={"attached_to_name": self.name, "attached_to_doctype": self.DOCTYPE},
+		)
+		return attachments
 
 
 @frappe.whitelist()
