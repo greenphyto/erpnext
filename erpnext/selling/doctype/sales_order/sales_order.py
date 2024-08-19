@@ -81,6 +81,15 @@ class SalesOrder(SellingController):
 		for d in self.get("items"):
 			pass
 
+	def validate_working_progress(self, throw=False):
+		progress = False
+		for d in self.get("items"):
+			if d.get("lot_id"):
+				if throw:
+					frappe.throw(_(f"Cannot cancel {self.name} because already working in progress"))
+				return True
+		return False
+
 	def update_work_order_reference(self, wo_no, item):
 		for d in self.get("items"):
 			if d.item_code == item:
@@ -267,6 +276,7 @@ class SalesOrder(SellingController):
 			frappe.throw(_("Closed order cannot be cancelled. Unclose to cancel."))
 
 		self.check_nextdoc_docstatus()
+		self.validate_working_progress(throw=1)
 		self.update_reserved_qty()
 		self.update_project()
 		self.update_prevdoc_status("cancel")
