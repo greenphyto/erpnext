@@ -131,6 +131,10 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 		out.amount = flt(args.qty) * flt(out.rate)
 
 	out = remove_standard_fields(out)
+
+	if doc and doc.get("doctype") == "Sales Order":
+		out.uom = ""
+		
 	return out
 
 
