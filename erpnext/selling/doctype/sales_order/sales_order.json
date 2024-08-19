@@ -129,7 +129,7 @@
   "status",
   "delivery_status",
   "per_delivered",
-  "foms_id",
+  "on_progress",
   "per_working",
   "column_break_81",
   "per_billed",
@@ -1637,13 +1637,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "foms_id",
-   "fieldtype": "Data",
-   "label": "FOMS ID",
-   "no_copy": 1,
-   "read_only": 1
-  },
-  {
    "default": "0",
    "fieldname": "non_package_item",
    "fieldtype": "Check",
@@ -1656,13 +1649,20 @@
    "no_copy": 1,
    "options": "\nStarted\nHold\nFinished",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "on_progress",
+   "fieldtype": "Check",
+   "label": "On Progress",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-12 15:24:31.758451",
+ "modified": "2024-08-19 16:20:24.651981",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

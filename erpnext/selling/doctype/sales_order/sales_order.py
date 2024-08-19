@@ -94,16 +94,18 @@ class SalesOrder(SellingController):
 		for d in self.get("items"):
 			if d.item_code == item:
 				d.lot_id = wo_no
-				print(88, d.lot_id)
 				d.db_update()
+		self.on_progress = 1
 	
 	def update_work_progress(self, item, qty):
+		per_working = 0
 		for d in self.get("items"):
 			if d.item_code == item:
-				print(93, d.lot_id, qty)
+				per_working += 1
 				d.work_order_qty = qty
 				d.db_update()
 		
+		self.per_working = per_working/len(self.items)*100
 
 	def validate_po(self):
 		# validate p.o date v/s delivery date
