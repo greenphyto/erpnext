@@ -22,6 +22,8 @@ from erpnext.stock.doctype.inventory_dimension.inventory_dimension import (
 	get_evaluated_inventory_dimension,
 )
 from erpnext.stock.stock_ledger import get_items_to_be_repost
+from erpnext.stock.get_item_details import get_conversion_factor
+
 
 
 class QualityInspectionRequiredError(frappe.ValidationError):
@@ -86,6 +88,7 @@ class StockController(AccountsController):
 			is_material_issue = True
 
 		for d in self.get("items"):
+			d.conversion_factor = get_conversion_factor(d.item_code, d.uom).get("conversion_factor", 1)
 			if hasattr(d, "serial_no") and hasattr(d, "batch_no") and d.serial_no and d.batch_no:
 				serial_nos = frappe.get_all(
 					"Serial No",
