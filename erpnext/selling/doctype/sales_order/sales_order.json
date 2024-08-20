@@ -328,6 +328,7 @@
    "label": "Customer's Purchase Order",
    "oldfieldname": "po_no",
    "oldfieldtype": "Data",
+   "reqd": 1,
    "width": "100px"
   },
   {
@@ -1685,7 +1686,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-20 11:17:01.649020",
+ "modified": "2024-08-20 11:44:54.001184",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
