@@ -530,15 +530,16 @@ erpnext.utils.update_child_items = function(opts) {
 		in_list_view: 1,
 		reqd: 1,
 		get_query: opts.uom_query,
-		onchange: function () {
+		onchange:  function(e, row){
+			var value = row.doc.uom
 			frappe.call({
 				method: "erpnext.stock.get_item_details.get_conversion_factor",
-				args: { item_code: this.doc.item_code, uom: this.value },
+				args: { item_code: row.doc.item_code, uom: value },
 				callback: r => {
 					if(!r.exc) {
-						if (this.doc.conversion_factor == r.message.conversion_factor) return;
+						if (row.doc.conversion_factor == r.message.conversion_factor) return;
 
-						const docname = this.doc.docname;
+						const docname = row.doc.docname;
 						dialog.fields_dict.trans_items.df.data.some(doc => {
 							if (doc.docname == docname) {
 								doc.conversion_factor = r.message.conversion_factor;
