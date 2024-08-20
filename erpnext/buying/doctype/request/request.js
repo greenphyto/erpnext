@@ -17,6 +17,20 @@ frappe.ui.form.on("Request", {
 			}
 		})
 
+
+		frm.set_query("packaging", "items", function(doc, cdt, cdn) {
+			var row = locals[cdt][cdn];
+			if (!row.item_code){
+				frappe.throw(__("Select item first"))
+			}
+			return {
+				filters: {
+					"item": row.item_code
+				},
+				query:"erpnext.selling.doctype.sales_order.sales_order.get_packaging_available"
+			}
+		});
+
 		frm.set_query("type_of_vegetable", (doc)=>{
 			return {
 				filters:{
@@ -35,6 +49,12 @@ frappe.ui.form.on("Request", {
 		}
 	}
 });
+
+frappe.ui.form.on("Request Items", {
+	item_code:function(doc, cdt, cdn){
+		frappe.model.set_value(cdt,cdn,"packaging", "");
+	}
+})
 
 function update_weight(frm) {
 	frm.set_value("weight", flt(frm.doc.quantity * frm.doc.packaging_size));
