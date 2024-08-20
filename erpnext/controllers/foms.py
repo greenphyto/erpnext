@@ -606,11 +606,15 @@ def _update_foms_sales_order(log, api=None):
 	customer = frappe.get_doc("Customer", doc.customer)
 	farm_id = get_farm_id()
 
+	so_id = cint(doc.get("foms_id"))
+	req_id = cint(doc.get("req_id"))
+
 	products = []
 	
 	for d in doc.get("items"):
 		product_id = frappe.get_value("Item", d.item_code, "foms_product_id")
 		package_id = frappe.get_value("Packaging", d.uom, "foms_id")
+		child_id = cint(d.get("foms_id"))
 		item = {
 			"isWeightOrder": True if d.weight_order else False,
 			"productId": product_id,
@@ -618,7 +622,8 @@ def _update_foms_sales_order(log, api=None):
 			"uom": convert_uom(d.stock_uom),
 			"totalNetWeight": d.stock_qty,
 			"isRootInclude": "false",
-			"unitPrice": d.rate_package
+			"unitPrice": d.rate_package,
+			"id":child_id
 		}
 		if package_id:
 			item["packageId"] = cint(package_id)
@@ -629,21 +634,22 @@ def _update_foms_sales_order(log, api=None):
 		"orderType": "One-off",
 		"deliveryDate": getdate(doc.delivery_date),
 		"customerId": customer.foms_id or "",
-		"purchaseOrderNumber": doc.po_no or "",
+		"purchaseOrderNumber": doc.po_no or "-",
 		"saleOrder": {
 			"saleOrderNumber":doc.name, 
 			"farmId": farm_id,
 			"subSaleOrders": products,
-			"id": 0
+			"id": so_id
 		},
-		"farmId": farm_id
+		"farmId": farm_id,
+		"id":req_id
 	}
 
 	api.log = log
 	res = api.create_customer_order(data)
 	if res:
-		so_id = res['saleOrder']['id']
-		doc.foms_id = so_id
+		doc.foms_id = res['saleOrder']['id']
+		doc.req_id = res['id']
 		for d in res['saleOrder']['subSaleOrders']:
 			item_code = frappe.get_value("Item", {"foms_product_id": cstr(d['productId'])})
 			packaging = frappe.get_value("Packaging", {"foms_id": cstr(d['packageId'])})
