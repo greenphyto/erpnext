@@ -379,6 +379,7 @@ doc_events = {
 	},
     "Sales Order": {
         "on_submit":"erpnext.controllers.foms.sync_log_so",
+        "on_update_after_submit":"erpnext.controllers.foms.sync_log_so",
         "on_cancel":"erpnext.controllers.foms.sync_log_so",
 	},
     "Item": {
