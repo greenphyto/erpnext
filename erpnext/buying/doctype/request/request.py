@@ -95,7 +95,7 @@ def get_packaging_name(packaging, qty, uom, total_weight):
 def create_sales_order(request_name):
 	req = frappe.get_doc("Request", request_name)
 
-	exists = frappe.get_value("Sales Order", {"request_no":req.name})
+	exists = frappe.get_value("Sales Order", {"request_no":req.name, "docstatus":['!=', 2]})
 	if exists:
 		return exists
 	
@@ -104,24 +104,27 @@ def create_sales_order(request_name):
 	doc.customer = "Internal Customer"
 	doc.delivery_date = getdate(req.delivery_date)
 	doc.request_no = req.name
+	doc.po_no = req.name
+
+	non_package_item = 0
 
 	# set value
 	for d in req.get("items"):
 		row = doc.append("items")
 		row.item_code = d.item_code
 		if d.uom == "Package":
-			row.weight_order = 0
+			non_package_item = 0
 		else:
-			row.weight_order = 1
+			non_package_item = 1
 		row.uom = d.packaging
+		row.weight_in_kg = d.unit_weight
 		row.qty = d.qty
 
-		# need convertion from package vs stock qty
-		row.qty = d.qty
-		row.uom = d.uom
+	doc.non_package_item = non_package_item
 
 	# internal customer
-	doc.insert(ignore_permissions=1)
+	doc.save()
+	# doc.insert(ignore_permissions=1)
 	doc.submit()
 
 	return doc.name

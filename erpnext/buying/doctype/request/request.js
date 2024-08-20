@@ -72,6 +72,5 @@ $.extend(cur_frm.cscript, {
 				frappe.set_route("Form", "Sales Order", r.message);
 			}
 		})
-		console.log("hello", frm)
 	}
 })
