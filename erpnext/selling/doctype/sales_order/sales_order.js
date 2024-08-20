@@ -72,6 +72,27 @@ frappe.ui.form.on("Sales Order", {
 		frm.set_df_property('packed_items', 'cannot_delete_rows', true);
 	},
 	refresh: function(frm) {
+		var item_query = function(row) {
+			var filters = {"is_stock_item": 1, "is_fixed_asset": 0}
+			if (frm.doc.non_package_item){
+				filters['is_package_item']=0;
+			}else{
+				filters['is_package_item']=1;
+			}
+			return erpnext.queries.item(filters);
+		};
+
+		var uom_query = function(row) {
+			var doc = frm.doc;
+			if (!row.item_code) frappe.throw(__("Please select Item"));
+			var args =  erpnext.queries.uom({
+				"parent": row.item_code,
+				"is_packaging": doc.non_package_item? 0 : 1
+			})
+
+			return args;
+		}
+
 		if(frm.doc.docstatus === 1 && frm.doc.status !== 'Closed'
 			&& flt(frm.doc.per_delivered, 6) < 100 && flt(frm.doc.per_billed, 6) < 100 && cint(frm.doc.on_progress) == 0) {
 			frm.add_custom_button(__('Update Items'), () => {
@@ -80,6 +101,8 @@ frappe.ui.form.on("Sales Order", {
 					child_docname: "items",
 					child_doctype: "Sales Order Detail",
 					cannot_add_row: false,
+					item_query:item_query,
+					uom_query:uom_query
 				})
 			});
 		}
