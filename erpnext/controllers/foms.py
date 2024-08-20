@@ -622,7 +622,7 @@ def _update_foms_sales_order(log, api=None):
 			"uom": convert_uom(d.stock_uom),
 			"totalNetWeight": d.stock_qty,
 			"isRootInclude": "false",
-			"unitPrice": d.rate_package,
+			"unitPrice": d.rate,
 			"id":child_id
 		}
 		if package_id:
