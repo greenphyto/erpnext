@@ -573,7 +573,8 @@ class calculate_taxes_and_totals(object):
 		if self.doc.meta.get_field("total_net_weight"):
 			self.doc.total_net_weight = 0.0
 			for d in self.doc.items:
-				d.total_weight = (d.weight_in_kg or d.weight_per_unit) * d.qty
+				weight = flt(d.get("weight_per_unit"))
+				d.total_weight = weight * d.qty
 				self.doc.total_net_weight += d.total_weight
 
 	def set_rounded_total(self):

@@ -117,7 +117,7 @@ def create_sales_order(request_name):
 		else:
 			non_package_item = 1
 		row.uom = d.packaging
-		row.weight_in_kg = d.unit_weight
+		row.weight_in_unit = d.unit_weight
 		row.qty = d.qty
 
 	doc.non_package_item = non_package_item

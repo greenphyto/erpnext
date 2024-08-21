@@ -27,7 +27,6 @@
   "uom",
   "conversion_factor",
   "stock_qty",
-  "weight_in_kg",
   "packaging_section",
   "weight_order",
   "section_break_16",
@@ -885,13 +884,6 @@
    "label": "Is weight order?"
   },
   {
-   "fetch_from": "package.total_weight",
-   "fieldname": "weight_in_kg",
-   "fieldtype": "Float",
-   "label": "Weight in Kg",
-   "read_only": 1
-  },
-  {
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
@@ -914,7 +906,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-08-19 15:55:55.735069",
+ "modified": "2024-08-21 15:46:52.759612",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",
