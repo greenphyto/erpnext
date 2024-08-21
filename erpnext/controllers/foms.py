@@ -294,7 +294,7 @@ def _update_warehouse(log, api=None):
 
 	farm_id = get_foms_settings("farm_id")
 	doc = frappe.get_doc("Warehouse", log.docname)
-	wh_id = doc.name.replace(" ", "")[:12]
+	wh_id = doc.name[:12]
 	# wh_id = doc.name
 	data = {
 		"farmId": farm_id,
@@ -304,9 +304,9 @@ def _update_warehouse(log, api=None):
 		"capacity": 0,
 		"uom": "Kg", # not yet
 		"address": "",
-		"noRackRow": 0,
-		"noRackLevel": 0,
-		"noOfLane": 0,
+		"noRackRow": cint(doc.row_no),
+		"noRackLevel": cint(doc.level_no),
+		"noOfLane": cint(doc.lane_no),
 		"isFromERP": True
 	}
 
