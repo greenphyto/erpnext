@@ -28,6 +28,10 @@ frappe.ui.form.on("Workstation", {
 		})
 	},
 
+	refresh: function(frm){
+		frm.cscript.change_label();
+	},
+
 	workstation_type: function(frm) {
 		if (frm.doc.workstation_type) {
 			frm.call({
@@ -41,6 +45,13 @@ frappe.ui.form.on("Workstation", {
 	},
 
 	calculation_type:function (frm){
+		frm.cscript.change_label();
+	}
+});
+
+$.extend(cur_frm.cscript, {
+	change_label: function(){
+		var frm = this.frm;
 		var fields = ['per_qty_rate_electricity', 'per_qty_rate_wages', 'per_qty_rate_machinery', 'per_qty_rate', 'per_qty_rate_consumable']
 		var desc = "per qty"
 		if (frm.doc.calculation_type=="Per KG"){
@@ -51,7 +62,7 @@ frappe.ui.form.on("Workstation", {
 			frm.set_df_property(field, 'description', desc);
 		})
 	}
-});
+})
 
 frappe.tour['Workstation'] = [
 	{
