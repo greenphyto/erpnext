@@ -781,6 +781,60 @@
         }
       }
     },
+    "/erpnext.controllers.erp_api.update_delivery_note_signature": {
+      "post": {
+        "summary": "Update signature and attachment",
+        "description": "Update signature and attahcment to Delivery Note, image and signature is base64 string ",
+        "operationId": "update delivery signature",
+        "requestBody": {
+          "description": {
+            "test":123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data":{
+                      "doNumber":"DO-2024-003-1",
+                      "attachments":[{
+                          "filename":"test-image.png",
+                          "image":"/9j/4AAQSkZJRgABAQEASwBLAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAw...."
+                      }],
+                      "signature_by":"Jing Wei",
+                      "taken_at":"2024-08-20 12:24",
+                      "signature":"iVBORw0KGgoAAAANSUhEUgAAApsAAAEUCAYAAABknP30AAAAAXNSR0IArs4c6QAA..."
+                  }
+              }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": true
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
     "/erpnext.controllers.erp_api.remove_expired_stock": {
       "post": {
         "summary": "Remove Expired Stock",
