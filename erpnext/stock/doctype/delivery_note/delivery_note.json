@@ -165,7 +165,15 @@
   "excise_page",
   "instructions",
   "connections_tab",
-  "column_break_25"
+  "column_break_25",
+  "signature_details_section",
+  "authorized_signature_section",
+  "signature",
+  "signature_by",
+  "taken_at",
+  "column_break_161",
+  "attachment_preview",
+  "attachment"
  ],
  "fields": [
   {
@@ -1404,13 +1412,54 @@
    "fieldtype": "Data",
    "label": "FOMS ID",
    "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.docstatus == 1",
+   "fieldname": "signature_details_section",
+   "fieldtype": "Tab Break",
+   "label": "Signature Details"
+  },
+  {
+   "fieldname": "signature",
+   "fieldtype": "Signature",
+   "label": "Signature"
+  },
+  {
+   "fieldname": "column_break_161",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach Image",
+   "label": "Attachment"
+  },
+  {
+   "fieldname": "attachment_preview",
+   "fieldtype": "Image",
+   "label": "Attachment Preview",
+   "options": "attachment"
+  },
+  {
+   "fieldname": "signature_by",
+   "fieldtype": "Data",
+   "label": "Signature By"
+  },
+  {
+   "fieldname": "taken_at",
+   "fieldtype": "Datetime",
+   "label": "Taken At"
+  },
+  {
+   "fieldname": "authorized_signature_section",
+   "fieldtype": "Section Break",
+   "label": "Authorized Signature"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-25 14:44:17.773931",
+ "modified": "2024-08-22 11:29:34.655672",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

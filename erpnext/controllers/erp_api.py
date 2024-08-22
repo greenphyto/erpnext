@@ -22,6 +22,7 @@ from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry
 from erpnext.stock.doctype.purchase_receipt.purchase_receipt import make_purchase_return
 from frappe.model.workflow import apply_workflow
 from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
+from frappe.utils.file_manager import save_file
 
 
 def get_data(data):
@@ -347,6 +348,48 @@ def create_update_packaging(data):
 	return {
 		"PackageID":pack_name
 	}
+
+@frappe.whitelist()
+def update_delivery_note_signature(data):
+	"""
+	doNumber:"",
+	attachments: [base64image, base64image],
+	signature:"base64image"
+	"""
+	data = frappe._dict(data)
+	do_number = frappe.get_value("Delivery Note", data.doNumber)
+	if not do_number:
+		frappe.throw(_(f"Missing Delivery Note with ID {data.doNumber}"))
+	
+	doc = frappe.get_doc("Delivery Note", data.doNumber)
+	# convert base64 image from json to data
+
+	for d in data.attachments:
+		file_name = d.get("filename")
+		encoded_content = d.get("image")
+		# doc.db
+		file_save = save_file(
+			file_name,
+			encoded_content,
+			"Delivery Note",
+			do_number,
+			folder=None,
+			decode=True,
+			is_private=1,
+			df="attachment",
+		)
+		doc.db_set("attachment", file_save.file_url)
+
+	# signature
+	signature = "data:image/png;base64,"+cstr(data.signature)
+	doc.db_set("signature", signature)
+	doc.db_set("signature_by", data.signature_by)
+	doc.db_set("taken_at", data.taken_at)
+
+	return True
+
+	
+	
 
 
 @frappe.whitelist()
