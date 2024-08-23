@@ -5,9 +5,40 @@ import frappe
 from frappe.model.document import Document
 from frappe.desk.reportview import get_filters_cond, get_match_cond
 from frappe.utils import getdate, add_days
+from erpnext.stock.doctype.batch.batch import get_batch_qty
+from erpnext.stock.get_item_details import get_conversion_factor
 
 class ScrapRequest(Document):
-	pass
+	def on_submit(self):
+		create_material_issue(self)
+
+def create_material_issue(doc):
+	stock_entry = frappe.new_doc("Stock Entry")
+	stock_entry.purpose = "Material Issue"
+	stock_entry.set_stock_entry_type()
+	# get warehouse and batch portion
+	if doc.stock_entry:
+		stock_entry = frappe.get_doc("Stock Entry", doc.stock_entry)
+		if stock_entry.docstatus == 0:
+			stock_entry.submit()
+		return doc.stock_entry
+	
+	for d in doc.get("items"):
+		qty_map = get_batch_qty(d.batch)
+		for dt in qty_map:
+			row = stock_entry.append("items")
+			row.item_code = d.item_code
+			row.qty = dt.get("qty")
+			row.uom = d.uom
+			row.batch_no = d.batch
+			row.conversion_factor = get_conversion_factor(d.item_code, d.uom).get("conversion_factor", 1)
+			row.s_warehouse = dt.get("warehouse")
+	stock_entry.set_missing_values()
+	stock_entry.insert(ignore_permissions=1)
+	stock_entry.submit()
+	doc.stock_entry = stock_entry.name
+
+	return stock_entry.name
 
 
 @frappe.whitelist()

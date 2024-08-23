@@ -14,7 +14,8 @@
   "reason",
   "more_information_section",
   "amended_from",
-  "workflow_state"
+  "workflow_state",
+  "stock_entry"
  ],
  "fields": [
   {
@@ -61,12 +62,20 @@
    "label": "Scrap Items",
    "options": "Scrap Items",
    "reqd": 1
+  },
+  {
+   "fieldname": "stock_entry",
+   "fieldtype": "Link",
+   "label": "Stock Entry",
+   "no_copy": 1,
+   "options": "Stock Entry",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-30 16:00:58.849266",
+ "modified": "2024-08-23 14:57:18.332904",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Scrap Request",
