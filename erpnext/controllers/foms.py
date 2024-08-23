@@ -371,6 +371,9 @@ def _update_stock_recipe(log, api=None):
 
 		api.log = log  # working with log
 		res = api.update_raw_material_receipt(data)
+		if res:
+			frappe.db.set_value("Batch", d.batch_no, "foms_id", res.get('id'))
+			frappe.db.set_value("Batch", d.batch_no, "foms_name", res.get('batchRefNo'))
 
 # SUPPLIER (POST)
 def sync_all_supplier(show_progress=False):
