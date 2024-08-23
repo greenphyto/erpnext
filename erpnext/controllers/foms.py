@@ -353,13 +353,17 @@ def _update_stock_recipe(log, api=None):
 
 	doc = frappe.get_doc("Purchase Receipt", log.docname)
 	for d in doc.get("items"):
+		batch_foms_id = cint(frappe.get_value("Batch", d.batch_no, "foms_id"))
+		if batch_foms_id:
+			continue
+		
 		expiry_date = frappe.get_value("Batch", d.batch_no, "expiry_date")
 		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id")
 		supplier_id = frappe.get_value("Supplier", doc.supplier, "foms_id")
 		raw_id = frappe.get_value("Item", d.item_code, "foms_raw_id")
 		# need convert current PR receive to item default
 		data = {
-			"id": 0,
+			"id": batch_foms_id,
 			"rawMaterialId": raw_id,
 			"batchRefNo": d.batch_no,
 			"dateOfCreation": doc.creation,
