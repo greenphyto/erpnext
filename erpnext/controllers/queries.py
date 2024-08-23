@@ -374,7 +374,7 @@ def uom(doctype, txt, searchfield, start, page_len, filters):
 		group by `tabUOM`.name
 		""".format(
 			key=searchfield,
-			fcond=get_filters_cond(doctype, filters, conditions).replace("%", "%%"),
+			fcond=get_filters_cond(doctype, filters, conditions, ignore_permissions=1).replace("%", "%%"),
 		), {
 			"txt": "%(txt)s",
 		}
