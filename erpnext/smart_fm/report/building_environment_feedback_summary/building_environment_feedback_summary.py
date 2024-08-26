@@ -41,9 +41,9 @@ class Report:
 	def get_raw_data(self):
 		self.data
 		cur_label = ""
-		i = 0
+		idx = 0
 		for field in self.quiz_field:
-			i += 1
+			idx += 1
 			df = self.meta.get_field(field)
 			if not df:
 				continue
@@ -60,7 +60,7 @@ class Report:
 
 					self.data.append({})
 
-				quiz_title = "{}. {}".format(i,label)
+				quiz_title = "{}. {}".format(idx,label)
 
 				self.data.append({
 					"indent":0,
