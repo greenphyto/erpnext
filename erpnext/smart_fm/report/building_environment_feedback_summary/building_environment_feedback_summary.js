@@ -31,7 +31,10 @@ frappe.query_reports["Building Environment Feedback Summary"] = {
 				{"value":"q7", "label":"7. How would you rate the building's overall air quality and freshness?"},
 				{"value":"q8", "label":"8. Do you notice any unpleasant odors or smells within the building?"},
 				{"value":"q9", "label":"9. How would you describe the spaciousness of your workspace and common areas?"},
-				{"value":"q10", "label":"10. Are there any areas in the building where you feel enhancements could improve your overall comfort?"},
+				{"value":"q11", "label":"10. How satisfied are you with the breakout spaces (tables with chairs outside the meeting rooms) in the office?"},
+				{"value":"q12", "label":"11. How satisfied are you with the dining seating area in the wet kitchen?"},
+				{"value":"q13", "label":"12. How would you describe the cleanliness of the toilets?"},
+				{"value":"q10", "label":"13. Are there any areas in the building where we can improve to enhance your overall comfort?"},
 			]
 		},
 		{
