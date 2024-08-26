@@ -38,7 +38,7 @@ def update_enable_batch_no():
         SET 
             has_batch_no = 1,
             create_new_batch = 1,
-            batch_number_series = CONCAT(item_code, "BN.#####"),
+            batch_number_series = CONCAT(item_code,"-","BN.#####"),
             has_expiry_date=1,
             shelf_life_in_days=365
         WHERE
