@@ -181,8 +181,6 @@ def update_reff_id(res, doc, key_name):
 		doc.db_set("foms_name", res.get(key_name))
 
 def save_log(doc_type, data_name, key_name, data):
-	if doc_type == "Item":
-		p+=1
 	map_doc = create_foms_data(doc_type, key_name, data)
 	map_doc.doc_type = doc_type
 	map_doc.doc_name = data_name
@@ -944,7 +942,7 @@ def create_bom_products_version_1(log, product_id, submit=False):
 				else:
 					bom.is_default = 0
 
-				bom.transfer_material_against = TRANSFER_AGAIN
+				bom.transfer_material_against = "Job Card"
 
 				if not op.productRawMaterial:
 					continue

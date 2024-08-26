@@ -41,3 +41,14 @@ def create_foms_data(data_type, data_name, raw):
 	doc.save()
 
 	return doc
+
+def update_data_result(data_type, data_name, result_name, doc_type=""):
+	name = frappe.db.exists("FOMS Data Mapping", {
+		"data_type":data_type,
+		"data_name":data_name,
+	})
+	if name:
+		log = frappe.get_doc("FOMS Data Mapping", name)
+		log.doc_name = result_name
+		log.doc_type = doc_type or log.data_type
+		log.save()

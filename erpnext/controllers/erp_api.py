@@ -23,7 +23,7 @@ from erpnext.stock.doctype.purchase_receipt.purchase_receipt import make_purchas
 from frappe.model.workflow import apply_workflow
 from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 from frappe.utils.file_manager import save_file
-
+from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result
 
 def get_data(data):
 	if isinstance(data, string_types):
@@ -42,7 +42,13 @@ def create_bom(data):
 		
 	product_id = data.get("productID")
 	submit = get_foms_settings("auto_submit_bom")
+
+	item = frappe.get_value("Item", {"foms_product_id":product_id})
+	version = data.get("productVersionName")
+	data_name = f"BOM {item} {version}"
+	create_foms_data("BOM", data_name, data)
 	result = create_bom_products(data, product_id, submit=submit)
+	update_data_result("BOM", data_name, result)
 	
 	return {"ERPBomId":result}
 
