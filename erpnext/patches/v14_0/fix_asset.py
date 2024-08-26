@@ -192,7 +192,7 @@ def update_series(series, number):
 		cur_value = temp.get("current")
 	if not temp:
 		Series = frappe.qb.DocType("Series")
-		frappe.qb.into(Series).insert(series, 0).columns("name", "current").run(debug=1)
+		frappe.qb.into(Series).insert(series, number).columns("name", "current").run(debug=1)
 	elif cint(number) > cint(cur_value):
 		frappe.db.sql('update `tabSeries` set current = %s where name = %s', (number, temp.get("name")), debug=1)
 	
