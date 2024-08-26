@@ -120,8 +120,8 @@ def insert_new_asset():
 				"asset_number":d[ASSET_NUMBER]
 			}))
 
-			if res:
-				break
+			# if res:
+			# 	break
 
 def create_item(data):
 	exists = frappe.get_value("Item", {"item_code":data.item_code})
