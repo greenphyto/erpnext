@@ -94,7 +94,8 @@
   {
    "fieldname": "description_of_action_taken",
    "fieldtype": "Small Text",
-   "label": "Description of Action Taken"
+   "label": "Description of Action Taken",
+   "mandatory_depends_on": "eval: doc.creation != null"
   },
   {
    "fieldname": "column_break_zysnn",
@@ -109,7 +110,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-08-09 14:52:20.630824",
+ "modified": "2024-08-27 15:32:19.489072",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "BMS Alarm",
