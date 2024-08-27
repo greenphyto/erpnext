@@ -19,8 +19,7 @@
   "stock_uom",
   "material_group",
   "material_number",
-  "foms_product_id",
-  "foms_raw_id",
+  "default_supplier",
   "column_break0",
   "disabled",
   "allow_alternative_item",
@@ -131,7 +130,10 @@
   "published_in_website",
   "total_projected_qty",
   "department_tab",
-  "item_department"
+  "item_department",
+  "foms_tab",
+  "foms_product_id",
+  "foms_raw_id"
  ],
  "fields": [
   {
@@ -977,17 +979,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "packaging_details_section",
-   "fieldtype": "Section Break",
-   "label": "Packaging Details"
-  },
-  {
-   "fieldname": "packaging",
-   "fieldtype": "Table",
-   "label": "Packaging",
-   "options": "Packaging List Available"
-  },
-  {
    "fieldname": "sales_details_section",
    "fieldtype": "Section Break",
    "label": "Sales Details"
@@ -998,6 +989,17 @@
    "fieldtype": "Check",
    "hidden": 1,
    "label": "Is Package Item"
+  },
+  {
+   "fieldname": "foms_tab",
+   "fieldtype": "Tab Break",
+   "label": "FOMS"
+  },
+  {
+   "fieldname": "default_supplier",
+   "fieldtype": "Link",
+   "label": "Default Supplier",
+   "options": "Supplier"
   }
  ],
  "icon": "fa fa-tag",

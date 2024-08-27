@@ -43,6 +43,8 @@ class VATAuditReport(object):
 			)
 			self.select_columns += columns
 
+			self.setup_data()
+			self.get_journal_entry_data(doctype)
 			self.get_invoice_data(doctype)
 
 			if self.invoices:
@@ -93,9 +95,12 @@ class VATAuditReport(object):
 	# 		)
 	# 		frappe.throw(_("Please set VAT Accounts in {0}").format(link_to_settings))
 
+	def setup_data(self):
+		self.invoices = frappe._dict()
+		self.tax_details = []
+
 	def get_invoice_data(self, doctype):
 		conditions = self.get_conditions()
-		self.invoices = frappe._dict()
 
 		invoice_data = frappe.db.sql(
 			"""
@@ -174,7 +179,7 @@ class VATAuditReport(object):
 			"Purchase Taxes and Charges" if doctype == "Purchase Invoice" else "Sales Taxes and Charges"
 		)
 
-		self.tax_details = list(frappe.db.sql(
+		self.tax_details += list(frappe.db.sql(
 			"""
 			SELECT
 				s.name as parent,
@@ -364,7 +369,7 @@ class VATAuditReport(object):
 					   
 		""".format(
 			where_conditions=conditions, doctype=doctype
-		), self.filters, as_dict=1)
+		), self.filters, as_dict=1, debug=0)
 
 		for d in data:
 			dt = frappe._dict(json.loads(d.data))
@@ -389,11 +394,65 @@ class VATAuditReport(object):
 			self.invoices.setdefault(dt.voucher_no, dt)
 			for row in dt.get("items"):
 				row = frappe._dict(row)
+				# print(1000, row.parent, [row.item_code, {"net_amount": 0.0}])
 				self.invoice_items.setdefault(row.parent, {}).setdefault(row.item_code, {"net_amount": 0.0})
 
 			for row in dt.get("taxes"):
 				row = frappe._dict(row)
+				# print(2000, row.parent, [row.account_head, row.item_wise_tax_detail, row.parenttype, getdate(dt.posting_date)])
 				self.tax_detail_on_deleted.append((row.parent, row.account_head, row.item_wise_tax_detail, row.parenttype, getdate(dt.posting_date)))
+			
+	def get_journal_entry_data(self, doctype):
+		self.tax_detail_on_deleted = []
+		conditions = ""
+		for opts in (
+			("from_date", " and posting_date>=%(from_date)s"),
+			("to_date", " and posting_date<=%(to_date)s"),
+		):
+			if self.filters.get(opts[0]):
+				conditions += opts[1]
+		data = frappe.db.sql("""
+			SELECT 
+				name, transaction_type, tax_template, total_debit, invoice_no, party_name, base_value, posting_date, is_tax_refund
+			FROM
+				`tabJournal Entry`
+			WHERE
+				voucher_type = "GST Input Tax"
+				and docstatus = 1
+				and invoice_type = "{doctype}"
+				{where_conditions}
+					   
+		""".format(
+			where_conditions=conditions, doctype=doctype
+		), self.filters, as_dict=1)
+
+		for d in data:
+			dt = frappe._dict(d)
+
+			# overide data
+			dt.voucher_no = dt.name
+			dt.docstatus = 1
+			dt.is_journal_entry = 1
+			dt.posting_date = getdate(d.posting_date)
+			dt.Invoice_No = dt.invoice_no
+			dt.party = dt.party_name
+			dt.taxes_and_charges = dt.tax_template
+			account_head = ''
+			if d.transaction_type == "Buying":
+				invoice_type = "Purchase Invoice"
+			else:
+				invoice_type = "Sales Invoice"
+				pass
+
+			item_name = "item"
+			temp = {}
+			total = dt.total_debit * (-1 if dt.is_tax_refund else 1)
+			temp[item_name] = [8, total]
+			tax_detail = json.dumps(temp)
+			self.invoices.setdefault(dt.voucher_no, dt)
+			self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": d.base_value})
+			self.tax_details.append((dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date)))
+
 
 	def get_consolidated_data(self, doctype):
 		consolidated_data_map = {}
@@ -444,6 +503,12 @@ class VATAuditReport(object):
 						if inv_data.get("debit_note_transaction"):
 							row['posting_date'] = f"{inv} - Debit Note"
 							# continue
+						
+						if inv_data.get("is_journal_entry"):
+							row['posting_date'] = f"{inv} - Journal Entry"
+
+						if inv_data.get("is_tax_refund"):
+							row['posting_date'] += " (refund)"
 
 						if not item_details:
 							continue
