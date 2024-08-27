@@ -1037,9 +1037,9 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 						row.item_code = rm.rawMaterialRefNo
 						row.uom = get_uom(rm.uomrm)
 						if row.uom in ['Unit']:
-							row.qty = cint(rm.qtyrmInKg)
+							row.qty = cint(rm.qtyrmInKg or rm.qtyrm )
 						else:
-							row.qty = rm.qtyrmInKg
+							row.qty = rm.qtyrmInKg or rm.qtyrm 
 						row.operation = operation_name
 			bom.save()
 			name = bom.name
