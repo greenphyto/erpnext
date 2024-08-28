@@ -59,13 +59,15 @@
    "fieldname": "q1",
    "fieldtype": "Select",
    "label": "How would you rate the overall temperature comfort in the building?  ",
-   "options": "\nToo Cold\nComfortable\nToo Warm\nVaries throughout the day"
+   "options": "\nToo Cold\nComfortable\nToo Warm\nVaries throughout the day",
+   "reqd": 1
   },
   {
    "fieldname": "q2",
    "fieldtype": "Select",
    "label": "Are there areas in the building where you experience drafts or uneven temperatures?  ",
-   "options": "\nYes\nNo"
+   "options": "\nYes\nNo",
+   "reqd": 1
   },
   {
    "depends_on": "eval:doc.q2==\"Yes\"",
@@ -93,13 +95,15 @@
    "fieldname": "q3",
    "fieldtype": "Select",
    "label": "How satisfied are you with the natural and artificial lighting in your workspace? ",
-   "options": "\nVery Satisfied\nSatisfied\nNeutral\nUnsatisfied\nVery Unsatisfied"
+   "options": "\nVery Satisfied\nSatisfied\nNeutral\nUnsatisfied\nVery Unsatisfied",
+   "reqd": 1
   },
   {
    "fieldname": "q4",
    "fieldtype": "Select",
    "label": "Are there any areas where you find the lighting too dim or too bright?",
-   "options": "\nYes\nNo"
+   "options": "\nYes\nNo",
+   "reqd": 1
   },
   {
    "depends_on": "eval:doc.q4==\"Yes\"",
@@ -112,13 +116,15 @@
    "fieldname": "q5",
    "fieldtype": "Select",
    "label": "How would you rate the noise level in the building?",
-   "options": "\nVery Quiet\nAcceptable\nDistracting\nToo Noisy"
+   "options": "\nVery Quiet\nAcceptable\nDistracting\nToo Noisy",
+   "reqd": 1
   },
   {
    "fieldname": "q6",
    "fieldtype": "Select",
    "label": "Are there specific sources of noise or areas in the building that are particularly disruptive?",
-   "options": "\nYes\nNo"
+   "options": "\nYes\nNo",
+   "reqd": 1
   },
   {
    "depends_on": "eval:doc.q6==\"Yes\"",
@@ -131,13 +137,15 @@
    "fieldname": "q7",
    "fieldtype": "Select",
    "label": "How would you rate the building's overall air quality and freshness?",
-   "options": "\nExcellent\nGood\nAverage\nPoor\nVery Poor"
+   "options": "\nExcellent\nGood\nAverage\nPoor\nVery Poor",
+   "reqd": 1
   },
   {
    "fieldname": "q8",
    "fieldtype": "Select",
    "label": "Do you notice any unpleasant odors or smells within the building? ",
-   "options": "\nYes\nNo"
+   "options": "\nYes\nNo",
+   "reqd": 1
   },
   {
    "depends_on": "eval:doc.q8==\"Yes\"",
@@ -150,7 +158,8 @@
    "fieldname": "q9",
    "fieldtype": "Select",
    "label": "How would you describe the spaciousness of your workspace and common areas?",
-   "options": "\nVery Spacious\nAdequate\nCramped\nVaries by area"
+   "options": "\nVery Spacious\nAdequate\nCramped\nVaries by area",
+   "reqd": 1
   },
   {
    "collapsible": 1,
@@ -169,7 +178,8 @@
    "fieldname": "q11",
    "fieldtype": "Select",
    "label": "How satisfied are you with the breakout spaces (tables with chairs outside the meeting rooms) in the office?",
-   "options": "\nVery Satisfied\nSatisfied\nNeutral\nUnsatisfied\nVery Unsatisfied"
+   "options": "\nVery Satisfied\nSatisfied\nNeutral\nUnsatisfied\nVery Unsatisfied",
+   "reqd": 1
   },
   {
    "fieldname": "q11_detail",
@@ -180,7 +190,8 @@
    "fieldname": "q12",
    "fieldtype": "Select",
    "label": "How satisfied are you with the dining seating area in the wet kitchen?",
-   "options": "\nVery Satisfied\nSatisfied\nNeutral\nUnsatisfied\nVery Unsatisfied"
+   "options": "\nVery Satisfied\nSatisfied\nNeutral\nUnsatisfied\nVery Unsatisfied",
+   "reqd": 1
   },
   {
    "fieldname": "q12_detail",
@@ -191,7 +202,8 @@
    "fieldname": "q13",
    "fieldtype": "Select",
    "label": "How would you describe the cleanliness of the toilets?",
-   "options": "\nExcellent\nGood\nAverage\nPoor\nVery Poor"
+   "options": "\nExcellent\nGood\nAverage\nPoor\nVery Poor",
+   "reqd": 1
   },
   {
    "fieldname": "q13_detail",
@@ -201,7 +213,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-08-13 17:24:34.506468",
+ "modified": "2024-08-28 13:48:25.089522",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Building Environment Feedback",

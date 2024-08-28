@@ -77,6 +77,7 @@ class Report:
 				all_opts = df.options.split("\n")
 				all_opts.remove("")
 				all_opts.append("")
+				all_opts.append("Total")
 
 				data = frappe.db.sql("""
 					SELECT 
@@ -91,7 +92,7 @@ class Report:
 						""".format(field, self.condition), self.params, as_dict=1, debug=0)
 				
 			else:
-				all_opts = ["Answered", "None"]
+				all_opts = ["Answered", "None", "Total"]
 				data = frappe.db.sql("""
 					SELECT 
 						count(if(isnull({0}), "None", "Answered")) as count,
@@ -123,6 +124,10 @@ class Report:
 					percent_view = "{:.2f}%".format(round(percent, 2))
 				else:
 					question = opts or "None"
+					if opts == "Total":
+						count = total
+						percent = 100
+						percent_view = "{:.2f}%".format(100)
 
 				self.data.append({
 					"indent":1,
@@ -168,12 +173,12 @@ class Report:
 		data = self.quiz_map[select_quiz]
 		sorted_data = sorted(data, key=lambda x: x['percent'], reverse=True)
 		for d in sorted_data:
-			if d['percent']:
-				labels.append(d['question'])
-				values.append(d['percent'])
+			if d["question"] != "Total" and d['percent']:
+					labels.append(d['question'])
+					values.append(d['percent'])
 		
 		df = self.meta.get_field(select_quiz)
-		label = f"{select_quiz.replace('q', '')}. {df.label}"
+		label = f"{df.label}"
 
 		chart_data = {
 			"labels": labels,
@@ -188,7 +193,8 @@ class Report:
 			"data": chart_data,
 			"type": "donut",
 			"height": 300,
-			"title": label
+			"title": label,
+			"colors": ["#0f4b25", "#007BFF", "#FFC107", "#FF8A3D", "#d93232", "#828282"],
 		}
 
 
