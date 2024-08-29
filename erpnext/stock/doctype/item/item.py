@@ -239,7 +239,7 @@ class Item(Document):
 				stock_entry.add_comment("Comment", _("Opening Stock"))
 
 	def validate_package(self):
-		if len(self.get("packaging")):
+		if len(self.get("packaging") or []):
 			self.is_package_item = 1
 		else:
 			self.is_package_item = 0
@@ -247,6 +247,9 @@ class Item(Document):
 		self.sync_uom_from_package()
 
 	def sync_uom_from_package(self):
+		if not self.get("packaging"):
+			return
+		
 		for d in self.get("packaging"):
 			row = self.get("uoms", {"uom":d.packaging})
 			if row:
