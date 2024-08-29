@@ -32,8 +32,28 @@ def get_data(data):
 
 	return data
 
+def save_log(doctype, data_name, raw_data):
+	frappe.enqueue("erpnext.foms.doctype.foms_data_mapping.foms_data_mapping.create_foms_data",
+		data_type=doctype, 
+		data_name=data_name,
+		raw=raw_data,
+	)
+
+def update_log(doctype, data_name, result):
+	frappe.enqueue("erpnext.foms.doctype.foms_data_mapping.foms_data_mapping.update_data_result",
+		data_type=doctype, 
+		data_name=data_name,
+		result_name=result,
+	)
+
 @frappe.whitelist()
 def ping_data(data):
+	print(data)
+	data = get_data(data)
+	if data.create_log == 1:
+		save_log("TEST", "test", data)
+		update_log("TEST", "test", "oke")
+
 	return data
 
 @frappe.whitelist()
@@ -46,14 +66,25 @@ def create_bom(data):
 	item = frappe.get_value("Item", {"foms_product_id":product_id})
 	version = data.get("productVersionName")
 	data_name = f"BOM {item} {version}"
-	create_foms_data("BOM", data_name, data)
+	save_log("BOM", data_name, data)
 	result = create_bom_products(data, product_id, submit=submit)
-	update_data_result("BOM", data_name, result)
+	update_log("BOM", data_name, result)
 	
 	return {"ERPBomId":result}
 
 @frappe.whitelist()
 def create_work_order(FomsWorkOrderID, FomsLotID, productID, SalesOrderNo, qty, uom, submit=False):
+	data_name = f"Work Order {FomsLotID}"
+	save_log("Work Order", data_name, {
+		"FomsWorkOrderID":FomsWorkOrderID, 
+		"FomsLotID":FomsLotID, 
+		"productID":productID, 
+		"SalesOrderNo":SalesOrderNo, 
+		"qty":qty, 
+		"uom":uom, 
+		"submit":submit
+	})
+
 	submit = get_foms_settings("auto_submit_work_order") or submit
 	item_code = frappe.get_value("Item", {"foms_product_id":productID})
 	if not item_code or productID==0:
@@ -69,6 +100,7 @@ def create_work_order(FomsWorkOrderID, FomsLotID, productID, SalesOrderNo, qty, 
 		"lotId":FomsLotID,
 		"sales_order_no":SalesOrderNo
 	})
+
 	doc = _create_work_order(log, item_code, bom_no, qty, submit, return_doc=1)
 	seeding_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(1)})
 	transplanting_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(2)})
@@ -78,6 +110,8 @@ def create_work_order(FomsWorkOrderID, FomsLotID, productID, SalesOrderNo, qty, 
 		"ERPWorkOrderID":doc.name,
 		"ERPBOMId":doc.bom_no
 	}
+
+	update_log("Work Order", data_name, doc.name)
 
 	return res
 
@@ -141,6 +175,13 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 
 @frappe.whitelist()
 def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0, rawMaterials=[]):
+	data_name = f"Update Work Order {ERPWorkOrderID}"
+	save_log("Work Order", data_name, {
+		"ERPWorkOrderID":ERPWorkOrderID, 
+		"operationNo":operationNo, 
+		"percentage":percentage, 
+		"rawMaterials":rawMaterials, 
+	})
 	operationName = OPERATION_MAP_NAME.get( cint(operationNo) )
 	work_order_name = frappe.db.get_value("Work Order", ERPWorkOrderID)
 		
@@ -195,6 +236,8 @@ def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0
 
 	frappe.db.commit()
 
+	update_log("Work Order", data_name, job_card_name)
+
 	return {
 		"result": True,
 		"percentage": percentage
@@ -202,6 +245,11 @@ def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0
 
 @frappe.whitelist()
 def submit_work_order_finish_goods(ERPWorkOrderID, qty):
+	data_name = f"Finish Work Order {ERPWorkOrderID}"
+	save_log("Work Order", data_name, {
+		"ERPWorkOrderID":ERPWorkOrderID, 
+		"qty":qty
+	})
 	work_order_name, lot_id = frappe.db.get_value("Work Order", ERPWorkOrderID, ['name', 'foms_lot_id']) or ("", "", "")
 
 	if not work_order_name:
@@ -213,6 +261,7 @@ def submit_work_order_finish_goods(ERPWorkOrderID, qty):
 	se_doc.submit()
 
 	# update_so_working(so_sub_id, lot_id)
+	update_log("Work Order", data_name, work_order_name)
 
 	return {
 		"ERPStockEntry":se_doc.name
