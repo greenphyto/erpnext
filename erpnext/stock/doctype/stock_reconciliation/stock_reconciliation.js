@@ -19,14 +19,19 @@ frappe.ui.form.on("Stock Reconciliation", {
 				}
 			}
 		});
-		frm.set_query("batch_no", "items", function(doc, cdt, cdn) {
-			var item = locals[cdt][cdn];
+		frm.set_query("batch_no", "items", (doc, cdt,cdn)=>{
+			var d = locals[cdt][cdn];
+
+			if (!d.item_code){
+				frappe.throw(__("Please select Item."))
+			}
 			return {
-				filters: {
-					'item': item.item_code
-				}
-			};
-		});
+				filters:{
+					item:d.item_code
+				},
+				query:"erpnext.stock.doctype.stock_reconciliation.stock_reconciliation.get_batch_numbers"
+			}
+		})
 
 		if (frm.doc.company) {
 			erpnext.queries.setup_queries(frm, "Warehouse", function() {
