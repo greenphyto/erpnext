@@ -760,6 +760,10 @@ def _update_foms_stock_recon(log, api=None):
 
 	success = 0
 	for d in doc.get("items"):
+		if d.item_group != "Raw Material":
+			success += 1
+			continue
+
 		if cint(d.foms_sync):
 			success += 1
 			continue

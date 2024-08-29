@@ -14,7 +14,7 @@ frappe.ui.form.on("Stock Reconciliation", {
 				query: "erpnext.controllers.queries.item_query",
 				filters:{
 					"is_stock_item": 1,
-					"item_group":['in', ['Raw Material']],
+					"item_group":['in', ['Raw Material', 'Products']],
 					"has_batch_no":1
 				}
 			}
