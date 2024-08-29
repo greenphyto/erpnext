@@ -313,6 +313,15 @@ def create_material_request(
 		items=[],
 		cancel=False,
 	):
+	item_str = ", ".joint(items)
+	data_name = f"Create Material Request {item_str}"
+	save_log("Material Request", data_name, {
+		"transactionDate":transactionDate, 
+		"requiredBy":requiredBy, 
+		"requestedBy":requestedBy, 
+		"items":items, 
+		"cancel":cancel, 
+	})
 	# find draft
 	doc_name = frappe.get_value("Material Request", {"requested_by":requestedBy, "workflow_state":"Draft"})
 	if doc_name:
@@ -343,6 +352,8 @@ def create_material_request(
 
 	# apply_workflow(doc, "Submit")
 
+	update_log("Material Request", data_name, doc.name)
+
 	return {
 		"materialRequestNo": doc.name
 	}
@@ -350,8 +361,11 @@ def create_material_request(
 # Create Material Request 
 @frappe.whitelist()
 def create_material_return(data):
-	# create purchase receipt return
+	# logger
 	data = frappe._dict(data)
+	data_name = f"Material Return {data.return_against}"
+	save_log("Material Request", data_name, data)
+	# create purchase receipt return
 	return_against = frappe.db.get_value("Purchase Receipt", data.return_against)
 	if not return_against:
 		frappe.throw(_(f"Purchase receipt {data.return_against} not found"), frappe.DoesNotExistError)
@@ -382,13 +396,19 @@ def create_material_return(data):
 
 	doc.save()
 
+	update_log("Material Request", data_name, doc.name)
+
 	return {
 		"purchaseReturnNo":doc.name
 	}
 	
 @frappe.whitelist()
 def create_update_packaging(data):
+	# logger
 	data = frappe._dict(data)
+	data_name = f"Packaging {data.packageName}"
+	save_log("Packaging", data_name, data)
+
 	item = frappe.get_value("Item", data.itemCode)
 	if not item:
 		frappe.throw(_(f"Missing Item with ID {data.itemCode}"))
@@ -400,18 +420,25 @@ def create_update_packaging(data):
 		row.packaging = pack_name
 		doc.save()
 
+	update_log("Packaging", data_name, pack_name)
+
 	return {
 		"PackageID":pack_name
 	}
 
 @frappe.whitelist()
 def update_delivery_note_signature(data):
+	# logger
 	"""
 	doNumber:"",
 	attachments: [base64image, base64image],
 	signature:"base64image"
 	"""
 	data = frappe._dict(data)
+
+	data_name = f"Update DO Signature {data.doNumber}"
+	save_log("Delivery Note", data_name, data)
+
 	do_number = frappe.get_value("Delivery Note", data.doNumber)
 	if not do_number:
 		frappe.throw(_(f"Missing Delivery Note with ID {data.doNumber}"))
@@ -441,14 +468,14 @@ def update_delivery_note_signature(data):
 	doc.db_set("signature_by", data.signature_by)
 	doc.db_set("taken_at", data.taken_at)
 
-	return True
+	update_log("Delivery Note", data_name, doc.name)
 
-	
-	
+	return True
 
 
 @frappe.whitelist()
 def create_raw_material(data):
+	# logger
 	res = _create_raw_material(data)
 	
 	return {
@@ -457,6 +484,7 @@ def create_raw_material(data):
 
 @frappe.whitelist()
 def create_product(data):
+	# logger
 	res = _create_products(data)
 	return {
 		"ProductNo":res
@@ -464,6 +492,7 @@ def create_product(data):
 
 @frappe.whitelist()
 def create_delivery_order(data):
+	# logger
 	res = _create_delivery_order(data)
 	return {
 		"DeliveryOrderNo":res
@@ -471,6 +500,7 @@ def create_delivery_order(data):
 
 @frappe.whitelist()
 def create_stock_issue(data):
+	# logger
 	return _create_stock_entry(data)
 
 def _create_stock_entry(data):
@@ -570,6 +600,7 @@ def create_material_consume(data):
 from erpnext.buying.doctype.request.request import create_request_form as _create_request_form, update_request
 @frappe.whitelist()
 def create_request_form(data):
+	# logger
 	"""
 		data = {
 			"department": "",
