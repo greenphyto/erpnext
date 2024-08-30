@@ -375,7 +375,8 @@ doc_events = {
         "after_delete":"erpnext.controllers.foms.sync_log",
 	},
     "Warehouse":{
-        "validate":"erpnext.controllers.foms.sync_log"
+        "validate":"erpnext.controllers.foms.sync_log",
+        "after_delete":"erpnext.controllers.foms.sync_log",
 	},
 	"Stock Reconciliation":{
         "on_submit":"erpnext.controllers.foms.sync_log",

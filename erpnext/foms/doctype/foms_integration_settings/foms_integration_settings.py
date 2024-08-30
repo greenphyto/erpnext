@@ -349,11 +349,19 @@ class FomsAPI():
 		}
 		res = self.req("DELETE", "/Supplier/Delete", params=params)
 		return res
+	
+	def delete_warehouse(self, id):
+		params = {
+			"id": cint(id)
+		}
+		res = self.req("DELETE", "/Warehouse/DeleteWarehouse", params=params)
+		return res
 
 	def cancel_sales_order(self, id):
 		id = cint(id)
 		res = self.req("DELETE", f"/userportal/CustomerOrder/CancelSaleOrder?SaleOrderId={id}&IsOnlyThisOne=true")
 		return res
+
 	
 """
 TODO:

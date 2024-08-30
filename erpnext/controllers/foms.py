@@ -292,31 +292,39 @@ def _update_warehouse(log, api=None):
 	if not api:
 		api = FomsAPI()
 
-	farm_id = get_foms_settings("farm_id")
-	doc = frappe.get_doc("Warehouse", log.docname)
-	wh_id = doc.name[:12]
-	# wh_id = doc.name
-	data = {
-		"farmId": farm_id,
-		"warehouseID": wh_id,
-		"warehouseName": doc.warehouse_name,
-		"countryCode": "SG", # not yet
-		"capacity": 0,
-		"uom": "Kg", # not yet
-		"address": "",
-		"noRackRow": cint(doc.row_no),
-		"noRackLevel": cint(doc.level_no),
-		"noOfLane": cint(doc.lane_no),
-		"isFromERP": True
-	}
-
-	if doc.foms_id:
-		data["id"] = doc.foms_id
-
 	api.log = log
-	res = api.update_warehouse(data)
-	update_reff_id(res, doc, "warehouseID")
-	return res
+
+	if log.update_type != "Delete":
+		farm_id = get_foms_settings("farm_id")
+		doc = frappe.get_doc("Warehouse", log.docname)
+		wh_id = doc.name[:12]
+		# wh_id = doc.name
+		data = {
+			"farmId": farm_id,
+			"warehouseID": wh_id,
+			"warehouseName": doc.warehouse_name,
+			"countryCode": "SG", # not yet
+			"capacity": 0,
+			"uom": "Kg", # not yet
+			"address": "",
+			"noRackRow": cint(doc.row_no),
+			"noRackLevel": cint(doc.level_no),
+			"noOfLane": cint(doc.lane_no),
+			"isFromERP": True
+		}
+
+		if doc.foms_id:
+			data["id"] = doc.foms_id
+
+		res = api.update_warehouse(data)
+		update_reff_id(res, doc, "warehouseID")
+		return res
+	else:
+		doc_data = get_deleted_document("Warehouse", log.docname)
+		if not doc_data:
+			return
+		
+		res = api.delete_warehouse(doc_data.foms_id)
 
 def sync_all_warehouse(show_progress=False):
 	# foms to erp
