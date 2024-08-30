@@ -24,6 +24,7 @@ frappe.ui.form.on('Asset Maintenance', {
 				return indicator;
 			}
 		);
+		frappe.do_submit = false;
 	},
 
 	refresh: (frm) => {
@@ -57,6 +58,27 @@ frappe.ui.form.on('Asset Maintenance', {
 				}
 			});
 		}
+	},
+	before_save: function(frm){
+		console.log("1111")
+		return new Promise((resolve, reject) => {
+			if (frm.doc.docstatus==0 && frm.doc.maintenance_status == "Completed"){
+				frappe.confirm(
+				  'Continue submit if complete?',
+				  function(){
+					frappe.validated=true;
+					resolve();
+				  },
+				  function(){
+					frappe.validated=false;
+					reject();
+				  }
+				)
+			}else{
+				frappe.validated=true;
+				resolve();
+			}
+		})
 	}
 });
 

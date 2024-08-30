@@ -24,6 +24,13 @@ class AssetMaintenanceLog(Document):
 			frappe.throw(_("Please select Maintenance Status as Completed or remove Completion Date"))
 
 		self.calculate_working_time()
+		self.force_submit()
+
+	def force_submit(self):
+		if self.docstatus == 0 and self.maintenance_status == "Completed":
+			self.docstatus = 1
+			self.before_submit()
+			self.on_submit()
 
 	def on_submit(self):
 		if self.maintenance_status not in ["Completed", "Cancelled"]:
