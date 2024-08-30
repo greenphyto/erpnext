@@ -128,7 +128,7 @@ class FomsAPI():
 			res = self.session.delete(url, data=data, params=params)
 		else:
 			res = self.session.get(url, data=data, params=params)
-			
+
 		self.last_result = res
 		self.request_detail = {
 			"host":self.settings.foms_url,
@@ -348,6 +348,11 @@ class FomsAPI():
 			"id": cint(id)
 		}
 		res = self.req("DELETE", "/Supplier/Delete", params=params)
+		return res
+
+	def cancel_sales_order(self, id):
+		id = cint(id)
+		res = self.req("DELETE", f"/userportal/CustomerOrder/CancelSaleOrder?SaleOrderId={id}&IsOnlyThisOne=true")
 		return res
 	
 """

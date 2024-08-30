@@ -146,22 +146,14 @@ def sync_log(doc, method=""):
 
 	method_id = METHOD_MAP.get(doc.doctype)
 
-	if not cancel:
-		log_name = create_log(doc.doctype, doc.name, method=method_id, doc_method=method)
-
-		# start enquee individually, if fail, it will try again with scheduler itself
-		frappe.enqueue("erpnext.controllers.foms.start_sync_enquee", log_name=log_name)
-		
-	else:
-		# not yet update to FOMS
+	if cancel:
 		if delete_log(doc.doctype, doc.name):
 			return
-		# yet updated to FOMS
-		else:
-			# [unfinish] create cancel transaction when alr submit receipt item
-			# quick check on foms when allow/disallow to cancel
-			# and really prohibit the user if really cannot cancelling
-			pass
+
+	log_name = create_log(doc.doctype, doc.name, method=method_id, doc_method=method)
+
+	# start enquee individually, if fail, it will try again with scheduler itself
+	frappe.enqueue("erpnext.controllers.foms.start_sync_enquee", log_name=log_name)
 	
 def start_sync_enquee(log_name):
 	log = frappe.get_doc("Sync Log", log_name)
@@ -424,7 +416,7 @@ def _update_foms_supplier(log, api=None):
 		api = FomsAPI()
 
 	api.log = log
-	
+
 	if log.update_type != "Delete":
 		supplier = frappe.get_doc("Supplier", log.docname)
 		if cint(supplier.disabled) == 1:
@@ -634,7 +626,7 @@ def sync_log_so(doc, method=""):
 	if doc.get("non_package_item"):
 		return
 	else:
-		sync_log(doc)
+		sync_log(doc, method)
 		
 def update_foms_sales_order():
 	sync_controller("Sales Order", _update_foms_sales_order)
@@ -644,64 +636,70 @@ def _update_foms_sales_order(log, api=None):
 		api = FomsAPI()
 
 	doc = frappe.get_doc("Sales Order", log.docname)
-	customer = frappe.get_doc("Customer", doc.customer)
-	farm_id = get_farm_id()
-
-	so_id = cint(doc.get("foms_id"))
-	req_id = cint(doc.get("req_id"))
-
-	products = []
-	
-	for d in doc.get("items"):
-		product_id = frappe.get_value("Item", d.item_code, "foms_product_id")
-		package_id = frappe.get_value("Packaging", d.uom, "foms_id")
-		child_id = cint(d.get("foms_id"))
-		item = {
-			"isWeightOrder": True if d.weight_order else False,
-			"productId": product_id,
-			"quantity": d.qty,
-			"uom": convert_uom(d.stock_uom),
-			"totalNetWeight": d.stock_qty,
-			"isRootInclude": "false",
-			"unitPrice": d.rate,
-			"id":child_id
-		}
-		if package_id:
-			item["packageId"] = cint(package_id)
-
-		products.append(item)
-
-	data = {
-		"orderType": "One-off",
-		"deliveryDate": getdate(doc.delivery_date),
-		"customerId": customer.foms_id or "",
-		"purchaseOrderNumber": doc.po_no or "-",
-		"saleOrder": {
-			"saleOrderNumber":doc.name, 
-			"farmId": farm_id,
-			"subSaleOrders": products,
-			"id": so_id
-		},
-		"farmId": farm_id,
-		"id":req_id
-	}
-
 	api.log = log
-	res = api.create_customer_order(data)
-	if res:
-		doc.foms_id = res['saleOrder']['id']
-		doc.req_id = res['id']
-		for d in res['saleOrder']['subSaleOrders']:
-			item_code = frappe.get_value("Item", {"foms_product_id": cstr(d['productId'])})
-			packaging = frappe.get_value("Packaging", {"foms_id": cstr(d['packageId'])})
-			# key on product id, package id, uom, quantity, unit price
-			for row in doc.get("items", {
-				"item_code":item_code,
-				"uom":packaging
-			}):
-				row.foms_id = d['id']
-				row.db_update()
-		doc.db_update()
+
+	if doc.docstatus == 1:
+		customer = frappe.get_doc("Customer", doc.customer)
+		farm_id = get_farm_id()
+
+		so_id = cint(doc.get("foms_id"))
+		req_id = cint(doc.get("req_id"))
+
+		products = []
+		
+		for d in doc.get("items"):
+			product_id = frappe.get_value("Item", d.item_code, "foms_product_id")
+			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
+			child_id = cint(d.get("foms_id"))
+			item = {
+				"isWeightOrder": True if d.weight_order else False,
+				"productId": product_id,
+				"quantity": d.qty,
+				"uom": convert_uom(d.stock_uom),
+				"totalNetWeight": d.stock_qty,
+				"isRootInclude": "false",
+				"unitPrice": d.rate,
+				"id":child_id
+			}
+			if package_id:
+				item["packageId"] = cint(package_id)
+
+			products.append(item)
+
+		data = {
+			"orderType": "One-off",
+			"deliveryDate": getdate(doc.delivery_date),
+			"customerId": customer.foms_id or "",
+			"purchaseOrderNumber": doc.po_no or "-",
+			"saleOrder": {
+				"saleOrderNumber":doc.name, 
+				"farmId": farm_id,
+				"subSaleOrders": products,
+				"id": so_id
+			},
+			"farmId": farm_id,
+			"id":req_id
+		}
+
+		res = api.create_customer_order(data)
+		if res:
+			doc.foms_id = res['saleOrder']['id']
+			doc.req_id = res['id']
+			for d in res['saleOrder']['subSaleOrders']:
+				item_code = frappe.get_value("Item", {"foms_product_id": cstr(d['productId'])})
+				packaging = frappe.get_value("Packaging", {"foms_id": cstr(d['packageId'])})
+				# key on product id, package id, uom, quantity, unit price
+				for row in doc.get("items", {
+					"item_code":item_code,
+					"uom":packaging
+				}):
+					row.foms_id = d['id']
+					row.db_update()
+			doc.db_update()
+	
+	if doc.docstatus == 2:
+		print(700000)
+		res = api.cancel_sales_order(doc.foms_id)
 
 def get_foms_format(date):
 	return getdate(date).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
