@@ -343,6 +343,13 @@ class FomsAPI():
 		res = self.req("DELETE", "/Customer/DeleteCustomer", params=params)
 		return res
 	
+	def delete_supplier(self, id):
+		params = {
+			"id": cint(id)
+		}
+		res = self.req("DELETE", "/Supplier/Delete", params=params)
+		return res
+	
 """
 TODO:
 update batch qty to userportal/RawMaterialUP/CreateOrUpdateRawMaterialBatch

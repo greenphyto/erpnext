@@ -422,32 +422,45 @@ def update_foms_supplier():
 def _update_foms_supplier(log, api=None):
 	if not api:
 		api = FomsAPI()
-	supplier = frappe.get_doc("Supplier", log.docname)
-	details = get_party_details(supplier.name, party_type="Supplier")
-	farm_id = get_farm_id()
-	data = {
-		"farmId": farm_id,
-		"id": cint(supplier.foms_id),
-		"supplierID": supplier.supplier_code,
-		"supplierName": supplier.supplier_name,
-		"address": details.address_display or details.company_address_display or "",
-		"contact": supplier.mobile_no or  details.contact_mobile or "",
-		"email": supplier.email_id or details.contact_email or "user@example.com",
-		"creditLimit": 0,
-		"creditTermID": 0,
-		"contactPerson": details.contact_person,
-		"countryCode": frappe.db.get_single_value('FOMS Integration Settings', "country_id"),
-		"rmDeviceIds": "",
-		"rmDeviceId":  [],
-		"isFromErp": True
-	}
-
-	if supplier.foms_id:
-		data['Id'] = supplier.foms_id
 
 	api.log = log
-	res = api.create_or_update_supplier(data)
-	update_reff_id(res, supplier, "supplierID")
+	
+	if log.update_type != "Delete":
+		supplier = frappe.get_doc("Supplier", log.docname)
+		if cint(supplier.disabled) == 1:
+			return
+		details = get_party_details(supplier.name, party_type="Supplier")
+		farm_id = get_farm_id()
+		data = {
+			"farmId": farm_id,
+			"id": cint(supplier.foms_id),
+			"supplierID": supplier.supplier_code,
+			"supplierName": supplier.supplier_name,
+			"address": details.address_display or details.company_address_display or "",
+			"contact": supplier.mobile_no or  details.contact_mobile or "",
+			"email": supplier.email_id or details.contact_email or "user@example.com",
+			"creditLimit": 0,
+			"creditTermID": 0,
+			"contactPerson": details.contact_person,
+			"countryCode": frappe.db.get_single_value('FOMS Integration Settings', "country_id"),
+			"rmDeviceIds": "",
+			"rmDeviceId":  [],
+			"isFromErp": True
+		}
+
+		if supplier.foms_id:
+			data['Id'] = supplier.foms_id
+	
+		res = api.create_or_update_supplier(data)
+		update_reff_id(res, supplier, "supplierID")
+
+	else:
+		doc_data = get_deleted_document("Supplier", log.docname)
+		if not doc_data:
+			return
+		
+		res = api.delete_supplier(doc_data.foms_id)
+
 
 # CUSTOMER (POST)
 def sync_all_customer(show_progress=False):
