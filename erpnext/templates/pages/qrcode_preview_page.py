@@ -21,14 +21,16 @@ def get_context(context):
     name_view = (doc.asset_name)[:75]
     name_view_length = len(name_view)
     font_size = 36
-    if name_view_length < 24:
-        font_size = 36
+    if name_view_length < 12:
+        font_size = 56
+    elif name_view_length < 24:
+        font_size = 40
     elif name_view_length < 40:
-        font_size = 30
+        font_size = 36
     elif name_view_length < 60:
-        font_size = 26
+        font_size = 28
     else:
-        font_size = 22
+        font_size = 24
         name_view += "..."
     
     context.name_view = name_view
