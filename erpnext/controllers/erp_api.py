@@ -476,7 +476,12 @@ def update_delivery_note_signature(data):
 @frappe.whitelist()
 def create_raw_material(data):
 	# logger
+	data_name = f"Create Raw Material {data.doNumber}"
+	save_log("Delivery Note", data_name, data)
+
 	res = _create_raw_material(data)
+
+	update_log("Delivery Note", data_name, doc.name)
 	
 	return {
 		"rawMaterialNo":res

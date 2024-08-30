@@ -124,9 +124,11 @@ class FomsAPI():
 		self.get_login()
 		if req == "POST":
 			res = self.session.post(url, data=data, params=params)
+		elif req == "DELETE":
+			res = self.session.delete(url, data=data, params=params)
 		else:
 			res = self.session.get(url, data=data, params=params)
-
+			
 		self.last_result = res
 		self.request_detail = {
 			"host":self.settings.foms_url,
@@ -146,11 +148,16 @@ class FomsAPI():
 			print(res.status_code)
 			print(res.text)
 
-		result =  res.json()
-		if "error" in result and result['error']:
-			print("ERROR: ", result['error'])
+		try:
+			result =  res.json()
+			if "error" in result and result['error']:
+				print("ERROR: ", result['error'])
 
-		return result.get("result") or {}
+			return result.get("result") or {}
+		except:
+			result =  res.text
+			return False
+
 	
 	def update_log(self):
 		if not hasattr(self, "log") or not self.log:
@@ -314,7 +321,7 @@ class FomsAPI():
 		params = {
 			"workOrderId":lot_id
 		}
-		res = self.req("GET", "/userportal/Planning/GetWorkOrderPlanningOutcomeList?workOrderId=168", params=params)
+		res = self.req("GET", "/userportal/Planning/GetWorkOrderPlanningOutcomeList", params=params)
 		return res
 
 	def update_foms_department(self, data):
@@ -327,6 +334,13 @@ class FomsAPI():
 		data = self.convert_data(data)
 		res = self.req("POST", "/userportal/ERPNextIntegration/CreateOrUpdateDeliveryOrder", data=data)
 
+		return res
+	
+	def delete_customer(self, id):
+		params = {
+			"id": cint(id)
+		}
+		res = self.req("DELETE", "/Customer/DeleteCustomer", params=params)
 		return res
 	
 """

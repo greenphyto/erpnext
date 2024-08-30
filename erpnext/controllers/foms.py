@@ -84,6 +84,16 @@ def get_foms_settings(field):
 	return frappe.db.get_single_value("FOMS Integration Settings", field)
 
 
+def get_deleted_document(doctype, docname):
+	exists = frappe.db.exists("Deleted Document", {"deleted_doctype":doctype, "deleted_name":docname})
+	if exists:
+		data = frappe.get_value("Deleted Document", exists, "data")
+		doc_data = frappe._dict(json.loads(data))
+		return doc_data
+	
+	return {}
+
+
 class GetData():
 	def __init__(self, data_type, get_data, get_key_name, post_process, doc_type="", show_progress=False, manual_save_log=False):
 		self.data_type = data_type
@@ -137,7 +147,7 @@ def sync_log(doc, method=""):
 	method_id = METHOD_MAP.get(doc.doctype)
 
 	if not cancel:
-		log_name = create_log(doc.doctype, doc.name, method=method_id)
+		log_name = create_log(doc.doctype, doc.name, method=method_id, doc_method=method)
 
 		# start enquee individually, if fail, it will try again with scheduler itself
 		frappe.enqueue("erpnext.controllers.foms.start_sync_enquee", log_name=log_name)
@@ -152,7 +162,7 @@ def sync_log(doc, method=""):
 			# quick check on foms when allow/disallow to cancel
 			# and really prohibit the user if really cannot cancelling
 			pass
-
+	
 def start_sync_enquee(log_name):
 	log = frappe.get_doc("Sync Log", log_name)
 	log.sync()
@@ -454,6 +464,8 @@ def sync_all_customer(show_progress=False):
 
 	return True
 
+# def delete_customer
+
 
 def foms_all_customer(show_progress=False):
 	farm_id = get_farm_id()
@@ -471,38 +483,46 @@ def update_foms_customer():
 def _update_foms_customer(log, api=None):
 	if not api:
 		api = FomsAPI()
-
-	customer = frappe.get_doc("Customer", log.docname)
-	details = get_party_details(customer.name, party_type="Customer")
-	farm_id = get_farm_id()
-	address = details.address_display or details.company_address_display
-	shipping_address = details.get("shipping_address") or address
-
-	customer_name = customer.customer_name
-	cust_id = customer.customer_code
-	if cust_id == "C00008":
-		customer_name = "Cash Sales"
-
-	data = {
-		"farmId": farm_id,
-		"customerRefNo": cust_id,
-		"customerName": customer_name,
-		"address": address,
-		"contact": customer.mobile_no or  details.contact_mobile or "" ,
-		"email": customer.email_id or details.contact_email or "user@example.com",
-		"creditLimit": 0,
-		"creditTermID": 0,
-		"contactPerson": details.contact_person or "",
-		"countryCode": frappe.db.get_single_value('FOMS Integration Settings', "country_id"),
-		"deliveryAddress": shipping_address,
-	}
-
-	if customer.foms_id:
-		data['Id'] = customer.foms_id
-
+	
 	api.log = log
-	res = api.create_or_update_customer(data)
-	update_reff_id(res, customer, "customerRefNo" )
+
+	if log.update_type != "Delete":
+		customer = frappe.get_doc("Customer", log.docname)
+		details = get_party_details(customer.name, party_type="Customer")
+		farm_id = get_farm_id()
+		address = details.address_display or details.company_address_display
+		shipping_address = details.get("shipping_address") or address
+
+		customer_name = customer.customer_name
+		cust_id = customer.customer_code
+		if cust_id == "C00008":
+			customer_name = "Cash Sales"
+
+		data = {
+			"farmId": farm_id,
+			"customerRefNo": cust_id,
+			"customerName": customer_name,
+			"address": address,
+			"contact": customer.mobile_no or  details.contact_mobile or "" ,
+			"email": customer.email_id or details.contact_email or "user@example.com",
+			"creditLimit": 0,
+			"creditTermID": 0,
+			"contactPerson": details.contact_person or "",
+			"countryCode": frappe.db.get_single_value('FOMS Integration Settings', "country_id"),
+			"deliveryAddress": shipping_address,
+		}
+
+		if customer.foms_id:
+			data['Id'] = customer.foms_id
+
+		res = api.create_or_update_customer(data)
+		update_reff_id(res, customer, "customerRefNo" )
+	else:
+		doc_data = get_deleted_document("Customer", log.docname)
+		if not doc_data:
+			return
+		
+		res = api.delete_customer(doc_data.foms_id)
 
 # PACKAGING (GET)
 def get_packaging(show_progress=False):
