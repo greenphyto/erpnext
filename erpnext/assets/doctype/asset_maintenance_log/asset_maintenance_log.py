@@ -47,15 +47,14 @@ class AssetMaintenanceLog(Document):
 	def update_maintenance_task(self):
 		asset_maintenance_doc = frappe.get_doc("Asset Maintenance Task", self.task)
 		if self.maintenance_status == "Completed":
-			if asset_maintenance_doc.last_completion_date != self.completion_date:
-				next_due_date = calculate_next_due_date(
-					periodicity=self.periodicity, last_completion_date=self.completion_date
-				)
-				asset_maintenance_doc.last_completion_date = self.completion_date
-				asset_maintenance_doc.next_due_date = next_due_date
-				asset_maintenance_doc.maintenance_status = "Planned"
-				asset_maintenance_doc.generated_log = 0
-				asset_maintenance_doc.save()
+			next_due_date = calculate_next_due_date(
+				periodicity=self.periodicity, last_completion_date=self.completion_date
+			)
+			asset_maintenance_doc.last_completion_date = self.completion_date
+			asset_maintenance_doc.next_due_date = next_due_date
+			asset_maintenance_doc.maintenance_status = "Planned"
+			asset_maintenance_doc.generated_log = 0
+			asset_maintenance_doc.save()
 		if self.maintenance_status == "Cancelled":
 			asset_maintenance_doc.maintenance_status = "Cancelled"
 			asset_maintenance_doc.generated_log = 0
