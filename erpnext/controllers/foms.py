@@ -698,7 +698,6 @@ def _update_foms_sales_order(log, api=None):
 			doc.db_update()
 	
 	if doc.docstatus == 2:
-		print(700000)
 		res = api.cancel_sales_order(doc.foms_id)
 
 def get_foms_format(date):

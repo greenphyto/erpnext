@@ -277,6 +277,7 @@ class SalesOrder(SellingController):
 		if self.status == "Closed":
 			frappe.throw(_("Closed order cannot be cancelled. Unclose to cancel."))
 
+		self.check_work_order()
 		self.check_nextdoc_docstatus()
 		self.validate_working_progress(throw=1)
 		self.update_reserved_qty()
@@ -292,6 +293,15 @@ class SalesOrder(SellingController):
 			from erpnext.accounts.doctype.pricing_rule.utils import update_coupon_code_count
 
 			update_coupon_code_count(self.coupon_code, "cancelled")
+
+	def check_work_order(self):
+		wo_list = frappe.db.get_list("Work Order", {
+			"sales_order_no":['like', "%%"+self.name+"%%"],
+			"docstatus":1
+		})
+		if wo_list:
+			wo_str = ", ".join([x.name for x in wo_list])
+			frappe.throw(_(f"Cannot cancel Sales Order {self.name} becuase already linked to Work Order {wo_str}"))
 
 	def update_project(self):
 		if (
