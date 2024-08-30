@@ -488,6 +488,9 @@ def _update_foms_customer(log, api=None):
 
 	if log.update_type != "Delete":
 		customer = frappe.get_doc("Customer", log.docname)
+		if cint(customer.disabled) == 1:
+			return
+		
 		details = get_party_details(customer.name, party_type="Customer")
 		farm_id = get_farm_id()
 		address = details.address_display or details.company_address_display
