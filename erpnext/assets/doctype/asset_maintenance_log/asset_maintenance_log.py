@@ -29,7 +29,6 @@ class AssetMaintenanceLog(Document):
 	def force_submit(self):
 		if self.docstatus == 0 and self.maintenance_status == "Completed":
 			self.docstatus = 1
-			self.before_submit()
 			self.on_submit()
 
 	def on_submit(self):

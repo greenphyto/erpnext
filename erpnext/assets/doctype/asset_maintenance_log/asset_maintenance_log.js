@@ -18,5 +18,30 @@ frappe.ui.form.on('Asset Maintenance Log', {
 				query: "erpnext.assets.doctype.asset_maintenance_log.asset_maintenance_log.filter_asset_maintenance",
 			};
 		});
+	},
+
+	setup: function(frm){
+		frappe.do_submit = false;
+	},
+
+	before_save: function(frm){
+		return new Promise((resolve, reject) => {
+			if (frm.doc.docstatus==0 && frm.doc.maintenance_status == "Completed"){
+				frappe.confirm(
+				  'Continue submit if complete?',
+				  function(){
+					frappe.validated=true;
+					resolve();
+				  },
+				  function(){
+					frappe.validated=false;
+					reject();
+				  }
+				)
+			}else{
+				frappe.validated=true;
+				resolve();
+			}
+		})
 	}
 });
