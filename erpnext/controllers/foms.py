@@ -1074,8 +1074,8 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 				if op.productRawMaterial:
 					for rm in op.productRawMaterial:
 						rm = frappe._dict(rm)
-						item_name = frappe.get_value("Item", rm.rawMaterialRefNo)
-						if not item_name:
+						rm_item_name = frappe.get_value("Item", rm.rawMaterialRefNo)
+						if not rm_item_name:
 							continue
 
 						row = bom.append("items")
