@@ -270,7 +270,6 @@ def get_recipe(show_progress=False, item_code=""):
 	def post_process(gd, log):
 		product_id =  log.get("id")
 		raw = gd.api.get_product_process(gd.farm_id, product_id)
-
 		version = raw.get("productVersionName")
 		item_code = frappe.get_value("Item", {"foms_product_id": product_id})
 		gd._log_name = f"Get BOM {item_code} version {version}"
@@ -1100,7 +1099,7 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 						row = bom.append("items")
 						row.item_code = rm.rawMaterialRefNo
 						row.uom = get_uom(rm.uomrm)
-
+						row.qty = qty
 						row.operation = operation_name
 			
 			if not bom.items:
