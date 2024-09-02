@@ -1000,7 +1000,18 @@
    "fieldtype": "Link",
    "label": "Default Supplier",
    "options": "Supplier"
-  }
+  },
+  {
+    "fieldname": "packaging_details_section",
+    "fieldtype": "Section Break",
+    "label": "Packaging Details"
+   },
+   {
+    "fieldname": "packaging",
+    "fieldtype": "Table",
+    "label": "Packaging",
+    "options": "Packaging List Available"
+   }
  ],
  "icon": "fa fa-tag",
  "idx": 2,
@@ -1008,7 +1019,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2024-08-07 12:17:11.902891",
+ "modified": "2024-08-07 12:17:13.902891",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",
