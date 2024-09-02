@@ -23,7 +23,7 @@
  "list_columns": [],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2024-08-13 17:25:04.128768",
+ "modified": "2024-09-02 09:31:42.519908",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "building-environment-feedback",
@@ -96,7 +96,7 @@
    "max_value": 0,
    "options": "\nToo Cold\nComfortable\nToo Warm\nVaries throughout the day",
    "read_only": 0,
-   "reqd": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {
@@ -109,7 +109,7 @@
    "max_value": 0,
    "options": "\nYes\nNo",
    "read_only": 0,
-   "reqd": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {
@@ -135,7 +135,7 @@
    "max_value": 0,
    "options": "\nVery Satisfied\nSatisfied\nNeutral\nUnsatisfied\nVery Unsatisfied",
    "read_only": 0,
-   "reqd": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {
@@ -148,7 +148,7 @@
    "max_value": 0,
    "options": "\nYes\nNo",
    "read_only": 0,
-   "reqd": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {
@@ -174,7 +174,7 @@
    "max_value": 0,
    "options": "\nVery Quiet\nAcceptable\nDistracting\nToo Noisy",
    "read_only": 0,
-   "reqd": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {
@@ -187,7 +187,7 @@
    "max_value": 0,
    "options": "\nYes\nNo",
    "read_only": 0,
-   "reqd": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {
@@ -213,7 +213,7 @@
    "max_value": 0,
    "options": "\nExcellent\nGood\nAverage\nPoor\nVery Poor",
    "read_only": 0,
-   "reqd": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {
@@ -226,7 +226,7 @@
    "max_value": 0,
    "options": "\nYes\nNo",
    "read_only": 0,
-   "reqd": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {
@@ -252,7 +252,7 @@
    "max_value": 0,
    "options": "\nVery Spacious\nAdequate\nCramped\nVaries by area",
    "read_only": 0,
-   "reqd": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {
@@ -265,7 +265,7 @@
    "max_value": 0,
    "options": "\nVery Satisfied\nSatisfied\nNeutral\nUnsatisfied\nVery Unsatisfied",
    "read_only": 0,
-   "reqd": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {
@@ -290,7 +290,7 @@
    "max_value": 0,
    "options": "\nVery Satisfied\nSatisfied\nNeutral\nUnsatisfied\nVery Unsatisfied",
    "read_only": 0,
-   "reqd": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {
@@ -315,7 +315,7 @@
    "max_value": 0,
    "options": "\nExcellent\nGood\nAverage\nPoor\nVery Poor",
    "read_only": 0,
-   "reqd": 0,
+   "reqd": 1,
    "show_in_filter": 0
   },
   {
