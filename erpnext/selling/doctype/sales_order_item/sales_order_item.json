@@ -792,11 +792,11 @@
   },
   {
    "fieldname": "bom_no",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "BOM No",
    "no_copy": 1,
-   "options": "BOM",
-   "print_hide": 1
+   "print_hide": 1,
+   "read_only": 1
   },
   {
    "fieldname": "manufacturing_section_section",
@@ -906,7 +906,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-08-21 15:46:52.759612",
+ "modified": "2024-09-02 12:02:36.267560",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",
