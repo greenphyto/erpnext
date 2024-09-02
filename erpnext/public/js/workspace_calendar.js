@@ -16,6 +16,7 @@ frappe.run_calendar = function (wrapper, calendar_name){
         calendar_use_name: calendar_name,
         hide_sort_selector: 1,
         can_create: 0,
+        get_events_method: "erpnext.smart_fm.controllers.smart_fm.get_workspace_calendar_events",
         field_map: {
 			id: "name",
 			start: "creation",
@@ -35,11 +36,30 @@ class CustomCalendar extends frappe.views.CalendarView{
         this.can_create = 0;
         super.setup_page();
     }
-
+    
     before_render() {
         this.calendar_name = this.calendar_use_name;
 		super.before_render();
         this.parent.find(".page-head").addClass("hidden");
+    }
+
+    get_calendar_preferences(){
+        var me = this;
+        return new Promise((resolve, reject) => {
+            super.get_calendar_preferences().then((opts)=>{
+                opts.get_events_method = me.get_events_method;
+                opts.get_css_class = function(data) {
+                    if(data.status==="Completed") {
+                        return "success";
+                    } else if(data.status==="Planned") {
+                        return "default";
+                    } else {
+                        return "danger";
+                    }
+                }
+                resolve(opts);
+            });
+        })
     }
 
     set_menu_items(){

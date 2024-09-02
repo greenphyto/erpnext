@@ -400,3 +400,24 @@ def force_get_building_management(doc, method=""):
 		row.role = "Building Management"
 		if info:
 			frappe.msgprint("<b>Building Management</b> base role is auto added if user is the Building Management")
+
+@frappe.whitelist()
+def get_workspace_calendar_events(doctype, start, end, field_map, filters=None, fields=None):
+	return frappe.db.sql("""
+		SELECT 
+			`description`,
+			`date` AS start,
+			`reference_name` AS name,
+			`date`,
+			status,
+			`date` AS end,
+			`reference_type` AS doctype,
+			if(status = 'Completed', '#28a745', '#007bff') as color
+		FROM
+			`tabToDo`
+		WHERE
+			COALESCE(`tabToDo`.`date`,
+					'0001-01-01 00:00:00.000000') BETWEEN %s AND %s
+			and status != "Cancelled"
+		ORDER BY `tabToDo`.`modified` DESC
+	""", (start, end), as_dict=1)
