@@ -7,7 +7,7 @@ from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
 from frappe import _
 from frappe.core.doctype.sync_log.sync_log import update_success, create_log, delete_log
-import json
+import json, math
 from erpnext import get_company_currency, get_default_company
 
 """
@@ -103,6 +103,7 @@ class GetData():
 		self.post_process = post_process
 		self.manual_save_log = manual_save_log
 		self.doc_type = doc_type or data_type
+		self._log_name = None
 	
 	def setup(self):
 		self.api = FomsAPI()
@@ -126,7 +127,7 @@ class GetData():
 			# pull to foms data mapping
 			result = self.post_process(self, d)
 			if not self.manual_save_log:
-				key_name = self.get_key_name(d)
+				key_name = self._log_name or self.get_key_name(d)
 				save_log(self.doc_type, result, key_name, d)
 
 			percent = (i+1)/total_count*100
@@ -242,7 +243,7 @@ def get_products(show_progress=False):
 		return log.get("productID")
 	
 	GetData(
-		data_type = "Product",
+		data_type = "Item",
 		get_data=get_data,
 		get_key_name = get_key_name,
 		post_process=post_process,
@@ -269,6 +270,10 @@ def get_recipe(show_progress=False, item_code=""):
 	def post_process(gd, log):
 		product_id =  log.get("id")
 		raw = gd.api.get_product_process(gd.farm_id, product_id)
+
+		version = raw.get("productVersionName")
+		item_code = frappe.get_value("Item", {"foms_product_id": product_id})
+		gd._log_name = f"Get BOM {item_code} version {version}"
 		return create_bom_products(raw, product_id, submit)
 
 	def get_key_name(log):
@@ -878,7 +883,12 @@ def create_raw_material(log):
 		doc.is_stock_item = 1
 		if not doc.foms_raw_id:
 			doc.foms_raw_id = log.id
-		doc.save()
+
+		try:
+			doc.save()
+		except Exception as e:
+			print(f"Skip for {doc.name}")
+			print("Error:", e)
 
 	return name
 
@@ -1078,14 +1088,24 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 						if not rm_item_name:
 							continue
 
+						uom = get_uom(rm.uomrm)
+						if uom in ['Unit']:
+							qty = cint(rm.qtyrmInKg or rm.qtyrm )
+						else:
+							qty = rm.qtyrmInKg or rm.qtyrm 
+
+						if qty == 0 or math.isinf( flt(qty) ):
+							continue
+
 						row = bom.append("items")
 						row.item_code = rm.rawMaterialRefNo
 						row.uom = get_uom(rm.uomrm)
-						if row.uom in ['Unit']:
-							row.qty = cint(rm.qtyrmInKg or rm.qtyrm )
-						else:
-							row.qty = rm.qtyrmInKg or rm.qtyrm 
+
 						row.operation = operation_name
+			
+			if not bom.items:
+				return ""
+			
 			bom.save()
 			name = bom.name
 		else:
