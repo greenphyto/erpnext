@@ -39,6 +39,9 @@
   "website",
   "language",
   "dashboard_tab",
+  "item_tab",
+  "enable_item_supplier",
+  "item_supplier",
   "tax_tab",
   "tax_id",
   "column_break_27",
@@ -480,6 +483,24 @@
    "fieldtype": "Data",
    "label": "FOMS Name",
    "read_only": 1
+  },
+  {
+   "fieldname": "item_tab",
+   "fieldtype": "Tab Break",
+   "label": "Item"
+  },
+  {
+   "description": "Specify the item for only can buy from this supplier",
+   "fieldname": "item_supplier",
+   "fieldtype": "Table",
+   "label": "Item Supplier",
+   "options": "Item List"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_item_supplier",
+   "fieldtype": "Check",
+   "label": "Enable Item Supplier"
   }
  ],
  "icon": "fa fa-user",
@@ -492,7 +513,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-06-27 12:49:07.992055",
+ "modified": "2024-09-03 15:45:37.363875",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",
