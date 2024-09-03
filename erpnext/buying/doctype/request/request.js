@@ -118,7 +118,17 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 	}
 
 	rate(){
-
+		var total_price = 0;
+		var total_weight = 0;
+		$.each(this.frm.doc.items, (i, d)=>{
+			console.log(i, d);
+			var amount = d.rate * flt(d.qty);
+			total_price += amount;
+			total_weight += d.weight;
+			frappe.model.set_value(d.doctype, d.name, "amount", amount);
+		})
+		this.frm.set_value("total_price", total_price);
+		this.frm.set_value("total_weight", total_weight);
 	}
 }
 
