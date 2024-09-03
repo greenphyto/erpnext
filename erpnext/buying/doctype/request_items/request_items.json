@@ -26,6 +26,7 @@
   },
   {
    "columns": 1,
+   "default": "1",
    "fieldname": "qty",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -87,7 +88,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-09-03 12:00:08.282020",
+ "modified": "2024-09-03 12:23:13.070333",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request Items",

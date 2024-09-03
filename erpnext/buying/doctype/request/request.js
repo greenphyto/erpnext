@@ -19,18 +19,15 @@ frappe.ui.form.on("Request", {
 			}
 		})
 
-
-		frm.set_query("packaging", "items", function(doc, cdt, cdn) {
+		frm.set_query("uom", "items", function(doc, cdt, cdn) {
 			var row = locals[cdt][cdn];
-			if (!row.item_code){
-				frappe.throw(__("Select item first"))
-			}
-			return {
-				filters: {
-					"item": row.item_code
-				},
-				query:"erpnext.selling.doctype.sales_order.sales_order.get_packaging_available"
-			}
+			if (!row.item_code) frappe.throw(__("Please select Item"));
+			var args =  erpnext.queries.uom({
+				"parent": row.item_code,
+				"is_packaging": doc.non_package_item? 0 : 1
+			})
+
+			return args;
 		});
 
 		frm.set_query("type_of_vegetable", (doc)=>{
@@ -42,6 +39,10 @@ frappe.ui.form.on("Request", {
 			}
 		})
 
+
+
+		// frm.cscript.change_package_display();
+
 	},
 	refresh:function(frm){
 		if (frm.doc.docstatus == 1){
@@ -49,6 +50,17 @@ frappe.ui.form.on("Request", {
 				frm.cscript.make_sales_order(frm);
 			}, __('Create'));
 		}
+
+		frm.set_query("item_code", "items", function(doc, cdt, cdn) {
+			var row = locals[cdt][cdn];
+			var filters = {"is_stock_item": 1, "is_fixed_asset": 0}
+			if (doc.non_package_item){
+				filters['is_package_item']=0;
+			}else{
+				filters['is_package_item']=1;
+			}
+			return erpnext.queries.item(filters);
+		})
 	},
 	non_package_item: function(frm){
 		frm.cscript.confirm_reset_item("non_package_item").then(r=>{
@@ -82,13 +94,29 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 			}
 		})
 	}
-	
+
 	change_package_display(){
 		if (!this.frm.doc.non_package_item){
 			this.frm.cscript.change_package_label(1);
 		}else{
 			this.frm.cscript.change_package_label(0);
 		}
+	}
+
+	item_code(){
+
+	}
+
+	qty(){
+
+	}
+
+	uom(){
+
+	}
+
+	rate(){
+		
 	}
 }
 
