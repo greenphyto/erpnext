@@ -38,7 +38,7 @@
    "fieldname": "uom",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "UOM",
+   "label": "Package",
    "options": "UOM",
    "reqd": 1
   },
@@ -88,7 +88,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-09-03 12:23:13.070333",
+ "modified": "2024-09-03 12:54:24.009706",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request Items",

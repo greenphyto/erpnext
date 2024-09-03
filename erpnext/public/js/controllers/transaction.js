@@ -2467,7 +2467,9 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 	change_package_label(change=false){
 		const item_table = "items";
 		var table = this.frm.fields_dict[item_table];
+		if (!table) return;
 		var uom_field = table.grid.fields_map.uom;
+		if (!uom_field) return;
 		if (change){
 			uom_field.label = "Package"
 		}else{

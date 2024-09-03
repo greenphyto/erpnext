@@ -41,7 +41,6 @@ frappe.ui.form.on("Request", {
 
 
 
-		// frm.cscript.change_package_display();
 
 	},
 	refresh:function(frm){
@@ -61,6 +60,9 @@ frappe.ui.form.on("Request", {
 			}
 			return erpnext.queries.item(filters);
 		})
+
+		frm.cscript.change_package_display();
+
 	},
 	non_package_item: function(frm){
 		frm.cscript.confirm_reset_item("non_package_item").then(r=>{
@@ -116,7 +118,7 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 	}
 
 	rate(){
-		
+
 	}
 }
 
