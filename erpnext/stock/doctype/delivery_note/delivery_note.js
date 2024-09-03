@@ -179,10 +179,10 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 					me.make_sales_return() }, __('Create'));
 			}
 
-			if (doc.docstatus==1) {
-				this.frm.add_custom_button(__('Delivery Trip'), function() {
-					me.make_delivery_trip() }, __('Create'));
-			}
+			// if (doc.docstatus==1) {
+			// 	this.frm.add_custom_button(__('Delivery Trip'), function() {
+			// 		me.make_delivery_trip() }, __('Create'));
+			// }
 
 			if(doc.docstatus==0 && !doc.__islocal) {
 				this.frm.add_custom_button(__('Packing Slip'), function() {

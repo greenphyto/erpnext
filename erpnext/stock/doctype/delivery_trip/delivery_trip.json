@@ -187,12 +187,14 @@
    "read_only": 1
   }
  ],
+ "in_create": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-04-30 21:21:36.610142",
+ "modified": "2024-09-03 15:02:35.080103",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Trip",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {
@@ -226,7 +228,9 @@
    "write": 1
   }
  ],
+ "read_only": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "driver_name"
 }
