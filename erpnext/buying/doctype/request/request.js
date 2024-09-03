@@ -138,6 +138,10 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 		this.calculate_rate();
 	}
 
+	validate(){
+		
+	}
+
 	rate(){
 		this.calculate_rate();
 	}
