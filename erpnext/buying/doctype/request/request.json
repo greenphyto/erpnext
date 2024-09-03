@@ -13,6 +13,7 @@
   "posting_date",
   "delivery_date",
   "section_break_5",
+  "non_package_item",
   "items",
   "section_break_8",
   "total_price",
@@ -105,12 +106,18 @@
   {
    "fieldname": "column_break_10",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_package_item",
+   "fieldtype": "Check",
+   "label": "Non Package Item"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-26 16:42:46.709886",
+ "modified": "2024-09-03 11:26:13.590439",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request",

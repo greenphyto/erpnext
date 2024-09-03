@@ -1,6 +1,8 @@
 // Copyright (c) 2024, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
+{% include 'erpnext/selling/sales_common.js' %}
+
 frappe.ui.form.on("Request", {
 	quantity: function (frm) {
 		update_weight(frm);
@@ -47,7 +49,14 @@ frappe.ui.form.on("Request", {
 				frm.cscript.make_sales_order(frm);
 			}, __('Create'));
 		}
-	}
+	},
+	non_package_item: function(frm){
+		frm.cscript.confirm_reset_item("non_package_item").then(r=>{
+			if (r){
+				frm.cscript.change_package_display();
+			}
+		});
+	},
 });
 
 frappe.ui.form.on("Request Items", {
@@ -60,9 +69,9 @@ function update_weight(frm) {
 	frm.set_value("weight", flt(frm.doc.quantity * frm.doc.packaging_size));
 }
 
-frappe.provide("cur_frm.cscript")
-$.extend(cur_frm.cscript, {
-	make_sales_order: function(frm){
+
+erpnext.selling.RequestController = class RequestController extends erpnext.selling.SellingController {
+	make_sales_order(frm){
 		frappe.call({
 			method:"erpnext.buying.doctype.request.request.create_sales_order",
 			args:{
@@ -73,4 +82,15 @@ $.extend(cur_frm.cscript, {
 			}
 		})
 	}
-})
+	
+	change_package_display(){
+		if (!this.frm.doc.non_package_item){
+			this.frm.cscript.change_package_label(1);
+		}else{
+			this.frm.cscript.change_package_label(0);
+		}
+	}
+}
+
+frappe.provide("cur_frm.cscript")
+extend_cscript(cur_frm.cscript, new erpnext.selling.RequestController({frm: cur_frm}));
