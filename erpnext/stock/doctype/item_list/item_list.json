@@ -24,7 +24,6 @@
    "fetch_from": "item_code.item_name",
    "fieldname": "item_name",
    "fieldtype": "Data",
-   "in_list_view": 1,
    "label": "Item Name",
    "read_only": 1
   }
@@ -32,7 +31,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-09-03 15:44:03.231386",
+ "modified": "2024-09-03 16:17:34.460675",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item List",
