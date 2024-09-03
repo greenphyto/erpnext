@@ -68,6 +68,8 @@ frappe.ui.form.on("Request", {
 		frm.cscript.confirm_reset_item("non_package_item").then(r=>{
 			if (r){
 				frm.cscript.change_package_display();
+				frm.cscript.calculate_rate();
+
 			}
 		});
 	},
@@ -106,25 +108,48 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 	}
 
 	item_code(){
+		// 
+	}
+	
+	uom(doc,cdt,cdn){
+		this.fetch_weight(cdt,cdn);
+	}
+
+	fetch_weight(cdt,cdn){
+		var d = locals[cdt][cdn];
+		if (!this.frm.doc.non_package_item){
+			frappe.db.get_value("Packaging", d.uom, "total_weight").then(r=>{
+				frappe.model.set_value(cdt,cdn, "unit_weight", r.message.total_weight);
+
+			});
+		}else{
+			if (in_list(['Kg', 'Litre'], d.uom)){
+				frappe.model.set_value(cdt,cdn, "unit_weight", d.qty);
+			}
+		}
 
 	}
 
 	qty(){
-
+		this.calculate_rate();
 	}
 
-	uom(){
-
+	unit_weight(){
+		this.calculate_rate();
 	}
 
 	rate(){
+		this.calculate_rate();
+	}
+
+	calculate_rate(){
 		var total_price = 0;
 		var total_weight = 0;
 		$.each(this.frm.doc.items, (i, d)=>{
 			console.log(i, d);
 			var amount = d.rate * flt(d.qty);
 			total_price += amount;
-			total_weight += d.weight;
+			total_weight += d.unit_weight;
 			frappe.model.set_value(d.doctype, d.name, "amount", amount);
 		})
 		this.frm.set_value("total_price", total_price);
