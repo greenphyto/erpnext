@@ -143,6 +143,10 @@ class Item(Document):
 			self.old_item_group = frappe.db.get_value(self.doctype, self.name, "item_group")\
 	
 	def validate_foms_item(self):
+		print(1111, self.flags.allow_delete)
+		if self.flags.allow_delete:
+			return
+		
 		if self.get("foms_raw_id") or self.get("foms_product_id"):
 			frappe.throw(_("Cannot delete FOMS's Item, you can only disable it"))
 

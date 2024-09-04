@@ -639,3 +639,20 @@ def create_finish_goods_stock(data):
 @frappe.whitelist()
 def update_request_data(data):
 	return update_request(data.get("request_no"), data.get("items"), data.get("delivery_date"))
+
+@frappe.whitelist(methods='DELETE')
+def delete_item(item_code):
+	from frappe.model.delete_doc import check_if_doc_is_linked
+	item_code_name = frappe.db.exists("Item", {"item_code":item_code})
+	if not item_code_name:
+		return True
+	
+	doc = frappe.get_doc("Item", item_code_name)
+	doc.flags.allow_delete = True
+
+	if check_if_doc_is_linked(doc, "Delete", True):
+		doc.delete()
+		return True
+	else:
+		doc.db_set("disabled", 1)
+		return False
