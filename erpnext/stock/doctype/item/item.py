@@ -140,7 +140,11 @@ class Item(Document):
 		set_item_tax_from_hsn_code(self)
 
 		if not self.is_new():
-			self.old_item_group = frappe.db.get_value(self.doctype, self.name, "item_group")
+			self.old_item_group = frappe.db.get_value(self.doctype, self.name, "item_group")\
+	
+	def validate_foms_item(self):
+		if self.get("foms_raw_id") or self.get("foms_product_id"):
+			frappe.throw(_("Cannot delete FOMS's Item, you can only disable it"))
 
 	def force_to_non_stock(self):
 		if frappe.db.get_single_value("Stock Settings", "force_to_non_stock_item"):
@@ -540,6 +544,7 @@ class Item(Document):
 		frappe.db.sql("delete from `tabItem Price` where item_code=%s", self.name)
 		for variant_of in frappe.get_all("Item", filters={"variant_of": self.name}):
 			frappe.delete_doc("Item", variant_of.name)
+		self.validate_foms_item()
 
 	def before_rename(self, old_name, new_name, merge=False):
 		if self.item_name == old_name:
