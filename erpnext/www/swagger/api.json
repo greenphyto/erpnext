@@ -249,15 +249,8 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "message": {
-                        "ERPWorkOrderId": "workOrderName",
-                        "ERPBOMId": "bomId",
-                        "JobCards":{
-                            "1":"JobCardSeeding",
-                            "2":"JobCardTransplanting",
-                            "3":"JobCardHarvesting"
-                        }
-                      }
+                      "ERPWorkOrderID": "workOrderName",
+                      "ERPBOMId": "bomId"
                     }
                   }
                 }
