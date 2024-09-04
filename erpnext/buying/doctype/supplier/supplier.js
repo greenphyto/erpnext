@@ -101,6 +101,13 @@ frappe.ui.form.on("Supplier", {
 			// indicators
 			erpnext.utils.set_party_dashboard_indicators(frm);
 		}
+
+		frm.set_df_property("supplier_code_series", "options", [
+			{"label":"S0.#### (AP Trade Creditors)", "value":"S0.####"},
+			{"label":"S1.#### (Other Creditors)", "value":"S1.####"},
+			{"label":"S1.#### (Indirect Creditors)", "value":"S2.####"},
+			{"label":"S1.#### (Bank Accounts / Hire Purchase)", "value":"S3.####"},
+		])
 	},
 	supplier_code_series: function(frm){
 		frappe.call({
