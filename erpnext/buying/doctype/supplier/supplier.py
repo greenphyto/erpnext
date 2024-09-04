@@ -4,6 +4,7 @@
 
 import frappe
 import frappe.defaults
+import erpnext
 from frappe import _, msgprint
 from frappe.contacts.address_and_contact import (
 	delete_contact_and_address,
@@ -56,6 +57,19 @@ class Supplier(TransactionBase):
 			return
 		
 		self.supplier_code = parse_naming_series(series, doc=self)
+		self.set_account_default()
+
+	def set_account_default(self):
+		doc = frappe.get_doc("Buying Settings")
+		company = erpnext.get_default_company()
+		for d in doc.get("default_supplier_account"):
+			series = d.code.replace("...", "")
+			if series in self.supplier_code:
+				row = self.get("accounts", {"account":d.account})
+				if not row:
+					row = self.append("accounts")
+					row.account = d.account
+					row.company = company
 
 	def on_update(self):
 		if not self.naming_series:
@@ -69,6 +83,8 @@ class Supplier(TransactionBase):
 		self.set_code()
 		self.update_series()
 		self.validate_item_supplier()
+		if not self.get("account"):
+			self.set_account_default()
 
 		# validation for Naming Series mandatory field...
 		if frappe.defaults.get_global_default("supp_master_name") == "Naming Series":
