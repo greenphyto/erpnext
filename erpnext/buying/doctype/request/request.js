@@ -44,11 +44,11 @@ frappe.ui.form.on("Request", {
 
 	},
 	refresh:function(frm){
-		if (frm.doc.docstatus == 1){
-			frm.add_custom_button(__('Sales Order'), ()=>{
-				frm.cscript.make_sales_order(frm);
-			}, __('Create'));
-		}
+		// if (frm.doc.docstatus == 1){
+			// frm.add_custom_button(__('Sales Order'), ()=>{
+			// 	frm.cscript.make_sales_order(frm);
+			// }, __('Create'));
+		// }
 
 		frm.set_query("item_code", "items", function(doc, cdt, cdn) {
 			var row = locals[cdt][cdn];
