@@ -1239,6 +1239,51 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.delete_item": {
+      "delete": {
+        "summary": "Delete item on erp",
+        "description": "Delete item on ERP, and will return <b>true</b> if clearly deleted and return <b>false</b> if can only disable",
+        "operationId": "delete item erp",
+        "requestBody": {
+          "description": {
+            "test":123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "itemCode":""
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": true
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
     }
   },
   "components": {

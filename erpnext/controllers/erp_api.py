@@ -641,9 +641,9 @@ def update_request_data(data):
 	return update_request(data.get("request_no"), data.get("items"), data.get("delivery_date"))
 
 @frappe.whitelist(methods='DELETE')
-def delete_item(item_code):
+def delete_item(itemCode):
 	from frappe.model.delete_doc import check_if_doc_is_linked
-	item_code_name = frappe.db.exists("Item", {"item_code":item_code})
+	item_code_name = frappe.db.exists("Item", {"item_code":itemCode})
 	if not item_code_name:
 		return True
 	
