@@ -313,7 +313,7 @@ def create_material_request(
 		items=[],
 		cancel=False,
 	):
-	item_str = ", ".joint(items)
+	item_str = ", ".join([d.get("rawMaterialRefNo") for d in items])
 	data_name = f"Create Material Request {item_str}"
 	save_log("Material Request", data_name, {
 		"transactionDate":transactionDate, 
