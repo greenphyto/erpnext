@@ -349,8 +349,7 @@ def create_material_request(
 	
 	doc.flags.ignore_mandatory = 1
 	doc.save()
-
-	# apply_workflow(doc, "Submit")
+	apply_workflow(doc, "Submit")
 
 	update_log("Material Request", data_name, doc.name)
 
