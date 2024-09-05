@@ -1,7 +1,7 @@
 import frappe, erpnext
 from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
 from frappe.core.doctype.sync_log.sync_log import get_pending_log
-from frappe.utils import cint, flt, cstr, get_time, getdate,add_days
+from frappe.utils import cint, flt, cstr, get_time, getdate,add_days, get_datetime
 from erpnext.accounts.party import get_party_details
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
@@ -217,14 +217,17 @@ def get_raw_material(show_progress=False, reff_no=""):
 		return data
 
 	def post_process(gd, log):
-		result = create_raw_material(log) 
-		return result
+		try:
+			result = create_raw_material(log) 
+			return result
+		except Exception as e:
+			print("Error: ", e)
 
 	def get_key_name(log):
 		return log.get("rawMaterialRefNo")
 	
 	GetData(
-		data_type = "Raw Material",
+		data_type = "Item",
 		get_data=get_data,
 		get_key_name = get_key_name,
 		post_process=post_process,
@@ -654,6 +657,86 @@ def create_batch(log):
 	name = doc.name
 
 	return name
+
+def get_stock_batch(show_progress=False):
+	def get_data(gd):
+		data = gd.api.get_all_batch()
+		return [data]
+
+	def post_process(gd, log):
+		return crate_batch_stock_recon(log) 
+
+	def get_key_name(log):
+		date = get_datetime()
+		name = f"Sync Stock Batch on {date}"
+		return name
+	
+	GetData(
+		data_type = "Batch",
+		get_data=get_data,
+		get_key_name = get_key_name,
+		post_process=post_process,
+		show_progress=show_progress
+	).run()
+
+# create stock recon from FOMS
+def crate_batch_stock_recon(data):
+	doc = frappe.new_doc("Stock Reconciliation")
+	doc.purpose = "Stock Reconciliation"
+	doc.flags.ignore_syncing = 1
+	missing_item = []
+	already_add = []
+	for d in data.get("items"):
+		if get_datetime(d.get("expiryDate")) < get_datetime():
+			continue
+		
+		if flt(d.get("qtyLeft")) <= 0:
+			continue
+
+		item_data = frappe.db.get_value("Item", {'foms_raw_id':cstr(d.get("rawMaterialId"))}, ['name', "is_stock_item"], as_dict=1)
+		if not item_data:
+			missing_item.append( cstr(d.get("rawMaterialId")) )
+			print("Missing Item", d.get("rawMaterialId") )
+			continue
+
+		if not item_data.is_stock_item:
+			continue
+
+		warehouse = frappe.db.get_value("Warehouse", {'foms_id':cstr(d.get("warehouseId"))})
+		if not warehouse:
+			print("Missing Warehouse", d.get("warehouseId") )
+			continue
+
+		batch_no = frappe.db.get_value("Batch", {'foms_id':d.get("id")})
+		if not batch_no:
+			batch_no = create_batch(d)
+
+		key = (item_data.name, warehouse, batch_no)
+		if not key in already_add:
+			already_add.append(key)
+		else:
+			continue
+
+		row = doc.append("items")
+		row.item_code = item_data.name
+		row.warehouse = warehouse
+		row.qty = d.get("qtyLeft")
+		row.batch_no = batch_no
+
+	if missing_item:
+		missing_item = list(set(missing_item))
+		count = len(missing_item)
+		temp = ", ".join(missing_item)
+		print(f"Missing item with {temp}, total count {count}")
+
+	try:
+		doc.flags.ignore_validate = 1
+		doc.flags.ignore_mandatory = 1
+		doc.insert(ignore_permissions=1)
+	except Exception as e:
+		print("Error: ", e)
+
+
 
 # SALES ORDER (POST)
 def sync_log_so(doc, method=""):
