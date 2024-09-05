@@ -1,4 +1,4 @@
-import frappe
+import frappe, erpnext
 from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
 from frappe.core.doctype.sync_log.sync_log import get_pending_log
 from frappe.utils import cint, flt, cstr, get_time, getdate,add_days
@@ -146,6 +146,9 @@ def sync_log(doc, method=""):
 	cancel = doc.docstatus == 2
 
 	method_id = METHOD_MAP.get(doc.doctype)
+
+	if doc.flags.ignore_syncing:
+		return
 
 	if cancel:
 		if delete_log(doc.doctype, doc.name):
@@ -300,29 +303,31 @@ def _update_warehouse(log, api=None):
 
 	if log.update_type != "Delete":
 		farm_id = get_foms_settings("farm_id")
-		doc = frappe.get_doc("Warehouse", log.docname)
-		wh_id = doc.name[:12]
-		# wh_id = doc.name
-		data = {
-			"farmId": farm_id,
-			"warehouseID": wh_id,
-			"warehouseName": doc.warehouse_name,
-			"countryCode": "SG", # not yet
-			"capacity": 0,
-			"uom": "Kg", # not yet
-			"address": "",
-			"noRackRow": cint(doc.row_no),
-			"noRackLevel": cint(doc.level_no),
-			"noOfLane": cint(doc.lane_no),
-			"isFromERP": True
-		}
+		name = frappe.db.exists("Warehouse", log.docname)
+		if name:
+			doc = frappe.get_doc("Warehouse", log.docname)
+			wh_id = doc.name[:12]
+			# wh_id = doc.name
+			data = {
+				"farmId": farm_id,
+				"warehouseID": wh_id,
+				"warehouseName": doc.warehouse_name,
+				"countryCode": "SG", # not yet
+				"capacity": 0,
+				"uom": "Kg", # not yet
+				"address": "",
+				"noRackRow": cint(doc.row_no),
+				"noRackLevel": cint(doc.level_no),
+				"noOfLane": cint(doc.lane_no),
+				"isFromERP": True
+			}
 
-		if doc.foms_id:
-			data["id"] = doc.foms_id
+			if doc.foms_id:
+				data["id"] = doc.foms_id 
 
-		res = api.update_warehouse(data)
-		update_reff_id(res, doc, "warehouseID")
-		return res
+			res = api.update_warehouse(data)
+			update_reff_id(res, doc, "warehouseID")
+			return res
 	else:
 		doc_data = get_deleted_document("Warehouse", log.docname)
 		if not doc_data:
@@ -349,11 +354,29 @@ def foms_all_warehouses():
 	farm_id = get_farm_id()
 	api = FomsAPI()
 	data = api.get_all_warehouse(farm_id)
+	company = erpnext.get_default_company()
 	for d in data.get("items", []):
 		# not yet finish
 		wh_name = d.get("warehouseName")
-		frappe.db.set_value("Warehouse", {"warehouse_name": wh_name}, "foms_id", d['id'])
-		frappe.db.set_value("Warehouse", {"warehouse_name": wh_name}, "foms_name", d['warehouseID'])
+		name = frappe.db.exists("Warehouse", wh_name)
+		if not name:
+			abbr = frappe.get_cached_value("Company", company, "abbr")
+			wh_name = wh_name + " - "+abbr
+			name = frappe.db.exists("Warehouse", wh_name)
+			
+		if name:
+			print(wh_name)
+			frappe.db.set_value("Warehouse", wh_name, "foms_id", d['id'])
+			frappe.db.set_value("Warehouse", wh_name, "foms_name", d['warehouseID'])
+		else:
+			# create warehouse
+			doc = frappe.new_doc("Warehouse")
+			doc.warehouse_name = wh_name
+			doc.foms_id = d['id']
+			doc.foms_name = d['warehouseID']
+			doc.flags.ignore_syncing = True
+			doc.insert()
+			print("Create", wh_name)
 
 # RAW MATERIAL RECEIPT
 def update_stock_recipe():
