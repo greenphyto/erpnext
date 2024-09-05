@@ -22,7 +22,7 @@ from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry
 from erpnext.stock.doctype.purchase_receipt.purchase_receipt import make_purchase_return
 from frappe.model.workflow import apply_workflow
 from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
-from frappe.utils.file_manager import save_file
+from frappe.utils.file_manager import save_file, save_url
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result
 
 def get_data(data):
@@ -198,7 +198,7 @@ def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0
 
 	wip_warehouse = frappe.get_value("Job Card", job_card_name, "wip_warehouse")
 
-	# create tsock entry
+	# create stock entry
 	if rawMaterials:
 		se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
 		se_doc.insert(ignore_permissions=1)
@@ -445,21 +445,38 @@ def update_delivery_note_signature(data):
 	doc = frappe.get_doc("Delivery Note", data.doNumber)
 	# convert base64 image from json to data
 
-	for d in data.attachments:
+	for d in data.get("attachments") or []:
 		file_name = d.get("filename")
 		encoded_content = d.get("image")
-		# doc.db
-		file_save = save_file(
-			file_name,
-			encoded_content,
-			"Delivery Note",
-			do_number,
-			folder=None,
-			decode=True,
-			is_private=1,
-			df="attachment",
-		)
-		doc.db_set("attachment", file_save.file_url)
+		image_url = d.get("imageUrl")
+		if not encoded_content and not image_url:
+			frappe.throw(_("Attachment must have content value"))
+
+		folder = "Home/Attachments"
+		if encoded_content:
+			# doc.db
+			file_save = save_file(
+				file_name,
+				encoded_content,
+				"Delivery Note",
+				do_number,
+				folder=folder,
+				decode=True,
+				is_private=1,
+				df="attachment",
+			)
+			doc.db_set("attachment", file_save.file_url)
+		else:
+			file_save = save_url(
+				image_url,
+				file_name,
+				"Delivery Note",
+				do_number,
+				folder,
+				True,
+				"attachment"
+			)
+			doc.db_set("attachment", file_save.file_url)		
 
 	# signature
 	signature = "data:image/png;base64,"+cstr(data.signature)
