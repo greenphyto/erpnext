@@ -630,11 +630,11 @@ def get_batch(show_progress=False):
 
 def create_batch(log):
 	log = frappe._dict(log)
-	name = frappe.get_value("Batch", log.batchRefNo)
+	name = frappe.db.get_value("Batch", log.batchRefNo)
 	if not name:
 		doc = frappe.new_doc("Batch")
 		doc.batch_id = log.batchRefNo
-		item_code = frappe.get_value("Item", {"foms_id": cstr(log.rawMaterialId)})
+		item_code = frappe.db.get_value("Item", {"foms_raw_id": cstr(log.rawMaterialId)})
 		if not item_code:
 			return ""
 		doc.item = item_code
