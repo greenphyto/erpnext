@@ -797,7 +797,8 @@
                       "doNumber":"DO-2024-003-1",
                       "attachments":[{
                           "filename":"test-image.png",
-                          "image":"/9j/4AAQSkZJRgABAQEASwBLAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAw...."
+                          "image":"/9j/4AAQSkZJRgABAQEASwBLAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAw....",
+                          "imageUrl":"should have 'http' string"
                       }],
                       "signature_by":"Jing Wei",
                       "taken_at":"2024-08-20 12:24",
