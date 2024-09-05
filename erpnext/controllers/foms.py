@@ -358,16 +358,15 @@ def foms_all_warehouses():
 	for d in data.get("items", []):
 		# not yet finish
 		wh_name = d.get("warehouseName")
-		name = frappe.db.exists("Warehouse", wh_name)
+		name = frappe.db.get_value("Warehouse", wh_name)
 		if not name:
 			abbr = frappe.get_cached_value("Company", company, "abbr")
 			wh_name = wh_name + " - "+abbr
-			name = frappe.db.exists("Warehouse", wh_name)
-			
+			name = frappe.db.get_value("Warehouse", wh_name)
+
 		if name:
-			print(wh_name)
-			frappe.db.set_value("Warehouse", wh_name, "foms_id", d['id'])
-			frappe.db.set_value("Warehouse", wh_name, "foms_name", d['warehouseID'])
+			frappe.db.set_value("Warehouse", name, "foms_id", d['id'])
+			frappe.db.set_value("Warehouse", name, "foms_name", d['warehouseID'])
 		else:
 			# create warehouse
 			doc = frappe.new_doc("Warehouse")
