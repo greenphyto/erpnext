@@ -132,17 +132,29 @@ def start_work_order(ERPWorkOrderID):
 def make_stock_entry_with_materials(source_name, materials, wip_warehouse, operation_name, work_order_name):
 	se = make_stock_entry_jc(source_name)
 	se.items = []
+	missing_warehouse = []
 	for d in materials:
 		d = frappe._dict(d)
 		row = se.append("items")
-		warehouse = frappe.get_value("Warehouse", {"foms_id": cstr(d.sourceWarehouseId)}) or d.sourceWarehouseRefNo
+		warehouse = frappe.get_value("Warehouse", {"foms_id": cint(d.sourceWarehouseId)}, debug=1)
+		if not warehouse:
+			missing_warehouse.append(d.sourceWarehouseRefNo)
 		item_code = frappe.get_value("Item", {"foms_raw_id": cstr(d.rawMaterialId)}) or d.rawMaterialRefNo
 		row.item_code = item_code
 		row.s_warehouse = warehouse
 		row.t_warehouse = wip_warehouse
-		row.qty = flt(d.qty)
-		row.batch_no = d.rawMaterialBatchRefNo
 		row.uom = get_uom(d.uom)
+		if row.uom in ['Unit']:
+			qty = round(d.qty)
+		else:
+			qty = flt(d.qty, 4)
+
+		row.qty = qty
+		row.batch_no = d.rawMaterialBatchRefNo
+	
+	if missing_warehouse:
+		warn = ", ".join(list(set(missing_warehouse)))
+		frappe.throw(f"Warehouse not found: {warn}")
 	
 	# additional cost
 	expense_account = frappe.db.get_single_value("Manufacturing Settings", "default_expense_account")
@@ -184,6 +196,8 @@ def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0
 	})
 	operationName = OPERATION_MAP_NAME.get( cint(operationNo) )
 	work_order_name = frappe.db.get_value("Work Order", ERPWorkOrderID)
+	if not work_order_name:
+		frappe.throw(_(f"Missing Work Order no {ERPWorkOrderID}"))
 		
 	operation_name = frappe.db.get_value("Job Card", {
 		"work_order":work_order_name,
