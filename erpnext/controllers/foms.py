@@ -831,13 +831,15 @@ def _sync_delivery_note(log, api=None):
 	customer = frappe.get_doc("Customer", doc.customer)
 	farm_id = get_farm_id()
 
+	address = doc.shipping_address or doc.company_address or doc.address_display
+
 	data = frappe._dict({
 		"farmId": 0,
 		"deliveryOrderRefNo": doc.name,
 		"erpDeliveryOrderId": doc.name,
 		"erpSaleOrderNo": "",
 		"customer": doc.customer,
-		"customerAddress": doc.address_display,
+		"customerAddress": address,
 		"remarks": doc.instructions,
 		"deliveryOrderDetails": [],
 		"id": 0
