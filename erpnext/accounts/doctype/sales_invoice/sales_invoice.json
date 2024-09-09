@@ -55,6 +55,7 @@
   "set_warehouse",
   "set_target_warehouse",
   "section_break_42",
+  "non_package_item",
   "items",
   "section_break_30",
   "total_qty",
@@ -2118,6 +2119,12 @@
    "fieldname": "debit_note_transaction",
    "fieldtype": "Check",
    "label": "Debit Note Transaction (without reference document)"
+  },
+  {
+   "default": "1",
+   "fieldname": "non_package_item",
+   "fieldtype": "Check",
+   "label": "Non Package Item"
   }
  ],
  "icon": "fa fa-file-text",
@@ -2130,7 +2137,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2024-03-04 12:24:42.509538",
+ "modified": "2024-09-06 16:29:35.827372",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

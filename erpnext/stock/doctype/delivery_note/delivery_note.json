@@ -47,6 +47,7 @@
   "set_warehouse",
   "set_target_warehouse",
   "section_break_30",
+  "non_package_item",
   "items",
   "section_break_31",
   "total_qty",
@@ -357,7 +358,8 @@
    "fieldtype": "Link",
    "label": "Shipping Address",
    "options": "Address",
-   "print_hide": 1
+   "print_hide": 1,
+   "reqd": 1
   },
   {
    "fieldname": "shipping_address",
@@ -1453,13 +1455,19 @@
    "fieldname": "authorized_signature_section",
    "fieldtype": "Section Break",
    "label": "Authorized Signature"
+  },
+  {
+   "default": "1",
+   "fieldname": "non_package_item",
+   "fieldtype": "Check",
+   "label": "Non Package Item"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-22 11:29:34.655672",
+ "modified": "2024-09-06 16:18:03.035639",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

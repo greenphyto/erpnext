@@ -192,10 +192,11 @@ frappe.ui.form.on("Sales Order", {
 		frm.ignore_doctypes_on_cancel_all = ['Purchase Order'];
 	},
 
-	non_package_item: function(frm){
-		frm.cscript.confirm_reset_item("non_package_item").then(r=>{
+	non_package_item: function(){
+		var me = this;
+		me.frm.cscript.confirm_reset_item("non_package_item").then(r=>{
 			if (r){
-				frm.cscript.change_package_display();
+				me.frm.cscript.change_package_display();
 			}
 		});
 	},
