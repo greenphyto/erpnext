@@ -862,6 +862,26 @@ $.extend(erpnext.item, {
 			frm.toggle_display("attributes", false);
 		}
 		frm.layout.refresh_sections();
+	},
+	control_uom_conversion: function(frm, cdt,cdn){
+		var row = locals[cdt][cdn];
+		if (row.idx==1){
+			frappe.model.set_value(cdt,cdn,"description", "Stock UOM Value");
+		}else{
+			if (row.reverse){
+				var conf = 0;
+				if (row.cf_view){
+					conf = 1/flt(row.cf_view, 5);
+				}
+				frappe.model.set_value(cdt, cdn, "conversion_factor", conf);
+				frappe.model.set_value(cdt, cdn, "description", `1 ${frm.doc.stock_uom} equal to ${row.cf_view} ${row.uom}`);
+				
+			}else{
+				frappe.model.set_value(cdt, cdn, "conversion_factor", row.cf_view);
+				frappe.model.set_value(cdt, cdn, "description", `1 ${row.uom} equal to ${row.cf_view} ${frm.doc.stock_uom}`);
+
+			}
+		}
 	}
 });
 
@@ -882,6 +902,12 @@ frappe.ui.form.on("UOM Conversion Detail", {
 				}
 			});
 		}
+	},
+	cf_view: function(frm,cdt,cdn){
+		erpnext.item.control_uom_conversion(frm,cdt,cdn);
+	},
+	reverse: function(frm,cdt,cdn){
+		erpnext.item.control_uom_conversion(frm,cdt,cdn);
 	}
 });
 

@@ -7,11 +7,15 @@
  "engine": "InnoDB",
  "field_order": [
   "uom",
+  "cf_view",
   "conversion_factor",
-  "is_packaging"
+  "is_packaging",
+  "reverse",
+  "description"
  ],
  "fields": [
   {
+   "columns": 2,
    "fieldname": "uom",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -21,13 +25,14 @@
    "options": "UOM"
   },
   {
+   "columns": 2,
    "fieldname": "conversion_factor",
-   "precision": "5",
    "fieldtype": "Float",
-   "in_list_view": 1,
-   "label": "Conversion Factor",
+   "label": "CF Calculated",
    "oldfieldname": "conversion_factor",
-   "oldfieldtype": "Float"
+   "oldfieldtype": "Float",
+   "precision": "5",
+   "read_only": 1
   },
   {
    "default": "0",
@@ -36,12 +41,38 @@
    "fieldtype": "Check",
    "label": "Is Packaging",
    "read_only": 1
+  },
+  {
+   "columns": 4,
+   "default": "Stock UOM Value",
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Description",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "reverse",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Reverse"
+  },
+  {
+   "columns": 2,
+   "default": "1",
+   "fieldname": "cf_view",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Conversion Factor",
+   "precision": "5"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-08-05 12:53:24.601409",
+ "modified": "2024-09-09 19:41:39.099408",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "UOM Conversion Detail",
