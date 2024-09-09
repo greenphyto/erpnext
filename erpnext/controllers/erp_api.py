@@ -18,7 +18,7 @@ from erpnext.controllers.foms import (
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
-from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry as make_stock_entry_wo
+from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry as make_stock_entry_wo, create_job_card
 from erpnext.stock.doctype.purchase_receipt.purchase_receipt import make_purchase_return
 from frappe.model.workflow import apply_workflow
 from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
@@ -136,7 +136,7 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 	for d in materials:
 		d = frappe._dict(d)
 		row = se.append("items")
-		warehouse = frappe.get_value("Warehouse", {"foms_id": cint(d.sourceWarehouseId)}, debug=1)
+		warehouse = frappe.get_value("Warehouse", {"foms_id": cint(d.sourceWarehouseId)}, debug=0)
 		if not warehouse:
 			missing_warehouse.append(d.sourceWarehouseRefNo)
 		item_code = frappe.get_value("Item", {"foms_raw_id": cstr(d.rawMaterialId)}) or d.rawMaterialRefNo
@@ -173,15 +173,16 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		'rent_cost': "Rent Cost"
 	}
 	if cost_ref:
+		# currently cost calculation is takne from gross weight from Work Order
+		gross_weight = flt(wo_doc.gross_weight)
 		cost_ref = cost_ref[0]
 		for field in cost_fields:
 			amount = cost_ref.get(field)
 			if amount:
 				row = se.append("wip_additional_costs")
 				row.expense_account = expense_account
-				row.amount = amount * flt(se.fg_completed_qty)
+				row.amount = amount * gross_weight
 				row.description = descriptions[field]
-
 	return se
 
 
@@ -199,14 +200,29 @@ def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0
 	if not work_order_name:
 		frappe.throw(_(f"Missing Work Order no {ERPWorkOrderID}"))
 		
-	operation_name = frappe.db.get_value("Job Card", {
+	temp = frappe.db.get_value("Job Card", {
 		"work_order":work_order_name,
 		"operation": operationName,
-		"docstatus":0
-	})
+		"docstatus":["!=", 2]
+	}, ['name', 'docstatus'], as_dict=1) or {}
+
+	operation_name = temp.get("name")
+
+	if temp.get("docstatus") == 1:
+		return {
+			"result": False,
+			"percentage": percentage
+		}
 
 	if not operation_name:
-		frappe.throw(_(f"Missing Operation {operationName} for Work Order {ERPWorkOrderID}"), frappe.DoesNotExistError)
+		# create
+		wo_doc = frappe.get_doc("Work Order", work_order_name)
+		for d in wo_doc.operations:
+			if d.operation == operationName:
+				row = d.as_dict()
+				row.job_card_qty = wo_doc.qty
+				jc_doc = create_job_card(wo_doc, row, False, True)
+				operation_name = jc_doc.name
 	
 	job_card_name = frappe.db.get_value("Job Card", operation_name)
 

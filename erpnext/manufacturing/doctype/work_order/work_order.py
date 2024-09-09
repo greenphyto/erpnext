@@ -225,13 +225,15 @@ class WorkOrder(Document):
 
 	def calculate_operating_cost(self):
 		self.planned_operating_cost, self.actual_operating_cost = 0.0, 0.0
+		planned_qty = self.gross_weight
+		actual_qty = self.gross_weight
 		for d in self.get("operations"):
 			if d.calculation_type == "Per Hour":
 				d.planned_operating_cost = flt(d.operation_rate) * (flt(d.time_in_mins) / 60.0)
 				d.actual_operating_cost = flt(d.operation_rate) * (flt(d.actual_operation_time) / 60.0)
 			else:
-				d.planned_operating_cost = flt(d.operation_rate) * (flt(self.qty))
-				d.actual_operating_cost = flt(d.operation_rate) * (flt(d.completed_qty))
+				d.planned_operating_cost = flt(d.operation_rate) * (flt(planned_qty))
+				d.actual_operating_cost = flt(d.operation_rate) * (flt(actual_qty))
 
 			self.planned_operating_cost += flt(d.planned_operating_cost)
 			self.actual_operating_cost += flt(d.actual_operating_cost)

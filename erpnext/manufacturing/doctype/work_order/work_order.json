@@ -620,10 +620,10 @@
    "fieldtype": "Column Break"
   },
   {
+   "description": "split with comma \", \"",
    "fieldname": "sales_order_no",
    "fieldtype": "Data",
-   "label": "Sales Order No",
-   "read_only": 1
+   "label": "Sales Order No"
   },
   {
    "fieldname": "gross_weight",
@@ -636,7 +636,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-09 11:22:06.195648",
+ "modified": "2024-09-09 12:41:09.214306",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",
