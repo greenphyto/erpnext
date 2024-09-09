@@ -23,6 +23,7 @@
   "column_break1",
   "po_no",
   "po_date",
+  "pending_po",
   "company",
   "skip_delivery_note",
   "amended_from",
@@ -1634,11 +1635,11 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "request_no",
-   "fieldtype": "Link",
-   "label": "Request No",
-   "options": "Request",
-   "read_only": 1
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "pending_po",
+   "fieldtype": "Check",
+   "label": "Pending PO number?"
   },
   {
    "default": "0",
@@ -1659,6 +1660,13 @@
    "fieldname": "on_progress",
    "fieldtype": "Check",
    "label": "On Progress",
+   "read_only": 1
+   },
+   {
+   "fieldname": "request_no",
+   "fieldtype": "Link",
+   "label": "Request No",
+   "options": "Request",
    "read_only": 1
   },
   {
@@ -1686,7 +1694,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-20 11:44:54.001184",
+ "modified": "2024-09-05 10:31:04.894779",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
