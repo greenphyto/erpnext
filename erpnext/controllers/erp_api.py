@@ -73,7 +73,7 @@ def create_bom(data):
 	return {"ERPBomId":result}
 
 @frappe.whitelist()
-def create_work_order(FomsWorkOrderID, FomsLotID, productID, SalesOrderNo, qty, uom, submit=False):
+def create_work_order(FomsWorkOrderID, FomsLotID, productID, SalesOrderNo, qty, gross_weight, uom, submit=False):
 	data_name = f"Work Order {FomsLotID}"
 	save_log("Work Order", data_name, {
 		"FomsWorkOrderID":FomsWorkOrderID, 
@@ -101,7 +101,7 @@ def create_work_order(FomsWorkOrderID, FomsLotID, productID, SalesOrderNo, qty, 
 		"sales_order_no":SalesOrderNo
 	})
 
-	doc = _create_work_order(log, item_code, bom_no, qty, submit, return_doc=1)
+	doc = _create_work_order(log, item_code, bom_no, qty, gross_weight, submit, return_doc=1)
 	seeding_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(1)})
 	transplanting_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(2)})
 	harvesting_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(3)})

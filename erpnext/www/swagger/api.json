@@ -234,6 +234,7 @@
                   "SalesOrderNo": ["SO056/2024"],
                   "submit": true,
                   "qty": 2,
+                  "gross_weight": 4,
                   "uom": "Kg"
                 }
               }

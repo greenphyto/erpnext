@@ -18,6 +18,7 @@
   "column_break11",
   "company",
   "qty",
+  "gross_weight",
   "material_transferred_for_manufacturing",
   "produced_qty",
   "process_loss_qty",
@@ -623,6 +624,11 @@
    "fieldtype": "Data",
    "label": "Sales Order No",
    "read_only": 1
+  },
+  {
+   "fieldname": "gross_weight",
+   "fieldtype": "Float",
+   "label": "Gross Weight"
   }
  ],
  "icon": "fa fa-cogs",
@@ -630,7 +636,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-12 14:16:56.266580",
+ "modified": "2024-09-09 11:22:06.195648",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",
