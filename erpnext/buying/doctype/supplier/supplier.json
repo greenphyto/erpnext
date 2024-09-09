@@ -513,7 +513,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-09-03 15:45:37.363875",
+ "modified": "2024-09-09 10:54:43.740654",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",
@@ -573,7 +573,6 @@
    "role": "Accounts Manager"
   }
  ],
- "quick_entry": 1,
  "search_fields": "supplier_name, supplier_group",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
