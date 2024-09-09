@@ -1288,13 +1288,16 @@ def check_stock_uom_with_bin(item, stock_uom):
 	bin_list = frappe.db.sql("select * from tabBin where item_code=%s", item, as_dict=1)
 	for bin in bin_list:
 		if (bin.stock_value != 0 or bin.actual_qty != 0) and cstr(bin.stock_uom) != cstr(stock_uom):
-			bin_error = bin_error + _("Default Unit of Measure for Item {0} cannot be changed in Warehouse {1} because actual quantity {2} or stock value {3} not equals 0. You will need to create a new Stock Entry to reset those values to 0.<BR>").format(item, bin.warehouse, bin.actual_qty, bin.stock_value)
+			if not bin_error:
+				bin_error += "<p>Before changing the stock UOM, you may need to reset to zero value on these stock:</p><ol>"
+			bin_error += _("<li>{0}: <b>{1}</b> qty and {2} stock value</li>").format(bin.warehouse, bin.actual_qty, bin.stock_value)
 
 	if bin_list and not bin_error:
 		frappe.db.sql("""update tabBin set stock_uom=%s where item_code=%s""", (stock_uom, item))
 		frappe.msgprint(_("Unit of Measure for Item {0} updated. Don't forget to change Unit Of Measure for any pending transaction of this Item.").format(item))
 
 	if bin_error:
+		bin_error += "</ol>"
 		frappe.throw(bin_error)
 
 def get_item_defaults(item_code, company):
