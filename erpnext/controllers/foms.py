@@ -676,7 +676,10 @@ def get_stock_batch(show_progress=False):
 		return [data]
 
 	def post_process(gd, log):
-		return crate_batch_stock_recon(log) 
+		try:
+			return crate_batch_stock_recon(log) 
+		except Exception as e:
+			print("Error: ", e)
 
 	def get_key_name(log):
 		date = get_datetime()
@@ -692,14 +695,24 @@ def get_stock_batch(show_progress=False):
 	).run()
 
 # create stock recon from FOMS
-def crate_batch_stock_recon(data):
+def crate_batch_stock_recon(data={}, log_name=""):
+	if log_name:
+		log = frappe.get_doc("FOMS Data Mapping", log_name)
+		data = log.get_data()
+
 	doc = frappe.new_doc("Stock Reconciliation")
 	doc.purpose = "Stock Reconciliation"
 	doc.flags.ignore_syncing = 1
 	missing_item = []
 	already_add = []
 	for d in data.get("items"):
-		if get_datetime(d.get("expiryDate")) < get_datetime():
+		expiry_date = get_datetime(d.get("expiryDate"))
+		if not expiry_date:
+			expiry_date = get_datetime(d.get("dateOfCreation"))
+		if not expiry_date:
+			expiry_date = get_datetime("2000-01-01")
+
+		if expiry_date < get_datetime():
 			continue
 		
 		if flt(d.get("qtyLeft")) <= 0:
@@ -741,12 +754,10 @@ def crate_batch_stock_recon(data):
 		temp = ", ".join(missing_item)
 		print(f"Missing item with {temp}, total count {count}")
 
-	try:
-		doc.flags.ignore_validate = 1
-		doc.flags.ignore_mandatory = 1
-		doc.insert(ignore_permissions=1)
-	except Exception as e:
-		print("Error: ", e)
+	doc.flags.ignore_validate = 1
+	doc.flags.ignore_mandatory = 1
+	doc.insert(ignore_permissions=1)
+
 
 
 
