@@ -389,6 +389,13 @@ def _update_stock_receipt(log, api=None):
 		api = FomsAPI()
 
 	doc = frappe.get_doc("Purchase Receipt", log.docname)
+
+	# find overide
+	settings = frappe.get_doc("FOMS Integration Settings")
+	overide_map = {}
+	for d in settings.get("uom_conversion"):
+		overide_map[d.item_code] = d.conversion_factor
+
 	for d in doc.get("items"):
 		batch_foms_id = cint(frappe.get_value("Batch", d.batch_no, "foms_id"))
 		if batch_foms_id:
@@ -398,6 +405,11 @@ def _update_stock_receipt(log, api=None):
 		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id")
 		supplier_id = frappe.get_value("Supplier", doc.supplier, "foms_id")
 		raw_id = frappe.get_value("Item", d.item_code, "foms_raw_id")
+
+		qty = d.qty
+		if d.item_code in overide_map:
+			qty = d.qty * flt(overide_map[d.item_code])
+
 		# need convert current PR receive to item default
 		data = {
 			"id": batch_foms_id,
@@ -407,7 +419,7 @@ def _update_stock_receipt(log, api=None):
 			"expiryDate": expiry_date,
 			"warehouseId": warehouse_id,
 			"supplierId": supplier_id,
-			"quantity": d.qty
+			"quantity": qty
 		}
 
 		api.log = log  # working with log

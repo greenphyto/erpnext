@@ -25,7 +25,7 @@
   "auto_submit_bom",
   "auto_submit_work_order",
   "conversion_section",
-  "uom_conversion_tab",
+  "uom_conversion",
   "section_break_9",
   "get_foms_raw_material",
   "get_foms_products",
@@ -217,7 +217,7 @@
   },
   {
    "description": "This table will overide the sync process of stock quantity, to always use To UOM value as FOMS Unit",
-   "fieldname": "uom_conversion_tab",
+   "fieldname": "uom_conversion",
    "fieldtype": "Table",
    "label": "UOM Conversion",
    "options": "UOM FOMS Convertion"
@@ -226,7 +226,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-09-10 12:20:04.321619",
+ "modified": "2024-09-10 12:27:57.454773",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",
