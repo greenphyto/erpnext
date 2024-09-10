@@ -21,6 +21,7 @@ from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as 
 from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry as make_stock_entry_wo, create_job_card
 from erpnext.stock.doctype.purchase_receipt.purchase_receipt import make_purchase_return
 from frappe.model.workflow import apply_workflow
+from erpnext.stock.doctype.batch.batch import get_batch_no
 from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 from frappe.utils.file_manager import save_file, save_url
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result
@@ -133,6 +134,16 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 	se = make_stock_entry_jc(source_name)
 	se.items = []
 	missing_warehouse = []
+
+	settings = frappe.get_doc("FOMS Integration Settings")
+	overide_map = {}
+	for d in settings.get("item_conversion"):
+		if cint(d.enable):
+			overide_map[d.from_item] = {
+				"cf":d.conversion_factor,
+				"item":d.to_item
+			}
+
 	for d in materials:
 		d = frappe._dict(d)
 		row = se.append("items")
@@ -140,17 +151,29 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		if not warehouse:
 			missing_warehouse.append(d.sourceWarehouseRefNo)
 		item_code = frappe.get_value("Item", {"foms_raw_id": cstr(d.rawMaterialId)}) or d.rawMaterialRefNo
-		row.item_code = item_code
 		row.s_warehouse = warehouse
 		row.t_warehouse = wip_warehouse
 		row.uom = get_uom(d.uom)
-		if row.uom in ['Unit']:
-			qty = round(d.qty)
-		else:
-			qty = flt(d.qty, 4)
 
+		qty_conversion = 1
+		overide_item = False
+		if item_code in overide_map:
+			overide_item = True
+			qty_conversion = overide_map[item_code]['cf']
+			item_code = overide_map[item_code]['item']
+
+		batch_no = d.rawMaterialBatchRefNo
+		qty = flt(d.qty) * qty_conversion
+		if row.uom in ['Unit']:
+			qty = round(qty)
+		
+		if overide_item:
+			# get batch automaticly
+			batch_no = get_batch_no(item_code, warehouse, qty)
+
+		row.item_code = item_code
 		row.qty = qty
-		row.batch_no = d.rawMaterialBatchRefNo
+		row.batch_no = batch_no
 	
 	if missing_warehouse:
 		warn = ", ".join(list(set(missing_warehouse)))

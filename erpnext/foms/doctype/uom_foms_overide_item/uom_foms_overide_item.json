@@ -8,7 +8,7 @@
  "field_order": [
   "from_item",
   "to_item",
-  "convertion_factor",
+  "conversion_factor",
   "enable"
  ],
  "fields": [
@@ -29,28 +29,28 @@
    "reqd": 1
   },
   {
-   "columns": 2,
-   "default": "1",
-   "fieldname": "convertion_factor",
-   "fieldtype": "Float",
-   "in_list_view": 1,
-   "label": "Convertion Factor",
-   "precision": "5",
-   "reqd": 1
-  },
-  {
    "columns": 1,
    "default": "1",
    "fieldname": "enable",
    "fieldtype": "Check",
    "in_list_view": 1,
    "label": "Enable"
+  },
+  {
+   "columns": 2,
+   "default": "1",
+   "fieldname": "conversion_factor",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Conversion Factor",
+   "precision": "5",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-09-10 17:35:26.414048",
+ "modified": "2024-09-10 18:15:05.353911",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "UOM FOMS Overide Item",
