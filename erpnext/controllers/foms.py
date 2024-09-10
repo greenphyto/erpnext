@@ -1328,7 +1328,6 @@ def get_bom_for_work_order(item_code):
 def get_work_order(show_progress=False, work_order=""):
 	def get_data(gd):
 		data = gd.api.get_work_order_list(gd.farm_id, work_order=work_order)
-		print(data)
 		return data
 
 	def post_process(gd, log):
@@ -1336,7 +1335,6 @@ def get_work_order(show_progress=False, work_order=""):
 		if not detail_log:
 			return
 
-		print(1202, detail_log)
 		submit = get_foms_settings("auto_submit_work_order")
 		for d in detail_log:
 			d = frappe._dict(d)
