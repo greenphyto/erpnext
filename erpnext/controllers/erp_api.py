@@ -130,11 +130,7 @@ def start_work_order(ERPWorkOrderID):
 		se_doc = make_stock_entry_wo(doc.name, 'Material Transfer for Manufacture', transfer_material)
 		se_doc.submit()	
 
-def make_stock_entry_with_materials(source_name, materials, wip_warehouse, operation_name, work_order_name):
-	se = make_stock_entry_jc(source_name)
-	se.items = []
-	missing_warehouse = []
-
+def get_item_overide():
 	settings = frappe.get_doc("FOMS Integration Settings")
 	overide_map = {}
 	for d in settings.get("item_conversion"):
@@ -143,6 +139,14 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 				"cf":d.conversion_factor,
 				"item":d.to_item
 			}
+	return overide_map
+
+def make_stock_entry_with_materials(source_name, materials, wip_warehouse, operation_name, work_order_name):
+	se = make_stock_entry_jc(source_name)
+	se.items = []
+	missing_warehouse = []
+
+	overide_map = get_item_overide()
 
 	for d in materials:
 		d = frappe._dict(d)
@@ -386,6 +390,8 @@ def create_material_request(
 		doc.requiredBy = getdate(requiredBy)
 		doc.requested_by = requestedBy
 
+	overide_map = get_item_overide()
+
 	for d in items:
 		d = frappe._dict(d)
 		row = doc.get("items", {"foms_request_id": cstr(d.id) })
@@ -394,9 +400,19 @@ def create_material_request(
 		else:
 			row = doc.append("items")
 
+		item_code = d.rawMaterialRefNo
+		qty = d.qtyRequest
+
+		qty_conversion = 1
+		overide_item = False
+		if item_code in overide_map:
+			overide_item = True
+			qty_conversion = overide_map[item_code]['cf']
+			item_code = overide_map[item_code]['item']
+
 		row.foms_request_id = d.id
-		row.item_code = d.rawMaterialRefNo
-		row.qty = d.qtyRequest
+		row.item_code = item_code
+		row.qty = qty * qty_conversion
 		row.uom = get_uom(d.uom)
 		row.schedule_date = getdate(d.requestDate)
 	
