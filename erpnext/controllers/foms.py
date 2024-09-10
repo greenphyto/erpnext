@@ -695,7 +695,7 @@ def get_stock_batch(show_progress=False):
 	).run()
 
 # create stock recon from FOMS
-def crate_batch_stock_recon(data={}, log_name=""):
+def crate_batch_stock_recon(data={}, log_name="", dummy=False):
 	if log_name:
 		log = frappe.get_doc("FOMS Data Mapping", log_name)
 		data = log.get_data()
@@ -715,8 +715,13 @@ def crate_batch_stock_recon(data={}, log_name=""):
 		if expiry_date < get_datetime():
 			continue
 		
-		if flt(d.get("qtyLeft")) <= 0:
-			continue
+		qty = flt(d.get("qtyLeft"))
+		if qty <= 0:
+
+			if dummy:
+				qty = abs(flt(d.get("qtyAdd"))) or 1000
+			else:
+				continue
 
 		item_data = frappe.db.get_value("Item", {'foms_raw_id':cstr(d.get("rawMaterialId"))}, ['name', "is_stock_item"], as_dict=1)
 		if not item_data:
@@ -745,7 +750,7 @@ def crate_batch_stock_recon(data={}, log_name=""):
 		row = doc.append("items")
 		row.item_code = item_data.name
 		row.warehouse = warehouse
-		row.qty = d.get("qtyLeft")
+		row.qty = qty
 		row.batch_no = batch_no
 
 	if missing_item:
