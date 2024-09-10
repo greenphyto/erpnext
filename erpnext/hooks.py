@@ -445,7 +445,7 @@ scheduler_events = {
 		"erpnext.erpnext_integrations.doctype.plaid_settings.plaid_settings.automatic_synchronization",
 		"erpnext.projects.doctype.project.project.hourly_reminder",
 		"erpnext.projects.doctype.project.project.collect_project_status",
-        "erpnext.controllers.foms.update_stock_recipe",
+        "erpnext.controllers.foms.update_stock_receipt",
 	],
 	"hourly_long": [
 		"erpnext.accounts.doctype.subscription.subscription.process_all",
@@ -696,7 +696,7 @@ sync_log_method = {
     1:"erpnext.controllers.foms._update_foms_supplier",
     2:"erpnext.controllers.foms._update_foms_customer",
     3:"erpnext.controllers.foms._update_warehouse",
-    4:"erpnext.controllers.foms._update_stock_recipe",
+    4:"erpnext.controllers.foms._update_stock_receipt",
     5:"erpnext.controllers.foms._update_foms_sales_order",
     6:"erpnext.controllers.foms._update_foms_stock_recon",
     7:"erpnext.controllers.foms._update_foms_scrap_request",

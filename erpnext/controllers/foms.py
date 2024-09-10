@@ -381,10 +381,10 @@ def foms_all_warehouses():
 			print("Create", wh_name)
 
 # RAW MATERIAL RECEIPT
-def update_stock_recipe():
-	sync_controller("Purchase Receipt", _update_stock_recipe)
+def update_stock_receipt():
+	sync_controller("Purchase Receipt", _update_stock_receipt)
 
-def _update_stock_recipe(log, api=None):
+def _update_stock_receipt(log, api=None):
 	if not api:
 		api = FomsAPI()
 
