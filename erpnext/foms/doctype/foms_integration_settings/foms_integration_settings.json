@@ -24,6 +24,8 @@
   "column_break_14",
   "auto_submit_bom",
   "auto_submit_work_order",
+  "conversion_section",
+  "uom_conversion_tab",
   "section_break_9",
   "get_foms_raw_material",
   "get_foms_products",
@@ -88,7 +90,7 @@
   {
    "collapsible": 1,
    "fieldname": "section_break_9",
-   "fieldtype": "Section Break",
+   "fieldtype": "Tab Break",
    "label": "Sync Data"
   },
   {
@@ -207,12 +209,24 @@
    "fieldname": "get_batch",
    "fieldtype": "Button",
    "label": "Get Batch"
+  },
+  {
+   "fieldname": "conversion_section",
+   "fieldtype": "Tab Break",
+   "label": "Conversion"
+  },
+  {
+   "description": "This table will overide the sync process of stock quantity, to always use To UOM value as FOMS Unit",
+   "fieldname": "uom_conversion_tab",
+   "fieldtype": "Table",
+   "label": "UOM Conversion",
+   "options": "UOM FOMS Convertion"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-07-23 17:28:59.948361",
+ "modified": "2024-09-10 12:20:04.321619",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",
