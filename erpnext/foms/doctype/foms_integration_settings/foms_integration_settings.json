@@ -26,6 +26,7 @@
   "auto_submit_work_order",
   "conversion_section",
   "uom_conversion",
+  "item_conversion",
   "section_break_9",
   "get_foms_raw_material",
   "get_foms_products",
@@ -221,12 +222,19 @@
    "fieldtype": "Table",
    "label": "UOM Conversion",
    "options": "UOM FOMS Convertion"
+  },
+  {
+   "description": "When FOMS call use stock on ERP it will overide the item to another item, currently it will effect to Raw Material on Work Order and for Material Request",
+   "fieldname": "item_conversion",
+   "fieldtype": "Table",
+   "label": "Item Conversion",
+   "options": "UOM FOMS Overide Item"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-09-10 12:27:57.454773",
+ "modified": "2024-09-10 17:34:45.916022",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",

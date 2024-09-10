@@ -394,7 +394,8 @@ def _update_stock_receipt(log, api=None):
 	settings = frappe.get_doc("FOMS Integration Settings")
 	overide_map = {}
 	for d in settings.get("uom_conversion"):
-		overide_map[d.item_code] = d.conversion_factor
+		if cint(d.enable):
+			overide_map[d.item_code] = d.conversion_factor
 
 	for d in doc.get("items"):
 		batch_foms_id = cint(frappe.get_value("Batch", d.batch_no, "foms_id"))
