@@ -1091,6 +1091,9 @@ class Item(Document):
 				)
 
 	def set_material_number(self):
+		if self.disabled:
+			return
+		
 		from frappe.model.naming import parse_naming_series
 		if self.get("material_group"):
 			series = MATERIAL_MAP.get(self.material_group)

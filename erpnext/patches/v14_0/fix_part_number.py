@@ -18,7 +18,9 @@ PART_NUMBER_FIX = {
         "RM-NS-NSA":"110000",
         "RM-NS-NSB":"110001",
         "RM-NS-WW":"110002",
-        "RM-NS-OA":"110003"
+        "RM-NS-OA":"110003",
+        "RM-NS-NPA":"110004",
+        "RM-NS-NPB":"110005"
     },
     "Other Packaging":{
         "ZOT01":"130000",
@@ -83,7 +85,8 @@ def set_part_number(doc, method=""):
     if doc.material_group in PART_NUMBER_FIX:
         mat_group = PART_NUMBER_FIX[doc.material_group]
         part_number = mat_group.get(doc.item_code)
-        doc.material_number = part_number
+        if part_number:
+            doc.material_number = part_number
 
 """
 bench --site test3 execute erpnext.patches.v14_0.fix_part_number.execute
