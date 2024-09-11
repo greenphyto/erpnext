@@ -64,6 +64,13 @@ frappe.ui.form.on("Customer", {
 			}
 		});
 	},
+	is_cash_sales: function(frm){
+		if (frm.doc.is_cash_sales){
+			frm.set_value("customer_code", "C00008")
+		}else{
+			frm.set_value("customer_code", "")
+		}
+	},
 	customer_primary_address: function(frm){
 		if(frm.doc.customer_primary_address){
 			frappe.call({

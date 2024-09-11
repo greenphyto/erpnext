@@ -578,7 +578,8 @@
    "in_list_view": 1,
    "in_preview": 1,
    "in_standard_filter": 1,
-   "label": "Customer Code"
+   "label": "Customer Code",
+   "read_only_depends_on": "eval:doc.foms_id"
   },
   {
    "fieldname": "foms_id",
@@ -610,7 +611,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-06-27 12:49:34.163716",
+ "modified": "2024-09-11 18:23:25.273690",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

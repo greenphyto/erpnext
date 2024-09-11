@@ -62,10 +62,8 @@ class Customer(TransactionBase):
 		
 		if self.is_cash_sales:
 			self.customer_code = cash_sales
-		else:
+		if not self.customer_code:
 			self.customer_code = parse_naming_series(series, doc=self)
-			if self.customer_code == cash_sales:
-				self.customer_code = parse_naming_series(series, doc=self)
 
 	def get_customer_name(self):
 
