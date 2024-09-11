@@ -9,6 +9,7 @@ from frappe import _
 from frappe.core.doctype.sync_log.sync_log import update_success, create_log, delete_log
 import json, math
 from erpnext import get_company_currency, get_default_company
+from bs4 import BeautifulSoup as bs
 
 """
 Make Supplier from ERP to FOMS
@@ -861,15 +862,19 @@ def _sync_delivery_note(log, api=None):
 	farm_id = get_farm_id()
 
 	address = doc.shipping_address or doc.company_address or doc.address_display
+	address = get_html_text(address)
+	remarks = get_html_text(doc.instructions)
+
+	sales_orders = ", ".join([d.against_sales_order for d in doc.get("items")])
 
 	data = frappe._dict({
 		"farmId": 0,
 		"deliveryOrderRefNo": doc.name,
 		"erpDeliveryOrderId": doc.name,
-		"erpSaleOrderNo": "",
+		"erpSaleOrderNo": sales_orders,
 		"customer": doc.customer,
 		"customerAddress": address,
-		"remarks": doc.instructions,
+		"remarks": remarks,
 		"deliveryOrderDetails": [],
 		"id": 0
 	})
@@ -880,7 +885,7 @@ def _sync_delivery_note(log, api=None):
 			"itemName": d.item_name,
 			"qty": d.qty,
 			"uom": d.uom,
-			"remarks": d.description,
+			"remarks": get_html_text(d.description),
 			"warehouse": d.warehouse,
 			"batchNo": d.batch_no,
 			"id": 0
@@ -888,6 +893,11 @@ def _sync_delivery_note(log, api=None):
 
 	api.log = log
 	res = api.create_delivery_note(data)
+
+def get_html_text(html_text):
+	soup = bs(html_text or "", "html.parser")
+	txt = soup.get_text(separator=", ")
+	return txt
 
 # SCRAP REQUEST
 def update_foms_scrap_request():
