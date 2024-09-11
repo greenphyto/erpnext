@@ -214,7 +214,8 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 
 
 @frappe.whitelist()
-def update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage=0, rawMaterials=[]):
+def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[], ERPWorkOrderID="", erpWorkOrderID=""):
+	ERPWorkOrderID = ERPWorkOrderID or erpWorkOrderID
 	data_name = f"Update Work Order {ERPWorkOrderID}"
 	save_log("Work Order", data_name, {
 		"ERPWorkOrderID":ERPWorkOrderID, 
@@ -464,7 +465,7 @@ def create_material_return(data):
 
 	doc.save()
 
-	update_log("Material Request", data_name, doc.name)
+	update_log("Material Return", data_name, doc.name)
 
 	return {
 		"purchaseReturnNo":doc.name
@@ -560,13 +561,15 @@ def update_delivery_note_signature(data):
 
 @frappe.whitelist()
 def create_raw_material(data):
+	data = frappe._dict(data)
 	# logger
-	data_name = f"Create Raw Material {data.doNumber}"
-	save_log("Delivery Note", data_name, data)
+	name = data.get("rawMaterialRefNo")
+	data_name = f"Create Raw Material {name}"
+	save_log("Raw Material", data_name, data)
 
 	res = _create_raw_material(data)
 
-	update_log("Delivery Note", data_name, doc.name)
+	update_log("Raw Material", data_name, res)
 	
 	return {
 		"rawMaterialNo":res
