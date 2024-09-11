@@ -462,7 +462,8 @@
    "in_list_view": 1,
    "in_preview": 1,
    "in_standard_filter": 1,
-   "label": "Supplier Code"
+   "label": "Supplier Code",
+   "read_only_depends_on": "eval:doc.foms_id"
   },
   {
    "allow_in_quick_entry": 1,
@@ -513,7 +514,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-09-09 10:54:43.740654",
+ "modified": "2024-09-11 19:23:56.614217",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",
