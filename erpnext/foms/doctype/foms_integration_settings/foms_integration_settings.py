@@ -55,6 +55,12 @@ class FOMSIntegrationSettings(Document):
 	
 	def update_uom_reference(self):
 		# delete reference
+		old_doc = self.get_doc_before_save()
+		cur_list = [d.name for d in self.get("uom_conversion")]
+		for d in old_doc.get("uom_conversion"):
+			if d.name not in cur_list:
+				name = frappe.get_value("UOM Conversion Detail",{"reff_id":d.name})
+				frappe.delete_doc("UOM Conversion Detail", name)
 
 		for d in self.get("uom_conversion"):
 			if not cint(d.enable):
@@ -73,18 +79,15 @@ class FOMSIntegrationSettings(Document):
 
 			if not row:
 				row = item.append("uoms")
-			else:
-				cf_value = 1 / flt(d.conversion_factor)
-				row.uom = d.to_uom
-				row.cf_view = d.conversion_factor
-				row.conversion_factor = cf_value
-				row.reverse = 1
-				row.reff_id = d.name
+			cf_value = 1 / flt(d.conversion_factor)
+			row.uom = d.to_uom
+			row.cf_view = d.conversion_factor
+			row.conversion_factor = cf_value
+			row.reverse = 1
+			row.reff_id = d.name
 			
 			item.save()
 			
-
-
 
 
 
