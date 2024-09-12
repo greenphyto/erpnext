@@ -31,7 +31,7 @@ class PickList(Document):
 		self.set_item_locations()
 
 		# set percentage picked in SO
-		for location in self.get("locations"):
+		for location in self.get("locations") or []:
 			if (
 				location.sales_order
 				and frappe.db.get_value("Sales Order", location.sales_order, "per_picked") == 100
@@ -659,6 +659,7 @@ def update_packed_item_details(pick_list: "PickList", delivery_note) -> None:
 		packed_item.warehouse = location.warehouse
 		packed_item.batch_no = location.batch_no
 		packed_item.serial_no = location.serial_no
+		packed_item.qty = location.picked_qty
 
 
 @frappe.whitelist()
