@@ -224,7 +224,7 @@
    "options": "UOM FOMS Convertion"
   },
   {
-   "description": "When FOMS call use stock on ERP it will overide the item to another item, currently it will effect to Raw Material on Work Order and for Material Request",
+   "description": "When FOMS call use stock on ERP it will overide the item to another item, currently it will effect to Raw Material on Work Order and for Material Request.\n1 from UOM = ?? to UOM",
    "fieldname": "item_conversion",
    "fieldtype": "Table",
    "label": "Item Conversion",
@@ -234,7 +234,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-09-10 17:34:45.916022",
+ "modified": "2024-09-12 16:04:19.816602",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",

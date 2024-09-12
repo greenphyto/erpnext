@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "autoincrement",
+ "autoname": "hash",
  "creation": "2024-09-10 17:32:19.621229",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -42,10 +42,10 @@
    "columns": 2,
    "default": "1",
    "fieldname": "conversion_factor",
-   "precision": "7",
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Conversion Factor",
+   "precision": "7",
    "reqd": 1
   },
   {
@@ -70,11 +70,11 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-09-12 12:12:32.993053",
+ "modified": "2024-09-12 15:48:11.299703",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "UOM FOMS Overide Item",
- "naming_rule": "Autoincrement",
+ "naming_rule": "Random",
  "owner": "Administrator",
  "permissions": [],
  "sort_field": "modified",

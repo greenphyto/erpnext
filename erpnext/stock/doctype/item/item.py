@@ -949,6 +949,8 @@ class Item(Document):
 
 				if d.idx == 1:
 					d.description = "Stock UOM Value"
+					d.conversion_factor = 1
+					d.cf_view = 1
 					continue
 
 				if d.reverse:
