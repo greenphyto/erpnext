@@ -347,6 +347,11 @@ def submit_work_order_finish_goods(ERPWorkOrderID, qty):
 	
 	se_doc = make_stock_entry_wo(work_order_name,"Manufacture", qty, return_doc=1)
 	se_doc.save()
+
+	# debug
+	# for d in se_doc.items:
+	# 	print(352, d.item_code, d.original_item, d.qty,d.transfer_qty, d.conversion_factor, d.uom, d.stock_uom, d.batch_no)
+
 	se_doc.submit()
 
 	# update_so_working(so_sub_id, lot_id)

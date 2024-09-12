@@ -1470,7 +1470,7 @@ class StockEntry(StockController):
 			# fetch the serial_no of the first stock entry for the second stock entry
 			if self.work_order and self.purpose == "Manufacture":
 				work_order = frappe.get_doc("Work Order", self.work_order)
-				add_additional_cost(self, work_order)
+				# add_additional_cost(self, work_order)
 				add_wip_additional_cost(self, work_order)
 
 			# add finished goods item
@@ -1809,6 +1809,9 @@ class StockEntry(StockController):
 			"from_warehouse": item.warehouse,
 			"to_warehouse": "",
 			"qty": qty,
+			"uom": item.uom,
+			"transfer_qty": item.transfer_qty,
+			"conversion_factor": item.conversion_factor,
 			"item_name": item.item_name,
 			"batch_no": item.batch_no,
 			"description": item.description,
@@ -2647,9 +2650,9 @@ def get_available_materials(work_order) -> dict:
 
 	available_materials = {}
 	for row in data:
-		key = (row.item_code, row.warehouse)
+		key = (row.item_code, row.warehouse, row.uom)
 		if row.purpose != "Material Transfer for Manufacture":
-			key = (row.item_code, row.s_warehouse)
+			key = (row.item_code, row.s_warehouse, row.uom)
 
 		if key not in available_materials:
 			available_materials.setdefault(
@@ -2699,10 +2702,13 @@ def get_stock_entry_data(work_order):
 			(stock_entry_detail.s_warehouse).as_("s_warehouse"),
 			stock_entry_detail.description,
 			stock_entry_detail.stock_uom,
+			stock_entry_detail.transfer_qty,
 			stock_entry_detail.expense_account,
 			stock_entry_detail.cost_center,
 			stock_entry_detail.batch_no,
 			stock_entry_detail.serial_no,
+			stock_entry_detail.uom,
+			stock_entry_detail.conversion_factor,
 			stock_entry.purpose,
 		)
 		.where(
@@ -2739,7 +2745,7 @@ def add_wip_additional_cost(stock_entry, work_order):
 				AND s.work_order = %s
 				AND s.purpose = 'Material Transfer for Manufacture'
 				AND s.docstatus = 1
-	""", (work_order.name), as_dict=1, debug=1)
+	""", (work_order.name), as_dict=1, debug=0)
 	data_map = {}
 	for d in data:
 		key = (d.expense_account, d.description)
