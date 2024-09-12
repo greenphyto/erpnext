@@ -871,7 +871,7 @@ $.extend(erpnext.item, {
 			if (row.reverse){
 				var conf = 0;
 				if (row.cf_view){
-					conf = 1/flt(row.cf_view, 5);
+					conf = 1/flt(row.cf_view, 7);
 				}
 				frappe.model.set_value(cdt, cdn, "conversion_factor", conf);
 				frappe.model.set_value(cdt, cdn, "description", `1 ${frm.doc.stock_uom} equal to ${row.cf_view} ${row.uom}`);

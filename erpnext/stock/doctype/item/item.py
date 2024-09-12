@@ -954,7 +954,7 @@ class Item(Document):
 				if d.reverse:
 					conf = 1
 					if d.cf_view:
-						conf = 1/flt(d.cf_view, 5)
+						conf = 1/flt(d.cf_view, 7)
 					desc = f"1 {self.stock_uom} equal to {d.cf_view} {d.uom}"
 					d.conversion_factor = conf
 				else:
