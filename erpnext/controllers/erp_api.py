@@ -137,16 +137,36 @@ def get_item_overide():
 		if cint(d.enable):
 			overide_map[d.from_item] = {
 				"cf":d.conversion_factor,
-				"item":d.to_item
+				"item":d.to_item,
+				"uom":d.to_uom
 			}
 	return overide_map
+
+def get_uom_overide(reverse=False):
+	settings = frappe.get_doc("FOMS Integration Settings")
+	overide_map = {}
+	for d in settings.get("uom_conversion"):
+		if cint(d.enable):
+			if not reverse:
+				overide_map[(d.item_code, d.from_uom)] = {
+					"cf":d.conversion_factor,
+					"uom":d.to_uom
+				}
+			else:
+				cf = 1/ flt(d.conversion_factor)
+				overide_map[(d.item_code, d.to_uom)] = {
+					"cf": cf,
+					"uom":d.from_uom
+				}
+	return overide_map
+
 
 def make_stock_entry_with_materials(source_name, materials, wip_warehouse, operation_name, work_order_name):
 	se = make_stock_entry_jc(source_name)
 	se.items = []
 	missing_warehouse = []
 
-	overide_map = get_item_overide()
+	overide_item = get_item_overide()
 
 	for d in materials:
 		d = frappe._dict(d)
@@ -157,26 +177,32 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		item_code = frappe.get_value("Item", {"foms_raw_id": cstr(d.rawMaterialId)}) or d.rawMaterialRefNo
 		row.s_warehouse = warehouse
 		row.t_warehouse = wip_warehouse
-		row.uom = get_uom(d.uom)
-
-		qty_conversion = 1
-		overide_item = False
-		if item_code in overide_map:
-			overide_item = True
-			qty_conversion = overide_map[item_code]['cf']
-			item_code = overide_map[item_code]['item']
-
+		uom = get_uom(d.uom)
+		qty = flt(d.qty)
 		batch_no = d.rawMaterialBatchRefNo
-		qty = flt(d.qty) * qty_conversion
-		if row.uom in ['Unit']:
+
+		# Overide Item
+		qty_conversion = 1
+		is_overide_item = False
+		if item_code in overide_item:
+			is_overide_item = True
+			qty_conversion = overide_item[item_code]['cf']
+			uom = overide_item[item_code]['uom']
+			item_code = overide_item[item_code]['item']
+
+		qty = qty * qty_conversion
+		if uom in ['Unit']:
 			qty = round(qty)
+
+		qty = flt(qty, 5)
 		
-		if overide_item:
+		if is_overide_item:
 			# get batch automaticly
 			batch_no = get_batch_no(item_code, warehouse, qty)
 
 		row.item_code = item_code
 		row.qty = qty
+		row.uom = uom
 		row.batch_no = batch_no
 	
 	if missing_warehouse:

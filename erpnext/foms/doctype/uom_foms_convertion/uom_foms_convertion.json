@@ -7,7 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "item_code",
-  "stock_uom",
+  "from_uom",
   "to_uom",
   "conversion_factor",
   "enable"
@@ -20,14 +20,6 @@
    "label": "Item Code",
    "options": "Item",
    "reqd": 1
-  },
-  {
-   "fetch_from": "item_code.stock_uom",
-   "fetch_if_empty": 1,
-   "fieldname": "stock_uom",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "From UOM"
   },
   {
    "fieldname": "to_uom",
@@ -51,12 +43,21 @@
    "fieldtype": "Check",
    "in_list_view": 1,
    "label": "Enable"
+  },
+  {
+   "fetch_from": "item_code.stock_uom",
+   "fetch_if_empty": 1,
+   "fieldname": "from_uom",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "From UOM",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-09-10 12:21:30.182277",
+ "modified": "2024-09-12 12:05:58.637211",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "UOM FOMS Convertion",
