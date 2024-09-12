@@ -17,6 +17,7 @@ from erpnext.accounts.report.utils import convert_wrap_report_data
 
 
 def execute(filters=None):
+	filters = frappe._dict(filters)
 	period_list = get_period_list(
 		filters.from_fiscal_year,
 		filters.to_fiscal_year,
