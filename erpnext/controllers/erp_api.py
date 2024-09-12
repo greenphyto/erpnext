@@ -138,7 +138,7 @@ def get_item_overide():
 			overide_map[d.from_item] = {
 				"cf":d.conversion_factor,
 				"item":d.to_item,
-				"uom":d.to_uom
+				"uom":d.from_uom
 			}
 	return overide_map
 
@@ -187,7 +187,7 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		original_item = None
 		if item_code in overide_item:
 			is_overide_item = True
-			qty_conversion = overide_item[item_code]['cf']
+			# qty_conversion = overide_item[item_code]['cf']
 			uom = overide_item[item_code]['uom']
 			original_item = cstr(item_code)
 			item_code = overide_item[item_code]['item']
@@ -196,7 +196,7 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		if uom in ['Unit']:
 			qty = round(qty)
 
-		qty = flt(qty, 5)
+		qty = flt(qty, 7)
 		
 		if is_overide_item:
 			# get batch automaticly
@@ -289,9 +289,9 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	if rawMaterials:
 		se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
 		se_doc.insert(ignore_permissions=1)
-		for d in se_doc.items:
-			print(311, d.item_code, d.original_item, d.qty, d.conversion_factor)
-		# se_doc.submit()
+		# for d in se_doc.items:
+		# 	print(311, d.item_code, d.original_item, d.qty,d.transfer_qty, d.conversion_factor, d.uom, d.stock_uom)
+		se_doc.submit()
 
 	job_card = frappe.get_doc("Job Card", job_card_name)
 
