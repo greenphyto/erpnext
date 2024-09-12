@@ -113,7 +113,7 @@
   {
    "default": "1",
    "fieldname": "conversion_factor",
-   "precision": "5",
+   "precision": "7",
    "fieldtype": "Float",
    "hidden": 1,
    "label": "Conversion Factor",
@@ -195,7 +195,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-11-07 17:17:21.670762",
+ "modified": "2022-11-07 17:17:21.670763",
  "modified_by": "Administrator",
  "module": "Subcontracting",
  "name": "Subcontracting Receipt Supplied Item",

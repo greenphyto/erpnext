@@ -103,7 +103,7 @@
   {
    "default": "1",
    "fieldname": "conversion_factor",
-   "precision": "5",
+   "precision": "7",
    "fieldtype": "Float",
    "label": "Conversion Factor",
    "no_copy": 1,
@@ -112,7 +112,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-11-25 20:39:19.973438",
+ "modified": "2020-11-25 20:39:19.973439",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Putaway Rule",

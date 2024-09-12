@@ -268,7 +268,7 @@
   {
    "depends_on": "eval:doc.uom != doc.stock_uom",
    "fieldname": "conversion_factor",
-   "precision": "5",
+   "precision": "7",
    "fieldtype": "Float",
    "label": "Conversion Factor",
    "oldfieldname": "conversion_factor",
@@ -1015,7 +1015,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-07-25 14:46:22.147247",
+ "modified": "2024-07-25 14:46:22.147248",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Purchase Receipt Item",
