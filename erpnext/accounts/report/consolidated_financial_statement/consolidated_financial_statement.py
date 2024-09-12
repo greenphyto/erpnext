@@ -40,6 +40,7 @@ from erpnext.accounts.report.utils import convert, convert_to_presentation_curre
 
 
 def execute(filters=None):
+	filters.periodicity = "Yearly"
 	columns, data, message, chart = [], [], [], []
 
 	if not filters.get("company"):
@@ -82,7 +83,7 @@ def get_balance_sheet_data(fiscal_year, companies, columns, filters):
 
 	company_currency = get_company_currency(filters)
 	provisional_profit_loss, total_credit = get_provisional_profit_loss(
-		asset, liability, equity, companies, filters.get("company"), company_currency, True
+		asset, liability, equity, companies, filters.get("company"), company_currency, True, filters
 	)
 
 	message, opening_balance = prepare_companywise_opening_balance(
