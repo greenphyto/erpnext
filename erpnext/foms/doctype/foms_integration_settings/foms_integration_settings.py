@@ -6,7 +6,7 @@ from frappe.model.document import Document
 from urllib.parse import urljoin
 from six import string_types
 from frappe.model.document import Document
-from frappe.utils import cint
+from frappe.utils import cint, flt
 from frappe.core.doctype.sync_log.sync_log import update_success, update_error
 
 class FOMSIntegrationSettings(Document):
@@ -49,6 +49,43 @@ class FOMSIntegrationSettings(Document):
 	def get_batch(self):
 		frappe.msgprint("Get batch running..")
 		frappe.enqueue("erpnext.controllers.foms.get_batch", show_progress=True)
+
+	def validate(self):
+		self.update_uom_reference()
+	
+	def update_uom_reference(self):
+		# delete reference
+
+		for d in self.get("uom_conversion"):
+			if not cint(d.enable):
+				continue
+
+			item = frappe.get_doc("Item", d.item_code)
+			row = None
+			for r in item.get("uoms"):
+				if r.reff_id == d.name:
+					row = r
+
+			if not row:
+				for r in item.get("uoms"):
+					if r.uom == d.to_uom:
+						row = r
+
+			if not row:
+				row = item.append("uoms")
+			else:
+				cf_value = 1 / flt(d.conversion_factor)
+				row.uom = d.to_uom
+				row.cf_view = d.conversion_factor
+				row.conversion_factor = cf_value
+				row.reverse = 1
+				row.reff_id = d.name
+			
+			item.save()
+			
+
+
+
 
 
 def is_enable_integration():

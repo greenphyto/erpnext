@@ -947,6 +947,22 @@ class Item(Document):
 				if value:
 					d.conversion_factor = value
 
+				if d.idx == 1:
+					d.description = "Stock UOM Value"
+					continue
+
+				if d.reverse:
+					conf = 1
+					if d.cf_view:
+						conf = 1/flt(d.cf_view, 5)
+					desc = f"1 {self.stock_uom} equal to {d.cf_view} {d.uom}"
+					d.conversion_factor = conf
+				else:
+					desc = f"1 {d.uom} equal to {d.cf_view} {self.stock_uom}"
+					d.conversion_factor = flt(d.cf_view)
+
+				d.description = desc
+
 	def validate_attributes(self):
 		if not (self.has_variants or self.variant_of):
 			return
