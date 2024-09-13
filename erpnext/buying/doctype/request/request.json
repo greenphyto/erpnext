@@ -8,7 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "department",
-  "foms_order_id",
+  "foms_id",
   "column_break_3",
   "posting_date",
   "delivery_date",
@@ -21,7 +21,8 @@
   "total_weight",
   "section_break_9",
   "amended_from",
-  "workflow_state"
+  "workflow_state",
+  "req_id"
  ],
  "fields": [
   {
@@ -94,12 +95,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "foms_order_id",
-   "fieldtype": "Data",
-   "label": "FOMS Order ID",
-   "read_only": 1
-  },
-  {
    "fieldname": "section_break_8",
    "fieldtype": "Section Break"
   },
@@ -112,12 +107,24 @@
    "fieldname": "non_package_item",
    "fieldtype": "Check",
    "label": "Non Package Item"
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "req_id",
+   "fieldtype": "Data",
+   "label": "Request ID",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-03 11:26:13.590439",
+ "modified": "2024-09-13 11:30:08.347553",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request",

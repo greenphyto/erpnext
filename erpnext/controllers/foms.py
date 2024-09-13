@@ -52,6 +52,7 @@ METHOD_MAP = {
 	"Scrap Request":7,
 	"Department":8,
 	"Delivery Note":9,
+	"Request":10,
 }
 
 UOM_KG_CONVERTION = {
@@ -786,7 +787,7 @@ def _update_foms_sales_order(log, api=None):
 	api.log = log
 
 	if doc.docstatus == 1:
-		customer = frappe.get_doc("Customer", doc.customer)
+		customer_foms_id = frappe.get_value("Customer", doc.customer, "foms_id")
 		farm_id = get_farm_id()
 
 		so_id = cint(doc.get("foms_id"))
@@ -816,7 +817,7 @@ def _update_foms_sales_order(log, api=None):
 		data = {
 			"orderType": "One-off",
 			"deliveryDate": getdate(doc.delivery_date),
-			"customerId": customer.foms_id or "",
+			"customerId": customer_foms_id or "",
 			"purchaseOrderNumber": doc.po_no or "-",
 			"saleOrder": {
 				"saleOrderNumber":doc.name, 
@@ -898,6 +899,91 @@ def get_html_text(html_text):
 	soup = bs(html_text or "", "html.parser")
 	txt = soup.get_text(separator=", ")
 	return txt
+
+# REQUEST FORM
+def update_foms_forecast():
+	sync_controller("Request", _update_foms_forecast)
+
+def _update_foms_forecast(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Request", log.docname)
+	api.log = log
+
+	def day_selected(date):
+		key_list = ['isMonday', 'isTuesday', 'isWednesday', 'isThursday', 'isFriday', 'isSaturday', 'isSunday']
+		day_no = getdate(date).weekday()
+		return key_list[day_no]
+
+	if doc.docstatus == 1:
+		department_foms_id = frappe.get_value("Department", doc.department, "foms_id")
+		farm_id = get_farm_id()
+
+		so_id = cint(doc.get("foms_id"))
+		req_id = cint(doc.get("req_id"))
+		delivery_date = getdate(doc.delivery_date)
+		end_delivery_date = add_days(delivery_date, 1)
+
+		products = []
+		
+		for d in doc.get("items"):
+			temp = frappe.get_value("Item", d.item_code, ["foms_product_id", "stock_uom"], as_dict=1)
+			product_id = temp.foms_product_id
+			stock_uom = temp.stock_uom
+			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
+			child_id = cint(d.get("foms_id"))
+			item = {
+				"isWeightOrder": False,
+				"productId": cint(product_id),
+				"quantity": d.qty,
+				"uom": convert_uom(stock_uom),
+				"totalNetWeight": d.weight,
+				"isRootInclude": "false",
+				"unitPrice": d.rate,
+				"id":child_id
+			}
+			if package_id:
+				item["packageId"] = cint(package_id)
+
+			products.append(item)
+
+		data = {
+			"orderType": "Forecast",
+			"startDeliveryDate": delivery_date,
+			"endDeliveryDate": end_delivery_date,
+			"departmentId ": department_foms_id or "",
+			"saleOrder": {
+				"saleOrderNumber":doc.name, 
+				"farmId": farm_id,
+				"subSaleOrders": products,
+				"id": so_id
+			},
+			"farmId": farm_id,
+			"id":req_id
+		}
+
+		day_name = day_selected(delivery_date)
+		data[day_name] = True
+
+		res = api.create_forecast_order(data)
+		if res:
+			doc.foms_id = res['saleOrder']['id']
+			doc.req_id = res['id']
+			for d in res['saleOrder']['subSaleOrders']:
+				item_code = frappe.get_value("Item", {"foms_product_id": cstr(d['productId'])})
+				packaging = frappe.get_value("Packaging", {"foms_id": cstr(d['packageId'])})
+				# key on product id, package id, uom, quantity, unit price
+				for row in doc.get("items", {
+					"item_code":item_code,
+					"uom":packaging
+				}):
+					row.foms_id = d['id']
+					row.db_update()
+			doc.db_update()
+	
+	if doc.docstatus == 2:
+		res = api.cancel_sales_order(doc.foms_id)
 
 # SCRAP REQUEST
 def update_foms_scrap_request():

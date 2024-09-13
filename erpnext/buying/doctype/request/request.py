@@ -55,7 +55,7 @@ def create_request_form(data):
 
 	# find exists
 
-	name = frappe.db.exists("Request", {"foms_order_id":data.foms_order_id})
+	name = frappe.db.exists("Request", {"foms_id":data.foms_order_id})
 	if name:
 		doc = frappe.get_doc("Request", name)
 		return doc.name

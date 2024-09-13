@@ -405,8 +405,9 @@ doc_events = {
     "Department": {
         "validate":"erpnext.controllers.foms.sync_log",
 	},
-    "Item": {
-        "before_validate":"erpnext.patches.v14_0.fix_part_number.set_part_number"
+    "Request": {
+        "on_submit":"erpnext.controllers.foms.sync_log",
+        "on_cancel":"erpnext.controllers.foms.sync_log",
 	}
 }
 
@@ -702,4 +703,5 @@ sync_log_method = {
     7:"erpnext.controllers.foms._update_foms_scrap_request",
     8:"erpnext.controllers.foms._update_foms_department",
     9:"erpnext.controllers.foms._sync_delivery_note",
+    10:"erpnext.controllers.foms._update_foms_forecast",
 }

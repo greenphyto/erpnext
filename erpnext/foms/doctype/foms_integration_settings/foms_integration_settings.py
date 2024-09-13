@@ -442,6 +442,12 @@ class FomsAPI():
 		res = self.req("DELETE", f"/userportal/CustomerOrder/CancelSaleOrder?SaleOrderId={id}&IsOnlyThisOne=true")
 		return res
 
+	def create_forecast_order(self, data):
+		data = self.convert_data(data)
+		res = self.req("POST", "/userportal/CustomerOrder/CreateOrUpdateCustomerOrder", data=data)
+
+		return res
+
 	
 """
 TODO:
