@@ -11,6 +11,7 @@
   "workstation_name",
   "section_break_2",
   "item_code",
+  "version",
   "column_break_4",
   "operation",
   "section_break_6",
@@ -37,7 +38,8 @@
   "description",
   "working_hours_section",
   "holiday_list",
-  "working_hours"
+  "working_hours",
+  "amended_from"
  ],
  "fields": [
   {
@@ -234,12 +236,28 @@
   {
    "fieldname": "section_break_6",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Workstation",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "version",
+   "fieldtype": "Data",
+   "label": "Version",
+   "read_only": 1
   }
  ],
  "icon": "icon-wrench",
  "idx": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2024-08-13 16:25:00.834197",
+ "modified": "2024-09-17 00:39:02.191073",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Workstation",

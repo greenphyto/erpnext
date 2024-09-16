@@ -13,8 +13,11 @@ from frappe.utils import (
 	formatdate,
 	getdate,
 	time_diff_in_seconds,
-	to_timedelta,
+	to_timedelta, cstr
 )
+from typing import Dict, List
+import re
+
 
 from erpnext.support.doctype.issue.issue import get_holidays
 
@@ -33,14 +36,74 @@ class OverlapError(frappe.ValidationError):
 
 class Workstation(Document):
 	def autoname(self):
+		name = ""
 		if self.item_code:
 			if not self.operation:
 				frappe.throw(_("Operation needed if set item code value"))
-			self.name = f"Farm-{self.item_code}-{self.operation}"
+			name = f"Farm-{self.item_code}-{self.operation}"
 		else:
 			if not self.workstation_name:
 				frappe.throw(_("Please set workstation name"))
-			self.name = self.workstation_name
+			name = self.workstation_name
+			
+		existing_wss = frappe.get_all(
+			"Workstation", filters={
+				"item_code": self.item_code,
+				"operation":self.operation,
+				"amended_from": ["is", "not set"]}, pluck="name"
+		)
+
+		if existing_wss:
+			index = self.get_next_version_index(existing_wss)
+		else:
+			index = 1
+
+		suffix = "%.3i" % index  # convert index to string (1 -> "001")
+		ws_name = f"{name}-{suffix}"
+
+		if frappe.db.exists("Workstation", name):
+			conflicting_ws = frappe.get_doc("Workstation", name)
+
+			if conflicting_ws.item_code != self.item_code:
+				msg = _("A Workstation with name {0} already exists for item {1} and operation {2}.").format(
+					frappe.bold(name), frappe.bold(conflicting_ws.item_code), frappe.bold(conflicting_ws.operation)
+				)
+
+				frappe.throw(
+					_("{0}{1} Did you rename the item? Please contact Administrator / Tech support").format(
+						msg, "<br>"
+					)
+				)
+
+		self.name = ws_name
+		self.version = index
+
+	@staticmethod
+	def get_next_version_index(existing_ws: List[str]) -> int:
+		# split by "/" and "-"
+		delimiters = ["/", "-"]
+		pattern = "|".join(map(re.escape, delimiters))
+		ws_parts = [re.split(pattern, ws_name) for ws_name in existing_ws]
+
+		# filter out BOMs that do not follow the following formats: BOM/ITEM/001, BOM-ITEM-001
+		valid_ws_parts = list(filter(lambda x: len(x) > 1 and x[-1], ws_parts))
+
+		# extract the current index from the BOM parts
+		if valid_ws_parts:
+			# handle cancelled and submitted documents
+			indexes = []
+			for part in valid_ws_parts:
+				temp = cint(part[-1])
+				if len(str(temp)) > 3:
+					temp = cint(str(temp)[len(str(temp)) - 3:])
+
+				indexes.append(temp)
+
+			index = max(indexes) + 1
+		else:
+			index = 1
+
+		return index
 
 	def validate(self):
 		self.validate_per_kg()
