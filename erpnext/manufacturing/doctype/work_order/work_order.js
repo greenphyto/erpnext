@@ -558,7 +558,12 @@ frappe.ui.form.on("Work Order Operation", {
 				frappe.model.set_value(cdt,cdn,"version", "Custom");
 			}
 		})
-	}
+	},
+	electrical_cost: function(frm,cdt,cdn){ erpnext.work_order.calculate_cost_rate(frm,cdt,cdn) },
+	consumable_cost: function(frm,cdt,cdn){ erpnext.work_order.calculate_cost_rate(frm,cdt,cdn) },
+	machinery_cost: function(frm,cdt,cdn){ erpnext.work_order.calculate_cost_rate(frm,cdt,cdn) },
+	wages_cost: function(frm,cdt,cdn){ erpnext.work_order.calculate_cost_rate(frm,cdt,cdn) },
+	rent_cost: function(frm,cdt,cdn){ erpnext.work_order.calculate_cost_rate(frm,cdt,cdn) },
 });
 
 erpnext.work_order = {
@@ -566,7 +571,7 @@ erpnext.work_order = {
 		var d = locals[cdt][cdn];
 		if (d.workstation){
 			frappe.db.get_doc("Workstation", d.workstation).then(doc=>{
-				d.version = doc.version or 1; 
+				d.version = doc.version || 1; 
 				if(in_list(["Per KG", "Per Qty"], doc.calculation_type)){
 					d.electrical_cost = doc.per_qty_rate_electricity
 					d.consumable_cost = doc.per_qty_rate_consumable
@@ -580,6 +585,7 @@ erpnext.work_order = {
 					d.wages_cost = doc.hour_rate_labour
 					d.rent_cost = doc.hour_rate_rent
 				}
+				erpnext.work_order.calculate_cost_rate(frm,cdt,cdn);
 				frm.refresh_field("operations");
 			})
 
@@ -590,7 +596,15 @@ erpnext.work_order = {
 			d.wages_cost = 0;
 			d.rent_cost = 0;
 		}
+		erpnext.work_order.calculate_cost_rate(frm,cdt,cdn);
 		frm.refresh_field("operations");
+	},
+	calculate_cost_rate: function(frm,cdt,cdn){
+		var d = locals[cdt][cdn];
+		var opr_rate = d.electrical_cost + d.consumable_cost + d.machinery_cost + d.wages_cost + d.rent_cost;
+		frappe.model.set_value(cdt,cdn,"operation_rate", opr_rate);
+		erpnext.work_order.calculate_cost(frm.doc);
+		erpnext.work_order.calculate_total_cost(frm);
 	},
 	set_custom_buttons: function(frm) {
 		var doc = frm.doc;
@@ -706,10 +720,10 @@ erpnext.work_order = {
 			for(var i=0;i<op.length;i++) {
 
 				var planned_operating_cost = 0;
-				if (op[1].calculation_type=="Per Qty"){
-					planned_operating_cost = flt(flt(op[i].operation_rate) * doc.qty, 2);
-				}else{
+				if (op[1].calculation_type=="Per Hour"){
 					planned_operating_cost = flt(flt(op[i].operation_rate) * flt(op[i].time_in_mins) / 60, 2);
+				}else{
+					planned_operating_cost = flt(flt(op[i].operation_rate) * doc.gross_weight, 2);
 				}
 				frappe.model.set_value('Work Order Operation', op[i].name,
 					"planned_operating_cost", planned_operating_cost);
