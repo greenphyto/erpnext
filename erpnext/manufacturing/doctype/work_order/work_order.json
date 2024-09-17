@@ -337,7 +337,6 @@
    "label": "Expected Delivery Date"
   },
   {
-   "collapsible": 1,
    "fieldname": "operations_section",
    "fieldtype": "Section Break",
    "label": "Operations",
@@ -636,7 +635,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-09 12:41:09.214306",
+ "modified": "2024-09-17 15:29:38.854648",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",

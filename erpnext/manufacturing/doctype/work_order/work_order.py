@@ -95,6 +95,9 @@ class WorkOrder(Document):
 
 		self.set_required_items()
 
+	def on_update_after_submit(self):
+		self.validate_cost_editing()
+
 	def autoname(self):
 		if cint(self.operation_no):
 			alpha_map = ["A", "B", "C", "D", "E", "F"]
@@ -164,6 +167,27 @@ class WorkOrder(Document):
 					self.validate_work_order_against_so()
 			else:
 				frappe.throw(_("Sales Order {0} is not valid").format(self.sales_order))
+
+	def validate_cost_editing(self):
+		old_doc = self.get_doc_before_save()
+		if not old_doc:
+			return
+		
+		cost_fields = ['electrical_cost', 'consumable_cost', 'machinery_cost', 'wages_cost', 'rent_cost']
+		for d in self.get("operations"):
+			edit = False
+			row = old_doc.get("operations", {"name":d.name})
+			if row:
+				row = row[0]
+			else:
+				continue
+
+			for field in cost_fields:
+				if d.get(field) != row.get(field):
+					edit = True
+			
+			if edit and flt(d.completed_qty) != 0:
+				frappe.throw(_(f"Cannot editing cost for completed operation <b>{d.operation}</b>"))
 
 	def update_sales_order(self, state="Start"):
 		if not self.sales_order_no:
