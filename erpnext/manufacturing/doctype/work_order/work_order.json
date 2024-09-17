@@ -364,6 +364,7 @@
    "label": "Operation Cost"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "planned_operating_cost",
    "fieldtype": "Currency",
    "label": "Planned Operating Cost",
@@ -371,6 +372,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "actual_operating_cost",
    "fieldtype": "Currency",
    "label": "Actual Operating Cost",
@@ -390,6 +392,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_operating_cost",
    "fieldtype": "Currency",
    "label": "Total Operating Cost",
@@ -635,7 +638,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-17 15:29:38.854648",
+ "modified": "2024-09-17 16:02:20.997795",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",

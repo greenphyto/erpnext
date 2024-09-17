@@ -97,6 +97,8 @@ class WorkOrder(Document):
 
 	def on_update_after_submit(self):
 		self.validate_cost_editing()
+		self.calculate_operating_cost()
+		self.db_update()
 
 	def autoname(self):
 		if cint(self.operation_no):
@@ -175,6 +177,7 @@ class WorkOrder(Document):
 		
 		cost_fields = ['electrical_cost', 'consumable_cost', 'machinery_cost', 'wages_cost', 'rent_cost']
 		for d in self.get("operations"):
+			total_rate = 0
 			edit = False
 			row = old_doc.get("operations", {"name":d.name})
 			if row:
@@ -185,9 +188,14 @@ class WorkOrder(Document):
 			for field in cost_fields:
 				if d.get(field) != row.get(field):
 					edit = True
+				total_rate += flt(d.get(field))
 			
 			if edit and flt(d.completed_qty) != 0:
 				frappe.throw(_(f"Cannot editing cost for completed operation <b>{d.operation}</b>"))
+
+			d.operation_rate = total_rate		
+	
+
 
 	def update_sales_order(self, state="Start"):
 		if not self.sales_order_no:
