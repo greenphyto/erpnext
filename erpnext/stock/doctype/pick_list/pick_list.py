@@ -19,6 +19,7 @@ from erpnext.selling.doctype.sales_order.sales_order import (
 	make_delivery_note as create_delivery_note_from_sales_order,
 )
 from erpnext.stock.get_item_details import get_conversion_factor
+from erpnext.stock.doctype.batch.batch import get_batch_qty
 
 # TODO: Prioritize SO or WO group warehouse
 
@@ -321,6 +322,13 @@ def get_items_with_location_and_quantity(item_doc, item_location_map, docstatus)
 		if item_location.serial_no:
 			serial_nos = "\n".join(item_location.serial_no[0 : cint(stock_qty)])
 
+		balance_qty = get_batch_qty(
+			batch_no=item_location.batch_no, 
+			warehouse=item_location.warehouse, 
+			item_code=item_location.item_code, 
+			posting_date=today()
+		)
+
 		locations.append(
 			frappe._dict(
 				{
@@ -329,6 +337,7 @@ def get_items_with_location_and_quantity(item_doc, item_location_map, docstatus)
 					"warehouse": item_location.warehouse,
 					"serial_no": serial_nos,
 					"batch_no": item_location.batch_no,
+					"balance_qty": balance_qty
 				}
 			)
 		)
