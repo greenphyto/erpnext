@@ -98,6 +98,7 @@ class WorkOrder(Document):
 	def on_update_after_submit(self):
 		self.validate_cost_editing()
 		self.calculate_operating_cost()
+		self.write_opr_version()
 		self.db_update()
 
 	def autoname(self):
@@ -195,7 +196,12 @@ class WorkOrder(Document):
 
 			d.operation_rate = total_rate		
 	
-
+	def write_opr_version(self):
+		for d in self.get("operations"):
+			if d.enable_cost_editing:
+				d.version = "Custom"
+			else:
+				d.version = frappe.get_value("Workstation", d.workstation, "version") or 1
 
 	def update_sales_order(self, state="Start"):
 		if not self.sales_order_no:
