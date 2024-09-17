@@ -1045,7 +1045,7 @@ def _update_foms_stock_recon(log, api=None):
 			success += 1
 			continue
 
-		item_id = frappe.get_value("Item", d.item_code, "foms_id")
+		item_id = frappe.get_value("Item", d.item_code, "foms_raw_id")
 		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id")
 		batch_id = frappe.get_value("Batch", d.batch_no, "foms_id")
 		data = {
