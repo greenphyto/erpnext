@@ -552,12 +552,46 @@ frappe.ui.form.on("Work Order Operation", {
 		erpnext.work_order.confirm_reset_operation_value(frm,cdt,cdn,"enable_cost_editing", 
 			'Are you sure to reset the values?'
 		).then(r=>{
-			console.log("result", r)
+			if (r){
+				erpnext.work_order.get_workstation_cost(frm, cdt, cdn);
+			}else{
+				frappe.model.set_value(cdt,cdn,"version", "Custom");
+			}
 		})
 	}
 });
 
 erpnext.work_order = {
+	get_workstation_cost: function(frm,cdt,cdn){
+		var d = locals[cdt][cdn];
+		if (d.workstation){
+			frappe.db.get_doc("Workstation", d.workstation).then(doc=>{
+				d.version = doc.version or 1; 
+				if(in_list(["Per KG", "Per Qty"], doc.calculation_type)){
+					d.electrical_cost = doc.per_qty_rate_electricity
+					d.consumable_cost = doc.per_qty_rate_consumable
+					d.machinery_cost = doc.per_qty_rate_machinery
+					d.wages_cost = doc.per_qty_rate_wages
+					d.rent_cost = 0
+				}else{
+					d.electrical_cost = doc.hour_rate_electricity
+					d.consumable_cost = doc.hour_rate_consumable
+					d.machinery_cost = 0
+					d.wages_cost = doc.hour_rate_labour
+					d.rent_cost = doc.hour_rate_rent
+				}
+				frm.refresh_field("operations");
+			})
+
+		}else{
+			d.electrical_cost = 0;
+			d.consumable_cost = 0;
+			d.machinery_cost = 0;
+			d.wages_cost = 0;
+			d.rent_cost = 0;
+		}
+		frm.refresh_field("operations");
+	},
 	set_custom_buttons: function(frm) {
 		var doc = frm.doc;
 
@@ -834,7 +868,7 @@ erpnext.work_order = {
 			var d = locals[cdt][cdn];
 			var field = grid.grid_form.fields_dict[field_reff];
 
-			if (field.old_value==0) return resolve(true);
+			if (field.old_value==0) return resolve(false);
 			
 			return confirm_action().then((reset)=>{
 				if (reset){
