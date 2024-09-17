@@ -547,6 +547,14 @@ frappe.ui.form.on("Work Order Operation", {
 		erpnext.work_order.calculate_cost(frm.doc);
 		erpnext.work_order.calculate_total_cost(frm);
 	},
+	enable_cost_editing: function(frm,cdt,cdn){
+		var d = locals[cdt][cdn];
+		erpnext.work_order.confirm_reset_operation_value(frm,cdt,cdn,"enable_cost_editing", 
+			'Are you sure to reset the values?'
+		).then(r=>{
+			console.log("result", r)
+		})
+	}
 });
 
 erpnext.work_order = {
@@ -802,6 +810,42 @@ erpnext.work_order = {
 				}
 			}
 		});
+	},
+	confirm_reset_operation_value(frm,cdt,cdn, field_reff, msg){
+		var me = this;
+		function confirm_action(){
+			return new Promise((resolve)=>{
+				frappe.confirm(
+					msg,
+					function(){
+						resolve(true);
+					},
+					function(){
+						resolve(false)
+					}
+				)
+			});
+		}
+
+		return new Promise((resolve, reject) => {
+			var grid = frm.fields_dict.operations.grid.grid_rows_by_docname[cdn];
+			if(!grid) return resolve(false);
+
+			var d = locals[cdt][cdn];
+			var field = grid.grid_form.fields_dict[field_reff];
+
+			if (field.old_value==0) return resolve(true);
+			
+			return confirm_action().then((reset)=>{
+				if (reset){
+					return  resolve(true)
+				}else{
+					d[field_reff] = field.old_value;
+					field.refresh();
+					return resolve(false);
+				}
+			})
+		})
 	}
 };
 
