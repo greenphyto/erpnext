@@ -103,12 +103,20 @@ class Workstation(Document):
 		else:
 			index = 1
 
+		if existing_ws and index == 1:
+			index += 1
+		
 		return index
 
 	def validate(self):
+		self.set_version_missing()
 		self.validate_per_kg()
 		self.validate_calculation_type()
 		self.set_hour_rate()
+
+	def set_version_missing(self):
+		if not self.version:
+			self.version = 1
 
 	def before_save(self):
 		self.set_data_based_on_workstation_type()
