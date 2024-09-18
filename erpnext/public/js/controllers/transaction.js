@@ -1861,6 +1861,11 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 			});
 
 			me.trigger_price_list_rate();
+		} else if (item.has_pricing_rule && !item.pricing_rules && !me.frm.doc.ignore_pricing_rule){
+			fields.forEach(f => {
+				item[f] = 0;
+			});
+			me.trigger_price_list_rate();
 		}
 	}
 
