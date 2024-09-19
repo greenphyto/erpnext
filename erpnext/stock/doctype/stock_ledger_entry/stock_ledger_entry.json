@@ -153,6 +153,7 @@
    "label": "Qty Change",
    "oldfieldname": "actual_qty",
    "oldfieldtype": "Currency",
+   "precision": "7",
    "print_width": "150px",
    "read_only": 1,
    "width": "150px"
@@ -192,6 +193,7 @@
    "label": "Qty After Transaction",
    "oldfieldname": "bin_aqat",
    "oldfieldtype": "Currency",
+   "precision": "7",
    "print_width": "150px",
    "read_only": 1,
    "width": "150px"
@@ -317,7 +319,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2021-12-21 06:25:30.040801",
+ "modified": "2024-09-19 14:39:50.955593",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Ledger Entry",

@@ -176,6 +176,7 @@
    "label": "Qty",
    "oldfieldname": "qty",
    "oldfieldtype": "Currency",
+   "precision": "7",
    "reqd": 1
   },
   {
@@ -237,11 +238,11 @@
   {
    "depends_on": "eval:doc.uom != doc.stock_uom",
    "fieldname": "conversion_factor",
-   "precision": "7",
    "fieldtype": "Float",
    "label": "Conversion Factor",
    "oldfieldname": "conversion_factor",
    "oldfieldtype": "Currency",
+   "precision": "7",
    "print_hide": 1,
    "reqd": 1
   },
@@ -264,6 +265,7 @@
    "label": "Qty as per Stock UOM",
    "oldfieldname": "transfer_qty",
    "oldfieldtype": "Currency",
+   "precision": "7",
    "print_hide": 1,
    "read_only": 1,
    "reqd": 1
@@ -579,7 +581,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-11-02 13:00:34.258830",
+ "modified": "2024-09-19 14:39:30.780181",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry Detail",
