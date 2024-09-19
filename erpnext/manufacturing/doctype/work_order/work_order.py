@@ -94,6 +94,7 @@ class WorkOrder(Document):
 		validate_uom_is_integer(self, "stock_uom", ["qty", "produced_qty"])
 
 		self.set_required_items()
+		self.validate_non_stock_items()
 
 	def on_update_after_submit(self):
 		self.validate_cost_editing()
@@ -122,6 +123,24 @@ class WorkOrder(Document):
 			if not row.workstation and not row.workstation_type:
 				msg = f"Row {row.idx}: Workstation or Workstation Type is mandatory for an operation {row.operation}"
 				frappe.throw(_(msg))
+
+	def validate_non_stock_items(self):
+		is_stock_item = {}
+		remove_list = []
+		for d in self.get("required_items"):
+			stock_item = 0
+			if not d.item_code in is_stock_item:
+				stock_item = frappe.get_value("Item", d.item_code, "is_stock_item")
+				is_stock_item[d.item_code] = stock_item
+			else:
+				stock_item = is_stock_item[d.item_code]
+			
+
+			if not stock_item:
+				remove_list.append(d)
+		
+		for d in remove_list:
+			self.remove(d)
 
 	def validate_sales_order(self):
 		if self.sales_order:
