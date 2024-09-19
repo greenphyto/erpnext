@@ -118,6 +118,7 @@ class StockEntry(StockController):
 		self.validate_bom()
 		self.validate_purchase_order()
 		self.validate_subcontracting_order()
+		self.calculate_wip_operation_cost()
 
 		if self.purpose in ("Manufacture", "Repack"):
 			self.mark_finished_and_scrap_items()
@@ -267,6 +268,14 @@ class StockEntry(StockController):
 				frappe.throw(
 					_("Row {0}: Qty in Stock UOM can not be zero.").format(item.idx), title=_("Zero quantity")
 				)
+	
+	def calculate_wip_operation_cost(self):
+		total_cost = 0
+		for d in self.get("wip_additional_costs"):
+			d.exchange_rate = d.exchange_rate or 1
+			d.base_amount = flt(d.amount) * flt(d.exchange_rate)
+			total_cost += d.base_amount
+		self.total_wip_additional_costs = total_cost
 
 	def update_cost_in_project(self):
 		if self.work_order and not frappe.db.get_value(
