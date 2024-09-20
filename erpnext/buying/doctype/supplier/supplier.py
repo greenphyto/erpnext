@@ -84,7 +84,7 @@ class Supplier(TransactionBase):
 		self.flags.is_new_doc = self.is_new()
 		self.set_code()
 		self.update_series()
-		self.validate_item_supplier()
+		# self.validate_item_supplier()
 		if not self.get("account"):
 			self.set_account_default()
 
