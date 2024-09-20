@@ -65,7 +65,7 @@ class Supplier(TransactionBase):
 		for d in doc.get("default_supplier_account"):
 			series = d.code.replace("...", "")
 			if series in self.supplier_code:
-				row = self.get("accounts", {"account":d.account})
+				row = self.get("accounts", {"company":company})
 				if not row:
 					row = self.append("accounts")
 					row.account = d.account
@@ -82,7 +82,7 @@ class Supplier(TransactionBase):
 		self.flags.is_new_doc = self.is_new()
 		self.set_code()
 		self.update_series()
-		self.validate_item_supplier()
+		# self.validate_item_supplier()
 		if not self.get("account"):
 			self.set_account_default()
 
