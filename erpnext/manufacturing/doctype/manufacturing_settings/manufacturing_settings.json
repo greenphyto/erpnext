@@ -17,9 +17,10 @@
   "capacity_planning_for_days",
   "mins_between_operations",
   "section_break_6",
+  "default_source_warehouse",
   "default_wip_warehouse",
-  "default_fg_warehouse",
   "column_break_11",
+  "default_fg_warehouse",
   "default_scrap_warehouse",
   "over_production_for_sales_and_work_order_section",
   "overproduction_percentage_for_sales_order",
@@ -201,13 +202,19 @@
    "fieldtype": "Link",
    "label": "Default Expense Account",
    "options": "Account"
+  },
+  {
+   "fieldname": "default_source_warehouse",
+   "fieldtype": "Link",
+   "label": "Default Source Warehouse",
+   "options": "Warehouse"
   }
  ],
  "icon": "icon-wrench",
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-07-02 17:12:07.414712",
+ "modified": "2024-09-20 14:48:10.652303",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Manufacturing Settings",
