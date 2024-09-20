@@ -20,6 +20,8 @@ from frappe.utils import (
 	nowdate,
 	time_diff_in_hours,cstr
 )
+
+from erpnext.stock.stock_ledger import get_valuation_rate
 from pypika import functions as fn
 
 from erpnext.manufacturing.doctype.bom.bom import (
@@ -253,6 +255,9 @@ class WorkOrder(Document):
 			)
 		if not self.fg_warehouse:
 			self.fg_warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_fg_warehouse")
+
+		if not self.source_warehouse:
+			self.source_warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_source_warehouse")
 
 	def validate_warehouse_belongs_to_company(self):
 		warehouses = [self.fg_warehouse, self.wip_warehouse]
@@ -1034,18 +1039,20 @@ class WorkOrder(Document):
 						d.operation = operation
 			else:
 				for item in sorted(item_dict.values(), key=lambda d: d["idx"] or float("inf")):
+					source_warehouse = self.source_warehouse or item.source_warehouse or item.default_warehouse
+					rate = get_valuation_rate(item.item_code, source_warehouse, "", "")
 					self.append(
 						"required_items",
 						{
-							"rate": item.rate,
-							"amount": item.rate * item.qty,
+							"rate": rate,
+							"amount": rate * item.qty,
 							"operation": item.operation or operation,
 							"item_code": item.item_code,
 							"item_name": item.item_name,
 							"description": item.description,
 							"allow_alternative_item": item.allow_alternative_item,
 							"required_qty": item.qty,
-							"source_warehouse": item.source_warehouse or item.default_warehouse,
+							"source_warehouse": source_warehouse,
 							"include_item_in_manufacturing": item.include_item_in_manufacturing,
 						},
 					)
@@ -1397,6 +1404,7 @@ def get_default_warehouse():
 	doc = frappe.get_cached_doc("Manufacturing Settings")
 
 	return {
+		"source_warehouse": doc.default_source_warehouse,
 		"wip_warehouse": doc.default_wip_warehouse,
 		"fg_warehouse": doc.default_fg_warehouse,
 		"scrap_warehouse": doc.default_scrap_warehouse,
