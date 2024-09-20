@@ -67,7 +67,7 @@ class Supplier(TransactionBase):
 		for d in doc.get("default_supplier_account"):
 			series = d.code.replace("...", "")
 			if series in self.supplier_code:
-				row = self.get("accounts", {"account":d.account})
+				row = self.get("accounts", {"company":company})
 				if not row:
 					row = self.append("accounts")
 					row.account = d.account
