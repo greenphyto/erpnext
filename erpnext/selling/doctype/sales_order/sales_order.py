@@ -689,7 +689,7 @@ def make_project(source_name, target_doc=None):
 
 	return doc
 
-
+from erpnext.accounts.custom.address import get_customer_shipping_address
 @frappe.whitelist()
 def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 	def set_missing_values(source, target):
@@ -702,6 +702,11 @@ def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 		else:
 			# set company address
 			target.update(get_company_address(target.company))
+		
+		target.shipping_address_name = source.shipping_address_name
+		if not target.shipping_address_name:
+			cust_address = get_customer_shipping_address(source.customer)
+			target.update({"shipping_address_name":cust_address.get("name")})
 
 		if target.company_address:
 			target.update(get_fetch_values("Delivery Note", "company_address", target.company_address))

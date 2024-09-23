@@ -64,3 +64,27 @@ def get_shipping_address(company, address=None):
 		address_as_dict = address[0]
 		name, address_template = get_address_templates(address_as_dict)
 		return address_as_dict.get("name"), frappe.render_template(address_template, address_as_dict)
+
+@frappe.whitelist()
+def get_customer_shipping_address(customer, address=None):
+	filters = [
+		["Dynamic Link", "link_doctype", "=", "Customer"],
+		["Dynamic Link", "link_name", "=", customer],
+	]
+	fields = ["*"]
+	if address and frappe.db.get_value("Dynamic Link", {"parent": address, "link_name": customer}):
+		filters.append(["Address", "name", "=", address])
+	if not address:
+		filters.append(["Address", "is_shipping_address", "=", 1])
+
+	address = frappe.get_all("Address", filters=filters, fields=fields) or {}
+
+	if address:
+		address_as_dict = address[0]
+		name, address_template = get_address_templates(address_as_dict)
+		return {
+			"name":		address_as_dict.get("name"), 
+			"address":	frappe.render_template(address_template, address_as_dict)
+		}
+	else:
+		return {}
