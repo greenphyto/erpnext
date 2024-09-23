@@ -8,5 +8,12 @@ frappe.ui.form.on('Material Group', {
 		fields.forEach(field=>{
 			frm.set_df_property(field, 'read_only', read_only);
 		})
+
+		if (read_only){
+			frm.$wrapper.find(".form-message")
+			.removeClass("hidden")
+			.text("This document become read only when any existing Item used this material group")
+			.css({"background-color":"#fff6e9"})
+		}
 	}
 });
