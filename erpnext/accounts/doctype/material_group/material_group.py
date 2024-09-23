@@ -47,4 +47,8 @@ class MaterialGroup(Document):
 				frappe.throw(_(f"overlapping number range with <b>{exist.material_group_name}</b> ({exist.number_start}-{exist.number_end})"))
 
 	def check_exist_item(self):
-		self.set_onload("exist_transaction", False)
+		exist = frappe.get_value("Item", {"material_group":self.name})
+		if exist:
+			self.set_onload("exist_transaction", True)
+		else:
+			self.set_onload("exist_transaction", False)
