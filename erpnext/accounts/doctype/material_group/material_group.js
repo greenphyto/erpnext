@@ -12,7 +12,7 @@ frappe.ui.form.on('Material Group', {
 		if (read_only){
 			frm.$wrapper.find(".form-message")
 			.removeClass("hidden")
-			.text("This document become read only when any existing Item used this material group")
+			.text("This document become read only when any existing items using this material group")
 			.css({"background-color":"#fff6e9"})
 		}
 	}
