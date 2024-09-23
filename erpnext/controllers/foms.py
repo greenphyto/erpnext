@@ -1536,6 +1536,51 @@ def create_delivery_order(log):
 
 	return doc.name
 
+from erpnext.selling.doctype.sales_order.sales_order import make_delivery_note
+def create_do_based_on_work_order(wo_name, qty_finish, warehouse, batch_use):
+	wo_doc = frappe.get_doc("Work Order", wo_name)
+	if not wo_doc.sales_order_no:
+		return
+	
+	so_list = wo_doc.sales_order_no
+	qty_finish = qty_finish or flt(wo_doc.produced_qty)
+	item_code = wo_doc.production_item
+
+
+	temp = so_list.replace(" ", "")
+	so_list = temp.split(",")
+	for so_name in so_list:
+		so_name = frappe.get_value("Sales Order", so_name)
+		if not so_name:
+			continue
+
+		if qty_finish == 0:
+			break
+		
+		dn_doc = make_delivery_note(so_name)
+		# change warehouse
+		dn_doc.set_warehouse = warehouse
+		for d in dn_doc.get("items"):
+			if qty_finish == 0:
+				dn_doc.remove(d)
+				break
+
+			# filter item based on work order
+			if d.item_code != item_code:
+				dn_doc.remove(d)
+				continue
+
+			if d.stock_qty >= qty_finish:
+				d.qty = qty_finish/d.conversion_factor
+				qty_finish = 0
+			else:
+				qty_finish = qty_finish - d.stock_qty
+			d.batch_no = batch_use
+
+		dn_doc.flags.ignore_validate = 1
+		dn_doc.save()
+
+
 def create_finish_goods_stock(data):
 	"""
 	reff:

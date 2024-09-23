@@ -14,7 +14,7 @@ from erpnext.controllers.foms import (
 	create_delivery_order as _create_delivery_order,
 	get_operation_map_name,
 	create_finish_goods_stock as _create_finish_goods_stock,
-	create_packaging, update_so_working
+	create_packaging, update_so_working, create_do_based_on_work_order
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
@@ -353,6 +353,10 @@ def submit_work_order_finish_goods(ERPWorkOrderID, qty):
 	# 	print(352, d.item_code, d.original_item, d.qty,d.transfer_qty, d.conversion_factor, d.uom, d.stock_uom, d.batch_no)
 
 	se_doc.submit()
+
+	for d in se_doc.get("items"):
+		if d.is_finished_item:
+			create_do_based_on_work_order(se_doc.work_order, d.qty, d.t_warehouse, d.batch_no)
 
 	# update_so_working(so_sub_id, lot_id)
 	update_log("Work Order", data_name, work_order_name)
