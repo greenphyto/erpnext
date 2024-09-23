@@ -101,6 +101,34 @@ frappe.ui.form.on("Journal Entry", {
 		erpnext.journal_entry.toggle_fields_based_on_currency(frm);
 	},
 
+	transaction_type: function(frm){
+		var type = frm.doc.transaction_type;
+		if (type == "Selling"){
+			frm.set_value("tax_template_based_on", "Sales Taxes and Charges Template");
+			frm.set_value("invoice_type", "Sales Invoice");
+			frm.set_value("party_source", "Customer");
+		}else{
+			frm.set_value("tax_template_based_on", "Purchase Taxes and Charges Template");
+			frm.set_value("invoice_type", "Purchase Invoice");
+			frm.set_value("party_source", "Supplier");
+		}
+		frm.set_value("tax_template", "");
+		frm.set_value("invoice_no", "");
+		frm.set_value("party_name", "");
+	},
+
+	invoice_no: function(frm){
+		if (frm.doc.invoice_no){
+			var party = frappe.scrub(frm.doc.party_source);
+			frappe.db.get_value(frm.doc.invoice_type, frm.doc.invoice_no, ["grand_total", party]).then(r=>{
+				if (r.message){
+					frm.set_value("base_value", r.message.grand_total);
+					frm.set_value("party_name", r.message[party]);
+				}
+			})
+		}
+	},
+
 	posting_date: function(frm) {
 		if(!frm.doc.multi_currency || !frm.doc.posting_date) return;
 

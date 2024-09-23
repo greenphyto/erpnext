@@ -39,10 +39,12 @@ class VATAuditReport(object):
 			columns = (
 				", supplier as party, credit_to as account, bill_no as Invoice_No"
 				if doctype == "Purchase Invoice"
-				else ", customer as party, debit_to as account, name as Invoice_No"
+				else ", customer as party, debit_to as account, name as Invoice_No, debit_note_transaction"
 			)
 			self.select_columns += columns
 
+			self.setup_data()
+			self.get_journal_entry_data(doctype)
 			self.get_invoice_data(doctype)
 
 			if self.invoices:
@@ -93,9 +95,12 @@ class VATAuditReport(object):
 	# 		)
 	# 		frappe.throw(_("Please set VAT Accounts in {0}").format(link_to_settings))
 
+	def setup_data(self):
+		self.invoices = frappe._dict()
+		self.tax_details = []
+
 	def get_invoice_data(self, doctype):
 		conditions = self.get_conditions()
-		self.invoices = frappe._dict()
 
 		invoice_data = frappe.db.sql(
 			"""
@@ -162,7 +167,7 @@ class VATAuditReport(object):
 			""".format(
 				  doc_type=tax_doctype
 			),
-			as_dict=1,
+			as_dict=1,debug=0
 		)
 	 
 		return items	
@@ -174,21 +179,30 @@ class VATAuditReport(object):
 			"Purchase Taxes and Charges" if doctype == "Purchase Invoice" else "Sales Taxes and Charges"
 		)
 
-		self.tax_details = list(frappe.db.sql(
+		self.tax_details += list(frappe.db.sql(
 			"""
 			SELECT
-				t.parent, t.account_head, t.item_wise_tax_detail, t.parenttype, s.posting_date
+				s.name as parent,
+				t.account_head,
+				t.item_wise_tax_detail,
+				%(doctype)s as parenttype,
+				s.posting_date
 			FROM
-				`tab%s` t, `tab%s` s
+				`tab{}` s
+			LEFT JOIN 
+				`tab{}` t on t.parent = s.name
 			WHERE
-				s.name = t.parent
-				and t.parenttype = %s and t.docstatus in (1, 2)
-				and t.parent in (%s)
+				s.docstatus in (1, 2)
+				and s.name in %(invoices)s
 			ORDER BY
 				t.account_head
-			"""
-			% (self.tax_doctype,doctype, "%s", ", ".join(["%s"] * len(self.invoices.keys()))),
-			tuple([doctype] + list(self.invoices.keys()))
+			""".format(doctype, self.tax_doctype),
+			{
+				"doctype":doctype,
+				"tax_doctype":self.tax_doctype,
+				"invoices": [x for x in self.invoices.keys()]
+			}
+			, debug=0
 		))
 
 		self.tax_details += self.tax_detail_on_deleted 
@@ -216,6 +230,16 @@ class VATAuditReport(object):
 								rate_based_dict.append(item_code)
 				except ValueError:
 					continue
+			else:
+				items = []
+				for item, detail in self.invoice_items.get(parent).items():
+					items.append(item)
+					taxes = [0, 0]
+					self.get_item_amount_map(parent, parenttype, item, taxes)
+
+				self.items_based_on_tax_rate.setdefault(parent, {}).setdefault(
+					0, items
+				)
 
 	def get_item_amount_map(self, parent, parenttype, item_code, taxes):
 		net_amount = flt(self.invoice_items.get(parent, {}).get(item_code, {}).get("net_amount"))
@@ -345,7 +369,7 @@ class VATAuditReport(object):
 					   
 		""".format(
 			where_conditions=conditions, doctype=doctype
-		), self.filters, as_dict=1)
+		), self.filters, as_dict=1, debug=0)
 
 		for d in data:
 			dt = frappe._dict(json.loads(d.data))
@@ -370,21 +394,80 @@ class VATAuditReport(object):
 			self.invoices.setdefault(dt.voucher_no, dt)
 			for row in dt.get("items"):
 				row = frappe._dict(row)
+				# print(1000, row.parent, [row.item_code, {"net_amount": 0.0}])
 				self.invoice_items.setdefault(row.parent, {}).setdefault(row.item_code, {"net_amount": 0.0})
 
 			for row in dt.get("taxes"):
 				row = frappe._dict(row)
+				# print(2000, row.parent, [row.account_head, row.item_wise_tax_detail, row.parenttype, getdate(dt.posting_date)])
 				self.tax_detail_on_deleted.append((row.parent, row.account_head, row.item_wise_tax_detail, row.parenttype, getdate(dt.posting_date)))
+			
+	def get_journal_entry_data(self, doctype):
+		self.tax_detail_on_deleted = []
+		conditions = ""
+		for opts in (
+			("from_date", " and posting_date>=%(from_date)s"),
+			("to_date", " and posting_date<=%(to_date)s"),
+		):
+			if self.filters.get(opts[0]):
+				conditions += opts[1]
+		data = frappe.db.sql("""
+			SELECT 
+				name, transaction_type, tax_template, total_debit, invoice_no, party_name, base_value, posting_date, is_tax_refund
+			FROM
+				`tabJournal Entry`
+			WHERE
+				voucher_type = "GST Input Tax"
+				and docstatus = 1
+				and invoice_type = "{doctype}"
+				{where_conditions}
+					   
+		""".format(
+			where_conditions=conditions, doctype=doctype
+		), self.filters, as_dict=1)
+
+		for d in data:
+			dt = frappe._dict(d)
+
+			# overide data
+			dt.voucher_no = dt.name
+			dt.docstatus = 1
+			dt.is_journal_entry = 1
+			dt.posting_date = getdate(d.posting_date)
+			dt.Invoice_No = dt.invoice_no
+			dt.party = dt.party_name
+			dt.taxes_and_charges = dt.tax_template
+			account_head = ''
+			if d.transaction_type == "Buying":
+				invoice_type = "Purchase Invoice"
+			else:
+				invoice_type = "Sales Invoice"
+				pass
+
+			item_name = "item"
+			temp = {}
+			total = dt.total_debit * (-1 if dt.is_tax_refund else 1)
+			temp[item_name] = [8, total]
+			tax_detail = json.dumps(temp)
+			self.invoices.setdefault(dt.voucher_no, dt)
+			self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": d.base_value})
+			self.tax_details.append((dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date)))
+
 
 	def get_consolidated_data(self, doctype):
 		consolidated_data_map = {}
 		self.already_add = []
+		tax_doctype = (
+			"Purchase Taxes and Charges Template" if doctype == "Purchase Invoice" else "Sales Taxes and Charges Template"
+		)
+		default_for_zero_tax = frappe.get_value(tax_doctype, {"default_for_zero":1}) or ""
 		for inv, inv_data in self.invoices.items():
-			if self.items_based_on_tax_rate.get(inv):
-				for rate, items in self.items_based_on_tax_rate.get(inv).items():
+			if True:
+				data = self.items_based_on_tax_rate.get(inv) or {0: ['']}
+				for rate, items in data.items():
 					row = {"tax_amount": 0.0, "gross_amount": 0.0, "net_amount": 0.0}
 					docprefix = _("purchases ") if doctype == "Purchase Invoice" else _("sales ")
-					taxdata ="" if  inv_data.get("taxes_and_charges") is None else inv_data.get("taxes_and_charges")
+					taxdata = default_for_zero_tax if inv_data.get("taxes_and_charges") is None else inv_data.get("taxes_and_charges")
 					taxType = docprefix + taxdata
 					consolidated_data_map.setdefault(taxType, {"data": []})
 					key = inv
@@ -394,9 +477,8 @@ class VATAuditReport(object):
 						continue
 
 					for item in items:
-						item_details = self.item_tax_rate.get(inv).get(item)
-
-
+						detail = self.item_tax_rate.get(inv) or {}
+						item_details = detail.get(item)
 
 						row['inv_date'] = inv_data.get("posting_date")
 						row["account"] = inv_data.get("account")
@@ -416,6 +498,19 @@ class VATAuditReport(object):
 
 						if inv_data.docstatus == 3:
 							row['posting_date'] = f"{inv} - Deleted"
+							continue
+
+						if inv_data.get("debit_note_transaction"):
+							row['posting_date'] = f"{inv} - Debit Note"
+							# continue
+						
+						if inv_data.get("is_journal_entry"):
+							row['posting_date'] = f"{inv} - Journal Entry"
+
+						if inv_data.get("is_tax_refund"):
+							row['posting_date'] += " (refund)"
+
+						if not item_details:
 							continue
 					 
 						rowgross_amount = 0.0 if item_details.get("gross_amount") =="" else item_details.get("gross_amount")

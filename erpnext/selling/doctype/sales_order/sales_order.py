@@ -76,6 +76,11 @@ class SalesOrder(SellingController):
 
 	def validate_po(self):
 		# validate p.o date v/s delivery date
+		if self.pending_po:
+			self.po_no = "Pending PO"
+			self.po_date = ""
+			return 
+		
 		if self.po_date and not self.skip_delivery_note:
 			for d in self.get("items"):
 				if d.delivery_date and getdate(self.po_date) > getdate(d.delivery_date):
@@ -97,7 +102,7 @@ class SalesOrder(SellingController):
 					frappe.db.get_single_value("Selling Settings", "allow_against_multiple_purchase_orders")
 				)
 			):
-				frappe.msgprint(
+				frappe.throw(
 					_("Warning: Sales Order {0} already exists against Customer's Purchase Order {1}").format(
 						so[0][0], self.po_no
 					)

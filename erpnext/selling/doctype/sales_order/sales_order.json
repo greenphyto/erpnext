@@ -23,6 +23,7 @@
   "column_break1",
   "po_no",
   "po_date",
+  "pending_po",
   "company",
   "skip_delivery_note",
   "amended_from",
@@ -47,6 +48,7 @@
   "column_break_28",
   "set_warehouse",
   "items_section",
+  "non_package_item",
   "items",
   "section_break_31",
   "total_qty",
@@ -128,6 +130,8 @@
   "status",
   "delivery_status",
   "per_delivered",
+  "on_progress",
+  "per_working",
   "column_break_81",
   "per_billed",
   "per_picked",
@@ -157,8 +161,12 @@
   "select_print_heading",
   "language",
   "additional_info_section",
+  "request_no",
   "is_internal_customer",
   "represents_company",
+  "foms_details_section",
+  "foms_id",
+  "req_id",
   "column_break_152",
   "inter_company_order_reference",
   "party_account_currency",
@@ -321,6 +329,7 @@
    "label": "Customer's Purchase Order",
    "oldfieldname": "po_no",
    "oldfieldtype": "Data",
+   "reqd": 1,
    "width": "100px"
   },
   {
@@ -1624,13 +1633,68 @@
   {
    "fieldname": "column_break_152",
    "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "pending_po",
+   "fieldtype": "Check",
+   "label": "Pending PO number?"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_package_item",
+   "fieldtype": "Check",
+   "label": "Non Package Item"
+  },
+  {
+   "default": "0",
+   "fieldname": "on_progress",
+   "fieldtype": "Check",
+   "label": "On Progress",
+   "read_only": 1
+  },
+  {
+   "fieldname": "per_working",
+   "fieldtype": "Percent",
+   "label": "Working Status",
+   "no_copy": 1,
+   "options": "\nStarted\nHold\nFinished",
+   "read_only": 1
+  },
+  {
+   "fieldname": "request_no",
+   "fieldtype": "Link",
+   "label": "Request No",
+   "options": "Request",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "foms_details_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS Details"
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "req_id",
+   "fieldtype": "Data",
+   "label": "REQ ID",
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-15 11:01:43.597696",
+ "modified": "2024-09-05 10:31:04.894779",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

@@ -14,7 +14,7 @@ frappe.listview_settings['Item'] = {
 			return [__("Variant"), "green", "variant_of,=," + doc.variant_of];
 		}
 	},
-
+	hide_name_column: true,
 	reports: [
 		{
 			name: 'Stock Summary',
