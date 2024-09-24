@@ -81,6 +81,12 @@ PART_NUMBER_FIX = {
 
 def set_part_number(doc, method=""):
     if doc.material_group in PART_NUMBER_FIX:
+        part_number = frappe.db.get_value("Part Number Details", {"material_group":doc.material_group, "code":doc.name}, "part_number")
+        if part_number:
+            doc.material_number = part_number
+
+def set_part_number2(doc, method=""):
+    if doc.material_group in PART_NUMBER_FIX:
         mat_group = PART_NUMBER_FIX[doc.material_group]
         part_number = mat_group.get(doc.item_code)
         doc.material_number = part_number

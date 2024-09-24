@@ -1073,6 +1073,21 @@ def parse_material_group_series(material_group):
 	series = re.sub(f'{diff}$', replacer, cstr(temp.number_end))
 	return series
 
+def get_part_number_index(material_group):
+	name = frappe.db.exists('Material Group', material_group)
+	if not name:
+		frappe.throw(_(f"Cannot find Material Group {material_group}"))
+	
+	temp = frappe.get_value("Material Group", material_group, ['number_start', 'number_end'], as_dict=1)
+
+	current = frappe.db.get_value("Item", {"material_group":material_group}, "material_number", order_by="material_number")
+
+	index = cint(current) + 1
+	if cint(temp.number_start) > index:
+		index = cint(temp.number_start) + 1
+
+	return index
+
 def make_item_price(item, price_list_name, item_price):
 	frappe.get_doc(
 		{
