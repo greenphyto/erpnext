@@ -5,7 +5,7 @@ import copy
 import json
 from typing import Dict, List, Optional
 
-import frappe
+import frappe, re
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import (
@@ -1054,12 +1054,24 @@ class Item(Document):
 	def set_material_number(self):
 		from frappe.model.naming import parse_naming_series
 		if self.get("material_group"):
-			series = MATERIAL_MAP.get(self.material_group)
-			if not self.get("material_number"):
+			series = parse_material_group_series(self.material_group)
+			if not self.get("material_number") and not self.disabled:
 				self.material_number = parse_naming_series(series)
 		else:
 			self.material_number = ""
 
+def parse_material_group_series(material_group):
+	name = frappe.db.exists('Material Group', material_group)
+	if not name:
+		frappe.throw(_(f"Cannot find Material Group {material_group}"))
+	
+	temp = frappe.get_value("Material Group", material_group, ['number_start', 'number_end'], as_dict=1)
+	diff = cint(temp.number_end) - cint(temp.number_start)
+	replacer = "."
+	for d in cstr(diff):
+		replacer += "#"
+	series = re.sub(f'{diff}$', replacer, cstr(temp.number_end))
+	return series
 
 def make_item_price(item, price_list_name, item_price):
 	frappe.get_doc(
