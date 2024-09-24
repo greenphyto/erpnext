@@ -17,6 +17,11 @@ def execute(filters=None):
 		{"label": _("BS Inventory"), 	"fieldname": "bs_inventory", 	"fieldtype": "Link", "width": 260, "options":"Account"},
 	]
 
+	data = get_data_from_settings(filters)
+
+	return columns, data
+
+def get_data_from_settings(filters):
 	raw_data = frappe.db.sql("""
 		select * from `tabPart Number Details` order by idx
 	""", as_dict=1)
@@ -42,5 +47,5 @@ def execute(filters=None):
 		dt['part_number'] = d.part_number
 		dt['bs_inventory'] = d.account_code
 		data.append(dt)
-
-	return columns, data
+	
+	return data
