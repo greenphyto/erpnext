@@ -4,6 +4,11 @@
 
 frappe.query_reports["Part Number"] = {
 	"filters": [
-
+		{
+			"fieldname":"show_settings",
+			"label": __("Show Settings"),
+			"fieldtype": "Check",
+			"width": 100,
+		}
 	]
 };
