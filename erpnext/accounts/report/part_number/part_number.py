@@ -3,7 +3,7 @@
 
 import frappe
 from frappe import _
-from erpnext.stock import get_warehouse_account_map
+from erpnext.stock import get_warehouse_account_map, get_item_account
 
 
 def execute(filters=None):
