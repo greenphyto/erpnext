@@ -17,13 +17,12 @@ from erpnext.accounts.general_ledger import (
 )
 from erpnext.accounts.utils import get_fiscal_year
 from erpnext.controllers.accounts_controller import AccountsController
-from erpnext.stock import get_warehouse_account_map
+from erpnext.stock import get_warehouse_account_map, get_item_account
 from erpnext.stock.doctype.inventory_dimension.inventory_dimension import (
 	get_evaluated_inventory_dimension,
 )
 from erpnext.stock.stock_ledger import get_items_to_be_repost
 from erpnext.stock.get_item_details import get_conversion_factor
-
 
 
 class QualityInspectionRequiredError(frappe.ValidationError):
@@ -159,14 +158,14 @@ class StockController(AccountsController):
 						# expense account/ target_warehouse / source_warehouse
 						if item_row.get("target_warehouse"):
 							warehouse = item_row.get("target_warehouse")
-							expense_account = warehouse_account[warehouse]["account"]
+							expense_account = get_item_account(warehouse_account, warehouse, item_row.item_code)
 						else:
 							expense_account = item_row.expense_account
 
 						gl_list.append(
 							self.get_gl_dict(
 								{
-									"account": warehouse_account[sle.warehouse]["account"],
+									"account": get_item_account(warehouse_account, sle.warehouse, item_row.item_code),
 									"against": expense_account,
 									"cost_center": item_row.cost_center,
 									"project": item_row.project or self.get("project"),
@@ -174,7 +173,7 @@ class StockController(AccountsController):
 									"debit": flt(sle.stock_value_difference, precision),
 									"is_opening": item_row.get("is_opening") or self.get("is_opening") or "No",
 								},
-								warehouse_account[sle.warehouse]["account_currency"],
+								get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency"),
 								item=item_row,
 							)
 						)
@@ -183,7 +182,7 @@ class StockController(AccountsController):
 							self.get_gl_dict(
 								{
 									"account": expense_account,
-									"against": warehouse_account[sle.warehouse]["account"],
+									"against": get_item_account(warehouse_account, sle.warehouse, item_row.item_code),
 									"cost_center": item_row.cost_center,
 									"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
 									"debit": -1 * flt(sle.stock_value_difference, precision),
@@ -199,9 +198,9 @@ class StockController(AccountsController):
 			if abs(sle_rounding_diff) > (1.0 / (10**precision)) and self.is_internal_transfer():
 				warehouse_asset_account = ""
 				if self.get("is_internal_customer"):
-					warehouse_asset_account = warehouse_account[item_row.get("target_warehouse")]["account"]
+					warehouse_asset_account = get_item_account(warehouse_account, item_row.get("target_warehouse"), item_row.item_code)
 				elif self.get("is_internal_supplier"):
-					warehouse_asset_account = warehouse_account[item_row.get("warehouse")]["account"]
+					warehouse_asset_account = get_item_account(warehouse_account, item_row.get("warehouse"), item_row.item_code)
 
 				expense_account = frappe.get_cached_value("Company", self.company, "default_expense_account")
 
@@ -216,7 +215,7 @@ class StockController(AccountsController):
 							"debit": sle_rounding_diff,
 							"is_opening": item_row.get("is_opening") or self.get("is_opening") or "No",
 						},
-						warehouse_account[sle.warehouse]["account_currency"],
+						get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency"),
 						item=item_row,
 					)
 				)
