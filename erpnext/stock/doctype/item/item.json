@@ -945,9 +945,9 @@
   {
    "allow_in_quick_entry": 1,
    "fieldname": "material_group",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "label": "Material Group",
-   "options": "\nSeeds\nNutrition\nOther Packaging\nVegetables (Lettuce)\nVegetables (Asian Vegetables)\nLED\nGateway\nDimmer Controller\nPower Connector\nFG - Systems\nTrays & Boards\nTooling & Moulding\nAccessories\nEquipment"
+   "options": "Material Group"
   },
   {
    "default": "0",
@@ -1021,7 +1021,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2024-09-11 19:12:44.248699",
+ "modified": "2024-09-24 12:43:38.345284",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",

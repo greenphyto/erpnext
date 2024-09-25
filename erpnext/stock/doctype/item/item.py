@@ -5,7 +5,7 @@ import copy
 import json
 from typing import Dict, List, Optional
 
-import frappe
+import frappe, re
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import (
@@ -1114,29 +1114,39 @@ class Item(Document):
 		
 		from frappe.model.naming import parse_naming_series
 		if self.get("material_group"):
-			series = MATERIAL_MAP.get(self.material_group)
-			if not self.get("material_number"):
+			series = parse_material_group_series(self.material_group)
+			if not self.get("material_number") and not self.disabled:
 				self.material_number = parse_naming_series(series)
 		else:
 			self.material_number = ""
 
-	def get_item_material_group(self, set_data=False):
-		group_name = ""
-		if "RM-SD" in self.item_code:
-			group_name = "Seeds"
-		elif "RM-MS" in self.item_code:
-			group_name = ""
-		elif "RM-NS" in self.item_code:
-			group_name = "Nutrition"
-		elif "PR-AV" in self.item_code:
-			group_name = "Vegetables (Asian Vegetables)"
-		elif "PR-LV" in self.item_code:
-			group_name = "Vegetables (Lettuce)"
-		
-		if set_data and not self.get("material_group"):
-			self.material_group = group_name
-		
-		return group_name
+def parse_material_group_series(material_group):
+	name = frappe.db.exists('Material Group', material_group)
+	if not name:
+		frappe.throw(_(f"Cannot find Material Group {material_group}"))
+	
+	temp = frappe.get_value("Material Group", material_group, ['number_start', 'number_end'], as_dict=1)
+	diff = cint(temp.number_end) - cint(temp.number_start)
+	replacer = "."
+	for d in cstr(diff):
+		replacer += "#"
+	series = re.sub(f'{diff}$', replacer, cstr(temp.number_end))
+	return series
+
+def get_part_number_index(material_group):
+	name = frappe.db.exists('Material Group', material_group)
+	if not name:
+		frappe.throw(_(f"Cannot find Material Group {material_group}"))
+	
+	temp = frappe.get_value("Material Group", material_group, ['number_start', 'number_end'], as_dict=1)
+
+	current = frappe.db.get_value("Item", {"material_group":material_group}, "material_number", order_by="material_number")
+
+	index = cint(current) + 1
+	if cint(temp.number_start) > index:
+		index = cint(temp.number_start) + 1
+
+	return index
 
 def make_item_price(item, price_list_name, item_price):
 	frappe.get_doc(

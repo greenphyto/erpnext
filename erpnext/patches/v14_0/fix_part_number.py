@@ -83,13 +83,19 @@ PART_NUMBER_FIX = {
 
 def set_part_number(doc, method=""):
     if doc.material_group in PART_NUMBER_FIX:
+        part_number = frappe.db.get_value("Part Number Details", {"material_group":doc.material_group, "code":doc.name}, "part_number")
+        if part_number:
+            doc.material_number = part_number
+
+def set_part_number2(doc, method=""):
+    if doc.material_group in PART_NUMBER_FIX:
         mat_group = PART_NUMBER_FIX[doc.material_group]
         part_number = mat_group.get(doc.item_code)
         if part_number:
             doc.material_number = part_number
 
 """
-bench --site test3 execute erpnext.patches.v14_0.fix_part_number.execute
+bench --site erp.greenphyto.com execute erpnext.patches.v14_0.fix_part_number.execute
 """
 def execute():
     # Seeds
@@ -128,6 +134,9 @@ def execute():
 
     # Tooling & Moulding
     do_sync(PART_NUMBER_FIX['Tooling & Moulding'], "Tooling & Moulding", 28, 6)
+
+    # Accessoris
+    do_sync(PART_NUMBER_FIX['Accessories'], "Accessories", 29, 3)
 
 
 def do_sync(data, material_group, series_key, start_from):
