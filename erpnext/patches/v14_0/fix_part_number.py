@@ -92,7 +92,7 @@ def set_part_number2(doc, method=""):
         doc.material_number = part_number
 
 """
-bench --site test3 execute erpnext.patches.v14_0.fix_part_number.execute
+bench --site erp.greenphyto.com execute erpnext.patches.v14_0.fix_part_number.execute
 """
 def execute():
     # Seeds
@@ -131,6 +131,9 @@ def execute():
 
     # Tooling & Moulding
     do_sync(PART_NUMBER_FIX['Tooling & Moulding'], "Tooling & Moulding", 28, 6)
+
+    # Accessoris
+    do_sync(PART_NUMBER_FIX['Accessories'], "Accessories", 29, 3)
 
 
 def do_sync(data, material_group, series_key, start_from):
