@@ -72,7 +72,7 @@ def get_item_account(account_map, warehouse, item="", key="account"):
 	if item and account_map.get(item):
 		data = account_map[item].get(key)
 	
-	if not data:
+	if not data and warehouse:
 		data = account_map[warehouse].get(key)
 	
 	return data
