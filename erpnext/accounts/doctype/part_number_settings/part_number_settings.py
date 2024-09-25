@@ -4,6 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from frappe.utils import cint, cstr
+from erpnext.accounts.utils import get_balance_on
 
 class PartNumberSettings(Document):
 	@frappe.whitelist()
@@ -24,6 +25,7 @@ class PartNumberSettings(Document):
 
 		data = []
 		self.data_mapping = []
+		idx = 1
 		for d in mat_groups:
 			cur_index = 0
 			start_index = cint(d.number_start)
@@ -32,7 +34,10 @@ class PartNumberSettings(Document):
 				dt = set_item.get(key)
 				if dt:
 					# from settings
-					self.data_mapping.append(dt)
+					dt.idx = idx
+					row = self.append("data_mapping")
+					row.update(dt.as_dict())
+					idx += 1
 					continue
 
 				if not dt:
@@ -48,3 +53,28 @@ class PartNumberSettings(Document):
 					row.price = d.price_control
 					row.start = d.number_start
 					row.end = d.number_end
+					row.idx = idx
+					idx += 1
+
+	def validate(self):
+		self.validate_account_change()
+
+	def validate_account_change(self):
+		old_doc = self.get_doc_before_save()
+		if not old_doc:
+			return
+
+		old_map = {}
+		for d in old_doc.data_mapping:
+			old_map[d.part_number] = d
+		
+		for d in self.data_mapping:
+			old_data = old_map.get(d.part_number)
+			if not old_data:
+				continue
+
+			if old_data.account_code and old_data.account_code != d.account_code:
+				balance = get_balance_on(old_data.account_code)
+				if balance:
+					frappe.throw(f"Row {d.idx}, Cannot change account <b>{old_data.account_code}</b> to {d.account_code} becuase has existing balance")
+					d.account_code = old_data.account_code
