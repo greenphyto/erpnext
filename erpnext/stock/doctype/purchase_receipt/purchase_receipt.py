@@ -17,6 +17,7 @@ from erpnext.assets.doctype.asset_category.asset_category import get_asset_categ
 from erpnext.buying.utils import check_on_hold_or_closed_status
 from erpnext.controllers.buying_controller import BuyingController
 from erpnext.stock.doctype.delivery_note.delivery_note import make_inter_company_transaction
+from erpnext.stock import get_item_account
 
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
@@ -321,12 +322,10 @@ class PurchaseReceipt(BuyingController):
 						"stock_value_difference",
 					)
 
-					warehouse_account_name = warehouse_account[d.warehouse]["account"]
-					warehouse_account_currency = warehouse_account[d.warehouse]["account_currency"]
-					supplier_warehouse_account = warehouse_account.get(self.supplier_warehouse, {}).get("account")
-					supplier_warehouse_account_currency = warehouse_account.get(self.supplier_warehouse, {}).get(
-						"account_currency"
-					)
+					warehouse_account_name = get_item_account(warehouse_account, d.warehouse, d.item_code)
+					warehouse_account_currency = get_item_account(warehouse_account, d.warehouse, d.item_code, "account_currency")
+					supplier_warehouse_account = get_item_account(warehouse_account, self.supplier_warehouse, d.item_code)
+					supplier_warehouse_account_currency = get_item_account(warehouse_account, self.supplier_warehouse, d.item_code, "account_currency")
 					remarks = self.get("remarks") or _("Accounting Entry for Stock")
 
 					# If PR is sub-contracted and fg item rate is zero
@@ -371,7 +370,7 @@ class PurchaseReceipt(BuyingController):
 						credit_amount = outgoing_amount
 
 					if credit_amount:
-						account = warehouse_account[d.from_warehouse]["account"] if d.from_warehouse else stock_rbnb
+						account = get_item_account(warehouse_account, d.from_warehouse, d.item_code)
 
 						self.add_gl_entry(
 							gl_entries=gl_entries,
