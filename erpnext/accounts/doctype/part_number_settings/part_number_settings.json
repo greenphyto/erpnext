@@ -21,7 +21,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-09-25 14:44:03.592851",
+ "modified": "2024-09-25 16:13:42.447028",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Part Number Settings",
@@ -34,16 +34,6 @@
    "print": 1,
    "read": 1,
    "role": "System Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "print": 1,
-   "read": 1,
-   "role": "Item Manager",
    "share": 1,
    "write": 1
   }
