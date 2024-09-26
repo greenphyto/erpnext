@@ -1292,6 +1292,10 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 		
 		name, status = find_existing_bom2(item_name, log.productVersionName) 
 
+		if status == 1:
+			frappe.db.set_value("BOM", name, "is_active", 0)
+			force_new = 1
+
 		if not name or force_new:
 			operation_map = {}
 			bom = frappe.new_doc("BOM")
