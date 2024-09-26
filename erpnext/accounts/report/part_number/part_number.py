@@ -3,7 +3,7 @@
 
 import frappe
 from frappe import _
-from erpnext.stock import get_warehouse_account_map, get_item_account
+from erpnext.stock import get_warehouse_account_map
 
 
 def execute(filters=None):
@@ -98,4 +98,14 @@ def get_data_from_actual_item(filters):
 		dt['bs_inventory'] = get_item_account(warehouse_account, "", d.item_code)
 		data.append(dt)
 
+	return data
+
+def get_item_account(account_map, warehouse, item="", key="account"):
+	data = None	
+	if item and account_map.get(item):
+		data = account_map[item].get(key)
+	
+	if not data and warehouse:
+		data = account_map[warehouse].get(key)
+	
 	return data
