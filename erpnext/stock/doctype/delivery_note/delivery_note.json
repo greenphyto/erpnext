@@ -1428,7 +1428,8 @@
   },
   {
    "fieldname": "column_break_161",
-   "fieldtype": "Column Break"
+   "fieldtype": "Column Break",
+   "label": "Attachment"
   },
   {
    "fieldname": "attachment",
@@ -1467,7 +1468,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-06 16:18:03.035639",
+ "modified": "2024-09-26 13:33:03.629210",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

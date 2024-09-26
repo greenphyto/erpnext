@@ -1,6 +1,6 @@
 import frappe, json
 from six import string_types
-from frappe.utils import flt, now_datetime, cint, getdate, cstr
+from frappe.utils import flt, now_datetime, cint, getdate, cstr, get_datetime
 from erpnext.controllers.foms import (
     create_bom_products, 
     get_bom_for_work_order, 
@@ -589,10 +589,14 @@ def update_delivery_note_signature(data):
 			doc.db_set("attachment", file_save.file_url)		
 
 	# signature
-	signature = "data:image/png;base64,"+cstr(data.signature)
+	if "image/png" not in data.signature:
+		signature = "data:image/png;base64,"+cstr(data.signature)
+	else:
+		signature  = data.signature
+
 	doc.db_set("signature", signature)
 	doc.db_set("signature_by", data.signature_by)
-	doc.db_set("taken_at", data.taken_at)
+	doc.db_set("taken_at", get_datetime(data.taken_at))
 
 	update_log("Delivery Note", data_name, doc.name)
 
