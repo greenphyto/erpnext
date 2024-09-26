@@ -1026,8 +1026,9 @@ class WorkOrder(Document):
 			operation = self.operations[0].operation
 
 		if self.bom_no and self.qty:
+			use_qty = self.gross_weight
 			item_dict = get_bom_items_as_dict(
-				self.bom_no, self.company, qty=self.qty, fetch_exploded=self.use_multi_level_bom
+				self.bom_no, self.company, qty=use_qty , fetch_exploded=self.use_multi_level_bom
 			)
 
 			if reset_only_qty:
@@ -1277,13 +1278,14 @@ def get_item_details(item, project=None, skip_bom_info=False):
 
 
 @frappe.whitelist()
-def make_work_order(bom_no, item, qty=0, project=None, variant_items=None):
+def make_work_order(bom_no, item, qty=0, gross_weight=0, project=None, variant_items=None):
 	if not frappe.has_permission("Work Order", "write"):
 		frappe.throw(_("Not permitted"), frappe.PermissionError)
 
 	item_details = get_item_details(item, project)
 
 	wo_doc = frappe.new_doc("Work Order")
+	wo_doc.gross_weight = flt(gross_weight or qty)
 	wo_doc.production_item = item
 	wo_doc.update(item_details)
 	wo_doc.bom_no = bom_no

@@ -1470,13 +1470,12 @@ def get_work_order(show_progress=False, work_order=""):
 	).run()
 
 def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=False, return_doc=False):
-	doc = make_work_order(bom_no, item_code, qty)
+	doc = make_work_order(bom_no, item_code, qty, gross_weight)
 	validate_operation(doc)
 	doc.foms_work_order = log.workOrderNo
 	doc.foms_lot_id = log.id
 	doc.foms_lot_name = log.lotId
 	doc.gross_weight = gross_weight
-	print(152, doc.gross_weight)
 	doc.sales_order_no = ", ".join(log.sales_order_no or [])
 	doc.use_multi_level_bom = 0 #if use multi level bom it will use exploed items as raw material, but if not it will use bom items
 	doc.insert()
