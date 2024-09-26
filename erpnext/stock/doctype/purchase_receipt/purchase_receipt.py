@@ -370,8 +370,7 @@ class PurchaseReceipt(BuyingController):
 						credit_amount = outgoing_amount
 
 					if credit_amount:
-						account = get_item_account(warehouse_account, d.from_warehouse, d.item_code)
-
+						account = get_item_account(warehouse_account, d.from_warehouse, d.item_code) or stock_rbnb
 						self.add_gl_entry(
 							gl_entries=gl_entries,
 							account=account,
