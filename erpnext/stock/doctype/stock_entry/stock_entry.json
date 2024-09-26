@@ -8,8 +8,8 @@
  "engine": "InnoDB",
  "field_order": [
   "items_section",
-  "naming_series",
   "stock_entry_type",
+  "naming_series",
   "outgoing_stock_entry",
   "purpose",
   "add_to_transit",
@@ -95,6 +95,7 @@
    "oldfieldtype": "Section Break"
   },
   {
+   "fetch_from": "stock_entry_type.series",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
@@ -103,6 +104,7 @@
    "oldfieldtype": "Select",
    "options": "MAT-STE-.YYYY.-",
    "print_hide": 1,
+   "read_only": 1,
    "reqd": 1,
    "set_only_once": 1
   },
@@ -708,7 +710,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-08 15:06:37.853542",
+ "modified": "2024-09-26 15:57:17.825323",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",

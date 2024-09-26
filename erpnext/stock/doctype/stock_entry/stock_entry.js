@@ -101,6 +101,12 @@ frappe.ui.form.on('Stock Entry', {
 			}
 		});
 
+		frm.set_query("stock_entry_type",()=>{
+			return {
+				filters: {disabled:0}
+			}
+		})
+
 
 		frm.add_fetch("bom_no", "inspection_required", "inspection_required");
 		erpnext.accounts.dimensions.setup_dimension_filters(frm, frm.doctype);

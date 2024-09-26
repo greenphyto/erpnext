@@ -6,8 +6,10 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "series",
   "purpose",
-  "add_to_transit"
+  "add_to_transit",
+  "disabled"
  ],
  "fields": [
   {
@@ -26,13 +28,30 @@
    "fieldname": "add_to_transit",
    "fieldtype": "Check",
    "label": "Add to Transit"
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  },
+  {
+   "default": "MAT-STE-.YYYY.-",
+   "fieldname": "series",
+   "fieldtype": "Data",
+   "in_filter": 1,
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "label": "Series"
   }
  ],
  "links": [],
- "modified": "2021-05-21 11:27:01.144110",
+ "modified": "2024-09-26 16:16:15.465675",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry Type",
+ "naming_rule": "Set by user",
  "owner": "Administrator",
  "permissions": [
   {
@@ -85,7 +104,9 @@
   }
  ],
  "quick_entry": 1,
+ "search_fields": "series",
  "sort_field": "modified",
  "sort_order": "ASC",
+ "states": [],
  "track_changes": 1
 }
