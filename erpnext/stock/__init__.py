@@ -42,6 +42,12 @@ def get_warehouse_account_map(company=None):
 			if d.account:
 				d.account_currency = frappe.db.get_value("Account", d.account, "account_currency", cache=True)
 				warehouse_account.setdefault(d.name, d)
+
+		# add part number settings account
+		# format {item_code:account}
+		item_account = get_part_number_account_settings()
+		warehouse_account.update(item_account)
+
 		if company:
 			frappe.flags.warehouse_account_map[company] = warehouse_account
 		else:
@@ -49,8 +55,29 @@ def get_warehouse_account_map(company=None):
 
 	return frappe.flags.warehouse_account_map.get(company) or frappe.flags.warehouse_account_map
 
+def get_part_number_account_settings():
+	item_account = frappe._dict()
+	doc = frappe.get_doc("Part Number Settings")
+	for d in doc.get("data_mapping"):
+		if d.account_code:
+			item_account.setdefault(d.code, frappe._dict({
+				"account":d.account_code,
+				"account_currency":d.account_currency
+			}))
+	
+	return item_account
 
-def get_warehouse_account(warehouse, warehouse_account=None):
+def get_item_account(account_map, warehouse, item="", key="account"):
+	data = None
+	if item and account_map.get(item):
+		data = account_map[item].get(key)
+	
+	if not data:
+		data = account_map[warehouse].get(key)
+	
+	return data
+
+def get_warehouse_account(warehouse, warehouse_account=None, item=None):
 	account = warehouse.account
 	if not account and warehouse.parent_warehouse:
 		if warehouse_account:
@@ -89,6 +116,10 @@ def get_warehouse_account(warehouse, warehouse_account=None):
 				warehouse.name, warehouse.company
 			)
 		)
+
+	# use part number settings
+
+
 	return account
 
 
