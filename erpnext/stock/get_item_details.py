@@ -22,6 +22,7 @@ from erpnext.stock.doctype.batch.batch import get_batch_no
 from erpnext.stock.doctype.item.item import get_item_defaults, get_uom_conv_factor
 from erpnext.stock.doctype.item_manufacturer.item_manufacturer import get_item_manufacturer_part_no
 from erpnext.stock.doctype.price_list.price_list import get_price_list_details
+from erpnext.accounts.utils import get_company_default
 
 sales_doctypes = ["Quotation", "Sales Order", "Delivery Note", "Sales Invoice", "POS Invoice"]
 purchase_doctypes = [
@@ -703,13 +704,17 @@ def get_default_income_account(args, item, item_group, brand):
 
 
 def get_default_expense_account(args, item, item_group, brand):
-	return (
+	account = (
 		item.get("expense_account")
 		or item_group.get("expense_account")
 		or brand.get("expense_account")
 		or args.expense_account
 	)
 
+	if not account and args.get("doctype") in ['Purchase Receipt', 'Purchase Invoice', 'Purchase Order']:
+		return get_company_default(args.company, "stock_received_but_not_billed" )
+	
+	return account
 
 def get_provisional_account(args, item):
 	return item.get("default_provisional_account") or args.default_provisional_account
