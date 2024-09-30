@@ -1,5 +1,6 @@
 import frappe
 from frappe import _
+from frappe.utils import get_link_to_form
 
 install_docs = [
 	{"doctype": "Role", "role_name": "Stock Manager", "name": "Stock Manager"},
@@ -59,11 +60,10 @@ def get_part_number_account_settings():
 	item_account = frappe._dict()
 	doc = frappe.get_doc("Part Number Settings")
 	for d in doc.get("data_mapping"):
-		if d.account_code:
-			item_account.setdefault(d.code, frappe._dict({
-				"account":d.account_code,
-				"account_currency":d.account_currency
-			}))
+		item_account.setdefault(d.code, frappe._dict({
+			"account":d.account_code,
+			"account_currency":d.account_currency
+		}))
 	
 	return item_account
 
@@ -74,10 +74,13 @@ def get_item_account(account_map, warehouse, item="", key="account"):
 	
 	if item and account_map.get(item):
 		data = account_map[item].get(key)
+
+	if not data and item in account_map:
+		link_str = get_link_to_form("Part Number Settings", "", "Part Number Settings")
+		frappe.throw(_(f"Account is Missing for inventory item <b>{item}</b>. Please edit the {link_str}."))
 	
 	if not data and warehouse:
 		data = account_map[warehouse].get(key)
-	
 	return data
 
 def get_warehouse_account(warehouse, warehouse_account=None, item=None):
