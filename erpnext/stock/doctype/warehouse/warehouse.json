@@ -252,6 +252,7 @@
   {
    "fieldname": "foms_id",
    "fieldtype": "Data",
+   "in_standard_filter": 1,
    "label": "FOMS ID",
    "read_only": 1
   },
