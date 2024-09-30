@@ -21,6 +21,8 @@
   "column_break_10",
   "company",
   "amended_from",
+  "delivery_completed_at",
+  "delivery_completed_by",
   "is_return",
   "issue_credit_note",
   "return_against",
@@ -47,6 +49,7 @@
   "set_warehouse",
   "set_target_warehouse",
   "section_break_30",
+  "non_package_item",
   "items",
   "section_break_31",
   "total_qty",
@@ -165,7 +168,15 @@
   "excise_page",
   "instructions",
   "connections_tab",
-  "column_break_25"
+  "column_break_25",
+  "signature_details_section",
+  "authorized_signature_section",
+  "signature",
+  "signature_by",
+  "taken_at",
+  "column_break_161",
+  "attachment_preview",
+  "attachment"
  ],
  "fields": [
   {
@@ -349,7 +360,8 @@
    "fieldtype": "Link",
    "label": "Shipping Address",
    "options": "Address",
-   "print_hide": 1
+   "print_hide": 1,
+   "reqd": 1
   },
   {
    "fieldname": "shipping_address",
@@ -626,6 +638,7 @@
   {
    "fieldname": "taxes_section",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "hide_border": 1,
    "label": "Taxes and Charges",
    "oldfieldtype": "Section Break",
@@ -634,17 +647,20 @@
   {
    "fieldname": "tax_category",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Tax Category",
    "options": "Tax Category",
    "print_hide": 1
   },
   {
    "fieldname": "column_break_39",
-   "fieldtype": "Column Break"
+   "fieldtype": "Column Break",
+   "hidden": 1
   },
   {
    "fieldname": "shipping_rule",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Shipping Rule",
    "oldfieldtype": "Button",
    "options": "Shipping Rule",
@@ -653,11 +669,13 @@
   {
    "fieldname": "section_break_41",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "hide_border": 1
   },
   {
    "fieldname": "taxes_and_charges",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Sales Taxes and Charges Template",
    "oldfieldname": "charge",
    "oldfieldtype": "Link",
@@ -667,6 +685,7 @@
   {
    "fieldname": "taxes",
    "fieldtype": "Table",
+   "hidden": 1,
    "oldfieldname": "other_charges",
    "oldfieldtype": "Table",
    "options": "Sales Taxes and Charges"
@@ -1353,7 +1372,8 @@
   },
   {
    "fieldname": "column_break_43",
-   "fieldtype": "Column Break"
+   "fieldtype": "Column Break",
+   "hidden": 1
   },
   {
    "fieldname": "custom_dimensions_section",
@@ -1396,13 +1416,75 @@
    "fieldtype": "Data",
    "label": "FOMS ID",
    "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "delivery_completed_at",
+   "fieldtype": "Datetime",
+   "label": "Delivery Completed at",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "delivery_completed_by",
+   "fieldtype": "Data",
+   "label": "Delivery Completed By",
+   "read_only": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "non_package_item",
+   "fieldtype": "Check",
+   "label": "Non Package Item"
+  },
+  {
+   "depends_on": "eval:doc.docstatus == 1",
+   "fieldname": "signature_details_section",
+   "fieldtype": "Tab Break",
+   "label": "Signature Details"
+  },
+  {
+   "fieldname": "authorized_signature_section",
+   "fieldtype": "Section Break",
+   "label": "Authorized Signature"
+  },
+  {
+   "fieldname": "signature",
+   "fieldtype": "Signature",
+   "label": "Signature"
+  },
+  {
+   "fieldname": "signature_by",
+   "fieldtype": "Data",
+   "label": "Signature By"
+  },
+  {
+   "fieldname": "taken_at",
+   "fieldtype": "Datetime",
+   "label": "Taken At"
+  },
+  {
+   "fieldname": "column_break_161",
+   "fieldtype": "Column Break",
+   "label": "Attachment"
+  },
+  {
+   "fieldname": "attachment_preview",
+   "fieldtype": "Image",
+   "label": "Attachment Preview",
+   "options": "attachment"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach Image",
+   "label": "Attachment"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-03-28 16:30:36.199706",
+ "modified": "2024-09-27 18:23:40.885920",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
