@@ -803,7 +803,9 @@
                       }],
                       "signature_by":"Jing Wei",
                       "taken_at":"2024-08-20 12:24",
-                      "signature":"iVBORw0KGgoAAAANSUhEUgAAApsAAAEUCAYAAABknP30AAAAAXNSR0IArs4c6QAA..."
+                      "signature":"iVBORw0KGgoAAAANSUhEUgAAApsAAAEUCAYAAABknP30AAAAAXNSR0IArs4c6QAA...",
+                      "completed_at":"2024-09-21 12:24",
+                      "completed_by":"Alex"
                   }
               }
               }
