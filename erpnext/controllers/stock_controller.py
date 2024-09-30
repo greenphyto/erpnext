@@ -24,7 +24,6 @@ from erpnext.stock.doctype.inventory_dimension.inventory_dimension import (
 from erpnext.stock.stock_ledger import get_items_to_be_repost
 from erpnext.stock.get_item_details import get_conversion_factor
 
-
 class QualityInspectionRequiredError(frappe.ValidationError):
 	pass
 
