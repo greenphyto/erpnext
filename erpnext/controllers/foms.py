@@ -145,6 +145,9 @@ class GetData():
 
 # for create one-by-obe log, based on doctype and name
 def sync_log(doc, method=""):
+	if not is_enable_integration():
+		return 
+	
 	cancel = doc.docstatus == 2
 
 	method_id = METHOD_MAP.get(doc.doctype)
