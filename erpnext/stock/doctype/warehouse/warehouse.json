@@ -261,6 +261,7 @@
   {
    "fieldname": "foms_id",
    "fieldtype": "Data",
+   "in_standard_filter": 1,
    "label": "FOMS ID",
    "read_only": 1
   },
@@ -329,7 +330,7 @@
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-07-24 12:43:01.334932",
+ "modified": "2024-09-30 11:47:14.364757",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Warehouse",
