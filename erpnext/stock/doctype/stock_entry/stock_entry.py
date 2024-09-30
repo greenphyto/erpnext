@@ -226,6 +226,7 @@ class StockEntry(StockController):
 			frappe.throw(_("Cannot cancel transaction for Completed Work Order."))
 
 	def validate_purpose(self):
+		self.stock_entry_type = frappe.get_value("Stock Entry Type", self.stock_entry_type_view, "purpose" )
 		valid_purposes = [
 			"Material Issue",
 			"Material Receipt",

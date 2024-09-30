@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "items_section",
+  "stock_entry_type_view",
   "stock_entry_type",
   "naming_series",
   "outgoing_stock_entry",
@@ -109,13 +110,12 @@
    "set_only_once": 1
   },
   {
+   "fetch_from": "stock_entry_type_view.purpose",
    "fieldname": "stock_entry_type",
    "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
+   "hidden": 1,
    "label": "Stock Entry Type",
-   "options": "Stock Entry Type",
-   "reqd": 1
+   "options": "Stock Entry Type"
   },
   {
    "depends_on": "eval:doc.purpose == 'Material Transfer'",
@@ -703,6 +703,15 @@
    "label": "Total WIP Additional Costs",
    "precision": "2",
    "read_only": 1
+  },
+  {
+   "fieldname": "stock_entry_type_view",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Stock Entry Type",
+   "options": "Stock Entry Type",
+   "reqd": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -710,7 +719,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-26 15:57:17.825323",
+ "modified": "2024-09-30 20:37:41.784350",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",
@@ -782,6 +791,6 @@
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
- "title_field": "stock_entry_type",
+ "title_field": "stock_entry_type_view",
  "track_changes": 1
 }
