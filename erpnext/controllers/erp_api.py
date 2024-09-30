@@ -241,6 +241,15 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 				row.description = descriptions[field]
 	return se
 
+def get_stock_entry_type(operation):
+	if operation == "Seeding":
+		return "Seeding Transfer"
+	elif operation == "Transplanting":
+		return "Transplanting Transfer"
+	else:
+		return "Harvesting Finished Goods"
+
+
 
 @frappe.whitelist()
 def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[], ERPWorkOrderID="", erpWorkOrderID=""):
@@ -288,6 +297,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	# create stock entry
 	if rawMaterials:
 		se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
+		se_doc.stock_entry_type_view = get_stock_entry_type(operationName)
 		se_doc.insert(ignore_permissions=1)
 		# for d in se_doc.items:
 		# 	print(311, d.item_code, d.original_item, d.qty,d.transfer_qty, d.conversion_factor, d.uom, d.stock_uom)
@@ -346,6 +356,7 @@ def submit_work_order_finish_goods(ERPWorkOrderID, qty):
 	
 	
 	se_doc = make_stock_entry_wo(work_order_name,"Manufacture", qty, return_doc=1)
+	se_doc.stock_entry_type_view = get_stock_entry_type("Harvesting")
 	se_doc.save()
 
 	# debug
