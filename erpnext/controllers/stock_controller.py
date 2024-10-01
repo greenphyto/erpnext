@@ -135,7 +135,6 @@ class StockController(AccountsController):
 
 		if not warehouse_account:
 			warehouse_account = get_warehouse_account_map(self.company)
-
 		sle_map = self.get_stock_ledger_details()
 		voucher_details = self.get_voucher_details(default_expense_account, default_cost_center, sle_map)
 
