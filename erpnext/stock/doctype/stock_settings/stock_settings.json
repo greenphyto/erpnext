@@ -23,6 +23,7 @@
   "section_break_9",
   "over_delivery_receipt_allowance",
   "mr_qty_allowance",
+  "block_batch_splitting_transaction",
   "column_break_121",
   "role_allowed_to_over_deliver_receive",
   "allow_negative_stock",
@@ -373,6 +374,12 @@
    "fieldname": "scrap_tab",
    "fieldtype": "Tab Break",
    "label": "Scrap"
+  },
+  {
+   "default": "0",
+   "fieldname": "block_batch_splitting_transaction",
+   "fieldtype": "Check",
+   "label": "Block Batch Splitting Transaction"
   }
  ],
  "icon": "icon-cog",
@@ -380,7 +387,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-07-25 17:47:34.413665",
+ "modified": "2024-10-01 12:03:54.095504",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Settings",

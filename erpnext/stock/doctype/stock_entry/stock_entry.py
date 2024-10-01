@@ -111,6 +111,7 @@ class StockEntry(StockController):
 		self.validate_customer_provided_item()
 		self.validate_qty()
 		self.set_transfer_qty()
+		self.validate_batch_splitting()
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_uom_is_integer("stock_uom", "transfer_qty")
 		self.validate_warehouse()
@@ -277,6 +278,21 @@ class StockEntry(StockController):
 			d.base_amount = flt(d.amount) * flt(d.exchange_rate)
 			total_cost += d.base_amount
 		self.total_wip_additional_costs = total_cost
+
+	def validate_batch_splitting(self):
+		if not self.purpose == "Material Transfer":
+			return
+		
+		enable_split = frappe.db.get_single_value("Stock Settings", "block_batch_splitting_transaction")
+		if enable_split:
+			for d in self.get("items"):
+				if not d.batch_no:
+					continue
+
+				batch_source_qty = get_batch_qty(d.batch_no, d.s_warehouse, d.item_code)
+				if d.transfer_qty < batch_source_qty:
+					frappe.throw(_(f"Row {d.idx}, Cannot move stock partially for batch {d.batch_no}, you can only move all qty as {batch_source_qty} {d.uom}"))
+
 
 	def update_cost_in_project(self):
 		if self.work_order and not frappe.db.get_value(
