@@ -343,7 +343,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	}
 
 @frappe.whitelist()
-def submit_work_order_finish_goods(ERPWorkOrderID, qty):
+def submit_work_order_finish_goods(ERPWorkOrderID, qty, expiryDate=""):
 	data_name = f"Finish Work Order {ERPWorkOrderID}"
 	save_log("Work Order", data_name, {
 		"ERPWorkOrderID":ERPWorkOrderID, 
@@ -357,13 +357,14 @@ def submit_work_order_finish_goods(ERPWorkOrderID, qty):
 	
 	se_doc = make_stock_entry_wo(work_order_name,"Manufacture", qty, return_doc=1)
 	se_doc.stock_entry_type_view = get_stock_entry_type("Harvesting")
+	
 	se_doc.save()
+	se_doc.submit()
 
 	# debug
-	# for d in se_doc.items:
-	# 	print(352, d.item_code, d.original_item, d.qty,d.transfer_qty, d.conversion_factor, d.uom, d.stock_uom, d.batch_no)
-
-	se_doc.submit()
+	for d in se_doc.items:
+		if d.is_finished_item and expiryDate:
+			frappe.db.set_value("Batch", d.batch_no, "expiry_date", getdate(expiryDate))
 
 	for d in se_doc.get("items"):
 		if d.is_finished_item:
@@ -371,7 +372,6 @@ def submit_work_order_finish_goods(ERPWorkOrderID, qty):
 
 	# update_so_working(so_sub_id, lot_id)
 	update_log("Work Order", data_name, work_order_name)
-
 	return {
 		"ERPStockEntry":se_doc.name
 	}
