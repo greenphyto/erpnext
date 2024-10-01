@@ -688,7 +688,8 @@
                     "productDetail":"Read bean F1 quality",
                     "productDesc":"Read bean F1 quality from Taiwan",
                     "unitOfMeasurement":"kg",
-                    "id":101
+                    "id":101,
+                    "defaultExpiryDays":30
                   }
                 }
               }

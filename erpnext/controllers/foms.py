@@ -1150,7 +1150,7 @@ def create_products(log):
 			doc.foms_product_id = log.id
 
 	doc.item_group = types
-	doc.shelf_life_in_days = 365
+	doc.shelf_life_in_days = log.defaultExpiryDays or 30
 	doc.has_expiry_date = 1
 	doc.has_batch_no = 1
 	doc.create_new_batch = 1
