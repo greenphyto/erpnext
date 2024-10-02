@@ -96,7 +96,7 @@
    "oldfieldtype": "Section Break"
   },
   {
-   "fetch_from": "stock_entry_type.series",
+   "fetch_from": "stock_entry_type_view.series",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
@@ -719,7 +719,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-30 20:37:41.784350",
+ "modified": "2024-10-02 19:58:05.736547",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",

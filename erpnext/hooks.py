@@ -408,6 +408,9 @@ doc_events = {
     "Request": {
         "on_submit":"erpnext.controllers.foms.sync_log",
         "on_cancel":"erpnext.controllers.foms.sync_log",
+	},
+    "Stock Entry": {
+        "on_submit":"erpnext.controllers.foms.sync_log",
 	}
 }
 
@@ -704,4 +707,5 @@ sync_log_method = {
     8:"erpnext.controllers.foms._update_foms_department",
     9:"erpnext.controllers.foms._sync_delivery_note",
     10:"erpnext.controllers.foms._update_foms_forecast",
+    11:"erpnext.controllers.foms._update_material_transfer"
 }

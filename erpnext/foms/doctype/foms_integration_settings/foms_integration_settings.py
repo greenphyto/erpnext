@@ -448,6 +448,12 @@ class FomsAPI():
 
 		return res
 
+	def update_material_transfer(self, data):
+		data = self.convert_data(data)
+		res = self.req("POST", "/userportal/ERPNextIntegration/UpdateRawMaterialWarehouse", data=data)
+
+		return res
+
 	
 """
 TODO:

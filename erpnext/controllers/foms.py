@@ -53,6 +53,7 @@ METHOD_MAP = {
 	"Department":8,
 	"Delivery Note":9,
 	"Request":10,
+	"Stock Entry":11,
 }
 
 UOM_KG_CONVERTION = {
@@ -433,6 +434,33 @@ def _update_stock_receipt(log, api=None):
 		if res:
 			frappe.db.set_value("Batch", d.batch_no, "foms_id", res.get('id'))
 			frappe.db.set_value("Batch", d.batch_no, "foms_name", res.get('batchRefNo'))
+
+# MATERIAL TRANSFER
+def update_material_transfer():
+	sync_controller("Stock Entry", _update_material_transfer)
+
+def _update_material_transfer(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	purpose = frappe.get_value("Stock Entry", log.docname, "purpose")
+	if purpose != "Material Transfer":
+		return
+	
+	doc = frappe.get_doc("Stock Entry", log.docname)
+
+	for d in doc.get("items"):
+
+		warehouse_id = frappe.get_value("Warehouse", d.t_warehouse, "foms_id")
+
+		# need convert current PR receive to item default
+		data = {
+			"batchRefNo": d.batch_no,
+			"warehouseId": warehouse_id
+		}
+
+		api.log = log  # working with log
+		res = api.update_material_transfer(data)
 
 # SUPPLIER (POST)
 def sync_all_supplier(show_progress=False):
