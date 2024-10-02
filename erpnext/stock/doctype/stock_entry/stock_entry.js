@@ -796,6 +796,23 @@ frappe.ui.form.on('Stock Entry Detail', {
 	batch_no: function(frm, cdt, cdn) {
 		validate_sample_quantity(frm, cdt, cdn);
 	},
+	asset_code: function(frm,cdt,cdn){
+		var d = locals[cdt][cdn];
+		if (d.asset_code){
+			frappe.db.get_value("Asset Code Map", {"parent":"Accounts Settings", "account":d.asset_code}, "default_asset_category", r=>{
+				if (!r.default_asset_category){
+					frappe.msgprint(`Missing default Asset Category for <b>${d.asset_code}</b>. Please update the Asset Code configuration on the Account Settings.`)
+					frappe.model.set_value(cdt,cdn, "asset_category", "");
+				}else{
+					frappe.model.set_value(cdt,cdn, "asset_category", r.default_asset_category);
+				}
+			}, "Accounts Settings");
+		}else{
+			frappe.model.set_value(cdt,cdn, "asset_category", "");
+		}
+
+		frappe.model.set_value(cdt,cdn, "expense_account", d.asset_code);
+	}
 });
 
 var validate_sample_quantity = function(frm, cdt, cdn) {
