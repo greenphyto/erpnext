@@ -23,16 +23,22 @@ def create_material_issue(doc):
 			stock_entry.submit()
 		return doc.stock_entry
 	
+	qty_all = 0
 	for d in doc.get("items"):
 		qty_map = get_batch_qty(d.batch)
 		for dt in qty_map:
 			row = stock_entry.append("items")
 			row.item_code = d.item_code
 			row.qty = dt.get("qty")
+			qty_all += row.qty
 			row.uom = d.uom
 			row.batch_no = d.batch
 			row.conversion_factor = get_conversion_factor(d.item_code, d.uom).get("conversion_factor", 1)
 			row.s_warehouse = dt.get("warehouse")
+
+	if not qty_all:
+		return 
+	
 	stock_entry.set_missing_values()
 	stock_entry.insert(ignore_permissions=1)
 	stock_entry.submit()

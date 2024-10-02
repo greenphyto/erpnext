@@ -864,7 +864,10 @@ class StockEntry(StockEntryAsset, StockController):
 	def set_stock_entry_type(self):
 		if self.purpose:
 			self.stock_entry_type = frappe.get_cached_value(
-				"Stock Entry Type", {"purpose": self.purpose}, "name"
+				"Stock Entry Type", {"purpose": self.purpose, "disabled":0}, "name"
+			)
+			self.stock_entry_type_view = frappe.get_cached_value(
+				"Stock Entry Type", {"purpose": self.purpose, "disabled":0}, "name"
 			)
 
 	def set_purpose_for_stock_entry(self):
