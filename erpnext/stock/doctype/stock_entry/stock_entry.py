@@ -2334,6 +2334,9 @@ class StockEntry(StockController):
 		self.calculate_rate_and_amount()
 
 	def validate_stock_entry_asset(self):
+		if self.stock_entry_type_view != "Conversion from Inventory to Fixed Asset":
+			return
+		
 		self.validate_asset_expense()
 
 	def validate_asset_expense(self):
