@@ -52,6 +52,12 @@ frappe.ui.form.on('Stock Entry', {
 			}
 		});
 
+		frm.set_query("asset_code", "items", ()=>{
+            return {
+                query:"erpnext.assets.doctype.asset.asset.filter_account_for_asset_code",
+			}
+        })
+
 		frappe.db.get_value('Stock Settings', {name: 'Stock Settings'}, 'sample_retention_warehouse', (r) => {
 			if (r.sample_retention_warehouse) {
 				var filters = [
