@@ -60,8 +60,45 @@ from erpnext.controllers.stock_controller import StockController
 
 form_grid_templates = {"items": "templates/form_grid/stock_entry_grid.html"}
 
+class StockEntryAsset():
+	def validate_stock_entry_asset(self):
+		if self.stock_entry_type_view != "Conversion from Inventory to Fixed Asset":
+			return
+		
+		self.validate_asset_expense()
 
-class StockEntry(StockController):
+	def validate_asset_expense(self):
+		for d in self.items:
+			d.expense_account = d.asset_code
+			d.item_code = frappe.get_value("Item", {"asset_for_item":d.item_code})
+			if not d.asset_category:
+				default = frappe.get_value("Asset Code Map", {"parent":"Accounts Settings", "account":d.asset_code}, "default_asset_category")
+				if not default:
+					frappe.throw(_(f"Row {d.idx}, missing Asset Category"))
+				else:
+					d.asset_category = default
+	
+	def create_asset_stock(self):
+		for d in self.get("items"):
+			asset_item = frappe.get_value("Item", {"asset_for_item":d.item_code})
+			if not asset_item:
+				# create an asset item
+				ref_item = frappe.get_doc("Item", d.item_code)
+				asset_name = d.item_code + " - asset"
+				item = frappe.new_doc("Item")
+				item.item_code = asset_name
+				item.item_group = ref_item.item_group
+				item.stock_uom = ref_item.stock_uom
+				item.asset_for_item = d.item_code
+				item.asset_code = d.asset_code
+				item.asset_category = d.asset_category
+				item.is_stock_item = 0
+				item.is_fixed_asset = 1
+				item.insert()
+
+
+
+class StockEntry(StockEntryAsset, StockController):
 	def __init__(self, *args, **kwargs):
 		super(StockEntry, self).__init__(*args, **kwargs)
 		if self.purchase_order:
@@ -155,7 +192,7 @@ class StockEntry(StockController):
 			# in Manufacture Entry
 			self.reset_default_field_value("from_warehouse", "items", "s_warehouse")
 			self.reset_default_field_value("to_warehouse", "items", "t_warehouse")
-
+		
 	def on_submit(self):
 		self.update_stock_ledger()
 
@@ -180,6 +217,8 @@ class StockEntry(StockController):
 			self.set_material_request_transfer_status("In Transit")
 		if self.purpose == "Material Transfer" and self.outgoing_stock_entry:
 			self.set_material_request_transfer_status("Completed")
+		
+		self.create_asset_stock()
 
 	def on_cancel(self):
 		self.update_subcontract_order_supplied_items()
@@ -2333,21 +2372,8 @@ class StockEntry(StockController):
 		self.set_actual_qty()
 		self.calculate_rate_and_amount()
 
-	def validate_stock_entry_asset(self):
-		if self.stock_entry_type_view != "Conversion from Inventory to Fixed Asset":
-			return
-		
-		self.validate_asset_expense()
 
-	def validate_asset_expense(self):
-		for d in self.items:
-			d.expense_account = d.asset_code
-			if not d.asset_category:
-				default = frappe.get_value("Asset Code Map", {"parent":"Accounts Settings", "account":d.asset_code}, "default_asset_category")
-				if not default:
-					frappe.throw(_(f"Row {d.idx}, missing Asset Category"))
-				else:
-					d.asset_category = default
+
 
 
 @frappe.whitelist()

@@ -76,6 +76,7 @@
   "accounting",
   "item_defaults",
   "debit_note_item",
+  "asset_for_item",
   "purchasing_tab",
   "purchase_uom",
   "min_order_qty",
@@ -1013,6 +1014,12 @@
    "in_standard_filter": 1,
    "label": "Material Number",
    "read_only": 1
+  },
+  {
+   "fieldname": "asset_for_item",
+   "fieldtype": "Data",
+   "label": "Asset for Item",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-tag",
@@ -1021,7 +1028,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2024-09-24 12:43:38.345284",
+ "modified": "2024-10-02 16:00:27.984282",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",
