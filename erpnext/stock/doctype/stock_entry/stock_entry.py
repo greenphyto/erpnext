@@ -5,11 +5,12 @@
 import json
 from collections import defaultdict
 
-import frappe
+import frappe, math
 from frappe import _
+from erpnext import get_default_company
 from frappe.model.mapper import get_mapped_doc
 from frappe.query_builder.functions import Sum
-from frappe.utils import cint, comma_or, cstr, flt, format_time, formatdate, getdate, nowdate
+from frappe.utils import cint, comma_or, cstr, flt, format_time, formatdate, getdate, nowdate, get_link_to_form
 
 import erpnext
 from erpnext.accounts.general_ledger import process_gl_map
@@ -2834,6 +2835,30 @@ def add_wip_additional_cost(stock_entry, work_order):
 @frappe.whitelist()
 def create_asset_from_stock_entry(se_name):
 	se_doc = frappe.get_doc("Stock Entry", se_name)
-	jv = frappe.new_doc("Journal Entry")
 
-	# create manual papi
+	company = get_default_company()
+
+	def create_asset(item, date, asset_code, asset_category, purchase_value):
+		doc = frappe.new_doc("Asset")
+		asset_item = frappe.get_value("Item", {"asset_for_item":d.item_code})
+		doc.company = company
+		doc.item_code = asset_item
+		doc.asset_name = item
+		doc.is_existing_asset = 1
+		doc.gross_purchase_amount = purchase_value
+		doc.purchase_date = getdate(date)
+		doc.available_for_use_date = getdate(date)
+		doc.flags.ignore_mandatory = 1
+		doc.insert()
+		return doc.name
+
+	result = "<p>Creating Asset as a Draft:</p><ul>"
+	# create asset item x qty
+	for d in se_doc.get("items"):
+		for i in range( math.ceil(d.qty) ):
+			name = create_asset(d.item_code, se_doc.posting_date, d.asset_code, d.asset_category, d.purchase_value)
+			result += f"<li>{d.item_code}: <b>{name}</b></li>"
+
+	asset_cdt = get_link_to_form("Asset", "Asset").replace("/Asset", "")
+	result += f"</ul><p>Please go to the {asset_cdt}, and submit the newly created Asset document."
+	frappe.msgprint(result)

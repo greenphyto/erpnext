@@ -212,15 +212,13 @@ frappe.ui.form.on('Stock Entry', {
 				frappe.call({
 					method:"erpnext.stock.doctype.stock_entry.stock_entry.create_asset_from_stock_entry",
 					args:{
-						name:frm.doc.name
+						se_name:frm.doc.name
 					},
 					callback:(r)=>{
-							console.log("result: ",r)
 					}
 				})
 			});
 			btn.removeClass("btn-default").addClass("btn-warning")
-			console.log(200, btn)
 		}
 
 		if(frm.doc.items) {
