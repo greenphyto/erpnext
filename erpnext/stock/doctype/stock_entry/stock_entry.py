@@ -120,6 +120,7 @@ class StockEntry(StockController):
 		self.validate_purchase_order()
 		self.validate_subcontracting_order()
 		self.calculate_wip_operation_cost()
+		self.validate_stock_entry_asset()
 
 		if self.purpose in ("Manufacture", "Repack"):
 			self.mark_finished_and_scrap_items()
@@ -2332,6 +2333,19 @@ class StockEntry(StockController):
 		self.set_actual_qty()
 		self.calculate_rate_and_amount()
 
+	def validate_stock_entry_asset(self):
+		self.validate_asset_expense()
+
+	def validate_asset_expense(self):
+		for d in self.items:
+			d.expense_account = d.asset_code
+			if not d.asset_category:
+				default = frappe.get_value("Asset Code Map", {"parent":"Accounts Settings", "account":d.asset_code}, "default_asset_category")
+				if not default:
+					frappe.throw(_(f"Row {d.idx}, missing Asset Category"))
+				else:
+					d.asset_category = default
+
 
 @frappe.whitelist()
 def move_sample_to_retention_warehouse(company, items):
@@ -2787,3 +2801,10 @@ def add_wip_additional_cost(stock_entry, work_order):
 		row.update(d)
 
 	return stock_entry
+
+@frappe.whitelist()
+def create_asset_from_stock_entry(se_name):
+	se_doc = frappe.get_doc("Stock Entry", se_name)
+	jv = frappe.new_doc("Journal Entry")
+
+	# create manual papi
