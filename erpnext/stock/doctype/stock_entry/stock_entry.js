@@ -201,6 +201,22 @@ frappe.ui.form.on('Stock Entry', {
 			}, __("Create"));
 		}
 
+		if(frm.doc.stock_entry_type_view == "Conversion from Inventory to Fixed Asset" && frm.doc.docstatus==1){
+			var btn = frm.add_custom_button(__('Create Asset'), function() {
+				frappe.call({
+					method:"erpnext.stock.doctype.stock_entry.stock_entry.create_asset_from_stock_entry",
+					args:{
+						name:frm.doc.name
+					},
+					callback:(r)=>{
+							console.log("result: ",r)
+					}
+				})
+			});
+			btn.removeClass("btn-default").addClass("btn-warning")
+			console.log(200, btn)
+		}
+
 		if(frm.doc.items) {
 			const has_alternative = frm.doc.items.find(i => i.allow_alternative_item === 1);
 
@@ -333,6 +349,7 @@ frappe.ui.form.on('Stock Entry', {
 
 		frm.trigger("setup_quality_inspection");
 		attach_bom_items(frm.doc.bom_no)
+		frm.cscript.change_view_on_pupose();
 	},
 
 	before_save: function(frm) {
@@ -351,6 +368,7 @@ frappe.ui.form.on('Stock Entry', {
 		frm.trigger('validate_purpose_consumption');
 		frm.fields_dict.items.grid.refresh();
 		frm.cscript.toggle_related_fields(frm.doc);
+		frm.cscript.change_view_on_pupose();
 	},
 
 	validate_purpose_consumption: function(frm) {
@@ -1071,6 +1089,59 @@ erpnext.stock.StockEntry = class StockEntry extends erpnext.stock.StockControlle
 
 	supplier(doc) {
 		erpnext.utils.get_party_details(this.frm, null, null, null);
+	}
+
+	change_view_on_pupose(doc){
+		var frm = this.frm;
+
+		if (frm.doc.purpose=="Material Issue"){
+			if (frm.doc.stock_entry_type_view == "Conversion from Inventory to Fixed Asset"){
+				frm.cscript.change_item_preview("asset")
+			}else{
+				frm.cscript.change_item_preview("issue")
+			}
+
+		}else if (frm.doc.purpose=="Material Receipt"){
+			frm.cscript.change_item_preview("receipt")
+		}else{
+			frm.cscript.change_item_preview("std")
+		}
+	}
+
+	change_item_preview(types="std"){
+		const item_table = "items";
+		var fields = {
+			asset:[
+				"item_code", "qty", "basic_rate","asset_code","purchase_value"
+			],
+			std:[
+				"s_warehouse", "t_warehouse", "item_code", "qty", "basic_rate", "batch_no"
+			],
+			receipt:[
+				"t_warehouse", "item_code", "qty", "basic_rate", "batch_no"
+			],
+			issue:[
+				"s_warehouse", "item_code", "qty", "basic_rate", "batch_no"
+			]
+		}
+
+
+		var table = this.frm.fields_dict[item_table];
+		
+		function reset_non_list_view(){
+			table.grid.docfields.forEach(f=>{
+				f.in_list_view = 0;
+			})
+		}
+
+		reset_non_list_view();
+		$(fields[types]).each((i, field)=>{
+			table.grid.fields_map[field].in_list_view = 1;
+		})
+
+		table.grid.reset_grid();
+
+		return
 	}
 };
 
