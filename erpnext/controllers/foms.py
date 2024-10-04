@@ -506,12 +506,13 @@ def _update_foms_supplier(log, api=None):
 			return
 		details = get_party_details(supplier.name, party_type="Supplier")
 		farm_id = get_farm_id()
+		address = get_html_text(details.address_display or details.company_address_display or "")
 		data = {
 			"farmId": farm_id,
 			"id": cint(supplier.foms_id),
 			"supplierID": supplier.supplier_code,
 			"supplierName": supplier.supplier_name,
-			"address": details.address_display or details.company_address_display or "",
+			"address": address,
 			"contact": supplier.mobile_no or  details.contact_mobile or "",
 			"email": supplier.email_id or details.contact_email or "user@example.com",
 			"creditLimit": 0,
@@ -581,8 +582,8 @@ def _update_foms_customer(log, api=None):
 		
 		details = get_party_details(customer.name, party_type="Customer")
 		farm_id = get_farm_id()
-		address = details.address_display or details.company_address_display
-		shipping_address = details.get("shipping_address") or address
+		address = get_html_text(details.address_display or details.company_address_display)
+		shipping_address = get_html_text(details.get("shipping_address") or address)
 
 		customer_name = customer.customer_name
 		cust_id = customer.customer_code
@@ -929,6 +930,7 @@ def _sync_delivery_note(log, api=None):
 def get_html_text(html_text):
 	soup = bs(html_text or "", "html.parser")
 	txt = soup.get_text(separator=", ")
+	txt = txt.rstrip().rstrip(',')
 	return txt
 
 # REQUEST FORM
