@@ -80,6 +80,9 @@ class StockEntryAsset():
 					d.asset_category = default
 	
 	def create_asset_stock(self):
+		if self.stock_entry_type_view != "Conversion from Inventory to Fixed Asset":
+			return
+		
 		for d in self.get("items"):
 			asset_item = frappe.get_value("Item", {"asset_for_item":d.item_code})
 			if not asset_item:
