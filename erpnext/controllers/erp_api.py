@@ -254,7 +254,7 @@ def get_stock_entry_type(operation):
 @frappe.whitelist()
 def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[], ERPWorkOrderID="", erpWorkOrderID=""):
 	ERPWorkOrderID = ERPWorkOrderID or erpWorkOrderID
-	data_name = f"Update Work Order {ERPWorkOrderID}"
+	data_name = f"Operation {operationNo} Work Order {ERPWorkOrderID}"
 	save_log("Work Order", data_name, {
 		"ERPWorkOrderID":ERPWorkOrderID, 
 		"operationNo":operationNo, 
@@ -277,7 +277,8 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	if temp.get("docstatus") == 1:
 		return {
 			"result": False,
-			"percentage": percentage
+			"percentage": percentage,
+			"message": "Already updated"
 		}
 
 	if not operation_name:
