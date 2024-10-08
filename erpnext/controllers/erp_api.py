@@ -608,7 +608,7 @@ def update_delivery_note_signature(data):
 
 	doc.db_set("signature", signature)
 	doc.db_set("signature_by", data.signature_by)
-	doc.db_set("delivery_completed_at", data.completed_at)
+	doc.db_set("delivery_completed_at", get_datetime(data.completed_at))
 	doc.db_set("delivery_completed_by", data.completed_by)
 	doc.db_set("taken_at", get_datetime(data.taken_at))
 
