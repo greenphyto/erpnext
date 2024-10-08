@@ -71,7 +71,7 @@ class StockEntryAsset():
 	def validate_asset_expense(self):
 		for d in self.items:
 			d.expense_account = d.asset_code
-			d.item_code = frappe.get_value("Item", {"asset_for_item":d.item_code})
+			d.item_asset = frappe.get_value("Item", {"asset_for_item":d.item_code})
 			if not d.asset_category:
 				default = frappe.get_value("Asset Code Map", {"parent":"Accounts Settings", "account":d.asset_code}, "default_asset_category")
 				if not default:
