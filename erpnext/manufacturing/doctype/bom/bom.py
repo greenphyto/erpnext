@@ -256,7 +256,8 @@ class BOM(WebsiteGenerator):
 				"batch_size",
 				"operating_cost",
 				"idx",
-				"hour_rate",
+				"calculation_type",
+				"operation_rate",
 				"set_cost_based_on_bom_qty",
 				"fixed_time",
 			]
@@ -268,7 +269,7 @@ class BOM(WebsiteGenerator):
 				order_by="sequence_id, idx",
 			):
 				child = self.append("operations", row)
-				child.hour_rate = flt(row.hour_rate / self.conversion_rate, child.precision("hour_rate"))
+				child.operation_rate = flt(row.operation_rate / self.conversion_rate, child.precision("operation_rate"))
 
 	def set_bom_material_details(self):
 		for item in self.get("items"):
@@ -431,6 +432,23 @@ class BOM(WebsiteGenerator):
 				msg = "No changes in cost found"
 
 			frappe.msgprint(_(msg), alert=True)
+	
+	def get_workstation_cost(self):
+		for d in self.get("operations"):
+			if d.workstation:
+				doc = frappe.get_doc("Workstation", d.workstation)
+				if doc.calculation_type in ("Per KG", "Per Qty"):
+					d.electrical_cost = doc.per_qty_rate_electricity
+					d.consumable_cost = doc.per_qty_rate_consumable
+					d.machinery_cost = doc.per_qty_rate_machinery
+					d.wages_cost = doc.per_qty_rate_wages
+					d.rent_cost = 0
+				else:
+					d.electrical_cost = doc.hour_rate_electricity
+					d.consumable_cost = doc.hour_rate_consumable
+					d.machinery_cost = 0
+					d.wages_cost = doc.hour_rate_labour
+					d.rent_cost = doc.hour_rate_rent
 
 	def update_parent_cost(self):
 		if self.total_cost:
@@ -634,27 +652,39 @@ class BOM(WebsiteGenerator):
 			if d.workstation:
 				self.update_rate_and_time(d, update_hour_rate)
 
-			operating_cost = d.operating_cost
-			base_operating_cost = d.base_operating_cost
-			if d.set_cost_based_on_bom_qty:
-				operating_cost = flt(d.cost_per_unit) * flt(self.quantity)
-				base_operating_cost = flt(d.base_cost_per_unit) * flt(self.quantity)
+			if d.calculation_type == "Per Hour":
+				operating_cost = d.operating_cost
+				base_operating_cost = d.base_operating_cost
+			else:
+				operating_cost = flt(d.operating_cost) * flt(self.quantity)
+				base_operating_cost = flt(d.base_operating_cost) * flt(self.quantity)
 
 			self.operating_cost += flt(operating_cost)
 			self.base_operating_cost += flt(base_operating_cost)
 
 	def update_rate_and_time(self, row, update_hour_rate=False):
-		if not row.hour_rate or update_hour_rate:
-			hour_rate = flt(frappe.get_cached_value("Workstation", row.workstation, "hour_rate"))
+		operation_rate = 0
+		self.get_workstation_cost()
 
-			if hour_rate:
-				row.hour_rate = (
-					hour_rate / flt(self.conversion_rate) if self.conversion_rate and hour_rate else hour_rate
-				)
+		if not row.operation_rate or update_hour_rate:
+			if row.calculation_type in ("Per Qty", "Per KG"):
+				operation_rate = flt(frappe.get_cached_value("Workstation", row.workstation, "per_qty_rate"))
+			else:
+				operation_rate = flt(frappe.get_cached_value("Workstation", row.workstation, "hour_rate"))
 
-		if row.hour_rate and row.time_in_mins:
-			row.base_hour_rate = flt(row.hour_rate) * flt(self.conversion_rate)
-			row.operating_cost = flt(row.hour_rate) * flt(row.time_in_mins) / 60.0
+		if operation_rate:
+			row.operation_rate = (
+				operation_rate / flt(self.conversion_rate) if self.conversion_rate and operation_rate else operation_rate
+			)
+			row.base_operation_rate = row.operation_rate # temporary
+
+		if row.operation_rate and row.time_in_mins:
+			row.base_hour_rate = flt(row.operation_rate) * flt(self.conversion_rate)
+			if row.calculation_type in ("Per Qty", "Per KG"):
+				row.operating_cost = flt(row.operation_rate) * flt(self.quantity)
+			else:
+				row.operating_cost = flt(row.operation_rate) * flt(row.time_in_mins) / 60.0
+				
 			row.base_operating_cost = flt(row.operating_cost) * flt(self.conversion_rate)
 			row.cost_per_unit = row.operating_cost / (row.batch_size or 1.0)
 			row.base_cost_per_unit = row.base_operating_cost / (row.batch_size or 1.0)
@@ -889,6 +919,8 @@ class BOM(WebsiteGenerator):
 					d.description = frappe.db.get_value("Operation", d.operation, "description")
 				if not d.batch_size or d.batch_size <= 0:
 					d.batch_size = 1
+		
+		self.get_workstation_cost()
 
 	def get_tree_representation(self) -> BOMTree:
 		"""Get a complete tree representation preserving order of child items."""

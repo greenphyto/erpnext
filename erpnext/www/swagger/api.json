@@ -231,7 +231,10 @@
                   "FomsWorkOrderID": "FOMS-001",
                   "FomsLotID": "LOT12",
                   "productID": "37",
+                  "SalesOrderNo": ["SO056/2024"],
+                  "submit": true,
                   "qty": 2,
+                  "gross_weight": 4,
                   "uom": "Kg"
                 }
               }
@@ -247,15 +250,8 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "message": {
-                        "ERPWorkOrderId": "workOrderName",
-                        "ERPBOMId": "bomId",
-                        "JobCards":{
-                            "1":"JobCardSeeding",
-                            "2":"JobCardTransplanting",
-                            "3":"JobCardHarvesting"
-                        }
-                      }
+                      "ERPWorkOrderID": "workOrderName",
+                      "ERPBOMId": "bomId"
                     }
                   }
                 }
@@ -285,9 +281,38 @@
                   }
                 },
                 "example": {
-                  "ERPWorkOrderID": "FOMS-001-005",
+                  "ERPWorkOrderID": "LOT135-001",
                   "operationNo": 1,
-                  "percentage": 10
+                  "percentage": 100,
+                  "rawMaterials":[
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "41",
+                      "rawMaterialRefNo": "RM-NS-NSB",
+                      "rawMaterialBatchRefNo": "",
+                      "qty": 1520,
+                      "uom": "ml"
+                    },
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "40",
+                      "rawMaterialRefNo": "RM-NS-NSA",
+                      "rawMaterialBatchRefNo": "",
+                      "qty": 1900,
+                      "uom": "ml"
+                    },
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "57",
+                      "rawMaterialRefNo": "RM-SD-SPC",
+                      "rawMaterialBatchRefNo": "",
+                      "qty": 1.5,
+                      "uom": "g"
+                    }
+                  ]
                 }
               }
             }
@@ -301,7 +326,10 @@
               "application/json": {
                 "schema": {
                   "example": {
-                    "message": true
+                    "message": {
+                      "result": true,
+                      "percentage": 10
+                    }
                   }
                 }
               }
@@ -331,7 +359,8 @@
                 },
                 "example": {
                   "ERPWorkOrderID": "FOMS-001-005",
-                  "qty": 1
+                  "qty": 1,
+                  "expiryDate":"2025-01-01"
                 }
               }
             }
@@ -449,48 +478,46 @@
                   }
                 },
                 "example": {
-                  "ERPWorkOrderID": "ERPWorkOrderID",
-                  "status": "Reserved",
+                  "ERPWorkOrderID": "FOMS-123-001",
                   "items": [
-                    {
-                      "workOrderId": 123,
-                      "workOrderNumber": "WO-240315-00001",
-                      "rawMaterialBatchId": 214,
-                      "rawMaterialBatchRefNo": "RM-NS-NSB-BN00009",
-                      "location": "Warehouse (R01-01-01)",
-                      "rawMaterialId": 41,
-                      "rawMaterialRefNo": "RM-NS-NSB",
-                      "rawMaterialName": "Nutrient B",
-                      "isInfinityQty": false,
-                      "isSeed": false,
-                      "currentQty": 170240,
-                      "unitCost": 0,
-                      "lossRatePercent": 0,
-                      "productId": 48,
-                      "productRefNo": "PR-AV-KLL",
-                      "productName": "F1 Hybrid Kailan 2",
-                      "productVersionId": 0,
-                      "productTaskId": 0,
-                      "productGrowthProcessId": 0,
-                      "isMixProduct": false,
-                      "creationDate": "2024-03-14T14:01:38.11067",
-                      "reserveDate": "2024-04-04T00:00:00",
-                      "qtyReserve": 3480,
-                      "uom": "ml",
-                      "reserveByUserId": 0,
-                      "reserveByUserName": "Planning",
-                      "parentProductId": 0,
-                      "status": "Reserved",
-                      "rawMaterialReserveStatus": null,
-                      "issuedTimeStamp": "0001-01-01T00:00:00",
-                      "issuedUserId": 0,
-                      "issuedUser": null,
-                      "unableToIssue": false,
-                      "lotId": "24-0022",
-                      "id": 9558
-                    }
+                      {
+                          "sourceWarehouseId":"48",
+                          "sourceWarehouseRefNo":"Raw Materials - GPL",
+                          "rawMaterialId":"38",
+                          "rawMaterialRefNo":"RM-IN-WW",
+                          "rawMaterialBatchRefNo":"",
+                          "qtyReserve":196,
+                          "uom":"L"
+                      },
+                      {
+                          "sourceWarehouseId":"48",
+                          "sourceWarehouseRefNo":"Raw Materials - GPL",
+                          "rawMaterialId":"41",
+                          "rawMaterialRefNo":"RM-NS-NSB",
+                          "rawMaterialBatchRefNo":"",
+                          "qtyReserve":1980,
+                          "uom":"ml"
+                      },
+                      {
+                          "sourceWarehouseId":"48",
+                          "sourceWarehouseRefNo":"Raw Materials - GPL",
+                          "rawMaterialId":"72",
+                          "rawMaterialRefNo":"RM-NS-NSB",
+                          "rawMaterialBatchRefNo":"",
+                          "qtyReserve":2.57,
+                          "uom":"g"
+                      },  
+                      {
+                          "sourceWarehouseId":"48",
+                          "sourceWarehouseRefNo":"Raw Materials - GPL",
+                          "rawMaterialId":"40",
+                          "rawMaterialRefNo":"RM-NS-NSA",
+                          "rawMaterialBatchRefNo":"",
+                          "qtyReserve":2480,
+                          "uom":"ml"
+                      }
                   ]
-                }
+              }
               }
             }
           },
@@ -661,7 +688,8 @@
                     "productDetail":"Read bean F1 quality",
                     "productDesc":"Read bean F1 quality from Taiwan",
                     "unitOfMeasurement":"kg",
-                    "id":101
+                    "id":101,
+                    "defaultExpiryDays":30
                   }
                 }
               }
@@ -738,6 +766,63 @@
                     "message": {
                       "DeliveryOrderNo":""
                     }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.update_delivery_note_signature": {
+      "post": {
+        "summary": "Update signature and attachment",
+        "description": "Update signature and attahcment to Delivery Note, image and signature is base64 string ",
+        "operationId": "update delivery signature",
+        "requestBody": {
+          "description": {
+            "test":123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data":{
+                      "doNumber":"DO-2024-003-1",
+                      "attachments":[{
+                          "filename":"test-image.png",
+                          "image":"/9j/4AAQSkZJRgABAQEASwBLAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAw....",
+                          "imageUrl":"should have 'http' string"
+                      }],
+                      "signature_by":"Jing Wei",
+                      "taken_at":"2024-08-20 12:24",
+                      "signature":"iVBORw0KGgoAAAANSUhEUgAAApsAAAEUCAYAAABknP30AAAAAXNSR0IArs4c6QAA...",
+                      "completed_at":"2024-09-21 12:24",
+                      "completed_by":"Alex"
+                  }
+              }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": true
                   }
                 }
               }
@@ -914,6 +999,287 @@
                     "message": {
                       "StockEntryNo":""
                     }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_request_form": {
+      "post": {
+        "summary": "Create Request Form",
+        "description": "Create request from FOMS's order, internal transaction",
+        "operationId": "create request form",
+        "requestBody": {
+          "description": {
+            "test":123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data" : {
+                    "department": "Sales",
+                    "posting_date":"2024-05-26",
+                    "delivery_date":"2024-05-30",
+                    "foms_order_id":"12",
+                    "items":[
+                      {
+                        "item_code":"PR-AV-KLL",
+                        "qty":2,
+                        "uom":"Package",
+                        "packaging":"Package (200g) - GP Type A",
+                        "rate":1.2,
+                        "unit_qty":200,
+                        "unit_uom":"g",
+                        "unit_weight":0.20,
+                        "weight":0.40
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "RequestNo":""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_finish_goods_stock": {
+      "post": {
+        "summary": "Create Finish Goods Stock",
+        "description": "Submit finish goods stock without use BOM-Work Order process, so it will directly submit new stock to warehouse by stock entry.",
+        "operationId": "create finish goods stock",
+        "requestBody": {
+          "description": {
+            "test":123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data":{
+                    "work_order_id":"",
+                    "lot_id":"",
+                    "rack_no":"",
+                    "customer_order_no:":"",
+                    "posting_date":"2024-07-02 08:12:32",
+                    "company":"optional",
+                    "item_code":"PR-AV-KL",
+                    "bom":"optional or u can also refer to existing BOM",
+                    "qty":2,
+                    "uom":"kg",
+                    "batch":"optional | if not set it will generated from ERP side",
+                    "batch_exp":"optional", 
+                    "batch_mfg":"optional", 
+                    "warehouse":"Finished Goods - GPL",
+                    "id":1
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "RequestNo":""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.update_request_data": {
+      "post": {
+        "summary": "Update Request Data",
+        "description": "Update selected Request to new qty or delivery date",
+        "operationId": "Update request data",
+        "requestBody": {
+          "description": {
+            "test":123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data":{
+                    "request_no":"REQ0001/2024", 
+                    "items":[{
+                      "item_code":"PR-AV-KLL",
+                      "qty":6
+                    }], 
+                    "delivery_date": "2024-08-25"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "RequestNo":""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_update_packaging": {
+      "post": {
+        "summary": "Create/Update master Packaging data",
+        "description": "Update/create packaging referring to this endpoint /userportal/CustomerOrder/GetPackageList",
+        "operationId": "create packaging data",
+        "requestBody": {
+          "description": {
+            "test":123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data":{
+                    "itemCode":"PR-AV-KOM",
+                    "packageName":"Package (120g) - GP Type A",
+                    "packageType":"GP Type A",
+                    "packageWeight":120,
+                    "uom":"g",
+                    "id":"foms id"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "PackageID":""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.delete_item": {
+      "delete": {
+        "summary": "Delete item on erp",
+        "description": "Delete item on ERP, and will return <b>true</b> if clearly deleted and return <b>false</b> if can only disable",
+        "operationId": "delete item erp",
+        "requestBody": {
+          "description": {
+            "test":123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "itemCode":""
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": true
                   }
                 }
               }

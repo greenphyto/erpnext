@@ -92,7 +92,7 @@ class JobCard(Document):
 				if d.to_time and get_datetime(d.from_time) > get_datetime(d.to_time):
 					frappe.throw(_("Row {0}: From time must be less than to time").format(d.idx))
 
-				data = self.get_overlap_for(d)
+				data = None # self.get_overlap_for(d)
 				if data:
 					frappe.throw(
 						_("Row {0}: From Time and To Time of {1} is overlapping with {2}").format(

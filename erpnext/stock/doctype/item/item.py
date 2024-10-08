@@ -135,11 +135,20 @@ class Item(Document):
 		self.set_material_number()
 		self.validate_debit_note_item()
 		self.set_asset_category()
+		self.validate_package()
 
 		set_item_tax_from_hsn_code(self)
 
 		if not self.is_new():
-			self.old_item_group = frappe.db.get_value(self.doctype, self.name, "item_group")
+			self.old_item_group = frappe.db.get_value(self.doctype, self.name, "item_group")\
+	
+	def validate_foms_item(self):
+		print(1111, self.flags.allow_delete)
+		if self.flags.allow_delete:
+			return
+		
+		if self.get("foms_raw_id") or self.get("foms_product_id"):
+			frappe.throw(_("Cannot delete FOMS's Item, you can only disable it"))
 
 	def force_to_non_stock(self):
 		if frappe.db.get_single_value("Stock Settings", "force_to_non_stock_item"):
@@ -236,6 +245,35 @@ class Item(Document):
 				)
 
 				stock_entry.add_comment("Comment", _("Opening Stock"))
+
+	def validate_package(self):
+		if len(self.get("packaging") or []):
+			self.is_package_item = 1
+		else:
+			self.is_package_item = 0
+
+		self.sync_uom_from_package()
+
+	def sync_uom_from_package(self):
+		if not self.get("packaging"):
+			return
+		
+		for d in self.get("packaging"):
+			row = self.get("uoms", {"uom":d.packaging})
+			if row:
+				row = row[0]
+				row.conversion_factor = flt(d.weight)
+			else:
+				row = self.append("uoms")
+				row.uom = d.packaging
+				row.conversion_factor = flt(d.weight)
+				row.is_packaging = 1
+		
+		# delete
+		for d in list(self.get("uoms", {"is_packaging":1})):
+			row = self.get("packaging", {"packaging":d.uom})
+			if not row:
+				self.remove(d)
 
 	def validate_fixed_asset(self):
 		if self.is_fixed_asset:
@@ -510,6 +548,7 @@ class Item(Document):
 		frappe.db.sql("delete from `tabItem Price` where item_code=%s", self.name)
 		for variant_of in frappe.get_all("Item", filters={"variant_of": self.name}):
 			frappe.delete_doc("Item", variant_of.name)
+		self.validate_foms_item()
 
 	def before_rename(self, old_name, new_name, merge=False):
 		if self.item_name == old_name:
@@ -908,6 +947,24 @@ class Item(Document):
 				if value:
 					d.conversion_factor = value
 
+				if d.idx == 1:
+					d.description = "Stock UOM Value"
+					d.conversion_factor = 1
+					d.cf_view = 1
+					continue
+
+				if d.reverse:
+					conf = 1
+					if d.cf_view:
+						conf = 1/flt(d.cf_view, 7)
+					desc = f"1 {self.stock_uom} equal to {d.cf_view} {d.uom}"
+					d.conversion_factor = conf
+				else:
+					desc = f"1 {d.uom} equal to {d.cf_view} {self.stock_uom}"
+					d.conversion_factor = flt(d.cf_view)
+
+				d.description = desc
+
 	def validate_attributes(self):
 		if not (self.has_variants or self.variant_of):
 			return
@@ -1052,6 +1109,9 @@ class Item(Document):
 				)
 
 	def set_material_number(self):
+		if self.disabled:
+			return
+		
 		from frappe.model.naming import parse_naming_series
 		if self.get("material_group"):
 			series = parse_material_group_series(self.material_group)
@@ -1259,13 +1319,16 @@ def check_stock_uom_with_bin(item, stock_uom):
 	bin_list = frappe.db.sql("select * from tabBin where item_code=%s", item, as_dict=1)
 	for bin in bin_list:
 		if (bin.stock_value != 0 or bin.actual_qty != 0) and cstr(bin.stock_uom) != cstr(stock_uom):
-			bin_error = bin_error + _("Default Unit of Measure for Item {0} cannot be changed in Warehouse {1} because actual quantity {2} or stock value {3} not equals 0. You will need to create a new Stock Entry to reset those values to 0.<BR>").format(item, bin.warehouse, bin.actual_qty, bin.stock_value)
+			if not bin_error:
+				bin_error += "<p>Before changing the stock UOM, you may need to reset to zero value on these stock:</p><ol>"
+			bin_error += _("<li>{0}: <b>{1}</b> qty and {2} stock value</li>").format(bin.warehouse, bin.actual_qty, bin.stock_value)
 
 	if bin_list and not bin_error:
 		frappe.db.sql("""update tabBin set stock_uom=%s where item_code=%s""", (stock_uom, item))
 		frappe.msgprint(_("Unit of Measure for Item {0} updated. Don't forget to change Unit Of Measure for any pending transaction of this Item.").format(item))
 
 	if bin_error:
+		bin_error += "</ol>"
 		frappe.throw(bin_error)
 
 def get_item_defaults(item_code, company):

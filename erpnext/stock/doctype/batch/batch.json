@@ -32,7 +32,10 @@
   "manufacturing_section",
   "qty_to_produce",
   "column_break_23",
-  "produced_qty"
+  "produced_qty",
+  "foms_section",
+  "foms_id",
+  "foms_name"
  ],
  "fields": [
   {
@@ -200,6 +203,23 @@
    "label": "Use Batch-wise Valuation",
    "read_only": 1,
    "set_only_once": 1
+  },
+  {
+   "fieldname": "foms_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS"
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "Foms ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_name",
+   "fieldtype": "Data",
+   "label": "Foms Name",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-archive",
@@ -207,7 +227,7 @@
  "image_field": "image",
  "links": [],
  "max_attachments": 5,
- "modified": "2022-02-21 08:08:23.999236",
+ "modified": "2024-07-22 17:28:37.262707",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Batch",

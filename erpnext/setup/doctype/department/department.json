@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "department_name",
+  "foms_id",
   "parent_department",
   "column_break_3",
   "company",
@@ -83,13 +84,19 @@
   {
    "fieldname": "column_break_3",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-sitemap",
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-03-13 12:47:48.601171",
+ "modified": "2024-08-08 18:01:35.732926",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Department",

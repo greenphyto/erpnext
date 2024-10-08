@@ -42,6 +42,15 @@ frappe.ui.form.on("Supplier", {
 				}
 			};
 		});
+
+		frm.set_query("item_code", "item_supplier", function(doc) {
+			return {
+				filters: {
+					"disabled": 0,
+					"is_purchase_item": 1
+				}
+			};
+		});
 	},
 
 	refresh: function (frm) {

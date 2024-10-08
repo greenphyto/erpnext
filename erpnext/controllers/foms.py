@@ -1,12 +1,15 @@
-import frappe
+import frappe, erpnext
 from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
 from frappe.core.doctype.sync_log.sync_log import get_pending_log
-from frappe.utils import cint, flt, cstr
+from frappe.utils import cint, flt, cstr, get_time, getdate,add_days, get_datetime
 from erpnext.accounts.party import get_party_details
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
 from frappe import _
-import json
+from frappe.core.doctype.sync_log.sync_log import update_success, create_log, delete_log
+import json, math
+from erpnext import get_company_currency, get_default_company
+from bs4 import BeautifulSoup as bs
 
 """
 Make Supplier from ERP to FOMS
@@ -38,10 +41,31 @@ UOM_MAP = {
 	"ml":"Millilitre",
 }
 
-TRANFER_AGAIN = 'Work Order'
+# see on hooks.py on sync_log_method
+METHOD_MAP = {
+	"Supplier":1,
+	"Customer":2,
+	"Warehouse":3,
+	"Purchase Receipt":4,
+	"Sales Order":5,
+	"Stock Reconciliation":6,
+	"Scrap Request":7,
+	"Department":8,
+	"Delivery Note":9,
+	"Request":10,
+	"Stock Entry":11,
+}
 
-def get_uom(uom_foms):
-	uom_foms = uom_foms or 'kg'
+UOM_KG_CONVERTION = {
+	"Gram":1000,
+	"Litre":1,
+	"Millilitre":1000
+}
+
+TRANFER_AGAIN = 'Job Card'
+
+def get_uom(uom_foms, default=""):
+	uom_foms = uom_foms or default or'kg'
 	uom = UOM_MAP.get(uom_foms)
 
 	if not uom:
@@ -52,37 +76,37 @@ def get_uom(uom_foms):
 	
 	return uom
 
-# SUPPLIER (POST)
-def update_foms_supplier():
-	if not is_enable_integration():
-		return 
+def convert_uom(uom):
+	for key, val in UOM_MAP.items():
+		if val == uom:
+			return key
 	
-	logs = get_pending_log({"doctype":"Supplier"})
-	api = FomsAPI()
-	for log in logs:
-		# create new supplier if not have
-		if log.update_type == "Update":
-			_update_foms_supplier(api, log) 
+	return 'kg'
 
-# CUSTOMER (POST)
-def update_foms_customer():
-	if not is_enable_integration():
-		return 
+def get_foms_settings(field):
+	return frappe.db.get_single_value("FOMS Integration Settings", field)
+
+
+def get_deleted_document(doctype, docname):
+	exists = frappe.db.exists("Deleted Document", {"deleted_doctype":doctype, "deleted_name":docname})
+	if exists:
+		data = frappe.get_value("Deleted Document", exists, "data")
+		doc_data = frappe._dict(json.loads(data))
+		return doc_data
 	
-	logs = get_pending_log({"doctype":"Customer"})
-	api = FomsAPI()
-	for log in logs:
-		if log.update_type == "Update":
-			_update_foms_customer(api, log) 
+	return {}
+
 
 class GetData():
-	def __init__(self, data_type, get_data, get_key_name, post_process, doc_type="Item", show_progress=False):
+	def __init__(self, data_type, get_data, get_key_name, post_process, doc_type="", show_progress=False, manual_save_log=False):
 		self.data_type = data_type
 		self.show_progress = show_progress
 		self.get_data = get_data
 		self.get_key_name = get_key_name
 		self.post_process = post_process
-		self.doc_type = doc_type
+		self.manual_save_log = manual_save_log
+		self.doc_type = doc_type or data_type
+		self._log_name = None
 	
 	def setup(self):
 		self.api = FomsAPI()
@@ -104,12 +128,10 @@ class GetData():
 			d = frappe._dict(data[i])
 
 			# pull to foms data mapping
-			key_name = self.get_key_name(d)
-			map_doc = create_foms_data(self.data_type, key_name, d)
 			result = self.post_process(self, d)
-			map_doc.doc_type = self.doc_type
-			map_doc.doc_name = result
-			map_doc.save()
+			if not self.manual_save_log:
+				key_name = self._log_name or self.get_key_name(d)
+				save_log(self.doc_type, result, key_name, d)
 
 			percent = (i+1)/total_count*100
 			if i % 10 == 0:
@@ -120,22 +142,98 @@ class GetData():
 		for i in range(total_count):
 			do_create(i)
 
+# ###### TOOLS ###### #
+
+# for create one-by-obe log, based on doctype and name
+def sync_log(doc, method=""):
+	if not is_enable_integration():
+		return 
+	
+	cancel = doc.docstatus == 2
+
+	method_id = METHOD_MAP.get(doc.doctype)
+
+	if doc.flags.ignore_syncing:
+		return
+
+	if cancel:
+		if delete_log(doc.doctype, doc.name):
+			return
+
+	log_name = create_log(doc.doctype, doc.name, method=method_id, doc_method=method)
+
+	# start enquee individually, if fail, it will try again with scheduler itself
+	frappe.enqueue("erpnext.controllers.foms.start_sync_enquee", log_name=log_name)
+	
+def start_sync_enquee(log_name):
+	log = frappe.get_doc("Sync Log", log_name)
+	log.sync()
+
+def sync_controller(doctype, controller):
+	if not is_enable_integration():
+			return 
+		
+	api = FomsAPI()
+
+	logs = get_pending_log({"doctype": doctype})
+	count = len(logs)
+	i = 0
+	for log in logs:
+		# create new if not have
+		if log.update_type == "Update":
+			controller(log, api=None)
+		
+		show_progress(i, count)
+		i+=1
+	show_progress(i, count)
+
+def update_reff_id(res, doc, key_name):
+	if res and 'id' in res:
+		doc.db_set("foms_id", res['id'])
+		doc.db_set("foms_name", res.get(key_name))
+
+def save_log(doc_type, data_name, key_name, data):
+	map_doc = create_foms_data(doc_type, key_name, data)
+	map_doc.doc_type = doc_type
+	map_doc.doc_name = data_name
+	map_doc.save()
+
+def show_progress(current=0, total=100):
+	if not current:
+		return
+	
+	percent = current/total*100
+	frappe.publish_progress(percent, title="Sync FOMS data..")
+	frappe.publish_realtime(
+		event="foms_sync_progress",
+		message={
+			"percent":percent
+		}
+	)
+
+
+# ###### ***** ##### #
+
 
 # RAW MATERIAL (GET)
-def get_raw_material(show_progress=False):
+def get_raw_material(show_progress=False, reff_no=""):
 	def get_data(gd):
-		raw = gd.api.get_raw_material(gd.farm_id)
+		raw = gd.api.get_raw_material(gd.farm_id, reff_no=reff_no)
 		data = raw.get("items")
 		return data
 
 	def post_process(gd, log):
-		return create_raw_material(log) 
+		try:
+			result = create_raw_material(log) 
+			return result
+		except Exception as e:
+			print("Error: ", e)
 
 	def get_key_name(log):
 		return log.get("rawMaterialRefNo")
 	
 	GetData(
-		data_type = "Raw Material",
+		data_type = "Item",
 		get_data=get_data,
 		get_key_name = get_key_name,
 		post_process=post_process,
@@ -157,7 +255,7 @@ def get_products(show_progress=False):
 		return log.get("productID")
 	
 	GetData(
-		data_type = "Product",
+		data_type = "Item",
 		get_data=get_data,
 		get_key_name = get_key_name,
 		post_process=post_process,
@@ -169,16 +267,24 @@ def get_products(show_progress=False):
 # Pending
 
 # RECIPE (GET)
-def get_recipe(show_progress=False):
+def get_recipe(show_progress=False, item_code=""):
 	submit = get_foms_settings("auto_submit_bom")
 
 	def get_data(gd):
-		data = gd.api.get_product_list_for_recipe(gd.farm_id)
+		if not item_code:
+			data = gd.api.get_product_list_for_recipe(gd.farm_id)
+		else:
+			product_id = frappe.get_value("Item", item_code, "foms_product_id")
+			data = [frappe._dict({'id':product_id})]
+		
 		return data
 
 	def post_process(gd, log):
 		product_id =  log.get("id")
 		raw = gd.api.get_product_process(gd.farm_id, product_id)
+		version = raw.get("productVersionName")
+		item_code = frappe.get_value("Item", {"foms_product_id": product_id})
+		gd._log_name = f"Get BOM {item_code} version {version}"
 		return create_bom_products(raw, product_id, submit)
 
 	def get_key_name(log):
@@ -195,75 +301,806 @@ def get_recipe(show_progress=False):
 	
 
 # WAREHOUSE
-def update_warehouse(doc, method=""):
-	farm_id = get_foms_settings("farm_id")
-	wh_id = doc.name.replace(" ", "")[:12]
-	data = {
-		"farmId": farm_id,
-		"warehouseID": wh_id,
-		"warehouseName": doc.warehouse_name,
-		"countryCode": "SG",
-		"capacity": 0,
-		"uom": "Kg",
-		"address": "",
-		"noRackRow": 0,
-		"noRackLevel": 0,
-		"noOfLane": 0,
-		"isFromERP": True,
-		"id": 0
-	}
+def update_warehouse():
+	sync_controller("Warehouse", _update_warehouse)
+
+def _update_warehouse(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	api.log = log
+
+	if log.update_type != "Delete":
+		farm_id = get_foms_settings("farm_id")
+		name = frappe.db.exists("Warehouse", log.docname)
+		if name:
+			doc = frappe.get_doc("Warehouse", log.docname)
+			wh_id = doc.name[:12]
+			# wh_id = doc.name
+			data = {
+				"farmId": farm_id,
+				"warehouseID": wh_id,
+				"warehouseName": doc.warehouse_name,
+				"countryCode": "SG", # not yet
+				"capacity": 0,
+				"uom": "Kg", # not yet
+				"address": "",
+				"noRackRow": cint(doc.row_no),
+				"noRackLevel": cint(doc.level_no),
+				"noOfLane": cint(doc.lane_no),
+				"isFromERP": True
+			}
+
+			if doc.foms_id:
+				data["id"] = doc.foms_id 
+
+			res = api.update_warehouse(data)
+			update_reff_id(res, doc, "warehouseID")
+			return res
+	else:
+		doc_data = get_deleted_document("Warehouse", log.docname)
+		if not doc_data:
+			return
+		
+		res = api.delete_warehouse(doc_data.foms_id)
+
+def sync_all_warehouse(show_progress=False):
+	# foms to erp
+	foms_all_warehouses()
+
+	# find not exist foms id 
+	docs = frappe.db.get_all("Warehouse", {"foms_id": ['is', 'not set']})
+	for d in docs:
+		# generate log
+		create_log("Warehouse", d.name, method=METHOD_MAP.get("Warehouse"))
+
+	# from erp to foms
+	update_warehouse()
+
+	return True
+
+def foms_all_warehouses():
+	farm_id = get_farm_id()
 	api = FomsAPI()
-	res = api.update_warehouse(data)
-	return res
+	data = api.get_all_warehouse(farm_id)
+	company = erpnext.get_default_company()
+	for d in data.get("items", []):
+		# not yet finish
+		wh_name = d.get("warehouseName")
+		name = frappe.db.get_value("Warehouse", wh_name)
+		if not name:
+			abbr = frappe.get_cached_value("Company", company, "abbr")
+			wh_name = wh_name + " - "+abbr
+			name = frappe.db.get_value("Warehouse", wh_name)
 
+		if name:
+			frappe.db.set_value("Warehouse", name, "foms_id", d['id'])
+			frappe.db.set_value("Warehouse", name, "foms_name", d['warehouseID'])
+		else:
+			# create warehouse
+			doc = frappe.new_doc("Warehouse")
+			doc.warehouse_name = wh_name
+			doc.foms_id = d['id']
+			doc.foms_name = d['warehouseID']
+			doc.flags.ignore_syncing = True
+			doc.insert()
+			print("Create", wh_name)
 
-def _update_foms_supplier(api, log):
-	supplier = frappe.get_doc("Supplier", log.name)
-	details = get_party_details(supplier.name, party_type="Supplier")
+# RAW MATERIAL RECEIPT
+def update_stock_receipt():
+	sync_controller("Purchase Receipt", _update_stock_receipt)
+
+def _update_stock_receipt(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Purchase Receipt", log.docname)
+
+	# find overide
+	settings = frappe.get_doc("FOMS Integration Settings")
+	overide_map = {}
+	for d in settings.get("uom_conversion"):
+		if cint(d.enable):
+			overide_map[d.item_code] = d.conversion_factor
+
+	for d in doc.get("items"):
+		batch_foms_id = cint(frappe.get_value("Batch", d.batch_no, "foms_id"))
+		if batch_foms_id:
+			continue
+		
+		expiry_date = frappe.get_value("Batch", d.batch_no, "expiry_date")
+		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id")
+		supplier_id = frappe.get_value("Supplier", doc.supplier, "foms_id")
+		raw_id = frappe.get_value("Item", d.item_code, "foms_raw_id")
+
+		qty = d.qty
+		if d.item_code in overide_map:
+			qty = d.qty * flt(overide_map[d.item_code])
+
+		# need convert current PR receive to item default
+		data = {
+			"id": batch_foms_id,
+			"rawMaterialId": raw_id,
+			"batchRefNo": d.batch_no,
+			"dateOfCreation": doc.creation,
+			"expiryDate": expiry_date,
+			"warehouseId": warehouse_id,
+			"supplierId": supplier_id,
+			"quantity": qty
+		}
+
+		api.log = log  # working with log
+		res = api.update_raw_material_receipt(data)
+		if res:
+			frappe.db.set_value("Batch", d.batch_no, "foms_id", res.get('id'))
+			frappe.db.set_value("Batch", d.batch_no, "foms_name", res.get('batchRefNo'))
+
+# MATERIAL TRANSFER
+def update_material_transfer():
+	sync_controller("Stock Entry", _update_material_transfer)
+
+def _update_material_transfer(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	purpose = frappe.get_value("Stock Entry", log.docname, "purpose")
+	if purpose != "Material Transfer":
+		return
+	
+	doc = frappe.get_doc("Stock Entry", log.docname)
+
+	for d in doc.get("items"):
+
+		warehouse_id = frappe.get_value("Warehouse", d.t_warehouse, "foms_id")
+
+		# need convert current PR receive to item default
+		data = {
+			"batchRefNo": d.batch_no,
+			"warehouseId": warehouse_id
+		}
+
+		api.log = log  # working with log
+		res = api.update_material_transfer(data)
+
+# SUPPLIER (POST)
+def sync_all_supplier(show_progress=False):
+
+	# matching existing first
+	foms_all_supplier()
+	
+	# find not exist foms id 
+	suppliers = frappe.db.get_all("Supplier", {"foms_id": ['is', 'not set']})
+	for d in suppliers:
+		# generate log
+		create_log("Supplier", d.name, method=METHOD_MAP.get("Supplier"))
+
+	# push the log
+	update_foms_supplier()
+
+	return True
+
+def foms_all_supplier():
 	farm_id = get_farm_id()
-	data = {
-		"farmId": farm_id,
-		"supplierID": supplier.foms_id,
-		"supplierRefNo": supplier.name,
-		"supplierName": supplier.supplier_name,
-		"address": details.address_display or details.company_address_display or "",
-		"contact": supplier.mobile_no or  details.contact_mobile or "",
-		"email": supplier.email_id or details.contact_email or "user@example.com",
-		"creditLimit": 0,
-		"creditTermID": 0,
-		"contactPerson": details.contact_person,
-		"countryCode": frappe.db.get_single_value('FOMS Integration Settings', "country_id"),
-		"rmDeviceIds": "",
-		"rmDeviceId":  [],
-	}
-	res = api.create_or_update_supplier(data)
-	if 'supplierID' in res:
-		supplier.db_set("foms_id", res['supplierID'])
+	api = FomsAPI()
+	data = api.get_all_supplier(farm_id)
+	for d in data.get("items", []):
+		# not yet finish
+		name = d.get("supplierName")
+		print("Renaming", name, d['id'])
+		frappe.db.set_value("Supplier", {"supplier_name": name}, "foms_id", d['id'])
+		frappe.db.set_value("Supplier", {"supplier_name": name}, "foms_name", d['supplierRefNo'])
 
-def _update_foms_customer(api, log):
-	customer = frappe.get_doc("Customer", log.name)
-	details = get_party_details(customer.name, party_type="Customer")
-	# print(details)
+def update_foms_supplier():
+	sync_controller("Supplier", _update_foms_supplier)
+
+
+def _update_foms_supplier(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	api.log = log
+
+	if log.update_type != "Delete":
+		supplier = frappe.get_doc("Supplier", log.docname)
+		if cint(supplier.disabled) == 1:
+			return
+		details = get_party_details(supplier.name, party_type="Supplier")
+		farm_id = get_farm_id()
+		address = get_html_text(details.address_display or details.company_address_display or "")
+		data = {
+			"farmId": farm_id,
+			"id": cint(supplier.foms_id),
+			"supplierID": supplier.supplier_code,
+			"supplierName": supplier.supplier_name,
+			"address": address,
+			"contact": supplier.mobile_no or  details.contact_mobile or "",
+			"email": supplier.email_id or details.contact_email or "user@example.com",
+			"creditLimit": 0,
+			"creditTermID": 0,
+			"contactPerson": details.contact_person,
+			"countryCode": frappe.db.get_single_value('FOMS Integration Settings', "country_id"),
+			"rmDeviceIds": "",
+			"rmDeviceId":  [],
+			"isFromErp": True
+		}
+
+		if supplier.foms_id:
+			data['Id'] = supplier.foms_id
+	
+		res = api.create_or_update_supplier(data)
+		update_reff_id(res, supplier, "supplierID")
+
+	else:
+		doc_data = get_deleted_document("Supplier", log.docname)
+		if not doc_data:
+			return
+		
+		res = api.delete_supplier(doc_data.foms_id)
+
+
+# CUSTOMER (POST)
+def sync_all_customer(show_progress=False):
+	foms_all_customer()
+
+	# find not exist foms id 
+	customers = frappe.db.get_all("Customer", {"foms_id": ['is', 'not set']})
+	for d in customers:
+		# generate log
+		create_log("Customer", d.name, method=METHOD_MAP.get("Customer"))
+
+	# push the log
+	update_foms_customer()
+
+	return True
+
+# def delete_customer
+
+
+def foms_all_customer(show_progress=False):
 	farm_id = get_farm_id()
-	address = details.address_display or details.company_address_display
-	shipping_address = details.get("shipping_address") or address
+	api = FomsAPI()
+	data = api.get_all_customer(farm_id)
+	for d in data.get("items", []):
+		# not yet finish
+		name = d.get("customerName")
+		frappe.db.set_value("Customer", {"customer_name": name}, "foms_id", d['id'])
+		frappe.db.set_value("Customer", {"customer_name": name}, "foms_name", d['customerRefNo'])
 
+def update_foms_customer():
+	sync_controller("Customer", _update_foms_customer)
+
+def _update_foms_customer(log, api=None):
+	if not api:
+		api = FomsAPI()
+	
+	api.log = log
+
+	if log.update_type != "Delete":
+		customer = frappe.get_doc("Customer", log.docname)
+		if cint(customer.disabled) == 1:
+			return
+		
+		details = get_party_details(customer.name, party_type="Customer")
+		farm_id = get_farm_id()
+		address = get_html_text(details.address_display or details.company_address_display)
+		shipping_address = get_html_text(details.get("shipping_address") or address)
+
+		customer_name = customer.customer_name
+		cust_id = customer.customer_code
+		if cust_id == "C00008":
+			customer_name = "Cash Sales"
+
+		data = {
+			"farmId": farm_id,
+			"customerRefNo": cust_id,
+			"customerName": customer_name,
+			"address": address,
+			"contact": customer.mobile_no or  details.contact_mobile or "" ,
+			"email": customer.email_id or details.contact_email or "user@example.com",
+			"creditLimit": 0,
+			"creditTermID": 0,
+			"contactPerson": details.contact_person or "",
+			"countryCode": frappe.db.get_single_value('FOMS Integration Settings', "country_id"),
+			"deliveryAddress": shipping_address,
+		}
+
+		if customer.foms_id:
+			data['Id'] = customer.foms_id
+
+		res = api.create_or_update_customer(data)
+		update_reff_id(res, customer, "customerRefNo" )
+	else:
+		doc_data = get_deleted_document("Customer", log.docname)
+		if not doc_data:
+			return
+		
+		res = api.delete_customer(doc_data.foms_id)
+
+# PACKAGING (GET)
+def get_packaging(show_progress=False):
+	api = FomsAPI()
+	data = frappe.db.get_all("Item", {"foms_product_id":['!=', 0]}, ['name', 'foms_product_id'])
+	for d in data:
+		packs = api.get_packaging(d.foms_product_id)
+		doc = frappe.get_doc("Item", d.name)
+		doc.packaging = []
+		for d in packs or []:
+			pack_name = create_packaging(d)
+			row = doc.append("packaging")
+			row.packaging = pack_name
+
+		doc.save()
+
+def create_packaging(log):
+	name = frappe.get_value("Packaging", log.get("packageName"))
+	log = frappe._dict(log)
+	if not name:
+		doc = frappe.new_doc("Packaging")
+		doc.title = log.packageName[:159]
+		doc.description = log.packageName
+		doc.package_type = log.packageType
+		doc.foms_id = log.id		
+	else:
+		doc = frappe.get_doc("Packaging", name)
+		doc.description = log.packageName
+
+	doc.quantity = log.packageWeight
+	doc.uom = get_uom(log.uom, "g")
+	factor = UOM_KG_CONVERTION.get(doc.uom) or 1
+	doc.total_weight = flt(doc.quantity/factor)
+
+	if doc.is_new():
+		doc.insert(ignore_permissions=1)
+	else:
+		doc.save()
+
+	return doc.name
+
+# BATCH (GET)
+def get_batch(show_progress=False):
+	def get_data(gd):
+		data = gd.api.get_all_batch()
+		if "items" in data:
+			return data.get("items")
+		return {}
+
+	def post_process(gd, log):
+		return create_batch(log) 
+
+	def get_key_name(log):
+		return log.get("batchRefNo")
+	
+	GetData(
+		data_type = "Batch",
+		get_data=get_data,
+		get_key_name = get_key_name,
+		post_process=post_process,
+		show_progress=show_progress
+	).run()
+
+def create_batch(log):
+	log = frappe._dict(log)
+	name = frappe.db.get_value("Batch", log.batchRefNo)
+	if not name:
+		doc = frappe.new_doc("Batch")
+		doc.batch_id = log.batchRefNo
+		item_code = frappe.db.get_value("Item", {"foms_raw_id": cstr(log.rawMaterialId)})
+		if not item_code:
+			return ""
+		doc.item = item_code
+	else:
+		doc = frappe.get_doc("Batch", name)
+	shelf_life_in_days = frappe.db.get_value(
+		"Item", doc.item, ["shelf_life_in_days"]
+	) or 0
+	doc.manufacturing_date = getdate(log.dateOfCreation) or getdate()
+	doc.expiry_date = getdate(log.expiryDate) or add_days(getdate(), shelf_life_in_days)
+	doc.foms_id = log.id
+	if doc.is_new():
+		doc.insert(ignore_permissions=1)
+	else:
+		doc.save()
+
+	name = doc.name
+
+	return name
+
+def get_stock_batch(show_progress=False):
+	def get_data(gd):
+		data = gd.api.get_all_batch()
+		return [data]
+
+	def post_process(gd, log):
+		try:
+			return crate_batch_stock_recon(log) 
+		except Exception as e:
+			print("Error: ", e)
+
+	def get_key_name(log):
+		date = get_datetime()
+		name = f"Sync Stock Batch on {date}"
+		return name
+	
+	GetData(
+		data_type = "Batch",
+		get_data=get_data,
+		get_key_name = get_key_name,
+		post_process=post_process,
+		show_progress=show_progress
+	).run()
+
+# create stock recon from FOMS
+def crate_batch_stock_recon(data={}, log_name="", dummy=False):
+	if log_name:
+		log = frappe.get_doc("FOMS Data Mapping", log_name)
+		data = log.get_data()
+
+	doc = frappe.new_doc("Stock Reconciliation")
+	doc.purpose = "Stock Reconciliation"
+	doc.flags.ignore_syncing = 1
+	missing_item = []
+	already_add = []
+	for d in data.get("items"):
+		expiry_date = get_datetime(d.get("expiryDate"))
+		if not expiry_date:
+			expiry_date = get_datetime(d.get("dateOfCreation"))
+		if not expiry_date:
+			expiry_date = get_datetime("2000-01-01")
+
+		if expiry_date < get_datetime():
+			continue
+		
+		qty = flt(d.get("qtyLeft"))
+		if qty <= 0:
+
+			if dummy:
+				qty = abs(flt(d.get("qtyAdd"))) or 1000
+			else:
+				continue
+
+		item_data = frappe.db.get_value("Item", {'foms_raw_id':cstr(d.get("rawMaterialId"))}, ['name', "is_stock_item"], as_dict=1)
+		if not item_data:
+			missing_item.append( cstr(d.get("rawMaterialId")) )
+			print("Missing Item", d.get("rawMaterialId") )
+			continue
+
+		if not item_data.is_stock_item:
+			continue
+
+		warehouse = frappe.db.get_value("Warehouse", {'foms_id':cstr(d.get("warehouseId"))})
+		if not warehouse:
+			print("Missing Warehouse", d.get("warehouseId") )
+			continue
+
+		batch_no = frappe.db.get_value("Batch", {'foms_id':d.get("id")})
+		if not batch_no:
+			batch_no = create_batch(d)
+
+		key = (item_data.name, warehouse, batch_no)
+		if not key in already_add:
+			already_add.append(key)
+		else:
+			continue
+
+		row = doc.append("items")
+		row.item_code = item_data.name
+		row.warehouse = warehouse
+		row.qty = qty
+		row.batch_no = batch_no
+
+	if missing_item:
+		missing_item = list(set(missing_item))
+		count = len(missing_item)
+		temp = ", ".join(missing_item)
+		print(f"Missing item with {temp}, total count {count}")
+
+	doc.flags.ignore_validate = 1
+	doc.flags.ignore_mandatory = 1
+	doc.insert(ignore_permissions=1)
+
+
+
+
+# SALES ORDER (POST)
+def sync_log_so(doc, method=""):
+	if doc.get("non_package_item"):
+		return
+	else:
+		sync_log(doc, method)
+		
+def update_foms_sales_order():
+	sync_controller("Sales Order", _update_foms_sales_order)
+
+def _update_foms_sales_order(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Sales Order", log.docname)
+	api.log = log
+
+	if doc.docstatus == 1:
+		customer_foms_id = frappe.get_value("Customer", doc.customer, "foms_id")
+		farm_id = get_farm_id()
+
+		so_id = cint(doc.get("foms_id"))
+		req_id = cint(doc.get("req_id"))
+
+		products = []
+		
+		for d in doc.get("items"):
+			product_id = frappe.get_value("Item", d.item_code, "foms_product_id")
+			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
+			child_id = cint(d.get("foms_id"))
+			item = {
+				"isWeightOrder": True if d.weight_order else False,
+				"productId": product_id,
+				"quantity": d.qty,
+				"uom": convert_uom(d.stock_uom),
+				"totalNetWeight": d.stock_qty,
+				"isRootInclude": "false",
+				"unitPrice": d.rate,
+				"id":child_id
+			}
+			if package_id:
+				item["packageId"] = cint(package_id)
+
+			products.append(item)
+
+		data = {
+			"orderType": "One-off",
+			"deliveryDate": getdate(doc.delivery_date),
+			"customerId": customer_foms_id or "",
+			"purchaseOrderNumber": doc.po_no or "-",
+			"saleOrder": {
+				"saleOrderNumber":doc.name, 
+				"farmId": farm_id,
+				"subSaleOrders": products,
+				"id": so_id
+			},
+			"farmId": farm_id,
+			"id":req_id
+		}
+
+		res = api.create_customer_order(data)
+		if res:
+			doc.foms_id = res['saleOrder']['id']
+			doc.req_id = res['id']
+			for d in res['saleOrder']['subSaleOrders']:
+				item_code = frappe.get_value("Item", {"foms_product_id": cstr(d['productId'])})
+				packaging = frappe.get_value("Packaging", {"foms_id": cstr(d['packageId'])})
+				# key on product id, package id, uom, quantity, unit price
+				for row in doc.get("items", {
+					"item_code":item_code,
+					"uom":packaging
+				}):
+					row.foms_id = d['id']
+					row.db_update()
+			doc.db_update()
+	
+	if doc.docstatus == 2:
+		res = api.cancel_sales_order(doc.foms_id)
+
+def get_foms_format(date):
+	return getdate(date).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+
+def update_foms_delivery():
+	sync_controller("Delivery Note", _sync_delivery_note)
+
+def _sync_delivery_note(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Delivery Note", log.docname)
+	customer = frappe.get_doc("Customer", doc.customer)
+	farm_id = get_farm_id()
+
+	address = doc.shipping_address or doc.company_address or doc.address_display
+	address = get_html_text(address)
+	remarks = get_html_text(doc.instructions)
+
+	sales_orders = ", ".join([d.against_sales_order for d in doc.get("items")])
+
+	data = frappe._dict({
+		"farmId": 0,
+		"deliveryOrderRefNo": doc.name,
+		"erpDeliveryOrderId": doc.name,
+		"erpSaleOrderNo": sales_orders,
+		"customer": doc.customer,
+		"customerAddress": address,
+		"remarks": remarks,
+		"deliveryOrderDetails": [],
+		"id": 0
+	})
+
+	for d in doc.get("items"):
+		data.deliveryOrderDetails.append({
+			"itemCode": d.item_code,
+			"itemName": d.item_name,
+			"qty": d.qty,
+			"uom": d.uom,
+			"remarks": get_html_text(d.description),
+			"warehouse": d.warehouse,
+			"batchNo": d.batch_no,
+			"id": 0
+		})
+
+	api.log = log
+	res = api.create_delivery_note(data)
+
+def get_html_text(html_text):
+	soup = bs(html_text or "", "html.parser")
+	txt = soup.get_text(separator=", ")
+	txt = txt.rstrip().rstrip(',')
+	return txt
+
+# REQUEST FORM
+def update_foms_forecast():
+	sync_controller("Request", _update_foms_forecast)
+
+def _update_foms_forecast(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Request", log.docname)
+	api.log = log
+
+	def day_selected(date):
+		key_list = ['isMonday', 'isTuesday', 'isWednesday', 'isThursday', 'isFriday', 'isSaturday', 'isSunday']
+		day_no = getdate(date).weekday()
+		return key_list[day_no]
+
+	if doc.docstatus == 1:
+		department_foms_id = frappe.get_value("Department", doc.department, "foms_id")
+		farm_id = get_farm_id()
+
+		so_id = cint(doc.get("foms_id"))
+		req_id = cint(doc.get("req_id"))
+		delivery_date = getdate(doc.delivery_date)
+		end_delivery_date = add_days(delivery_date, 1)
+
+		products = []
+		
+		for d in doc.get("items"):
+			temp = frappe.get_value("Item", d.item_code, ["foms_product_id", "stock_uom"], as_dict=1)
+			product_id = temp.foms_product_id
+			stock_uom = temp.stock_uom
+			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
+			child_id = cint(d.get("foms_id"))
+			item = {
+				"isWeightOrder": False,
+				"productId": cint(product_id),
+				"quantity": d.qty,
+				"uom": convert_uom(stock_uom),
+				"totalNetWeight": d.weight,
+				"isRootInclude": "false",
+				"unitPrice": d.rate,
+				"id":child_id
+			}
+			if package_id:
+				item["packageId"] = cint(package_id)
+
+			products.append(item)
+
+		data = {
+			"orderType": "Internal / Forecast",
+			"startDeliveryDate": delivery_date,
+			"endDeliveryDate": end_delivery_date,
+			"departmentId ": department_foms_id or "",
+			"saleOrder": {
+				"saleOrderNumber":doc.name, 
+				"farmId": farm_id,
+				"subSaleOrders": products,
+				"id": so_id
+			},
+			"farmId": farm_id,
+			"id":req_id
+		}
+
+		day_name = day_selected(delivery_date)
+		data[day_name] = True
+
+		res = api.create_forecast_order(data)
+		if res:
+			doc.foms_id = res['saleOrder']['id']
+			doc.req_id = res['id']
+			for d in res['saleOrder']['subSaleOrders']:
+				item_code = frappe.get_value("Item", {"foms_product_id": cstr(d['productId'])})
+				packaging = frappe.get_value("Packaging", {"foms_id": cstr(d['packageId'])})
+				# key on product id, package id, uom, quantity, unit price
+				for row in doc.get("items", {
+					"item_code":item_code,
+					"uom":packaging
+				}):
+					row.foms_id = d['id']
+					row.db_update()
+			doc.db_update()
+	
+	if doc.docstatus == 2:
+		res = api.cancel_sales_order(doc.foms_id)
+
+# SCRAP REQUEST
+def update_foms_scrap_request():
+	sync_controller("Scrap Request", _update_foms_scrap_request)
+
+def _update_foms_scrap_request(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Scrap Request", log.docname)
+	api.log = log
+	for d in doc.get("items"):
+		batch_id = frappe.get_value("Batch", d.batch, "foms_id")
+		data = {
+			"RawMaterialBatchID": cint(batch_id)
+		}
+		res = api.post_scrap_issue(data)
+
+# DEPARTMENT
+def update_foms_department():
+	sync_controller("Department", _update_foms_department)
+
+def _update_foms_department(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Department", log.docname)
+	api.log = log
 	data = {
-		"farmId": farm_id,
-		"customerRefNo": customer.name,
-		"customerName": customer.customer_name,
-		"address": address,
-		"contact": customer.mobile_no or  details.contact_mobile or "" ,
-		"email": customer.email_id or details.contact_email or "user@example.com",
-		"creditLimit": 0,
-		"creditTermID": 0,
-		"contactPerson": details.contact_person or "",
-		"countryCode": frappe.db.get_single_value('FOMS Integration Settings', "country_id"),
-		"deliveryAddress": shipping_address,
+		"name": doc.name,
+		"departmentName": doc.department_name,
+		"parentDepartment": doc.parent_department,
+		"company": doc.company,
+		"id": cint(doc.foms_id)
 	}
-	res = api.create_or_update_customer(data)
-	if 'customerRefNo' in res:
-		customer.db_set("foms_id", res['customerRefNo'])
+	res = api.update_foms_department(data)
+
+	id = res.get("id")
+	doc.db_set("foms_id", cint(id))
+
+# SALES RECONCILLIATION (POST)
+def update_foms_stock_recon():
+	sync_controller("Stock Reconciliation", _update_foms_stock_recon)
+
+def _update_foms_stock_recon(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Stock Reconciliation", log.docname)
+	farm_id = get_farm_id()
+
+	success = 0
+	for d in doc.get("items"):
+		if d.item_group != "Raw Material":
+			success += 1
+			continue
+
+		if cint(d.foms_sync):
+			success += 1
+			continue
+
+		item_id = frappe.get_value("Item", d.item_code, "foms_raw_id")
+		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id")
+		batch_id = frappe.get_value("Batch", d.batch_no, "foms_id")
+		data = {
+			"rawMaterialId": item_id,
+			"batchRefNo": d.batch_no,
+			"warehouseId": warehouse_id,
+			"quantity": flt(d.qty),
+			"FarmId": farm_id,
+			"id": cint(batch_id)
+		}
+		api.log = log
+		try:
+			res = api.update_raw_material_batch_qty(data)
+			if res:
+				d.foms_sync = 1
+				success += 1
+				d.db_update()
+		except:
+			pass
+	
+	doc.sync_percent = success/len(doc.get("items"))*100
+	doc.db_update()
 
 def create_raw_material(log):
 	name = frappe.get_value("Item", log.get("rawMaterialRefNo"))
@@ -279,11 +1116,11 @@ def create_raw_material(log):
 		doc.item_group = types
 		doc.is_purchase_item = 1
 		doc.is_sales_item = 0
+		doc.is_stock_item = 1
 		doc.has_expiry_date = 1
 		doc.has_batch_no = 1
-		if doc.has_batch_no:
-			doc.create_new_batch = 1
-			doc.batch_number_series = log.rawMaterialRefNo + "-" + "BN.#####"
+		doc.create_new_batch = 1
+		doc.batch_number_series = doc.item_code + "-" + "BN.#####"
 
 		doc.lead_time_days = cint(log.RequestLeadTime)
 		doc.min_order_qty = flt(log.MinimumOrderQuantity)
@@ -291,7 +1128,8 @@ def create_raw_material(log):
 		doc.shelf_life_in_days = 365
 		doc.valuation_method = "FIFO"
 		doc.foms_raw_id = log.id
-		doc.insert()
+		doc.get_item_material_group(set_data=1)
+		doc.insert(ignore_permissions=1)
 		name = doc.name
 	else:
 		# validate_id
@@ -306,14 +1144,17 @@ def create_raw_material(log):
 		doc.min_order_qty = flt(log.MinimumOrderQuantity)
 		doc.safety_stock = log.safetyLevel
 		doc.shelf_life_in_days = 365
+		doc.is_stock_item = 1
 		if not doc.foms_raw_id:
 			doc.foms_raw_id = log.id
-		doc.db_update()
+
+		try:
+			doc.save()
+		except Exception as e:
+			print(f"Skip for {doc.name}")
+			print("Error:", e)
 
 	return name
-
-def get_foms_settings(field):
-	return frappe.db.get_single_value("FOMS Integration Settings", field)
 
 def create_products(log):
 	name = frappe.get_value("Item", log.get("productID"))
@@ -325,20 +1166,49 @@ def create_products(log):
 		doc.item_name = log.productName
 		doc.description = log.productDesc or log.productDetail or log.productName
 		doc.stock_uom = get_uom(log.unitOfMeasurement)
-		doc.item_group = types
 		doc.foms_product_id = log.id
-		doc.insert()
+		doc.is_stock_item = 1
+		doc.valuation_method = "FIFO"
+		doc.batch_number_series = doc.item_code + "-" + "BN.#####"
 		name = doc.name
 	else:
 		doc = frappe.get_doc("Item", name)
 		doc.item_name = log.productName
 		doc.description = log.productDesc or log.productDetail or log.productName
-		doc.item_group = types
+		doc.is_stock_item = 1
 		if not doc.foms_product_id:
 			doc.foms_product_id = log.id
-		doc.db_update()
+
+	doc.item_group = types
+	doc.shelf_life_in_days = log.defaultExpiryDays or 30
+	doc.has_expiry_date = 1
+	doc.has_batch_no = 1
+	doc.create_new_batch = 1
+	doc.batch_number_series = doc.item_code + "-" + "BN.#####"
+	doc.get_item_material_group(set_data=1)
+	doc.weight_per_unit = 1
+	doc.weight_uom = "Kg"
+
+
+	if doc.is_new():
+		doc.insert(ignore_permissions=1)
+	else:
+		doc.save()
+
+	create_workstation_process(doc.item_code)
 
 	return name
+
+def create_workstation_process(item_code):
+	default = get_foms_settings("workstation")
+	for i,operation in OPERATION_MAP_NAME.items():
+		exists = get_workstation_name(item_code, operation)
+		if not exists or exists == default:
+			doc = frappe.new_doc("Workstation")
+			doc.item_code = item_code
+			doc.operation = operation
+			doc.calculation_type = "Per KG"
+			doc.insert(ignore_permissions=1)
 
 def get_operation_no(operation):
 	return OPERATION_MAP.get(operation) or 1
@@ -361,7 +1231,6 @@ def create_bom_products_version_1(log, product_id, submit=False):
 		# 	return name
 		
 		# join process Preharvest and PostHarvest
-		print(303, log)
 		if "process" in log:
 			all_process = log.process
 		else:
@@ -392,7 +1261,7 @@ def create_bom_products_version_1(log, product_id, submit=False):
 				else:
 					bom.is_default = 0
 
-				bom.transfer_material_against = TRANSFER_AGAIN
+				bom.transfer_material_against = "Job Card"
 
 				if not op.productRawMaterial:
 					continue
@@ -402,7 +1271,7 @@ def create_bom_products_version_1(log, product_id, submit=False):
 					row = bom.append("items")
 					row.item_code = rm.rawMaterialRefNo
 					row.uom = get_uom(rm.uomrm)
-					row.qty = rm.qtyrm
+					row.qty = rm.qtyrmInKg
 
 				bom.insert()
 				name = bom.name
@@ -421,7 +1290,7 @@ def create_bom_products_version_1(log, product_id, submit=False):
 					row = bom.append("items")
 					row.item_code = rm.rawMaterialRefNo
 					row.uom = get_uom(rm.uomrm)
-					row.qty = rm.qtyrm
+					row.qty = rm.qtyrmInKg
 
 				bom.save()
 			
@@ -456,6 +1325,10 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 		
 		name, status = find_existing_bom2(item_name, log.productVersionName) 
 
+		if status == 1:
+			frappe.db.set_value("BOM", name, "is_active", 0)
+			force_new = 1
+
 		if not name or force_new:
 			operation_map = {}
 			bom = frappe.new_doc("BOM")
@@ -471,20 +1344,36 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 				if not operation_name in operation_map:
 					op_row = bom.append("operations")
 					op_row.operation = operation_name
-					op_row.time_in_mins = get_foms_settings("operation_time") or 60*24 #(24 hours)
-					op_row.workstation = get_foms_settings("workstation")
-					op_row.fixed_time = 1
+					op_row.time_in_mins = 60
+					op_row.workstation = get_workstation_name(item_name, operation_name)
 					op_row.description = operation_name
 					operation_map[operation_name] = op_row
 
 				if op.productRawMaterial:
 					for rm in op.productRawMaterial:
 						rm = frappe._dict(rm)
+						rm_item_name = frappe.get_value("Item", rm.rawMaterialRefNo)
+						if not rm_item_name:
+							continue
+
+						uom = get_uom(rm.uomrm)
+						if uom in ['Unit']:
+							qty = cint(rm.qtyrmInKg or rm.qtyrm )
+						else:
+							qty = rm.qtyrmInKg or rm.qtyrm 
+
+						if qty == 0 or math.isinf( flt(qty) ):
+							continue
+
 						row = bom.append("items")
 						row.item_code = rm.rawMaterialRefNo
 						row.uom = get_uom(rm.uomrm)
-						row.qty = rm.qtyrm
+						row.qty = qty
 						row.operation = operation_name
+			
+			if not bom.items:
+				return ""
+			
 			bom.save()
 			name = bom.name
 		else:
@@ -497,6 +1386,13 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 				bom.submit()
 	
 	return name
+
+def get_workstation_name(item_name, operation_name):
+	name = frappe.get_value("Workstation", {"item_code":item_name, "operation": operation_name})
+	if name:
+		return name
+	else:
+		return get_foms_settings("workstation")
 
 def find_existing_bom(item, foms_version, operation_no):
 	return frappe.get_value("BOM", {
@@ -568,14 +1464,30 @@ def get_work_order(show_progress=False, work_order=""):
 		return data
 
 	def post_process(gd, log):
+		detail_log = gd.api.get_work_order_detail(gd.farm_id, work_order=log.id)
+		if not detail_log:
+			return
+
 		submit = get_foms_settings("auto_submit_work_order")
-		for d in log.get("products"):
+		for d in detail_log:
+			d = frappe._dict(d)
+			# update data
+			d.workOrderNo = log.get("workOrderNo")
+			d.id = log.get("id")
+
 			item_code = d.get("productRefNo")
 			bom_no = get_bom_for_work_order(item_code)
-			qty = 1
+			# qty = 1
 
-			if bom_no:
-				create_work_order(log, item_code, bom_no, qty, submit)
+			result = None
+			try:
+				if bom_no:
+					result = create_work_order(d, item_code, bom_no, qty, submit)
+				
+				save_log("Work Order", result, d.get("lotId"), log)
+			except Exception as e:
+				print("error with ",item_code, d.workOrderNo, d.id)
+				continue
 
 	def get_key_name(log):
 		return log.get("workOrderNo")
@@ -586,14 +1498,18 @@ def get_work_order(show_progress=False, work_order=""):
 		get_data=get_data,
 		get_key_name = get_key_name,
 		post_process=post_process,
-		show_progress=show_progress
+		show_progress=show_progress,
+		manual_save_log=1
 	).run()
 
-def create_work_order(log, item_code, bom_no, qty=1, submit=False, return_doc=False):
-	doc = make_work_order(bom_no, item_code, qty)
+def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=False, return_doc=False):
+	doc = make_work_order(bom_no, item_code, qty, gross_weight)
 	validate_operation(doc)
 	doc.foms_work_order = log.workOrderNo
-	doc.foms_lot_id = log.lotID
+	doc.foms_lot_id = log.id
+	doc.foms_lot_name = log.lotId
+	doc.gross_weight = gross_weight
+	doc.sales_order_no = ", ".join(log.sales_order_no or [])
 	doc.use_multi_level_bom = 0 #if use multi level bom it will use exploed items as raw material, but if not it will use bom items
 	doc.insert()
 
@@ -604,6 +1520,18 @@ def create_work_order(log, item_code, bom_no, qty=1, submit=False, return_doc=Fa
 		return doc
 	return doc.name
 
+def update_so_working(sub_so_id, lot_id):
+	parent = frappe.get_value("Sales Order Item", {"foms_id":cstr(sub_so_id)})
+	if not parent:
+		return
+	
+	doc = frappe.get_doc("Sales Order", parent)
+	for d in doc.get("items"):
+		if d.foms_id == cstr(sub_so_id):
+			d.db_set("lot_id", lot_id)
+	doc.db_update()
+
+
 def validate_operation(doc):
 	# use default
 	workstation_warehouse = get_foms_settings("workstation")
@@ -613,7 +1541,7 @@ def validate_operation(doc):
 
 def get_raw_item_foms(item_id="", item_code=""):
 	if item_id:
-		item = frappe.get_value("Item", {"foms_raw_id":1})
+		item = frappe.get_value("Item", {"foms_raw_id":item_id})
 	
 	if not item and item_code:
 		item = frappe.get_value("Item", item_code)
@@ -624,7 +1552,7 @@ def create_delivery_order(log):
 	# need to add foms id
 	log = frappe._dict(log)
 	doc = frappe.new_doc("Delivery Note")
-	exists = frappe.get_value("Delivery Note", {"foms_id":log.id})
+	exists = frappe.get_value("Delivery Note", {"foms_id":cstr(log.id)})
 	if exists:
 		return exists
 	
@@ -644,25 +1572,144 @@ def create_delivery_order(log):
 
 	return doc.name
 
-# update stock from receipt:
-def update_stock_recipe(doc, cancel=False):
-	if not is_enable_integration():
-		return 
+from erpnext.selling.doctype.sales_order.sales_order import make_delivery_note
+def create_do_based_on_work_order(wo_name, qty_finish, warehouse, batch_use):
+	wo_doc = frappe.get_doc("Work Order", wo_name)
+	if not wo_doc.sales_order_no:
+		return
 	
-	api = FomsAPI()
-	for d in doc.get("items"):
-		expiry_date = frappe.get_value("Batch", d.batch_no, "expiry_date")
-		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id")
-		supplier_id = frappe.get_value("Supplier", doc.supplier, "foms_id")
-		raw_id = frappe.get_value("Item", d.item_code, "foms_raw_id")
-		params = {
-			"id": 0,
-			"rawMaterialId": raw_id,
-			"batchRefNo": d.batch_no,
-			"dateOfCreation": doc.creation,
-			"expiryDate": expiry_date,
-			"warehouseId": warehouse_id,
-			"supplierId": supplier_id,
-			"quantity": d.qty
-		}
-		res = api.req(method="/userportal/ERPNextIntegration/RawMaterialReceipt", data=json.dumps(params, default=str))
+	so_list = wo_doc.sales_order_no
+	qty_finish = qty_finish or flt(wo_doc.produced_qty)
+	item_code = wo_doc.production_item
+
+
+	temp = so_list.replace(" ", "")
+	so_list = temp.split(",")
+	for so_name in so_list:
+		so_name = frappe.get_value("Sales Order", so_name)
+		if not so_name:
+			continue
+
+		if qty_finish == 0:
+			break
+		
+		dn_doc = make_delivery_note(so_name)
+		# change warehouse
+		dn_doc.set_warehouse = warehouse
+		for d in dn_doc.get("items"):
+			if qty_finish == 0:
+				dn_doc.remove(d)
+				break
+
+			# filter item based on work order
+			if d.item_code != item_code:
+				dn_doc.remove(d)
+				continue
+
+			if d.stock_qty >= qty_finish:
+				d.qty = qty_finish/d.conversion_factor
+				qty_finish = 0
+			else:
+				qty_finish = qty_finish - d.stock_qty
+			d.batch_no = batch_use
+
+		dn_doc.flags.ignore_validate = 1
+		dn_doc.save()
+
+
+def create_finish_goods_stock(data):
+	"""
+	reff:
+	https://docs.erpnext.com/docs/user/manual/en/manufacturing-without-creating-bom
+
+	question:
+	- how to select account no when add cost
+
+	data = {
+		"material_reff":"",
+		"posting_date":"2024-01-12 08:12:32",
+		"company":"", // opt
+		"bom":"",
+		"id":"",
+		"item_code":"",
+		"qty":"",
+		"uom":"",
+		"batch":"",
+		"batch_exp":"", // opt if not set, it will created from erp
+		"batch_mfg":"", // opt
+		"work_order_id":"",
+		"lot_id":"",
+		"rack_no":"",
+		"customer_order_no:":"",
+		"warehouse":""
+		"materials":[{  // material consumed at end of process
+			"item_code":"",
+			"qty":"",
+			"uom":"",
+			"batch":"",
+			"warehouse":""
+		}],
+		"additional_cost":[{
+			"expense_account":"",
+			"description":"",
+			"amount":0
+		}]
+	}
+	"""
+	data = frappe._dict(data)
+
+	# optional if find exist 
+
+	doc = frappe.new_doc("Stock Entry")
+	doc.foms_id = data.id
+	# doc.material_reff = data.material_reff
+	doc.posting_date = getdate(data.posting_date)
+	doc.posting_time = get_time(data.posting_date)
+	doc.stock_entry_type = "Manufacture"
+	doc.company = get_default_company()
+	doc.work_order_id = data.work_order_id
+	doc.lot_id = data.lot_id
+	doc.rack_no = data.rack_no
+	doc.customer_order_no = data.customer_order_no
+	if data.bom:
+		doc.from_bom = 1
+	if not "optional" in data.bom:
+		doc.bom_no = data.bom
+
+	# default_expense = frappe.db.get_single_value("Manufacturing Settings", "default_expense_account") 
+	# if not default_expense:
+	# 	frappe.throw(_("Please set <b>Default Expense Account</b> on Manufacturing Settings!"))
+
+	# material issue
+	for d in data.get("materials") or []:
+		d = frappe._dict(d)
+		row = doc.append("items")
+		row.item_code = d.item_code
+		row.qty = d.qty
+		row.uom = d.uom
+		row.s_warehouse = d.warehouse
+
+	# finish goods
+	row = doc.append("items")
+	row.item_code = data.item_code
+	row.qty = data.qty
+	row.uom = data.uom
+	row.t_warehouse = data.warehouse
+	row.is_finished_item = 1
+
+	# add cost
+	for d in data.get("additional_cost") or []:
+		row = doc.append("additional_costs")
+		row.update(d)
+		# row.expense_account = default_expense
+
+	# temporary
+	doc.flags.ignore_validate = 1
+	doc.flags.ignore_mandatory = 1
+
+	doc.insert(ignore_permissions=1)
+	doc.submit()
+
+	return {
+		"StockEntryNo":doc.name
+	}

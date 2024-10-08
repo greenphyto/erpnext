@@ -52,6 +52,12 @@ frappe.ui.form.on('Stock Entry', {
 			}
 		});
 
+		frm.set_query("asset_code", "items", ()=>{
+            return {
+                query:"erpnext.assets.doctype.asset.asset.filter_account_for_asset_code",
+			}
+        })
+
 		frappe.db.get_value('Stock Settings', {name: 'Stock Settings'}, 'sample_retention_warehouse', (r) => {
 			if (r.sample_retention_warehouse) {
 				var filters = [
@@ -100,6 +106,12 @@ frappe.ui.form.on('Stock Entry', {
 				}
 			}
 		});
+
+		frm.set_query("stock_entry_type",()=>{
+			return {
+				filters: {disabled:0}
+			}
+		})
 
 
 		frm.add_fetch("bom_no", "inspection_required", "inspection_required");
@@ -193,6 +205,20 @@ frappe.ui.form.on('Stock Entry', {
 					frappe.set_route('Form', 'Material Request', mr.name);
 				});
 			}, __("Create"));
+		}
+
+		if(frm.doc.stock_entry_type_view == "Conversion from Inventory to Fixed Asset" && frm.doc.docstatus==1){
+			var btn = frm.add_custom_button(__('Create Asset'), function() {
+				frappe.call({
+					method:"erpnext.stock.doctype.stock_entry.stock_entry.create_asset_from_stock_entry",
+					args:{
+						se_name:frm.doc.name
+					},
+					callback:(r)=>{
+					}
+				})
+			});
+			btn.removeClass("btn-default").addClass("btn-warning")
 		}
 
 		if(frm.doc.items) {
@@ -327,6 +353,7 @@ frappe.ui.form.on('Stock Entry', {
 
 		frm.trigger("setup_quality_inspection");
 		attach_bom_items(frm.doc.bom_no)
+		frm.cscript.change_view_on_pupose();
 	},
 
 	before_save: function(frm) {
@@ -345,6 +372,7 @@ frappe.ui.form.on('Stock Entry', {
 		frm.trigger('validate_purpose_consumption');
 		frm.fields_dict.items.grid.refresh();
 		frm.cscript.toggle_related_fields(frm.doc);
+		frm.cscript.change_view_on_pupose();
 	},
 
 	validate_purpose_consumption: function(frm) {
@@ -576,6 +604,15 @@ frappe.ui.form.on('Stock Entry', {
 			flt(total_additional_costs, precision("total_additional_costs")));
 	},
 
+	calculate_total_wip_additional_costs: function(frm) {
+		const total = frappe.utils.sum(
+			(frm.doc.wip_additional_costs || []).map(function(c) { return flt(c.base_amount); })
+		);
+
+		frm.set_value("total_wip_additional_costs",
+			flt(total, precision("total_wip_additional_costs")));
+	},
+
 	source_warehouse_address: function(frm) {
 		erpnext.utils.get_address_display(frm, 'source_warehouse_address', 'source_address_display', false);
 	},
@@ -757,6 +794,23 @@ frappe.ui.form.on('Stock Entry Detail', {
 	batch_no: function(frm, cdt, cdn) {
 		validate_sample_quantity(frm, cdt, cdn);
 	},
+	asset_code: function(frm,cdt,cdn){
+		var d = locals[cdt][cdn];
+		if (d.asset_code){
+			frappe.db.get_value("Asset Code Map", {"parent":"Accounts Settings", "account":d.asset_code}, "default_asset_category", r=>{
+				if (!r.default_asset_category){
+					frappe.msgprint(`Missing default Asset Category for <b>${d.asset_code}</b>. Please update the Asset Code configuration on the Account Settings.`)
+					frappe.model.set_value(cdt,cdn, "asset_category", "");
+				}else{
+					frappe.model.set_value(cdt,cdn, "asset_category", r.default_asset_category);
+				}
+			}, "Accounts Settings");
+		}else{
+			frappe.model.set_value(cdt,cdn, "asset_category", "");
+		}
+
+		frappe.model.set_value(cdt,cdn, "expense_account", d.asset_code);
+	}
 });
 
 var validate_sample_quantity = function(frm, cdt, cdn) {
@@ -780,11 +834,13 @@ var validate_sample_quantity = function(frm, cdt, cdn) {
 frappe.ui.form.on('Landed Cost Taxes and Charges', {
 	amount: function(frm, cdt, cdn) {
 		frm.events.set_base_amount(frm, cdt, cdn);
-
+		frm.events.calculate_total_wip_additional_costs(frm);
+		
 	},
-
+	
 	expense_account: function(frm, cdt, cdn) {
 		frm.events.set_account_currency(frm, cdt, cdn);
+		frm.events.calculate_total_wip_additional_costs(frm);
 	}
 });
 
@@ -1054,6 +1110,59 @@ erpnext.stock.StockEntry = class StockEntry extends erpnext.stock.StockControlle
 
 	supplier(doc) {
 		erpnext.utils.get_party_details(this.frm, null, null, null);
+	}
+
+	change_view_on_pupose(doc){
+		var frm = this.frm;
+
+		if (frm.doc.purpose=="Material Issue"){
+			if (frm.doc.stock_entry_type_view == "Conversion from Inventory to Fixed Asset"){
+				frm.cscript.change_item_preview("asset")
+			}else{
+				frm.cscript.change_item_preview("issue")
+			}
+
+		}else if (frm.doc.purpose=="Material Receipt"){
+			frm.cscript.change_item_preview("receipt")
+		}else{
+			frm.cscript.change_item_preview("std")
+		}
+	}
+
+	change_item_preview(types="std"){
+		const item_table = "items";
+		var fields = {
+			asset:[
+				"item_code", "qty", "basic_rate","asset_code","purchase_value"
+			],
+			std:[
+				"s_warehouse", "t_warehouse", "item_code", "qty", "basic_rate", "batch_no"
+			],
+			receipt:[
+				"t_warehouse", "item_code", "qty", "basic_rate", "batch_no"
+			],
+			issue:[
+				"s_warehouse", "item_code", "qty", "basic_rate", "batch_no"
+			]
+		}
+
+
+		var table = this.frm.fields_dict[item_table];
+		
+		function reset_non_list_view(){
+			table.grid.docfields.forEach(f=>{
+				f.in_list_view = 0;
+			})
+		}
+
+		reset_non_list_view();
+		$(fields[types]).each((i, field)=>{
+			table.grid.fields_map[field].in_list_view = 1;
+		})
+
+		table.grid.reset_grid();
+
+		return
 	}
 };
 

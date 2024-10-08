@@ -1648,13 +1648,6 @@
    "label": "Non Package Item"
   },
   {
-   "default": "0",
-   "fieldname": "on_progress",
-   "fieldtype": "Check",
-   "label": "On Progress",
-   "read_only": 1
-  },
-  {
    "fieldname": "per_working",
    "fieldtype": "Percent",
    "label": "Working Status",
@@ -1663,6 +1656,13 @@
    "read_only": 1
   },
   {
+   "default": "0",
+   "fieldname": "on_progress",
+   "fieldtype": "Check",
+   "label": "On Progress",
+   "read_only": 1
+   },
+   {
    "fieldname": "request_no",
    "fieldtype": "Link",
    "label": "Request No",

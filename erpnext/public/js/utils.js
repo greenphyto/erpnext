@@ -481,6 +481,31 @@ erpnext.utils.update_child_items = function(opts) {
 	const child_meta = frappe.get_meta(`${frm.doc.doctype} Item`);
 	const get_precision = (fieldname) => child_meta.fields.find(f => f.fieldname == fieldname).precision;
 
+	var item_query = function() {
+		let filters;
+		if (frm.doc.doctype == 'Sales Order') {
+			filters = {"is_sales_item": 1};
+		} else if (frm.doc.doctype == 'Purchase Order') {
+			if (frm.doc.is_subcontracted) {
+				if (frm.doc.is_old_subcontracting_flow) {
+					filters = {"is_sub_contracted_item": 1};
+				} else {
+					filters = {"is_stock_item": 0};
+				}
+			} else {
+				filters = {"is_purchase_item": 1};
+			}
+		}
+		return {
+			query: "erpnext.controllers.queries.item_query",
+			filters: filters
+		};
+	}
+
+	if (opts.item_query){
+		item_query = opts.item_query;
+	}
+
 	this.data = [];
 	const fields = [{
 		fieldtype:'Data',
@@ -495,42 +520,26 @@ erpnext.utils.update_child_items = function(opts) {
 		read_only: 0,
 		disabled: 0,
 		label: __('Item Code'),
-		get_query: function() {
-			let filters;
-			if (frm.doc.doctype == 'Sales Order') {
-				filters = {"is_sales_item": 1};
-			} else if (frm.doc.doctype == 'Purchase Order') {
-				if (frm.doc.is_subcontracted) {
-					if (frm.doc.is_old_subcontracting_flow) {
-						filters = {"is_sub_contracted_item": 1};
-					} else {
-						filters = {"is_stock_item": 0};
-					}
-				} else {
-					filters = {"is_purchase_item": 1};
-				}
-			}
-			return {
-				query: "erpnext.controllers.queries.item_query",
-				filters: filters
-			};
-		}
+		get_query: item_query
 	}, {
 		fieldtype:'Link',
 		fieldname:'uom',
 		options: 'UOM',
 		read_only: 0,
 		label: __('UOM'),
+		in_list_view: 1,
 		reqd: 1,
-		onchange: function () {
+		get_query: opts.uom_query,
+		onchange:  function(e, row){
+			var value = row.doc.uom
 			frappe.call({
 				method: "erpnext.stock.get_item_details.get_conversion_factor",
-				args: { item_code: this.doc.item_code, uom: this.value },
+				args: { item_code: row.doc.item_code, uom: value },
 				callback: r => {
 					if(!r.exc) {
-						if (this.doc.conversion_factor == r.message.conversion_factor) return;
+						if (row.doc.conversion_factor == r.message.conversion_factor) return;
 
-						const docname = this.doc.docname;
+						const docname = row.doc.docname;
 						dialog.fields_dict.trans_items.df.data.some(doc => {
 							if (doc.docname == docname) {
 								doc.conversion_factor = r.message.conversion_factor;
@@ -613,6 +622,7 @@ erpnext.utils.update_child_items = function(opts) {
 			this.hide();
 			refresh_field("items");
 		},
+		size:"large",
 		primary_action_label: __('Update')
 	});
 

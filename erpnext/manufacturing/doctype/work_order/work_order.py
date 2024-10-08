@@ -18,8 +18,10 @@ from frappe.utils import (
 	get_link_to_form,
 	getdate,
 	nowdate,
-	time_diff_in_hours,
+	time_diff_in_hours,cstr
 )
+
+from erpnext.stock.stock_ledger import get_valuation_rate
 from pypika import functions as fn
 
 from erpnext.manufacturing.doctype.bom.bom import (
@@ -83,6 +85,7 @@ class WorkOrder(Document):
 		self.validate_sales_order()
 		self.set_default_warehouse()
 		self.validate_warehouse_belongs_to_company()
+		self.get_workstation_cost()
 		self.calculate_operating_cost()
 		self.validate_qty()
 		self.validate_transfer_against()
@@ -92,19 +95,26 @@ class WorkOrder(Document):
 
 		validate_uom_is_integer(self, "stock_uom", ["qty", "produced_qty"])
 
-		self.set_required_items(reset_only_qty=len(self.get("required_items")))
+		self.set_required_items()
+		self.validate_non_stock_items()
+
+	def on_update_after_submit(self):
+		self.validate_cost_editing()
+		self.calculate_operating_cost()
+		self.write_opr_version()
+		self.db_update()
 
 	def autoname(self):
 		if cint(self.operation_no):
 			alpha_map = ["A", "B", "C", "D", "E", "F"]
 			alpha = alpha_map[cint(self.operation_no)-1]
-			if self.foms_work_order:
-				series = self.foms_work_order + "-.###.-{}".format( alpha )
+			if self.foms_lot_name:
+				series = self.foms_lot_name + "-.###.-{}".format( alpha )
 			else:
 				series = self.naming_series + ".###.-{}".format( alpha )
 		else:
-			if self.foms_work_order:
-				series = self.foms_work_order + "-.###"
+			if self.foms_lot_name:
+				series = self.foms_lot_name + "-.###"
 			else:
 				series = self.naming_series + ".###"
 
@@ -115,6 +125,24 @@ class WorkOrder(Document):
 			if not row.workstation and not row.workstation_type:
 				msg = f"Row {row.idx}: Workstation or Workstation Type is mandatory for an operation {row.operation}"
 				frappe.throw(_(msg))
+
+	def validate_non_stock_items(self):
+		is_stock_item = {}
+		remove_list = []
+		for d in self.get("required_items"):
+			stock_item = 0
+			if not d.item_code in is_stock_item:
+				stock_item = frappe.get_value("Item", d.item_code, "is_stock_item")
+				is_stock_item[d.item_code] = stock_item
+			else:
+				stock_item = is_stock_item[d.item_code]
+			
+
+			if not stock_item:
+				remove_list.append(d)
+		
+		for d in remove_list:
+			self.remove(d)
 
 	def validate_sales_order(self):
 		if self.sales_order:
@@ -164,6 +192,57 @@ class WorkOrder(Document):
 			else:
 				frappe.throw(_("Sales Order {0} is not valid").format(self.sales_order))
 
+	def validate_cost_editing(self):
+		old_doc = self.get_doc_before_save()
+		if not old_doc:
+			return
+		
+		cost_fields = ['electrical_cost', 'consumable_cost', 'machinery_cost', 'wages_cost', 'rent_cost']
+		for d in self.get("operations"):
+			total_rate = 0
+			edit = False
+			row = old_doc.get("operations", {"name":d.name})
+			if row:
+				row = row[0]
+			else:
+				continue
+
+			for field in cost_fields:
+				if d.get(field) != row.get(field):
+					edit = True
+				total_rate += flt(d.get(field))
+			
+			if edit and flt(d.completed_qty) != 0:
+				frappe.throw(_(f"Cannot editing cost for completed operation <b>{d.operation}</b>"))
+
+			d.operation_rate = total_rate		
+	
+	def write_opr_version(self):
+		for d in self.get("operations"):
+			if d.enable_cost_editing:
+				d.version = "Custom"
+			else:
+				d.version = frappe.get_value("Workstation", d.workstation, "version") or 1
+
+	def update_sales_order(self, state="Start"):
+		if not self.sales_order_no:
+			return
+		
+		def get_sales_order():
+			data = [ cstr(x).strip() for x in self.sales_order_no.split(",") ]
+			return data
+		
+		so_list = get_sales_order()
+		for d in so_list:
+			doc = frappe.get_doc("Sales Order", d)
+			if state == "Start":
+				doc.update_work_order_reference(self.name, self.production_item)
+			elif state == "Finish":
+				doc.update_work_progress(self.production_item, self.qty)
+				# create draft for single good
+
+			doc.db_update()
+
 	def check_sales_order_on_hold_or_close(self):
 		status = frappe.db.get_value("Sales Order", self.sales_order, "status")
 		if status in ("Closed", "On Hold"):
@@ -177,6 +256,9 @@ class WorkOrder(Document):
 		if not self.fg_warehouse:
 			self.fg_warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_fg_warehouse")
 
+		if not self.source_warehouse:
+			self.source_warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_source_warehouse")
+
 	def validate_warehouse_belongs_to_company(self):
 		warehouses = [self.fg_warehouse, self.wip_warehouse]
 		for d in self.get("required_items"):
@@ -186,11 +268,34 @@ class WorkOrder(Document):
 		for wh in warehouses:
 			validate_warehouse_company(wh, self.company)
 
+	def get_workstation_cost(self):
+		for d in self.get("operations"):
+			if d.workstation:
+				doc = frappe.get_doc("Workstation", d.workstation)
+				if doc.calculation_type in ("Per KG", "Per Qty"):
+					d.electrical_cost = doc.per_qty_rate_electricity
+					d.consumable_cost = doc.per_qty_rate_consumable
+					d.machinery_cost = doc.per_qty_rate_machinery
+					d.wages_cost = doc.per_qty_rate_wages
+					d.rent_cost = 0
+				else:
+					d.electrical_cost = doc.hour_rate_electricity
+					d.consumable_cost = doc.hour_rate_consumable
+					d.machinery_cost = 0
+					d.wages_cost = doc.hour_rate_labour
+					d.rent_cost = doc.hour_rate_rent
+
 	def calculate_operating_cost(self):
 		self.planned_operating_cost, self.actual_operating_cost = 0.0, 0.0
+		planned_qty = self.gross_weight
+		actual_qty = self.gross_weight
 		for d in self.get("operations"):
-			d.planned_operating_cost = flt(d.hour_rate) * (flt(d.time_in_mins) / 60.0)
-			d.actual_operating_cost = flt(d.hour_rate) * (flt(d.actual_operation_time) / 60.0)
+			if d.calculation_type == "Per Hour":
+				d.planned_operating_cost = flt(d.operation_rate) * (flt(d.time_in_mins) / 60.0)
+				d.actual_operating_cost = flt(d.operation_rate) * (flt(d.actual_operation_time) / 60.0)
+			else:
+				d.planned_operating_cost = flt(d.operation_rate) * (flt(planned_qty))
+				d.actual_operating_cost = flt(d.operation_rate) * (flt(actual_qty))
 
 			self.planned_operating_cost += flt(d.planned_operating_cost)
 			self.actual_operating_cost += flt(d.actual_operating_cost)
@@ -280,6 +385,9 @@ class WorkOrder(Document):
 						status = "Completed"
 		else:
 			status = "Cancelled"
+
+		if status == "Completed":
+			self.update_sales_order(state="Finish")
 
 		return status
 
@@ -394,6 +502,7 @@ class WorkOrder(Document):
 		self.update_planned_qty()
 		self.update_ordered_qty()
 		self.create_job_card()
+		self.update_sales_order(state="Start")
 
 	def on_cancel(self):
 		self.validate_cancel()
@@ -682,7 +791,7 @@ class WorkOrder(Document):
 					"workstation",
 					"idx",
 					"workstation_type",
-					"base_hour_rate as hour_rate",
+					"base_operation_rate as operation_rate",
 					"time_in_mins",
 					"parent as bom",
 					"batch_size",
@@ -917,8 +1026,9 @@ class WorkOrder(Document):
 			operation = self.operations[0].operation
 
 		if self.bom_no and self.qty:
+			use_qty = self.gross_weight
 			item_dict = get_bom_items_as_dict(
-				self.bom_no, self.company, qty=self.qty, fetch_exploded=self.use_multi_level_bom
+				self.bom_no, self.company, qty=use_qty , fetch_exploded=self.use_multi_level_bom
 			)
 
 			if reset_only_qty:
@@ -930,18 +1040,20 @@ class WorkOrder(Document):
 						d.operation = operation
 			else:
 				for item in sorted(item_dict.values(), key=lambda d: d["idx"] or float("inf")):
+					source_warehouse = self.source_warehouse or item.source_warehouse or item.default_warehouse
+					rate = get_valuation_rate(item.item_code, source_warehouse, "", "")
 					self.append(
 						"required_items",
 						{
-							"rate": item.rate,
-							"amount": item.rate * item.qty,
+							"rate": rate,
+							"amount": rate * item.qty,
 							"operation": item.operation or operation,
 							"item_code": item.item_code,
 							"item_name": item.item_name,
 							"description": item.description,
 							"allow_alternative_item": item.allow_alternative_item,
 							"required_qty": item.qty,
-							"source_warehouse": item.source_warehouse or item.default_warehouse,
+							"source_warehouse": source_warehouse,
 							"include_item_in_manufacturing": item.include_item_in_manufacturing,
 						},
 					)
@@ -1166,13 +1278,14 @@ def get_item_details(item, project=None, skip_bom_info=False):
 
 
 @frappe.whitelist()
-def make_work_order(bom_no, item, qty=0, project=None, variant_items=None):
+def make_work_order(bom_no, item, qty=0, gross_weight=0, project=None, variant_items=None):
 	if not frappe.has_permission("Work Order", "write"):
 		frappe.throw(_("Not permitted"), frappe.PermissionError)
 
 	item_details = get_item_details(item, project)
 
 	wo_doc = frappe.new_doc("Work Order")
+	wo_doc.gross_weight = flt(gross_weight or qty)
 	wo_doc.production_item = item
 	wo_doc.update(item_details)
 	wo_doc.bom_no = bom_no
@@ -1293,6 +1406,7 @@ def get_default_warehouse():
 	doc = frappe.get_cached_doc("Manufacturing Settings")
 
 	return {
+		"source_warehouse": doc.default_source_warehouse,
 		"wip_warehouse": doc.default_wip_warehouse,
 		"fg_warehouse": doc.default_fg_warehouse,
 		"scrap_warehouse": doc.default_scrap_warehouse,
@@ -1446,7 +1560,7 @@ def create_job_card(work_order, row, enable_capacity_planning=False, auto_create
 			"company": work_order.company,
 			"sequence_id": row.get("sequence_id"),
 			"wip_warehouse": work_order.wip_warehouse,
-			"hour_rate": row.get("hour_rate"),
+			"operation_rate": row.get("operation_rate"),
 			"serial_no": row.get("serial_no"),
 		}
 	)

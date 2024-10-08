@@ -26,6 +26,12 @@ $.extend(erpnext.queries, {
 		return args;
 	},
 
+	uom: function(filters) {
+		var args = { query: "erpnext.controllers.queries.uom" };
+		if(filters) args["filters"] = filters;
+		return args;
+	},
+
 	bom: function() {
 		return { query: "erpnext.controllers.queries.bom" };
 	},

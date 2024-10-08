@@ -49,6 +49,14 @@ def get_warehouse_account_map(company=None):
 		item_account = get_part_number_account_settings()
 		warehouse_account.update(item_account)
 
+		# WIP 
+		warehouse_account["WIP"] = {
+			"wip_warehouse":frappe.db.get_single_value("Manufacturing Settings", "default_wip_warehouse"),
+			"wip_account":""
+		}
+		if warehouse_account["WIP"]['wip_warehouse']:
+			warehouse_account["WIP"]['wip_account'] = frappe.get_value("Warehouse", warehouse_account["WIP"]['wip_warehouse'], "account")
+
 		if company:
 			frappe.flags.warehouse_account_map[company] = warehouse_account
 		else:
@@ -81,6 +89,7 @@ def get_item_account(account_map, warehouse, item="", key="account"):
 	
 	if not data and warehouse:
 		data = account_map[warehouse].get(key)
+	
 	return data
 
 def get_warehouse_account(warehouse, warehouse_account=None, item=None):

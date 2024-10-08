@@ -24,8 +24,6 @@ from erpnext.accounts.party import (  # noqa
 	validate_party_accounts,
 )
 from erpnext.utilities.transaction_base import TransactionBase
-from frappe.core.doctype.sync_log.sync_log import create_log
-
 
 class Customer(TransactionBase):
 	def get_feed(self):
@@ -54,15 +52,18 @@ class Customer(TransactionBase):
 	def set_code(self, force=False):
 		cash_sales = "C00008"
 		series = "C.#####"
-		if self.customer_code and not force:
-			return
+		if self.customer_code:
+			if self.customer_code == cash_sales or force:
+				return
+			else:
+				exist = frappe.get_value("Customer", {"customer_code":self.customer_code, "name":['!=', self.name]})
+				if exist:
+					frappe.throw(_(f"<b>{self.customer_code}</b> already use by {exist}"))
 		
 		if self.is_cash_sales:
 			self.customer_code = cash_sales
-		else:
+		if not self.customer_code:
 			self.customer_code = parse_naming_series(series, doc=self)
-			if self.customer_code == cash_sales:
-				self.customer_code = parse_naming_series(series, doc=self)
 
 	def get_customer_name(self):
 
@@ -114,8 +115,6 @@ class Customer(TransactionBase):
 			if sum(member.allocated_percentage or 0 for member in self.sales_team) != 100:
 				frappe.throw(_("Total contribution percentage should be equal to 100"))
 		
-		create_log(self.doctype, self.name)
-
 
 	@frappe.whitelist()
 	def get_customer_group_details(self):

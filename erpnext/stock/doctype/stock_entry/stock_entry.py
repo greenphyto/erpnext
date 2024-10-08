@@ -5,11 +5,12 @@
 import json
 from collections import defaultdict
 
-import frappe
+import frappe, math
 from frappe import _
+from erpnext import get_default_company
 from frappe.model.mapper import get_mapped_doc
 from frappe.query_builder.functions import Sum
-from frappe.utils import cint, comma_or, cstr, flt, format_time, formatdate, getdate, nowdate
+from frappe.utils import cint, comma_or, cstr, flt, format_time, formatdate, getdate, nowdate, get_link_to_form
 
 import erpnext
 from erpnext.accounts.general_ledger import process_gl_map
@@ -60,8 +61,49 @@ from erpnext.controllers.stock_controller import StockController
 
 form_grid_templates = {"items": "templates/form_grid/stock_entry_grid.html"}
 
+class StockEntryAsset():
+	def validate_stock_entry_asset(self):
+		if self.stock_entry_type_view != "Conversion from Inventory to Fixed Asset":
+			return
+		
+		self.validate_asset_expense()
 
-class StockEntry(StockController):
+	def validate_asset_expense(self):
+		for d in self.items:
+			d.expense_account = d.asset_code
+			d.item_code = frappe.get_value("Item", {"asset_for_item":d.item_code})
+			if not d.asset_category:
+				default = frappe.get_value("Asset Code Map", {"parent":"Accounts Settings", "account":d.asset_code}, "default_asset_category")
+				if not default:
+					frappe.throw(_(f"Row {d.idx}, missing Asset Category"))
+				else:
+					d.asset_category = default
+	
+	def create_asset_stock(self):
+		if self.stock_entry_type_view != "Conversion from Inventory to Fixed Asset":
+			return
+		
+		for d in self.get("items"):
+			asset_item = frappe.get_value("Item", {"asset_for_item":d.item_code})
+			if not asset_item:
+				# create an asset item
+				ref_item = frappe.get_doc("Item", d.item_code)
+				asset_name = d.item_code + " - asset"
+				item = frappe.new_doc("Item")
+				item.item_code = asset_name
+				item.item_group = ref_item.item_group
+				item.stock_uom = ref_item.stock_uom
+				item.asset_for_item = d.item_code
+				item.asset_code = d.asset_code
+				item.asset_category = d.asset_category
+				item.is_stock_item = 0
+				item.is_fixed_asset = 1
+				item.valuation_rate = d.basic_rate
+				item.insert()
+
+
+
+class StockEntry(StockEntryAsset, StockController):
 	def __init__(self, *args, **kwargs):
 		super(StockEntry, self).__init__(*args, **kwargs)
 		if self.purchase_order:
@@ -111,6 +153,7 @@ class StockEntry(StockController):
 		self.validate_customer_provided_item()
 		self.validate_qty()
 		self.set_transfer_qty()
+		self.validate_batch_splitting()
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_uom_is_integer("stock_uom", "transfer_qty")
 		self.validate_warehouse()
@@ -118,6 +161,8 @@ class StockEntry(StockController):
 		self.validate_bom()
 		self.validate_purchase_order()
 		self.validate_subcontracting_order()
+		self.calculate_wip_operation_cost()
+		self.validate_stock_entry_asset()
 
 		if self.purpose in ("Manufacture", "Repack"):
 			self.mark_finished_and_scrap_items()
@@ -145,13 +190,14 @@ class StockEntry(StockController):
 		self.set_actual_qty()
 		self.calculate_rate_and_amount()
 		self.validate_putaway_capacity()
+		self.validate_wip_additional_cost()
 
 		if not self.get("purpose") == "Manufacture":
 			# ignore scrap item wh difference and empty source/target wh
 			# in Manufacture Entry
 			self.reset_default_field_value("from_warehouse", "items", "s_warehouse")
 			self.reset_default_field_value("to_warehouse", "items", "t_warehouse")
-
+		
 	def on_submit(self):
 		self.update_stock_ledger()
 
@@ -176,6 +222,8 @@ class StockEntry(StockController):
 			self.set_material_request_transfer_status("In Transit")
 		if self.purpose == "Material Transfer" and self.outgoing_stock_entry:
 			self.set_material_request_transfer_status("Completed")
+		
+		self.create_asset_stock()
 
 	def on_cancel(self):
 		self.update_subcontract_order_supplied_items()
@@ -212,12 +260,19 @@ class StockEntry(StockController):
 			self.from_bom = 1
 			self.bom_no = data.bom_no
 
+	def validate_wip_additional_cost(self):
+		total = 0
+		for d in self.get("wip_additional_costs"):
+			total += flt(d.base_amount)
+		self.total_wip_additional_costs = total
+
 	def validate_work_order_status(self):
 		pro_doc = frappe.get_doc("Work Order", self.work_order)
 		if pro_doc.status == "Completed":
 			frappe.throw(_("Cannot cancel transaction for Completed Work Order."))
 
 	def validate_purpose(self):
+		self.stock_entry_type = frappe.get_value("Stock Entry Type", self.stock_entry_type_view, "purpose" )
 		valid_purposes = [
 			"Material Issue",
 			"Material Receipt",
@@ -260,6 +315,29 @@ class StockEntry(StockController):
 				frappe.throw(
 					_("Row {0}: Qty in Stock UOM can not be zero.").format(item.idx), title=_("Zero quantity")
 				)
+	
+	def calculate_wip_operation_cost(self):
+		total_cost = 0
+		for d in self.get("wip_additional_costs"):
+			d.exchange_rate = d.exchange_rate or 1
+			d.base_amount = flt(d.amount) * flt(d.exchange_rate)
+			total_cost += d.base_amount
+		self.total_wip_additional_costs = total_cost
+
+	def validate_batch_splitting(self):
+		if not self.purpose == "Material Transfer":
+			return
+		
+		enable_split = frappe.db.get_single_value("Stock Settings", "block_batch_splitting_transaction")
+		if enable_split:
+			for d in self.get("items"):
+				if not d.batch_no:
+					continue
+
+				batch_source_qty = get_batch_qty(d.batch_no, d.s_warehouse, d.item_code)
+				if d.transfer_qty < batch_source_qty:
+					frappe.throw(_(f"Row {d.idx}, Cannot move stock partially for batch {d.batch_no}, you can only move all qty as {batch_source_qty} {d.uom}"))
+
 
 	def update_cost_in_project(self):
 		if self.work_order and not frappe.db.get_value(
@@ -790,7 +868,10 @@ class StockEntry(StockController):
 	def set_stock_entry_type(self):
 		if self.purpose:
 			self.stock_entry_type = frappe.get_cached_value(
-				"Stock Entry Type", {"purpose": self.purpose}, "name"
+				"Stock Entry Type", {"purpose": self.purpose, "disabled":0}, "name"
+			)
+			self.stock_entry_type_view = frappe.get_cached_value(
+				"Stock Entry Type", {"purpose": self.purpose, "disabled":0}, "name"
 			)
 
 	def set_purpose_for_stock_entry(self):
@@ -1463,7 +1544,8 @@ class StockEntry(StockController):
 			# fetch the serial_no of the first stock entry for the second stock entry
 			if self.work_order and self.purpose == "Manufacture":
 				work_order = frappe.get_doc("Work Order", self.work_order)
-				add_additional_cost(self, work_order)
+				# add_additional_cost(self, work_order)
+				add_wip_additional_cost(self, work_order)
 
 			# add finished goods item
 			if self.purpose in ("Manufacture", "Repack"):
@@ -1801,6 +1883,9 @@ class StockEntry(StockController):
 			"from_warehouse": item.warehouse,
 			"to_warehouse": "",
 			"qty": qty,
+			"uom": item.uom,
+			"transfer_qty": item.transfer_qty,
+			"conversion_factor": item.conversion_factor,
 			"item_name": item.item_name,
 			"batch_no": item.batch_no,
 			"description": item.description,
@@ -2296,6 +2381,9 @@ class StockEntry(StockController):
 		self.calculate_rate_and_amount()
 
 
+
+
+
 @frappe.whitelist()
 def move_sample_to_retention_warehouse(company, items):
 	if isinstance(items, str):
@@ -2639,9 +2727,9 @@ def get_available_materials(work_order) -> dict:
 
 	available_materials = {}
 	for row in data:
-		key = (row.item_code, row.warehouse)
+		key = (row.item_code, row.warehouse, row.uom)
 		if row.purpose != "Material Transfer for Manufacture":
-			key = (row.item_code, row.s_warehouse)
+			key = (row.item_code, row.s_warehouse, row.uom)
 
 		if key not in available_materials:
 			available_materials.setdefault(
@@ -2691,10 +2779,13 @@ def get_stock_entry_data(work_order):
 			(stock_entry_detail.s_warehouse).as_("s_warehouse"),
 			stock_entry_detail.description,
 			stock_entry_detail.stock_uom,
+			stock_entry_detail.transfer_qty,
 			stock_entry_detail.expense_account,
 			stock_entry_detail.cost_center,
 			stock_entry_detail.batch_no,
 			stock_entry_detail.serial_no,
+			stock_entry_detail.uom,
+			stock_entry_detail.conversion_factor,
 			stock_entry.purpose,
 		)
 		.where(
@@ -2710,3 +2801,71 @@ def get_stock_entry_data(work_order):
 		)
 		.orderby(stock_entry.creation, stock_entry_detail.item_code, stock_entry_detail.idx)
 	).run(as_dict=1)
+
+def add_wip_additional_cost(stock_entry, work_order):
+	# get all additional from transfer material
+	data = frappe.db.sql("""
+		SELECT 
+			c.expense_account,
+			c.exchange_rate,
+			c.account_currency,
+			c.description,
+			c.amount,
+			c.base_amount
+		FROM
+			`tabLanded Cost Taxes and Charges` c
+				LEFT JOIN
+			`tabStock Entry` s ON s.name = c.parent
+		WHERE
+			c.parentfield = 'wip_additional_costs'
+				AND c.parenttype = 'Stock Entry'
+				AND s.work_order = %s
+				AND s.purpose = 'Material Transfer for Manufacture'
+				AND s.docstatus = 1
+	""", (work_order.name), as_dict=1, debug=0)
+	data_map = {}
+	for d in data:
+		key = (d.expense_account, d.description)
+		if key in data_map:
+			data_map[key].amount = data_map[key].amount + d.amount
+			data_map[key].base_amount = data_map[key].base_amount + d.base_amount
+		else:
+			data_map[key] = d
+		
+	
+	for key, d in data_map.items():
+		row = stock_entry.append("additional_costs")
+		row.update(d)
+
+	return stock_entry
+
+@frappe.whitelist()
+def create_asset_from_stock_entry(se_name):
+	se_doc = frappe.get_doc("Stock Entry", se_name)
+
+	company = get_default_company()
+
+	def create_asset(item, date, asset_code, asset_category, purchase_value):
+		doc = frappe.new_doc("Asset")
+		asset_item = frappe.get_value("Item", {"asset_for_item":d.item_code})
+		doc.company = company
+		doc.item_code = asset_item
+		doc.asset_name = item
+		doc.is_existing_asset = 1
+		doc.gross_purchase_amount = purchase_value
+		doc.purchase_date = getdate(date)
+		doc.available_for_use_date = getdate(date)
+		doc.flags.ignore_mandatory = 1
+		doc.insert()
+		return doc.name
+
+	result = "<p>Creating Asset as a Draft:</p><ul>"
+	# create asset item x qty
+	for d in se_doc.get("items"):
+		for i in range( math.ceil(d.qty) ):
+			name = create_asset(d.item_code, se_doc.posting_date, d.asset_code, d.asset_category, d.purchase_value)
+			result += f"<li>{d.item_code}: <b>{name}</b></li>"
+
+	asset_cdt = get_link_to_form("Asset", "Asset").replace("/Asset", "")
+	result += f"</ul><p>Please go to the {asset_cdt}, and submit the newly created Asset document."
+	frappe.msgprint(result)

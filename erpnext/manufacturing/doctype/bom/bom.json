@@ -531,6 +531,7 @@
   {
    "fieldname": "operation_no",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Operation No",
    "options": "\n1\n2\n3\n4\n5"
   },
@@ -546,7 +547,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2024-01-30 12:13:26.012414",
+ "modified": "2024-08-13 16:08:53.349045",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "BOM",

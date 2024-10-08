@@ -1037,7 +1037,6 @@ def update_cost_center(docname, cost_center_name, abbreviation, company, merge):
 	Renames the document by adding the number as a prefix to the current name and updates
 	all transaction where it was present.
 	"""
-	print(1040, docname, cost_center_name, abbreviation)
 	frappe.db.set_value("Cost Center", docname, "abbreviation", abbreviation)
 	frappe.db.set_value("Cost Center", docname, "cost_center_name", cost_center_name.strip())
 

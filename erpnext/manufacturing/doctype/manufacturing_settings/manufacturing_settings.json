@@ -17,9 +17,10 @@
   "capacity_planning_for_days",
   "mins_between_operations",
   "section_break_6",
+  "default_source_warehouse",
   "default_wip_warehouse",
-  "default_fg_warehouse",
   "column_break_11",
+  "default_fg_warehouse",
   "default_scrap_warehouse",
   "over_production_for_sales_and_work_order_section",
   "overproduction_percentage_for_sales_order",
@@ -32,7 +33,8 @@
   "other_settings_section",
   "update_bom_costs_automatically",
   "column_break_23",
-  "make_serial_no_batch_from_work_order"
+  "make_serial_no_batch_from_work_order",
+  "default_expense_account"
  ],
  "fields": [
   {
@@ -194,13 +196,25 @@
    "fieldname": "job_card_excess_transfer",
    "fieldtype": "Check",
    "label": "Allow Excess Material Transfer"
+  },
+  {
+   "fieldname": "default_expense_account",
+   "fieldtype": "Link",
+   "label": "Default Expense Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "default_source_warehouse",
+   "fieldtype": "Link",
+   "label": "Default Source Warehouse",
+   "options": "Warehouse"
   }
  ],
  "icon": "icon-wrench",
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2021-09-13 22:09:09.401559",
+ "modified": "2024-09-20 14:48:10.652303",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Manufacturing Settings",
@@ -216,5 +230,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }
