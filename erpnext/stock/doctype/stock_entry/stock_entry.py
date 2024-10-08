@@ -99,6 +99,7 @@ class StockEntryAsset():
 				item.is_stock_item = 0
 				item.is_fixed_asset = 1
 				item.valuation_rate = d.basic_rate
+				item.is_purchase_item = 0
 				item.insert()
 
 
