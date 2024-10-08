@@ -2860,11 +2860,30 @@ def create_asset_from_stock_entry(se_name):
 		return doc.name
 
 	result = "<p>Creating Asset as a Draft:</p><ul>"
+
 	# create asset item x qty
 	for d in se_doc.get("items"):
-		for i in range( math.ceil(d.qty) ):
+		if d.created_asset:
+			temp_create = cstr(d.created_asset).split(",")
+		else:
+			temp_create = []
+		
+		already_create = []
+		for x in temp_create:
+			if frappe.get_value("Asset", x):
+				already_create.append(x)
+
+		qty_create = math.ceil(d.qty) - len(already_create)
+		for x in already_create:
+			result += f"<li>{d.item_code}: <b>{x}</b></li>"
+
+		for i in range( qty_create ):
 			name = create_asset(d.item_code, se_doc.posting_date, d.asset_code, d.asset_category, d.purchase_value)
+			already_create.append(name)
 			result += f"<li>{d.item_code}: <b>{name}</b></li>"
+
+		str_data = ",".join(already_create)
+		d.db_set("created_asset", str_data)
 
 	asset_cdt = get_link_to_form("Asset", "Asset").replace("/Asset", "")
 	result += f"</ul><p>Please go to the {asset_cdt}, and submit the newly created Asset document."

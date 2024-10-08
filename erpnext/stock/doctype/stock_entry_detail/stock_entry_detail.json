@@ -57,6 +57,7 @@
   "asset_category",
   "column_break_49",
   "item_asset",
+  "created_asset",
   "purchase_value",
   "accounting_dimensions_section",
   "cost_center",
@@ -615,13 +616,19 @@
    "fieldname": "purchase_value",
    "fieldtype": "Currency",
    "label": "Purchase Value"
+  },
+  {
+   "fieldname": "created_asset",
+   "fieldtype": "Small Text",
+   "label": "Created Asset",
+   "read_only": 1
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-10-02 12:45:49.854934",
+ "modified": "2024-10-08 16:01:50.357325",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry Detail",
