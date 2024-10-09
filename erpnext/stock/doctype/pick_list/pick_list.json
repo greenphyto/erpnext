@@ -93,11 +93,11 @@
    "read_only": 1
   },
   {
-   "default": "Material Transfer for Manufacture",
+   "default": "Delivery",
    "fieldname": "purpose",
    "fieldtype": "Select",
    "label": "Purpose",
-   "options": "Material Transfer for Manufacture\nMaterial Transfer\nDelivery"
+   "options": "Delivery\nMaterial Transfer for Manufacture\nMaterial Transfer"
   },
   {
    "depends_on": "eval:['Material Transfer', 'Material Issue'].includes(doc.purpose)",
@@ -172,7 +172,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2022-07-19 11:03:04.442174",
+ "modified": "2024-10-09 11:33:06.545000",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Pick List",
