@@ -16,6 +16,14 @@ frappe.ui.form.on('Scrap Request', {
 				query:"erpnext.stock.doctype.scrap_request.scrap_request.get_batch_numbers"
 			}
 		})
+		frm.set_query("item_code", "items", (doc, cdt,cdn)=>{
+			return {
+				filters:{
+					is_stock_item:1,
+					is_fixed_asset:0
+				}
+			}
+		})
 	}
 });
 
