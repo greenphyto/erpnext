@@ -10,7 +10,14 @@ from erpnext.stock.get_item_details import get_conversion_factor
 
 class ScrapRequest(Document):
 	def on_submit(self):
-		create_material_issue(self)
+		name = create_material_issue(self)
+		if name:
+			self.db_set("stock_entry", name)
+
+	def on_cancel(self):
+		if self.stock_entry:
+			doc = frappe.get_doc("Stock Entry", self.stock_entry)
+			doc.cancel()
 
 def create_material_issue(doc):
 	stock_entry = frappe.new_doc("Stock Entry")
@@ -29,7 +36,7 @@ def create_material_issue(doc):
 		for dt in qty_map:
 			row = stock_entry.append("items")
 			row.item_code = d.item_code
-			row.qty = dt.get("qty")
+			row.qty = dt.get("qty") or 1
 			qty_all += row.qty
 			row.uom = d.uom
 			row.batch_no = d.batch
@@ -42,9 +49,9 @@ def create_material_issue(doc):
 	stock_entry.set_missing_values()
 	stock_entry.insert(ignore_permissions=1)
 	stock_entry.submit()
-	doc.stock_entry = stock_entry.name
 
 	return stock_entry.name
+
 
 
 @frappe.whitelist()
