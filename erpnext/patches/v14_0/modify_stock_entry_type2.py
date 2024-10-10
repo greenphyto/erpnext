@@ -25,6 +25,11 @@ TYPE_MAP = [
         "purpose":"Material Transfer for Manufacture"
     },
     {
+        "__newname":"Harvesting Transfer",
+        "series":"HR-.#####./.YYYY",
+        "purpose":"Material Transfer for Manufacture"
+    },
+    {
         "__newname":"Harvesting Finished Goods",
         "series":"HA-.#####./.YYYY",
         "purpose":"Manufacture"
@@ -48,6 +53,11 @@ TYPE_MAP = [
         "__newname":"Move from one warehouse to another",
         "series":"MW-.#####./.YYYY",
         "purpose":"Material Transfer"
+    },
+    {
+        "__newname":"Scrap Materials",
+        "series":"SM-.#####./.YYYY",
+        "purpose":"Material Issue"
     },
 ]
 
