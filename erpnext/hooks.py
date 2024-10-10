@@ -429,6 +429,10 @@ scheduler_events = {
 		"0/30 * * * *": [
 			"erpnext.utilities.doctype.video.video.update_youtube_data",
 		],
+        "*/15 * * * *": [
+			"erpnext.controllers.foms.update_foms_supplier",
+			"erpnext.controllers.foms.update_foms_customer",
+		],
 		# Hourly but offset by 30 minutes
 		"30 * * * *": [
 			"erpnext.accounts.doctype.gl_entry.gl_entry.rename_gle_sle_docs",
