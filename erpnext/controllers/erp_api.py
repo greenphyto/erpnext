@@ -246,6 +246,8 @@ def get_stock_entry_type(operation):
 		return "Seeding Transfer"
 	elif operation == "Transplanting":
 		return "Transplanting Transfer"
+	elif operation == "Harvesting":
+		return "Harvesting Transfer"
 	else:
 		return "Harvesting Finished Goods"
 
@@ -357,7 +359,7 @@ def submit_work_order_finish_goods(ERPWorkOrderID, qty, expiryDate=""):
 	
 	
 	se_doc = make_stock_entry_wo(work_order_name,"Manufacture", qty, return_doc=1)
-	se_doc.stock_entry_type_view = get_stock_entry_type("Harvesting")
+	se_doc.stock_entry_type_view = get_stock_entry_type("Harvesting Finish")
 	
 	se_doc.save()
 	se_doc.submit()
