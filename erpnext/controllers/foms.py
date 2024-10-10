@@ -500,6 +500,11 @@ def _update_foms_supplier(log, api=None):
 
 	api.log = log
 
+	exists = frappe.get_value("Supplier", log.docname)
+	if not exists:
+		frappe.db.set_value("Sync Log", log.name, "status", "Error")
+		return
+
 	if log.update_type != "Delete":
 		supplier = frappe.get_doc("Supplier", log.docname)
 		if cint(supplier.disabled) == 1:
@@ -574,6 +579,11 @@ def _update_foms_customer(log, api=None):
 		api = FomsAPI()
 	
 	api.log = log
+
+	exists = frappe.get_value("Customer", log.docname)
+	if not exists:
+		frappe.db.set_value("Sync Log", log.name, "status", "Error")
+		return
 
 	if log.update_type != "Delete":
 		customer = frappe.get_doc("Customer", log.docname)
