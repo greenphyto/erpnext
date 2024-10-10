@@ -2889,3 +2889,34 @@ def create_asset_from_stock_entry(se_name):
 	asset_cdt = get_link_to_form("Asset", "Asset").replace("/Asset", "")
 	result += f"</ul><p>Please go to the {asset_cdt}, and submit the newly created Asset document."
 	frappe.msgprint(result)
+
+@frappe.whitelist()
+def get_item_expense_for_issue(item_code="", company=""):
+	item = frappe.db.sql(
+		"""select i.name, i.stock_uom, i.description, i.image, i.item_name, i.item_group,
+			i.has_batch_no, i.sample_quantity, i.has_serial_no, i.allow_alternative_item,
+			id.expense_account, id.buying_cost_center
+		from `tabItem` i LEFT JOIN `tabItem Default` id ON i.name=id.parent and id.company=%s
+		where i.name=%s
+			and i.disabled=0
+			and (i.end_of_life is null or i.end_of_life<'1900-01-01' or i.end_of_life > %s)""",
+		(company, item_code, nowdate()),
+		as_dict=1,
+	)
+
+	if not item:
+		frappe.throw(
+			_("Item {0} is not active or end of life has been reached").format(item_code)
+		)
+
+	item = item[0]
+
+	item_group_defaults = get_item_group_defaults(item.name, company)
+
+	expense_account = (
+		item.get("expense_account")
+		or item_group_defaults.get("expense_account")
+		or frappe.get_cached_value("Company", company, "default_expense_account")
+	)
+
+	return expense_account

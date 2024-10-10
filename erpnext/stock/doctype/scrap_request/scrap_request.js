@@ -32,5 +32,27 @@ frappe.ui.form.on('Scrap Items', {
 		frappe.model.set_value(cdt,cdn, "batch", "");
 		frappe.model.set_value(cdt,cdn, "cur_qty", "");
 		frappe.model.set_value(cdt,cdn, "uom", "");
+		frm.cscript.add_expense_account(frm, cdt, cdn);
+	}
+})
+
+$.extend(cur_frm.cscript, {
+	add_expense_account: function(frm,cdt,cdn){
+		var d = locals[cdt][cdn];
+		if(d.item_code && frm.doc.company){
+			frappe.call({
+				method:"erpnext.stock.doctype.stock_entry.stock_entry.get_item_expense_for_issue",
+				args: {
+					company:frm.doc.company,
+					item_code:d.item_code
+				},
+				callback: (r)=>{
+					frappe.model.set_value(cdt, cdn, "expense_account", r.message);
+				}
+			})
+		}else{
+			frappe.model.set_value(cdt, cdn, "expense_account", "");
+		}
+		
 	}
 })
