@@ -90,6 +90,11 @@
   "depreciation_cost_center",
   "capital_work_in_progress_account",
   "asset_received_but_not_billed",
+  "manufacturing_settings_section",
+  "default_cost_expense_account",
+  "column_break_84",
+  "cost_center_for_production",
+  "cost_center_for_packing",
   "exchange_rate_revaluation_settings_section",
   "auto_exchange_rate_revaluation",
   "auto_err_frequency",
@@ -733,6 +738,35 @@
    "fieldtype": "Table",
    "label": "Unrealized FX Account Map",
    "options": "Account Adjustment Map"
+  },
+  {
+   "fieldname": "manufacturing_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Manufacturing Settings"
+  },
+  {
+   "description": "Default expense account for additional cost for work order",
+   "fieldname": "default_cost_expense_account",
+   "fieldtype": "Link",
+   "label": "Default Cost Expense Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "column_break_84",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Default cost center for Seeding and Transplanting process",
+   "fieldname": "cost_center_for_production",
+   "fieldtype": "Link",
+   "label": "Cost Center for Production",
+   "options": "Cost Center"
+  },
+  {
+   "fieldname": "cost_center_for_packing",
+   "fieldtype": "Link",
+   "label": "Cost Center for Packing",
+   "options": "Cost Center"
   }
  ],
  "icon": "fa fa-building",
@@ -740,7 +774,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2024-03-26 11:53:37.510493",
+ "modified": "2024-10-11 11:38:23.701013",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

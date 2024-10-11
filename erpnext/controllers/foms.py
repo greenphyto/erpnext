@@ -1723,3 +1723,17 @@ def create_finish_goods_stock(data):
 	return {
 		"StockEntryNo":doc.name
 	}
+
+def get_cost_center(operation_name, company):
+	company = company or erpnext.get_default_company()
+	if operation_name in ['Seeding', 'Transplanting']:
+		cc = frappe.get_value("Company", company, "cost_center_for_production")
+		if not cc:
+			frappe.throw(_("Missing Cost Center for Production, please update the Company Settings"))
+		return cc 
+	else:
+		cc = frappe.get_value("Company", company, "cost_center_for_packing")
+		if not cc:
+			frappe.throw(_("Missing Cost Center for Packing, please update the Company Settings"))
+		return cc
+

@@ -1,4 +1,4 @@
-import frappe, json
+import frappe, json, erpnext
 from six import string_types
 from frappe.utils import flt, now_datetime, cint, getdate, cstr, get_datetime
 from erpnext.controllers.foms import (
@@ -14,7 +14,8 @@ from erpnext.controllers.foms import (
 	create_delivery_order as _create_delivery_order,
 	get_operation_map_name,
 	create_finish_goods_stock as _create_finish_goods_stock,
-	create_packaging, update_so_working, create_do_based_on_work_order
+	create_packaging, update_so_working, create_do_based_on_work_order,
+	get_cost_center
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
@@ -161,12 +162,15 @@ def get_uom_overide(reverse=False):
 	return overide_map
 
 
-def make_stock_entry_with_materials(source_name, materials, wip_warehouse, operation_name, work_order_name):
+def make_stock_entry_with_materials(source_name, materials, wip_warehouse, operation_name, work_order_name, company=""):
 	se = make_stock_entry_jc(source_name)
 	se.items = []
 	missing_warehouse = []
 
 	overide_item = get_item_overide()
+
+	company = company or erpnext.get_default_company()
+	cost_center = get_cost_center(operation_name, company)
 
 	for d in materials:
 		d = frappe._dict(d)
@@ -203,6 +207,7 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 			row.original_item = original_item
 			batch_no = get_batch_no(item_code, warehouse, qty)
 
+		row.cost_center = cost_center
 		row.item_code = item_code
 		row.qty = qty
 		row.uom = uom
@@ -213,9 +218,9 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		frappe.throw(f"Warehouse not found: {warn}")
 	
 	# additional cost
-	expense_account = frappe.db.get_single_value("Manufacturing Settings", "default_expense_account")
+	expense_account = frappe.get_value("Company", company, "default_cost_expense_account" )
 	if not expense_account:
-		frappe.throw(_("Please set Default Expense Account in Manufacturing Settings"))
+		frappe.throw(_("Please set Default Cost Expense Account in {} Company Settings".format(company)))
 	
 	wo_doc = frappe.get_doc("Work Order", work_order_name)
 	se.wip_additional_costs = []
@@ -238,6 +243,7 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 				row = se.append("wip_additional_costs")
 				row.expense_account = expense_account
 				row.amount = amount * gross_weight
+				row.cost_center = frappe.get_value("Company", company, "cost_center_for_packing")
 				row.description = descriptions[field]
 	return se
 
