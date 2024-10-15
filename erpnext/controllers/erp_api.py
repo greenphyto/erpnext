@@ -352,7 +352,8 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	}
 
 @frappe.whitelist()
-def submit_work_order_finish_goods(ERPWorkOrderID, qty, expiryDate=""):
+def submit_work_order_finish_goods(erpWorkOrderID, qty, expiryDate=""):
+	ERPWorkOrderID = erpWorkOrderID
 	data_name = f"Finish Work Order {ERPWorkOrderID}"
 	save_log("Work Order", data_name, {
 		"ERPWorkOrderID":ERPWorkOrderID, 
