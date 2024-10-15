@@ -1626,6 +1626,7 @@ def create_do_based_on_work_order(wo_name, qty_finish, warehouse, batch_use):
 			d.batch_no = batch_use
 
 		dn_doc.flags.ignore_validate = 1
+		dn_doc.flags.ignore_mandatory = 1
 		dn_doc.save()
 
 
