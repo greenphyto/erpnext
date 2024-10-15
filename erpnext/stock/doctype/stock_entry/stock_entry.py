@@ -263,7 +263,7 @@ class StockEntry(StockEntryAsset, StockController):
 
 	def validate_wip_additional_cost(self):
 		total = 0
-		for d in self.get("wip_additional_costs"):
+		for d in self.get("wip_additional_costs") or []:
 			total += flt(d.base_amount)
 		self.total_wip_additional_costs = total
 
@@ -319,7 +319,7 @@ class StockEntry(StockEntryAsset, StockController):
 	
 	def calculate_wip_operation_cost(self):
 		total_cost = 0
-		for d in self.get("wip_additional_costs"):
+		for d in self.get("wip_additional_costs") or []:
 			d.exchange_rate = d.exchange_rate or 1
 			d.base_amount = flt(d.amount) * flt(d.exchange_rate)
 			total_cost += d.base_amount
