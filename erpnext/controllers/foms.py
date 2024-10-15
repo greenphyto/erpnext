@@ -1207,6 +1207,8 @@ def create_products(log):
 
 	create_workstation_process(doc.item_code)
 
+	name = doc.name
+
 	return name
 
 def create_workstation_process(item_code):
