@@ -7,12 +7,21 @@ frappe.pages['batch-foms-details'].on_page_load = function(wrapper) {
 	});
 	page.start = 0;
 
+	// page.warehouse_field = page.add_field({
+	// 	fieldname: 'batch_no',
+	// 	label: __('Batch No'),
+	// 	fieldtype:'Data',
+	// 	change: function() {
+	// 		page.item_dashboard.start = 0;
+	// 		page.item_dashboard.refresh();
+	// 	}
+	// });
+
 	page.warehouse_field = page.add_field({
-		fieldname: 'batch_no',
-		label: __('Batch No'),
-		fieldtype:'Data',
-		change: function() {
-			page.item_dashboard.start = 0;
+		fieldname: 'refresh',
+		label: __('Refresh'),
+		fieldtype:'Button',
+		click: function() {
 			page.item_dashboard.refresh();
 		}
 	});
@@ -21,22 +30,21 @@ frappe.pages['batch-foms-details'].on_page_load = function(wrapper) {
 		fieldname: 'fetch_data',
 		label: __('Fetch Data'),
 		fieldtype:'Button',
-		description:"Last fetch on 12:23",
-		change: function() {
-			console.log("Fetch Data")
+		click: function() {
+			page.item_dashboard.refresh(true);
 		}
 	});
 
 	page.warehouse_field = page.add_field({
 		fieldname: 'last_update',
 		label: __('Last Fetch'),
-		fieldtype:'Datetime',
+		fieldtype:'Data',
 		read_only:1,
-		default: "2024-10-10 13:21"
 	});
 
 	frappe.require('item-dashboard.bundle.js', function() {
 		page.item_dashboard = new erpnext.stock.BatchFOMS({
+			page: page,
 			parent: page.main,
 			page_length: 20,
 			method: 'erpnext.stock.page.batch_foms_details.get_data',
@@ -68,7 +76,7 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 		this.result = this.content.find('.result');
 
 	}
-	refresh() {
+	refresh(update=false) {
 		if(this.before_refresh) {
 			this.before_refresh();
 		}
@@ -77,13 +85,22 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 
 		frappe.call({
 			method: this.method,
+			args: {
+				update:update
+			},
 			callback: function (r) {
+				r = r.message;
 				console.log("Result", r)
-				me.render(r.message);
+				me.render(r);
 			}
 		});
+
+		frappe.show_alert("Refresh complete")
 	}
-	render(data) {
+	render(res) {
+		var data = res.data;
+		this.page.fields_dict.last_update.set_value(`On: ${res.last_fetch}`);
+
 		if (this.start===0) {
 			this.max_count = 0;
 			this.result.empty();

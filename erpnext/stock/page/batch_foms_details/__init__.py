@@ -1,120 +1,63 @@
-import frappe
+import frappe, json
+from frappe.utils import datetime, now, get_datetime, flt, getdate, format_datetime, format_date
 from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
 
+LOG_DATA_NAME = "Batch FOMS All Data"
+
 @frappe.whitelist()
-def get_data():
-    api = FomsAPI()
+def get_data(update=False):
+	api = FomsAPI()
 
+	log_name = frappe.db.exists("FOMS Data Mapping", {"data_name":LOG_DATA_NAME})
+	if not log_name:
+		log = frappe.new_doc("FOMS Data Mapping")
+		log.data_type = "Batch"
+		log.data_name = LOG_DATA_NAME
+		log.status = "Mapped"
+		log.doc_type = "Batch"
+		log.doc_name = "All Batch"
+		raw_data = api.get_all_batch()
+		log.raw_data = json.dumps(raw_data)
+		log.insert()
+	else:
+		log = frappe.get_doc("FOMS Data Mapping", log_name)
+	
+	if not update and log_name:
+		raw_data = log.get_data()
+	else:
+		log = frappe.get_doc("FOMS Data Mapping", log_name)
+		raw_data = api.get_all_batch()
+		log.raw_data = json.dumps(raw_data)
+		log.last_sync = now()
+		log.save()
 
-    foms_batch2 = {"items":[
-      {
-        "rawMaterialId": 1,
-        "batchRefNo": "RM-SS-NBS-BN00001",
-        "dateOfCreation": "2021-10-12T00:00:00",
-        "qtyAdd": 500000,
-        "qtyUsed": 0,
-        "qtyReconcilled": 0,
-        "qtyLeft": 500000,
-        "unitCost": 1,
-        "quantityUOM": "g",
-        "totalCost": 500000,
-        "expiryDate": "2022-06-01T00:00:00",
-        "lossRatePercent": 2,
-        "rackNumbers": None,
-        "warehouseName": None,
-        "warehouseId": 0,
-        "warehouseRefId": None,
-        "supplierId": 0,
-        "supplierName": None,
-        "supplierRefId": None,
-        "status": "Expired",
-        "isSeed": False,
-        "id": 1
-      },
-      {
-        "rawMaterialId": 2,
-        "batchRefNo": "RM-NN-AA-BN00001",
-        "dateOfCreation": "2021-10-12T00:00:00",
-        "qtyAdd": 100000,
-        "qtyUsed": 0,
-        "qtyReconcilled": 0,
-        "qtyLeft": 100000,
-        "unitCost": 1,
-        "quantityUOM": "ml",
-        "totalCost": 100000,
-        "expiryDate": "2022-06-01T00:00:00",
-        "lossRatePercent": 1,
-        "rackNumbers": None,
-        "warehouseName": None,
-        "warehouseId": 0,
-        "warehouseRefId": None,
-        "supplierId": 0,
-        "supplierName": None,
-        "supplierRefId": None,
-        "status": "Expired",
-        "isSeed": True,
-        "id": 2
-      },
-      {
-        "rawMaterialId": 3,
-        "batchRefNo": "RM-NN-BB-BN00001",
-        "dateOfCreation": "2021-10-12T00:00:00",
-        "qtyAdd": 100000,
-        "qtyUsed": 0,
-        "qtyReconcilled": 0,
-        "qtyLeft": 100000,
-        "unitCost": 1,
-        "quantityUOM": "L",
-        "totalCost": 100000,
-        "expiryDate": "2022-06-01T00:00:00",
-        "lossRatePercent": 0,
-        "rackNumbers": None,
-        "warehouseName": None,
-        "warehouseId": 0,
-        "warehouseRefId": None,
-        "supplierId": 0,
-        "supplierName": None,
-        "supplierRefId": None,
-        "status": "Expired",
-        "isSeed": False,
-        "id": 3
-      },
-      {
-        "rawMaterialId": 4,
-        "batchRefNo": "RM-NN-CC-BN00001",
-        "dateOfCreation": "2021-10-12T00:00:00",
-        "qtyAdd": 100000,
-        "qtyUsed": 0,
-        "qtyReconcilled": 0,
-        "qtyLeft": 100000,
-        "unitCost": 1,
-        "quantityUOM": "kg",
-        "totalCost": 100000,
-        "expiryDate": "2022-06-01T00:00:00",
-        "lossRatePercent": 1,
-        "rackNumbers": [
-          "R07-07-06"
-        ],
-        "warehouseName": "Test warehouse",
-        "warehouseId": 1,
-        "warehouseRefId": "WH-SG-00001",
-        "supplierId": 0,
-        "supplierName": None,
-        "supplierRefId": None,
-        "status": "Expired",
-        "isSeed": False,
-        "id": 4
-    }]}
+	erp_batch_all = frappe.db.get_all("Batch", limit=99999, fields=['name', 'batch_qty', 'expiry_date'])
+	erp_batch = {}
+	for d in erp_batch_all:
+		erp_batch[d.name] = d.batch_qty
 
-    foms_batch = foms_batch2
-    # foms_batch = api.get_all_batch()
+	data = []
 
-    data = []
-    for d in foms_batch.get("items") or []:
-        d = frappe._dict(d)
-        d.foms_qty = d.qtyLeft
-        d.batch_no = d.batchRefNo
-        d.erp_qty = frappe.get_value("Batch", d.batch_no, "batch_qty" )
-        data.append(d)
+	for d in raw_data.get("items") or []:
+		d = frappe._dict(d)
+		d.foms_qty = d.qtyLeft
+		d.foms_exp = format_date(d.expiryDate)
+		d.batch_no = d.batchRefNo
+		if d.batch_no in erp_batch:
+			d.erp_batch_missing = False
+			d.erp_qty = 0
+			d.erp_exp = ""
+		else:
+			d.erp_batch_missing = True
+			d.erp_qty = flt(erp_batch.get(d.batch_no))
+			d.erp_exp = format_date(d.expiry_date)
+		data.append(d)
+	
+	stock_recon = ""
 
-    return data
+	result = {
+		"data":data,
+		"last_fetch": format_datetime(log.last_sync),
+		"stock_recon":stock_recon
+	}
+	return result
