@@ -17,6 +17,24 @@ frappe.pages['batch-foms-details'].on_page_load = function(wrapper) {
 		}
 	});
 
+	page.warehouse_field = page.add_field({
+		fieldname: 'fetch_data',
+		label: __('Fetch Data'),
+		fieldtype:'Button',
+		description:"Last fetch on 12:23",
+		change: function() {
+			console.log("Fetch Data")
+		}
+	});
+
+	page.warehouse_field = page.add_field({
+		fieldname: 'last_update',
+		label: __('Last Fetch'),
+		fieldtype:'Datetime',
+		read_only:1,
+		default: "2024-10-10 13:21"
+	});
+
 	frappe.require('item-dashboard.bundle.js', function() {
 		page.item_dashboard = new erpnext.stock.BatchFOMS({
 			parent: page.main,

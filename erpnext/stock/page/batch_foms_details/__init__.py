@@ -5,8 +5,8 @@ from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings im
 def get_data():
     api = FomsAPI()
 
-    foms_batch = api.get_all_batch()
-    foms_batch2 = [
+
+    foms_batch2 = {"items":[
       {
         "rawMaterialId": 1,
         "batchRefNo": "RM-SS-NBS-BN00001",
@@ -104,7 +104,10 @@ def get_data():
         "status": "Expired",
         "isSeed": False,
         "id": 4
-    }]
+    }]}
+
+    foms_batch = foms_batch2
+    # foms_batch = api.get_all_batch()
 
     data = []
     for d in foms_batch.get("items") or []:
