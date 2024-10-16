@@ -284,6 +284,7 @@ standard_queries = {
 doc_events = {
 	"*": {
 		"validate": "erpnext.support.doctype.service_level_agreement.service_level_agreement.apply",
+        "after_insert": "erpnext.controllers.foms.sync_log"
 	},
 	"Stock Entry": {
 		"on_submit": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
@@ -411,7 +412,10 @@ doc_events = {
 	},
     "Stock Entry": {
         "on_submit":"erpnext.controllers.foms.sync_log",
-	}
+	},
+    # "Stock Ledger Entry": {
+    #     "on_submit":"erpnext.controllers.foms.sync_sle",
+	# }
 }
 
 # On cancel event Payment Entry will be exempted and all linked submittable doctype will get cancelled.
@@ -429,10 +433,10 @@ scheduler_events = {
 		"0/30 * * * *": [
 			"erpnext.utilities.doctype.video.video.update_youtube_data",
 		],
-        "*/15 * * * *": [
-			"erpnext.controllers.foms.update_foms_supplier",
-			"erpnext.controllers.foms.update_foms_customer",
-		],
+        # "*/15 * * * *": [
+		# 	"erpnext.controllers.foms.update_foms_supplier",
+		# 	"erpnext.controllers.foms.update_foms_customer",
+		# ],
 		# Hourly but offset by 30 minutes
 		"30 * * * *": [
 			"erpnext.accounts.doctype.gl_entry.gl_entry.rename_gle_sle_docs",

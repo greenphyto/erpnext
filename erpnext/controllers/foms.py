@@ -146,12 +146,15 @@ class GetData():
 
 # for create one-by-obe log, based on doctype and name
 def sync_log(doc, method=""):
+	method_id = METHOD_MAP.get(doc.get("doctype"))
+	if not method_id:
+		return
+
 	if not is_enable_integration():
 		return 
 	
 	cancel = doc.docstatus == 2
 
-	method_id = METHOD_MAP.get(doc.doctype)
 
 	if doc.flags.ignore_syncing:
 		return
@@ -162,8 +165,11 @@ def sync_log(doc, method=""):
 
 	log_name = create_log(doc.doctype, doc.name, method=method_id, doc_method=method)
 
-	# start enquee individually, if fail, it will try again with scheduler itself
-	frappe.enqueue("erpnext.controllers.foms.start_sync_enquee", log_name=log_name)
+	if method == "after_insert":
+		start_sync_enquee(log_name)
+	else:
+		# start enquee individually, if fail, it will try again with scheduler itself
+		frappe.enqueue("erpnext.controllers.foms.start_sync_enquee", log_name=log_name)
 	
 def start_sync_enquee(log_name):
 	log = frappe.get_doc("Sync Log", log_name)
@@ -808,6 +814,36 @@ def crate_batch_stock_recon(data={}, log_name="", dummy=False):
 	doc.flags.ignore_mandatory = 1
 	doc.insert(ignore_permissions=1)
 
+# STOCK LEDGER ENTRY
+def sync_sle(doc, method=""):
+	qty = frappe.get_value("Batch", doc.batch_no, "batch_qty")
+	update_foms_batch(doc.batch_no, doc.item_code, doc.warehouse, qty)
+
+def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False):
+	item_id = frappe.get_value("Item", item_code, "foms_raw_id")
+	if not item_id:
+		# not raw material
+		return
+	
+	api = FomsAPI()
+	farm_id = get_farm_id()
+	batch_id = frappe.get_value("Batch", batch_no, "foms_id")
+	if not batch_id:
+		# create new batch
+		pass
+	
+	warehouse_id = frappe.get_value("Warehouse", warehouse, "foms_id")
+	data = {
+		"rawMaterialId": item_id,
+		"batchRefNo": batch_no,
+		"warehouseId": warehouse_id,
+		"quantity": flt(qty),
+		"FarmId": farm_id,
+		"id": cint(batch_id)
+	}
+	print(data)
+	res = api.update_raw_material_batch_qty(data)
+	print(820, res)
 
 
 
