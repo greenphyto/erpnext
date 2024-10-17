@@ -1,7 +1,7 @@
 import frappe, erpnext
 from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
 from frappe.core.doctype.sync_log.sync_log import get_pending_log
-from frappe.utils import cint, flt, cstr, get_time, getdate,add_days, get_datetime
+from frappe.utils import cint, flt, cstr, get_time, getdate,add_days, get_datetime, now
 from erpnext.accounts.party import get_party_details
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
@@ -828,23 +828,40 @@ def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False):
 	api = FomsAPI()
 	farm_id = get_farm_id()
 	batch_id = frappe.get_value("Batch", batch_no, "foms_id")
-	if not batch_id:
-		# create new batch
-		pass
-	
+	batch_exp = frappe.get_value("Batch", batch_no, "expiry_date")
 	warehouse_id = frappe.get_value("Warehouse", warehouse, "foms_id")
 	data = {
 		"rawMaterialId": item_id,
 		"batchRefNo": batch_no,
+		"rawMaterialTypeId": 0,
+		"rawMaterialVariantTypeId": 0,
+		"dateOfCreation": now(),
+		"qtyAdd": 0,
+		"quantity": qty,
+		"quantityUOM": None,
+		"totalCost": 0.0,
+		"expiryDate": getdate(batch_exp),
+		"lossRatePercent": 0,
+		"rackNumbers": None,
+		"warehouseName": None,
 		"warehouseId": warehouse_id,
-		"quantity": flt(qty),
-		"FarmId": farm_id,
-		"id": cint(batch_id)
+		"supplierId": 0,
+		"isFromERP": True,
+		"id": 0
 	}
-	print(data)
+	if not batch_id:
+		# create new batch
+		res = api.update_raw_material_batch_qty(data)
+		if res:
+			temp = res.get("result") or {}
+			batch_id = temp.get("id")
+			if batch_id:
+				frappe.db.set_value("Batch", "foms_id", batch_id)
+	data['id'] = cint(batch_id)
+		
 	res = api.update_raw_material_batch_qty(data)
-	print(820, res)
 
+	return res
 
 
 # SALES ORDER (POST)
@@ -1124,20 +1141,8 @@ def _update_foms_stock_recon(log, api=None):
 			success += 1
 			continue
 
-		item_id = frappe.get_value("Item", d.item_code, "foms_raw_id")
-		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id")
-		batch_id = frappe.get_value("Batch", d.batch_no, "foms_id")
-		data = {
-			"rawMaterialId": item_id,
-			"batchRefNo": d.batch_no,
-			"warehouseId": warehouse_id,
-			"quantity": flt(d.qty),
-			"FarmId": farm_id,
-			"id": cint(batch_id)
-		}
-		api.log = log
 		try:
-			res = api.update_raw_material_batch_qty(data)
+			res = update_foms_batch(d.batch_no, d.item_code, d.warehouse, flt(d.qty))
 			if res:
 				d.foms_sync = 1
 				success += 1

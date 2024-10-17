@@ -413,9 +413,9 @@ doc_events = {
     "Stock Entry": {
         "on_submit":"erpnext.controllers.foms.sync_log",
 	},
-    # "Stock Ledger Entry": {
-    #     "on_submit":"erpnext.controllers.foms.sync_sle",
-	# }
+    "Stock Ledger Entry": {
+        "on_submit":"erpnext.controllers.foms.sync_sle",
+	}
 }
 
 # On cancel event Payment Entry will be exempted and all linked submittable doctype will get cancelled.
