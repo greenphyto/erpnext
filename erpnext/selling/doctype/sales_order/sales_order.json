@@ -161,7 +161,6 @@
   "select_print_heading",
   "language",
   "additional_info_section",
-  "request_no",
   "is_internal_customer",
   "represents_company",
   "foms_details_section",
@@ -1663,13 +1662,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "request_no",
-   "fieldtype": "Link",
-   "label": "Request No",
-   "options": "Request",
-   "read_only": 1
-  },
-  {
    "collapsible": 1,
    "fieldname": "foms_details_section",
    "fieldtype": "Section Break",
@@ -1694,7 +1686,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-05 10:31:04.894779",
+ "modified": "2024-10-17 21:08:37.820290",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

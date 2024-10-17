@@ -164,6 +164,7 @@
    "fieldname": "conversion_factor",
    "fieldtype": "Float",
    "label": "UOM Conversion Factor",
+   "precision": "7",
    "print_hide": 1,
    "reqd": 1
   },
@@ -212,6 +213,7 @@
    "in_list_view": 1,
    "label": "Rate",
    "options": "currency",
+   "precision": "4",
    "print_hide": 1
   },
   {
@@ -219,6 +221,7 @@
    "fieldtype": "Currency",
    "label": "Amount",
    "options": "currency",
+   "precision": "4",
    "print_hide": 1,
    "read_only": 1
   },
@@ -511,7 +514,8 @@
    "fieldname": "base_rate",
    "fieldtype": "Currency",
    "label": "Rate (Company Currency)",
-   "options": "Company:company:default_currency"
+   "options": "Company:company:default_currency",
+   "precision": "4"
   },
   {
    "fieldname": "base_amount",
@@ -529,31 +533,36 @@
    "fieldname": "net_amount",
    "fieldtype": "Currency",
    "label": "Net Amount",
-   "options": "currency"
+   "options": "currency",
+   "precision": "4"
   },
   {
    "fieldname": "base_net_rate",
    "fieldtype": "Currency",
    "label": "Net Rate (Company Currency)",
-   "options": "Company:company:default_currency"
+   "options": "Company:company:default_currency",
+   "precision": "4"
   },
   {
    "fieldname": "base_net_amount",
    "fieldtype": "Currency",
    "label": "Net Amount (Company Currency)",
-   "options": "Company:company:default_currency"
+   "options": "Company:company:default_currency",
+   "precision": "4"
   },
   {
    "fieldname": "base_price_list_rate",
    "fieldtype": "Currency",
    "label": "Price List Rate (Company Currency)",
-   "options": "Company:company:default_currency"
+   "options": "Company:company:default_currency",
+   "precision": "4"
   },
   {
    "fieldname": "price_list_rate",
    "fieldtype": "Currency",
    "label": "Price List Rate",
-   "options": "currency"
+   "options": "currency",
+   "precision": "4"
   },
   {
    "depends_on": "price_list_rate",
@@ -585,7 +594,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-03-21 15:19:18.540855",
+ "modified": "2024-10-17 21:04:04.314923",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request Item",
