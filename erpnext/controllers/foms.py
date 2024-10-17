@@ -819,7 +819,7 @@ def sync_sle(doc, method=""):
 	qty = frappe.get_value("Batch", doc.batch_no, "batch_qty")
 	update_foms_batch(doc.batch_no, doc.item_code, doc.warehouse, qty)
 
-def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False):
+def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False, expiry_date=""):
 	item_id = frappe.get_value("Item", item_code, "foms_raw_id")
 	if not item_id:
 		# not raw material
@@ -828,7 +828,7 @@ def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False):
 	api = FomsAPI()
 	farm_id = get_farm_id()
 	batch_id = frappe.get_value("Batch", batch_no, "foms_id")
-	batch_exp = frappe.get_value("Batch", batch_no, "expiry_date")
+	batch_exp = expiry_date or frappe.get_value("Batch", batch_no, "expiry_date")
 	warehouse_id = frappe.get_value("Warehouse", warehouse, "foms_id")
 	data = {
 		"rawMaterialId": item_id,
@@ -853,10 +853,11 @@ def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False):
 		# create new batch
 		res = api.update_raw_material_batch_qty(data)
 		if res:
-			temp = res.get("result") or {}
-			batch_id = temp.get("id")
+			batch_id = res.get("id")
 			if batch_id:
-				frappe.db.set_value("Batch", "foms_id", batch_id)
+				frappe.db.set_value("Batch", batch_no, "foms_id", batch_id)
+
+
 	data['id'] = cint(batch_id)
 		
 	res = api.update_raw_material_batch_qty(data)
