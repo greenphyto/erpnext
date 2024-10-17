@@ -1,0 +1,9 @@
+
+div[data-fieldname="sr_wrapper"]{
+    margin-left: auto;
+}
+.draft-recon{
+    a{
+        color: blue;
+    }
+}

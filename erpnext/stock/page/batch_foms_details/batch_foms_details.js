@@ -31,7 +31,7 @@ frappe.pages['batch-foms-details'].on_page_load = function(wrapper) {
 		label: __('Fetch Data'),
 		fieldtype:'Button',
 		click: function() {
-			page.item_dashboard.refresh(true);
+			page.item_dashboard.refresh(1);
 		}
 	});
 
@@ -39,6 +39,29 @@ frappe.pages['batch-foms-details'].on_page_load = function(wrapper) {
 		fieldname: 'last_update',
 		label: __('Last Fetch'),
 		fieldtype:'Data',
+		read_only:1,
+	});
+
+	page.warehouse_field = page.add_field({
+		fieldname: 'hide_expired',
+		label: __('Hide Expired'),
+		fieldtype:'Check',
+		read_only:0,
+		change:function(){
+			var value = this.get_value();
+			var old_value = this.last_value;
+			if (value!=old_value){
+				console.log(this, value, old_value);
+				page.item_dashboard.filters.hide_expired = value;
+				page.item_dashboard.refresh();
+			}
+		}
+	});
+
+	page.warehouse_field = page.add_field({
+		fieldname: 'sr_wrapper',
+		label: __(''),
+		fieldtype:'HTML',
 		read_only:1,
 	});
 
@@ -62,6 +85,8 @@ frappe.provide('erpnext.stock');
 erpnext.stock.BatchFOMS = class BatchFOMS {
 	constructor(opts) {
 		$.extend(this, opts);
+		this.stock_recon = "";
+		this.filters = {};
 		this.make();
 	}
 	make() {
@@ -76,7 +101,7 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 		this.result = this.content.find('.result');
 
 	}
-	refresh(update=false) {
+	refresh(update=0) {
 		if(this.before_refresh) {
 			this.before_refresh();
 		}
@@ -86,20 +111,30 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 		frappe.call({
 			method: this.method,
 			args: {
-				update:update
+				update:update,
+				filters:this.filters
 			},
 			callback: function (r) {
 				r = r.message;
 				console.log("Result", r)
 				me.render(r);
+				frappe.show_alert({
+					message:"Refresh complete",
+					indicator: "green"
+				})
 			}
 		});
+		frappe.show_alert(({
+			message:"Refresh in progress",
+			indicator: "orange"
+		}))
 
-		frappe.show_alert("Refresh complete")
 	}
 	render(res) {
 		var data = res.data;
 		this.page.fields_dict.last_update.set_value(`On: ${res.last_fetch}`);
+
+		this.update_stock_recon(res.stock_recon);
 
 		if (this.start===0) {
 			this.max_count = 0;
@@ -122,6 +157,11 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 			$(`<div class='text-muted' style='margin: 20px 5px;'>
 				${message} </div>`).appendTo(this.result);
 		}
+	}
+
+	update_stock_recon(stock_recon){
+		var wrapper = $(this.page.parent).find('div[data-fieldname="sr_wrapper"]');
+		wrapper.empty().append(`<div class="draft-recon">Draft Stock Recon: <br><a href="/app/stock-reconciliation/${stock_recon}">${stock_recon}</a></div>`)
 	}
 
 	get_item_dashboard_data(data, max_count, show_item){
