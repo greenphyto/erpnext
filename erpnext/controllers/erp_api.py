@@ -304,13 +304,13 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	wip_warehouse = frappe.get_value("Job Card", job_card_name, "wip_warehouse")
 
 	# create stock entry
-	if rawMaterials:
-		se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
-		se_doc.stock_entry_type_view = get_stock_entry_type(operationName)
-		se_doc.insert(ignore_permissions=1)
-		# for d in se_doc.items:
-		# 	print(311, d.item_code, d.original_item, d.qty,d.transfer_qty, d.conversion_factor, d.uom, d.stock_uom)
-		se_doc.submit()
+	# if rawMaterials:
+	se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
+	se_doc.stock_entry_type_view = get_stock_entry_type(operationName)
+	se_doc.insert(ignore_permissions=1)
+	# for d in se_doc.items:
+	# 	print(311, d.item_code, d.original_item, d.qty,d.transfer_qty, d.conversion_factor, d.uom, d.stock_uom)
+	se_doc.submit()
 
 	job_card = frappe.get_doc("Job Card", job_card_name)
 
