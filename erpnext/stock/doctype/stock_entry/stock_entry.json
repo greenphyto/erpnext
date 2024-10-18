@@ -378,7 +378,7 @@
    "oldfieldname": "mtn_details",
    "oldfieldtype": "Table",
    "options": "Stock Entry Detail",
-   "reqd": 1
+   "reqd": 0
   },
   {
    "fieldname": "get_stock_and_rate",
@@ -726,7 +726,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-10-10 15:15:03.268814",
+ "modified": "2024-10-10 15:15:03.268815",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",

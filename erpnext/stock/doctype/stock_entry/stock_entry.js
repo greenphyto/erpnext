@@ -357,7 +357,7 @@ frappe.ui.form.on('Stock Entry', {
 	},
 
 	before_save: function(frm) {
-		frm.doc.items.forEach((item) => {
+		$.each(frm.doc.items, (i, item) => {
 			item.uom = item.uom || item.stock_uom;
 		})
 	},

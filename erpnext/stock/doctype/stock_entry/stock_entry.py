@@ -376,6 +376,10 @@ class StockEntry(StockEntryAsset, StockController):
 			frappe.db.set_value("Project", self.project, "total_consumed_material_cost", amount)
 
 	def validate_item(self):
+		# validate mandatory item
+		if self.purpose != "Material Transfer for Manufacture" and not self.get("items"):
+			frappe.throw(_(f"Item must be set"))
+
 		stock_items = self.get_stock_items()
 		serialized_items = self.get_serialized_items()
 		for item in self.get("items"):
