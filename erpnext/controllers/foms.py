@@ -517,9 +517,12 @@ def _update_foms_supplier(log, api=None):
 		supplier = frappe.get_doc("Supplier", log.docname)
 		if cint(supplier.disabled) == 1:
 			return
-		details = get_party_details(supplier.name, party_type="Supplier")
 		farm_id = get_farm_id()
-		address = get_html_text(details.address_display or details.company_address_display or "")
+		address = get_html_text(supplier.primary_address)
+		details = get_party_details(supplier.name, party_type="Supplier")
+		if not address:
+			address = get_html_text(details.address_display or details.company_address_display or "")
+
 		data = {
 			"farmId": farm_id,
 			"id": cint(supplier.foms_id),
@@ -600,7 +603,12 @@ def _update_foms_customer(log, api=None):
 		
 		details = get_party_details(customer.name, party_type="Customer")
 		farm_id = get_farm_id()
-		address = get_html_text(details.address_display or details.company_address_display)
+		
+		address = get_html_text(customer.primary_address)
+		if not address:
+			details = get_party_details(customer.name, party_type="Customer")
+			address = get_html_text(details.address_display or details.company_address_display or "")
+
 		shipping_address = get_html_text(details.get("shipping_address") or address)
 
 		customer_name = customer.customer_name
