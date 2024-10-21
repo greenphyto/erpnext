@@ -164,6 +164,7 @@ def get_uom_overide(reverse=False):
 
 def make_stock_entry_with_materials(source_name, materials, wip_warehouse, operation_name, work_order_name, company=""):
 	se = make_stock_entry_jc(source_name)
+	se.stock_entry_type_view = get_stock_entry_type(operation_name)
 	se.items = []
 	missing_warehouse = []
 
@@ -245,6 +246,9 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 				row.amount = amount * gross_weight
 				row.cost_center = frappe.get_value("Company", company, "cost_center_for_packing")
 				row.description = descriptions[field]
+
+	se.set_expense_account()
+
 	return se
 
 def get_stock_entry_type(operation):
@@ -306,7 +310,6 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	# create stock entry
 	# if rawMaterials:
 	se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
-	se_doc.stock_entry_type_view = get_stock_entry_type(operationName)
 	se_doc.insert(ignore_permissions=1)
 	# for d in se_doc.items:
 	# 	print(311, d.item_code, d.original_item, d.qty,d.transfer_qty, d.conversion_factor, d.uom, d.stock_uom)

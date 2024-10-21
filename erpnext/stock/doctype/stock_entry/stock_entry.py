@@ -35,6 +35,7 @@ from erpnext.stock.get_item_details import (
 )
 from erpnext.stock.stock_ledger import NegativeStockError, get_previous_sle, get_valuation_rate
 from erpnext.stock.utils import get_bin, get_incoming_rate
+from erpnext.stock import get_warehouse_account_map, get_item_account
 
 
 class FinishedGoodError(frappe.ValidationError):
@@ -1358,6 +1359,8 @@ class StockEntry(StockEntryAsset, StockController):
 		item = item[0]
 		item_group_defaults = get_item_group_defaults(item.name, self.company)
 		brand_defaults = get_brand_defaults(item.name, self.company)
+		warehouse_account = get_warehouse_account_map(self.company)
+
 
 		ret = frappe._dict(
 			{
@@ -1397,6 +1400,11 @@ class StockEntry(StockEntryAsset, StockController):
 				or frappe.get_cached_value("Company", self.company, "default_expense_account")
 			)
 
+		print(1403, self.purpose)
+		if self.purpose in ['Material Transfer', 'Material Transfer for Manufacture', 'Manufacture']:
+			# keep balance sheet
+			ret['expense_account'] = get_item_account(warehouse_account, args.get("warehouse"), args.get("item_code"), get_default=1)
+
 		for company_field, field in {
 			"stock_adjustment_account": "expense_account",
 			"cost_center": "cost_center",
@@ -1433,7 +1441,42 @@ class StockEntry(StockEntryAsset, StockController):
 			if subcontract_items and len(subcontract_items) == 1:
 				ret["subcontracted_item"] = subcontract_items[0].main_item_code
 
+		print(1445, ret['expense_account'])
 		return ret
+	
+	def set_expense_account(self):
+		warehouse_account = get_warehouse_account_map(self.company)
+		for d in self.get("items"):
+			if self.purpose in ['Material Transfer', 'Material Transfer for Manufacture', 'Manufacture']:
+				# keep balance sheet
+				d.expense_account = get_item_account(warehouse_account, d.s_warehouse, d.item_code, get_default=1)
+				
+			if self.purpose == "Material Issue":
+				item = frappe.db.sql(
+					"""select i.name, i.stock_uom, i.description, i.image, i.item_name, i.item_group,
+						i.has_batch_no, i.sample_quantity, i.has_serial_no, i.allow_alternative_item,
+						id.expense_account, id.buying_cost_center
+					from `tabItem` i LEFT JOIN `tabItem Default` id ON i.name=id.parent and id.company=%s
+					where i.name=%s
+						and i.disabled=0
+						and (i.end_of_life is null or i.end_of_life<'1900-01-01' or i.end_of_life > %s)""",
+					(self.company, self.item_code, nowdate()),
+					as_dict=1,
+				)
+
+				if not item:
+					frappe.throw(
+						_("Item {0} is not active or end of life has been reached").format(args.get("item_code"))
+					)
+
+				item = item[0]
+				item_group_defaults = get_item_group_defaults(item.name, self.company)
+				d.expense_account = (
+					item.get("expense_account")
+					or item_group_defaults.get("expense_account")
+					or frappe.get_cached_value("Company", self.company, "default_expense_account")
+				)
+
 
 	@frappe.whitelist()
 	def set_items_for_stock_in(self):
