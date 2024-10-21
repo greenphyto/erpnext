@@ -370,7 +370,7 @@ def submit_work_order_finish_goods(erpWorkOrderID, qty, expiryDate=""):
 	
 	se_doc = make_stock_entry_wo(work_order_name,"Manufacture", qty, return_doc=1)
 	se_doc.stock_entry_type_view = get_stock_entry_type("Harvesting Finish")
-	
+	se_doc.set_expense_account()	
 	se_doc.save()
 	se_doc.submit()
 

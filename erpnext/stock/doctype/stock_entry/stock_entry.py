@@ -1400,7 +1400,6 @@ class StockEntry(StockEntryAsset, StockController):
 				or frappe.get_cached_value("Company", self.company, "default_expense_account")
 			)
 
-		print(1403, self.purpose)
 		if self.purpose in ['Material Transfer', 'Material Transfer for Manufacture', 'Manufacture']:
 			# keep balance sheet
 			ret['expense_account'] = get_item_account(warehouse_account, args.get("warehouse"), args.get("item_code"), get_default=1)
@@ -1441,7 +1440,6 @@ class StockEntry(StockEntryAsset, StockController):
 			if subcontract_items and len(subcontract_items) == 1:
 				ret["subcontracted_item"] = subcontract_items[0].main_item_code
 
-		print(1445, ret['expense_account'])
 		return ret
 	
 	def set_expense_account(self):
