@@ -244,7 +244,12 @@ class FomsAPI():
 			return
 		
 		if self.last_result.status_code == 200:
-			update_success([self.log.name])
+			update_success([{
+				"log":self.log.name,
+				"save_log": self.log.save_log,
+				"status_code":self.last_result.status_code,
+				"request":self.request_detail
+			}])
 		else:
 			update_error([{
 				"log":self.log.name,
