@@ -159,6 +159,9 @@ class StockController(AccountsController):
 						else:
 							expense_account = item_row.expense_account
 
+						if self.purpose == "Manufacture":
+							expense_account = frappe.db.get_value("Company", self.company, "stock_adjustment_account")
+
 						row = self.get_gl_dict(
 							{
 								"account": get_item_account(warehouse_account, sle.warehouse, item_row.item_code),
@@ -186,6 +189,7 @@ class StockController(AccountsController):
 							},
 							item=item_row,
 						)
+						print(190, row.account, row.debit)
 						gl_list.append(row)
 
 					elif sle.warehouse not in warehouse_with_no_account:
@@ -239,6 +243,9 @@ class StockController(AccountsController):
 							"Warehouse {0} is not linked to any account, please mention the account in the warehouse record or set default inventory account in company {1}."
 						).format(wh, self.company)
 					)
+		
+		for d in gl_list:
+			print(1303, d.account, d.debit, d.creadit)
 
 		return process_gl_map(gl_list, precision=precision)
 

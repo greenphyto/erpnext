@@ -1445,10 +1445,9 @@ class StockEntry(StockEntryAsset, StockController):
 	def set_expense_account(self):
 		warehouse_account = get_warehouse_account_map(self.company)
 		for d in self.get("items"):
-			if self.purpose in ['Material Transfer', 'Material Transfer for Manufacture', 'Manufacture']:
+			if self.purpose in ['Material Transfer', 'Material Transfer for Manufacture', "Manufacture"]:
 				# keep balance sheet
-				d.expense_account = get_item_account(warehouse_account, d.s_warehouse, d.item_code, get_default=1)
-				
+				d.expense_account = get_item_account(warehouse_account, d.s_warehouse or d.t_warehouse, d.item_code, get_default=1)
 			if self.purpose == "Material Issue":
 				item = frappe.db.sql(
 					"""select i.name, i.stock_uom, i.description, i.image, i.item_name, i.item_group,
