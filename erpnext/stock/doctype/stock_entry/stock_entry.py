@@ -1590,7 +1590,7 @@ class StockEntry(StockEntryAsset, StockController):
 			if self.work_order and self.purpose == "Manufacture":
 				work_order = frappe.get_doc("Work Order", self.work_order)
 				# add_additional_cost(self, work_order)
-				add_wip_additional_cost(self, work_order)
+				# add_wip_additional_cost(self, work_order)
 
 			# add finished goods item
 			if self.purpose in ("Manufacture", "Repack"):

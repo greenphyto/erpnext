@@ -224,7 +224,7 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		frappe.throw(_("Please set Default Cost Expense Account in {} Company Settings".format(company)))
 	
 	wo_doc = frappe.get_doc("Work Order", work_order_name)
-	se.wip_additional_costs = []
+	se.additional_costs = []
 	cost_ref = wo_doc.get("operations", {"operation":operation_name})
 	cost_fields = ['electrical_cost', 'consumable_cost', 'machinery_cost', 'wages_cost', 'rent_cost']
 	descriptions = {
@@ -241,7 +241,7 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		for field in cost_fields:
 			amount = cost_ref.get(field)
 			if amount:
-				row = se.append("wip_additional_costs")
+				row = se.append("additional_costs")
 				row.expense_account = expense_account
 				row.amount = amount * gross_weight
 				row.cost_center = frappe.get_value("Company", company, "cost_center_for_packing")
@@ -311,8 +311,8 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	# if rawMaterials:
 	se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
 	se_doc.insert(ignore_permissions=1)
-	# for d in se_doc.items:
-	# 	print(311, d.item_code, d.original_item, d.qty,d.transfer_qty, d.conversion_factor, d.uom, d.stock_uom)
+	# for d in se_doc.additional_costs:
+	# 	print(311, d.expense_account, d.description, d.amount)
 	se_doc.submit()
 
 	job_card = frappe.get_doc("Job Card", job_card_name)
@@ -344,6 +344,8 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 		job_card.submit()
 	else:
 		job_card.save()
+
+	
 
 	frappe.db.commit()
 
