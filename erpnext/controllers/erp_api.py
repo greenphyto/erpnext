@@ -1,4 +1,4 @@
-import frappe, json
+import frappe, json, erpnext
 from six import string_types
 from frappe.utils import flt, now_datetime, cint, getdate, cstr, get_datetime
 from erpnext.controllers.foms import (
@@ -14,7 +14,8 @@ from erpnext.controllers.foms import (
 	create_delivery_order as _create_delivery_order,
 	get_operation_map_name,
 	create_finish_goods_stock as _create_finish_goods_stock,
-	create_packaging, update_so_working, create_do_based_on_work_order
+	create_packaging, update_so_working, create_do_based_on_work_order,
+	get_cost_center
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
@@ -161,12 +162,16 @@ def get_uom_overide(reverse=False):
 	return overide_map
 
 
-def make_stock_entry_with_materials(source_name, materials, wip_warehouse, operation_name, work_order_name):
+def make_stock_entry_with_materials(source_name, materials, wip_warehouse, operation_name, work_order_name, company=""):
 	se = make_stock_entry_jc(source_name)
+	se.stock_entry_type_view = get_stock_entry_type(operation_name)
 	se.items = []
 	missing_warehouse = []
 
 	overide_item = get_item_overide()
+
+	company = company or erpnext.get_default_company()
+	cost_center = get_cost_center(operation_name, company)
 
 	for d in materials:
 		d = frappe._dict(d)
@@ -203,6 +208,7 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 			row.original_item = original_item
 			batch_no = get_batch_no(item_code, warehouse, qty)
 
+		row.cost_center = cost_center
 		row.item_code = item_code
 		row.qty = qty
 		row.uom = uom
@@ -213,12 +219,12 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		frappe.throw(f"Warehouse not found: {warn}")
 	
 	# additional cost
-	expense_account = frappe.db.get_single_value("Manufacturing Settings", "default_expense_account")
+	expense_account = frappe.get_value("Company", company, "default_cost_expense_account" )
 	if not expense_account:
-		frappe.throw(_("Please set Default Expense Account in Manufacturing Settings"))
+		frappe.throw(_("Please set Default Cost Expense Account in {} Company Settings".format(company)))
 	
 	wo_doc = frappe.get_doc("Work Order", work_order_name)
-	se.wip_additional_costs = []
+	se.additional_costs = []
 	cost_ref = wo_doc.get("operations", {"operation":operation_name})
 	cost_fields = ['electrical_cost', 'consumable_cost', 'machinery_cost', 'wages_cost', 'rent_cost']
 	descriptions = {
@@ -235,10 +241,14 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		for field in cost_fields:
 			amount = cost_ref.get(field)
 			if amount:
-				row = se.append("wip_additional_costs")
+				row = se.append("additional_costs")
 				row.expense_account = expense_account
 				row.amount = amount * gross_weight
+				row.cost_center = frappe.get_value("Company", company, "cost_center_for_packing")
 				row.description = descriptions[field]
+
+	se.set_expense_account()
+
 	return se
 
 def get_stock_entry_type(operation):
@@ -246,6 +256,8 @@ def get_stock_entry_type(operation):
 		return "Seeding Transfer"
 	elif operation == "Transplanting":
 		return "Transplanting Transfer"
+	elif operation == "Harvesting":
+		return "Harvesting Transfer"
 	else:
 		return "Harvesting Finished Goods"
 
@@ -296,13 +308,12 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	wip_warehouse = frappe.get_value("Job Card", job_card_name, "wip_warehouse")
 
 	# create stock entry
-	if rawMaterials:
-		se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
-		se_doc.stock_entry_type_view = get_stock_entry_type(operationName)
-		se_doc.insert(ignore_permissions=1)
-		# for d in se_doc.items:
-		# 	print(311, d.item_code, d.original_item, d.qty,d.transfer_qty, d.conversion_factor, d.uom, d.stock_uom)
-		se_doc.submit()
+	# if rawMaterials:
+	se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
+	se_doc.insert(ignore_permissions=1)
+	# for d in se_doc.additional_costs:
+	# 	print(311, d.expense_account, d.description, d.amount)
+	se_doc.submit()
 
 	job_card = frappe.get_doc("Job Card", job_card_name)
 
@@ -334,6 +345,8 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	else:
 		job_card.save()
 
+	
+
 	frappe.db.commit()
 
 	update_log("Work Order", data_name, job_card_name)
@@ -344,7 +357,8 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	}
 
 @frappe.whitelist()
-def submit_work_order_finish_goods(ERPWorkOrderID, qty, expiryDate=""):
+def submit_work_order_finish_goods(erpWorkOrderID, qty, expiryDate=""):
+	ERPWorkOrderID = erpWorkOrderID
 	data_name = f"Finish Work Order {ERPWorkOrderID}"
 	save_log("Work Order", data_name, {
 		"ERPWorkOrderID":ERPWorkOrderID, 
@@ -357,8 +371,8 @@ def submit_work_order_finish_goods(ERPWorkOrderID, qty, expiryDate=""):
 	
 	
 	se_doc = make_stock_entry_wo(work_order_name,"Manufacture", qty, return_doc=1)
-	se_doc.stock_entry_type_view = get_stock_entry_type("Harvesting")
-	
+	se_doc.stock_entry_type_view = get_stock_entry_type("Harvesting Finish")
+	se_doc.set_expense_account()	
 	se_doc.save()
 	se_doc.submit()
 
@@ -608,7 +622,7 @@ def update_delivery_note_signature(data):
 
 	doc.db_set("signature", signature)
 	doc.db_set("signature_by", data.signature_by)
-	doc.db_set("delivery_completed_at", data.completed_at)
+	doc.db_set("delivery_completed_at", get_datetime(data.completed_at))
 	doc.db_set("delivery_completed_by", data.completed_by)
 	doc.db_set("taken_at", get_datetime(data.taken_at))
 

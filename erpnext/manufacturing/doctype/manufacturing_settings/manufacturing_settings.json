@@ -33,8 +33,7 @@
   "other_settings_section",
   "update_bom_costs_automatically",
   "column_break_23",
-  "make_serial_no_batch_from_work_order",
-  "default_expense_account"
+  "make_serial_no_batch_from_work_order"
  ],
  "fields": [
   {
@@ -198,12 +197,6 @@
    "label": "Allow Excess Material Transfer"
   },
   {
-   "fieldname": "default_expense_account",
-   "fieldtype": "Link",
-   "label": "Default Expense Account",
-   "options": "Account"
-  },
-  {
    "fieldname": "default_source_warehouse",
    "fieldtype": "Link",
    "label": "Default Source Warehouse",
@@ -214,7 +207,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-09-20 14:48:10.652303",
+ "modified": "2024-10-11 11:39:37.348845",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Manufacturing Settings",

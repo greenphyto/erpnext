@@ -358,7 +358,7 @@
                   }
                 },
                 "example": {
-                  "ERPWorkOrderID": "FOMS-001-005",
+                  "erpWorkOrderID": "FOMS-001-005",
                   "qty": 1,
                   "expiryDate":"2025-01-01"
                 }

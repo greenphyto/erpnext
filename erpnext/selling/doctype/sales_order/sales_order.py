@@ -1373,6 +1373,10 @@ def create_pick_list(source_name, target_doc=None):
 
 	doc.purpose = "Delivery"
 
+	for d in list(doc.get("locations")):
+		if not d.item_code:
+			doc.remove(d)
+
 	doc.set_item_locations()
 
 	return doc

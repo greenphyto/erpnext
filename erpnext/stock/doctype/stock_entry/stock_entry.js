@@ -357,7 +357,7 @@ frappe.ui.form.on('Stock Entry', {
 	},
 
 	before_save: function(frm) {
-		frm.doc.items.forEach((item) => {
+		$.each(frm.doc.items, (i, item) => {
 			item.uom = item.uom || item.stock_uom;
 		})
 	},
@@ -740,7 +740,7 @@ frappe.ui.form.on('Stock Entry Detail', {
 		if(d.item_code) {
 			var args = {
 				'item_code'			: d.item_code,
-				'warehouse'			: cstr(d.s_warehouse) || cstr(d.t_warehouse),
+				'warehouse'			: cstr(d.s_warehouse),
 				'transfer_qty'		: d.transfer_qty,
 				'serial_no'		: d.serial_no,
 				'batch_no'      : d.batch_no,

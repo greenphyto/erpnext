@@ -26,6 +26,7 @@ from erpnext.stock.doctype.batch.batch import get_batch_qty
 
 class PickList(Document):
 	def validate(self):
+		self.set_missing_values()
 		self.validate_for_qty()
 
 	def before_save(self):
@@ -92,6 +93,10 @@ class PickList(Document):
 
 		self.update_bundle_picked_qty()
 		self.update_sales_order_picking_status(updated_sales_orders)
+
+	def set_missing_values(self):
+		for d in self.locations:
+			d.picked_qty = flt(d.picked_qty_view) * flt(d.conversion_factor)
 
 	def update_sales_order_item(self, item, picked_qty, item_code):
 		item_table = "Sales Order Item" if not item.product_bundle_item else "Packed Item"

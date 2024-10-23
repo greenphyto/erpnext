@@ -10,6 +10,8 @@ from frappe.core.doctype.sync_log.sync_log import update_success, create_log, de
 import json, math
 from erpnext import get_company_currency, get_default_company
 from bs4 import BeautifulSoup as bs
+from erpnext.stock import get_warehouse_account_map, get_item_account
+
 
 """
 Make Supplier from ERP to FOMS
@@ -146,12 +148,15 @@ class GetData():
 
 # for create one-by-obe log, based on doctype and name
 def sync_log(doc, method=""):
+	method_id = METHOD_MAP.get(doc.get("doctype"))
+	if not method_id:
+		return
+
 	if not is_enable_integration():
 		return 
 	
 	cancel = doc.docstatus == 2
 
-	method_id = METHOD_MAP.get(doc.doctype)
 
 	if doc.flags.ignore_syncing:
 		return
@@ -162,8 +167,11 @@ def sync_log(doc, method=""):
 
 	log_name = create_log(doc.doctype, doc.name, method=method_id, doc_method=method)
 
-	# start enquee individually, if fail, it will try again with scheduler itself
-	frappe.enqueue("erpnext.controllers.foms.start_sync_enquee", log_name=log_name)
+	if method == "after_insert":
+		start_sync_enquee(log_name)
+	else:
+		# start enquee individually, if fail, it will try again with scheduler itself
+		frappe.enqueue("erpnext.controllers.foms.start_sync_enquee", log_name=log_name)
 	
 def start_sync_enquee(log_name):
 	log = frappe.get_doc("Sync Log", log_name)
@@ -500,13 +508,21 @@ def _update_foms_supplier(log, api=None):
 
 	api.log = log
 
+	exists = frappe.get_value("Supplier", log.docname)
+	if not exists:
+		frappe.db.set_value("Sync Log", log.name, "status", "Error")
+		return
+
 	if log.update_type != "Delete":
 		supplier = frappe.get_doc("Supplier", log.docname)
 		if cint(supplier.disabled) == 1:
 			return
-		details = get_party_details(supplier.name, party_type="Supplier")
 		farm_id = get_farm_id()
-		address = get_html_text(details.address_display or details.company_address_display or "")
+		address = get_html_text(supplier.primary_address)
+		details = get_party_details(supplier.name, party_type="Supplier")
+		if not address:
+			address = get_html_text(details.address_display or details.company_address_display or "")
+
 		data = {
 			"farmId": farm_id,
 			"id": cint(supplier.foms_id),
@@ -575,6 +591,11 @@ def _update_foms_customer(log, api=None):
 	
 	api.log = log
 
+	exists = frappe.get_value("Customer", log.docname)
+	if not exists:
+		frappe.db.set_value("Sync Log", log.name, "status", "Error")
+		return
+
 	if log.update_type != "Delete":
 		customer = frappe.get_doc("Customer", log.docname)
 		if cint(customer.disabled) == 1:
@@ -582,7 +603,12 @@ def _update_foms_customer(log, api=None):
 		
 		details = get_party_details(customer.name, party_type="Customer")
 		farm_id = get_farm_id()
-		address = get_html_text(details.address_display or details.company_address_display)
+		
+		address = get_html_text(customer.primary_address)
+		if not address:
+			details = get_party_details(customer.name, party_type="Customer")
+			address = get_html_text(details.address_display or details.company_address_display or "")
+
 		shipping_address = get_html_text(details.get("shipping_address") or address)
 
 		customer_name = customer.customer_name
@@ -798,6 +824,36 @@ def crate_batch_stock_recon(data={}, log_name="", dummy=False):
 	doc.flags.ignore_mandatory = 1
 	doc.insert(ignore_permissions=1)
 
+# STOCK LEDGER ENTRY
+def sync_sle(doc, method=""):
+	qty = frappe.get_value("Batch", doc.batch_no, "batch_qty")
+	update_foms_batch(doc.batch_no, doc.item_code, doc.warehouse, qty)
+
+def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False):
+	item_id = frappe.get_value("Item", item_code, "foms_raw_id")
+	if not item_id:
+		# not raw material
+		return
+	
+	api = FomsAPI()
+	farm_id = get_farm_id()
+	batch_id = frappe.get_value("Batch", batch_no, "foms_id")
+	if not batch_id:
+		# create new batch
+		pass
+	
+	warehouse_id = frappe.get_value("Warehouse", warehouse, "foms_id")
+	data = {
+		"rawMaterialId": item_id,
+		"batchRefNo": batch_no,
+		"warehouseId": warehouse_id,
+		"quantity": flt(qty),
+		"FarmId": farm_id,
+		"id": cint(batch_id)
+	}
+	print(data)
+	res = api.update_raw_material_batch_qty(data)
+	print(820, res)
 
 
 
@@ -1197,6 +1253,8 @@ def create_products(log):
 
 	create_workstation_process(doc.item_code)
 
+	name = doc.name
+
 	return name
 
 def create_workstation_process(item_code):
@@ -1326,13 +1384,14 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 		name, status = find_existing_bom2(item_name, log.productVersionName) 
 
 		if status == 1:
-			frappe.db.set_value("BOM", name, "is_active", 0)
+			frappe.db.set_value("BOM", name, "is_default", 0)
 			force_new = 1
 
 		if not name or force_new:
 			operation_map = {}
 			bom = frappe.new_doc("BOM")
 			bom.item = item_name
+			bom.is_default = 1
 			bom.foms_recipe_version = log.productVersionName
 			bom.with_operations = 1
 			bom.transfer_material_against = TRANFER_AGAIN
@@ -1614,6 +1673,7 @@ def create_do_based_on_work_order(wo_name, qty_finish, warehouse, batch_use):
 			d.batch_no = batch_use
 
 		dn_doc.flags.ignore_validate = 1
+		dn_doc.flags.ignore_mandatory = 1
 		dn_doc.save()
 
 
@@ -1713,3 +1773,17 @@ def create_finish_goods_stock(data):
 	return {
 		"StockEntryNo":doc.name
 	}
+
+def get_cost_center(operation_name, company):
+	company = company or erpnext.get_default_company()
+	if operation_name in ['Seeding', 'Transplanting']:
+		cc = frappe.get_value("Company", company, "cost_center_for_production")
+		if not cc:
+			frappe.throw(_("Missing Cost Center for Production, please update the Company Settings"))
+		return cc 
+	else:
+		cc = frappe.get_value("Company", company, "cost_center_for_packing")
+		if not cc:
+			frappe.throw(_("Missing Cost Center for Packing, please update the Company Settings"))
+		return cc
+

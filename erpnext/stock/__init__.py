@@ -52,10 +52,13 @@ def get_warehouse_account_map(company=None):
 		# WIP 
 		warehouse_account["WIP"] = {
 			"wip_warehouse":frappe.db.get_single_value("Manufacturing Settings", "default_wip_warehouse"),
-			"wip_account":""
+			"account":""
 		}
 		if warehouse_account["WIP"]['wip_warehouse']:
-			warehouse_account["WIP"]['wip_account'] = frappe.get_value("Warehouse", warehouse_account["WIP"]['wip_warehouse'], "account")
+			warehouse_account["WIP"]['account'] = frappe.get_value("Warehouse", warehouse_account["WIP"]['wip_warehouse'], "account")
+			warehouse_account["WIP"]['account_currency'] = ""
+			if warehouse_account["WIP"]['account']:
+				warehouse_account["WIP"]['account_currency'] = frappe.db.get_value("Account", warehouse_account["WIP"]['account'], "account_currency", cache=True)
 
 		if company:
 			frappe.flags.warehouse_account_map[company] = warehouse_account
@@ -75,12 +78,13 @@ def get_part_number_account_settings():
 	
 	return item_account
 
-def get_item_account(account_map, warehouse, item="", key="account"):
+def get_item_account(account_map, warehouse, item="", key="account", get_default = False):
 	data = None
-	if not warehouse:
+	if not warehouse and not get_default:
 		return None
 	
 	if item and account_map.get(item):
+
 		data = account_map[item].get(key)
 
 	if not data and item in account_map:
@@ -89,6 +93,16 @@ def get_item_account(account_map, warehouse, item="", key="account"):
 	
 	if not data and warehouse:
 		data = account_map[warehouse].get(key)
+
+	# special for WIP account
+	if "WIP" in account_map:
+		wip_warehouse = account_map['WIP']['wip_warehouse']
+		wip_account = account_map['WIP']['account']
+		if wip_warehouse == warehouse:
+			if not wip_account:
+				frappe.throw(_("Missing Account for WIP warehouse! please update settings for WIP Warehouse in Manufacturing Settings, and the warehouse account itself."))
+
+			data = account_map['WIP'].get(key)
 	
 	return data
 

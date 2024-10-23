@@ -11,7 +11,8 @@
   "warehouse",
   "qty",
   "cur_qty",
-  "uom"
+  "uom",
+  "expense_account"
  ],
  "fields": [
   {
@@ -60,19 +61,28 @@
    "reqd": 1
   },
   {
-   "columns": 2,
+   "columns": 1,
    "fetch_from": "batch.batch_qty",
    "fieldname": "cur_qty",
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Cur. Qty",
    "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "expense_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Expense Account",
+   "options": "Account",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-08-23 10:41:25.493684",
+ "modified": "2024-10-10 11:46:57.452772",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Scrap Items",

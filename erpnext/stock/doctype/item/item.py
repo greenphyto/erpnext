@@ -1119,6 +1119,40 @@ class Item(Document):
 				self.material_number = parse_naming_series(series)
 		else:
 			self.material_number = ""
+	
+	def get_item_material_group(self, set_data=False):
+		group_name = ""
+		if "RM-SD" in self.item_code:
+			group_name = "Seeds"
+		elif "RM-NS" in self.item_code:
+			group_name = "Nutrition"
+		elif "ZOT" in self.item_code:
+			group_name = "Other Packaging"
+		elif "PR-LV" in self.item_code:
+			group_name = "Vegetables (Lettuce)"
+		elif "PR-AV" in self.item_code:
+			group_name = "Vegetables (Asian Vegetables)"
+		elif "PDLED" in self.item_code:
+			group_name = "LED"
+		elif "ZGW" in self.item_code:
+			group_name = "Gateway"
+		elif "DMC" in self.item_code:
+			group_name = "Dimmer Controller"
+		elif "POC" in self.item_code:
+			group_name = "Power Connector"
+		elif "ZMS" in self.item_code:
+			group_name = "FG - Systems"
+		elif "PD-" in self.item_code:
+			group_name = "Trays & Boards"
+		elif "TOM" in self.item_code:
+			group_name = "Tooling & Moulding"
+		elif "ACC" in self.item_code:
+			group_name = "Accessories"
+		
+		if set_data and not self.get("material_group"):
+			self.material_group = group_name
+		
+		return group_name
 
 def parse_material_group_series(material_group):
 	name = frappe.db.exists('Material Group', material_group)
