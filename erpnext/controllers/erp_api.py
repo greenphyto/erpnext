@@ -15,7 +15,7 @@ from erpnext.controllers.foms import (
 	get_operation_map_name,
 	create_finish_goods_stock as _create_finish_goods_stock,
 	create_packaging, update_so_working, create_do_based_on_work_order,
-	get_cost_center
+	get_cost_center, get_default_expense_production_account
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
@@ -219,9 +219,7 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		frappe.throw(f"Warehouse not found: {warn}")
 	
 	# additional cost
-	expense_account = frappe.get_value("Company", company, "default_cost_expense_account" )
-	if not expense_account:
-		frappe.throw(_("Please set Default Cost Expense Account in {} Company Settings".format(company)))
+	expense_account = get_default_expense_production_account(company)
 	
 	wo_doc = frappe.get_doc("Work Order", work_order_name)
 	se.additional_costs = []
@@ -310,6 +308,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	# create stock entry
 	# if rawMaterials:
 	se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
+	se_doc.add_previous_costs()
 	se_doc.insert(ignore_permissions=1)
 	# for d in se_doc.additional_costs:
 	# 	print(311, d.expense_account, d.description, d.amount)
@@ -344,8 +343,6 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 		job_card.submit()
 	else:
 		job_card.save()
-
-	
 
 	frappe.db.commit()
 

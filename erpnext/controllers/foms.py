@@ -34,6 +34,12 @@ OPERATION_MAP_NAME = {
 	3:"Harvesting",
 }
 
+OPERATION_MAP_BY_NAME = {
+	"Seeding":1,
+	"Transplanting":2,
+	"Harvesting":3,
+}
+
 # FOMS UOM to ERP UOM
 UOM_MAP = {
 	"L":"Litre",
@@ -98,7 +104,24 @@ def get_deleted_document(doctype, docname):
 	
 	return {}
 
+def get_operation_number(operation):
+	return OPERATION_MAP_BY_NAME.get(operation) or 1
 
+def get_previous_operation(operation):
+	cur_no = OPERATION_MAP_BY_NAME.get(operation)
+	if cur_no == 1:
+		return 
+	
+	prev_no = cur_no - 1
+	return OPERATION_MAP_NAME.get(prev_no)
+
+def get_default_expense_production_account(company):
+	expense_account = frappe.get_value("Company", company, "default_cost_expense_account" )
+	if not expense_account:
+		frappe.throw(_("Please set Default Cost Expense Account in {} Company Settings".format(company)))
+
+	return expense_account
+	
 class GetData():
 	def __init__(self, data_type, get_data, get_key_name, post_process, doc_type="", show_progress=False, manual_save_log=False):
 		self.data_type = data_type

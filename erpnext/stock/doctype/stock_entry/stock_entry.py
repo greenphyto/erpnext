@@ -36,6 +36,7 @@ from erpnext.stock.get_item_details import (
 from erpnext.stock.stock_ledger import NegativeStockError, get_previous_sle, get_valuation_rate
 from erpnext.stock.utils import get_bin, get_incoming_rate
 from erpnext.stock import get_warehouse_account_map, get_item_account
+from erpnext.controllers.foms import get_previous_operation, get_operation_number,get_default_expense_production_account
 
 
 class FinishedGoodError(frappe.ValidationError):
@@ -1587,10 +1588,10 @@ class StockEntry(StockEntryAsset, StockController):
 					self.add_to_stock_entry_detail(item_dict)
 
 			# fetch the serial_no of the first stock entry for the second stock entry
-			if self.work_order and self.purpose == "Manufacture":
-				work_order = frappe.get_doc("Work Order", self.work_order)
-				# add_additional_cost(self, work_order)
-				# add_wip_additional_cost(self, work_order)
+			# if self.work_order and self.purpose == "Manufacture":
+			# 	work_order = frappe.get_doc("Work Order", self.work_order)
+			# 	# add_additional_cost(self, work_order)
+			# 	# add_wip_additional_cost(self, work_order)
 
 			# add finished goods item
 			if self.purpose in ("Manufacture", "Repack"):
@@ -1601,6 +1602,35 @@ class StockEntry(StockEntryAsset, StockController):
 		self.update_items_for_process_loss()
 		self.validate_customer_provided_item()
 		self.calculate_rate_and_amount(raise_error_if_no_rate=False)
+
+	def add_previous_costs(self):
+		# reference: costs variance for work order v1.xlxs
+		operation = self.operation
+		op_no = get_operation_number(operation)
+		prev_operation = get_previous_operation(operation)
+		if not prev_operation:
+			return
+		
+		# find previous stock entry
+		se_name = frappe.db.get_value("Stock Entry", {
+			"operation":prev_operation,
+			"work_order":self.work_order,
+			"purpose":"Material Transfer for Manufacture",
+			"docstatus":1
+		})
+		reff_id = f"OP-0{op_no}XC"
+		if se_name:
+			prev_amount = frappe.db.get_value("Stock Entry", se_name, "total_incoming_value")
+			row_adding = self.get("additional_costs", {"reff_id": reff_id})
+			if row_adding:
+				row_adding=row_adding[0]
+				row_adding.amount = prev_amount
+			else:
+				row_adding = self.append("additional_costs")
+				row_adding.amount = prev_amount
+				row_adding.expense_account = get_default_expense_production_account(self.company)
+				row_adding.description = f"Settlement to {self.operation}"
+				row_adding.reff_id = reff_id
 
 	def set_scrap_items(self):
 		if self.purpose != "Send to Subcontractor" and self.purpose in ["Manufacture", "Repack"]:
