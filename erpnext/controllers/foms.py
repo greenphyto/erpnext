@@ -190,11 +190,10 @@ def sync_log(doc, method=""):
 
 	log_name = create_log(doc.doctype, doc.name, method=method_id, doc_method=method)
 
-	if method == "after_insert":
+	try:
 		start_sync_enquee(log_name)
-	else:
-		# start enquee individually, if fail, it will try again with scheduler itself
-		frappe.enqueue("erpnext.controllers.foms.start_sync_enquee", log_name=log_name)
+	except:
+		pass
 	
 def start_sync_enquee(log_name):
 	log = frappe.get_doc("Sync Log", log_name)
@@ -609,6 +608,7 @@ def update_foms_customer():
 	sync_controller("Customer", _update_foms_customer)
 
 def _update_foms_customer(log, api=None):
+	p+=1
 	if not api:
 		api = FomsAPI()
 	
