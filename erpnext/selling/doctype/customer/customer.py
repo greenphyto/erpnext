@@ -17,6 +17,9 @@ from frappe.model.naming import set_name_by_naming_series, set_name_from_naming_
 from frappe.model.rename_doc import update_linked_doctypes
 from frappe.utils import cint, cstr, flt, get_formatted_email, today
 from frappe.utils.user import get_users_with_role
+from frappe.contacts.doctype.address.address import (
+	get_address_templates
+)
 
 from erpnext.accounts.party import (  # noqa
 	get_dashboard_info,
@@ -104,6 +107,7 @@ class Customer(TransactionBase):
 		self.validate_default_bank_account()
 		self.validate_internal_customer()
 		self.set_code()
+		self.set_default_customer_address()
 
 		# set loyalty program tier
 		if frappe.db.exists("Customer", self.name):
@@ -332,6 +336,27 @@ class Customer(TransactionBase):
 					frappe.bold(self.customer_name)
 				)
 			)
+
+	def set_default_customer_address(self):
+		if self.customer_primary_address:
+			return
+		
+		filters = [
+			["Dynamic Link", "link_doctype", "=", "Customer"],
+			["Dynamic Link", "link_name", "=", self.name],
+		]
+		fields = ["*"]
+		address = frappe.get_all("Address", filters=filters, fields=fields) or {}
+		if address:
+			address_as_dict = address[0]
+			name, address_template = get_address_templates(address_as_dict)
+			data = {
+				"name":		address_as_dict.get("name"), 
+				"address":	frappe.render_template(address_template, address_as_dict)
+			}
+			self.customer_primary_address = data['name']
+			self.primary_address = data['address']
+
 
 
 def create_contact(contact, party_type, party, email):
