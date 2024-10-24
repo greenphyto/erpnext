@@ -608,7 +608,6 @@ def update_foms_customer():
 	sync_controller("Customer", _update_foms_customer)
 
 def _update_foms_customer(log, api=None):
-	p+=1
 	if not api:
 		api = FomsAPI()
 	
