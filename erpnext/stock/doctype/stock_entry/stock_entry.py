@@ -829,7 +829,7 @@ class StockEntry(StockEntryAsset, StockController):
 	def distribute_additional_costs(self):
 		# If no incoming items, set additional costs blank
 		if not any(d.item_code for d in self.items if d.t_warehouse):
-			self.additional_costs = []
+			return
 
 		self.total_additional_costs = sum(flt(t.base_amount) for t in self.get("additional_costs"))
 
@@ -1657,7 +1657,6 @@ class StockEntry(StockEntryAsset, StockController):
 			# if self.work_order and self.purpose == "Manufacture":
 			# 	work_order = frappe.get_doc("Work Order", self.work_order)
 			# 	# add_additional_cost(self, work_order)
-			# 	# add_wip_additional_cost(self, work_order)
 
 			# add finished goods item
 			if self.purpose in ("Manufacture", "Repack"):
@@ -2913,43 +2912,6 @@ def get_stock_entry_data(work_order):
 		)
 		.orderby(stock_entry.creation, stock_entry_detail.item_code, stock_entry_detail.idx)
 	).run(as_dict=1)
-
-def add_wip_additional_cost(stock_entry, work_order):
-	# get all additional from transfer material
-	data = frappe.db.sql("""
-		SELECT 
-			c.expense_account,
-			c.exchange_rate,
-			c.account_currency,
-			c.description,
-			c.amount,
-			c.base_amount
-		FROM
-			`tabLanded Cost Taxes and Charges` c
-				LEFT JOIN
-			`tabStock Entry` s ON s.name = c.parent
-		WHERE
-			c.parentfield = 'wip_additional_costs'
-				AND c.parenttype = 'Stock Entry'
-				AND s.work_order = %s
-				AND s.purpose = 'Material Transfer for Manufacture'
-				AND s.docstatus = 1
-	""", (work_order.name), as_dict=1, debug=0)
-	data_map = {}
-	for d in data:
-		key = (d.expense_account, d.description)
-		if key in data_map:
-			data_map[key].amount = data_map[key].amount + d.amount
-			data_map[key].base_amount = data_map[key].base_amount + d.base_amount
-		else:
-			data_map[key] = d
-		
-	
-	for key, d in data_map.items():
-		row = stock_entry.append("additional_costs")
-		row.update(d)
-
-	return stock_entry
 
 @frappe.whitelist()
 def create_asset_from_stock_entry(se_name):
