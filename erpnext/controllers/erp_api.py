@@ -308,7 +308,6 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	# create stock entry
 	# if rawMaterials:
 	se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
-	se_doc.add_previous_costs()
 	se_doc.insert(ignore_permissions=1)
 	# for d in se_doc.additional_costs:
 	# 	print(311, d.expense_account, d.description, d.amount)
@@ -344,7 +343,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	else:
 		job_card.save()
 
-	frappe.db.commit()
+	# frappe.db.commit()
 
 	update_log("Work Order", data_name, job_card_name)
 

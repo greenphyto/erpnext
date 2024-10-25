@@ -1669,36 +1669,6 @@ class StockEntry(StockEntryAsset, StockController):
 		self.validate_customer_provided_item()
 		self.calculate_rate_and_amount(raise_error_if_no_rate=False)
 
-	def add_previous_costs(self):
-		return
-		# reference: costs variance for work order v1.xlxs
-		operation = self.operation
-		op_no = get_operation_number(operation)
-		prev_operation = get_previous_operation(operation)
-		if not prev_operation:
-			return
-		
-		# find previous stock entry
-		se_name = frappe.db.get_value("Stock Entry", {
-			"operation":prev_operation,
-			"work_order":self.work_order,
-			"purpose":"Material Transfer for Manufacture",
-			"docstatus":1
-		})
-		reff_id = f"OP-0{op_no}XC"
-		if se_name:
-			prev_amount = frappe.db.get_value("Stock Entry", se_name, "total_incoming_value")
-			row_adding = self.get("additional_costs", {"reff_id": reff_id})
-			if row_adding:
-				row_adding=row_adding[0]
-				row_adding.amount = prev_amount
-			else:
-				row_adding = self.append("additional_costs")
-				row_adding.amount = prev_amount
-				row_adding.expense_account = get_default_expense_production_account(self.company)
-				row_adding.description = f"Settlement to {self.operation}"
-				row_adding.reff_id = reff_id
-
 	def set_scrap_items(self):
 		if self.purpose != "Send to Subcontractor" and self.purpose in ["Manufacture", "Repack"]:
 			scrap_item_dict = self.get_bom_scrap_material(self.fg_completed_qty)
