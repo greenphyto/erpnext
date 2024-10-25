@@ -1228,7 +1228,7 @@ class StockEntry(StockEntryAsset, StockController):
 				sl_entries.append(sle)
 
 	def get_gl_entries(self, warehouse_account):
-		from erpnext.controllers.foms import get_cost_center, get_default_expense_production_account
+		from erpnext.controllers.foms import get_cost_center, get_default_expense_production_account, get_previous_operation, get_default_wip_account
 		gl_entries = super(StockEntry, self).get_gl_entries(warehouse_account)
 
 		if self.purpose in ("Repack", "Manufacture"):
@@ -1264,6 +1264,35 @@ class StockEntry(StockEntryAsset, StockController):
 
 				item_account_wise_additional_cost[(d.item_code, d.name)][t.expense_account]["base_amount"] += (
 					flt(t.base_amount * multiply_based_on) / divide_based_on
+				)
+			
+			# if item not set so do additional cost only
+			if not item_account_wise_additional_cost:
+				temp = get_default_wip_account(self.company) or {}
+				wip_account = temp.get("account")
+				gl_entries.append(
+					self.get_gl_dict(
+						{
+							"account": t.expense_account,
+							"against": wip_account,
+							"cost_center": t.cost_center,
+							"remarks": "Additional/Activity Costs",
+							"credit_in_account_currency": flt(t.amount),
+							"credit": flt(t.base_amount),
+						}
+					)
+				)
+				gl_entries.append(
+					self.get_gl_dict(
+						{
+							"account": wip_account,
+							"against": t.expense_account,
+							"cost_center": t.cost_center,
+							"remarks": "Additional/Activity Costs",
+							"credit_in_account_currency": -1*flt(t.amount),
+							"credit": -1*flt(t.base_amount),
+						}
+					)
 				)
 
 		if item_account_wise_additional_cost:
@@ -1305,19 +1334,20 @@ class StockEntry(StockEntryAsset, StockController):
 		# special case for Work Order Greenphyto
 		# reference doc: costs variance for work order v1.xlxs
 		if self.purpose == 'Material Transfer for Manufacture':
+			prev_operation = get_previous_operation(self.operation)
 			prev_wip = frappe.db.sql("""
 				SELECT 
-					gl.name, s.name AS se_name, gl.debit, gl.credit, gl.account
+					gl.name, s.name AS se_name, sum(gl.debit) as debit, sum(gl.credit) as credit, gl.account
 				FROM
 					`tabGL Entry` gl
 						LEFT JOIN
 					`tabStock Entry` s ON gl.voucher_no = s.name
 				WHERE
-					s.operation = 'Seeding'
-						AND s.work_order = '24-014156-004'
+					s.operation = %s
+						AND s.work_order = %s
 						AND s.docstatus = 1
 						AND gl.debit > 0
-			""", as_dict=1)
+			""", (prev_operation, self.work_order), as_dict=1, debug=0)
 			if prev_wip and 1:
 				prev_wip = prev_wip[0]
 				cost_center = get_cost_center(self.operation, self.company)

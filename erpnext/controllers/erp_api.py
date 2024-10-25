@@ -343,7 +343,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	else:
 		job_card.save()
 
-	frappe.db.commit()
+	# frappe.db.commit()
 
 	update_log("Work Order", data_name, job_card_name)
 

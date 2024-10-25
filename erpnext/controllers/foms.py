@@ -115,6 +115,10 @@ def get_previous_operation(operation):
 	prev_no = cur_no - 1
 	return OPERATION_MAP_NAME.get(prev_no)
 
+def get_default_wip_account(company):
+	warehouse_account = get_warehouse_account_map(company)
+	return warehouse_account['WIP']
+
 def get_default_expense_production_account(company):
 	expense_account = frappe.get_value("Company", company, "default_cost_expense_account" )
 	if not expense_account:
