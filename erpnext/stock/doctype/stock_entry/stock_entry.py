@@ -1228,6 +1228,7 @@ class StockEntry(StockEntryAsset, StockController):
 				sl_entries.append(sle)
 
 	def get_gl_entries(self, warehouse_account):
+		from erpnext.controllers.foms import get_cost_center, get_default_expense_production_account
 		gl_entries = super(StockEntry, self).get_gl_entries(warehouse_account)
 
 		if self.purpose in ("Repack", "Manufacture"):
@@ -1301,7 +1302,72 @@ class StockEntry(StockEntryAsset, StockController):
 						)
 					)
 
-		return process_gl_map(gl_entries)
+		# special case for Work Order Greenphyto
+		# reference doc: costs variance for work order v1.xlxs
+		if self.purpose == 'Material Transfer for Manufacture':
+			prev_wip = frappe.db.sql("""
+				SELECT 
+					gl.name, s.name AS se_name, gl.debit, gl.credit, gl.account
+				FROM
+					`tabGL Entry` gl
+						LEFT JOIN
+					`tabStock Entry` s ON gl.voucher_no = s.name
+				WHERE
+					s.operation = 'Seeding'
+						AND s.work_order = '24-014156-004'
+						AND s.docstatus = 1
+						AND gl.debit > 0
+			""", as_dict=1)
+			if prev_wip and 1:
+				prev_wip = prev_wip[0]
+				cost_center = get_cost_center(self.operation, self.company)
+				expense_account = prev_wip.account
+				variance_account = get_default_expense_production_account(self.company)
+
+				# cheange remarks
+				for d in gl_entries:
+					if d.account == variance_account:
+						d.remarks = "Additional/Activity Costs"
+
+				row = self.get_gl_dict(
+					{
+						"account": expense_account,
+						"against": variance_account,
+						"cost_center": cost_center,
+						"remarks": "From Previous WIP",
+						"debit": prev_wip.debit,  # put it as negative credit instead of debit purposefully
+						"do_not_merge":1
+					},
+				)
+				gl_entries.append(row)
+
+				row = self.get_gl_dict(
+					{
+						"account": variance_account,
+						"against": expense_account,
+						"cost_center": cost_center,
+						"remarks": "From Previous WIP",
+						"debit": -1* prev_wip.debit,  # put it as negative credit instead of debit purposefully
+						"do_not_merge":0
+					},
+				)
+
+				gl_entries.append(row)
+		
+		# debugging
+		# for d in self.additional_costs:
+		# 	print(1338, d.expense_account, d.description, d.amount)
+		# print("\n")
+		# for d in gl_entries:
+		# 	print(1303, d.account, d.debit,d.credit)
+
+		result = process_gl_map(gl_entries, merge_entries=1)
+
+		# print("\n")
+		# for d in result:
+		# 	print(1360, d.account, d.debit,d.credit, d.remarks)
+
+		return result
 
 	def update_work_order(self):
 		def _validate_work_order(pro_doc):
@@ -1604,6 +1670,7 @@ class StockEntry(StockEntryAsset, StockController):
 		self.calculate_rate_and_amount(raise_error_if_no_rate=False)
 
 	def add_previous_costs(self):
+		return
 		# reference: costs variance for work order v1.xlxs
 		operation = self.operation
 		op_no = get_operation_number(operation)
