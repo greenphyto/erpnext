@@ -153,6 +153,8 @@ class Report():
 						data_mapping[d.work_order]['Transplanting']["rawmat"]
 					)
 				
+				values['total']['credit'] += d['credit']
+				values['total']['prev_value'] += d['prev_value']
 				self.data.append(d)
 			values['total']['operation'] = "Total"
 			self.data.append(values['total'])
