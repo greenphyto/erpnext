@@ -34,7 +34,14 @@ frappe.query_reports["COS Product Variances"] = {
 			"fieldname":"work_order",
 			"label": __("Work Order"),
 			"fieldtype": "Link",
-			"options": "Work Order"
+			"options": "Work Order",
+			"get_query":()=>{
+				return {
+					filters: {
+						docstatus:1
+					}
+				}
+			}
 		}
 	]
 };

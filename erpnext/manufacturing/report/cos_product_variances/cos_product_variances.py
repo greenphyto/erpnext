@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.utils import flt
+from frappe.utils import flt, getdate
 import datetime
 
 def execute(filters=None):
@@ -15,6 +15,15 @@ class Report():
 
 	def setup_condition(self):
 		self.cond = ""
+		self.filters.from_date = getdate(self.filters.get("from_date") or "2000-01-01") 
+		self.filters.to_date = getdate(self.filters.get("to_date") or "2099-01-01") 
+
+		if self.filters.get("work_order"):
+			self.cond += " work_order = %(work_order)s"
+
+		if self.filters.get("product"):
+			self.cond += " production_item = %(product)s "
+
 
 	def setup_column(self):
 		self.columns = [
@@ -25,7 +34,7 @@ class Report():
 			{"fieldname": "operation", 			"label": "Operation", 		"fieldtype": "Data", 		"width":120, "options":""},
 			{"fieldname": "debit", 				"label": "Debit", 			"fieldtype": "Currency", 	"width":100, "options":""},
 			{"fieldname": "credit", 			"label": "Credit", 			"fieldtype": "Currency", 	"width":100, "options":""},
-			{"fieldname": "prev_value", 		"label": "Prev. Values",	"fieldtype": "Currency", 	"width":100, "options":""}
+			{"fieldname": "prev_value", 		"label": "Retrieved from Previous Step",	"fieldtype": "Currency", 	"width":100, "options":""}
 			
 		]
 		for c in self.cost_type:
@@ -39,7 +48,7 @@ class Report():
 			self.columns.append(col)
 	
 	def get_data(self):
-		use_test= 1
+		use_test= 0
 
 		if not use_test:
 			self.raw_data = frappe.db.sql("""
@@ -65,7 +74,9 @@ class Report():
 				WHERE
 					s.docstatus = 1
 						AND s.purpose = 'Material Transfer for Manufacture'
-						AND s.work_order = '24-014156-004'
+						AND s.operation is not null
+						AND s.posting_date between %(from_date)s and %(to_date)s
+						{}
 				ORDER BY s.work_order , s.creation
 			""".format(self.cond), self.filters, as_dict=1)
 		else:
@@ -118,6 +129,7 @@ class Report():
 					data_mapping[d.work_order][d.operation]["costs"] += amount
 					data_mapping[d.work_order]["total"][field] = flt(data_mapping[d.work_order]["total"].get(field)) + flt(amount)
 
+		cur_wo = ""
 		for wo, values in data_mapping.items():
 			for opr, dt in values.items():
 				d = dt['row']
@@ -158,7 +170,10 @@ class Report():
 				self.data.append(d)
 			values['total']['operation'] = "Total"
 			self.data.append(values['total'])
-
+			self.data.append({})
+		
+		if self.data:
+			del self.data[-1]
 	
 	def get_cost_column_field(self, cost_type):
 		return cost_type.lower()
