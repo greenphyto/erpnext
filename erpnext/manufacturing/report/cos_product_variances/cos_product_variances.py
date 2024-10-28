@@ -3,6 +3,7 @@
 
 import frappe
 from frappe.utils import flt
+import datetime
 
 def execute(filters=None):
 	return Report(filters).execute()
@@ -24,8 +25,7 @@ class Report():
 			{"fieldname": "operation", 			"label": "Operation", 		"fieldtype": "Data", 		"width":120, "options":""},
 			{"fieldname": "debit", 				"label": "Debit", 			"fieldtype": "Currency", 	"width":100, "options":""},
 			{"fieldname": "credit", 			"label": "Credit", 			"fieldtype": "Currency", 	"width":100, "options":""},
-			{"fieldname": "raw_mat", 			"label": "Raw. Materials",	"fieldtype": "Currency", 	"width":120, "options":""},
-			{"fieldname": "packing", 			"label": "Packing", 		"fieldtype": "Currency",    "width":90, "options":""},
+			{"fieldname": "prev_value", 		"label": "Prev. Values",	"fieldtype": "Currency", 	"width":100, "options":""}
 			
 		]
 		for c in self.cost_type:
@@ -39,65 +39,107 @@ class Report():
 			self.columns.append(col)
 	
 	def get_data(self):
-		self.raw_data = frappe.db.sql("""
-			SELECT 
-				s.posting_date,
-				s.name AS stock_entry,
-				s.work_order,
-				s.operation,
-				si.expense_account,
-				si.description,
-				si.amount,
-				si.cost_center,
-				s.total_additional_costs,
-				s.total_outgoing_value,
-				s.total_outgoing_value - s.total_additional_costs as raw_mat
-			FROM
-				`tabLanded Cost Taxes and Charges` si
-					LEFT JOIN
-				`tabStock Entry` s ON s.name = si.parent
-			WHERE
-				s.docstatus = 1
-					AND s.purpose = 'Material Transfer for Manufacture'
-					and s.work_order = '24-014156-004'
-			order by s.work_order, s.creation
-		""".format(self.cond), self.filters, as_dict=1)
+		use_test= 1
+
+		if not use_test:
+			self.raw_data = frappe.db.sql("""
+				SELECT 
+					s.posting_date,
+					s.name AS stock_entry,
+					s.work_order,
+					s.operation,
+					si.expense_account,
+					si.description,
+					si.amount,
+					si.cost_center,
+					s.total_additional_costs,
+					s.total_outgoing_value,
+					s.total_outgoing_value - s.total_additional_costs as raw_mat
+				FROM
+					`tabLanded Cost Taxes and Charges` si
+						LEFT JOIN
+					`tabStock Entry` s ON s.name = si.parent
+				WHERE
+					s.docstatus = 1
+						AND s.purpose = 'Material Transfer for Manufacture'
+						and s.work_order = '24-014156-004'
+				order by s.work_order, s.creation
+			""".format(self.cond), self.filters, as_dict=1)
+		else:
+			self.raw_data = get_test_data()
 	
 	def process_data(self):
 		self.data = []
 
+		temp_data = []
 		data_mapping = {}
+		wo_mapping = {}
 		cur_key = ""
 		for d in self.raw_data:
-			key = (d.operation, d.work_order)
-			if key not in data_mapping:
-				row = d
-			else:
-				row = data_mapping[key]
+			if d.work_order not in data_mapping:
+				data_mapping[d.work_order] = {
+					"Seeding": {
+						"costs":0,
+						"rawmat":0,
+						'row':{}
+					},
+					"Transplanting": {
+						"costs":0,
+						"rawmat":0,
+						'row':{}
+					},
+					"Harvesting": {
+						"costs":0,
+						"rawmat":0,
+						'row':{}
+					},
+				}
+			
+			row = d
+			data_mapping[d.work_order][d.operation]["rawmat"] = d.raw_mat
+			if not data_mapping[d.work_order][d.operation]['row']:
+				data_mapping[d.work_order][d.operation]['row'] = d
 
-			row.credit = flt(row.get("credit")) + d.total_additional_costs
 			for c in self.cost_type:
 				cost_name = f"{c} Cost"
 				if cost_name == d.description:
 					field = self.get_cost_column_field(c)
-					row[field] = flt(row.get(field)) + flt(d.amount)
+					data_mapping[d.work_order][d.operation]['row'][field] = flt(data_mapping[d.work_order][d.operation]['row'].get(field)) + flt(d.amount)
+					data_mapping[d.work_order][d.operation]["costs"] += data_mapping[d.work_order][d.operation]['row'][field]
 
-			row.credit = flt(row.get("credit")) + d.total_additional_costs
+		for wo, values in data_mapping.items():
+			for opr, dt in values.items():
+				d = dt['row']
+				if d.operation == "Seeding":
+					d['credit'] = data_mapping[d.work_order]['Seeding']["costs"]
+					d['prev_value'] = 0
+				elif d.operation == "Transplanting":
+					d['credit'] = ( 
+						data_mapping[d.work_order]['Seeding']["costs"] +
+						data_mapping[d.work_order]['Seeding']["rawmat"] + 
+						data_mapping[d.work_order]['Transplanting']["costs"] 
+					)
+					d['prev_value'] = ( 
+						data_mapping[d.work_order]['Seeding']["costs"] +
+						data_mapping[d.work_order]['Seeding']["rawmat"] 
+					)
+				elif d.operation == "Harvesting":
+					d['credit'] = ( 
+						data_mapping[d.work_order]['Seeding']["costs"] +
+						data_mapping[d.work_order]['Seeding']["rawmat"] + 
+						data_mapping[d.work_order]['Transplanting']["costs"] +
+						data_mapping[d.work_order]['Transplanting']["rawmat"] +
+						data_mapping[d.work_order]['Harvesting']["costs"] 
+					)
+					d['prev_value'] = ( 
+						data_mapping[d.work_order]['Seeding']["costs"] +
+						data_mapping[d.work_order]['Seeding']["rawmat"] + 
+						data_mapping[d.work_order]['Transplanting']["costs"] +
+						data_mapping[d.work_order]['Transplanting']["rawmat"]
+					)
+				
+				self.data.append(d)
 
-			if not cur_key:
-				cur_key = key
-			elif cur_key != key:
-				data_mapping[key] = row
-				cur_key = ""
-				print(92, "append", row)
-		
-			print(90, key, cur_key, row.credit, d.total_additional_costs)
-		
-		print(92, "append", row)
-		data_mapping[key] = row
-
-		for key, val in data_mapping.items():
-			self.data.append(val)
 	
 	def get_cost_column_field(self, cost_type):
 		return cost_type.lower()
@@ -109,3 +151,26 @@ class Report():
 		self.process_data()
 
 		return self.columns, self.data
+
+
+TEST_DATA = [
+{'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004', 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Machinery Cost', 	'amount': 2, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
+{'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004', 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Electrical Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
+{'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004', 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Consumable Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
+{'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004', 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Wages Cost', 		'amount': 2, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004', 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Electrical Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004', 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Wages Cost', 		'amount': 1, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004', 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Consumable Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004', 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Machinery Cost', 	'amount': 1, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004', 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Consumable Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004', 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Machinery Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004', 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Electrical Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004', 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Wages Cost', 		'amount': 1, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1}
+]
+
+def get_test_data():
+	res = []
+	for d in TEST_DATA:
+		res.append(frappe._dict(d))
+	
+	return res
