@@ -1348,7 +1348,7 @@ class StockEntry(StockEntryAsset, StockController):
 						AND s.docstatus = 1
 						AND gl.debit > 0
 			""", (prev_operation, self.work_order), as_dict=1, debug=0)
-			if prev_wip and 1:
+			if prev_wip:
 				prev_wip = prev_wip[0]
 				cost_center = get_cost_center(self.operation, self.company)
 				expense_account = prev_wip.account
@@ -1383,19 +1383,8 @@ class StockEntry(StockEntryAsset, StockController):
 				)
 
 				gl_entries.append(row)
-		
-		# debugging
-		# for d in self.additional_costs:
-		# 	print(1338, d.expense_account, d.description, d.amount)
-		# print("\n")
-		# for d in gl_entries:
-		# 	print(1303, d.account, d.debit,d.credit)
 
 		result = process_gl_map(gl_entries, merge_entries=1)
-
-		# print("\n")
-		# for d in result:
-		# 	print(1360, d.account, d.debit,d.credit, d.remarks)
 
 		return result
 
