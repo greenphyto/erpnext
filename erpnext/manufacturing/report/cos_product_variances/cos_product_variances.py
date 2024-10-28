@@ -50,20 +50,23 @@ class Report():
 					s.operation,
 					si.expense_account,
 					si.description,
+					w.production_item as product,
 					si.amount,
 					si.cost_center,
 					s.total_additional_costs,
 					s.total_outgoing_value,
-					s.total_outgoing_value - s.total_additional_costs as raw_mat
+					s.total_outgoing_value - s.total_additional_costs AS raw_mat
 				FROM
 					`tabLanded Cost Taxes and Charges` si
 						LEFT JOIN
 					`tabStock Entry` s ON s.name = si.parent
+						LEFT JOIN
+					`tabWork Order` w ON w.name = s.work_order
 				WHERE
 					s.docstatus = 1
 						AND s.purpose = 'Material Transfer for Manufacture'
-						and s.work_order = '24-014156-004'
-				order by s.work_order, s.creation
+						AND s.work_order = '24-014156-004'
+				ORDER BY s.work_order , s.creation
 			""".format(self.cond), self.filters, as_dict=1)
 		else:
 			self.raw_data = get_test_data()
@@ -154,18 +157,18 @@ class Report():
 
 
 TEST_DATA = [
-{'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004', 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Machinery Cost', 	'amount': 2, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
-{'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004', 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Electrical Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
-{'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004', 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Consumable Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
-{'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004', 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Wages Cost', 		'amount': 2, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
-{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004', 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Electrical Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
-{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004', 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Wages Cost', 		'amount': 1, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
-{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004', 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Consumable Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
-{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004', 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Machinery Cost', 	'amount': 1, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
-{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004', 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Consumable Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1},
-{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004', 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Machinery Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1},
-{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004', 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Electrical Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1},
-{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004', 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Wages Cost', 		'amount': 1, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1}
+{'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Electrical Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
+{'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Machinery Cost', 	'amount': 2, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
+{'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Consumable Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
+{'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Wages Cost', 		'amount': 2, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Electrical Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Wages Cost', 		'amount': 1, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Consumable Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Machinery Cost', 	'amount': 1, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Consumable Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Machinery Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Electrical Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Wages Cost', 		'amount': 1, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1}
 ]
 
 def get_test_data():
