@@ -1350,39 +1350,40 @@ class StockEntry(StockEntryAsset, StockController):
 			""", (prev_operation, self.work_order), as_dict=1, debug=0)
 			if prev_wip:
 				prev_wip = prev_wip[0]
-				cost_center = get_cost_center(self.operation, self.company)
-				expense_account = prev_wip.account
-				variance_account = get_default_expense_production_account(self.company)
+				if prev_wip.name:
+					cost_center = get_cost_center(self.operation, self.company)
+					expense_account = prev_wip.account
+					variance_account = get_default_expense_production_account(self.company)
 
-				# cheange remarks
-				for d in gl_entries:
-					if d.account == variance_account:
-						d.remarks = "Additional/Activity Costs"
+					# cheange remarks
+					for d in gl_entries:
+						if d.account == variance_account:
+							d.remarks = "Additional/Activity Costs"
 
-				row = self.get_gl_dict(
-					{
-						"account": expense_account,
-						"against": variance_account,
-						"cost_center": cost_center,
-						"remarks": "From Previous WIP",
-						"debit": prev_wip.debit,  # put it as negative credit instead of debit purposefully
-						"do_not_merge":1
-					},
-				)
-				gl_entries.append(row)
+					row = self.get_gl_dict(
+						{
+							"account": expense_account,
+							"against": variance_account,
+							"cost_center": cost_center,
+							"remarks": "From Previous WIP",
+							"debit": prev_wip.debit,  # put it as negative credit instead of debit purposefully
+							"do_not_merge":1
+						},
+					)
+					gl_entries.append(row)
 
-				row = self.get_gl_dict(
-					{
-						"account": variance_account,
-						"against": expense_account,
-						"cost_center": cost_center,
-						"remarks": "From Previous WIP",
-						"debit": -1* prev_wip.debit,  # put it as negative credit instead of debit purposefully
-						"do_not_merge":0
-					},
-				)
+					row = self.get_gl_dict(
+						{
+							"account": variance_account,
+							"against": expense_account,
+							"cost_center": cost_center,
+							"remarks": "From Previous WIP",
+							"debit": -1* prev_wip.debit,  # put it as negative credit instead of debit purposefully
+							"do_not_merge":0
+						},
+					)
 
-				gl_entries.append(row)
+					gl_entries.append(row)
 
 		result = process_gl_map(gl_entries, merge_entries=1)
 
