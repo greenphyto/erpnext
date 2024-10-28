@@ -1298,99 +1298,6 @@ def get_operation_no(operation):
 	return OPERATION_MAP.get(operation) or 1
 
 def create_bom_products(log, product_id, submit=False, force_new=False):
-	return create_bom_products_version_2(log, product_id, submit, force_new)
-
-# bom created based on 1 operation 1 work order
-# so it will cause 1 operation 1 bom
-# https://b83cw27ro1.larksuite.com/docx/FhH4dGmEZor3z2xQouEuNG9GsKp?from=from_copylink
-def create_bom_products_version_1(log, product_id, submit=False):
-	log = frappe._dict(log)
-	item_name = frappe.get_value("Item", {"foms_product_id":product_id})
-	name = None
-	bom_map = {}
-	# find existing
-	if item_name:
-		# # Pre Harvest Process
-		# if item_name != "PR-AV-GN":
-		# 	return name
-		
-		# join process Preharvest and PostHarvest
-		if "process" in log:
-			all_process = log.process
-		else:
-			all_process = log.preHarvestProcess + log.postHarvestProcess
-		
-		for op in all_process:
-			op = frappe._dict(op)
-			operation_no = get_operation_no(op.processName)
-			bom = None
-			if operation_no in bom_map:
-				bom = bom_map[operation_no]
-				name = bom.name
-				status = bom.docstatus
-			else:
-				name, status = find_existing_bom(item_name, log.productVersionName, operation_no) 
-
-			if not name:
-				bom = frappe.new_doc("BOM")
-				bom.item = item_name
-				bom.operation_no = operation_no
-				bom.foms_recipe_version = log.productVersionName
-
-				bom.with_operations = 1
-				bom.routing = get_routing_name(op.processName)
-
-				if bom.operation_no == 1:
-					bom.is_default = 1
-				else:
-					bom.is_default = 0
-
-				bom.transfer_material_against = "Job Card"
-
-				if not op.productRawMaterial:
-					continue
-
-				for rm in op.productRawMaterial:
-					rm = frappe._dict(rm)
-					row = bom.append("items")
-					row.item_code = rm.rawMaterialRefNo
-					row.uom = get_uom(rm.uomrm)
-					row.qty = rm.qtyrmInKg
-
-				bom.insert()
-				name = bom.name
-			
-			else:
-				if not bom:
-					bom = frappe.get_doc("BOM", name)
-
-				if bom.operation_no == 1:
-					bom.is_default = 1
-				else:
-					bom.is_default = 0
-
-				for rm in op.productRawMaterial:
-					rm = frappe._dict(rm)
-					row = bom.append("items")
-					row.item_code = rm.rawMaterialRefNo
-					row.uom = get_uom(rm.uomrm)
-					row.qty = rm.qtyrmInKg
-
-				bom.save()
-			
-			bom_map[operation_no] = bom
-
-		if submit:
-			for operation_no, bom in bom_map.items():
-				if bom.docstatus == 0:
-					bom.submit()
-	
-	return name
-
-# this is 1 BOM can have 3 operation (multiple operation in 1 bom)
-# so the work order will be just 1 and has 3 job card
-# each job card will be finish each operation one-by-one
-def create_bom_products_version_2(log, product_id, submit=False, force_new=False):
 	log = frappe._dict(log)
 	if not product_id:
 		frappe.throw(_(f"Missing Item with Product ID {product_id}"), frappe.DoesNotExistError)
@@ -1407,7 +1314,7 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 		else:
 			all_process = log.preHarvestProcess + log.postHarvestProcess
 		
-		name, status = find_existing_bom2(item_name, log.productVersionName) 
+		name, status = find_existing_bom(item_name, log.productVersionName) 
 
 		if not name or force_new:
 			operation_map = {}
@@ -1476,15 +1383,7 @@ def get_workstation_name(item_name, operation_name):
 	else:
 		return get_foms_settings("workstation")
 
-def find_existing_bom(item, foms_version, operation_no):
-	return frappe.get_value("BOM", {
-		"item":item, 
-		"foms_recipe_version":foms_version,
-		"operation_no": operation_no,
-		"docstatus":["!=", 2]
-	}, ["name", "docstatus"]) or (None, None)
-
-def find_existing_bom2(item, foms_version):
+def find_existing_bom(item, foms_version):
 	return frappe.get_value("BOM", {
 		"item":item, 
 		"foms_recipe_version":foms_version,
@@ -1524,13 +1423,6 @@ def get_operation_name(operation):
 		name = doc.name
 	
 	return name
-
-def get_bom_for_work_order2(item_code):
-	return frappe.get_value("BOM", {
-		"item":item_code,
-		"operation_no":1,
-		"docstatus":1
-	}, "name", order_by="foms_recipe_version")
 
 def get_bom_for_work_order(item_code):
 	return frappe.get_value("BOM", {
