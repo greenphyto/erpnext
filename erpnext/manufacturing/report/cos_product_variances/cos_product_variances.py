@@ -96,6 +96,12 @@ class Report():
 						"rawmat":0,
 						'row':{}
 					},
+					"total":{
+						"debit":0,
+						"credit":0,
+						"prev_value":0,
+						"row":None
+					}
 				}
 			
 			row = d
@@ -107,12 +113,18 @@ class Report():
 				cost_name = f"{c} Cost"
 				if cost_name == d.description:
 					field = self.get_cost_column_field(c)
-					data_mapping[d.work_order][d.operation]['row'][field] = flt(data_mapping[d.work_order][d.operation]['row'].get(field)) + flt(d.amount)
-					data_mapping[d.work_order][d.operation]["costs"] += data_mapping[d.work_order][d.operation]['row'][field]
+					amount = flt(data_mapping[d.work_order][d.operation]['row'].get(field)) + flt(d.amount)
+					data_mapping[d.work_order][d.operation]['row'][field] = amount
+					data_mapping[d.work_order][d.operation]["costs"] += amount
+					data_mapping[d.work_order]["total"][field] = flt(data_mapping[d.work_order]["total"].get(field)) + flt(amount)
 
 		for wo, values in data_mapping.items():
 			for opr, dt in values.items():
 				d = dt['row']
+				if not d:
+					continue
+				
+				d['debit'] = 0
 				if d.operation == "Seeding":
 					d['credit'] = data_mapping[d.work_order]['Seeding']["costs"]
 					d['prev_value'] = 0
@@ -142,6 +154,8 @@ class Report():
 					)
 				
 				self.data.append(d)
+			values['total']['operation'] = "Total"
+			self.data.append(values['total'])
 
 	
 	def get_cost_column_field(self, cost_type):
