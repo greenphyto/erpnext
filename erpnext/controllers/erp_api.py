@@ -360,7 +360,12 @@ def submit_work_order_finish_goods(erpWorkOrderID, qty, expiryDate=""):
 		"ERPWorkOrderID":ERPWorkOrderID, 
 		"qty":qty
 	})
-	work_order_name, lot_id = frappe.db.get_value("Work Order", ERPWorkOrderID, ['name', 'foms_lot_id']) or ("", "", "")
+	work_order_name, lot_id, status = frappe.db.get_value("Work Order", ERPWorkOrderID, ['name', 'foms_lot_id', 'status']) or ("", "", "")
+
+	if status == "Completed":
+		return {
+			"result":"Already complete"
+		}
 
 	if not work_order_name:
 		frappe.throw(_(f"Work Order {ERPWorkOrderID} not found!"), frappe.DoesNotExistError)
