@@ -54,6 +54,9 @@ def get_data(update=False, filters={}):
 		d.foms_qty = d.qtyLeft
 		d.foms_exp = format_date(d.expiryDate)
 		d.batch_no = d.batchRefNo
+		if filters.get('hide_empty') and d.foms_qty == 0:
+			continue
+		
 		if d.batch_no in erp_batch:
 			d.erp_batch_missing = False
 			batch = erp_batch.get(d.batch_no)

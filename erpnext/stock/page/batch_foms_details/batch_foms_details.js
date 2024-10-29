@@ -59,10 +59,56 @@ frappe.pages['batch-foms-details'].on_page_load = function(wrapper) {
 	});
 
 	page.warehouse_field = page.add_field({
+		fieldname: 'hide_empty',
+		label: __('Hide Empty'),
+		fieldtype:'Check',
+		read_only:0,
+		change:function(){
+			var value = this.get_value();
+			var old_value = this.last_value;
+			if (value!=old_value){
+				console.log(this, value, old_value);
+				page.item_dashboard.filters.hide_empty = value;
+				page.item_dashboard.refresh(0);
+			}
+		}
+	});
+
+	page.warehouse_field = page.add_field({
 		fieldname: 'sr_wrapper',
 		label: __(''),
 		fieldtype:'HTML',
 		read_only:1,
+	});
+
+	page.warehouse_field = page.add_field({
+		fieldname: 'batch_no',
+		label: __('Batch No'),
+		fieldtype:'Data',
+		change:function(){
+			var value = this.get_value();
+			var old_value = this.last_value;
+			if (value!=old_value){
+				console.log(this, value, old_value);
+				page.item_dashboard.filters.batch_no = value;
+				page.item_dashboard.refresh(0);
+			}
+		}
+	});
+	page.warehouse_field = page.add_field({
+		fieldname: 'item_code',
+		label: __('Item Code'),
+		fieldtype:'Link',
+		options:"Item",
+		change:function(){
+			var value = this.get_value();
+			var old_value = this.last_value;
+			if (value!=old_value){
+				console.log(this, value, old_value);
+				page.item_dashboard.filters.item_code = value;
+				page.item_dashboard.refresh(0);
+			}
+		}
 	});
 
 	frappe.require('item-dashboard.bundle.js', function() {
