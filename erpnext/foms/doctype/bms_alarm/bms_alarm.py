@@ -3,10 +3,18 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe.utils import now_datetime
 
 class BMSAlarm(Document):
+	def validate(self):
+		self.set_closed_datetime()
+
 	def after_insert(self):
-		self.create_todo()
+		self.create_todo()		
+
+	def set_closed_datetime(self):
+		if self.alarm_status == "Alarm Closed":
+			self.closed_datetime = now_datetime()
 
 	def create_todo(self):
 		priority_map = {
