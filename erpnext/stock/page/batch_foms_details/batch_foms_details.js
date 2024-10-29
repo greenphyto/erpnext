@@ -83,7 +83,7 @@ frappe.pages['batch-foms-details'].on_page_load = function(wrapper) {
 
 	page.warehouse_field = page.add_field({
 		fieldname: 'batch_no',
-		label: __('Batch No'),
+		label: __('Search batch'),
 		fieldtype:'Data',
 		change:function(){
 			var value = this.get_value();
@@ -91,21 +91,6 @@ frappe.pages['batch-foms-details'].on_page_load = function(wrapper) {
 			if (value!=old_value){
 				console.log(this, value, old_value);
 				page.item_dashboard.filters.batch_no = value;
-				page.item_dashboard.refresh(0);
-			}
-		}
-	});
-	page.warehouse_field = page.add_field({
-		fieldname: 'item_code',
-		label: __('Item Code'),
-		fieldtype:'Link',
-		options:"Item",
-		change:function(){
-			var value = this.get_value();
-			var old_value = this.last_value;
-			if (value!=old_value){
-				console.log(this, value, old_value);
-				page.item_dashboard.filters.item_code = value;
 				page.item_dashboard.refresh(0);
 			}
 		}

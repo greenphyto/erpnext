@@ -56,7 +56,10 @@ def get_data(update=False, filters={}):
 		d.batch_no = d.batchRefNo
 		if filters.get('hide_empty') and d.foms_qty == 0:
 			continue
-		
+
+		if filters.get('batch_no') and filters.batch_no.lower() not in d.batchRefNo.lower() :
+			continue
+
 		if d.batch_no in erp_batch:
 			d.erp_batch_missing = False
 			batch = erp_batch.get(d.batch_no)
