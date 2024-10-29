@@ -61,8 +61,8 @@ def get_data(update=False, filters={}):
 			d.erp_exp = format_date(batch.expiry_date)
 		else:
 			d.erp_batch_missing = True
-			d.erp_qty = flt(erp_batch.get(d.batch_no))
-			d.erp_exp = format_date(d.expiry_date)
+			d.erp_qty = ""
+			d.erp_exp = ""
 		data.append(d)
 	
 	stock_recon = "MAT-RECO-2024-00028"

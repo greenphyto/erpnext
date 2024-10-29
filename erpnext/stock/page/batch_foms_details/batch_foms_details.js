@@ -53,7 +53,7 @@ frappe.pages['batch-foms-details'].on_page_load = function(wrapper) {
 			if (value!=old_value){
 				console.log(this, value, old_value);
 				page.item_dashboard.filters.hide_expired = value;
-				page.item_dashboard.refresh();
+				page.item_dashboard.refresh(1);
 			}
 		}
 	});
@@ -122,12 +122,14 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 					message:"Refresh complete",
 					indicator: "green"
 				})
+				me.hide_result(0);
 			}
 		});
 		frappe.show_alert(({
-			message:"Refresh in progress",
+			message:"Fetching in progress",
 			indicator: "orange"
-		}))
+		}));
+		me.hide_result(1);
 
 	}
 	render(res) {
@@ -156,6 +158,18 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 
 			$(`<div class='text-muted' style='margin: 20px 5px;'>
 				${message} </div>`).appendTo(this.result);
+		}
+	}
+
+	hide_result(hide=true){
+		var loading_area = this.content.find(".loading-area");
+		var result_area = this.content.find(".result-area");
+		if (!hide){
+			result_area.show();
+			loading_area.hide();
+		}else{
+			result_area.hide();
+			loading_area.show();
 		}
 	}
 
