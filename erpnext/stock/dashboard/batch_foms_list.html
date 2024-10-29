@@ -6,10 +6,20 @@
 		<td>{{d.erp_exp}}</td>
 		<td>{{d.erp_qty}}</td>
 		<td>
-			<button style="margin-left: 7px;" class="btn btn-default btn-xs btn-add" batch-no="{{d.batch_no}}">
+			<button style="margin-left: 7px;" class="btn btn-default btn-xs btn-add btn-update-foms" 
+			 btn-type="foms" batch-no="{{d.batch_no}}" qty="{{d.erp_qty}}"
+			 {% if (d.erp_qty=="") %}
+				disabled
+			 {% endif %}
+			 >
 				Update FOMS
 			</button>
-			<button style="margin-left: 7px;" class="btn btn-default btn-xs btn-add" batch-no="{{d.batch_no}}">
+			<button style="margin-left: 7px;" class="btn btn-default btn-xs btn-add btn-update-erp"
+			 btn-type="erp" batch-no="{{d.batch_no}}" qty="{{d.foms_qty}}"
+			 {% if (d.foms_qty=="") %}
+				disabled
+			 {% endif %}
+			 >
 				Update ERP
 			</button>
 		</td>

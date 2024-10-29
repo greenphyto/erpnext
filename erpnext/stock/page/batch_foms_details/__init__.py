@@ -81,9 +81,12 @@ def get_data(update=False, filters={}):
 	return result
 
 @frappe.whitelist()
-def update_foms_batch(batch_no, item_code, warehouse, qty, exp=""):
-	res = _update_foms_batch(batch_no, item_code, warehouse, qty, expiry_date=exp)
-	return res
+def update_foms_batch(batch_no, qty):
+	item_code = frappe.get_value("Batch", batch_no, "item")
+	if item_code:
+		warehouse = ""
+		res = _update_foms_batch(batch_no, item_code, warehouse, qty)
+		return res
 
 @frappe.whitelist()
 def update_erp_batch(stock_recon, batch,warehouse,qty,exp=""):

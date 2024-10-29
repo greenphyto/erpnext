@@ -826,7 +826,6 @@ def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False, expiry
 		return
 	
 	api = FomsAPI()
-	farm_id = get_farm_id()
 	batch_id = frappe.get_value("Batch", batch_no, "foms_id")
 	batch_exp = expiry_date or frappe.get_value("Batch", batch_no, "expiry_date")
 	warehouse_id = frappe.get_value("Warehouse", warehouse, "foms_id")

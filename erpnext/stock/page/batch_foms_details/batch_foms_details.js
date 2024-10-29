@@ -164,6 +164,7 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 
 	}
 	render(res) {
+		var me = this;
 		var data = res.data;
 		this.page.fields_dict.last_update.set_value(`On: ${res.last_fetch}`);
 
@@ -182,7 +183,18 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 		// If not any stock in any warehouses provide a message to end user
 		if (context.data.length > 0) {
 			this.content.find('.result').css('text-align', 'unset');
-			$(frappe.render_template(this.template, context)).appendTo(this.result);
+			var res = $(frappe.render_template(this.template, context))
+			res.click(".btn-update-foms", function(el){
+				var qty=0, batch_no;
+				batch_no = $(el.target).attr("batch-no");
+				qty = $(el.target).attr("qty");
+				var type_batch = $(el.target).attr("btn-type");
+				if (type_batch=='foms'){
+					console.log(20, this, el);
+					me.update_batch(batch_no, qty);
+				}
+			});
+			res.appendTo(this.result);
 		} else {
 			var message = __("No Stock Available Currently");
 			this.content.find('.result').css('text-align', 'center');
@@ -190,6 +202,19 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 			$(`<div class='text-muted' style='margin: 20px 5px;'>
 				${message} </div>`).appendTo(this.result);
 		}
+	}
+
+	update_batch(batch_no, qty){
+		frappe.call({
+			method:"erpnext.stock.page.batch_foms_details.update_foms_batch",
+			args:{
+				batch_no:batch_no,
+				qty:qty,
+			},
+			callback: (res)=>{
+				console.log(208, res);
+			}
+		})
 	}
 
 	hide_result(hide=true){
