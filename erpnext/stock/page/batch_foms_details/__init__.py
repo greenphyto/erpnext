@@ -12,6 +12,11 @@ def get_data(update=False, filters={}):
 	log_name = frappe.db.exists("FOMS Data Mapping", {"data_name":LOG_DATA_NAME})
 	print("filters", filters)
 	print("Find exist", log_name)
+	if filters.hide_expired:
+		non_expired_batch_only = 1
+	else:
+		non_expired_batch_only = 0
+
 	if not log_name:
 		log = frappe.new_doc("FOMS Data Mapping")
 		log.data_type = "Batch"
@@ -19,7 +24,7 @@ def get_data(update=False, filters={}):
 		log.status = "Mapped"
 		log.doc_type = "Batch"
 		log.doc_name = "All Batch"
-		raw_data = api.get_all_batch()
+		raw_data = api.get_all_batch(active_batch_only=non_expired_batch_only)
 		log.raw_data = json.dumps(raw_data)
 		log.insert()
 	else:
@@ -27,12 +32,12 @@ def get_data(update=False, filters={}):
 	
 	print(26, update, log_name)
 	if not cint(update) and log_name:
-		print(1000)
+		print("Refresh only")
 		raw_data = log.get_data()
 	else:
-		print(200)
+		print("Fetch new data")
 		log = frappe.get_doc("FOMS Data Mapping", log_name)
-		raw_data = api.get_all_batch()
+		raw_data = api.get_all_batch(active_batch_only=non_expired_batch_only)
 		log.raw_data = json.dumps(raw_data)
 		log.last_sync = now()
 		log.save()
@@ -49,12 +54,6 @@ def get_data(update=False, filters={}):
 		d.foms_qty = d.qtyLeft
 		d.foms_exp = format_date(d.expiryDate)
 		d.batch_no = d.batchRefNo
-		print(52, filters.hide_expired)
-		if filters.hide_expired:
-			print(d.batch_no, getdate(d.foms_exp), getdate())
-			if getdate(d.foms_exp) < getdate():
-				continue
-
 		if d.batch_no in erp_batch:
 			d.erp_batch_missing = False
 			batch = erp_batch.get(d.batch_no)
