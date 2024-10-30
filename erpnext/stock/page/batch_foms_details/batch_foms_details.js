@@ -187,7 +187,7 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 			res.click(".btn-update-foms", function(el){
 				var batch_no = $(el.target).attr("batch-no");
 				var qty = $(el.target).attr("qty");
-				var batch_no = $(el.target).attr("batch-id");
+				var batch_id = $(el.target).attr("batch-id");
 				var warehouseID = $(el.target).attr("warehouseID");
 				var type_batch = $(el.target).attr("btn-type");
 				if (type_batch=='foms'){

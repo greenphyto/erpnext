@@ -6,14 +6,7 @@
 		<td class="erp-exp">{{d.erp_exp}}</td>
 		<td class="erp-qty">{{d.erp_qty}}</td>
 		<td>
-			<button style="margin-left: 7px;" class="btn  btn-xs btn-add btn-update-foms
-			{% if (d.erp_qty=="") %}
-				btn-default
-			{% else %}
-				btn-warning
-			 {% endif %}
-			
-			" 
+			<button style="margin-left: 7px;" class="btn  btn-xs btn-add btn-update-foms btn-warning" 
 			 btn-type="foms" batch-id="{{d.id}}" batch-no="{{d.batch_no}}" qty="{{d.erp_qty}}" warehouseID="{{d.warehouseId}}"
 			 {% if (d.erp_qty=="") %}
 				disabled
@@ -21,13 +14,7 @@
 			 >
 				Update FOMS
 			</button>
-			<button style="margin-left: 7px;" class="btn btn-default btn-xs btn-add btn-update-erp
-				{% if (d.erp_qty=="") %}
-					btn-default
-				{% else %}
-					btn-primary
-				{% endif %}
-			"
+			<button style="margin-left: 7px;" class="btn btn-xs btn-add btn-update-erp btn-primary"
 			 btn-type="erp" batch-id="{{d.id}}" batch-no="{{d.batch_no}}" qty="{{d.foms_qty}}"
 			 {% if (d.foms_qty=="") %}
 				disabled

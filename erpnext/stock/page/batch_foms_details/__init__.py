@@ -140,6 +140,6 @@ def update_erp_batch(batch_no,warehouse,qty,stock_recon="",exp=""):
 	row.qty = qty
 	doc.save()
 
-	return True
+	return doc.name
 
 	
