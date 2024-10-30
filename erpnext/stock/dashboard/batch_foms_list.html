@@ -1,21 +1,34 @@
 {% for d in data %}
-	<tr>
-		<td>{{d.batch_no}}</td>
-		<td>{{d.foms_exp}}</td>
-		<td>{{d.foms_qty}}</td>
-		<td>{{d.erp_exp}}</td>
-		<td>{{d.erp_qty}}</td>
+	<tr id="batchID{{d.id}}">
+		<td class="bacth-no">{{d.batch_no}}</td>
+		<td class="foms-exp">{{d.foms_exp}}</td>
+		<td class="foms-qty">{{d.foms_qty}}</td>
+		<td class="erp-exp">{{d.erp_exp}}</td>
+		<td class="erp-qty">{{d.erp_qty}}</td>
 		<td>
-			<button style="margin-left: 7px;" class="btn btn-default btn-xs btn-add btn-update-foms" 
-			 btn-type="foms" batch-no="{{d.batch_no}}" qty="{{d.erp_qty}}"
+			<button style="margin-left: 7px;" class="btn  btn-xs btn-add btn-update-foms
+			{% if (d.erp_qty=="") %}
+				btn-default
+			{% else %}
+				btn-warning
+			 {% endif %}
+			
+			" 
+			 btn-type="foms" batch-id="{{d.id}}" batch-no="{{d.batch_no}}" qty="{{d.erp_qty}}" warehouseID="{{d.warehouseId}}"
 			 {% if (d.erp_qty=="") %}
 				disabled
 			 {% endif %}
 			 >
 				Update FOMS
 			</button>
-			<button style="margin-left: 7px;" class="btn btn-default btn-xs btn-add btn-update-erp"
-			 btn-type="erp" batch-no="{{d.batch_no}}" qty="{{d.foms_qty}}"
+			<button style="margin-left: 7px;" class="btn btn-default btn-xs btn-add btn-update-erp
+				{% if (d.erp_qty=="") %}
+					btn-default
+				{% else %}
+					btn-primary
+				{% endif %}
+			"
+			 btn-type="erp" batch-id="{{d.id}}" batch-no="{{d.batch_no}}" qty="{{d.foms_qty}}"
 			 {% if (d.foms_qty=="") %}
 				disabled
 			 {% endif %}
