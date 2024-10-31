@@ -115,6 +115,7 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 		$.extend(this, opts);
 		this.stock_recon = "";
 		this.filters = {};
+		this.warning = false;
 		this.make();
 	}
 	make() {
@@ -257,6 +258,10 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 						me.update_row(res.message, false);
 						if (res.message.stock_recon){
 							me.update_stock_recon(res.message.stock_recon);
+							if (!me.warning){
+								frappe.msgprint("Please submit Stock Reconcilliation on the top corner after finish all update")
+								me.warning=true;
+							}
 						}
 					}
 					resolve()
