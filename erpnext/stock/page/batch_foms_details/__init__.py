@@ -92,6 +92,9 @@ def update_foms_batch(batch_no, batch_id, warehouseID, qty):
 
 @frappe.whitelist()
 def update_erp_batch(batch_no,batch_id="",item_id="",warehouseID="",qty=0,expired_date="", stock_recon="",exp=""):
+	if not batch_no:
+		return {"error":"Batch number unknown"}
+	
 	# create batch
 	# add batch
 	if expired_date:

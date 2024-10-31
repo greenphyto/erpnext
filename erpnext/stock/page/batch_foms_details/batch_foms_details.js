@@ -255,12 +255,16 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 				},
 				callback: (res)=>{
 					if (res.message){
-						me.update_row(res.message, false);
-						if (res.message.stock_recon){
-							me.update_stock_recon(res.message.stock_recon);
-							if (!me.warning){
-								frappe.msgprint("Please submit Stock Reconcilliation on the top corner after finish all update")
-								me.warning=true;
+						if (res.message.error){
+							frappe.msgprint(res.message.error);
+						}else{
+							me.update_row(res.message, false);
+							if (res.message.stock_recon){
+								me.update_stock_recon(res.message.stock_recon);
+								if (!me.warning){
+									frappe.msgprint("Please submit Stock Reconcilliation on the top corner after finish all update")
+									me.warning=true;
+								}
 							}
 						}
 					}
