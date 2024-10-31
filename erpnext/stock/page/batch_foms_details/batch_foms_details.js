@@ -188,11 +188,15 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 				var batch_no = $(el.target).attr("batch-no");
 				var qty = $(el.target).attr("qty");
 				var batch_id = $(el.target).attr("batch-id");
+				var item_id = $(el.target).attr("item-id");
 				var warehouseID = $(el.target).attr("warehouseID");
 				var type_batch = $(el.target).attr("btn-type");
 				if (type_batch=='foms'){
 					console.log(20, this, el);
 					me.update_batch(batch_no,batch_id, warehouseID, qty);
+				}else{
+					console.log(197)
+					me.update_erp_batch(batch_no, item_id, warehouseID, qty);
 				}
 			});
 			res.appendTo(this.result);
@@ -218,6 +222,26 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 			},
 			callback: (res)=>{
 				console.log(208, res);
+				if (res.message){
+					me.update_row(res.message, true);
+				}
+			}
+		})
+	}
+
+	update_erp_batch(batch_no, item_id, warehouseID, qty){
+		var me = this;
+		console.log(batch_no, warehouseID, qty);
+		frappe.call({
+			method:"erpnext.stock.page.batch_foms_details.update_erp_batch",
+			args:{
+				batch_no:batch_no,
+				qty:qty,
+				item_id: item_id,
+				warehouseID:warehouseID
+			},
+			callback: (res)=>{
+				console.log(242, res);
 				if (res.message){
 					me.update_row(res.message, true);
 				}

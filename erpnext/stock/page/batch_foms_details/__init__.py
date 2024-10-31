@@ -55,6 +55,9 @@ def get_data(update=False, filters={}):
 		d.foms_qty = d.qtyLeft
 		d.foms_exp = format_date(d.expiryDate)
 		d.batch_no = d.batchRefNo
+		if not d.rawMaterialId:
+			continue 
+
 		if filters.get('hide_empty') and d.foms_qty == 0:
 			continue
 
@@ -83,56 +86,44 @@ def get_data(update=False, filters={}):
 
 @frappe.whitelist()
 def update_foms_batch(batch_no, batch_id, warehouseID, qty):
-	# return {
-	# 	"rawMaterialId": 51,
-	# 	"batchRefNo": "RM-LS-TENBN00001",
-	# 	"dateOfCreation": "2024-10-30T11:19:48.890584",
-	# 	"qtyAdd": 27,
-	# 	"qtyUsed": 0,
-	# 	"qtyReconcilled": 0,
-	# 	"qtyLeft": 0,
-	# 	"unitCost": 0,
-	# 	"quantityUOM": None,
-	# 	"totalCost": 0,
-	# 	"expiryDate": "2025-08-23T00:00:00",
-	# 	"lossRatePercent": 0,
-	# 	"rackNumbers": None,
-	# 	"warehouseName": None,
-	# 	"warehouseId": 37,
-	# 	"warehouseRefId": None,
-	# 	"supplierId": 0,
-	# 	"supplierName": None,
-	# 	"supplierRefId": None,
-	# 	"status": None,
-	# 	"isSeed": False,
-	# 	"id": 287
-	# }
+	print(86, batch_no, batch_id, warehouseID, qty)
 	item_code = frappe.get_value("Batch", batch_no, "item")
 	if item_code:
 		res = _update_foms_batch(batch_id, item_code, warehouseID, qty)
 		return res
 
 @frappe.whitelist()
-def update_erp_batch(batch_no,warehouse,qty,stock_recon="",exp=""):
+def update_erp_batch(batch_no,item_id,warehouseID,qty,batch_data={}, stock_recon="",exp=""):
 	# create batch
 	# add batch
-	exists = stock_recon or frappe.get_value("Stock Reconcilliation", {"reff_id":REFF_ID, "docstatus":0})
+	exists = stock_recon or frappe.get_value("Stock Reconciliation", {"reff_id":REFF_ID, "docstatus":0})
 	if not exists:
-		doc = frappe.new_doc("Stock Reconcilliation")
+		doc = frappe.new_doc("Stock Reconciliation")
 	else:
-		doc = frappe.get_doc("Stock Reconcilliation", exists)
+		doc = frappe.get_doc("Stock Reconciliation", exists)
 
 	item_code = frappe.get_value("Batch", batch_no, "item")
 	if not item_code:
+		item_code = frappe.get_value("Item", {"foms_raw_id":item_id})
+		if not item_code:
+			return {"error":f"Missing Raw material with FOMS ID {item_id}"}
+		
+		batch = frappe.new_doc("Batch")
+		batch.item_code = item_code
+		batch.batch_id = batch_no
+		batch.insert()
 		# can create new batch if item are exists
-		return
-
 	
 	row_exists = doc.get("items", {"batch_no":batch_no})
 	if row_exists:
 		row = row_exists[0]
 	else:
 		row = doc.append("items")
+
+	warehouse = frappe.get_value("Warehouse",{"foms_id": warehouseID})
+
+	if not warehouse:
+		return {"error":f"Missing warehouse with FOMS ID {warehouseID}"}
 
 	row.batch_no = batch_no
 	row.item_code = item_code
