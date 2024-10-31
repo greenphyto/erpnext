@@ -92,9 +92,10 @@
   "asset_received_but_not_billed",
   "manufacturing_settings_section",
   "default_cost_expense_account",
-  "column_break_84",
   "cost_center_for_production",
   "cost_center_for_packing",
+  "column_break_84",
+  "operation_wip_account",
   "exchange_rate_revaluation_settings_section",
   "auto_exchange_rate_revaluation",
   "auto_err_frequency",
@@ -767,6 +768,12 @@
    "fieldtype": "Link",
    "label": "Cost Center for Packing",
    "options": "Cost Center"
+  },
+  {
+   "fieldname": "operation_wip_account",
+   "fieldtype": "Table",
+   "label": "Operation WIP Account",
+   "options": "Operation WIP Account"
   }
  ],
  "icon": "fa fa-building",
@@ -774,7 +781,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2024-10-11 11:38:23.701013",
+ "modified": "2024-10-23 12:17:09.083342",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

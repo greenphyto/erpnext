@@ -21,6 +21,7 @@
   "created_on",
   "raw_data_section",
   "raw_data",
+  "section_break_15",
   "view_in_console"
  ],
  "fields": [
@@ -113,11 +114,15 @@
    "fieldtype": "Datetime",
    "label": "Created On",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_break_15",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-06-14 11:52:07.396456",
+ "modified": "2024-10-29 15:15:54.645609",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Data Mapping",

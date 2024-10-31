@@ -78,12 +78,13 @@ def get_part_number_account_settings():
 	
 	return item_account
 
-def get_item_account(account_map, warehouse, item="", key="account"):
+def get_item_account(account_map, warehouse, item="", key="account", get_default = False):
 	data = None
-	if not warehouse:
+	if not warehouse and not get_default:
 		return None
 	
 	if item and account_map.get(item):
+
 		data = account_map[item].get(key)
 	
 	if not data and warehouse:

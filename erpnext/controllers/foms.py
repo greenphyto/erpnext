@@ -10,6 +10,8 @@ from frappe.core.doctype.sync_log.sync_log import update_success, create_log, de
 import json, math
 from erpnext import get_company_currency, get_default_company
 from bs4 import BeautifulSoup as bs
+from erpnext.stock import get_warehouse_account_map, get_item_account
+
 
 """
 Make Supplier from ERP to FOMS
@@ -30,6 +32,12 @@ OPERATION_MAP_NAME = {
 	1:"Seeding",
 	2:"Transplanting",
 	3:"Harvesting",
+}
+
+OPERATION_MAP_BY_NAME = {
+	"Seeding":1,
+	"Transplanting":2,
+	"Harvesting":3,
 }
 
 # FOMS UOM to ERP UOM
@@ -96,7 +104,28 @@ def get_deleted_document(doctype, docname):
 	
 	return {}
 
+def get_operation_number(operation):
+	return OPERATION_MAP_BY_NAME.get(operation) or 1
 
+def get_previous_operation(operation):
+	cur_no = OPERATION_MAP_BY_NAME.get(operation)
+	if cur_no == 1:
+		return 
+	
+	prev_no = cur_no - 1
+	return OPERATION_MAP_NAME.get(prev_no)
+
+def get_default_wip_account(company):
+	warehouse_account = get_warehouse_account_map(company)
+	return warehouse_account['WIP']
+
+def get_default_expense_production_account(company):
+	expense_account = frappe.get_value("Company", company, "default_cost_expense_account" )
+	if not expense_account:
+		frappe.throw(_("Please set Default Cost Expense Account in {} Company Settings".format(company)))
+
+	return expense_account
+	
 class GetData():
 	def __init__(self, data_type, get_data, get_key_name, post_process, doc_type="", show_progress=False, manual_save_log=False):
 		self.data_type = data_type
@@ -165,11 +194,10 @@ def sync_log(doc, method=""):
 
 	log_name = create_log(doc.doctype, doc.name, method=method_id, doc_method=method)
 
-	if method == "after_insert":
+	try:
 		start_sync_enquee(log_name)
-	else:
-		# start enquee individually, if fail, it will try again with scheduler itself
-		frappe.enqueue("erpnext.controllers.foms.start_sync_enquee", log_name=log_name)
+	except:
+		pass
 	
 def start_sync_enquee(log_name):
 	log = frappe.get_doc("Sync Log", log_name)
@@ -515,9 +543,12 @@ def _update_foms_supplier(log, api=None):
 		supplier = frappe.get_doc("Supplier", log.docname)
 		if cint(supplier.disabled) == 1:
 			return
-		details = get_party_details(supplier.name, party_type="Supplier")
 		farm_id = get_farm_id()
-		address = get_html_text(details.address_display or details.company_address_display or "")
+		address = get_html_text(supplier.primary_address)
+		details = get_party_details(supplier.name, party_type="Supplier")
+		if not address:
+			address = get_html_text(details.address_display or details.company_address_display or "")
+
 		data = {
 			"farmId": farm_id,
 			"id": cint(supplier.foms_id),
@@ -598,7 +629,12 @@ def _update_foms_customer(log, api=None):
 		
 		details = get_party_details(customer.name, party_type="Customer")
 		farm_id = get_farm_id()
-		address = get_html_text(details.address_display or details.company_address_display)
+		
+		address = get_html_text(customer.primary_address)
+		if not address:
+			details = get_party_details(customer.name, party_type="Customer")
+			address = get_html_text(details.address_display or details.company_address_display or "")
+
 		shipping_address = get_html_text(details.get("shipping_address") or address)
 
 		customer_name = customer.customer_name
@@ -1270,99 +1306,6 @@ def get_operation_no(operation):
 	return OPERATION_MAP.get(operation) or 1
 
 def create_bom_products(log, product_id, submit=False, force_new=False):
-	return create_bom_products_version_2(log, product_id, submit, force_new)
-
-# bom created based on 1 operation 1 work order
-# so it will cause 1 operation 1 bom
-# https://b83cw27ro1.larksuite.com/docx/FhH4dGmEZor3z2xQouEuNG9GsKp?from=from_copylink
-def create_bom_products_version_1(log, product_id, submit=False):
-	log = frappe._dict(log)
-	item_name = frappe.get_value("Item", {"foms_product_id":product_id})
-	name = None
-	bom_map = {}
-	# find existing
-	if item_name:
-		# # Pre Harvest Process
-		# if item_name != "PR-AV-GN":
-		# 	return name
-		
-		# join process Preharvest and PostHarvest
-		if "process" in log:
-			all_process = log.process
-		else:
-			all_process = log.preHarvestProcess + log.postHarvestProcess
-		
-		for op in all_process:
-			op = frappe._dict(op)
-			operation_no = get_operation_no(op.processName)
-			bom = None
-			if operation_no in bom_map:
-				bom = bom_map[operation_no]
-				name = bom.name
-				status = bom.docstatus
-			else:
-				name, status = find_existing_bom(item_name, log.productVersionName, operation_no) 
-
-			if not name:
-				bom = frappe.new_doc("BOM")
-				bom.item = item_name
-				bom.operation_no = operation_no
-				bom.foms_recipe_version = log.productVersionName
-
-				bom.with_operations = 1
-				bom.routing = get_routing_name(op.processName)
-
-				if bom.operation_no == 1:
-					bom.is_default = 1
-				else:
-					bom.is_default = 0
-
-				bom.transfer_material_against = "Job Card"
-
-				if not op.productRawMaterial:
-					continue
-
-				for rm in op.productRawMaterial:
-					rm = frappe._dict(rm)
-					row = bom.append("items")
-					row.item_code = rm.rawMaterialRefNo
-					row.uom = get_uom(rm.uomrm)
-					row.qty = rm.qtyrmInKg
-
-				bom.insert()
-				name = bom.name
-			
-			else:
-				if not bom:
-					bom = frappe.get_doc("BOM", name)
-
-				if bom.operation_no == 1:
-					bom.is_default = 1
-				else:
-					bom.is_default = 0
-
-				for rm in op.productRawMaterial:
-					rm = frappe._dict(rm)
-					row = bom.append("items")
-					row.item_code = rm.rawMaterialRefNo
-					row.uom = get_uom(rm.uomrm)
-					row.qty = rm.qtyrmInKg
-
-				bom.save()
-			
-			bom_map[operation_no] = bom
-
-		if submit:
-			for operation_no, bom in bom_map.items():
-				if bom.docstatus == 0:
-					bom.submit()
-	
-	return name
-
-# this is 1 BOM can have 3 operation (multiple operation in 1 bom)
-# so the work order will be just 1 and has 3 job card
-# each job card will be finish each operation one-by-one
-def create_bom_products_version_2(log, product_id, submit=False, force_new=False):
 	log = frappe._dict(log)
 	if not product_id:
 		frappe.throw(_(f"Missing Item with Product ID {product_id}"), frappe.DoesNotExistError)
@@ -1379,16 +1322,13 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 		else:
 			all_process = log.preHarvestProcess + log.postHarvestProcess
 		
-		name, status = find_existing_bom2(item_name, log.productVersionName) 
-
-		if status == 1:
-			frappe.db.set_value("BOM", name, "is_active", 0)
-			force_new = 1
+		name, status = find_existing_bom(item_name, log.productVersionName) 
 
 		if not name or force_new:
 			operation_map = {}
 			bom = frappe.new_doc("BOM")
 			bom.item = item_name
+			bom.is_default = 1
 			bom.foms_recipe_version = log.productVersionName
 			bom.with_operations = 1
 			bom.transfer_material_against = TRANFER_AGAIN
@@ -1435,7 +1375,8 @@ def create_bom_products_version_2(log, product_id, submit=False, force_new=False
 		else:
 			if not bom:
 				bom = frappe.get_doc("BOM", name)
-			bom.save()
+			if status == 0:
+				bom.save()
 
 		if submit and bom:
 			if bom.docstatus == 0:
@@ -1450,15 +1391,7 @@ def get_workstation_name(item_name, operation_name):
 	else:
 		return get_foms_settings("workstation")
 
-def find_existing_bom(item, foms_version, operation_no):
-	return frappe.get_value("BOM", {
-		"item":item, 
-		"foms_recipe_version":foms_version,
-		"operation_no": operation_no,
-		"docstatus":["!=", 2]
-	}, ["name", "docstatus"]) or (None, None)
-
-def find_existing_bom2(item, foms_version):
+def find_existing_bom(item, foms_version):
 	return frappe.get_value("BOM", {
 		"item":item, 
 		"foms_recipe_version":foms_version,
@@ -1498,13 +1431,6 @@ def get_operation_name(operation):
 		name = doc.name
 	
 	return name
-
-def get_bom_for_work_order2(item_code):
-	return frappe.get_value("BOM", {
-		"item":item_code,
-		"operation_no":1,
-		"docstatus":1
-	}, "name", order_by="foms_recipe_version")
 
 def get_bom_for_work_order(item_code):
 	return frappe.get_value("BOM", {

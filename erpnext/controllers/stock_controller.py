@@ -132,7 +132,6 @@ class StockController(AccountsController):
 	def get_gl_entries(
 		self, warehouse_account=None, default_expense_account=None, default_cost_center=None
 	):
-
 		if not warehouse_account:
 			warehouse_account = get_warehouse_account_map(self.company)
 		sle_map = self.get_stock_ledger_details()
@@ -159,6 +158,9 @@ class StockController(AccountsController):
 							expense_account = get_item_account(warehouse_account, warehouse, item_row.item_code)
 						else:
 							expense_account = item_row.expense_account
+
+						if self.purpose == "Manufacture":
+							expense_account = frappe.db.get_value("Company", self.company, "stock_adjustment_account")
 
 						row = self.get_gl_dict(
 							{

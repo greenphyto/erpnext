@@ -12,7 +12,8 @@
   "col_break3",
   "amount",
   "base_amount",
-  "cost_center"
+  "cost_center",
+  "reff_id"
  ],
  "fields": [
   {
@@ -69,12 +70,18 @@
    "fieldtype": "Link",
    "label": "Cost Center",
    "options": "Cost Center"
+  },
+  {
+   "fieldname": "reff_id",
+   "fieldtype": "Data",
+   "label": "Reff ID",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-10-10 15:57:46.028087",
+ "modified": "2024-10-23 16:42:58.330894",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Landed Cost Taxes and Charges",
