@@ -8,7 +8,7 @@
 		<td>
 			<button style="margin-left: 7px;" class="btn  btn-xs btn-add btn-update-foms btn-warning" 
 			 btn-type="foms" batch-id="{{d.id}}" batch-no="{{d.batch_no}}" qty="{{d.erp_qty}}" warehouseID="{{d.warehouseId}}"
-			 item-id="{{d.rawMaterialId}}"
+			 item-id="{{d.rawMaterialId}}" expired-date="{{d.expiryDate}}" 
 			 {% if (d.erp_qty=="" || d.erp_qty==d.foms_qty) %}
 				disabled
 			 {% endif %}
@@ -17,7 +17,7 @@
 			</button>
 			<button style="margin-left: 7px;" class="btn btn-xs btn-add btn-update-erp btn-primary"
 			 btn-type="erp" batch-id="{{d.id}}" batch-no="{{d.batch_no}}" qty="{{d.foms_qty}}" warehouseID="{{d.warehouseId}}"
-			 item-id="{{d.rawMaterialId}}"
+			 item-id="{{d.rawMaterialId}}" expired-date="{{d.expiryDate}}" 
 			 {% if (d.foms_qty=="" || d.erp_qty==d.foms_qty) %}
 				disabled
 			 {% endif %}

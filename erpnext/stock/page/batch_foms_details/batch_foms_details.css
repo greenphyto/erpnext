@@ -17,3 +17,7 @@ button:disabled.btn-add{
     color: #4e4e4e;
     border: 0.5px solid #8b8b8b;
 }
+
+.row-onupdate{
+    opacity: 0.5;
+}

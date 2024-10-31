@@ -51,7 +51,6 @@ frappe.pages['batch-foms-details'].on_page_load = function(wrapper) {
 			var value = this.get_value();
 			var old_value = this.last_value;
 			if (value!=old_value){
-				console.log(this, value, old_value);
 				page.item_dashboard.filters.hide_expired = value;
 				page.item_dashboard.refresh(1);
 			}
@@ -67,7 +66,6 @@ frappe.pages['batch-foms-details'].on_page_load = function(wrapper) {
 			var value = this.get_value();
 			var old_value = this.last_value;
 			if (value!=old_value){
-				console.log(this, value, old_value);
 				page.item_dashboard.filters.hide_empty = value;
 				page.item_dashboard.refresh(0);
 			}
@@ -89,7 +87,6 @@ frappe.pages['batch-foms-details'].on_page_load = function(wrapper) {
 			var value = this.get_value();
 			var old_value = this.last_value;
 			if (value!=old_value){
-				console.log(this, value, old_value);
 				page.item_dashboard.filters.batch_no = value;
 				page.item_dashboard.refresh(0);
 			}
@@ -147,7 +144,6 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 			},
 			callback: function (r) {
 				r = r.message;
-				console.log("Result", r)
 				me.render(r);
 				frappe.show_alert({
 					message:"Refresh complete",
@@ -190,13 +186,18 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 				var batch_id = $(el.target).attr("batch-id");
 				var item_id = $(el.target).attr("item-id");
 				var warehouseID = $(el.target).attr("warehouseID");
+				var expired_date = $(el.target).attr("expired-date");
 				var type_batch = $(el.target).attr("btn-type");
 				if (type_batch=='foms'){
-					console.log(20, this, el);
-					me.update_batch(batch_no,batch_id, warehouseID, qty);
+					me.show_update_progress(el, true);
+					me.update_batch(batch_no,batch_id, warehouseID, qty).then(()=>{
+						me.show_update_progress(el, false);
+					});
 				}else{
-					console.log(197)
-					me.update_erp_batch(batch_no, item_id, warehouseID, qty);
+					me.show_update_progress(el, true);
+					me.update_erp_batch(batch_no,batch_id, item_id, warehouseID, qty, expired_date).then(()=>{
+						me.show_update_progress(el, false);
+					});
 				}
 			});
 			res.appendTo(this.result);
@@ -209,43 +210,58 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 		}
 	}
 
+	show_update_progress(el, start=false){
+		if (start){
+			$(el.currentTarget).addClass("row-onupdate");
+		}else{
+			$(el.currentTarget).removeClass("row-onupdate");
+		}
+	}
+
 	update_batch(batch_no, batch_id, warehouseID, qty){
 		var me = this;
-		console.log(batch_no, warehouseID, qty);
-		frappe.call({
-			method:"erpnext.stock.page.batch_foms_details.update_foms_batch",
-			args:{
-				batch_no:batch_no,
-				batch_id:batch_id,
-				qty:qty,
-				warehouseID:warehouseID
-			},
-			callback: (res)=>{
-				console.log(208, res);
-				if (res.message){
-					me.update_row(res.message, true);
+		return new Promise((resolve)=>{
+			frappe.call({
+				method:"erpnext.stock.page.batch_foms_details.update_foms_batch",
+				args:{
+					batch_no:batch_no,
+					batch_id:batch_id,
+					qty:qty,
+					warehouseID:warehouseID
+				},
+				callback: (res)=>{
+					if (res.message){
+						me.update_row(res.message, true);
+					}
+					resolve()
 				}
-			}
+			})
 		})
 	}
 
-	update_erp_batch(batch_no, item_id, warehouseID, qty){
+	update_erp_batch(batch_no,batch_id, item_id, warehouseID, qty, expired_date){
 		var me = this;
-		console.log(batch_no, warehouseID, qty);
-		frappe.call({
-			method:"erpnext.stock.page.batch_foms_details.update_erp_batch",
-			args:{
-				batch_no:batch_no,
-				qty:qty,
-				item_id: item_id,
-				warehouseID:warehouseID
-			},
-			callback: (res)=>{
-				console.log(242, res);
-				if (res.message){
-					me.update_row(res.message, true);
+		return new Promise((resolve)=>{
+			frappe.call({
+				method:"erpnext.stock.page.batch_foms_details.update_erp_batch",
+				args:{
+					batch_no:batch_no,
+					batch_id:batch_id,
+					qty:qty,
+					item_id: item_id,
+					warehouseID:warehouseID,
+					expired_date:expired_date
+				},
+				callback: (res)=>{
+					if (res.message){
+						me.update_row(res.message, false);
+						if (res.message.stock_recon){
+							me.update_stock_recon(res.message.stock_recon);
+						}
+					}
+					resolve()
 				}
-			}
+			})
 		})
 	}
 
@@ -255,10 +271,12 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 		var row = $(`tr#batchID${result.id}`);
 		row.find("button").attr("disabled", true);
 		if (update_foms){
-			row.find("td.foms-qty").text(result.qtyAdd)
+			row.find("td.foms-qty").text(result.qtyAdd);
+			row.find("td.foms-exp").text( moment(result.expiryDate).format("DD-MM-yyyy") );
 			row.find("button.btn-update-erp").attr("qty", result.qtyAdd)
 		}else{
-			row.find("td.erp-qty").text(result.qty)
+			row.find("td.erp-qty").text(result.qty);
+			row.find("td.erp-exp").text(result.expired_date);
 			row.find("button.btn-update-foms").attr("qty", result.qty)
 		}
 		row.fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
@@ -278,7 +296,11 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 
 	update_stock_recon(stock_recon){
 		var wrapper = $(this.page.parent).find('div[data-fieldname="sr_wrapper"]');
-		wrapper.empty().append(`<div class="draft-recon">Draft Stock Recon: <br><a href="/app/stock-reconciliation/${stock_recon}">${stock_recon}</a></div>`)
+		if (stock_recon){
+			wrapper.empty().append(`<div class="draft-recon">Draft Stock Recon: <br><a href="/app/stock-reconciliation/${stock_recon}">${stock_recon}</a></div>`)
+		}else{
+			wrapper.empty()
+		}
 	}
 
 	get_item_dashboard_data(data, max_count, show_item){

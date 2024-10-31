@@ -11,8 +11,7 @@ def get_data(update=False, filters={}):
 	filters = frappe._dict( json.loads(filters) )
 
 	log_name = frappe.db.exists("FOMS Data Mapping", {"data_name":LOG_DATA_NAME})
-	print("filters", filters)
-	print("Find exist", log_name)
+	non_stock_item = [ d.foms_raw_id for d in frappe.db.get_all("Item", {"is_stock_item":0}, ['foms_raw_id']) ]
 	if filters.hide_expired:
 		non_expired_batch_only = 1
 	else:
@@ -31,12 +30,9 @@ def get_data(update=False, filters={}):
 	else:
 		log = frappe.get_doc("FOMS Data Mapping", log_name)
 	
-	print(26, update, log_name)
 	if not cint(update) and log_name:
-		print("Refresh only")
 		raw_data = log.get_data()
 	else:
-		print("Fetch new data")
 		log = frappe.get_doc("FOMS Data Mapping", log_name)
 		raw_data = api.get_all_batch(active_batch_only=non_expired_batch_only)
 		log.raw_data = json.dumps(raw_data)
@@ -64,6 +60,9 @@ def get_data(update=False, filters={}):
 		if filters.get('batch_no') and filters.batch_no.lower() not in d.batchRefNo.lower() :
 			continue
 
+		if cint(d.rawMaterialId) in non_stock_item:
+			continue
+
 		if d.batch_no in erp_batch:
 			d.erp_batch_missing = False
 			batch = erp_batch.get(d.batch_no)
@@ -75,7 +74,7 @@ def get_data(update=False, filters={}):
 			d.erp_exp = ""
 		data.append(d)
 	
-	stock_recon = "MAT-RECO-2024-00028"
+	stock_recon = frappe.get_value("Stock Reconciliation", {"reff_id":REFF_ID, "docstatus":0})
 
 	result = {
 		"data":data,
@@ -86,16 +85,18 @@ def get_data(update=False, filters={}):
 
 @frappe.whitelist()
 def update_foms_batch(batch_no, batch_id, warehouseID, qty):
-	print(86, batch_no, batch_id, warehouseID, qty)
 	item_code = frappe.get_value("Batch", batch_no, "item")
 	if item_code:
 		res = _update_foms_batch(batch_id, item_code, warehouseID, qty)
 		return res
 
 @frappe.whitelist()
-def update_erp_batch(batch_no,item_id,warehouseID,qty,batch_data={}, stock_recon="",exp=""):
+def update_erp_batch(batch_no,batch_id="",item_id="",warehouseID="",qty=0,expired_date="", stock_recon="",exp=""):
 	# create batch
 	# add batch
+	if expired_date:
+		expired_date = getdate(expired_date)
+	
 	exists = stock_recon or frappe.get_value("Stock Reconciliation", {"reff_id":REFF_ID, "docstatus":0})
 	if not exists:
 		doc = frappe.new_doc("Stock Reconciliation")
@@ -109,8 +110,10 @@ def update_erp_batch(batch_no,item_id,warehouseID,qty,batch_data={}, stock_recon
 			return {"error":f"Missing Raw material with FOMS ID {item_id}"}
 		
 		batch = frappe.new_doc("Batch")
-		batch.item_code = item_code
+		batch.item = item_code
 		batch.batch_id = batch_no
+		batch.foms_id = batch_id
+		batch.expired_date = expired_date
 		batch.insert()
 		# can create new batch if item are exists
 	
@@ -129,8 +132,16 @@ def update_erp_batch(batch_no,item_id,warehouseID,qty,batch_data={}, stock_recon
 	row.item_code = item_code
 	row.warehouse = warehouse
 	row.qty = qty
+	doc.reff_id = REFF_ID
+	doc.purpose = "Stock Reconciliation"
 	doc.save()
 
-	return doc.name
+	return {
+		"stock_recon":doc.name,
+		"batchRefNo":batch_no,
+		"qty":qty,
+		"id":batch_id,
+		"expired_date":expired_date
+	}
 
 	
