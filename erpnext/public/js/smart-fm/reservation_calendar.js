@@ -61,7 +61,11 @@ class FacilityCalendar{
   };
 
   make_new_reservation(){
-    window.location.href = "/menu/facilities-service-reservation/new";
+    if (window.location.pathname.includes("requests")) {
+      window.location.href = "/requests/facilities-service-reservation/new";
+    } else {
+      window.location.href = "/menu/facilities-service-reservation/new";
+    }
   }
 
   filter_facilities(){
