@@ -244,7 +244,7 @@ class PurchaseReceipt(BuyingController):
 	def update_bom_rate(self):
 		if not frappe.db.get_single_value("Manufacturing Settings", "update_bom_rate_as_pr_price"):
 			return
-			
+
 		# save only when any updated rate, if still same => ignore
 		item_list = []
 		item_data = {}
@@ -1172,7 +1172,7 @@ def update_BOM_rate(item_data, item_list):
 		bom.flags.ignore_rate = 1
 		for d in bom.get("items"):
 			temp = item_data.get(d.item_code) or {}
-			new_rate = flt(temp.get("rate")) * 20
+			new_rate = flt(temp.get("rate"))
 			if new_rate:
 				d.rate = new_rate
 
