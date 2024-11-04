@@ -239,6 +239,24 @@ class PurchaseReceipt(BuyingController):
 		self.make_gl_entries()
 		self.repost_future_sle_and_gle()
 		self.set_consumed_qty_in_subcontract_order()
+		self.update_bom_rate()
+	
+	def update_bom_rate(self):
+		# save only when any updated rate, if still same => ignore
+		item_list = []
+		item_data = {}
+		for d in self.get("items"):
+			key = d.item_code
+			if key not in item_list:
+				item_list.append(key)
+				item_data[key] = {
+					"rate":d.rate,
+					"uom": d.uom,
+					"stock_uom": d.stock_uom,
+					"conversion_factor": d.conversion_factor
+				}
+		
+		update_BOM_rate(item_data, item_list)
 
 	def check_next_docstatus(self):
 		submit_rv = frappe.db.sql(
@@ -1130,3 +1148,29 @@ def get_item_account_wise_additional_cost(purchase_document):
 
 def on_doctype_update():
 	frappe.db.add_index("Purchase Receipt", ["supplier", "is_return", "return_against"])
+
+def update_BOM_rate(item_data, item_list):
+	bom_list = frappe.db.sql("""
+		SELECT 
+			i.item_code, b.name, i.uom, i.qty, i.rate
+		FROM
+			`tabBOM Item` i
+				LEFT JOIN
+			`tabBOM` b ON b.name = i.parent
+		WHERE
+			b.is_active = 1 AND b.is_default = 1
+				AND b.docstatus = 1
+				AND i.item_code IN ('RM-NS-NSB' , 'RM-NS-NSA', 'RM-NS-OA', 'RM-SD-SPC')
+		GROUP BY b.name
+	""", as_dict=1, debug=1)
+
+	for b in bom_list:
+		bom = frappe.get_doc("BOM", b.name)
+		bom.flags.ignore_rate = 1
+		for d in bom.get("items"):
+			temp = item_data.get(d.item_code) or {}
+			new_rate = flt(temp.get("rate")) * 20
+			if new_rate:
+				d.rate = new_rate
+
+		bom.update_cost(save=True)
