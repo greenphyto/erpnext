@@ -2,7 +2,7 @@
 frappe.pages['batch-foms-details'].on_page_load = function(wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: __('Batch FOMS Details'),
+		title: __('FOMS Batch Syncing'),
 		single_column: true
 	});
 	page.start = 0;
