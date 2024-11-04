@@ -181,7 +181,7 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 		if (context.data.length > 0) {
 			this.content.find('.result').css('text-align', 'unset');
 			var res = $(frappe.render_template(this.template, context))
-			res.click(".btn-update-foms", function(el){
+			res.on("click", ".btn-add", function(el){
 				var batch_no = $(el.target).attr("batch-no");
 				var qty = $(el.target).attr("qty");
 				var batch_id = $(el.target).attr("batch-id");
