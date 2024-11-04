@@ -27,6 +27,7 @@ def get_data(update=False, filters={}):
 		raw_data = api.get_all_batch(active_batch_only=non_expired_batch_only)
 		log.raw_data = json.dumps(raw_data)
 		log.insert()
+		log_name = log.name
 	else:
 		log = frappe.get_doc("FOMS Data Mapping", log_name)
 	
