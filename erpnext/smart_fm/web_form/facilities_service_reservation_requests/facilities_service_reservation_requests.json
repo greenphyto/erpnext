@@ -25,7 +25,7 @@
  "list_columns": [],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2024-10-29 11:00:27.728185",
+ "modified": "2024-11-05 10:41:10.672795",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "facility-reservation-calendar-requests",
@@ -36,7 +36,7 @@
  "show_attachments": 0,
  "show_list": 1,
  "show_sidebar": 1,
- "title": "Facility Reservation Calendar Requests",
+ "title": "Facilities Service Reservation Requests",
  "web_form_fields": [
   {
    "allow_read_on_all_link_options": 0,
