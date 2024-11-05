@@ -2,6 +2,7 @@ import frappe, json
 from frappe.utils import datetime, now, get_datetime, flt, getdate, format_datetime, format_date, cint
 from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
 from erpnext.controllers.foms import update_foms_batch as _update_foms_batch
+from erpnext.stock.doctype.batch.batch import get_batch_qty
 LOG_DATA_NAME = "Batch FOMS All Data"
 REFF_ID = "FOMS Batch for ERP"
 
@@ -88,8 +89,34 @@ def get_data(update=False, filters={}):
 def update_foms_batch(batch_no, batch_id, warehouseID, qty):
 	item_code = frappe.get_value("Batch", batch_no, "item")
 	if item_code:
-		res = _update_foms_batch(batch_id, item_code, warehouseID, qty)
-		return res
+		batch_qty = get_batch_qty(batch_no=batch_no)
+		if len(batch_qty)==1:
+			batch_qty = batch_qty[0]
+			warehouseID = frappe.get_value("Warehouse", batch_qty['warehouse'], "foms_id")
+			res = _update_foms_batch(batch_no, item_code, warehouseID, qty, batch_id=batch_id)
+			return res
+		else:
+			default_wip = frappe.db.get_single_value("Manufacturing Settings", "default_wip_warehouse")
+			warehouse_issue = []
+			for d in batch_qty:
+				# ignore WIP warehouse
+				if d['warehouse'] != default_wip:
+					warehouse_issue.append(d)
+			
+			if len(warehouse_issue) == 1:
+				batch_qty = warehouse_issue[0]
+				warehouseID = frappe.get_value("Warehouse", batch_qty['warehouse'], "foms_id")
+				res = _update_foms_batch(batch_no, item_code, warehouseID, qty, batch_id=batch_id)
+				# If found multiple warehouse (ousite WIP) send warning
+				return res
+			else:
+				return {
+					"error":f"Multiple warehouse found for Batch {batch_no}, please resolve manually",
+					"report_filter":{
+						"batch_no":batch_no,
+						"item_code":item_code
+					}
+				}
 
 @frappe.whitelist()
 def update_erp_batch(batch_no,batch_id="",item_id="",warehouseID="",qty=0,expired_date="", stock_recon="",exp=""):

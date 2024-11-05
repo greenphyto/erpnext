@@ -232,7 +232,21 @@ erpnext.stock.BatchFOMS = class BatchFOMS {
 				},
 				callback: (res)=>{
 					if (res.message){
-						me.update_row(res.message, true);
+						res = res.message;
+						if (res.error){
+							frappe.confirm(res.error,
+								function(){ 
+									frappe.set_route('query-report', "Batch-Wise Balance History", res.report_filter);
+								},
+								function(){ 
+									
+								}
+							)
+
+							console.log(res.error);
+						}else{
+							me.update_row(res, true);
+						}
 					}
 					resolve()
 				}

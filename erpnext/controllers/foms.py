@@ -855,16 +855,14 @@ def sync_sle(doc, method=""):
 	qty = frappe.get_value("Batch", doc.batch_no, "batch_qty")
 	update_foms_batch(doc.batch_no, doc.item_code, doc.warehouse, qty)
 
-def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False, expiry_date=""):
-	print(823, batch_no, item_code, warehouse, qty)
+def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False, expiry_date="", batch_id=0):
 	item_id = frappe.get_value("Item", item_code, "foms_raw_id")
-	print(item_id, item_code)
 	if not item_id:
 		# not raw material
 		return
 	
 	api = FomsAPI()
-	batch_id = cint(batch_no) or frappe.get_value("Batch", batch_no, "foms_id")
+	batch_id = cint(batch_id) or frappe.get_value("Batch", batch_no, "foms_id")
 	batch_exp = expiry_date or frappe.get_value("Batch", batch_no, "expiry_date")
 	warehouse_id = cint(warehouse) or frappe.get_value("Warehouse", warehouse, "foms_id")
 	data = {
@@ -889,7 +887,6 @@ def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False, expiry
 	if not batch_id:
 		# create new batch
 		res = api.update_raw_material_batch_qty(data)
-		print(855, res, data)
 		if res:
 			batch_id = res.get("id")
 			if batch_id:
