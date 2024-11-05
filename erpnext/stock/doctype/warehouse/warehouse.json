@@ -279,29 +279,34 @@
    "read_only": 1
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "rack_details_section",
    "fieldtype": "Section Break",
    "label": "Rack Details"
   },
   {
+   "allow_in_quick_entry": 1,
    "description": "<b>A-Z</b> column",
    "fieldname": "row_no",
    "fieldtype": "Data",
    "label": "Row No"
   },
   {
+   "allow_in_quick_entry": 1,
    "description": "<b>A-Z</b>",
    "fieldname": "level_no",
    "fieldtype": "Data",
    "label": "Level No"
   },
   {
+   "allow_in_quick_entry": 1,
    "description": "<b>1-99</b>",
    "fieldname": "lane_no",
    "fieldtype": "Data",
    "label": "Lane No"
   },
   {
+   "allow_in_quick_entry": 1,
    "description": "Store locator: <b>Main (1), Cold room (2), Sub-store (3)</b>\n\n",
    "fieldname": "store",
    "fieldtype": "Select",
@@ -309,16 +314,19 @@
    "options": "\n1\n2\n3"
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "column_break_18",
    "fieldtype": "Column Break"
   },
   {
+   "allow_in_quick_entry": 1,
    "description": "Visual aid",
    "fieldname": "colour",
    "fieldtype": "Color",
    "label": "Colour"
   },
   {
+   "allow_in_quick_entry": 1,
    "description": "Position: <b>Left (1), Middle (2), Right (3)</b>",
    "fieldname": "position",
    "fieldtype": "Select",
@@ -330,7 +338,7 @@
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-09-30 11:47:14.364757",
+ "modified": "2024-11-05 11:03:30.551049",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Warehouse",
