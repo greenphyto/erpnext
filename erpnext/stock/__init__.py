@@ -105,7 +105,7 @@ def get_item_account(account_map, warehouse, item="", key="account", get_default
 	# special for WIP account
 	if "WIP" in account_map:
 		wip_warehouse = account_map['WIP']['wip_warehouse']
-		if wip_warehouse == warehouse:
+		if wip_warehouse == warehouse or warehouse == "WIP":
 			if operation:
 				dt = account_map['WIP'].get(operation)
 				if dt:

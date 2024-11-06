@@ -140,7 +140,7 @@ class StockController(AccountsController):
 		gl_list = []
 		warehouse_with_no_account = []
 		precision = self.get_debit_field_precision()
-		operation = None or self.get("operation")
+		operation = self.get("operation")
 		for item_row in voucher_details:
 			sle_list = sle_map.get(item_row.name)
 			sle_rounding_diff = 0.0
@@ -203,7 +203,6 @@ class StockController(AccountsController):
 					warehouse_asset_account = get_item_account(warehouse_account, item_row.get("warehouse"), item_row.item_code, operation=operation)
 
 				expense_account = frappe.get_cached_value("Company", self.company, "default_expense_account")
-
 				gl_list.append(
 					self.get_gl_dict(
 						{

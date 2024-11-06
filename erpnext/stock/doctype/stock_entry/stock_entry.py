@@ -1268,8 +1268,7 @@ class StockEntry(StockEntryAsset, StockController):
 			
 			# if item not set so do additional cost only
 			if not item_account_wise_additional_cost:
-				temp = get_default_wip_account(self.company) or {}
-				wip_account = temp.get("account")
+				wip_account = get_item_account(warehouse_account, "WIP", None, get_default=1, operation=self.operation)
 				gl_entries.append(
 					self.get_gl_dict(
 						{
@@ -1353,7 +1352,7 @@ class StockEntry(StockEntryAsset, StockController):
 				if prev_wip.name:
 					cost_center = get_cost_center(self.operation, self.company)
 					expense_account = prev_wip.account
-					variance_account = get_default_expense_production_account(self.company)
+					variance_account = get_item_account(warehouse_account, "WIP", None, get_default=1, operation=self.operation)
 
 					# cheange remarks
 					for d in gl_entries:
@@ -1366,7 +1365,7 @@ class StockEntry(StockEntryAsset, StockController):
 							"against": variance_account,
 							"cost_center": cost_center,
 							"remarks": "From Previous WIP",
-							"debit": prev_wip.debit,  # put it as negative credit instead of debit purposefully
+							"debit": -1*prev_wip.debit,  # put it as negative credit instead of debit purposefully
 							"do_not_merge":1
 						},
 					)
@@ -1378,7 +1377,7 @@ class StockEntry(StockEntryAsset, StockController):
 							"against": expense_account,
 							"cost_center": cost_center,
 							"remarks": "From Previous WIP",
-							"debit": -1* prev_wip.debit,  # put it as negative credit instead of debit purposefully
+							"debit": 1* prev_wip.debit,  # put it as negative credit instead of debit purposefully
 							"do_not_merge":0
 						},
 					)
