@@ -741,7 +741,6 @@ class StockEntry(StockEntryAsset, StockController):
 		for d in self.get("items"):
 			if d.s_warehouse or d.set_basic_rate_manually:
 				continue
-
 			if d.allow_zero_valuation_rate:
 				d.basic_rate = 0.0
 			elif d.is_finished_item:
@@ -779,7 +778,8 @@ class StockEntry(StockEntryAsset, StockController):
 					args = self.get_args_for_incoming_rate(d)
 					rate = get_incoming_rate(args, raise_error_if_no_rate)
 					if rate > 0:
-						d.basic_rate = rate
+						if not d.set_basic_rate_manually or not d.basic_rate:
+							d.basic_rate = rate
 
 				d.basic_amount = flt(flt(d.transfer_qty) * flt(d.basic_rate), d.precision("basic_amount"))
 				if not d.t_warehouse:
