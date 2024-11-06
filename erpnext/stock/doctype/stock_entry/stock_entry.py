@@ -1385,7 +1385,11 @@ class StockEntry(StockEntryAsset, StockController):
 
 					gl_entries.append(row)
 
+
 		result = process_gl_map(gl_entries, merge_entries=1)
+
+		# for d in result:
+		# 	print(1392, d.account, d.debit, d.credit, d.remarks)
 
 		return result
 
