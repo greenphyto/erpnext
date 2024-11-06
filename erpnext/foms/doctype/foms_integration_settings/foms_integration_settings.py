@@ -395,7 +395,6 @@ class FomsAPI():
 	
 	def update_raw_material_batch_qty(self, data):
 		data = self.convert_data(data)
-		print(393, data)
 		res = self.req("POST", "/userportal/RawMaterialUP/CreateOrUpdateRawMaterialBatch", data=data)
 
 		return res
