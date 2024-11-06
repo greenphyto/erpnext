@@ -172,6 +172,7 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 
 	company = company or erpnext.get_default_company()
 	cost_center = get_cost_center(operation_name, company)
+	bom = frappe.get_doc("BOM", se.bom_no)
 
 	for d in materials:
 		d = frappe._dict(d)
@@ -192,7 +193,6 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		original_item = None
 		if item_code in overide_item:
 			is_overide_item = True
-			# qty_conversion = overide_item[item_code]['cf']
 			uom = overide_item[item_code]['uom']
 			original_item = cstr(item_code)
 			item_code = overide_item[item_code]['item']
@@ -213,6 +213,12 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		row.qty = qty
 		row.uom = uom
 		row.batch_no = batch_no
+		basic_rate = 0
+		for m in bom.get("items"):
+			if (m.item_code == item_code or m.item_code == original_item) and m.operation == operation_name:
+				basic_rate = m.rate
+		row.basic_rate = basic_rate
+		row.set_basic_rate_manually = 1
 	
 	if missing_warehouse:
 		warn = ", ".join(list(set(missing_warehouse)))
