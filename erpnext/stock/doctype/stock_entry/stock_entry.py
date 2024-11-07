@@ -1979,13 +1979,17 @@ class StockEntry(StockEntryAsset, StockController):
 			as_dict=1,
 		)
 
+		single_complete = frappe.db.get_single_value(
+			"Manufacturing Settings", "allow_single_completed_work_order"
+		)
+
 		for key, row in available_materials.items():
 			remaining_qty_to_produce = flt(wo_data.trans_qty) - flt(wo_data.produced_qty)
 			if remaining_qty_to_produce <= 0 and not self.is_return:
 				continue
 
 			qty = flt(row.qty)
-			if not self.is_return:
+			if not self.is_return and not single_complete:
 				qty = (flt(row.qty) * flt(self.fg_completed_qty)) / remaining_qty_to_produce
 
 			item = row.item_details
