@@ -368,11 +368,11 @@ doc_events = {
         "on_trash": "erpnext.assets.doctype.asset.asset.asset_trigger",
 	},
 	"Supplier":{
-        "validate":"erpnext.controllers.foms.sync_log",
+        "on_update":"erpnext.controllers.foms.sync_log",
         "after_delete":"erpnext.controllers.foms.sync_log",
 	},
     "Customer":{
-        "validate":"erpnext.controllers.foms.sync_log",
+        "on_update":"erpnext.controllers.foms.sync_log",
         "after_delete":"erpnext.controllers.foms.sync_log",
 	},
     "Warehouse":{
