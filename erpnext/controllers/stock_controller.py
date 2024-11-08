@@ -159,13 +159,17 @@ class StockController(AccountsController):
 						else:
 							expense_account = item_row.expense_account
 
+						item_account = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, operation=operation)
+						item_account_currency = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency", operation=operation)
 						if self.purpose == "Manufacture":
 							expense_account = frappe.db.get_value("Company", self.company, "stock_adjustment_account")
+							item_account = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, operation="Harvesting")
+							item_account_currency = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency", operation="Harvesting")
 
 						# here
 						row = self.get_gl_dict(
 							{
-								"account": get_item_account(warehouse_account, sle.warehouse, item_row.item_code, operation=operation),
+								"account": item_account,
 								"against": expense_account,
 								"cost_center": item_row.cost_center,
 								"project": item_row.project or self.get("project"),
@@ -173,7 +177,7 @@ class StockController(AccountsController):
 								"debit": flt(sle.stock_value_difference, precision),
 								"is_opening": item_row.get("is_opening") or self.get("is_opening") or "No",
 							},
-							get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency", operation=operation),
+							item_account_currency,
 							item=item_row,
 						)
 						gl_list.append(row)
@@ -181,7 +185,7 @@ class StockController(AccountsController):
 						row = self.get_gl_dict(
 							{
 								"account": expense_account,
-								"against": get_item_account(warehouse_account, sle.warehouse, item_row.item_code, operation=operation),
+								"against": item_account,
 								"cost_center": item_row.cost_center,
 								"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
 								"debit": -1 * flt(sle.stock_value_difference, precision),

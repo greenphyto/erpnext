@@ -108,12 +108,15 @@ def get_operation_number(operation):
 	return OPERATION_MAP_BY_NAME.get(operation) or 1
 
 def get_previous_operation(operation):
-	cur_no = OPERATION_MAP_BY_NAME.get(operation)
-	if cur_no == 1:
-		return 
-	
-	prev_no = cur_no - 1
-	return OPERATION_MAP_NAME.get(prev_no)
+	if operation == "Manufacture":
+		return OPERATION_MAP_NAME.get(3)
+	else:
+		cur_no = OPERATION_MAP_BY_NAME.get(operation)
+		if cur_no == 1:
+			return 
+		
+		prev_no = cur_no - 1
+		return OPERATION_MAP_NAME.get(prev_no)
 
 def get_default_wip_account(company):
 	warehouse_account = get_warehouse_account_map(company)

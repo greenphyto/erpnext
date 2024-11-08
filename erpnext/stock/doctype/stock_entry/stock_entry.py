@@ -1332,8 +1332,8 @@ class StockEntry(StockEntryAsset, StockController):
 
 		# special case for Work Order Greenphyto
 		# reference doc: costs variance for work order v1.xlxs
-		if self.purpose == 'Material Transfer for Manufacture':
-			prev_operation = get_previous_operation(self.operation)
+		if self.purpose in ('Material Transfer for Manufacture', "Manufacture"):
+			prev_operation = get_previous_operation(self.operation or self.purpose)
 			prev_wip = frappe.db.sql("""
 				SELECT 
 					gl.name, s.name AS se_name, sum(gl.debit) as debit, sum(gl.credit) as credit, gl.account
@@ -1352,8 +1352,32 @@ class StockEntry(StockEntryAsset, StockController):
 				if prev_wip.name:
 					cost_center = get_cost_center(self.operation, self.company)
 					expense_account = prev_wip.account
-					variance_account = get_item_account(warehouse_account, "WIP", None, get_default=1, operation=self.operation)
-
+					debit_amount = prev_wip.debit
+					if self.purpose == 'Material Transfer for Manufacture':
+						variance_account = get_item_account(warehouse_account, "WIP", None, get_default=1, operation=self.operation)
+					elif self.purpose == "Manufacture":
+						data = frappe.db.sql("""
+							SELECT 
+								se.name AS stock_entry,
+								se.work_order,
+								SUM(i.amount) AS amount,
+								SUM(i.base_amount) AS base_amount
+							FROM
+								`tabLanded Cost Taxes and Charges` i
+									LEFT JOIN
+								`tabStock Entry` se ON se.name = i.parent
+							WHERE
+								se.docstatus = 1
+									AND se.purpose = 'Material Transfer for Manufacture'
+									AND se.work_order = %s
+						""", (self.work_order), as_dict=1)
+						data = data[0]
+						debit_amount = data.get("base_amount")
+						finish_item = self.get("items", {"is_finished_item":1})
+						if finish_item:
+							finish_item = finish_item[0].item_code
+						variance_account = get_item_account(warehouse_account, finish_item, None, get_default=1, operation="")
+					
 					# cheange remarks
 					for d in gl_entries:
 						if d.account == variance_account:
@@ -1365,7 +1389,7 @@ class StockEntry(StockEntryAsset, StockController):
 							"against": variance_account,
 							"cost_center": cost_center,
 							"remarks": "From Previous WIP",
-							"debit": -1*prev_wip.debit,  # put it as negative credit instead of debit purposefully
+							"debit": -1*debit_amount,  # put it as negative credit instead of debit purposefully
 							"do_not_merge":1
 						},
 					)
@@ -1377,7 +1401,7 @@ class StockEntry(StockEntryAsset, StockController):
 							"against": expense_account,
 							"cost_center": cost_center,
 							"remarks": "From Previous WIP",
-							"debit": 1* prev_wip.debit,  # put it as negative credit instead of debit purposefully
+							"debit": 1* debit_amount,  # put it as negative credit instead of debit purposefully
 							"do_not_merge":0
 						},
 					)
