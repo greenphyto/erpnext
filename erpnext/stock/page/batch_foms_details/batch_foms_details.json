@@ -1,0 +1,41 @@
+{
+ "content": null,
+ "creation": "2024-10-15 16:03:41.487595",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2024-11-04 11:23:52.596243",
+ "modified_by": "Administrator",
+ "module": "Stock",
+ "name": "batch-foms-details",
+ "owner": "Administrator",
+ "page_name": "batch-foms-details",
+ "roles": [
+  {
+   "role": "Stock Manager"
+  },
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Manufacturing Manager"
+  },
+  {
+   "role": "Manufacturing User"
+  },
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "System Manager"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "FOMS Batch Syncing"
+}

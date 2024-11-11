@@ -21,6 +21,7 @@
   "created_on",
   "raw_data_section",
   "raw_data",
+  "section_break_15",
   "view_in_console"
  ],
  "fields": [
@@ -48,19 +49,17 @@
   },
   {
    "fieldname": "doc_type",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Doc Type",
-   "options": "DocType"
+   "label": "Doc Type"
   },
   {
    "fieldname": "doc_name",
-   "fieldtype": "Dynamic Link",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Doc Name",
-   "options": "doc_type"
+   "label": "Doc Name"
   },
   {
    "fieldname": "section_break_8",
@@ -115,11 +114,15 @@
    "fieldtype": "Datetime",
    "label": "Created On",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_break_15",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-30 15:22:48.703258",
+ "modified": "2024-10-29 15:15:54.645609",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Data Mapping",

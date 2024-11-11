@@ -74,7 +74,7 @@ erpnext.stock.StockController = class StockController extends frappe.ui.form.Con
 					from_date: me.frm.doc.posting_date,
 					to_date: moment(me.frm.doc.modified).format('YYYY-MM-DD'),
 					company: me.frm.doc.company,
-					group_by: "Group by Voucher (Consolidated)",
+					group_by: "",
 					show_cancelled_entries: me.frm.doc.docstatus === 2
 				};
 				frappe.set_route("query-report", "General Ledger");

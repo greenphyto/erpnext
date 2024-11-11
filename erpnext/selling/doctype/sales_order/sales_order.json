@@ -169,7 +169,8 @@
   "column_break_152",
   "inter_company_order_reference",
   "party_account_currency",
-  "connections_tab"
+  "connections_tab",
+  "request_no"
  ],
  "fields": [
   {
@@ -1647,18 +1648,25 @@
    "label": "Non Package Item"
   },
   {
-   "default": "0",
-   "fieldname": "on_progress",
-   "fieldtype": "Check",
-   "label": "On Progress",
-   "read_only": 1
-  },
-  {
    "fieldname": "per_working",
    "fieldtype": "Percent",
    "label": "Working Status",
    "no_copy": 1,
    "options": "\nStarted\nHold\nFinished",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "on_progress",
+   "fieldtype": "Check",
+   "label": "On Progress",
+   "read_only": 1
+   },
+   {
+   "fieldname": "request_no",
+   "fieldtype": "Link",
+   "label": "Request No",
+   "options": "Request",
    "read_only": 1
   },
   {

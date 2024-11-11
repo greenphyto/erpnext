@@ -179,7 +179,7 @@ def merge_similar_entries(gl_map, precision=None):
 		# if there is already an entry in this account then just add it
 		# to that entry
 		same_head = check_if_in_list(entry, merged_gl_map, accounting_dimensions)
-		if same_head:
+		if same_head and not entry.do_not_merge:
 			same_head.debit = flt(same_head.debit) + flt(entry.debit)
 			same_head.debit_in_account_currency = flt(same_head.debit_in_account_currency) + flt(
 				entry.debit_in_account_currency

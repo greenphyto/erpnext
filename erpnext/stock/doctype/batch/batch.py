@@ -135,10 +135,10 @@ class Batch(Document):
 	def before_save(self):
 		has_expiry_date, shelf_life_in_days = frappe.db.get_value(
 			"Item", self.item, ["has_expiry_date", "shelf_life_in_days"]
-		)
+		) or (0, None)
 		if not self.expiry_date and has_expiry_date and shelf_life_in_days:
 			self.expiry_date = add_days(self.manufacturing_date, shelf_life_in_days)
-
+		
 		if has_expiry_date and not self.expiry_date:
 			frappe.throw(
 				msg=_("Please set {0} for Batched Item {1}, which is used to set {2} on Submit.").format(
@@ -272,7 +272,7 @@ def set_batch_nos(doc, warehouse_field, throw=False, child_table="items"):
 				if flt(batch_qty, d.precision("qty")) < flt(qty, d.precision("qty")):
 					frappe.throw(
 						_(
-							"Row #{0}: The batch {1} has only {2} qty. Please select another batch which has {3} qty available or split the row into multiple rows, to deliver/issue from multiple batches"
+							"Row #{0}: The batch {1} has only {2} qty. Please select another batch which has {3} qty available."
 						).format(d.idx, d.batch_no, batch_qty, qty)
 					)
 

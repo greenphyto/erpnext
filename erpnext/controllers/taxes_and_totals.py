@@ -573,8 +573,15 @@ class calculate_taxes_and_totals(object):
 		if self.doc.meta.get_field("total_net_weight"):
 			self.doc.total_net_weight = 0.0
 			for d in self.doc.items:
-				if d.total_weight:
-					self.doc.total_net_weight += d.total_weight
+				default_weight_per_unit = frappe.get_value("Item", "weight_per_unit") or 1
+				if self.doc.doctype == "Sales Order":
+					d.weight_per_unit = frappe.get_value("Packaging", d.uom, "total_weight") 
+				if not d.weight_per_unit:
+					d.weight_per_unit = default_weight_per_unit
+
+				weight = flt(d.get("weight_per_unit"))
+				d.total_weight = weight * d.qty
+				self.doc.total_net_weight += d.total_weight
 
 	def set_rounded_total(self):
 		if self.doc.get("is_consolidated") and self.doc.get("rounding_adjustment"):

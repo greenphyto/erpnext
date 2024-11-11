@@ -10,7 +10,8 @@
  "field_order": [
   "enabled",
   "uom_name",
-  "must_be_whole_number"
+  "must_be_whole_number",
+  "is_packaging"
  ],
  "fields": [
   {
@@ -35,12 +36,18 @@
    "fieldname": "enabled",
    "fieldtype": "Check",
    "label": "Enabled"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_packaging",
+   "fieldtype": "Check",
+   "label": "Is Packaging"
   }
  ],
  "icon": "fa fa-compass",
  "idx": 1,
  "links": [],
- "modified": "2021-10-18 14:07:43.722144",
+ "modified": "2024-08-05 10:56:13.120160",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "UOM",
@@ -78,5 +85,6 @@
  "quick_entry": 1,
  "show_name_in_global_search": 1,
  "sort_field": "modified",
- "sort_order": "ASC"
+ "sort_order": "ASC",
+ "states": []
 }

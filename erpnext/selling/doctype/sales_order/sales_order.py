@@ -74,6 +74,39 @@ class SalesOrder(SellingController):
 
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
 
+	def before_validate(self):
+		self.validate_packaging()
+
+	def validate_packaging(self):
+		for d in self.get("items"):
+			pass
+
+	def validate_working_progress(self, throw=False):
+		progress = False
+		for d in self.get("items"):
+			if d.get("lot_id"):
+				if throw:
+					frappe.throw(_(f"Cannot cancel {self.name} because already working in progress"))
+				return True
+		return False
+
+	def update_work_order_reference(self, wo_no, item):
+		for d in self.get("items"):
+			if d.item_code == item:
+				d.lot_id = wo_no
+				d.db_update()
+		self.on_progress = 1
+	
+	def update_work_progress(self, item, qty):
+		per_working = 0
+		for d in self.get("items"):
+			if d.item_code == item:
+				per_working += 1
+				d.work_order_qty = qty
+				d.db_update()
+		
+		self.per_working = per_working/len(self.items)*100
+
 	def validate_po(self):
 		# validate p.o date v/s delivery date
 		if self.pending_po:
@@ -249,7 +282,9 @@ class SalesOrder(SellingController):
 		if self.status == "Closed":
 			frappe.throw(_("Closed order cannot be cancelled. Unclose to cancel."))
 
+		self.check_work_order()
 		self.check_nextdoc_docstatus()
+		self.validate_working_progress(throw=1)
 		self.update_reserved_qty()
 		self.update_project()
 		self.update_prevdoc_status("cancel")
@@ -263,6 +298,15 @@ class SalesOrder(SellingController):
 			from erpnext.accounts.doctype.pricing_rule.utils import update_coupon_code_count
 
 			update_coupon_code_count(self.coupon_code, "cancelled")
+
+	def check_work_order(self):
+		wo_list = frappe.db.get_list("Work Order", {
+			"sales_order_no":['like', "%%"+self.name+"%%"],
+			"docstatus":1
+		})
+		if wo_list:
+			wo_str = ", ".join([x.name for x in wo_list])
+			frappe.throw(_(f"Cannot cancel Sales Order {self.name} becuase already linked to Work Order {wo_str}"))
 
 	def update_project(self):
 		if (
@@ -645,7 +689,7 @@ def make_project(source_name, target_doc=None):
 
 	return doc
 
-
+from erpnext.accounts.custom.address import get_customer_shipping_address
 @frappe.whitelist()
 def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 	def set_missing_values(source, target):
@@ -658,6 +702,11 @@ def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 		else:
 			# set company address
 			target.update(get_company_address(target.company))
+		
+		target.shipping_address_name = source.shipping_address_name
+		if not target.shipping_address_name:
+			cust_address = get_customer_shipping_address(source.customer)
+			target.update({"shipping_address_name":cust_address.get("name")})
 
 		if target.company_address:
 			target.update(get_fetch_values("Delivery Note", "company_address", target.company_address))
@@ -1242,6 +1291,24 @@ def make_raw_material_request(items, company, sales_order, project=None):
 
 
 @frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_packaging_available(doctype, txt, searchfield, start, page_len, filters):
+	item = filters.get("item")
+	if txt:
+		text = " and packaging like {} ".format(frappe.db.escape("%{0}%".format(txt)))
+	else:
+		text = ""
+	query = """select packaging from `tabPackaging List Available`
+			where parent = {item}
+			{txt}""".format(
+		txt=text,
+		item=frappe.db.escape(item)
+	)
+
+	res = frappe.db.sql(query, filters, debug=1, as_list = 1)
+	return res
+
+@frappe.whitelist()
 def make_inter_company_purchase_order(source_name, target_doc=None):
 	from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_inter_company_transaction
 
@@ -1300,7 +1367,15 @@ def create_pick_list(source_name, target_doc=None):
 		target_doc,
 	)
 
+	for d in list(doc.locations):
+		if not d.item_code:
+			doc.remove(d)
+
 	doc.purpose = "Delivery"
+
+	for d in list(doc.get("locations")):
+		if not d.item_code:
+			doc.remove(d)
 
 	doc.set_item_locations()
 

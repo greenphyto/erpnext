@@ -18,8 +18,6 @@ from erpnext.accounts.party import (  # noqa
 	validate_party_accounts,
 )
 from erpnext.utilities.transaction_base import TransactionBase
-from frappe.core.doctype.sync_log.sync_log import create_log
-
 
 class Supplier(TransactionBase):
 	def get_feed(self):
@@ -95,7 +93,10 @@ class Supplier(TransactionBase):
 
 		validate_party_accounts(self)
 		self.validate_internal_supplier()
-		create_log(self.doctype, self.name)
+
+	def after_insert(self):
+		self.validate_item_supplier(after_insert=1)
+
 
 	@frappe.whitelist()
 	def get_supplier_group_details(self):
@@ -173,7 +174,8 @@ class Supplier(TransactionBase):
 			)
 
 		delete_contact_and_address("Supplier", self.name)
-		create_log(self.doctype, self.name, "Delete")
+
+		frappe.db.sql("delete from `tabParty Specific Item` where party_type = 'Supplier' and party = %s ", (self.name))
 
 	def after_rename(self, olddn, newdn, merge=False):
 		if frappe.defaults.get_global_default("supp_master_name") == "Supplier Name":
@@ -184,6 +186,52 @@ class Supplier(TransactionBase):
 		next_series = get_exists_series(self.supplier_code_series)
 		if next_series == self.supplier_code:
 			parse_naming_series(self.supplier_code_series, doc=self)
+
+	def validate_item_supplier(self, after_insert=False):
+		# create/delete Party Specific Item
+		def process(value, typ="Add"):
+			data = {
+				"party_type":"Supplier",
+				"party":self.name,
+				"restrict_based_on":"Item",
+				"based_on_value":value
+			}
+			exist = frappe.db.exists("Party Specific Item", data)
+			if typ == "Add":
+				if exist:
+					return exist
+				else:
+					doc = frappe.new_doc("Party Specific Item")
+					doc.update(data)
+					doc.insert(ignore_permissions=1)
+					return doc.name
+			else:
+				if not exist:
+					return
+				else:
+					frappe.delete_doc("Party Specific Item", exist)
+		old_doc = self.get_doc_before_save()
+		if not old_doc:
+			if after_insert and self.enable_item_supplier:
+				for d in self.get("item_supplier"):
+					process(d.item_code, "Add")
+			return
+		
+		old_list = [x.item_code for x in old_doc.get("item_supplier")]
+
+		cur_list = []
+		for d in self.get("item_supplier"):
+			cur_list.append(d.item_code)
+			if not self.enable_item_supplier:
+				process(d.item_code, "Delete")
+			else:
+				process(d.item_code, "Add")
+
+		if self.enable_item_supplier:
+			for d in old_doc.get("item_supplier"):
+				if d.item_code not in cur_list:
+					process(d.item_code, "Delete")
+				
 
 @frappe.whitelist()
 def get_exists_series(series, doctype="", name="", field_series="", field_code=""):

@@ -130,15 +130,18 @@ def get_columns(filters):
 				"label": _("In Qty"),
 				"fieldname": "in_qty",
 				"fieldtype": "Float",
-				"width": 80,
+				"width": 100,
 				"convertible": "qty",
+				"precision":7
 			},
 			{
 				"label": _("Out Qty"),
 				"fieldname": "out_qty",
 				"fieldtype": "Float",
-				"width": 80,
+				"width": 100,
 				"convertible": "qty",
+				"precision":7
+
 			},
 			{
 				"label": _("Balance Qty"),
@@ -146,6 +149,7 @@ def get_columns(filters):
 				"fieldtype": "Float",
 				"width": 100,
 				"convertible": "qty",
+				"precision":7
 			},
 			{
 				"label": _("Voucher #"),

@@ -250,6 +250,7 @@
   {
    "depends_on": "eval:doc.uom != doc.stock_uom",
    "fieldname": "conversion_factor",
+   "precision": "7",
    "fieldtype": "Float",
    "label": "UOM Conversion Factor",
    "oldfieldname": "conversion_factor",

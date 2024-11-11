@@ -44,18 +44,65 @@ frappe.ui.form.on("Sales Order", {
 			}
 		});
 
+		frm.set_query("package", "items", function(doc, cdt, cdn) {
+			var row = locals[cdt][cdn];
+			if (!row.item_code){
+				frappe.throw(__("Select item first"))
+			}
+			return {
+				filters: {
+					"item": row.item_code
+				},
+				query:"erpnext.selling.doctype.sales_order.sales_order.get_packaging_available"
+			}
+		});
+
+		frm.set_query("uom", "items", function(doc, cdt, cdn) {
+			var row = locals[cdt][cdn];
+			if (!row.item_code) frappe.throw(__("Please select Item"));
+			var args =  erpnext.queries.uom({
+				"parent": row.item_code,
+				"is_packaging": doc.non_package_item? 0 : 1
+			})
+
+			return args;
+		});
+
 		frm.set_df_property('packed_items', 'cannot_add_rows', true);
 		frm.set_df_property('packed_items', 'cannot_delete_rows', true);
 	},
 	refresh: function(frm) {
+		var item_query = function(row) {
+			var filters = {"is_stock_item": 1, "is_fixed_asset": 0}
+			if (frm.doc.non_package_item){
+				filters['is_package_item']=0;
+			}else{
+				filters['is_package_item']=1;
+			}
+			return erpnext.queries.item(filters);
+		};
+
+		var uom_query = function(row) {
+			var doc = frm.doc;
+			if (!row.item_code) frappe.throw(__("Please select Item"));
+			var args =  erpnext.queries.uom({
+				"parent": row.item_code,
+				"is_packaging": doc.non_package_item? 0 : 1
+			})
+
+			return args;
+		}
+
 		if(frm.doc.docstatus === 1 && frm.doc.status !== 'Closed'
-			&& flt(frm.doc.per_delivered, 6) < 100 && flt(frm.doc.per_billed, 6) < 100) {
+			&& flt(frm.doc.per_delivered, 6) < 100 && flt(frm.doc.per_billed, 6) < 100 && cint(frm.doc.on_progress) == 0) {
 			frm.add_custom_button(__('Update Items'), () => {
 				erpnext.utils.update_child_items({
 					frm: frm,
 					child_docname: "items",
 					child_doctype: "Sales Order Detail",
 					cannot_add_row: false,
+					item_query:item_query,
+					uom_query:uom_query
 				})
 			});
 		}
@@ -63,6 +110,19 @@ frappe.ui.form.on("Sales Order", {
 		if (frm.doc.docstatus === 0 && frm.doc.is_internal_customer) {
 			frm.events.get_items_from_internal_purchase_order(frm);
 		}
+
+		frm.set_query("item_code", "items", function(doc, cdt, cdn) {
+			var row = locals[cdt][cdn];
+			var filters = {"is_stock_item": 1, "is_fixed_asset": 0}
+			if (doc.non_package_item){
+				filters['is_package_item']=0;
+			}else{
+				filters['is_package_item']=1;
+			}
+			return erpnext.queries.item(filters);
+		})
+
+		frm.cscript.change_package_display();
 	},
 
 	get_items_from_internal_purchase_order(frm) {
@@ -132,6 +192,15 @@ frappe.ui.form.on("Sales Order", {
 		frm.ignore_doctypes_on_cancel_all = ['Purchase Order'];
 	},
 
+	non_package_item: function(){
+		var me = this;
+		me.frm.cscript.confirm_reset_item("non_package_item").then(r=>{
+			if (r){
+				me.frm.cscript.change_package_display();
+			}
+		});
+	},
+
 	delivery_date: function(frm) {
 		$.each(frm.doc.items || [], function(i, d) {
 			if(!d.delivery_date) d.delivery_date = frm.doc.delivery_date;
@@ -154,8 +223,19 @@ frappe.ui.form.on("Sales Order Item", {
 		if(!frm.doc.delivery_date) {
 			erpnext.utils.copy_value_in_all_rows(frm.doc, cdt, cdn, "items", "delivery_date");
 		}
+	},
+	uom: function(frm, cdt, cdn){
+		fetch_package_weight(frm, cdt,cdn);
 	}
+
 });
+
+function fetch_package_weight(frm,cdt,cdn){
+	var d = locals[cdt][cdn];
+	frappe.db.get_value("Packaging", d.uom, "total_weight").then(r=>{
+		frappe.model.set_value(cdt,cdn, "weight_in_unit", r.message.total_weight);
+	})
+}
 
 erpnext.selling.SalesOrderController = class SalesOrderController extends erpnext.selling.SellingController {
 	onload(doc, dt, dn) {
@@ -317,6 +397,14 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			}
 			this.frm.set_df_property("po_no", "hidden", 0);
 			this.frm.set_df_property("po_date", "hidden", 0);
+		}
+	}
+
+	change_package_display(){
+		if (!this.frm.doc.non_package_item){
+			this.frm.cscript.change_package_label(1);
+		}else{
+			this.frm.cscript.change_package_label(0);
 		}
 	}
 

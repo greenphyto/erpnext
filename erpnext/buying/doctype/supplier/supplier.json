@@ -16,6 +16,7 @@
   "supplier_code_series",
   "supplier_code",
   "foms_id",
+  "foms_name",
   "column_break0",
   "supplier_group",
   "supplier_type",
@@ -38,6 +39,9 @@
   "website",
   "language",
   "dashboard_tab",
+  "item_tab",
+  "enable_item_supplier",
+  "item_supplier",
   "tax_tab",
   "tax_id",
   "column_break_27",
@@ -458,7 +462,8 @@
    "in_list_view": 1,
    "in_preview": 1,
    "in_standard_filter": 1,
-   "label": "Supplier Code"
+   "label": "Supplier Code",
+   "read_only_depends_on": "eval:doc.foms_id"
   },
   {
    "allow_in_quick_entry": 1,
@@ -473,6 +478,30 @@
    "fieldtype": "Data",
    "label": "FOMS ID",
    "read_only": 1
+  },
+  {
+   "fieldname": "foms_name",
+   "fieldtype": "Data",
+   "label": "FOMS Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_tab",
+   "fieldtype": "Tab Break",
+   "label": "Item"
+  },
+  {
+   "description": "Specify the item for only can buy from this supplier",
+   "fieldname": "item_supplier",
+   "fieldtype": "Table",
+   "label": "Item Supplier",
+   "options": "Item List"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_item_supplier",
+   "fieldtype": "Check",
+   "label": "Enable Item Supplier"
   }
  ],
  "icon": "fa fa-user",
@@ -485,7 +514,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-01-24 16:51:50.818129",
+ "modified": "2024-09-11 19:23:56.614217",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",
@@ -545,7 +574,6 @@
    "role": "Accounts Manager"
   }
  ],
- "quick_entry": 1,
  "search_fields": "supplier_name, supplier_group",
  "show_name_in_global_search": 1,
  "sort_field": "modified",

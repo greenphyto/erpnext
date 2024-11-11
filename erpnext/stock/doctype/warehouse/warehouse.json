@@ -10,6 +10,7 @@
   "warehouse_detail",
   "warehouse_name",
   "foms_id",
+  "foms_name",
   "column_break_3",
   "warehouse_type",
   "parent_warehouse",
@@ -21,6 +22,14 @@
   "only_for_item",
   "company",
   "disabled",
+  "rack_details_section",
+  "store",
+  "position",
+  "colour",
+  "column_break_18",
+  "row_no",
+  "lane_no",
+  "level_no",
   "address_and_contact",
   "address_html",
   "column_break_10",
@@ -262,13 +271,74 @@
    "fieldtype": "Link",
    "label": "Only for Item",
    "options": "Item"
+  },
+  {
+   "fieldname": "foms_name",
+   "fieldtype": "Data",
+   "label": "FOMS Name",
+   "read_only": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "rack_details_section",
+   "fieldtype": "Section Break",
+   "label": "Rack Details"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "description": "<b>A-Z</b> column",
+   "fieldname": "row_no",
+   "fieldtype": "Data",
+   "label": "Row No"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "description": "<b>A-Z</b>",
+   "fieldname": "level_no",
+   "fieldtype": "Data",
+   "label": "Level No"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "description": "<b>1-99</b>",
+   "fieldname": "lane_no",
+   "fieldtype": "Data",
+   "label": "Lane No"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "description": "Store locator: <b>Main (1), Cold room (2), Sub-store (3)</b>\n\n",
+   "fieldname": "store",
+   "fieldtype": "Select",
+   "label": "Store",
+   "options": "\n1\n2\n3"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "column_break_18",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "description": "Visual aid",
+   "fieldname": "colour",
+   "fieldtype": "Color",
+   "label": "Colour"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "description": "Position: <b>Left (1), Middle (2), Right (3)</b>",
+   "fieldname": "position",
+   "fieldtype": "Select",
+   "label": "Position",
+   "options": "\n1\n2\n3"
   }
  ],
  "icon": "fa fa-building",
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-06-06 14:44:44.247915",
+ "modified": "2024-11-05 11:03:30.551049",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Warehouse",

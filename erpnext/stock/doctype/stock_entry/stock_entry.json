@@ -8,11 +8,13 @@
  "engine": "InnoDB",
  "field_order": [
   "items_section",
-  "naming_series",
+  "stock_entry_type_view",
   "stock_entry_type",
+  "naming_series",
   "outgoing_stock_entry",
   "purpose",
   "add_to_transit",
+  "request_no",
   "work_order",
   "purchase_order",
   "subcontracting_order",
@@ -20,6 +22,7 @@
   "sales_invoice_no",
   "pick_list",
   "purchase_receipt_no",
+  "foms_id",
   "col2",
   "company",
   "posting_date",
@@ -31,6 +34,7 @@
   "sb1",
   "bom_no",
   "fg_completed_qty",
+  "material_reff",
   "cb1",
   "use_multi_level_bom",
   "get_items",
@@ -54,6 +58,9 @@
   "additional_costs_section",
   "additional_costs",
   "total_additional_costs",
+  "additional_cost_temporary_section",
+  "wip_additional_costs",
+  "total_wip_additional_costs",
   "contact_section",
   "supplier",
   "supplier_name",
@@ -76,7 +83,12 @@
   "operation",
   "amended_from",
   "credit_note",
-  "is_return"
+  "is_return",
+  "foms_details_section",
+  "work_order_id",
+  "lot_id",
+  "rack_no",
+  "customer_order_no"
  ],
  "fields": [
   {
@@ -85,6 +97,7 @@
    "oldfieldtype": "Section Break"
   },
   {
+   "fetch_from": "stock_entry_type_view.series",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
@@ -93,17 +106,17 @@
    "oldfieldtype": "Select",
    "options": "MAT-STE-.YYYY.-",
    "print_hide": 1,
+   "read_only": 1,
    "reqd": 1,
    "set_only_once": 1
   },
   {
+   "fetch_from": "stock_entry_type_view.purpose",
    "fieldname": "stock_entry_type",
    "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
+   "hidden": 1,
    "label": "Stock Entry Type",
-   "options": "Stock Entry Type",
-   "reqd": 1
+   "options": "Stock Entry Type"
   },
   {
    "depends_on": "eval:doc.purpose == 'Material Transfer'",
@@ -364,8 +377,7 @@
    "label": "Items",
    "oldfieldname": "mtn_details",
    "oldfieldtype": "Table",
-   "options": "Stock Entry Detail",
-   "reqd": 1
+   "options": "Stock Entry Detail"
   },
   {
    "fieldname": "get_stock_and_rate",
@@ -410,7 +422,6 @@
   },
   {
    "collapsible": 1,
-   "collapsible_depends_on": "total_additional_costs",
    "fieldname": "additional_costs_section",
    "fieldtype": "Section Break",
    "label": "Additional Costs"
@@ -629,6 +640,84 @@
    "fieldtype": "Data",
    "label": "Operation",
    "read_only": 1
+  },
+  {
+   "fieldname": "material_reff",
+   "fieldtype": "Link",
+   "label": "Material Reff",
+   "options": "Stock Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_details_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS Details"
+  },
+  {
+   "fieldname": "work_order_id",
+   "fieldtype": "Data",
+   "label": "Work Order ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "lot_id",
+   "fieldtype": "Data",
+   "label": "Lot ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rack_no",
+   "fieldtype": "Data",
+   "label": "Rack No",
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer_order_no",
+   "fieldtype": "Data",
+   "label": "Customer Order No",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.stock_entry_type == \"Material Transfer for Manufacture\"",
+   "description": "This section cost will not creating the accounting ledger entry, it is just for temporary WIP Additional Costs Information",
+   "fieldname": "additional_cost_temporary_section",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "label": "Additional Cost (WIP)"
+  },
+  {
+   "fieldname": "wip_additional_costs",
+   "fieldtype": "Table",
+   "label": "WIP Additional Costs",
+   "options": "Landed Cost Taxes and Charges"
+  },
+  {
+   "fieldname": "total_wip_additional_costs",
+   "fieldtype": "Currency",
+   "label": "Total WIP Additional Costs",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stock_entry_type_view",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Stock Entry Type",
+   "options": "Stock Entry Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "request_no",
+   "fieldtype": "Data",
+   "label": "Request No",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -636,7 +725,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-03 15:41:27.958428",
+ "modified": "2024-10-23 13:02:31.924512",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",
@@ -708,6 +797,6 @@
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
- "title_field": "stock_entry_type",
+ "title_field": "stock_entry_type_view",
  "track_changes": 1
 }

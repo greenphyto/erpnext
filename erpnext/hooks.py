@@ -284,6 +284,7 @@ standard_queries = {
 doc_events = {
 	"*": {
 		"validate": "erpnext.support.doctype.service_level_agreement.service_level_agreement.apply",
+        "after_insert": "erpnext.controllers.foms.sync_log"
 	},
 	"Stock Entry": {
 		"on_submit": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
@@ -366,14 +367,54 @@ doc_events = {
         "validate": "erpnext.assets.doctype.asset.asset.asset_trigger",
         "on_trash": "erpnext.assets.doctype.asset.asset.asset_trigger",
 	},
+	"Supplier":{
+        "on_update":"erpnext.controllers.foms.sync_log",
+        "after_delete":"erpnext.controllers.foms.sync_log",
+	},
+    "Customer":{
+        "on_update":"erpnext.controllers.foms.sync_log",
+        "after_delete":"erpnext.controllers.foms.sync_log",
+	},
     "Warehouse":{
-        "validate":"erpnext.controllers.foms.update_warehouse"
+        "validate":"erpnext.controllers.foms.sync_log",
+        "after_delete":"erpnext.controllers.foms.sync_log",
+	},
+	"Stock Reconciliation":{
+        "on_submit":"erpnext.controllers.foms.sync_log",
+        "on_cancel":"erpnext.controllers.foms.sync_log",
 	},
     "Purchase Receipt": {
-        "on_submit":"erpnext.controllers.foms.update_stock_recipe"
+        "on_submit":"erpnext.controllers.foms.sync_log",
+        "on_cancel":"erpnext.controllers.foms.sync_log",
+	},
+    "Sales Order": {
+        "on_submit":"erpnext.controllers.foms.sync_log_so",
+        "on_update_after_submit":"erpnext.controllers.foms.sync_log_so",
+        "on_cancel":"erpnext.controllers.foms.sync_log_so",
 	},
     "Item": {
         "before_validate":"erpnext.patches.v14_0.fix_part_number.set_part_number"
+	},
+    "Scrap Request": {
+        "on_submit":"erpnext.controllers.foms.sync_log",
+        "on_cancel":"erpnext.controllers.foms.sync_log",
+	},
+	"Delivery Note": {
+        "on_submit":"erpnext.controllers.foms.sync_log",
+        "on_cancel":"erpnext.controllers.foms.sync_log",
+	},
+    "Department": {
+        "validate":"erpnext.controllers.foms.sync_log",
+	},
+    "Request": {
+        "on_submit":"erpnext.controllers.foms.sync_log",
+        "on_cancel":"erpnext.controllers.foms.sync_log",
+	},
+    "Stock Entry": {
+        "on_submit":"erpnext.controllers.foms.sync_log",
+	},
+    "Stock Ledger Entry": {
+        "on_submit":"erpnext.controllers.foms.sync_sle",
 	}
 }
 
@@ -392,6 +433,10 @@ scheduler_events = {
 		"0/30 * * * *": [
 			"erpnext.utilities.doctype.video.video.update_youtube_data",
 		],
+        # "*/15 * * * *": [
+		# 	"erpnext.controllers.foms.update_foms_supplier",
+		# 	"erpnext.controllers.foms.update_foms_customer",
+		# ],
 		# Hourly but offset by 30 minutes
 		"30 * * * *": [
 			"erpnext.accounts.doctype.gl_entry.gl_entry.rename_gle_sle_docs",
@@ -412,6 +457,7 @@ scheduler_events = {
 		"erpnext.erpnext_integrations.doctype.plaid_settings.plaid_settings.automatic_synchronization",
 		"erpnext.projects.doctype.project.project.hourly_reminder",
 		"erpnext.projects.doctype.project.project.collect_project_status",
+        "erpnext.controllers.foms.update_stock_receipt",
 	],
 	"hourly_long": [
 		"erpnext.accounts.doctype.subscription.subscription.process_all",
@@ -444,6 +490,8 @@ scheduler_events = {
         # "erpnext.setup.doctype.currency_exchange.currency_exchange.save_main_currency_rate",
         "erpnext.controllers.foms.update_foms_supplier",
         "erpnext.controllers.foms.update_foms_customer",
+        "erpnext.controllers.foms.update_foms_sales_order",
+        "erpnext.controllers.foms.update_foms_stock_recon",
         "erpnext.controllers.foms.get_raw_material",
         "erpnext.controllers.foms.get_products",
         "erpnext.controllers.foms.get_recipe",
@@ -654,4 +702,18 @@ quick_entry_js = {
 
 validate_workflow = {
     "Material Request": "erpnext.stock.doctype.material_request.material_request.validate_purchase_request"
+}
+
+sync_log_method = {
+    1:"erpnext.controllers.foms._update_foms_supplier",
+    2:"erpnext.controllers.foms._update_foms_customer",
+    3:"erpnext.controllers.foms._update_warehouse",
+    4:"erpnext.controllers.foms._update_stock_receipt",
+    5:"erpnext.controllers.foms._update_foms_sales_order",
+    6:"erpnext.controllers.foms._update_foms_stock_recon",
+    7:"erpnext.controllers.foms._update_foms_scrap_request",
+    8:"erpnext.controllers.foms._update_foms_department",
+    9:"erpnext.controllers.foms._sync_delivery_note",
+    10:"erpnext.controllers.foms._update_foms_forecast",
+    11:"erpnext.controllers.foms._update_material_transfer"
 }

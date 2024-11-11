@@ -24,10 +24,19 @@
   "column_break_14",
   "auto_submit_bom",
   "auto_submit_work_order",
+  "conversion_section",
+  "uom_conversion",
+  "item_conversion",
   "section_break_9",
   "get_foms_raw_material",
   "get_foms_products",
   "get_foms_recipe",
+  "get_batch",
+  "column_break_23",
+  "sync_supplier",
+  "sync_customer",
+  "sync_warehouse",
+  "sync_packaging",
   "testing_section",
   "enable_testing",
   "testing_products"
@@ -82,7 +91,7 @@
   {
    "collapsible": 1,
    "fieldname": "section_break_9",
-   "fieldtype": "Section Break",
+   "fieldtype": "Tab Break",
    "label": "Sync Data"
   },
   {
@@ -172,12 +181,60 @@
    "fieldname": "testing_products",
    "fieldtype": "Small Text",
    "label": "Testing Products"
+  },
+  {
+   "fieldname": "column_break_23",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sync_supplier",
+   "fieldtype": "Button",
+   "label": "Sync Supplier"
+  },
+  {
+   "fieldname": "sync_customer",
+   "fieldtype": "Button",
+   "label": "Sync Customer"
+  },
+  {
+   "fieldname": "sync_warehouse",
+   "fieldtype": "Button",
+   "label": "Sync Warehouse"
+  },
+  {
+   "fieldname": "sync_packaging",
+   "fieldtype": "Button",
+   "label": "Sync Packaging"
+  },
+  {
+   "fieldname": "get_batch",
+   "fieldtype": "Button",
+   "label": "Get Batch"
+  },
+  {
+   "fieldname": "conversion_section",
+   "fieldtype": "Tab Break",
+   "label": "Conversion"
+  },
+  {
+   "description": "This table will overide the sync process of stock quantity, to always use To UOM value as FOMS Unit",
+   "fieldname": "uom_conversion",
+   "fieldtype": "Table",
+   "label": "UOM Conversion",
+   "options": "UOM FOMS Convertion"
+  },
+  {
+   "description": "When FOMS call use stock on ERP it will overide the item to another item, currently it will effect to Raw Material on Work Order and for Material Request.\n1 from UOM = ?? to UOM",
+   "fieldname": "item_conversion",
+   "fieldtype": "Table",
+   "label": "Item Conversion",
+   "options": "UOM FOMS Overide Item"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-06-06 16:32:47.436635",
+ "modified": "2024-09-12 16:04:19.816602",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",

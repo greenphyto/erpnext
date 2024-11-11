@@ -49,6 +49,29 @@ def get_warehouse_account_map(company=None):
 		item_account = get_part_number_account_settings()
 		warehouse_account.update(item_account)
 
+		# WIP 
+		warehouse_account["WIP"] = {
+			"wip_warehouse":frappe.db.get_single_value("Manufacturing Settings", "default_wip_warehouse"),
+			"account":""
+		}
+		if warehouse_account["WIP"]['wip_warehouse']:
+			warehouse_account["WIP"]['account'] = frappe.get_value("Warehouse", warehouse_account["WIP"]['wip_warehouse'], "account")
+			warehouse_account["WIP"]['account_currency'] = ""
+			if warehouse_account["WIP"]['account']:
+				warehouse_account["WIP"]['account_currency'] = frappe.db.get_value("Account", warehouse_account["WIP"]['account'], "account_currency", cache=True)
+		
+		# add WIP based on operation 
+		wip_operations = frappe.db.get_all("Operation WIP Account", {
+			"parent":company, 
+			"parenttype":"Company",
+			"parentfield":"operation_wip_account"
+		}, ['operation', 'wip_account'])
+		for d in wip_operations:
+			warehouse_account["WIP"][d.operation] = {
+				"account": d.wip_account,
+				"account_currency": frappe.db.get_value("Account", d.wip_account, "account_currency", cache=True)
+			}
+
 		if company:
 			frappe.flags.warehouse_account_map[company] = warehouse_account
 		else:
@@ -67,12 +90,13 @@ def get_part_number_account_settings():
 	
 	return item_account
 
-def get_item_account(account_map, warehouse, item="", key="account"):
+def get_item_account(account_map, warehouse, item="", key="account", get_default = False, operation=""):
 	data = None
-	if not warehouse:
+	if not warehouse and not get_default:
 		return None
 	
 	if item and account_map.get(item):
+
 		data = account_map[item].get(key)
 
 	if not data and item in account_map:
@@ -81,6 +105,25 @@ def get_item_account(account_map, warehouse, item="", key="account"):
 	
 	if not data and warehouse:
 		data = account_map[warehouse].get(key)
+
+	# special for WIP account
+	if "WIP" in account_map:
+		wip_warehouse = account_map['WIP']['wip_warehouse']
+		if wip_warehouse == warehouse or warehouse == "WIP":
+			if operation:
+				dt = account_map['WIP'].get(operation)
+				if dt:
+					data = account_map['WIP'][operation].get(key)
+				else:
+					data = None
+
+			if not data or not operation:
+				wip_account = account_map['WIP']['account']
+				if not wip_account:
+					frappe.throw(_("Missing Account for WIP warehouse! please update settings for WIP Warehouse in Manufacturing Settings, and the warehouse account itself."))
+
+				data = account_map['WIP'].get(key)
+	
 	return data
 
 def get_warehouse_account(warehouse, warehouse_account=None, item=None):

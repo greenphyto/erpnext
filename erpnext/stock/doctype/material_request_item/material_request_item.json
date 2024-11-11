@@ -162,6 +162,7 @@
   },
   {
    "fieldname": "conversion_factor",
+   "precision": "7",
    "fieldtype": "Float",
    "label": "UOM Conversion Factor",
    "precision": "7",

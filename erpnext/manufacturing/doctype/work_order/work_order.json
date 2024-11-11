@@ -13,18 +13,23 @@
   "production_item",
   "item_name",
   "image",
-  "foms_work_order",
-  "foms_lot_id",
   "bom_no",
   "operation_no",
-  "column_break1",
+  "column_break11",
   "company",
   "qty",
+  "gross_weight",
   "material_transferred_for_manufacturing",
   "produced_qty",
   "process_loss_qty",
   "sales_order",
   "project",
+  "foms_detail_section",
+  "foms_work_order",
+  "foms_lot_name",
+  "foms_lot_id",
+  "column_break1",
+  "sales_order_no",
   "serial_no_and_batch_for_finished_good_section",
   "has_serial_no",
   "has_batch_no",
@@ -141,6 +146,7 @@
   {
    "fieldname": "bom_no",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "BOM No",
    "oldfieldname": "bom_no",
    "oldfieldtype": "Link",
@@ -188,6 +194,7 @@
    "default": "1.0",
    "fieldname": "qty",
    "fieldtype": "Float",
+   "in_list_view": 1,
    "label": "Qty To Manufacture",
    "oldfieldname": "qty",
    "oldfieldtype": "Currency",
@@ -217,6 +224,7 @@
    "allow_on_submit": 1,
    "fieldname": "sales_order",
    "fieldtype": "Link",
+   "hidden": 1,
    "in_global_search": 1,
    "label": "Sales Order",
    "options": "Sales Order"
@@ -329,7 +337,6 @@
    "label": "Expected Delivery Date"
   },
   {
-   "collapsible": 1,
    "fieldname": "operations_section",
    "fieldtype": "Section Break",
    "label": "Operations",
@@ -357,6 +364,7 @@
    "label": "Operation Cost"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "planned_operating_cost",
    "fieldtype": "Currency",
    "label": "Planned Operating Cost",
@@ -364,6 +372,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "actual_operating_cost",
    "fieldtype": "Currency",
    "label": "Actual Operating Cost",
@@ -383,6 +392,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_operating_cost",
    "fieldtype": "Currency",
    "label": "Total Operating Cost",
@@ -575,7 +585,10 @@
   {
    "fieldname": "foms_work_order",
    "fieldtype": "Data",
-   "label": "FOMS Work Order"
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "FOMS Work Order",
+   "read_only": 1
   },
   {
    "fetch_from": "bom_no.operation_no",
@@ -587,8 +600,37 @@
   {
    "fieldname": "foms_lot_id",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "FOMS Lot ID",
    "read_only": 1
+  },
+  {
+   "fieldname": "foms_lot_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "FOMS Lot ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_detail_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS Detail"
+  },
+  {
+   "fieldname": "column_break11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "split with comma \", \"",
+   "fieldname": "sales_order_no",
+   "fieldtype": "Data",
+   "label": "Sales Order No"
+  },
+  {
+   "fieldname": "gross_weight",
+   "fieldtype": "Float",
+   "label": "Gross Weight"
   }
  ],
  "icon": "fa fa-cogs",
@@ -596,7 +638,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2024-03-18 15:45:11.761554",
+ "modified": "2024-09-17 16:02:20.997795",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",

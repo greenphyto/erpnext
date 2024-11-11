@@ -141,6 +141,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "fetch_from": "item_code.item_name",
    "fieldname": "item_name",
    "fieldtype": "Data",
    "in_global_search": 1,
@@ -237,6 +238,7 @@
   {
    "depends_on": "eval:doc.uom != doc.stock_uom",
    "fieldname": "conversion_factor",
+   "precision": "7",
    "fieldtype": "Float",
    "label": "UOM Conversion Factor",
    "precision": "7",
@@ -877,6 +879,38 @@
    "fieldname": "material_request_item",
    "fieldtype": "Data",
    "label": "Material Request Item"
+  },
+  {
+   "fieldname": "packaging_section",
+   "fieldtype": "Section Break",
+   "label": "Packaging"
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "weight_order",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Is weight order?"
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_detail_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS Detail"
+  },
+  {
+   "fieldname": "lot_id",
+   "fieldtype": "Data",
+   "label": "Lot ID",
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "idx": 1,

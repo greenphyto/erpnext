@@ -314,6 +314,14 @@ class MaterialRequest(BuyingController):
 		else:
 			self.is_low_amount = 0
 			return 0
+	
+	def get_attachments(self):
+		attachments = frappe.get_all(
+			"File",
+			fields=["name", "file_name", "file_url", "is_private"],
+			filters={"attached_to_name": self.name, "attached_to_doctype": self.doctype},
+		)
+		return attachments
 
 
 
