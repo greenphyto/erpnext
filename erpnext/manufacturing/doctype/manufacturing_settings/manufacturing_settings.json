@@ -7,6 +7,7 @@
  "field_order": [
   "raw_materials_consumption_section",
   "material_consumption",
+  "allow_single_completed_work_order",
   "column_break_3",
   "backflush_raw_materials_based_on",
   "capacity_planning",
@@ -32,6 +33,7 @@
   "job_card_excess_transfer",
   "other_settings_section",
   "update_bom_costs_automatically",
+  "update_bom_rate_as_pr_price",
   "column_break_23",
   "make_serial_no_batch_from_work_order"
  ],
@@ -201,13 +203,27 @@
    "fieldtype": "Link",
    "label": "Default Source Warehouse",
    "options": "Warehouse"
+  },
+  {
+   "default": "0",
+   "description": "When do a Purchase Receipt it will update the BOM raw material as last Purchase Rate",
+   "fieldname": "update_bom_rate_as_pr_price",
+   "fieldtype": "Check",
+   "label": "Update BOM rate as Purchase Receipt price"
+  },
+  {
+   "default": "0",
+   "description": "This will allow single submission of finish goods as all completed process of work order. and skip remaining qty and etc",
+   "fieldname": "allow_single_completed_work_order",
+   "fieldtype": "Check",
+   "label": "Allow Single Completed Work Order"
   }
  ],
  "icon": "icon-wrench",
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-10-11 11:39:37.348845",
+ "modified": "2024-11-07 13:50:13.424080",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Manufacturing Settings",

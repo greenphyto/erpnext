@@ -699,18 +699,19 @@ class BOM(WebsiteGenerator):
 
 		for d in self.get("items"):
 			old_rate = d.rate
-			d.rate = self.get_rm_rate(
-				{
-					"company": self.company,
-					"item_code": d.item_code,
-					"bom_no": d.bom_no,
-					"qty": d.qty,
-					"uom": d.uom,
-					"stock_uom": d.stock_uom,
-					"conversion_factor": d.conversion_factor,
-					"sourced_by_supplier": d.sourced_by_supplier,
-				}
-			)
+			if not self.flags.ignore_rate:
+				d.rate = self.get_rm_rate(
+					{
+						"company": self.company,
+						"item_code": d.item_code,
+						"bom_no": d.bom_no,
+						"qty": d.qty,
+						"uom": d.uom,
+						"stock_uom": d.stock_uom,
+						"conversion_factor": d.conversion_factor,
+						"sourced_by_supplier": d.sourced_by_supplier,
+					}
+				)
 
 			d.base_rate = flt(d.rate) * flt(self.conversion_rate)
 			d.amount = flt(d.rate, d.precision("rate")) * flt(d.qty, d.precision("qty"))

@@ -31,7 +31,8 @@
   "cost_center",
   "dimension_col_break",
   "foms_section",
-  "sync_percent"
+  "sync_percent",
+  "reff_id"
  ],
  "fields": [
   {
@@ -191,13 +192,19 @@
    "fieldtype": "Percent",
    "label": "% Sync",
    "read_only": 1
+  },
+  {
+   "fieldname": "reff_id",
+   "fieldtype": "Data",
+   "label": "Reff ID",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-upload-alt",
  "idx": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-22 17:34:25.244435",
+ "modified": "2024-10-30 15:18:18.656355",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Reconciliation",

@@ -59,6 +59,18 @@ def get_warehouse_account_map(company=None):
 			warehouse_account["WIP"]['account_currency'] = ""
 			if warehouse_account["WIP"]['account']:
 				warehouse_account["WIP"]['account_currency'] = frappe.db.get_value("Account", warehouse_account["WIP"]['account'], "account_currency", cache=True)
+		
+		# add WIP based on operation 
+		wip_operations = frappe.db.get_all("Operation WIP Account", {
+			"parent":company, 
+			"parenttype":"Company",
+			"parentfield":"operation_wip_account"
+		}, ['operation', 'wip_account'])
+		for d in wip_operations:
+			warehouse_account["WIP"][d.operation] = {
+				"account": d.wip_account,
+				"account_currency": frappe.db.get_value("Account", d.wip_account, "account_currency", cache=True)
+			}
 
 		if company:
 			frappe.flags.warehouse_account_map[company] = warehouse_account
@@ -78,7 +90,7 @@ def get_part_number_account_settings():
 	
 	return item_account
 
-def get_item_account(account_map, warehouse, item="", key="account", get_default = False):
+def get_item_account(account_map, warehouse, item="", key="account", get_default = False, operation=""):
 	data = None
 	if not warehouse and not get_default:
 		return None
@@ -97,12 +109,20 @@ def get_item_account(account_map, warehouse, item="", key="account", get_default
 	# special for WIP account
 	if "WIP" in account_map:
 		wip_warehouse = account_map['WIP']['wip_warehouse']
-		wip_account = account_map['WIP']['account']
-		if wip_warehouse == warehouse:
-			if not wip_account:
-				frappe.throw(_("Missing Account for WIP warehouse! please update settings for WIP Warehouse in Manufacturing Settings, and the warehouse account itself."))
+		if wip_warehouse == warehouse or warehouse == "WIP":
+			if operation:
+				dt = account_map['WIP'].get(operation)
+				if dt:
+					data = account_map['WIP'][operation].get(key)
+				else:
+					data = None
 
-			data = account_map['WIP'].get(key)
+			if not data or not operation:
+				wip_account = account_map['WIP']['account']
+				if not wip_account:
+					frappe.throw(_("Missing Account for WIP warehouse! please update settings for WIP Warehouse in Manufacturing Settings, and the warehouse account itself."))
+
+				data = account_map['WIP'].get(key)
 	
 	return data
 

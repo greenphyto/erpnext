@@ -140,6 +140,7 @@ class StockController(AccountsController):
 		gl_list = []
 		warehouse_with_no_account = []
 		precision = self.get_debit_field_precision()
+		operation = self.get("operation")
 		for item_row in voucher_details:
 			sle_list = sle_map.get(item_row.name)
 			sle_rounding_diff = 0.0
@@ -151,20 +152,24 @@ class StockController(AccountsController):
 						sle_rounding_diff += flt(sle.stock_value_difference)
 
 						self.check_expense_account(item_row)
-
 						# expense account/ target_warehouse / source_warehouse
 						if item_row.get("target_warehouse"):
 							warehouse = item_row.get("target_warehouse")
-							expense_account = get_item_account(warehouse_account, warehouse, item_row.item_code)
+							expense_account = get_item_account(warehouse_account, warehouse, item_row.item_code, operation=operation)
 						else:
 							expense_account = item_row.expense_account
 
+						item_account = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, operation=operation)
+						item_account_currency = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency", operation=operation)
 						if self.purpose == "Manufacture":
 							expense_account = frappe.db.get_value("Company", self.company, "stock_adjustment_account")
+							item_account = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, operation="Harvesting")
+							item_account_currency = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency", operation="Harvesting")
 
+						# here
 						row = self.get_gl_dict(
 							{
-								"account": get_item_account(warehouse_account, sle.warehouse, item_row.item_code),
+								"account": item_account,
 								"against": expense_account,
 								"cost_center": item_row.cost_center,
 								"project": item_row.project or self.get("project"),
@@ -172,7 +177,7 @@ class StockController(AccountsController):
 								"debit": flt(sle.stock_value_difference, precision),
 								"is_opening": item_row.get("is_opening") or self.get("is_opening") or "No",
 							},
-							get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency"),
+							item_account_currency,
 							item=item_row,
 						)
 						gl_list.append(row)
@@ -180,7 +185,7 @@ class StockController(AccountsController):
 						row = self.get_gl_dict(
 							{
 								"account": expense_account,
-								"against": get_item_account(warehouse_account, sle.warehouse, item_row.item_code),
+								"against": item_account,
 								"cost_center": item_row.cost_center,
 								"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
 								"debit": -1 * flt(sle.stock_value_difference, precision),
@@ -197,12 +202,11 @@ class StockController(AccountsController):
 			if abs(sle_rounding_diff) > (1.0 / (10**precision)) and self.is_internal_transfer():
 				warehouse_asset_account = ""
 				if self.get("is_internal_customer"):
-					warehouse_asset_account = get_item_account(warehouse_account, item_row.get("target_warehouse"), item_row.item_code)
+					warehouse_asset_account = get_item_account(warehouse_account, item_row.get("target_warehouse"), item_row.item_code, operation=operation)
 				elif self.get("is_internal_supplier"):
-					warehouse_asset_account = get_item_account(warehouse_account, item_row.get("warehouse"), item_row.item_code)
+					warehouse_asset_account = get_item_account(warehouse_account, item_row.get("warehouse"), item_row.item_code, operation=operation)
 
 				expense_account = frappe.get_cached_value("Company", self.company, "default_expense_account")
-
 				gl_list.append(
 					self.get_gl_dict(
 						{
@@ -214,7 +218,7 @@ class StockController(AccountsController):
 							"debit": sle_rounding_diff,
 							"is_opening": item_row.get("is_opening") or self.get("is_opening") or "No",
 						},
-						get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency"),
+						get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency", operation=operation),
 						item=item_row,
 					)
 				)
@@ -242,6 +246,10 @@ class StockController(AccountsController):
 							"Warehouse {0} is not linked to any account, please mention the account in the warehouse record or set default inventory account in company {1}."
 						).format(wh, self.company)
 					)
+
+		# debug
+		# for d in gl_list:
+		# 	print(1389, d.account, d.debit, d.credit)
 
 		return process_gl_map(gl_list, precision=precision)
 

@@ -15,7 +15,7 @@ from erpnext.controllers.foms import (
 	get_operation_map_name,
 	create_finish_goods_stock as _create_finish_goods_stock,
 	create_packaging, update_so_working, create_do_based_on_work_order,
-	get_cost_center
+	get_cost_center, get_default_expense_production_account
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
@@ -172,6 +172,7 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 
 	company = company or erpnext.get_default_company()
 	cost_center = get_cost_center(operation_name, company)
+	bom = frappe.get_doc("BOM", se.bom_no)
 
 	for d in materials:
 		d = frappe._dict(d)
@@ -192,7 +193,6 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		original_item = None
 		if item_code in overide_item:
 			is_overide_item = True
-			# qty_conversion = overide_item[item_code]['cf']
 			uom = overide_item[item_code]['uom']
 			original_item = cstr(item_code)
 			item_code = overide_item[item_code]['item']
@@ -213,15 +213,19 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		row.qty = qty
 		row.uom = uom
 		row.batch_no = batch_no
+		basic_rate = 0
+		for m in bom.get("items"):
+			if (m.item_code == item_code or m.item_code == original_item) and m.operation == operation_name:
+				basic_rate = m.rate
+		row.basic_rate = basic_rate
+		row.set_basic_rate_manually = 1
 	
 	if missing_warehouse:
 		warn = ", ".join(list(set(missing_warehouse)))
 		frappe.throw(f"Warehouse not found: {warn}")
 	
 	# additional cost
-	expense_account = frappe.get_value("Company", company, "default_cost_expense_account" )
-	if not expense_account:
-		frappe.throw(_("Please set Default Cost Expense Account in {} Company Settings".format(company)))
+	expense_account = get_default_expense_production_account(company)
 	
 	wo_doc = frappe.get_doc("Work Order", work_order_name)
 	se.additional_costs = []
@@ -345,9 +349,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	else:
 		job_card.save()
 
-	
-
-	frappe.db.commit()
+	# frappe.db.commit()
 
 	update_log("Work Order", data_name, job_card_name)
 
@@ -364,7 +366,12 @@ def submit_work_order_finish_goods(erpWorkOrderID, qty, expiryDate=""):
 		"ERPWorkOrderID":ERPWorkOrderID, 
 		"qty":qty
 	})
-	work_order_name, lot_id = frappe.db.get_value("Work Order", ERPWorkOrderID, ['name', 'foms_lot_id']) or ("", "", "")
+	work_order_name, lot_id, status = frappe.db.get_value("Work Order", ERPWorkOrderID, ['name', 'foms_lot_id', 'status']) or ("", "", "")
+
+	if status == "Completed":
+		return {
+			"result":"Already complete"
+		}
 
 	if not work_order_name:
 		frappe.throw(_(f"Work Order {ERPWorkOrderID} not found!"), frappe.DoesNotExistError)
