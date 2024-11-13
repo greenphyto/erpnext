@@ -12,6 +12,8 @@
   "account_code",
   "account_type",
   "balance",
+  "gst_option",
+  "gst_tax_template",
   "col_break1",
   "bank_account",
   "party_type",
@@ -343,12 +345,26 @@
   {
    "fieldname": "column_break_26",
    "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:parent.voucher_type==\"Journal Entrry with GST\"",
+   "fieldname": "gst_tax_template",
+   "fieldtype": "Link",
+   "label": "GST Tax Template",
+   "options": "Purchase Taxes and Charges Template"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:parent.voucher_type==\"Journal Entrry with GST\"",
+   "fieldname": "gst_option",
+   "fieldtype": "Check",
+   "label": "GST Option"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-09-19 15:59:16.128677",
+ "modified": "2024-11-12 16:24:37.559353",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry Account",

@@ -413,11 +413,11 @@ class VATAuditReport(object):
 				conditions += opts[1]
 		data = frappe.db.sql("""
 			SELECT 
-				name, transaction_type, tax_template, total_debit, invoice_no, party_name, base_value, posting_date, is_tax_refund
+				name, transaction_type, voucher_type, tax_template, total_debit, invoice_no, party_name, base_value, posting_date, is_tax_refund
 			FROM
 				`tabJournal Entry`
 			WHERE
-				voucher_type = "GST Input Tax"
+				voucher_type in ("GST Input Tax", "Journal Entrry with GST")
 				and docstatus = 1
 				and invoice_type = "{doctype}"
 				{where_conditions}
@@ -429,30 +429,46 @@ class VATAuditReport(object):
 		for d in data:
 			dt = frappe._dict(d)
 
-			# overide data
 			dt.voucher_no = dt.name
 			dt.docstatus = 1
 			dt.is_journal_entry = 1
 			dt.posting_date = getdate(d.posting_date)
 			dt.Invoice_No = dt.invoice_no
 			dt.party = dt.party_name
-			dt.taxes_and_charges = dt.tax_template
-			account_head = ''
-			if d.transaction_type == "Buying":
-				invoice_type = "Purchase Invoice"
+			if dt.voucher_type == "GST Input Tax":
+				# overide data
+				dt.taxes_and_charges = dt.tax_template
+				account_head = ''
+				if d.transaction_type == "Buying":
+					invoice_type = "Purchase Invoice"
+				else:
+					invoice_type = "Sales Invoice"
+					pass
+
+				item_name = "item"
+				temp = {}
+				total = dt.total_debit * (-1 if dt.is_tax_refund else 1)
+				temp[item_name] = [8, total]
+				tax_detail = json.dumps(temp)
+				self.invoices.setdefault(dt.voucher_no, dt)
+				self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": d.base_value})
+				self.tax_details.append((dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date)))
 			else:
-				invoice_type = "Sales Invoice"
-				pass
-
-			item_name = "item"
-			temp = {}
-			total = dt.total_debit * (-1 if dt.is_tax_refund else 1)
-			temp[item_name] = [8, total]
-			tax_detail = json.dumps(temp)
-			self.invoices.setdefault(dt.voucher_no, dt)
-			self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": d.base_value})
-			self.tax_details.append((dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date)))
-
+				# overide data
+				rows = frappe.db.get_list("Journal Entry Account", {"parent":dt.name, "gst_option":True}, "*", debug=0)
+				for row in rows:
+					dt.taxes_and_charges = row.gst_template
+					account_head = ''
+					invoice_type = "Purchase Invoice"
+					base_value = (dt.total_debit - row.credit) * -1
+					item_name = "item"
+					temp = {}
+					total = row.credit * -1
+					temp[item_name] = [8, total]
+					tax_detail = json.dumps(temp)
+					self.invoices.setdefault(dt.voucher_no, dt)
+					self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": base_value})
+					self.tax_details.append((dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date)))
 
 	def get_consolidated_data(self, doctype):
 		consolidated_data_map = {}
