@@ -460,10 +460,10 @@ class VATAuditReport(object):
 					dt.taxes_and_charges = row.gst_template
 					account_head = ''
 					invoice_type = "Purchase Invoice"
-					base_value = dt.total_debit - row.credit
+					base_value = (dt.total_debit - row.credit) * -1
 					item_name = "item"
 					temp = {}
-					total = row.credit
+					total = row.credit * -1
 					temp[item_name] = [8, total]
 					tax_detail = json.dumps(temp)
 					self.invoices.setdefault(dt.voucher_no, dt)
