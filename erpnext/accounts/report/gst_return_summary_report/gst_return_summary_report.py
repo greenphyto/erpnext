@@ -417,7 +417,7 @@ class VATAuditReport(object):
 			FROM
 				`tabJournal Entry`
 			WHERE
-				voucher_type in ("GST Input Tax", "Refund Deposit")
+				voucher_type in ("GST Input Tax", "Journal Entrry with GST")
 				and docstatus = 1
 				and invoice_type = "{doctype}"
 				{where_conditions}
