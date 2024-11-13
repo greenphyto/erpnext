@@ -54,6 +54,8 @@ frappe.ui.form.on("Journal Entry", {
 					frm.trigger("make_inter_company_journal_entry");
 				}, __('Make'));
 		}
+
+		erpnext.journal_entry.switch_view_based_on_type(frm);
 	},
 
 	make_inter_company_journal_entry: function(frm) {
@@ -182,6 +184,8 @@ frappe.ui.form.on("Journal Entry", {
 				});
 			}
 		}
+
+		erpnext.journal_entry.switch_view_based_on_type(frm);
 	},
 
 	from_template: function(frm){
@@ -596,6 +600,31 @@ $.extend(erpnext.journal_entry, {
 			}
 		});
 
+		table.grid.reset_grid();
+	},
+
+	switch_view_based_on_type: function(frm, cdt, cdn){
+		const item_table = "accounts";
+		var table = frm.fields_dict[item_table];
+		var fields_refund = ['account', 'account_code', 'gst_option', "gst_tax_template", "debit", "credit"]
+		var field_std = ['account', 'account_code', 'party_type', "party", "debit", "credit"]
+		if (frm.doc.voucher_type=="Refund Deposit"){
+			$.each(table.grid.fields_map, (i,f)=>{
+				if ( in_list(fields_refund, f.fieldname) ){
+					f.in_list_view = 1;
+				}else{
+					f.in_list_view = 0;
+				}
+			});
+		}else{
+			$.each(table.grid.fields_map, (i,f)=>{
+				if ( in_list(field_std, f.fieldname) ){
+					f.in_list_view = 1;
+				}else{
+					f.in_list_view = 0;
+				}
+			});
+		}
 		table.grid.reset_grid();
 	},
 
