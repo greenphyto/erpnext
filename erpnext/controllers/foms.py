@@ -1354,7 +1354,7 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 				if op.productRawMaterial:
 					for rm in op.productRawMaterial:
 						rm = frappe._dict(rm)
-						rm_item_name = frappe.get_value("Item", rm.rawMaterialRefNo)
+						rm_item_name = frappe.get_value("Item", {"item_code":rm.rawMaterialRefNo, "is_stock_item":1})
 						if not rm_item_name:
 							continue
 
