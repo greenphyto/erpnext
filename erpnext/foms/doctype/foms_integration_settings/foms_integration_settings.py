@@ -123,13 +123,7 @@ class FOMSIntegrationSettings(Document):
 			row.conversion_factor = cf_value
 			row.reverse = 0
 			row.reff_id = d.name
-			
 			item.save()
-
-		
-			
-
-
 
 def is_enable_integration():
 	return cint(frappe.db.get_single_value('FOMS Integration Settings', "enable"))

@@ -160,10 +160,16 @@ class GetData():
 			d = frappe._dict(data[i])
 
 			# pull to foms data mapping
-			result = self.post_process(self, d)
-			if not self.manual_save_log:
-				key_name = self._log_name or self.get_key_name(d)
-				save_log(self.doc_type, result, key_name, d)
+			result = None
+			try:
+				result = self.post_process(self, d)
+			except Exception as e:
+				print(e)
+			
+			if result:
+				if not self.manual_save_log:
+					key_name = self._log_name or self.get_key_name(d)
+					save_log(self.doc_type, result, key_name, d)
 
 			percent = (i+1)/total_count*100
 			if i % 10 == 0:
