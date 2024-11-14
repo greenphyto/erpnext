@@ -347,7 +347,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "depends_on": "eval:parent.voucher_type==\"Journal Entrry with GST\"",
+   "depends_on": "eval:parent.voucher_type==\"Journal Entry with GST\"",
    "fieldname": "gst_tax_template",
    "fieldtype": "Link",
    "label": "GST Tax Template",
@@ -355,7 +355,7 @@
   },
   {
    "default": "0",
-   "depends_on": "eval:parent.voucher_type==\"Journal Entrry with GST\"",
+   "depends_on": "eval:parent.voucher_type==\"Journal Entry with GST\"",
    "fieldname": "gst_option",
    "fieldtype": "Check",
    "label": "GST Option"
@@ -364,7 +364,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-11-12 16:24:37.559353",
+ "modified": "2024-11-12 16:24:38.559353",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry Account",

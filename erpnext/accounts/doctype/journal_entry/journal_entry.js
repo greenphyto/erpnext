@@ -608,7 +608,7 @@ $.extend(erpnext.journal_entry, {
 		var table = frm.fields_dict[item_table];
 		var fields_refund = ['account', 'account_code', 'gst_option', "gst_tax_template", "debit", "credit"]
 		var field_std = ['account', 'account_code', 'party_type', "party", "debit", "credit"]
-		if (frm.doc.voucher_type=="Journal Entrry with GST"){
+		if (frm.doc.voucher_type=="Journal Entry with GST"){
 			$.each(table.grid.fields_map, (i,f)=>{
 				if ( in_list(fields_refund, f.fieldname) ){
 					f.in_list_view = 1;
