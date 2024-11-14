@@ -1165,7 +1165,7 @@ def update_BOM_rate(item_data, item_list):
 				AND b.docstatus = 1
 				AND i.item_code IN ('RM-NS-NSB' , 'RM-NS-NSA', 'RM-NS-OA', 'RM-SD-SPC')
 		GROUP BY b.name
-	""", as_dict=1, debug=1)
+	""", as_dict=1, debug=0)
 
 	for b in bom_list:
 		bom = frappe.get_doc("BOM", b.name)
@@ -1175,5 +1175,6 @@ def update_BOM_rate(item_data, item_list):
 			new_rate = flt(temp.get("rate"))
 			if new_rate:
 				d.rate = new_rate
+				d.db_update()
 
 		bom.update_cost(save=True)
