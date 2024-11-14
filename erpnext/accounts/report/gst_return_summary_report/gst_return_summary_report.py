@@ -455,7 +455,7 @@ class VATAuditReport(object):
 				self.tax_details.append((dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date)))
 			else:
 				# overide data
-				rows = frappe.db.get_list("Journal Entry Account", {"parent":dt.name, "gst_option":True}, "*", debug=0)
+				rows = frappe.db.get_list("Journal Entry Account", {"parent":dt.name, "gst_option":True}, "*", ignore_permissions=1, debug=0)
 				for row in rows:
 					dt.taxes_and_charges = row.gst_template
 					account_head = ''
