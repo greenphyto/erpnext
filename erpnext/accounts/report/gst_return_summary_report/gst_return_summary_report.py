@@ -457,6 +457,11 @@ class VATAuditReport(object):
 				# overide data
 				rows = frappe.db.get_list("Journal Entry Account", {"parent":dt.name}, "*", ignore_permissions=1, debug=0, order_by="idx")
 				base_row = None
+				total = 0
+				base_value = 0
+				item_name = "item"
+				tax_mapping = {}
+				base_value_map = {}
 				for row in rows:
 					if row.gst_option:
 						if not base_row:
@@ -465,27 +470,31 @@ class VATAuditReport(object):
 						dt.taxes_and_charges = row.gst_template
 						account_head = ''
 						invoice_type = "Purchase Invoice"
-						item_name = "item"
 						temp = {}
 						if row.credit:
 							if not base_row.credit:
 								frappe.msgprint("GST Option should be after transaction row, please check on Journal Entry<br> {}".format(get_link_to_form("Journal Entry", dt.name)))
-							base_value = base_row.credit * -1
-							total = row.credit * -1
+							base_value += base_row.credit * -1
+							total += row.credit * -1
 						else:
 							if not base_row.debit:
 								frappe.msgprint("GST Option should be after transaction row, please check on Journal Entry<br> {}".format(get_link_to_form("Journal Entry", dt.name)))
-							base_value = base_row.debit
-							total = row.debit
-						
+							base_value += base_row.debit
+							total += row.debit
 						temp[item_name] = [8, total]
 						tax_detail = json.dumps(temp)
-						self.invoices.setdefault(dt.voucher_no, dt)
-						self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": base_value})
-						self.tax_details.append((dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date)))
+
+						base_value_map[dt.name] = base_value
+						tax_mapping[dt.name] = (dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date))
 						base_row = None
 					else:
 						base_row = row
+					
+				for key, val in tax_mapping.items():
+					self.tax_details.append(val)
+					base_value = base_value_map[dt.name]
+					self.invoices.setdefault(dt.voucher_no, dt)
+					self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": base_value})
 
 	def get_consolidated_data(self, doctype):
 		consolidated_data_map = {}
