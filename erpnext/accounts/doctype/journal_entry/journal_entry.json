@@ -35,6 +35,12 @@
   "2_add_edit_gl_entries",
   "accounts",
   "section_break99",
+  "tax_type",
+  "template_tax_based_on",
+  "col_brk",
+  "tax_template_",
+  "section_break_31",
+  "gst_entry",
   "section_break_28",
   "cheque_no",
   "cheque_date",
@@ -174,9 +180,10 @@
    "reqd": 1
   },
   {
+   "depends_on": "eval:doc.voucher_type == \"Journal Entry with GST\"",
    "fieldname": "section_break99",
    "fieldtype": "Section Break",
-   "label": "Tax "
+   "label": "Tax Details"
   },
   {
    "fieldname": "cheque_no",
@@ -671,14 +678,50 @@
   },
   {
    "fieldname": "section_break_28",
+   "fieldtype": "Section Break",
+   "label": "Reference Details"
+  },
+  {
+   "fieldname": "tax_type",
+   "fieldtype": "Select",
+   "label": "Tax Type",
+   "options": "Buying\nSelling"
+  },
+  {
+   "default": "Purchase Taxes and Charges Template",
+   "fieldname": "template_tax_based_on",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Template Tax Based On",
+   "options": "Sales Taxes and Charges Template\nPurchase Taxes and Charges Template"
+  },
+  {
+   "fieldname": "tax_template_",
+   "fieldtype": "Dynamic Link",
+   "label": "Tax Template",
+   "options": "template_tax_based_on"
+  },
+  {
+   "fieldname": "gst_entry",
+   "fieldtype": "Table",
+   "label": "GST Entry",
+   "options": "GST for Journal Entry"
+  },
+  {
+   "depends_on": "eval:doc.voucher_type == \"Journal Entry with GST\"",
+   "fieldname": "section_break_31",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "col_brk",
+   "fieldtype": "Column Break"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 176,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-11-18 14:41:53.780374",
+ "modified": "2024-11-18 15:22:09.749465",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",
