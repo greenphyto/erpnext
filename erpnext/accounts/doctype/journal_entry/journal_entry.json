@@ -37,9 +37,10 @@
   "section_break99",
   "tax_type",
   "template_tax_based_on",
-  "total_taxable_amount",
+  "total_taxable_amount_debit",
   "col_brk",
   "tax_template_",
+  "total_taxable_amount_credit",
   "section_break_31",
   "gst_entry",
   "section_break_28",
@@ -718,9 +719,15 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "total_taxable_amount",
+   "fieldname": "total_taxable_amount_debit",
    "fieldtype": "Currency",
-   "label": "Total Taxable Amount",
+   "label": "Total Taxable Amount (Debit)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_taxable_amount_credit",
+   "fieldtype": "Data",
+   "label": "Total Taxable Amount (Credit)",
    "read_only": 1
   }
  ],
@@ -728,7 +735,7 @@
  "idx": 176,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-11-18 15:34:02.307907",
+ "modified": "2024-11-18 15:48:09.852084",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",

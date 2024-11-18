@@ -528,6 +528,9 @@ frappe.ui.form.on("Journal Entry Account", {
 		}
 
 		erpnext.journal_entry.set_debit_credit_in_company_currency(frm, cdt, cdn);
+	},
+	gst_option: function(frm,cdt,cdn){
+		erpnext.journal_entry.calculate_taxable_amount(frm,cdt,cdn);
 	}
 })
 
@@ -606,7 +609,7 @@ $.extend(erpnext.journal_entry, {
 	switch_view_based_on_type: function(frm, cdt, cdn){
 		const item_table = "accounts";
 		var table = frm.fields_dict[item_table];
-		var fields_refund = ['account', 'account_code', 'gst_option', "gst_tax_template", "debit", "credit"]
+		var fields_refund = ['account', 'account_code', 'gst_option', "debit", "credit"]
 		var field_std = ['account', 'account_code', 'party_type', "party", "debit", "credit"]
 		if (frm.doc.voucher_type=="Journal Entry with GST"){
 			$.each(table.grid.fields_map, (i,f)=>{
@@ -626,6 +629,19 @@ $.extend(erpnext.journal_entry, {
 			});
 		}
 		table.grid.reset_grid();
+	},
+
+	calculate_taxable_amount: function(frm,cdt,cdn){
+		var total_cr = 0;
+		var total_db = 0;
+		$.each(frm.doc.accounts, (i, d)=>{
+			if ( cint(d.gst_option)){
+				total_cr += d.credit;
+				total_db += d.debit;
+			}
+		})
+		frm.set_value("total_taxable_amount_debit", total_db)
+		frm.set_value("total_taxable_amount_credit", total_cr)
 	},
 
 	calculate_from_currency_base: function(frm, cdt, cdn){
