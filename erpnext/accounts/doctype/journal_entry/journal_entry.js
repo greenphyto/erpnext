@@ -580,6 +580,9 @@ frappe.ui.form.on("GST for Journal Entry", {
 		}
 
 		erpnext.journal_entry.set_debit_credit_in_company_currency(frm, cdt, cdn);
+	},
+	tax_rate: function(frm,cdt,cdn){
+		erpnext.journal_entry.calculate_taxable_amount(frm,cdt,cdn);
 	}
 })
 
