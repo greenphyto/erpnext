@@ -413,7 +413,8 @@ class VATAuditReport(object):
 				conditions += opts[1]
 		data = frappe.db.sql("""
 			SELECT 
-				name, transaction_type, voucher_type, tax_template, total_debit, invoice_no, party_name, base_value, posting_date, is_tax_refund
+				name, transaction_type, voucher_type, tax_template, total_debit, invoice_no, party_name, base_value, posting_date, is_tax_refund,
+				tax_template_, total_taxable_amount_debit, total_taxable_amount_credit, total_tax_amount_debit, total_tax_amount_credit
 			FROM
 				`tabJournal Entry`
 			WHERE
@@ -453,7 +454,9 @@ class VATAuditReport(object):
 				self.invoices.setdefault(dt.voucher_no, dt)
 				self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": d.base_value})
 				self.tax_details.append((dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date)))
-			else:
+			
+			# Old Journal Entry with GST style summary
+			elif dt.voucher_type == "Journal Entry with GST" and not dt.tax_template_:
 				# overide data
 				rows = frappe.db.get_list("Journal Entry Account", {"parent":dt.name}, "*", ignore_permissions=1, debug=0, order_by="idx")
 				base_row = None
@@ -495,6 +498,34 @@ class VATAuditReport(object):
 					base_value = base_value_map[dt.name]
 					self.invoices.setdefault(dt.voucher_no, dt)
 					self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": base_value})
+			
+			# New Journal Entry with GST
+			else:
+				dt.taxes_and_charges = dt.tax_template_
+				account_head = ''
+				if d.tax_type == "Buying":
+					invoice_type = "Purchase Invoice"
+				else:
+					invoice_type = "Sales Invoice"
+
+				item_name = "item"
+				temp = {}
+
+				if dt.total_taxable_amount_debit:
+					base_value = flt(dt.total_taxable_amount_debit)
+				else:
+					base_value = flt(dt.total_taxable_amount_credit) *-1
+
+				if dt.total_tax_amount_debit:
+					total = dt.total_tax_amount_debit
+				else:
+					total = dt.total_tax_amount_credit * -1
+
+				temp[item_name] = [8, total]
+				tax_detail = json.dumps(temp)
+				self.invoices.setdefault(dt.voucher_no, dt)
+				self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": base_value})
+				self.tax_details.append((dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date)))
 
 	def get_consolidated_data(self, doctype):
 		consolidated_data_map = {}
