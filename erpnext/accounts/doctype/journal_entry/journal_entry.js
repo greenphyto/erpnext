@@ -448,6 +448,13 @@ cur_frm.cscript.update_totals = function(doc) {
 		tdb += flt(accounts[i].debit_in_currency_base, precision("debit_in_currency_base", accounts[i]));
 		tcb += flt(accounts[i].credit_in_currency_base, precision("credit_in_currency_base", accounts[i]));
 	}
+	var gst_entry = doc.gst_entry || [];
+	for(var i in gst_entry) {
+		td += flt(gst_entry[i].debit, precision("debit", gst_entry[i]));
+		tc += flt(gst_entry[i].credit, precision("credit", gst_entry[i]));
+		tdb += flt(gst_entry[i].debit_in_currency_base, precision("debit_in_currency_base", gst_entry[i]));
+		tcb += flt(gst_entry[i].credit_in_currency_base, precision("credit_in_currency_base", gst_entry[i]));
+	}
 	var doc = locals[doc.doctype][doc.name];
 	doc.total_debit = td;
 	doc.total_credit = tc;
@@ -577,6 +584,10 @@ frappe.ui.form.on("GST for Journal Entry", {
 })
 
 frappe.ui.form.on("Journal Entry Account", "accounts_remove", function(frm) {
+	cur_frm.cscript.update_totals(frm.doc);
+});
+
+frappe.ui.form.on("GST for Journal Entry", "gst_entry_remove", function(frm) {
 	cur_frm.cscript.update_totals(frm.doc);
 });
 
