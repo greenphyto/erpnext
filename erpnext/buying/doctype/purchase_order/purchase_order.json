@@ -887,6 +887,7 @@
    "options": "fa fa-legal"
   },
   {
+   "default": "Default Terms and Conditions",
    "fieldname": "tc_name",
    "fieldtype": "Link",
    "label": "Terms",
@@ -1247,7 +1248,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-20 15:08:43.185279",
+ "modified": "2024-11-18 17:25:40.794812",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order",
