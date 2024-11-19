@@ -127,6 +127,7 @@
   "payment_schedule_section",
   "payment_schedule",
   "terms_section_break",
+  "remarks",
   "tc_name",
   "terms",
   "more_info_tab",
@@ -1241,13 +1242,18 @@
    "in_standard_filter": 1,
    "label": "Purpose",
    "options": "Purchase\nMaterial Transfer\nMaterial Issue\nManufacture\nCustomer Provided\nServices"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Text Editor",
+   "label": "Remarks"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-20 15:08:43.185279",
+ "modified": "2024-11-19 07:21:02.950412",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order",
