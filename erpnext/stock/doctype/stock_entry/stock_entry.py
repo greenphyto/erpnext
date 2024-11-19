@@ -777,6 +777,7 @@ class StockEntry(StockEntryAsset, StockController):
 				if reset_outgoing_rate:
 					args = self.get_args_for_incoming_rate(d)
 					rate = get_incoming_rate(args, raise_error_if_no_rate)
+					print(780, rate)
 					if rate > 0:
 						if not d.set_basic_rate_manually or not d.basic_rate:
 							d.basic_rate = rate
@@ -849,7 +850,8 @@ class StockEntry(StockEntryAsset, StockController):
 				d.additional_cost = 0
 				continue
 			d.additional_cost = (flt(d.basic_amount) / incoming_items_cost) * self.total_additional_costs
-
+			print(850,  flt(d.basic_amount), incoming_items_cost, self.total_additional_costs)
+			print(853, d.additional_cost)
 	def update_valuation_rate(self):
 		for d in self.get("items"):
 			if d.transfer_qty:
@@ -1228,6 +1230,15 @@ class StockEntry(StockEntryAsset, StockController):
 				sl_entries.append(sle)
 
 	def get_gl_entries(self, warehouse_account):
+		
+		# debug
+		for d in self.items:
+			print("ITEM: ", d.item_code, d.qty, d.uom, d.s_warehouse,d.t_warehouse, d.basic_rate, d.valuation_rate, d.additional_cost, d.amount)
+		print("Total Additional Costs", self.total_additional_costs )
+		print("Total Outgoing Value ", self.total_outgoing_value )
+		print("Total Incoming Value ", self.total_incoming_value)
+		print("Value Difference     ", self.value_difference)
+
 		from erpnext.controllers.foms import get_cost_center, get_default_expense_production_account, get_previous_operation, get_default_wip_account
 		gl_entries = super(StockEntry, self).get_gl_entries(warehouse_account)
 
@@ -1411,8 +1422,8 @@ class StockEntry(StockEntryAsset, StockController):
 
 		result = process_gl_map(gl_entries, merge_entries=1)
 
-		# for d in result:
-		# 	print(1392, d.account, d.debit, d.credit, d.remarks)
+		for d in result:
+			print(1392, d.account, d.debit, d.credit, d.remarks)
 
 		return result
 

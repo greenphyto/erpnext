@@ -615,15 +615,16 @@ class JournalEntry(AccountsController):
 
 				d.against_account = frappe.db.get_value(d.reference_type, d.reference_name, field)
 		else:
-			for d in self.get("accounts"):
+			accounts = self.get("accounts") + (self.get("gst_entry") or [])
+			for d in accounts:
 				if flt(d.debit > 0):
 					accounts_debited.append(d.account or "")
-					party_debited.append(d.party or "")
+					party_debited.append(d.get("party") or "")
 				if flt(d.credit) > 0:
 					accounts_credited.append(d.account or "")
-					party_credited.append(d.party or "")
+					party_credited.append(d.get("party") or "")
 
-			for d in self.get("accounts"):
+			for d in accounts:
 				if flt(d.debit > 0):
 					d.against_account = ", ".join(list(set(accounts_credited)))
 					d.against_party = ", ".join(list(set(party_credited)))
@@ -648,14 +649,16 @@ class JournalEntry(AccountsController):
 	def set_total_debit_credit(self):
 		self.total_debit, self.total_credit, self.difference = 0, 0, 0
 		self.total_debit_in_currency_base, self.total_credit_in_currency_base, self.difference_in_currency_base = 0, 0, 0
-		for d in self.get("accounts"):
+		for d in self.get("accounts") + (self.get("gst_entry") or []):
 			if d.debit and d.credit:
 				frappe.throw(_("You cannot credit and debit same account at the same time"))
 
 			self.total_debit = flt(self.total_debit) + flt(d.debit, d.precision("debit"))
 			self.total_credit = flt(self.total_credit) + flt(d.credit, d.precision("credit"))
-			self.total_debit_in_currency_base = flt(self.total_debit_in_currency_base) + flt(d.debit_in_currency_base, d.precision("debit"))
-			self.total_credit_in_currency_base = flt(self.total_credit_in_currency_base) + flt(d.credit_in_currency_base, d.precision("credit"))
+			if d.get("debit_in_currency_base"):
+				self.total_debit_in_currency_base = flt(self.total_debit_in_currency_base) + flt(d.debit_in_currency_base, d.precision("debit"))
+			if d.get("credit_in_currency_base"):
+				self.total_credit_in_currency_base = flt(self.total_credit_in_currency_base) + flt(d.credit_in_currency_base, d.precision("credit"))
 
 		self.difference = flt(self.total_debit, self.precision("total_debit")) - flt(
 			self.total_credit, self.precision("total_credit")
@@ -826,7 +829,7 @@ class JournalEntry(AccountsController):
 
 	def build_gl_map(self):
 		gl_map = []
-		for d in self.get("accounts"):
+		for d in self.get("accounts") + self.get("gst_entry"):
 			if d.debit or d.credit or (self.voucher_type == "Exchange Gain Or Loss"):
 				r = [d.user_remark, self.remark]
 				r = [x for x in r if x]
@@ -836,10 +839,10 @@ class JournalEntry(AccountsController):
 					self.get_gl_dict(
 						{
 							"account": d.account,
-							"party_type": d.party_type,
+							"party_type": d.get("party_type"),
 							"due_date": self.due_date,
-							"party": d.party,
-							"against": d.against_account,
+							"party": d.get("party"),
+							"against": d.get("against_account"),
 							"debit": flt(d.debit, d.precision("debit")),
 							"credit": flt(d.credit, d.precision("credit")),
 							"account_currency": d.account_currency,
@@ -849,12 +852,12 @@ class JournalEntry(AccountsController):
 							"credit_in_account_currency": flt(
 								d.credit_in_account_currency, d.precision("credit_in_account_currency")
 							),
-							"against_voucher_type": d.reference_type,
-							"against_voucher": d.reference_name,
+							"against_voucher_type": d.get("reference_type"),
+							"against_voucher": d.get("reference_name"),
 							"remarks": remarks,
-							"voucher_detail_no": d.reference_detail_no,
+							"voucher_detail_no": d.get("reference_detail_no"),
 							"cost_center": d.cost_center,
-							"project": d.project,
+							"project": d.get("project"),
 							"finance_book": self.finance_book,
 						},
 						item=d,

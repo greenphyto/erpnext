@@ -8,7 +8,7 @@ import json
 import frappe
 from frappe import _
 from frappe.contacts.report.addresses_and_contacts import test_addresses_and_contacts
-from frappe.utils import formatdate, get_link_to_form, flt,fmt_money, getdate
+from frappe.utils import formatdate, get_link_to_form, flt,fmt_money, getdate, get_url_to_form
 
 
 def execute(filters=None):
@@ -455,20 +455,46 @@ class VATAuditReport(object):
 				self.tax_details.append((dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date)))
 			else:
 				# overide data
-				rows = frappe.db.get_list("Journal Entry Account", {"parent":dt.name, "gst_option":True}, "*", ignore_permissions=1, debug=0)
+				rows = frappe.db.get_list("Journal Entry Account", {"parent":dt.name}, "*", ignore_permissions=1, debug=0, order_by="idx")
+				base_row = None
+				total = 0
+				base_value = 0
+				item_name = "item"
+				tax_mapping = {}
+				base_value_map = {}
 				for row in rows:
-					dt.taxes_and_charges = row.gst_template
-					account_head = ''
-					invoice_type = "Purchase Invoice"
-					base_value = (dt.total_debit - row.credit) * -1
-					item_name = "item"
-					temp = {}
-					total = row.credit * -1
-					temp[item_name] = [8, total]
-					tax_detail = json.dumps(temp)
+					if row.gst_option:
+						if not base_row:
+							frappe.msgprint("GST Option should be after transaction row, please check on Journal Entry<br> {}".format(get_link_to_form("Journal Entry", dt.name)))
+							continue
+						dt.taxes_and_charges = row.gst_template
+						account_head = ''
+						invoice_type = "Purchase Invoice"
+						temp = {}
+						if row.credit:
+							if not base_row.credit:
+								frappe.msgprint("GST Option should be after transaction row, please check on Journal Entry<br> {}".format(get_link_to_form("Journal Entry", dt.name)))
+							base_value += base_row.credit * -1
+							total += row.credit * -1
+						else:
+							if not base_row.debit:
+								frappe.msgprint("GST Option should be after transaction row, please check on Journal Entry<br> {}".format(get_link_to_form("Journal Entry", dt.name)))
+							base_value += base_row.debit
+							total += row.debit
+						temp[item_name] = [8, total]
+						tax_detail = json.dumps(temp)
+
+						base_value_map[dt.name] = base_value
+						tax_mapping[dt.name] = (dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date))
+						base_row = None
+					else:
+						base_row = row
+					
+				for key, val in tax_mapping.items():
+					self.tax_details.append(val)
+					base_value = base_value_map[dt.name]
 					self.invoices.setdefault(dt.voucher_no, dt)
 					self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": base_value})
-					self.tax_details.append((dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date)))
 
 	def get_consolidated_data(self, doctype):
 		consolidated_data_map = {}

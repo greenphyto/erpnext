@@ -888,6 +888,7 @@
    "options": "fa fa-legal"
   },
   {
+   "default": "Default Terms and Conditions",
    "fieldname": "tc_name",
    "fieldtype": "Link",
    "label": "Terms",
