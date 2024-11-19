@@ -15,6 +15,7 @@
   "included_in_paid_amount",
   "col_break1",
   "account_head",
+  "account_code",
   "description",
   "section_break_10",
   "rate",
@@ -223,18 +224,27 @@
    "label": "Account Currency",
    "options": "Currency",
    "read_only": 1
+  },
+  {
+   "fetch_from": "account_head.account_number",
+   "fieldname": "account_code",
+   "fieldtype": "Data",
+   "label": "Account Code",
+   "read_only": 1
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-08-05 20:04:36.618240",
+ "modified": "2024-11-19 19:38:10.764129",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Taxes and Charges",
+ "naming_rule": "Random",
  "owner": "Administrator",
  "permissions": [],
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }
