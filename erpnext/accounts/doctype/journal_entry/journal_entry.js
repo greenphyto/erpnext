@@ -714,6 +714,8 @@ $.extend(erpnext.journal_entry, {
 	calculate_taxable_amount: function(frm,cdt,cdn){
 		var total_cr = 0;
 		var total_db = 0;
+		var total_tax_cr = 0;
+		var total_tax_db = 0;
 		$.each(frm.doc.accounts, (i, d)=>{
 			if ( cint(d.gst_option)){
 				total_cr += d.credit;
@@ -728,7 +730,13 @@ $.extend(erpnext.journal_entry, {
 
 			frappe.model.set_value(d.doctype, d.name, "debit_in_account_currency", value_db)
 			frappe.model.set_value(d.doctype, d.name, "credit_in_account_currency", value_cr)
+
+			total_tax_cr += flt(value_cr)
+			total_tax_db += flt(value_db)
+			
 		})
+		frm.set_value("total_tax_amount_debit", total_tax_db);
+		frm.set_value("total_tax_amount_credit", total_tax_cr);
 	},
 
 	calculate_from_currency_base: function(frm, cdt, cdn){
