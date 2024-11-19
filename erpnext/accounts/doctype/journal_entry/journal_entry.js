@@ -241,6 +241,30 @@ frappe.ui.form.on("Journal Entry", {
 		frm.cscript.update_totals(frm.doc);
 		frm.refresh_field("accounts");
 		frm.refresh_field('gst_entry');
+	},
+	tax_type: function(frm){
+		frm.set_value("tax_template_", '');
+		if (frm.doc.tax_type=="Buying"){
+			frm.set_value("template_tax_based_on", 'Purchase Taxes and Charges Template');
+		}else{
+			frm.set_value("template_tax_based_on", 'Sales Taxes and Charges Template')
+		}
+	},
+	tax_template_: function(frm){
+		frm.set_value("gst_entry", []);
+		if (frm.doc.tax_template_){
+			frappe.db.get_doc(frm.doc.template_tax_based_on, frm.doc.tax_template_).then(doc=>{
+				$.each(doc.taxes, (i, d)=>{
+					var row = frm.add_child("gst_entry");
+					frappe.model.set_value(row.doctype, row.name, "account", d.account_head)
+					row.tax_rate = d.rate
+					row.account_code = d.account_code
+					row.cost_center = d.cost_center
+				})
+				frm.refresh_field("gst_entry")
+				erpnext.journal_entry.calculate_taxable_amount(frm);
+			})
+		}
 	}
 });
 

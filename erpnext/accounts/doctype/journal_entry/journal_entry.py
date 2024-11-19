@@ -617,7 +617,7 @@ class JournalEntry(AccountsController):
 		else:
 			accounts = self.get("accounts") + (self.get("gst_entry") or [])
 			for d in accounts:
-				if flt(d.debit > 0):
+				if flt(d.debit) > 0:
 					accounts_debited.append(d.account or "")
 					party_debited.append(d.get("party") or "")
 				if flt(d.credit) > 0:
@@ -625,10 +625,10 @@ class JournalEntry(AccountsController):
 					party_credited.append(d.get("party") or "")
 
 			for d in accounts:
-				if flt(d.debit > 0):
+				if flt(d.debit) > 0:
 					d.against_account = ", ".join(list(set(accounts_credited)))
 					d.against_party = ", ".join(list(set(party_credited)))
-				if flt(d.credit > 0):
+				if flt(d.credit) > 0:
 					d.against_account = ", ".join(list(set(accounts_debited)))
 					d.against_party = ", ".join(list(set(party_debited)))
 

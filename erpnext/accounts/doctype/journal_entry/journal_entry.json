@@ -684,6 +684,7 @@
    "label": "Reference Details"
   },
   {
+   "default": "Buying",
    "fieldname": "tax_type",
    "fieldtype": "Select",
    "label": "Tax Type",
@@ -735,7 +736,7 @@
  "idx": 176,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-11-18 15:48:09.852084",
+ "modified": "2024-11-19 19:29:58.754280",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",
