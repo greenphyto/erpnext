@@ -922,7 +922,7 @@ class DebtorCreditorReport(object):
 			label="Cust. Code" if self.party_type == "Customer" else "Supp. Code",
 			fieldname="party_code",
 			fieldtype="Data",
-			width=80,
+			width=100,
 		)
 		self.add_column(
 			label="Receivable Account" if self.party_type == "Customer" else "Payable Account",
