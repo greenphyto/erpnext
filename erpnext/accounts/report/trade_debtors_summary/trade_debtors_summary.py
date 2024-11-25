@@ -53,18 +53,22 @@ class TradeDebtorsSummary(DebtorCreditorReport):
 			)
 			or {}
 		)
-		print(party_advance_amount)
 
 		if self.filters.show_gl_balance:
 			gl_balance_map = get_gl_balance(self.filters.report_date)
 
-		for party, party_dict in self.party_total.items():
+		for key, party_dict in self.party_total.items():
+			party = key[0]
+			party_account = key[1]
+
 			if party_dict.outstanding == 0:
 				continue
 
 			row = frappe._dict()
 
 			row.party = party
+			row.party_account = party_account
+
 			if self.party_naming_by == "Naming Series":
 				row.party_name = frappe.get_cached_value(
 					self.party_type, party, scrub(self.party_type) + "_name"
@@ -91,18 +95,20 @@ class TradeDebtorsSummary(DebtorCreditorReport):
 		for d in self.receivables:
 			self.init_party_total(d)
 
+			key = (d.party, d.party_account)
+
 			# Add all amount columns
-			for k in list(self.party_total[d.party]):
+			for k in list(self.party_total[key]):
 				if k not in ["currency", "sales_person"]:
 
-					self.party_total[d.party][k] += d.get(k, 0.0)
+					self.party_total[key][k] += d.get(k, 0.0)
 
 			# set territory, customer_group, sales person etc
 			self.set_party_details(d)
 
 	def init_party_total(self, row):
 		self.party_total.setdefault(
-			row.party,
+			(row.party, row.party_account),
 			frappe._dict(
 				{
 					"invoiced_in_account_currency": 0.0,
@@ -125,14 +131,15 @@ class TradeDebtorsSummary(DebtorCreditorReport):
 		)
 
 	def set_party_details(self, row):
-		self.party_total[row.party].currency = row.currency
+		keys = (row.party, row.party_account)
+		self.party_total[keys].currency = row.currency
 
 		for key in ("territory", "customer_group", "supplier_group"):
 			if row.get(key):
-				self.party_total[row.party][key] = row.get(key)
+				self.party_total[keys][key] = row.get(key)
 
 		if row.sales_person:
-			self.party_total[row.party].sales_person.append(row.sales_person)
+			self.party_total[keys].sales_person.append(row.sales_person)
 
 	def get_columns(self):
 		self.columns = []
@@ -141,6 +148,14 @@ class TradeDebtorsSummary(DebtorCreditorReport):
 			fieldname="party",
 			fieldtype="Link",
 			options=self.party_type,
+			width=180,
+		)
+
+		self.add_column(
+			label="Receivable Account" if self.party_type == "Customer" else "Payable Account",
+			fieldname="party_account",
+			fieldtype="Link",
+			options="Account",
 			width=180,
 		)
 
@@ -235,9 +250,9 @@ def get_gl_balance(report_date):
 	return frappe._dict(
 		frappe.db.get_all(
 			"GL Entry",
-			fields=["party", "sum(debit -  credit)"],
+			fields=["party", "sum(debit -  credit)", "account"],
 			filters={"posting_date": ("<=", report_date), "is_cancelled": 0},
-			group_by="party",
+			group_by="party, account",
 			as_list=1,
 		)
 	)
