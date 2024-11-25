@@ -109,6 +109,7 @@ class DebtorCreditorReport(object):
 					voucher_type=ple.voucher_type,
 					voucher_no=ple.voucher_no,
 					party=ple.party,
+					party_code=ple.party_code,
 					party_account=ple.account,
 					posting_date=ple.posting_date,
 					account_currency=ple.account_currency,
@@ -691,6 +692,8 @@ class DebtorCreditorReport(object):
 			self.qb_selection_filter.append(self.ple.posting_date.lte(self.filters.report_date))
 
 		ple = qb.DocType("Payment Ledger Entry")
+		party_table = qb.DocType(self.party_type)
+		field_code = "customer_code"  if self.party_type == "Customer" else "supplier_code"
 		query = (
 			qb.from_(ple)
 			.select(
@@ -708,8 +711,10 @@ class DebtorCreditorReport(object):
 				ple.amount,
 				ple.amount_in_account_currency,
 				ple.remarks,
-				ple.delinked
+				ple.delinked,
+				party_table[field_code].as_("party_code")
 			)
+			.left_join(party_table).on(ple.party == party_table.name)
 			.where(ple.delinked == 0)
 			.where(
 				((ple.voucher_type == "Journal Entry") & (ple.account == self.against_account)) |
@@ -723,7 +728,7 @@ class DebtorCreditorReport(object):
 		else:
 			query = query.orderby(self.ple.posting_date, self.ple.party)
 
-		self.ple_entries = query.run(as_dict=True)
+		self.ple_entries = query.run(as_dict=True, debug=0)
 
 	def get_sales_invoices_or_customers_based_on_sales_person(self):
 		if self.filters.get("sales_person"):
@@ -911,14 +916,20 @@ class DebtorCreditorReport(object):
 			fieldname="party",
 			fieldtype="Link",
 			options=self.party_type,
-			width=180,
+			width=200,
+		)
+		self.add_column(
+			label="Cust. Code" if self.party_type == "Customer" else "Supp. Code",
+			fieldname="party_code",
+			fieldtype="Data",
+			width=80,
 		)
 		self.add_column(
 			label="Receivable Account" if self.party_type == "Customer" else "Payable Account",
 			fieldname="party_account",
 			fieldtype="Link",
 			options="Account",
-			width=180,
+			width=280,
 		)
 
 		if self.party_naming_by == "Naming Series":
