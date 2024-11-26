@@ -330,6 +330,9 @@ class JournalEntry(AccountsController):
 					if s.schedule_date >= start_date and s.schedule_date <= end_date:
 						s.db_set("journal_entry", self.name)
 
+						if flt(d.credit, 2) != flt(s.depreciation_amount, 2):
+							frappe.throw(_(f"Row {d.idx}, Depreciation amount should be <b>{s.depreciation_amount}</b> ")) 
+
 						idx = cint(s.finance_book_id) or 1
 						finance_books = asset.get("finance_books")[idx - 1]
 						finance_books.value_after_depreciation -= s.depreciation_amount
