@@ -6,7 +6,7 @@ import json
 
 import frappe
 from frappe import _, msgprint, scrub
-from frappe.utils import cint, cstr, flt, fmt_money, formatdate, get_link_to_form, nowdate
+from frappe.utils import cint, cstr, flt, fmt_money, formatdate, get_link_to_form, nowdate, getdate
 
 import erpnext
 from erpnext.accounts.deferred_revenue import get_deferred_booking_accounts
@@ -86,6 +86,7 @@ class JournalEntry(AccountsController):
 		self.update_advance_paid()
 		self.update_inter_company_jv()
 		self.update_invoice_discounting()
+		self.link_asset_reference()
 
 	def on_cancel(self):
 		from erpnext.accounts.utils import unlink_ref_doc_from_payment_entries
@@ -318,6 +319,24 @@ class JournalEntry(AccountsController):
 						finance_books.db_update()
 
 						asset.set_status()
+
+	def link_asset_reference(self):
+		for d in self.get("accounts"):
+			if d.reference_type == "Asset" and d.reference_name and d.credit:
+				asset = frappe.get_doc("Asset", d.reference_name)
+				for s in asset.get("schedules"):
+					start_date = getdate(self.posting_date).replace(day=1)
+					end_date = getdate(self.posting_date)
+					if s.schedule_date >= start_date and s.schedule_date <= end_date:
+						s.db_set("journal_entry", self.name)
+
+						idx = cint(s.finance_book_id) or 1
+						finance_books = asset.get("finance_books")[idx - 1]
+						finance_books.value_after_depreciation -= s.depreciation_amount
+						finance_books.db_update()
+
+						asset.set_status()
+						break
 
 	def unlink_inter_company_jv(self):
 		if (
