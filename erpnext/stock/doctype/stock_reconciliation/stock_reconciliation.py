@@ -27,6 +27,26 @@ class StockReconciliation(StockController):
 	def __init__(self, *args, **kwargs):
 		super(StockReconciliation, self).__init__(*args, **kwargs)
 		self.head_row = ["Item Code", "Warehouse", "Quantity", "Valuation Rate"]
+	
+	def before_save(self):
+		if self.purpose == "Opening Stock":
+			for d in self.items:
+				if not d.batch_no:
+					# create batch
+					exists = frappe.get_value("Batch", {"item":d.item_code})
+					if exists:
+						d.batch_no = exists
+					else:
+						doc = frappe.new_doc("Batch")
+						doc.item = d.item_code
+						doc.insert(ignore_permissions=1)
+						d.batch_no = doc.name
+
+		else:
+			for d in self.items:
+				if not d.batch_no:
+					frappe.throw(_(f"Row {d.idx}, Batch No must be set."))
+
 
 	def validate(self):
 		if not self.expense_account:
