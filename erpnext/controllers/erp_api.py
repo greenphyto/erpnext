@@ -216,6 +216,7 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		basic_rate = 0
 		for m in bom.get("items"):
 			if (m.item_code == item_code or m.item_code == original_item) and m.operation == operation_name:
+				# get conversion rate from original item to current item 
 				basic_rate = m.rate
 		row.basic_rate = basic_rate
 		row.set_basic_rate_manually = 1
@@ -379,24 +380,71 @@ def submit_work_order_finish_goods(erpWorkOrderID, qty, expiryDate=""):
 	
 	se_doc = make_stock_entry_wo(work_order_name,"Manufacture", qty, return_doc=1)
 	se_doc.stock_entry_type_view = get_stock_entry_type("Harvesting Finish")
+
+	# get rate from incoming rate from prev process, and get prorate until near prev amount 109.5
+	rate_map = se_doc.get_previous_rate()
+	for row in se_doc.get("items"):
+		if row.s_warehouse:
+			row.basic_rate = flt(rate_map.get(row.item_code), 5)
+			row.valuation_rate = row.basic_rate
+			row.set_basic_rate_manually = 1
+
 	se_doc.set_expense_account()	
 	se_doc.save()
 	se_doc.submit()
 
-	# debug
-	for d in se_doc.items:
-		if d.is_finished_item and expiryDate:
-			frappe.db.set_value("Batch", d.batch_no, "expiry_date", getdate(expiryDate))
+	# # debug
+	# for d in se_doc.items:
+	# 	if d.is_finished_item and expiryDate:
+	# 		frappe.db.set_value("Batch", d.batch_no, "expiry_date", getdate(expiryDate))
 
-	for d in se_doc.get("items"):
-		if d.is_finished_item:
-			create_do_based_on_work_order(se_doc.work_order, d.qty, d.t_warehouse, d.batch_no)
+	# for d in se_doc.get("items"):
+	# 	if d.is_finished_item:
+	# 		create_do_based_on_work_order(se_doc.work_order, d.qty, d.t_warehouse, d.batch_no)
 
 	# update_so_working(so_sub_id, lot_id)
+
 	update_log("Work Order", data_name, work_order_name)
 	return {
 		"ERPStockEntry":se_doc.name
 	}
+
+def add_wip_additional_cost(stock_entry, work_order):
+	# get all additional from transfer material
+	data = frappe.db.sql("""
+		SELECT 
+			c.expense_account,
+			c.exchange_rate,
+			c.account_currency,
+			c.description,
+			c.amount,
+			c.base_amount
+		FROM
+			`tabLanded Cost Taxes and Charges` c
+				LEFT JOIN
+			`tabStock Entry` s ON s.name = c.parent
+		WHERE
+			c.parentfield = 'additional_costs'
+				AND c.parenttype = 'Stock Entry'
+				AND s.work_order = %s
+				AND s.purpose = 'Material Transfer for Manufacture'
+				AND s.docstatus = 1
+	""", (work_order), as_dict=1, debug=0)
+	data_map = {}
+	for d in data:
+		key = (d.expense_account, d.description)
+		if key in data_map:
+			data_map[key].amount = data_map[key].amount + d.amount
+			data_map[key].base_amount = data_map[key].base_amount + d.base_amount
+		else:
+			data_map[key] = d
+		
+	
+	for key, d in data_map.items():
+		row = stock_entry.append("additional_costs")
+		row.update(d)
+
+	return stock_entry
 
 # Create Material Reserve
 @frappe.whitelist()

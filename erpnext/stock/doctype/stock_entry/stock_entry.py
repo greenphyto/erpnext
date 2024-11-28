@@ -739,6 +739,7 @@ class StockEntry(StockEntryAsset, StockController):
 
 		# Set basic rate for incoming items
 		for d in self.get("items"):
+			print(742, d.item_code, d.basic_rate)
 			if d.s_warehouse or d.set_basic_rate_manually:
 				continue
 			if d.allow_zero_valuation_rate:
@@ -774,12 +775,11 @@ class StockEntry(StockEntryAsset, StockController):
 		outgoing_items_cost = 0.0
 		for d in self.get("items"):
 			if d.s_warehouse:
-				if reset_outgoing_rate:
+				if reset_outgoing_rate and not d.set_basic_rate_manually:
 					args = self.get_args_for_incoming_rate(d)
 					rate = get_incoming_rate(args, raise_error_if_no_rate)
-					print(780, rate)
 					if rate > 0:
-						if not d.set_basic_rate_manually or not d.basic_rate:
+						if not d.basic_rate:
 							d.basic_rate = rate
 
 				d.basic_amount = flt(flt(d.transfer_qty) * flt(d.basic_rate), d.precision("basic_amount"))
@@ -850,14 +850,14 @@ class StockEntry(StockEntryAsset, StockController):
 				d.additional_cost = 0
 				continue
 			d.additional_cost = (flt(d.basic_amount) / incoming_items_cost) * self.total_additional_costs
-			print(850,  flt(d.basic_amount), incoming_items_cost, self.total_additional_costs)
-			print(853, d.additional_cost)
+
 	def update_valuation_rate(self):
 		for d in self.get("items"):
 			if d.transfer_qty:
 				d.amount = flt(flt(d.basic_amount) + flt(d.additional_cost), d.precision("amount"))
 				# Do not round off valuation rate to avoid precision loss
 				d.valuation_rate = flt(d.basic_rate) + (flt(d.additional_cost) / flt(d.transfer_qty))
+				print(859, d.item_code,d.basic_rate, d.valuation_rate)
 
 	def set_total_incoming_outgoing_value(self):
 		self.total_incoming_value = self.total_outgoing_value = 0.0
@@ -1232,12 +1232,12 @@ class StockEntry(StockEntryAsset, StockController):
 	def get_gl_entries(self, warehouse_account):
 		
 		# debug
-		for d in self.items:
-			print("ITEM: ", d.item_code, d.qty, d.uom, d.s_warehouse,d.t_warehouse, d.basic_rate, d.valuation_rate, d.additional_cost, d.amount)
-		print("Total Additional Costs", self.total_additional_costs )
-		print("Total Outgoing Value ", self.total_outgoing_value )
-		print("Total Incoming Value ", self.total_incoming_value)
-		print("Value Difference     ", self.value_difference)
+		# for d in self.items:
+		# 	print("ITEM: ,{},{},{},{},{},{},{},{},{}".format(d.item_code, d.qty, d.uom, d.s_warehouse,d.t_warehouse, d.basic_rate, d.valuation_rate, d.additional_cost, d.amount))
+		# print("Total Additional Costs", self.total_additional_costs )
+		# print("Total Outgoing Value ", self.total_outgoing_value )
+		# print("Total Incoming Value ", self.total_incoming_value)
+		# print("Value Difference     ", self.value_difference)
 
 		from erpnext.controllers.foms import get_cost_center, get_default_expense_production_account, get_previous_operation, get_default_wip_account
 		gl_entries = super(StockEntry, self).get_gl_entries(warehouse_account)
@@ -1343,21 +1343,8 @@ class StockEntry(StockEntryAsset, StockController):
 
 		# special case for Work Order Greenphyto
 		# reference doc: costs variance for work order v1.xlxs
-		if self.purpose in ('Material Transfer for Manufacture', "Manufacture"):
-			prev_operation = get_previous_operation(self.operation or self.purpose)
-			prev_wip = frappe.db.sql("""
-				SELECT 
-					gl.name, s.name AS se_name, sum(gl.debit) as debit, sum(gl.credit) as credit, gl.account
-				FROM
-					`tabGL Entry` gl
-						LEFT JOIN
-					`tabStock Entry` s ON gl.voucher_no = s.name
-				WHERE
-					s.operation = %s
-						AND s.work_order = %s
-						AND s.docstatus = 1
-						AND gl.debit > 0
-			""", (prev_operation, self.work_order), as_dict=1, debug=0)
+		if self.purpose in ['Material Transfer for Manufacture']:
+			prev_wip = self.get_previous_ledger_entry(self.operation or self.purpose)
 			if prev_wip:
 				prev_wip = prev_wip[0]
 				if prev_wip.name:
@@ -1419,13 +1406,93 @@ class StockEntry(StockEntryAsset, StockController):
 
 					gl_entries.append(row)
 
-
 		result = process_gl_map(gl_entries, merge_entries=1)
 
-		for d in result:
-			print(1392, d.account, d.debit, d.credit, d.remarks)
+		# print("\nSE RESULT:")
+		# for d in self.get("items"):
+		# 	print("ITEM:", d.idx, d.s_warehouse, d.t_warehouse, d.item_code, d.qty,d.transfer_qty, d.basic_rate, d.basic_amount)
+		# for d in self.get("additional_costs"):
+		# 	print("COST: ", d.idx, d.description, d.amount)
+		# print("TOTAL OUTGOING VALUE :", self.total_outgoing_value)
+		# print("TOTAL INCOMING VALUE :", self.total_incoming_value)
+		# print("VALUE DIFFERENT      :", self.value_difference)
+
+		# for d in result:
+		# 	print( "{}, {}, {}, {}".format("RESULT", d.account, d.debit, d.credit))
 
 		return result
+	
+	def get_previous_ledger_entry(self, operation):
+		prev_operation = get_previous_operation(operation)
+		prev_wip = frappe.db.sql("""
+			SELECT 
+				gl.name, s.name AS se_name, sum(gl.debit) as debit, sum(gl.credit) as credit, gl.account
+			FROM
+				`tabGL Entry` gl
+					LEFT JOIN
+				`tabStock Entry` s ON gl.voucher_no = s.name
+			WHERE
+				s.operation = %s
+					AND s.work_order = %s
+					AND s.docstatus = 1
+					AND gl.debit > 0
+		""", (prev_operation, self.work_order), as_dict=1, debug=0)
+		
+		return prev_wip
+
+	def get_previous_rate(self):
+		# if take from SE Items valuation rate it will included with additional cost, if use basic amount it will exluded
+		data_item_amount = frappe.db.sql("""
+			SELECT 
+				s.operation,
+				se.item_code,
+				se.parent,
+				sum(se.transfer_qty) as stock_qty,
+				sum(se.basic_amount) as basic_amount
+			FROM
+				`tabStock Entry Detail` se
+					LEFT JOIN
+				`tabStock Entry` s ON s.name = se.parent
+			WHERE
+				s.docstatus = 1
+					AND s.work_order = %s
+				AND s.purpose = 'Material Transfer for Manufacture'
+			group by se.item_code
+			""", (self.work_order), as_dict=1)
+
+		total_item_amount = 0
+		for d in data_item_amount:
+			total_item_amount += flt(d.basic_amount)
+		
+		total_item_amount = flt(total_item_amount,2)
+
+		data_item_costs = frappe.db.sql("""
+			SELECT 
+				s.name,
+				s.operation,
+				sum(s.total_additional_costs) as total_costs
+			FROM
+				`tabStock Entry` s
+			WHERE
+				s.docstatus = 1
+					AND s.work_order = %s
+				and s.purpose = 'Material Transfer for Manufacture'
+			""", (self.work_order), as_dict=1)
+		total_costs = 0
+		if data_item_costs:
+			total_costs = data_item_costs[0].get("total_costs")
+		
+		
+		rate_map = frappe._dict()
+		total = 0
+		for d in data_item_amount:
+			add_cost = flt((d.basic_amount / total_item_amount) * total_costs, 2)
+			new_rate  = (d.basic_amount + flt(add_cost)) / flt(d.stock_qty,5)
+			rate_map[d.item_code] = new_rate
+			total += new_rate
+			
+		return rate_map
+		
 
 	def update_work_order(self):
 		def _validate_work_order(pro_doc):

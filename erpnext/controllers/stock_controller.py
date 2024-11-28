@@ -165,7 +165,6 @@ class StockController(AccountsController):
 							expense_account = frappe.db.get_value("Company", self.company, "stock_adjustment_account")
 							item_account = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, operation="Harvesting")
 							item_account_currency = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency", operation="Harvesting")
-
 						# here
 						row = self.get_gl_dict(
 							{
@@ -249,7 +248,7 @@ class StockController(AccountsController):
 
 		# debug
 		# for d in gl_list:
-		# 	print(1389, d.account, d.debit, d.credit)
+		# 	print("SC:, {}, {}, {}".format(d.account, d.debit, d.credit))
 
 		return process_gl_map(gl_list, precision=precision)
 
