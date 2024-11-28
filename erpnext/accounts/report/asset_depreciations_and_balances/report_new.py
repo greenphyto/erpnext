@@ -34,6 +34,12 @@ def get_data(filters):
 		'cost_of_sold_asset',
 		'cost_of_new_purchase',
 	]
+	all_category = frappe.db.get_list("Asset Category")
+	for d in all_category:
+		map_assets[d.name] = {
+				"assets":[]
+			}
+
 	for asset in assets:
 		category = asset["asset_category"]
 		asset_select = asset_selects[asset.name]
@@ -49,7 +55,7 @@ def get_data(filters):
 			map_assets[category]['assets'].append(asset)
 			for field in calculate_fields:
 				asset[field] = flt(asset.get(field)) or flt(asset_select.get(field))
-				map_assets[category][field] += asset.get(field)
+				map_assets[category][field] = flt(map_assets[category].get(category)) + asset.get(field)
 		
 		asset.cost_as_on_to_date = flt(
 			flt(asset.cost_as_on_from_date)
