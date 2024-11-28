@@ -739,7 +739,6 @@ class StockEntry(StockEntryAsset, StockController):
 
 		# Set basic rate for incoming items
 		for d in self.get("items"):
-			print(742, d.item_code, d.basic_rate)
 			if d.s_warehouse or d.set_basic_rate_manually:
 				continue
 			if d.allow_zero_valuation_rate:
@@ -857,7 +856,6 @@ class StockEntry(StockEntryAsset, StockController):
 				d.amount = flt(flt(d.basic_amount) + flt(d.additional_cost), d.precision("amount"))
 				# Do not round off valuation rate to avoid precision loss
 				d.valuation_rate = flt(d.basic_rate) + (flt(d.additional_cost) / flt(d.transfer_qty))
-				print(859, d.item_code,d.basic_rate, d.valuation_rate)
 
 	def set_total_incoming_outgoing_value(self):
 		self.total_incoming_value = self.total_outgoing_value = 0.0

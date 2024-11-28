@@ -149,7 +149,11 @@ class StockController(AccountsController):
 					if warehouse_account.get(sle.warehouse):
 						# from warehouse account
 
-						sle_rounding_diff += flt(sle.stock_value_difference)
+						stock_value_difference = flt(sle.stock_value_difference)
+						# if self.purpose == "Manufacture" and item_row.s_warehouse:
+						# 	stock_value_difference = item_row.amount * -1
+
+						sle_rounding_diff += flt(stock_value_difference)
 
 						self.check_expense_account(item_row)
 						# expense account/ target_warehouse / source_warehouse
@@ -173,7 +177,7 @@ class StockController(AccountsController):
 								"cost_center": item_row.cost_center,
 								"project": item_row.project or self.get("project"),
 								"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
-								"debit": flt(sle.stock_value_difference, precision),
+								"debit": flt(stock_value_difference, precision),
 								"is_opening": item_row.get("is_opening") or self.get("is_opening") or "No",
 							},
 							item_account_currency,
@@ -187,7 +191,7 @@ class StockController(AccountsController):
 								"against": item_account,
 								"cost_center": item_row.cost_center,
 								"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
-								"debit": -1 * flt(sle.stock_value_difference, precision),
+								"debit": -1 * flt(stock_value_difference, precision),
 								"project": item_row.get("project") or self.get("project"),
 								"is_opening": item_row.get("is_opening") or self.get("is_opening") or "No",
 							},
