@@ -1316,3 +1316,12 @@ def asset_trigger(doc, method=""):
 		create_log(doc.doctype, doc.name, 'Cancel' if method == 'on_cancel' else "Delete")
 	else:
 		create_log(doc.doctype, doc.name)
+
+@frappe.whitelist()
+def get_asset_depreciation_date(source_name, target_doc=None, ignore_permissions=False):
+	return {}
+
+@frappe.whitelist()
+def filter_asset_dep_date(doctype, txt, searchfield, start, page_len, filters):
+	print(1326, filters)
+	return frappe.db.get_list("Asset")
