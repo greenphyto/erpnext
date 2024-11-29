@@ -323,3 +323,5 @@ erpnext.patches.v14_0.create_non_stock_item
 erpnext.patches.v14_0.make_asset_change_log
 erpnext.patches.v14_0.fix_manufacturing
 erpnext.patches.v14_0.modify_stock_entry_type2
+erpnext.patches.v14_0.add_operation_default
+erpnext.patches.v14_0.set_default_warehouse_production
