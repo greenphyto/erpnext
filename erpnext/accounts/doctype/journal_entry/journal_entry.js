@@ -43,6 +43,8 @@ frappe.ui.form.on("Journal Entry", {
 			frm.add_custom_button(__('Quick Entry'), function() {
 				return erpnext.journal_entry.quick_entry(frm);
 			});
+
+			frm.trigger("easy_depreciation_btn");
 		}
 
 		// hide /unhide fields based on currency
@@ -56,6 +58,35 @@ frappe.ui.form.on("Journal Entry", {
 		}
 
 		erpnext.journal_entry.switch_view_based_on_type(frm);
+	},
+
+	easy_depreciation_btn: function(frm){
+		frappe.throw("Under contruction")
+		frm.$easy_dep_btn = frm.add_custom_button(__('Make Depreciation Entry'),
+			function() {
+				erpnext.utils.map_current_doc({
+					method: "erpnext.assets.doctype.asset.asset.get_asset_depreciation_date",
+					source_doctype: "Asset",
+					target: me.frm,
+					setters: {
+						// schedule_date: me.frm.doc.posting_date,
+						asset_name:"",
+						asset_category:"",
+					},
+					// filters: [
+					// 	{
+					// 		"label":"Schedule Date",
+					// 		"fieldname": "schedule_date", 
+					// 		"fieldtype": "Date", 
+					// 	}
+					// ],
+					get_query_filters: {
+						docstatus: 1,
+						company: me.frm.doc.company
+					},
+					get_query_method: "erpnext.stock.doctype.material_request.material_request.filter_asset_dep_date"
+				})
+			});
 	},
 
 	make_inter_company_journal_entry: function(frm) {
