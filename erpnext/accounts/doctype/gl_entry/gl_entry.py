@@ -139,9 +139,9 @@ class GLEntry(Document):
 					if account_number:
 						against_account_number.append(account_number)
 
-		self.against_account = ", ".join(against_account)
-		self.against_party =  ", ".join(against_party)
-		self.against_account_number = ", ".join(against_account_number)
+		self.against_account = ", ".join( list(set(against_account)) )
+		self.against_party =  ", ".join( list(set(against_party)) )
+		self.against_account_number = ", ".join( list(set(against_account_number)) )
 		self.account_number = frappe.get_value("Account", self.account, "account_number")
 
 	def check_mandatory(self):
