@@ -48,7 +48,6 @@ frappe.ui.form.on("Journal Entry", {
 		}
 
 		// hide /unhide fields based on currency
-		erpnext.journal_entry.toggle_fields_based_on_currency(frm);
 
 		if ((frm.doc.voucher_type == "Inter Company Journal Entry") && (frm.doc.docstatus == 1) && (!frm.doc.inter_company_journal_entry_reference)) {
 			frm.add_custom_button(__("Create Inter Company Journal Entry"),
@@ -58,12 +57,13 @@ frappe.ui.form.on("Journal Entry", {
 		}
 
 		erpnext.journal_entry.switch_view_based_on_type(frm);
+		erpnext.journal_entry.toggle_fields_based_on_currency(frm, 1);
 	},
 
 	easy_depreciation_btn: function(frm){
-		frappe.throw("Under contruction")
 		frm.$easy_dep_btn = frm.add_custom_button(__('Make Depreciation Entry'),
-			function() {
+		function() {
+				frappe.throw("Under contruction")
 				erpnext.utils.map_current_doc({
 					method: "erpnext.assets.doctype.asset.asset.get_asset_depreciation_date",
 					source_doctype: "Asset",
@@ -650,7 +650,7 @@ frappe.ui.form.on("GST for Journal Entry", "gst_entry_remove", function(frm) {
 });
 
 $.extend(erpnext.journal_entry, {
-	toggle_fields_based_on_currency: function(frm) {
+	toggle_fields_based_on_currency: function(frm, from_refresh=0) {
 		var origin_fields = ["debit", "credit"];
 		var new_fields = ["debit_in_currency_base", "credit_in_currency_base"];
 
@@ -661,6 +661,8 @@ $.extend(erpnext.journal_entry, {
 		var table = frm.fields_dict[item_table];
 
 		var show = frm.doc.multi_currency;
+
+		if (!show && from_refresh) return;
 
 		var field_label_map = {
 			"debit_in_currency_base": "Debit",

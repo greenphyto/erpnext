@@ -706,6 +706,10 @@ class JournalEntry(AccountsController):
 			if d.account_currency != self.company_currency and d.account_currency not in alternate_currency:
 				alternate_currency.append(d.account_currency)
 
+			if d.account_currency != self.company_currency:
+				d.credit_in_account_currency = d.credit_in_currency_base
+				d.debit_in_account_currency = d.debit_in_currency_base
+
 		if alternate_currency:
 			if not self.multi_currency:
 				frappe.throw(_("Please check Multi Currency option to allow accounts with other currency"))
@@ -713,7 +717,7 @@ class JournalEntry(AccountsController):
 		self.set_exchange_rate()
 
 	def set_amounts_in_company_currency(self):
-		if not (self.voucher_type == "Exchange Gain Or Loss" and self.multi_currency):
+		if not self.multi_currency:
 			for d in self.get("accounts"):
 				d.debit_in_account_currency = flt(
 					d.debit_in_account_currency, d.precision("debit_in_account_currency")
