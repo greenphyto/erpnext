@@ -1637,7 +1637,10 @@ class StockEntry(StockEntryAsset, StockController):
 		for d in self.get("items"):
 			if self.purpose in ['Material Transfer', 'Material Transfer for Manufacture', "Manufacture"]:
 				# keep balance sheet
-				d.expense_account = get_item_account(warehouse_account, d.s_warehouse or d.t_warehouse, d.item_code, get_default=1)
+				operation = self.operation
+				if self.purpose == "Manufacture":
+					operation = "Harvesting"
+				d.expense_account = get_item_account(warehouse_account, d.s_warehouse or d.t_warehouse, d.item_code, get_default=1, operation=operation)
 			if self.purpose == "Material Issue":
 				item = frappe.db.sql(
 					"""select i.name, i.stock_uom, i.description, i.image, i.item_name, i.item_group,

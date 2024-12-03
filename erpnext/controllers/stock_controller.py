@@ -141,6 +141,9 @@ class StockController(AccountsController):
 		warehouse_with_no_account = []
 		precision = self.get_debit_field_precision()
 		operation = self.get("operation")
+		if self.purpose == "Manufacture":
+			operation = "Harvesting"
+
 		for item_row in voucher_details:
 			sle_list = sle_map.get(item_row.name)
 			sle_rounding_diff = 0.0
