@@ -105,6 +105,7 @@ class MaterialRequest(BuyingController):
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
 		self.reset_default_field_value("set_from_warehouse", "items", "from_warehouse")
 		self.set_is_low_amount()
+		self.check_attachment()
 
 	def before_update_after_submit(self):
 		self.validate_schedule_date()
@@ -130,10 +131,13 @@ class MaterialRequest(BuyingController):
 	def before_save(self):
 		self.set_status(update=True)
 
-	def before_submit(self):
+	def check_attachment(self):
+		if self.is_new():
+			return
+		
 		attachments = self.get_attachments()
 		if len(attachments) == 0:
-			frappe.throw(_("Attachment is mandatory for submission"))
+			frappe.throw(_("Unable to approve due to missing attachment"))
 		self.set_status(update=True)
 	
 	def get_attachments(self):
