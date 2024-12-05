@@ -45,7 +45,7 @@
  ],
  "login_required": 1,
  "max_attachment_size": 5,
- "modified": "2024-06-21 10:01:41.020264",
+ "modified": "2024-12-05 10:16:56.620252",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "permit-to-work",
@@ -1284,7 +1284,7 @@
    "hidden": 0,
    "max_length": 0,
    "max_value": 0,
-   "options": "I, the Supervisor for the above work activities hereby take responsibility to supervise full time and ensure all workers comply with the safe work procedure and work in a safe manner.",
+   "options": "I, as the Supervisor for the aforementioned work activities, hereby take full responsibility for supervising the tasks on-site, ensuring that all workers strictly follow the safe work procedures and maintain safe working practices at all times. I also confirm that all workers involved in this work have successfully completed the required Safety Induction Course (SIC) training.",
    "read_only": 0,
    "reqd": 0,
    "show_in_filter": 0
