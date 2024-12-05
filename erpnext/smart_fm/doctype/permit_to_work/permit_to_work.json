@@ -295,7 +295,7 @@
    "fieldname": "declaration",
    "fieldtype": "HTML",
    "label": "Declaration",
-   "options": "I, the Supervisor for the above work activities hereby take responsibility to supervise full time and ensure all workers comply with the safe work procedure and work in a safe manner."
+   "options": "I, as the Supervisor for the aforementioned work activities, hereby take full responsibility for supervising the tasks on-site, ensuring that all workers strictly follow the safe work procedures and maintain safe working practices at all times. I also confirm that all workers involved in this work have successfully completed the required Safety Induction Course (SIC) training."
   },
   {
    "fieldname": "column_break_vo7eg",
@@ -838,7 +838,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-21 17:37:01.825577",
+ "modified": "2024-12-05 10:17:27.404744",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Permit to Work",

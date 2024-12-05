@@ -23,6 +23,7 @@
   "section_break_pikoh",
   "datetime",
   "column_break_iplgx",
+  "preferred_return_datetime",
   "return_datetime",
   "section_break_pz9oq",
   "declaration",
@@ -262,12 +263,17 @@
    "in_standard_filter": 1,
    "label": "Key Issued",
    "options": "Key"
+  },
+  {
+   "fieldname": "preferred_return_datetime",
+   "fieldtype": "Datetime",
+   "label": "Preferred Return Date and Time for Key or Access Card"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-12 09:29:11.261577",
+ "modified": "2024-12-05 10:10:11.625595",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Key Control",
