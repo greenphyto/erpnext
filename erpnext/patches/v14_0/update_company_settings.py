@@ -4,9 +4,9 @@ def execute():
     # add WIP account
     add_wip_account()
     add_cost_center()
-    update_company_settings()
+    _update_company_settings()
 
-def update_company_settings():
+def _update_company_settings():
     print("Update Company Settings for manufacturing section")
     doc = frappe.get_doc("Company", "Greenphyto Pte Ltd")
     doc.default_cost_expense_account = "540000 - COS Prod Variance - GPL"
@@ -31,8 +31,8 @@ def add_wip_account():
     # seeding
     accounts = [
         {
-            "account_name": "Stock - Seedingd WIP",
-            "account_number": "121305",
+            "account_name": "Stock - Seeding WIP",
+            "account_number": "121301",
             "is_group": 0,
             "company": "Greenphyto Pte Ltd",
             "root_type": "Asset",
