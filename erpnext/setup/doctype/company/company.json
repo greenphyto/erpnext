@@ -80,6 +80,7 @@
   "stock_received_but_not_billed",
   "default_provisional_account",
   "expenses_included_in_valuation",
+  "opening_stock_from_stock_entry",
   "fixed_asset_defaults",
   "accumulated_depreciation_account",
   "depreciation_expense_account",
@@ -774,6 +775,12 @@
    "fieldtype": "Table",
    "label": "Operation WIP Account",
    "options": "Operation WIP Account"
+  },
+  {
+   "fieldname": "opening_stock_from_stock_entry",
+   "fieldtype": "Link",
+   "label": "Opening Stock from Stock Entry",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-building",
@@ -781,7 +788,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2024-10-23 12:17:09.083342",
+ "modified": "2024-12-05 20:02:52.074384",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

@@ -1601,6 +1601,9 @@ class StockEntry(StockEntryAsset, StockController):
 			if not ret.get(field):
 				ret[field] = frappe.get_cached_value("Company", self.company, company_field)
 
+		if self.stock_entry_type_view == "Stock Opening":
+			ret['expense_account'] = frappe.get_cached_value("Company", self.company, "opening_stock_from_stock_entry") 
+
 		args["posting_date"] = self.posting_date
 		args["posting_time"] = self.posting_time
 
