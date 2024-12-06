@@ -124,6 +124,7 @@ class Item(Document):
 		self.validate_fixed_asset()
 		self.clear_retain_sample()
 		self.validate_retain_sample()
+		self.validate_package()
 		self.validate_uom_conversion_factor()
 		self.validate_customer_provided_part()
 		self.update_defaults_from_item_group()
@@ -135,7 +136,6 @@ class Item(Document):
 		self.set_material_number()
 		self.validate_debit_note_item()
 		self.set_asset_category()
-		self.validate_package()
 
 		set_item_tax_from_hsn_code(self)
 
@@ -263,11 +263,13 @@ class Item(Document):
 			if row:
 				row = row[0]
 				row.conversion_factor = flt(d.weight)
+				row.cf_view = flt(d.weight)
 			else:
 				row = self.append("uoms")
 				row.uom = d.packaging
 				row.conversion_factor = flt(d.weight)
 				row.is_packaging = 1
+				row.cf_view = flt(d.weight)
 		
 		# delete
 		for d in list(self.get("uoms", {"is_packaging":1})):
