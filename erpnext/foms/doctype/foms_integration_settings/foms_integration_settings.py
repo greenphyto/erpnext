@@ -50,6 +50,11 @@ class FOMSIntegrationSettings(Document):
 		frappe.msgprint("Get batch running..")
 		frappe.enqueue("erpnext.controllers.foms.get_batch", show_progress=True)
 
+	@frappe.whitelist()
+	def update_batch(self):
+		frappe.msgprint("Get batch running..")
+		frappe.enqueue("erpnext.controllers.foms.push_batch", show_progress=True)
+
 	def validate(self):
 		self.update_uom_reference()
 		self.update_item_reference()

@@ -478,6 +478,67 @@ def _update_stock_receipt(log, api=None):
 			frappe.db.set_value("Batch", d.batch_no, "foms_id", res.get('id'))
 			frappe.db.set_value("Batch", d.batch_no, "foms_name", res.get('batchRefNo'))
 
+# erpnext.controllers.foms.push_batch
+def push_batch():
+	api = FomsAPI()
+
+	# this only if 1 batch 1 warehouse
+	data = frappe.db.sql("""
+		SELECT 
+			s.warehouse,
+			s.batch_no,
+			b.item,
+			b.expiry_date,
+			b.foms_id,
+			b.creation,
+			(s.actual_qty) AS qty,
+			b.reference_name,
+			b.reference_doctype
+		FROM
+			`tabStock Ledger Entry` s
+				LEFT JOIN
+			`tabBatch` b ON s.batch_no = b.name
+		WHERE
+			s.is_cancelled = 0
+		GROUP BY s.warehouse , s.batch_no
+	""", as_dict=1)
+	for d in data:		
+		if not d.item or "TEST" in d.item:
+			continue
+
+		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id")
+		# supplier_id = frappe.get_value("Supplier", doc.supplier, "foms_id")
+		raw_id = frappe.get_value("Item", d.item, "foms_raw_id")
+
+		qty = d.qty
+
+		# supplier
+		if d.reference_doctype in ['Purchase Receipt']:
+			supplier_name = frappe.get_value(d.reference_doctype, d.reference_name, "supplier")
+			supplier_id = frappe.get_value("Supplier", supplier_name, "foms_id")
+		else:
+			supplier_id = "226" # temporary use Bio-Flora
+
+		# need convert current PR receive to item default
+		data = {
+			"id": cint(d.foms_id),
+			"rawMaterialId": raw_id,
+			"batchRefNo": d.batch_no,
+			"dateOfCreation": getdate(d.creation),
+			"expiryDate": getdate(d.expiry_date),
+			"warehouseId": warehouse_id,
+			"supplierId": supplier_id,
+			"quantity": qty
+		}
+
+		res = api.update_raw_material_receipt(data)
+		print("Updating", d.item, d.batch_no, d.warehouse, d.qty)
+		print(523, res)
+		if res:
+			frappe.db.set_value("Batch", d.batch_no, "foms_id", res.get('id'))
+			frappe.db.set_value("Batch", d.batch_no, "foms_name", res.get('batchRefNo'))
+
+
 # MATERIAL TRANSFER
 def update_material_transfer():
 	sync_controller("Stock Entry", _update_material_transfer)
