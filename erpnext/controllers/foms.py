@@ -529,7 +529,6 @@ def foms_all_supplier():
 	for d in data.get("items", []):
 		# not yet finish
 		name = d.get("supplierName")
-		print("Renaming", name, d['id'])
 		frappe.db.set_value("Supplier", {"supplier_name": name}, "foms_id", d['id'])
 		frappe.db.set_value("Supplier", {"supplier_name": name}, "foms_name", d['supplierRefNo'])
 
