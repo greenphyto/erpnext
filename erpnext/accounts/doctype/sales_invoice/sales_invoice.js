@@ -167,7 +167,7 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 			}
 		}
 
-		frm.cscript.change_package_display();
+		this.frm.cscript.change_package_display();
 	}
 
 	non_package_item(){

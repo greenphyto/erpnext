@@ -118,7 +118,7 @@
   },
   {
    "bold": 1,
-   "columns": 4,
+   "columns": 3,
    "fieldname": "item_code",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -179,7 +179,7 @@
   },
   {
    "bold": 1,
-   "columns": 2,
+   "columns": 1,
    "fieldname": "qty",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -200,8 +200,10 @@
    "fieldtype": "Column Break"
   },
   {
+   "columns": 1,
    "fieldname": "uom",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "UOM",
    "options": "UOM",
    "reqd": 1
@@ -209,9 +211,9 @@
   {
    "depends_on": "eval:doc.uom != doc.stock_uom",
    "fieldname": "conversion_factor",
-   "precision": "7",
    "fieldtype": "Float",
    "label": "UOM Conversion Factor",
+   "precision": "7",
    "print_hide": 1,
    "reqd": 1
   },
@@ -893,7 +895,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-03-04 12:40:27.430476",
+ "modified": "2024-12-06 18:23:03.729996",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice Item",
