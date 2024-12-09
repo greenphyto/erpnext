@@ -452,13 +452,52 @@ def _update_stock_receipt(log, api=None):
 			continue
 		
 		expiry_date = frappe.get_value("Batch", d.batch_no, "expiry_date")
-		warehouse_id = frappe.get_value("Warehouse", d.warehouse, "foms_id")
-		supplier_id = frappe.get_value("Supplier", doc.supplier, "foms_id")
-		raw_id = frappe.get_value("Item", d.item_code, "foms_raw_id")
+		warehouse_id = cint(frappe.get_value("Warehouse", d.warehouse, "foms_id"))
+		supplier_id = cint(frappe.get_value("Supplier", doc.supplier, "foms_id"))
+		raw_id = cint(frappe.get_value("Item", d.item_code, "foms_raw_id"))
 
 		qty = d.qty
 		if d.item_code in overide_map:
 			qty = d.qty * flt(overide_map[d.item_code])
+
+		# need convert current PR receive to item default
+		data = {
+			"id": batch_foms_id,
+			"rawMaterialId": raw_id,
+			"batchRefNo": d.batch_no,
+			"dateOfCreation": doc.creation,
+			"expiryDate": expiry_date,
+			"warehouseId": warehouse_id,
+			"supplierId": supplier_id,
+			"quantity": qty
+		}
+
+		api.log = log  # working with log
+		res = api.update_raw_material_receipt(data)
+		if res:
+			frappe.db.set_value("Batch", d.batch_no, "foms_id", res.get('id'))
+			frappe.db.set_value("Batch", d.batch_no, "foms_name", res.get('batchRefNo'))
+
+# RAW MATERIAL RECEIPT
+def update_stock_entry_receipt():
+	sync_controller("Purchase Receipt", _update_stock_entry_receipt)
+
+def _update_stock_entry_receipt(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Stock Entry", log.docname)
+
+	# find overide
+	for d in doc.get("items"):
+		batch_foms_id = cint(frappe.get_value("Batch", d.batch_no, "foms_id"))
+		
+		expiry_date = frappe.get_value("Batch", d.batch_no, "expiry_date")
+		warehouse_id = cint(frappe.get_value("Warehouse", d.t_warehouse, "foms_id"))
+		supplier_id = cint(frappe.get_value("Supplier", doc.from_supplier, "foms_id"))
+		raw_id = cint(frappe.get_value("Item", d.item_code, "foms_raw_id"))
+
+		qty = d.qty
 
 		# need convert current PR receive to item default
 		data = {
@@ -532,11 +571,17 @@ def push_batch():
 		}
 
 		res = api.update_raw_material_receipt(data)
-		print("Updating", d.item, d.batch_no, d.warehouse, d.qty)
-		print(523, res)
 		if res:
 			frappe.db.set_value("Batch", d.batch_no, "foms_id", res.get('id'))
 			frappe.db.set_value("Batch", d.batch_no, "foms_name", res.get('batchRefNo'))
+
+# STOCK ENTRY
+def update_stock_entry(log, api=""):
+	purpose = frappe.get_value("Stock Entry", log.docname, "purpose")
+	if purpose == "Material Transfer":
+		_update_material_transfer(log, api)
+	elif purpose == "Material Receipt":
+		_update_stock_entry_receipt(log, api)
 
 
 # MATERIAL TRANSFER
