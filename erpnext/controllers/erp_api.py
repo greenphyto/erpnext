@@ -75,13 +75,14 @@ def create_bom(data):
 	return {"ERPBomId":result}
 
 @frappe.whitelist()
-def create_work_order(FomsWorkOrderID, FomsLotID, productID, SalesOrderNo, qty, gross_weight, uom, submit=False):
-	data_name = f"Work Order {FomsLotID}"
+def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, gross_weight, uom, submit=False):
+
+	data_name = f"Work Order {fomsLotID}"
 	save_log("Work Order", data_name, {
-		"FomsWorkOrderID":FomsWorkOrderID, 
-		"FomsLotID":FomsLotID, 
+		"fomsWorkOrderID":fomsWorkOrderID, 
+		"fomsLotID":fomsLotID, 
 		"productID":productID, 
-		"SalesOrderNo":SalesOrderNo, 
+		"salesOrderNo":salesOrderNo, 
 		"qty":qty, 
 		"uom":uom, 
 		"submit":submit
@@ -98,9 +99,9 @@ def create_work_order(FomsWorkOrderID, FomsLotID, productID, SalesOrderNo, qty, 
 		
 	qty = flt(qty) or 1
 	log = frappe._dict({
-		"workOrderNo":FomsWorkOrderID,
-		"lotId":FomsLotID,
-		"sales_order_no":SalesOrderNo
+		"workOrderNo":fomsWorkOrderID,
+		"lotId":fomsLotID,
+		"sales_order_no":salesOrderNo
 	})
 
 	doc = _create_work_order(log, item_code, bom_no, qty, gross_weight, submit, return_doc=1)
@@ -118,11 +119,12 @@ def create_work_order(FomsWorkOrderID, FomsLotID, productID, SalesOrderNo, qty, 
 	return res
 
 @frappe.whitelist()
-def start_work_order(ERPWorkOrderID):
-	work_order_name = frappe.db.get_value("Work Order", ERPWorkOrderID)
+def start_work_order(erpWorkOrderID="", ERPWorkOrderID=""):
+	erpWorkOrderID = erpWorkOrderID or ERPWorkOrderID
+	work_order_name = frappe.db.get_value("Work Order", erpWorkOrderID)
 
 	if not work_order_name:
-		frappe.throw(_(f"Work Order {ERPWorkOrderID} not found!"), frappe.DoesNotExistError)
+		frappe.throw(_(f"Work Order {erpWorkOrderID} not found!"), frappe.DoesNotExistError)
 
 	doc = frappe.get_doc("Work Order", work_order_name)
 
@@ -448,7 +450,8 @@ def add_wip_additional_cost(stock_entry, work_order):
 
 # Create Material Reserve
 @frappe.whitelist()
-def create_raw_material_reserve(ERPWorkOrderID, items):
+def create_raw_material_reserve(items, erpWorkOrderID="", ERPWorkOrderID=""):
+	ERPWorkOrderID = erpWorkOrderID or ERPWorkOrderID
 	work_order_name, qty, source_warehouse = frappe.get_value("Work Order", ERPWorkOrderID, ["name", "qty", "source_warehouse"]) or ("", 1, "")
 	if not work_order_name:
 		frappe.throw(_(f"Work Order {ERPWorkOrderID} not found!"), frappe.DoesNotExistError)
