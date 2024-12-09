@@ -22,6 +22,7 @@
   "sales_invoice_no",
   "pick_list",
   "purchase_receipt_no",
+  "from_supplier",
   "foms_id",
   "col2",
   "company",
@@ -718,6 +719,13 @@
    "fieldtype": "Data",
    "label": "Request No",
    "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.purpose == \"Material Receipt\"",
+   "fieldname": "from_supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier"
   }
  ],
  "icon": "fa fa-file-text",
@@ -725,7 +733,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-10-23 13:02:31.924512",
+ "modified": "2024-12-09 15:45:40.600637",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",
