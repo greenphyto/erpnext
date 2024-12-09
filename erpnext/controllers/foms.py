@@ -1602,7 +1602,15 @@ def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=Fals
 	doc.foms_lot_id = log.id
 	doc.foms_lot_name = log.lotId
 	doc.gross_weight = gross_weight
-	doc.sales_order_no = ", ".join(log.sales_order_no or [])
+	sales_order_no = []
+	request_no = []
+	for so in log.sales_order_no:
+		if frappe.db.exists("Sales Order", so):
+			sales_order_no.append(so)
+		elif frappe.db.exists("Request", so):
+			request_no.append(so)
+
+	doc.sales_order_no = ", ".join(sales_order_no or [])
 	doc.use_multi_level_bom = 0 #if use multi level bom it will use exploed items as raw material, but if not it will use bom items
 	doc.insert()
 

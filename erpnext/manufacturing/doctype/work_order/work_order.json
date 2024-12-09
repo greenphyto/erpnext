@@ -30,6 +30,7 @@
   "foms_lot_id",
   "column_break1",
   "sales_order_no",
+  "request_no",
   "serial_no_and_batch_for_finished_good_section",
   "has_serial_no",
   "has_batch_no",
@@ -631,6 +632,12 @@
    "fieldname": "gross_weight",
    "fieldtype": "Float",
    "label": "Gross Weight"
+  },
+  {
+   "fieldname": "request_no",
+   "fieldtype": "Data",
+   "label": "Request No",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-cogs",
@@ -638,7 +645,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-17 16:02:20.997795",
+ "modified": "2024-12-09 18:24:07.495011",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",

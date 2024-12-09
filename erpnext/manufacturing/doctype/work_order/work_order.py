@@ -225,6 +225,8 @@ class WorkOrder(Document):
 				d.version = frappe.get_value("Workstation", d.workstation, "version") or 1
 
 	def update_sales_order(self, state="Start"):
+		# temporary only update the sales order no, not from request
+
 		if not self.sales_order_no:
 			return
 		
