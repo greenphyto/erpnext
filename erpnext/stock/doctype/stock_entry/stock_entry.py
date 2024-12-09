@@ -152,6 +152,7 @@ class StockEntry(StockEntryAsset, StockController):
 
 		self.validate_posting_time()
 		self.validate_purpose()
+		self.valdiate_from_supplier()
 		self.validate_item()
 		self.validate_customer_provided_item()
 		self.validate_qty()
@@ -273,6 +274,10 @@ class StockEntry(StockEntryAsset, StockController):
 		pro_doc = frappe.get_doc("Work Order", self.work_order)
 		if pro_doc.status == "Completed":
 			frappe.throw(_("Cannot cancel transaction for Completed Work Order."))
+
+	def valdiate_from_supplier(self):
+		if self.purpose == "Material Receipt" and not self.from_supplier:
+			frappe.throw(_("Supplier must be set for new stock receipt"))
 
 	def validate_purpose(self):
 		self.stock_entry_type = frappe.get_value("Stock Entry Type", self.stock_entry_type_view, "purpose" )
