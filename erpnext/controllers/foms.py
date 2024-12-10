@@ -1435,14 +1435,22 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 		
 		name, status = find_existing_bom(item_name, log.productVersionName) 
 
-		if not name or force_new:
-			operation_map = {}
+		if name:
+			bom = frappe.get_doc("BOM", name)
+		else:
 			bom = frappe.new_doc("BOM")
+
+		if bom.docstatus == 0 or force_new:
+			if force_new:
+				bom = frappe.new_doc("BOM")
+			operation_map = {}
 			bom.item = item_name
 			bom.is_default = 1
 			bom.foms_recipe_version = log.productVersionName
 			bom.with_operations = 1
 			bom.transfer_material_against = TRANFER_AGAIN
+			bom.operations = []
+			bom.items = []
 						
 			for op in all_process:
 				op = frappe._dict(op)
@@ -1483,11 +1491,6 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 			
 			bom.save()
 			name = bom.name
-		else:
-			if not bom:
-				bom = frappe.get_doc("BOM", name)
-			if status == 0:
-				bom.save()
 
 		if submit and bom:
 			if bom.docstatus == 0:
