@@ -141,7 +141,7 @@ class StockController(AccountsController):
 		warehouse_with_no_account = []
 		precision = self.get_debit_field_precision()
 		operation = self.get("operation")
-		if self.purpose == "Manufacture":
+		if self.doctype == "Stock Entry" and self.purpose == "Manufacture":
 			operation = "Harvesting"
 
 		for item_row in voucher_details:
@@ -168,7 +168,7 @@ class StockController(AccountsController):
 
 						item_account = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, operation=operation)
 						item_account_currency = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency", operation=operation)
-						if self.purpose == "Manufacture":
+						if self.doctype == "Stock Entry" and self.purpose == "Manufacture":
 							expense_account = frappe.db.get_value("Company", self.company, "stock_adjustment_account")
 							item_account = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, operation="Harvesting")
 							item_account_currency = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency", operation="Harvesting")
