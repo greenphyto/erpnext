@@ -808,6 +808,7 @@ def create_packaging(log):
 		doc.foms_id = log.id		
 	else:
 		doc = frappe.get_doc("Packaging", name)
+		doc.foms_id = log.id		
 		doc.description = log.packageName
 
 	doc.quantity = log.packageWeight

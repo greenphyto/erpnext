@@ -1489,7 +1489,10 @@ class StockEntry(StockEntryAsset, StockController):
 		rate_map = frappe._dict()
 		total = 0
 		for d in data_item_amount:
-			add_cost = flt((d.basic_amount / total_item_amount) * total_costs, 2)
+			if not total_item_amount:
+				add_cost = 0
+			else:
+				add_cost = flt((d.basic_amount / total_item_amount) * total_costs, 2)
 			new_rate  = (d.basic_amount + flt(add_cost)) / flt(d.stock_qty,5)
 			rate_map[d.item_code] = new_rate
 			total += new_rate

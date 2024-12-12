@@ -228,10 +228,10 @@
                   }
                 },
                 "example": {
-                  "FomsWorkOrderID": "FOMS-001",
-                  "FomsLotID": "LOT12",
+                  "fomsWorkOrderID": "FOMS-001",
+                  "fomsLotID": "LOT12",
                   "productID": "37",
-                  "SalesOrderNo": ["SO056/2024"],
+                  "salesOrderNo": ["SO056/2024"],
                   "submit": true,
                   "qty": 2,
                   "gross_weight": 4,
