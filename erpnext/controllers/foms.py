@@ -1104,8 +1104,15 @@ def _sync_delivery_note(log, api=None):
 		api = FomsAPI()
 
 	doc = frappe.get_doc("Delivery Note", log.docname)
-	customer = frappe.get_doc("Customer", doc.customer)
-	farm_id = get_farm_id()
+
+	# skip if not stock
+	non_stock = False
+	for d in doc.items:
+		if not d.batch_no:
+			non_stock = True
+	
+	if non_stock:
+		return
 
 	address = doc.shipping_address or doc.company_address or doc.address_display
 	address = get_html_text(address)
