@@ -1031,6 +1031,16 @@ def _update_foms_sales_order(log, api=None):
 	doc = frappe.get_doc("Sales Order", log.docname)
 	api.log = log
 
+	# skip if not stock item
+	non_stock = False
+	for d in doc.items:
+		stock_item = frappe.get_value("Item", d.item_code, "is_stock_item")
+		if not stock_item:
+			non_stock = True
+	
+	if non_stock:
+		return
+	
 	if doc.docstatus == 1:
 		customer_foms_id = frappe.get_value("Customer", doc.customer, "foms_id")
 		farm_id = get_farm_id()
