@@ -1834,3 +1834,44 @@ def make_purchase_receipt(source_name, target_doc=None):
 	doc.set_onload("ignore_price_list", True)
 
 	return doc
+
+@frappe.whitelist()
+@frappe.read_only()
+def hide_older_cancelled_document():
+	# hide cancelled document older than 1 day ago
+
+	from frappe.desk.reportview import get, get_form_params
+	from frappe.utils import add_days, getdate
+	args = get_form_params()
+
+	data = get()
+
+	new_values = []
+
+	# skip filter
+	skip_filter = False
+	for d in args.get("filters"):
+		if "Cancelled" in d:
+			skip_filter = 1
+		if "docstatus" in d and "2" in d:
+			skip_filter = 1
+
+	if data and not skip_filter:
+		docstatus_index = 0
+		modified_index = 0
+		for i,d in enumerate(data['keys']):
+			if 'docstatus' == d:
+				docstatus_index = i
+			if 'modified' == d:
+				modified_index = i
+		for d in data['values']:
+			# filter cancelled only for 1 day ago
+			if d[docstatus_index] == 2 and getdate(d[modified_index]) < add_days(getdate(), -1):
+				continue
+			else:
+				new_values.append(d)
+	
+		data['values'] = new_values
+
+
+	return data
