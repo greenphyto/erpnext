@@ -1116,6 +1116,9 @@ def _sync_delivery_note(log, api=None):
 
 	doc = frappe.get_doc("Delivery Note", log.docname)
 
+	if doc.docstatus != 0:
+		return
+
 	# skip if not stock
 	non_stock = False
 	for d in doc.items:
@@ -1129,7 +1132,7 @@ def _sync_delivery_note(log, api=None):
 	address = get_html_text(address)
 	remarks = get_html_text(doc.instructions)
 
-	sales_orders = ", ".join([d.against_sales_order for d in doc.get("items")])
+	sales_orders = ", ".join([d.get("against_sales_order") for d in doc.get("items")])
 
 	data = frappe._dict({
 		"farmId": 0,
@@ -1728,6 +1731,7 @@ def create_do_based_on_work_order(wo_name, qty_finish, warehouse, batch_use):
 				dn_doc.remove(d)
 				continue
 
+			d.warehouse = warehouse
 			if d.stock_qty >= qty_finish:
 				d.qty = qty_finish/d.conversion_factor
 				qty_finish = 0
