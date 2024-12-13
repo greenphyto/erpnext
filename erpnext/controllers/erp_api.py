@@ -362,7 +362,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	}
 
 @frappe.whitelist()
-def submit_work_order_finish_goods(erpWorkOrderID, qty, expiryDate=""):
+def submit_work_order_finish_goods(erpWorkOrderID, qty, expiryDate="", draft=False):
 	ERPWorkOrderID = erpWorkOrderID
 	data_name = f"Finish Work Order {ERPWorkOrderID}"
 	save_log("Work Order", data_name, {
@@ -381,6 +381,7 @@ def submit_work_order_finish_goods(erpWorkOrderID, qty, expiryDate=""):
 	
 	
 	se_doc = make_stock_entry_wo(work_order_name,"Manufacture", qty, return_doc=1)
+
 	se_doc.stock_entry_type_view = get_stock_entry_type("Harvesting Finish")
 
 	# get rate from incoming rate from prev process, and get prorate until near prev amount 109.5
@@ -393,18 +394,15 @@ def submit_work_order_finish_goods(erpWorkOrderID, qty, expiryDate=""):
 
 	se_doc.set_expense_account()	
 	se_doc.save()
-	se_doc.submit()
 
-	# # debug
-	# for d in se_doc.items:
-	# 	if d.is_finished_item and expiryDate:
-	# 		frappe.db.set_value("Batch", d.batch_no, "expiry_date", getdate(expiryDate))
+	if not draft:
+		se_doc.submit()
 
-	# for d in se_doc.get("items"):
-	# 	if d.is_finished_item:
-	# 		create_do_based_on_work_order(se_doc.work_order, d.qty, d.t_warehouse, d.batch_no)
-
-	# update_so_working(so_sub_id, lot_id)
+	# Create Draft Delivery Note
+	for d in se_doc.get("items"):
+		if d.is_finished_item:
+			frappe.db.set_value("Batch", d.batch_no, "expiry_date", getdate(expiryDate))
+			create_do_based_on_work_order(se_doc.work_order, d.qty, d.t_warehouse, d.batch_no)
 
 	update_log("Work Order", data_name, work_order_name)
 	return {
