@@ -520,7 +520,7 @@ email_brand_image = "assets/erpnext/images/erpnext-logo.jpg"
 default_mail_footer = f"""
 	<span>
 		Sent via
-		<a class="text-muted" href="{local.conf.sitename or "https://erp.greenphyto.com"}" target="_blank">
+		<a class="text-muted" href="{local.conf.siteurl or "https://erp.greenphyto.com"}" target="_blank">
 			{local.conf.hostname or "erp.greenphyto.com"} 
 		</a>
 	</span>
