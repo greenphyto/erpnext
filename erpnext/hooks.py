@@ -1,4 +1,4 @@
-from frappe import _
+from frappe import _, local
 
 app_name = "erpnext"
 app_title = "ERPNext"
@@ -517,11 +517,11 @@ scheduler_events = {
 
 email_brand_image = "assets/erpnext/images/erpnext-logo.jpg"
 
-default_mail_footer = """
+default_mail_footer = f"""
 	<span>
 		Sent via
-		<a class="text-muted" href="https://erpnext.com?source=via_email_footer" target="_blank">
-			ERPNext
+		<a class="text-muted" href="{local.conf.hostname or "https://erp.greenphyto.com"}" target="_blank">
+			{local.conf.sitename or "erp.greenphyto.com"} 
 		</a>
 	</span>
 """
