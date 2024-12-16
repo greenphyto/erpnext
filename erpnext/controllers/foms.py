@@ -1346,23 +1346,24 @@ def create_raw_material(log):
 		doc.item_code = log.rawMaterialRefNo
 		doc.item_name = log.rawMaterialName
 		doc.description = log.rawMaterialDescription
-		doc.stock_uom = get_uom(log.unitOfMeasurement)
 		doc.item_group = types
-		doc.is_purchase_item = 1
-		doc.is_sales_item = 0
-		doc.is_stock_item = 1
-		doc.has_expiry_date = 1
-		doc.has_batch_no = 1
-		doc.create_new_batch = 1
-		doc.batch_number_series = doc.item_code + "-" + "BN.#####"
+		if doc.item_code not in ['RM-NS-WW']:
+			doc.stock_uom = get_uom(log.unitOfMeasurement)
+			doc.is_purchase_item = 1
+			doc.is_sales_item = 0
+			doc.is_stock_item = 1
+			doc.has_expiry_date = 1
+			doc.has_batch_no = 1
+			doc.create_new_batch = 1
+			doc.batch_number_series = doc.item_code + "-" + "BN.#####"
 
-		doc.lead_time_days = cint(log.RequestLeadTime)
-		doc.min_order_qty = flt(log.MinimumOrderQuantity)
-		doc.safety_stock = log.safetyLevel
-		doc.shelf_life_in_days = 365
-		doc.valuation_method = "FIFO"
-		doc.foms_raw_id = log.id
-		doc.get_item_material_group(set_data=1)
+			doc.lead_time_days = cint(log.RequestLeadTime)
+			doc.min_order_qty = flt(log.MinimumOrderQuantity)
+			doc.safety_stock = log.safetyLevel
+			doc.shelf_life_in_days = 365
+			doc.valuation_method = "FIFO"
+			doc.foms_raw_id = log.id
+			doc.get_item_material_group(set_data=1)
 		doc.insert(ignore_permissions=1)
 		name = doc.name
 	else:
@@ -1373,14 +1374,15 @@ def create_raw_material(log):
 		doc = frappe.get_doc("Item", name)
 		doc.item_name = log.productName
 		doc.description = log.productDesc or log.productDetail or log.productName
-		doc.item_group = types
-		doc.lead_time_days = cint(log.RequestLeadTime)
-		doc.min_order_qty = flt(log.MinimumOrderQuantity)
-		doc.safety_stock = log.safetyLevel
-		doc.shelf_life_in_days = 365
-		doc.is_stock_item = 1
-		if not doc.foms_raw_id:
-			doc.foms_raw_id = log.id
+		if doc.item_code not in ['RM-NS-WW']:
+			doc.item_group = types
+			doc.lead_time_days = cint(log.RequestLeadTime)
+			doc.min_order_qty = flt(log.MinimumOrderQuantity)
+			doc.safety_stock = log.safetyLevel
+			doc.shelf_life_in_days = 365
+			doc.is_stock_item = 1
+			if not doc.foms_raw_id:
+				doc.foms_raw_id = log.id
 
 		try:
 			doc.save()
