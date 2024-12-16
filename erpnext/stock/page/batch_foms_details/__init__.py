@@ -46,7 +46,10 @@ def get_data(update=False, filters={}):
 	erp_batch_all = get_batch_qty_all(wip_warehouse)
 	erp_batch = {}
 	for d in erp_batch_all:
-		erp_batch[d.name] = d
+		if d.name not in erp_batch:
+			erp_batch[d.name] = d
+		else:
+			erp_batch[d.name]["double"] = 1
 
 	data = []
 
@@ -71,6 +74,7 @@ def get_data(update=False, filters={}):
 			d.erp_batch_missing = False
 			batch = erp_batch.get(d.batch_no)
 			d.erp_qty = batch.batch_qty
+			d.double = batch.double
 			d.erp_exp = format_date(batch.expiry_date)
 		else:
 			d.erp_batch_missing = True
@@ -103,8 +107,8 @@ def get_batch_qty_all(escape_warehouse=[]):
 			sle.is_cancelled = 0
 				AND sle.batch_no IS NOT NULL
 				AND sle.batch_no != ''
-				AND sle.batch_no NOT IN %(wh)s
-		GROUP BY sle.warehouse
+				AND sle.warehouse NOT IN %(wh)s
+		GROUP BY sle.batch_no, sle.warehouse
 		ORDER BY sle.batch_no ASC
 	""", {"wh":escape_warehouse}, as_dict=1)
 	

@@ -1,6 +1,10 @@
 {% for d in data %}
 	<tr id="batchID{{d.id}}">
-		<td class="bacth-no">{{d.batch_no}}</td>
+		<td class="bacth-no">{{d.batch_no}} 
+			{% if d.double %}
+				<a href="/app/batch/{{d.batch_no}}" style="color: red" target="_blank"><b>?</b></a>
+			{% endif %}
+		</td>
 		<td class="foms-exp">{{d.foms_exp}}</td>
 		<td class="foms-qty">{{d.foms_qty}}</td>
 		<td class="erp-exp">{{d.erp_exp}}</td>
