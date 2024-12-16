@@ -544,6 +544,8 @@
   },
   {
    "default": "1",
+   "fetch_from": "item.shelf_life_in_days",
+   "fetch_if_empty": 1,
    "fieldname": "storage_duration",
    "fieldtype": "Int",
    "label": "Storage Duration"
@@ -554,7 +556,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-16 18:01:34.756305",
+ "modified": "2024-12-16 21:03:56.709671",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "BOM",
