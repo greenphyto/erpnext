@@ -1,7 +1,7 @@
 import frappe, json
 from frappe.utils import datetime, now, get_datetime, flt, getdate, format_datetime, format_date, cint
 from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
-from erpnext.controllers.foms import update_foms_batch as _update_foms_batch
+from erpnext.controllers.foms import update_foms_batch as _update_foms_batch, get_wip_warehouse
 from erpnext.stock.doctype.batch.batch import get_batch_qty
 LOG_DATA_NAME = "Batch FOMS All Data"
 REFF_ID = "FOMS Batch for ERP"
@@ -41,7 +41,9 @@ def get_data(update=False, filters={}):
 		log.last_sync = now()
 		log.save()
 
-	erp_batch_all = frappe.db.get_all("Batch", limit=99999, fields=['name', 'batch_qty', 'expiry_date'])
+	# change with escape from WIP wh
+	wip_warehouse = get_wip_warehouse()
+	erp_batch_all = get_batch_qty_all(wip_warehouse)
 	erp_batch = {}
 	for d in erp_batch_all:
 		erp_batch[d.name] = d
@@ -84,6 +86,29 @@ def get_data(update=False, filters={}):
 		"stock_recon":stock_recon
 	}
 	return result
+
+def get_batch_qty_all(escape_warehouse=[]):
+	escape_warehouse = escape_warehouse or [""]
+	data = frappe.db.sql("""
+		SELECT 
+			sle.batch_no AS name,
+			sle.warehouse,
+			SUM(sle.actual_qty) AS batch_qty,
+			b.expiry_date
+		FROM
+			`tabStock Ledger Entry` sle
+				LEFT JOIN
+			`tabBatch` b ON b.name = sle.batch_no
+		WHERE
+			sle.is_cancelled = 0
+				AND sle.batch_no IS NOT NULL
+				AND sle.batch_no != ''
+				AND sle.batch_no NOT IN %(wh)s
+		GROUP BY sle.warehouse
+		ORDER BY sle.batch_no ASC
+	""", {"wh":escape_warehouse}, as_dict=1)
+	
+	return data
 
 @frappe.whitelist()
 def update_foms_batch(batch_no, batch_id, warehouseID, qty):
