@@ -95,21 +95,26 @@ def get_batch_qty_all(escape_warehouse=[]):
 	escape_warehouse = escape_warehouse or [""]
 	data = frappe.db.sql("""
 		SELECT 
-			sle.batch_no AS name,
-			sle.warehouse,
-			SUM(sle.actual_qty) AS batch_qty,
-			b.expiry_date
+			*
 		FROM
-			`tabStock Ledger Entry` sle
-				LEFT JOIN
-			`tabBatch` b ON b.name = sle.batch_no
+			(SELECT 
+				sle.batch_no AS name,
+					sle.warehouse,
+					SUM(sle.actual_qty) AS batch_qty,
+					b.expiry_date
+			FROM
+				`tabStock Ledger Entry` sle
+			LEFT JOIN `tabBatch` b ON b.name = sle.batch_no
+			WHERE
+				sle.is_cancelled = 0
+					AND sle.batch_no IS NOT NULL
+					AND sle.batch_no != ''
+					AND sle.warehouse NOT IN %(wh)s
+					AND batch_qty != 0
+			GROUP BY sle.batch_no , sle.warehouse
+			ORDER BY sle.modified ASC) a
 		WHERE
-			sle.is_cancelled = 0
-				AND sle.batch_no IS NOT NULL
-				AND sle.batch_no != ''
-				AND sle.warehouse NOT IN %(wh)s
-		GROUP BY sle.batch_no, sle.warehouse
-		ORDER BY sle.batch_no ASC
+			a.batch_qty != 0
 	""", {"wh":escape_warehouse}, as_dict=1)
 	
 	return data
