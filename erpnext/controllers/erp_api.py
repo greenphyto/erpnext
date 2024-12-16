@@ -85,6 +85,7 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 		"salesOrderNo":salesOrderNo, 
 		"qty":qty, 
 		"uom":uom, 
+		"gross_weight":gross_weight,
 		"submit":submit
 	})
 
