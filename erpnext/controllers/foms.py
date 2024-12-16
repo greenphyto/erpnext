@@ -975,6 +975,11 @@ def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False, expiry
 	if not item_id:
 		# not raw material
 		return
+
+	# skip sync transfer to WIP
+	wip_warehouse = get_wip_warehouse()
+	if warehouse in wip_warehouse:
+		return
 	
 	api = FomsAPI()
 	batch_id = cint(batch_id) or frappe.get_value("Batch", batch_no, "foms_id")
@@ -1014,6 +1019,13 @@ def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False, expiry
 
 	return res
 
+def get_wip_warehouse():
+	data = [d.name for d in frappe.get_list("Warehouse", {"is_wip_warehouse":1})]
+	wip_settings = frappe.get_value("Manufacturing Settings", "Manufacturing Settings", "default_wip_warehouse")
+	if wip_settings:
+		data.append(wip_settings)
+
+	return data
 
 # SALES ORDER (POST)
 def sync_log_so(doc, method=""):
@@ -1594,7 +1606,7 @@ def get_work_order(show_progress=False, work_order=""):
 
 			item_code = d.get("productRefNo")
 			bom_no = get_bom_for_work_order(item_code)
-			# qty = 1
+			qty = 1
 
 			result = None
 			try:
