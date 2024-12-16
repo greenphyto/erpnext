@@ -71,7 +71,8 @@
    "fieldname": "required_qty",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "Required Qty"
+   "label": "Required Qty",
+   "precision": "5"
   },
   {
    "depends_on": "eval:!parent.skip_transfer",
@@ -105,18 +106,21 @@
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Consumed Qty",
+   "precision": "5",
    "read_only": 1
   },
   {
    "fieldname": "available_qty_at_source_warehouse",
    "fieldtype": "Float",
    "label": "Available Qty at Source Warehouse",
+   "precision": "5",
    "read_only": 1
   },
   {
    "fieldname": "available_qty_at_wip_warehouse",
    "fieldtype": "Float",
    "label": "Available Qty at WIP Warehouse",
+   "precision": "5",
    "read_only": 1
   },
   {
@@ -137,12 +141,13 @@
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Returned Qty ",
+   "precision": "5",
    "read_only": 1
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2024-09-20 12:23:41.563536",
+ "modified": "2024-12-16 11:06:19.443228",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order Item",
