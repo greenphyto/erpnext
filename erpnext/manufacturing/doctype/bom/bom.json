@@ -12,6 +12,7 @@
   "uom",
   "operation_no",
   "foms_recipe_version",
+  "storage_duration",
   "cb0",
   "is_active",
   "is_default",
@@ -540,6 +541,12 @@
    "fieldtype": "Data",
    "label": "FOMS Recipe Version",
    "read_only": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "storage_duration",
+   "fieldtype": "Int",
+   "label": "Storage Duration"
   }
  ],
  "icon": "fa fa-sitemap",
@@ -547,7 +554,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-13 16:08:53.349045",
+ "modified": "2024-12-16 18:01:34.756305",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "BOM",

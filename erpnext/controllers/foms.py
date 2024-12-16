@@ -341,8 +341,14 @@ def get_recipe(show_progress=False, item_code=""):
 		post_process=post_process,
 		show_progress=show_progress
 	).run()
-	
 
+def get_product_storage_duration(product_id, api=None):
+	if not api:
+		api = FomsAPI()
+	farm_id = get_foms_settings("farm_id")
+	res = api.get_recipe(farm_id, product_id)
+	return res.get("recipeControlForStorage", {}).get("recipeControlValue") or 30
+	
 # WAREHOUSE
 def update_warehouse():
 	sync_controller("Warehouse", _update_warehouse)
@@ -1416,7 +1422,9 @@ def create_products(log):
 			doc.foms_product_id = log.id
 
 	doc.item_group = types
-	doc.shelf_life_in_days = log.defaultExpiryDays or 30
+	doc.shelf_life_in_days = log.defaultExpiryDays
+	if not doc.shelf_life_in_days:
+		doc.shelf_life_in_days = get_product_storage_duration(log.id)
 	doc.has_expiry_date = 1
 	doc.has_batch_no = 1
 	doc.create_new_batch = 1
@@ -1480,6 +1488,7 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 				bom = frappe.new_doc("BOM")
 			operation_map = {}
 			bom.item = item_name
+			bom.storage_duration = get_product_storage_duration(product_id)
 			bom.is_default = 1
 			bom.foms_recipe_version = log.productVersionName
 			bom.with_operations = 1
