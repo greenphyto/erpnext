@@ -9,6 +9,10 @@ from erpnext.stock.doctype.batch.batch import get_batch_qty
 from erpnext.stock.get_item_details import get_conversion_factor
 
 class ScrapRequest(Document):
+	def validate(self):
+		if self.docstatus == 0:
+			self.stock_entry = ""
+			
 	def on_submit(self):
 		name = create_material_issue(self)
 		if name:
