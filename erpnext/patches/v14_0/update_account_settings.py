@@ -52,8 +52,9 @@ def add_account():
         }
     ]
 
+
     for acc in accounts:
-        if not frappe.db.get_value("Account", {"account_name": acc['account_name']} ):
+        if not frappe.db.exists("Account", {"account_name": acc['account_name']} ):
             print("Creating new Account", acc['account_name'])
             doc = frappe.get_doc(acc)
-            doc.insert()
+            doc.save()
