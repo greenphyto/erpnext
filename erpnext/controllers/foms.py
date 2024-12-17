@@ -973,6 +973,9 @@ def crate_batch_stock_recon(data={}, log_name="", dummy=False):
 
 # STOCK LEDGER ENTRY
 def sync_sle(doc, method=""):
+	if doc.actual_qty < 0 or not doc.batch_no:
+		return
+
 	qty = frappe.db.get_value("Stock Ledger Entry", {
 		"is_cancelled":0,
 		"batch_no":doc.batch_no,
