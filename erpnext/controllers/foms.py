@@ -973,13 +973,20 @@ def crate_batch_stock_recon(data={}, log_name="", dummy=False):
 
 # STOCK LEDGER ENTRY
 def sync_sle(doc, method=""):
-	qty = frappe.get_value("Batch", doc.batch_no, "batch_qty")
+	qty = frappe.db.get_value("Stock Ledger Entry", {
+		"is_cancelled":0,
+		"batch_no":doc.batch_no,
+		"warehouse":doc.warehouse
+	}, "sum(actual_qty) as qty")
 	update_foms_batch(doc.batch_no, doc.item_code, doc.warehouse, qty)
 
 def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False, expiry_date="", batch_id=0):
 	item_id = frappe.get_value("Item", item_code, "foms_raw_id")
 	if not item_id:
 		# not raw material
+		return
+
+	if not cint(frappe.db.get_single_value("FOMS Integration Settings", "sync_sle")):
 		return
 
 	# skip sync transfer to WIP

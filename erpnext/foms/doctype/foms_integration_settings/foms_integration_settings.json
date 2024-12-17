@@ -24,6 +24,7 @@
   "column_break_14",
   "auto_submit_bom",
   "auto_submit_work_order",
+  "sync_sle",
   "conversion_section",
   "uom_conversion",
   "item_conversion",
@@ -229,12 +230,18 @@
    "fieldtype": "Table",
    "label": "Item Conversion",
    "options": "UOM FOMS Overide Item"
+  },
+  {
+   "default": "0",
+   "fieldname": "sync_sle",
+   "fieldtype": "Check",
+   "label": "Sync Stock Ledger Entry"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-09-12 16:04:19.816602",
+ "modified": "2024-12-17 15:37:43.328264",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",
