@@ -476,3 +476,38 @@ update batch qty to userportal/RawMaterialUP/CreateOrUpdateRawMaterialBatch
 }
 """
 
+from erpnext.controllers import foms
+# erpnext.foms.doctype.foms_integration_settings.foms_integration_settings.pull_foms_data
+def pull_foms_data(reset=1):
+	if reset:
+		frappe.db.sql('update `tabItem` set foms_raw_id = 0, foms_product_id = 0;')
+		frappe.db.sql('update `tabWarehouse` set foms_id = "";')
+		frappe.db.sql('update `tabPackaging` set foms_id = "";')
+		frappe.db.sql('update `tabCustomer` set foms_id = "";')
+		frappe.db.sql('update `tabSupplier` set foms_id = "";')
+		frappe.db.sql('update `tabBatch` set foms_id = "";')
+
+	# pull all FOMS data
+	print("Get raw material running..")
+	foms.get_raw_material()
+
+	print("\nGet products running..")
+	foms.get_products()
+
+	print("\nGet recipe running..")
+	foms.get_recipe()
+		
+	print("\nSync supplier running..")
+	foms.sync_all_supplier()
+
+	print("\nSync customer running..")
+	foms.sync_all_customer()
+
+	print("\nSync warehouse running..")
+	foms.sync_all_warehouse()
+
+	print("\nGet packaging running..")
+	foms.get_packaging()
+
+	print("\nGet batch running..")
+	foms.get_batch()
