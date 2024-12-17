@@ -12,6 +12,17 @@ class ScrapRequest(Document):
 	def validate(self):
 		if self.docstatus == 0:
 			self.stock_entry = ""
+
+		self.set_scrap_account()
+		 
+	def set_scrap_account(self):
+		rm_account = frappe.db.get_single_value("Stock Settings", "account_for_raw_material_scrap")
+		pr_account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
+		for d in self.items:
+			if d.item_group == "Raw Material":
+				d.expense_account = rm_account
+			if d.item_group == "Products":
+				d.expense_account = pr_account		
 			
 	def on_submit(self):
 		name = create_material_issue(self)
