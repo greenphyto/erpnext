@@ -207,7 +207,7 @@ def sync_log(doc, method=""):
 		start_sync_enquee(log_name)
 	except:
 		pass
-	
+
 def start_sync_enquee(log_name):
 	log = frappe.get_doc("Sync Log", log_name)
 	log.sync()
@@ -1060,6 +1060,9 @@ def _update_foms_sales_order(log, api=None):
 	doc = frappe.get_doc("Sales Order", log.docname)
 	api.log = log
 
+	if doc.docstatus == 0:
+		return
+
 	# skip if not stock item
 	non_stock = False
 	for d in doc.items:
@@ -1205,6 +1208,9 @@ def _update_foms_forecast(log, api=None):
 
 	doc = frappe.get_doc("Request", log.docname)
 	api.log = log
+
+	if doc.docstatus == 0:
+		return
 
 	def day_selected(date):
 		key_list = ['isMonday', 'isTuesday', 'isWednesday', 'isThursday', 'isFriday', 'isSaturday', 'isSunday']
