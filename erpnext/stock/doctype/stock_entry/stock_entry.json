@@ -77,6 +77,7 @@
   "more_info",
   "is_opening",
   "remarks",
+  "system_generated",
   "col5",
   "per_transferred",
   "total_amount",
@@ -718,6 +719,7 @@
    "fieldname": "request_no",
    "fieldtype": "Data",
    "label": "Request No",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -726,6 +728,13 @@
    "fieldtype": "Link",
    "label": "Supplier",
    "options": "Supplier"
+  },
+  {
+   "default": "0",
+   "fieldname": "system_generated",
+   "fieldtype": "Check",
+   "label": "System Generated",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -733,7 +742,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-09 15:45:40.600637",
+ "modified": "2024-12-18 18:37:34.173138",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",

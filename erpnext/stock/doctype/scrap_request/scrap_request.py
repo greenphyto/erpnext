@@ -35,7 +35,7 @@ class ScrapRequest(Document):
 			doc = frappe.get_doc("Stock Entry", self.stock_entry)
 			doc.cancel()
 
-def create_material_issue(doc):
+def create_material_issue(doc, submit=False):
 	stock_entry = frappe.new_doc("Stock Entry")
 	stock_entry.stock_entry_type_view = "Scrap Materials"
 	stock_entry.purpose = "Material Issue"
@@ -67,7 +67,8 @@ def create_material_issue(doc):
 	
 	stock_entry.set_missing_values()
 	stock_entry.insert(ignore_permissions=1)
-	# stock_entry.submit()
+	if submit:
+		stock_entry.submit()
 
 	return stock_entry.name
 
@@ -161,3 +162,70 @@ def collect_expired_items():
 	doc.system_generated = 1
 	doc.save(ignore_permissions=1)
 	return doc.name
+
+def collect_expired_product(date=""):
+	enable = frappe.db.get_value("Stock Settings","Stock Settings", 'enable_auto_collect_expired_products') or 0
+
+	if not enable:
+		return
+	
+	use_date = getdate(date)
+	wip_warehouse = get_wip_warehouse()
+
+	# get data
+	# only get expired batch on batch qty non WIP warehouse
+	data = frappe.db.sql("""
+		SELECT 
+			*
+		FROM
+			(SELECT 
+				sle.batch_no AS batch, b.item,
+					sle.warehouse,
+					SUM(sle.actual_qty) AS batch_qty,
+					b.expiry_date,
+					sle.stock_uom as uom
+			FROM
+				`tabStock Ledger Entry` sle
+			LEFT JOIN `tabBatch` b ON b.name = sle.batch_no
+			WHERE
+				sle.is_cancelled = 0
+					AND sle.batch_no IS NOT NULL
+					AND sle.batch_no != ''
+					AND sle.warehouse NOT IN %(wh)s
+					AND b.expiry_date < %(exp)s
+					AND b.item_group = 'Products'
+			GROUP BY sle.batch_no , sle.warehouse
+			ORDER BY sle.modified ASC) a
+		WHERE
+			a.batch_qty != 0
+	""", {"wh":wip_warehouse, "exp":use_date}, as_dict=1)
+
+	if not data:
+		return
+
+	# create SE directly
+	stock_entry = frappe.new_doc("Stock Entry")
+	stock_entry.stock_entry_type_view = "Scrap Materials"
+	stock_entry.purpose = "Material Issue"
+	stock_entry.set_stock_entry_type()
+	stock_entry.request_no = "Expired Product"
+	expense_account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
+
+	for d in data:
+		row = stock_entry.append("items")
+		row.item_code = d.item
+		row.qty = d.batch_qty
+		row.uom = d.uom
+		row.batch_no = d.batch
+		row.is_scrap_item = 1
+		row.conversion_factor = 1
+		row.s_warehouse = d.get("warehouse")
+		row.expense_account = expense_account
+	
+	stock_entry.system_generated = 1
+	stock_entry.remarks = "Expired products (system)"
+	stock_entry.set_missing_values()
+	stock_entry.insert(ignore_permissions=1)
+	stock_entry.submit()
+
+	return stock_entry.name

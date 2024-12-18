@@ -61,6 +61,7 @@
   "scrap_settings_section",
   "enable_auto_collect_expired_items",
   "expiry_days",
+  "enable_auto_collect_expired_products",
   "account_for_raw_material_scrap",
   "account_for_product_scrap"
  ],
@@ -394,6 +395,12 @@
    "fieldtype": "Link",
    "label": "Account for Product Scrap",
    "options": "Account"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_auto_collect_expired_products",
+   "fieldtype": "Check",
+   "label": "Enable auto collect expired products"
   }
  ],
  "icon": "icon-cog",
@@ -401,7 +408,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-12-17 19:35:55.489489",
+ "modified": "2024-12-18 18:40:44.510181",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Settings",
