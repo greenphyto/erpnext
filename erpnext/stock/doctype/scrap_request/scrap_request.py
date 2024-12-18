@@ -67,7 +67,7 @@ def create_material_issue(doc):
 	
 	stock_entry.set_missing_values()
 	stock_entry.insert(ignore_permissions=1)
-	stock_entry.submit()
+	# stock_entry.submit()
 
 	return stock_entry.name
 
