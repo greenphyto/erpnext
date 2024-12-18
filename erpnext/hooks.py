@@ -495,7 +495,8 @@ scheduler_events = {
         "erpnext.controllers.foms.get_raw_material",
         "erpnext.controllers.foms.get_products",
         "erpnext.controllers.foms.get_recipe",
-		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_items"
+		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_items",
+		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_product",
 	],
 	"weekly": [
 		"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_weekly",
