@@ -15,12 +15,15 @@
   "batch_id",
   "item",
   "item_name",
+  "item_group",
   "image",
   "parent_batch",
-  "manufacturing_date",
   "column_break_3",
   "batch_qty",
   "stock_uom",
+  "section_break_14",
+  "manufacturing_date",
+  "column_break_16",
   "expiry_date",
   "source",
   "supplier",
@@ -220,6 +223,22 @@
    "fieldtype": "Data",
    "label": "Foms Name",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_break_14",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "item.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-archive",
@@ -227,7 +246,7 @@
  "image_field": "image",
  "links": [],
  "max_attachments": 5,
- "modified": "2024-07-22 17:28:37.262707",
+ "modified": "2024-12-18 11:52:49.001538",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Batch",

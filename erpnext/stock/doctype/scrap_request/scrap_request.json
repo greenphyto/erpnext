@@ -18,7 +18,8 @@
   "more_information_section",
   "amended_from",
   "workflow_state",
-  "stock_entry"
+  "stock_entry",
+  "system_generated"
  ],
  "fields": [
   {
@@ -89,12 +90,19 @@
   {
    "fieldname": "section_break_4",
    "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "system_generated",
+   "fieldtype": "Check",
+   "label": "System Generated",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-10-10 11:52:49.277813",
+ "modified": "2024-12-18 12:02:03.196428",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Scrap Request",

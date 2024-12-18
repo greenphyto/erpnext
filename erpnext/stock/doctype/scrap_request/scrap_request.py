@@ -7,6 +7,7 @@ from frappe.desk.reportview import get_filters_cond, get_match_cond
 from frappe.utils import getdate, add_days
 from erpnext.stock.doctype.batch.batch import get_batch_qty
 from erpnext.stock.get_item_details import get_conversion_factor
+from erpnext.controllers.foms import get_wip_warehouse
 
 class ScrapRequest(Document):
 	def validate(self):
@@ -100,20 +101,63 @@ def collect_expired_items():
 		return
 	
 	use_date = add_days(getdate(), within_days)
+	wip_warehouse = get_wip_warehouse()
 
 	# get data
-	data = frappe.db.get_all("Batch", {"expiry_date": ['<', use_date], "batch_qty":['>', 0]}, ['name', 'item', 'batch_qty'])
+	# only get expired batch on batch qty non WIP warehouse
+	data = frappe.db.sql("""
+		SELECT 
+			*
+		FROM
+			(SELECT 
+				sle.batch_no AS batch, b.item,
+					sle.warehouse,
+					SUM(sle.actual_qty) AS batch_qty,
+					b.expiry_date
+			FROM
+				`tabStock Ledger Entry` sle
+			LEFT JOIN `tabBatch` b ON b.name = sle.batch_no
+			WHERE
+				sle.is_cancelled = 0
+					AND sle.batch_no IS NOT NULL
+					AND sle.batch_no != ''
+					AND sle.warehouse NOT IN %(wh)s
+					AND b.expiry_date < %(exp)s
+					AND b.item_group = 'Raw Material'
+			GROUP BY sle.batch_no , sle.warehouse
+			ORDER BY sle.modified ASC) a
+		WHERE
+			a.batch_qty != 0
+	""", {"wh":wip_warehouse, "exp":use_date}, as_dict=1)
+
 	if not data:
 		return
+	
+	sr_name = frappe.get_value("Scrap Request", {
+		"system_generated":1, 
+		"docstatus":0,
+		"workflow_state":"Pending"
+	}, debug=1)
+
+	if sr_name:
+		doc = frappe.get_doc("Scrap Request", sr_name)
+	else:
+		doc = frappe.new_doc("Scrap Request")
 
 	# create scrap request
-	doc = frappe.new_doc("Scrap Request")
 	for d in data:
-		row = doc.append("items")
-		row.item_code = d.item
-		row.batch = d.batch
+		temp = doc.get("items", {"batch":d.batch})
+		if temp:
+			row = temp[0]
+		else:
+			row = doc.append("items")
+			row.item_code = d.item
+			row.batch = d.batch
+
 		row.qty = d.batch_qty
+
 		# warehouse
-	doc.reason = "Expired item"
-	doc.insert(ignore_permissions=1)
+	doc.reason = "Expired item (system)"
+	doc.system_generated = 1
+	doc.save(ignore_permissions=1)
 	return doc.name
