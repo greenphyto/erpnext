@@ -348,10 +348,11 @@ class StockEntry(StockEntryAsset, StockController):
 					frappe.throw(_(f"Row {d.idx}, Cannot move stock partially for batch {d.batch_no}, you can only move all qty as {batch_source_qty} {d.uom}"))
 
 	def validate_partially_issue(self):
-		for d in self.get("items"):
-			qty = get_batch_qty(d.batch_no, d.s_warehouse)
-			if qty and flt(qty, 2) != flt(d.qty, 2):
-				frappe.throw(f"row {d.idx}, Cannot issuing stock partially, qty should be {qty}")
+		if self.purpose == "Material Issue":
+			for d in self.get("items"):
+				qty = get_batch_qty(d.batch_no, d.s_warehouse)
+				if qty and flt(qty, 2) != flt(d.qty, 2):
+					frappe.throw(f"Row {d.idx}, Cannot issuing stock partially, qty should be {qty}")
 
 	def update_cost_in_project(self):
 		if self.work_order and not frappe.db.get_value(
