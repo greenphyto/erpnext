@@ -244,7 +244,7 @@
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "INV.###./.YYYY\nINV-RET.###./.YYYY",
+   "options": "INV.###./.YYYY\nCN.###./.YYYY\nINV-RET.###./.YYYY",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -2137,7 +2137,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2024-09-06 16:29:35.827372",
+ "modified": "2024-12-19 11:43:05.677343",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

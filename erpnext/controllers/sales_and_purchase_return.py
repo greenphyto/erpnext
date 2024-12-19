@@ -338,6 +338,9 @@ def make_return_doc(doctype: str, source_name: str, target_doc=None):
 		if doctype == "Sales Invoice" or doctype == "POS Invoice":
 			doc.is_pos = source.is_pos
 
+			if doctype == "Sales Invoice":
+				doc.naming_series = "CN.###./.YYYY"
+
 			# look for Print Heading "Credit Note"
 			if not doc.select_print_heading:
 				doc.select_print_heading = frappe.get_cached_value("Print Heading", _("Credit Note"))
