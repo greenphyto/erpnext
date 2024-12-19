@@ -136,12 +136,14 @@ def collect_expired_items():
 	
 	sr_name = frappe.get_value("Scrap Request", {
 		"system_generated":1, 
-		"docstatus":0,
-		"workflow_state":"Pending"
+		"docstatus":0
 	}, debug=1)
 
 	if sr_name:
 		doc = frappe.get_doc("Scrap Request", sr_name)
+		# add tollerance approval on progress not more than 14 days ago
+		if doc.workflow_state != "Pending" and getdate(doc.posting_date) > add_days(getdate(), -14):
+			return
 	else:
 		doc = frappe.new_doc("Scrap Request")
 
@@ -157,7 +159,7 @@ def collect_expired_items():
 
 		row.qty = d.batch_qty
 
-		# warehouse
+	doc.posting_date = getdate()
 	doc.reason = "Expired item (system)"
 	doc.system_generated = 1
 	doc.save(ignore_permissions=1)
