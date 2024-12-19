@@ -110,7 +110,7 @@ class VATAuditReport(object):
 			FROM
 				`tab{doctype}`
 			WHERE
-				docstatus in (1,2) 
+				docstatus in (1) 
 				and is_opening = 'No'
 				{where_conditions}
 			ORDER BY
@@ -192,7 +192,7 @@ class VATAuditReport(object):
 			LEFT JOIN 
 				`tab{}` t on t.parent = s.name
 			WHERE
-				s.docstatus in (1, 2)
+				s.docstatus in (1)
 				and s.name in %(invoices)s
 			ORDER BY
 				t.account_head
