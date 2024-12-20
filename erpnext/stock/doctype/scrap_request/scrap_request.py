@@ -41,6 +41,7 @@ def create_material_issue(doc, submit=False):
 	stock_entry.purpose = "Material Issue"
 	stock_entry.system_generated = doc.system_generated
 	stock_entry.set_stock_entry_type()
+	stock_entry.request_no = doc.name
 
 	# get warehouse and batch portion
 	if doc.stock_entry:
@@ -60,7 +61,6 @@ def create_material_issue(doc, submit=False):
 			row.uom = d.uom
 			row.batch_no = d.batch
 			row.is_scrap_item = 1
-			row.request_no = doc.name
 			row.conversion_factor = get_conversion_factor(d.item_code, d.uom).get("conversion_factor", 1)
 			row.s_warehouse = dt.get("warehouse")
 
