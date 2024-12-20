@@ -26,9 +26,8 @@
     </tbody>
 </table>
 
-
-<p>Scrap Request No:</p>
-<p><a href="">{{doc.name}}</a></p>
+<p>Scrap Request No: {{doc.name}}</p>
+<a href="{{frappe.utils.get_url_to_form(doc.doctype, doc.name)}}">Open Document</a>
 
 <p>Please review these materials and take necessary actions to ensure efficient usage before their expiry.</p>
 <p>Thank you</p>
