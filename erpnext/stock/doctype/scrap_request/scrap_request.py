@@ -39,7 +39,7 @@ def create_material_issue(doc, submit=False):
 	stock_entry = frappe.new_doc("Stock Entry")
 	stock_entry.stock_entry_type_view = "Scrap Materials"
 	stock_entry.purpose = "Material Issue"
-	stock_entry.system_generated = 1
+	stock_entry.system_generated = doc.system_generated
 	stock_entry.set_stock_entry_type()
 
 	# get warehouse and batch portion
