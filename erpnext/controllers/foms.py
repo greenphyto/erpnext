@@ -1253,7 +1253,7 @@ def _update_foms_forecast(log, api=None):
 			"orderType": "Internal / Forecast",
 			"startDeliveryDate": delivery_date,
 			"endDeliveryDate": end_delivery_date,
-			"departmentId ": department_foms_id or "",
+			"departmentId": department_foms_id or "",
 			"saleOrder": {
 				"saleOrderNumber":doc.name, 
 				"farmId": farm_id,
