@@ -20,7 +20,8 @@ frappe.ui.form.on('Scrap Request', {
 			return {
 				filters:{
 					is_stock_item:1,
-					is_fixed_asset:0
+					is_fixed_asset:0,
+					item_group:['!=', "Products"]
 				}
 			}
 		})
