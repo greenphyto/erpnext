@@ -1104,7 +1104,8 @@ class WorkOrder(Document):
 				"description": item.description,
 				"allow_alternative_item": 0,
 				"required_qty": total_pcs,
-				"source_warehouse": source_warehouse
+				"source_warehouse": source_warehouse,
+				"is_packaging": 1,
 			}
 		)
 			
