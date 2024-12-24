@@ -345,6 +345,49 @@ def get_batches(item_code, warehouse, qty=1, throw=False, serial_no=None):
 		as_dict=True,
 	)
 
+def get_available_batch(item_code, qty, skip_wip_warehouse=False):
+	if not skip_wip_warehouse:
+		wip_warehouse = get_wip_warehouse()
+	else:
+		wip_warehouse = []
+
+	result = frappe.db.sql("""
+		SELECT 
+			*
+		FROM
+			(SELECT 
+				batch_id,
+					SUM(`tabStock Ledger Entry`.actual_qty) AS qty,
+					`tabStock Ledger Entry`.warehouse
+			FROM
+				`tabBatch`
+			JOIN `tabStock Ledger Entry` IGNORE INDEX (ITEM_CODE , WAREHOUSE) ON (`tabBatch`.batch_id = `tabStock Ledger Entry`.batch_no)
+			WHERE
+				`tabStock Ledger Entry`.item_code = %(item_code)s
+					AND `tabStock Ledger Entry`.is_cancelled = 0
+					AND (`tabBatch`.expiry_date >= CURRENT_DATE
+					OR `tabBatch`.expiry_date IS NULL) 
+			   AND `tabStock Ledger Entry`.warehouse not in %(warehouse)s
+			GROUP BY batch_id
+			ORDER BY `tabBatch`.expiry_date ASC , `tabBatch`.creation ASC) a
+		WHERE
+			a.qty > %(qty)s
+	""", {
+		"item_code":item_code,
+		"warehouse":wip_warehouse,
+		"qty":qty
+	}, as_dict=1)
+
+	return result
+
+def get_wip_warehouse():
+	data = [d.name for d in frappe.get_list("Warehouse", {"is_wip_warehouse":1})]
+	wip_settings = frappe.get_value("Manufacturing Settings", "Manufacturing Settings", "default_wip_warehouse")
+	if wip_settings:
+		data.append(wip_settings)
+
+	return data
+
 
 def validate_serial_no_with_batch(serial_nos, item_code):
 	if frappe.get_cached_value("Serial No", serial_nos[0], "item_code") != item_code:

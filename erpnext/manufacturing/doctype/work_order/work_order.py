@@ -1063,8 +1063,51 @@ class WorkOrder(Document):
 					if not self.project:
 						self.project = item.get("project")
 
+			# add packaging from sales order
+
+			self.get_packaging_from_order()
 			self.set_available_qty()
 
+	def get_packaging_from_order(self):
+		total_pcs = 0
+		# from SO
+		if self.sales_order_no:
+			doc_name = self.sales_order_no.replace(" ","").split(",")
+			temp = frappe.db.sql("select sum(qty) as qty from `tabSales Order Item` where parent in %(parent)s", {"parent":doc_name}, as_dict=1)
+			if temp:
+				total_pcs = temp[0].get("qty")
+		
+		if self.request_no:
+			doc_name = self.request_no.replace(" ","").split(",")
+			temp = frappe.db.sql("select sum(qty) as qty from `tabRequest Items` where parent in %(parent)s", {"parent":doc_name}, as_dict=1)
+			if temp:
+				total_pcs = temp[0].get("qty")
+		
+		if not total_pcs:
+			return
+		
+		pack_item = frappe.db.get_single_value("Manufacturing Settings", "default_packaging")
+		if not pack_item:
+			return
+		
+		source_warehouse = self.source_warehouse 
+		item = frappe.get_doc("Item", pack_item)
+		rate = get_valuation_rate(item.item_code, source_warehouse, "", "")
+		self.append(
+			"required_items",
+			{
+				"rate": rate,
+				"amount": rate * total_pcs,
+				"operation": "Harvesting",
+				"item_code": item.item_code,
+				"item_name": item.item_name,
+				"description": item.description,
+				"allow_alternative_item": 0,
+				"required_qty": total_pcs,
+				"source_warehouse": source_warehouse
+			}
+		)
+			
 	def update_transferred_qty_for_required_items(self):
 		ste = frappe.qb.DocType("Stock Entry")
 		ste_child = frappe.qb.DocType("Stock Entry Detail")

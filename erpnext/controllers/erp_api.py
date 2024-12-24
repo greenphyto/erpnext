@@ -22,7 +22,7 @@ from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as 
 from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry as make_stock_entry_wo, create_job_card
 from erpnext.stock.doctype.purchase_receipt.purchase_receipt import make_purchase_return
 from frappe.model.workflow import apply_workflow
-from erpnext.stock.doctype.batch.batch import get_batch_no
+from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
 from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 from frappe.utils.file_manager import save_file, save_url
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result
@@ -223,6 +223,36 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 				basic_rate = m.rate
 		row.basic_rate = basic_rate
 		row.set_basic_rate_manually = 1
+	
+	# add packaging from work order
+	if se.operation == "Harvesting":
+		packaging_cost_center = frappe.get_value("Company", se.company, "cost_center_for_packing")
+		wo_doc = frappe.get_doc("Work Order", se.work_order)
+		for d in wo_doc.required_items:
+			if d.is_packaging:
+				row = se.append("items")
+				row.item_code = d.item_code
+
+				# find available warehouse and batch
+				batch_qty = get_available_batch(d.item_code, d.required_qty)
+				if batch_qty:
+					batch_qty = batch_qty[0]
+					row.s_warehouse = batch_qty.get("warehouse")
+					row.batch_no = batch_qty.get("batch_id")
+
+				else:
+					# skip if not has qty
+					break					
+
+				row.t_warehouse = wip_warehouse
+
+				# packaging cost center
+				row.cost_center = packaging_cost_center
+				
+				row.qty = d.required_qty
+				row.uom = d.uom
+				row.basic_rate = d.rate
+				row.set_basic_rate_manually = 1
 	
 	if missing_warehouse:
 		warn = ", ".join(list(set(missing_warehouse)))
