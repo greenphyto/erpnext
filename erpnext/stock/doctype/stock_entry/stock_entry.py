@@ -1575,7 +1575,7 @@ class StockEntry(StockEntryAsset, StockController):
 				"image": item.image,
 				"item_name": item.item_name,
 				"cost_center": get_default_cost_center(
-					args, item, item_group_defaults, brand_defaults, self.company
+					args, item, item_group_defaults, brand_defaults, self.company, account=item.expense_account
 				),
 				"qty": args.get("qty"),
 				"transfer_qty": args.get("qty"),
@@ -2311,7 +2311,7 @@ class StockEntry(StockEntryAsset, StockController):
 			se_child.allow_alternative_item = item_row.get("allow_alternative_item", 0)
 			se_child.subcontracted_item = item_row.get("main_item_code")
 			se_child.cost_center = item_row.get("cost_center") or get_default_cost_center(
-				item_row, company=self.company
+				item_row, company=self.company, account=item_row.get("expense_account")
 			)
 			se_child.is_finished_item = item_row.get("is_finished_item", 0)
 			se_child.is_scrap_item = item_row.get("is_scrap_item", 0)

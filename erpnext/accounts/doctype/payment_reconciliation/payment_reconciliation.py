@@ -455,7 +455,7 @@ def reconcile_dr_cr_note(dr_cr_notes, company):
 						inv.dr_or_cr: abs(inv.allocated_amount),
 						"reference_type": inv.against_voucher_type,
 						"reference_name": inv.against_voucher,
-						"cost_center": erpnext.get_default_cost_center(company),
+						"cost_center": erpnext.get_default_cost_center(company, inv.account),
 					},
 					{
 						"account": inv.account,
@@ -468,7 +468,7 @@ def reconcile_dr_cr_note(dr_cr_notes, company):
 						),
 						"reference_type": inv.voucher_type,
 						"reference_name": inv.voucher_no,
-						"cost_center": erpnext.get_default_cost_center(company),
+						"cost_center": erpnext.get_default_cost_center(company, inv.account),
 					},
 				],
 			}

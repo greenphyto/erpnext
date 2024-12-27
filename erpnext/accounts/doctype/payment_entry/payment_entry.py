@@ -508,7 +508,7 @@ class PaymentEntry(AccountsController):
 			return
 
 		tax_withholding_details.update(
-			{"cost_center": self.cost_center or erpnext.get_default_cost_center(self.company)}
+			{"cost_center": self.cost_center or erpnext.get_default_cost_center(self.company, tax_withholding_details.get("account_head"))}
 		)
 
 		accounts = []

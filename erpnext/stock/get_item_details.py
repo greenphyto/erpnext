@@ -735,11 +735,15 @@ def get_default_deferred_account(args, item, fieldname=None):
 		return None
 
 
-def get_default_cost_center(args, item=None, item_group=None, brand=None, company=None):
+def get_default_cost_center(args, item=None, item_group=None, brand=None, company=None, account=None):
 	cost_center = None
 
 	if not company and args.get("company"):
 		company = args.get("company")
+
+	cost_center = frappe.get_value("Cost Center Mapping", {"company":company, "account":account}, "cost_center")
+	if cost_center:
+		return cost_center
 
 	if args.get("project"):
 		cost_center = frappe.db.get_value("Project", args.get("project"), "cost_center", cache=True)

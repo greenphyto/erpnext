@@ -5,4 +5,6 @@
 from frappe.model.document import Document
 
 class CostCenterSettings(Document):
-	pass
+	def validate(self):
+		for d in self.get("cost_center"):
+			d.company = self.company

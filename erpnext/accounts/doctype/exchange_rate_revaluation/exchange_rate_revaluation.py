@@ -377,7 +377,7 @@ class ExchangeRateRevaluation(Document):
 						d.get("balance_in_account_currency"), d.precision("balance_in_account_currency")
 					),
 					"exchange_rate": 0,
-					"cost_center": erpnext.get_default_cost_center(self.company),
+					"cost_center": erpnext.get_default_cost_center(self.company, d.get("account")),
 					"reference_type": "Exchange Rate Revaluation",
 					"reference_name": self.name,
 				}
@@ -430,7 +430,7 @@ class ExchangeRateRevaluation(Document):
 				"credit": abs(self.gain_loss_booked) if self.gain_loss_booked > 0 else 0,
 				"debit_in_account_currency": abs(self.gain_loss_booked) if self.gain_loss_booked < 0 else 0,
 				"credit_in_account_currency": self.gain_loss_booked if self.gain_loss_booked > 0 else 0,
-				"cost_center": erpnext.get_default_cost_center(self.company),
+				"cost_center": erpnext.get_default_cost_center(self.company, unrealized_exchange_gain_loss_account),
 				"exchange_rate": 1,
 				"reference_type": "Exchange Rate Revaluation",
 				"reference_name": self.name,
@@ -493,7 +493,7 @@ class ExchangeRateRevaluation(Document):
 							d.get("balance_in_account_currency"), d.precision("balance_in_account_currency")
 						),
 						dr_or_cr: amount,
-						"cost_center": erpnext.get_default_cost_center(self.company),
+						"cost_center": erpnext.get_default_cost_center(self.company, d.get("account")),
 						"exchange_rate": exchange_rate,
 						"reference_type": "Exchange Rate Revaluation",
 						"reference_name": self.name,
@@ -513,7 +513,7 @@ class ExchangeRateRevaluation(Document):
 							d.get("balance_in_account_currency"), d.precision("balance_in_account_currency")
 						),
 						reverse_dr_or_cr: amount,
-						"cost_center": erpnext.get_default_cost_center(self.company),
+						"cost_center": erpnext.get_default_cost_center(self.company, d.get("account")),
 						"exchange_rate": exchange_rate,
 						"reference_type": "Exchange Rate Revaluation",
 						"reference_name": self.name,
@@ -530,7 +530,7 @@ class ExchangeRateRevaluation(Document):
 				if self.gain_loss_unbooked < 0
 				else 0,
 				"credit_in_account_currency": self.gain_loss_unbooked if self.gain_loss_unbooked > 0 else 0,
-				"cost_center": erpnext.get_default_cost_center(self.company),
+				"cost_center": erpnext.get_default_cost_center(self.company, unrealized_exchange_gain_loss_account),
 				"exchange_rate": 1,
 				"reference_type": "Exchange Rate Revaluation",
 				"reference_name": self.name,
@@ -608,7 +608,7 @@ class ExchangeRateRevaluation(Document):
 							d.get("balance_in_account_currency"), d.precision("balance_in_account_currency")
 						),
 						dr_or_cr: amount,
-						"cost_center": erpnext.get_default_cost_center(self.company),
+						"cost_center": erpnext.get_default_cost_center(self.company, d.get("account")),
 						"exchange_rate": exchange_rate,
 						"reference_type": "Exchange Rate Revaluation",
 						"reference_name": self.name,
@@ -628,7 +628,7 @@ class ExchangeRateRevaluation(Document):
 							d.get("balance_in_account_currency"), d.precision("balance_in_account_currency")
 						),
 						reverse_dr_or_cr: amount,
-						"cost_center": erpnext.get_default_cost_center(self.company),
+						"cost_center": erpnext.get_default_cost_center(self.company, d.get("account")),
 						"exchange_rate": exchange_rate,
 						"reference_type": "Exchange Rate Revaluation",
 						"reference_name": self.name,
@@ -648,7 +648,7 @@ class ExchangeRateRevaluation(Document):
 					if gain_loss_amount < 0
 					else 0,
 					"credit_in_account_currency": gain_loss_amount if gain_loss_amount > 0 else 0,
-					"cost_center": erpnext.get_default_cost_center(self.company),
+					"cost_center": erpnext.get_default_cost_center(self.company, unrealized_exchange_gain_loss_account),
 					"exchange_rate": 1,
 					"reference_type": "Exchange Rate Revaluation",
 					"reference_name": self.name,

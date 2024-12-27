@@ -750,7 +750,7 @@ def get_service_item_details(args):
 		args, item_defaults, item_group_defaults, brand_defaults
 	)
 	out.cost_center = get_default_cost_center(
-		args, item_defaults, item_group_defaults, brand_defaults
+		args, item_defaults, item_group_defaults, brand_defaults, account=out.expense_account
 	)
 
 	return out
