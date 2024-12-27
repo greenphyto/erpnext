@@ -715,7 +715,7 @@ sync_log_method = {
     6:"erpnext.controllers.foms._update_foms_stock_recon",
     7:"erpnext.controllers.foms._update_foms_scrap_request",
     8:"erpnext.controllers.foms._update_foms_department",
-    9:"erpnext.controllers.foms._sync_delivery_note",
+    9:"erpnext.controllers.foms._sync_delivery_note2",
     10:"erpnext.controllers.foms._update_foms_forecast",
     11:"erpnext.controllers.foms.update_stock_entry"
 }

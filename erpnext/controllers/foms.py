@@ -1139,9 +1139,9 @@ def get_foms_format(date):
 	return getdate(date).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
 
 def update_foms_delivery():
-	sync_controller("Delivery Note", _sync_delivery_note)
+	sync_controller("Delivery Note", _sync_delivery_note2)
 
-def _sync_delivery_note(log, api=None):
+def _sync_delivery_note2(log, api=None):
 	if not api:
 		api = FomsAPI()
 
