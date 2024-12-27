@@ -59,6 +59,11 @@ TYPE_MAP = [
         "series":"SM-.#####./.YYYY",
         "purpose":"Material Issue"
     },
+    {
+        "__newname":"Waste Materials",
+        "series":"WS-.#####./.YYYY",
+        "purpose":"Material Issue"
+    },
 ]
 
 """

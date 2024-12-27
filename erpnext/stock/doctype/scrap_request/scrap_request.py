@@ -209,7 +209,7 @@ def collect_expired_product(date=""):
 
 	# create SE directly
 	stock_entry = frappe.new_doc("Stock Entry")
-	stock_entry.stock_entry_type_view = "Scrap Materials"
+	stock_entry.stock_entry_type_view = "Waste Materials"
 	stock_entry.purpose = "Material Issue"
 	stock_entry.set_stock_entry_type()
 	stock_entry.request_no = "Expired Product"
