@@ -1163,7 +1163,12 @@ def _sync_delivery_note(log, api=None):
 	address = get_html_text(address)
 	remarks = get_html_text(doc.instructions)
 
-	sales_orders = ", ".join([d.get("against_sales_order") for d in doc.get("items")])
+	reff_so = []
+	for d in doc.get("items"):
+		if d.get("against_sales_order"):
+			reff_so.append(d.get("against_sales_order"))
+			
+	sales_orders = ", ".join(reff_so)
 
 	data = frappe._dict({
 		"farmId": 0,
