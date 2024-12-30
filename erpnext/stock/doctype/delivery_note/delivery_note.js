@@ -392,3 +392,29 @@ frappe.tour['Delivery Note'] = [
 		description: __("This option can be checked to edit the 'Posting Date' and 'Posting Time' fields.")
 	}
 ]
+
+cur_frm.cscript['set_cost_center'] = function(frm, cdt, cdn, field_account="expense_account"){
+	var d = locals[cdt][cdn];
+	return new Promise((resolve)=>{
+		if (d[field_account]){
+			erpnext.utils.get_cost_center(d[field_account], frm.doc.company).then(r=>{
+				frappe.model.set_value(cdt,cdn,"cost_center", r);
+			})
+		}else{
+			frappe.model.set_value(cdt,cdn,"cost_center", "");
+			resolve()
+		}
+	})
+}
+
+frappe.ui.form.on("Delivery Note Item", {
+	expense_account: function(frm,cdt,cdn){
+		frm.cscript.set_cost_center(frm, cdt,cdn);
+	}
+})
+
+frappe.ui.form.on("Sales Taxes and Charges", {
+	account_head: function(frm,cdt,cdn){
+		frm.cscript.set_cost_center(frm, cdt,cdn,"account_head");
+	}
+})
