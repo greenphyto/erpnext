@@ -770,6 +770,21 @@ erpnext.utils.map_current_doc = function(opts) {
 	}
 }
 
+erpnext.utils.get_cost_center = function(account, company){
+	return new Promise(resolve=>{
+		frappe.call({
+			"method":"erpnext.accounts.utils.get_cost_center_from_account",
+			"args":{
+				account:account,
+				company:company
+			},
+			callback:r=>{
+				resolve(r.message)
+			}
+		})
+	})
+}
+
 frappe.form.link_formatters['Item'] = function(value, doc) {
 	if (doc && value && doc.item_name && doc.item_name !== value && doc.item_code === value) {
 		return value + ': ' + doc.item_name;

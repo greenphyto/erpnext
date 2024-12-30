@@ -1000,16 +1000,8 @@ $.extend(erpnext.journal_entry, {
 		var d = locals[cdt][cdn];
 		return new Promise((resolve)=>{
 			if (d.account){
-				frappe.call({
-					"method":"erpnext.accounts.utils.get_cost_center_from_account",
-					"args":{
-						account:d.account,
-						company:frm.doc.company
-					},
-					callback:r=>{
-						frappe.model.set_value(cdt,cdn,"cost_center", r.message);
-						resolve(r.message)
-					}
+				erpnext.utils.get_cost_center(d.account, frm.doc.comapny).then(r=>{
+					frappe.model.set_value(cdt,cdn,"cost_center", r);
 				})
 			}else{
 				frappe.model.set_value(cdt,cdn,"cost_center", "");
