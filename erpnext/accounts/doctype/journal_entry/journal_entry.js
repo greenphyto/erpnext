@@ -551,7 +551,9 @@ frappe.ui.form.on("Journal Entry Account", {
 	},
 
 	account: function(frm, dt, dn) {
-		erpnext.journal_entry.set_account_balance(frm, dt, dn);
+		erpnext.journal_entry.set_cost_center(frm,dt,dn).then(()=>{
+			erpnext.journal_entry.set_account_balance(frm, dt, dn);
+		})
 	},
 
 	debit_in_account_currency: function(frm, cdt, cdn) {
@@ -994,4 +996,25 @@ $.extend(erpnext.journal_entry, {
 			});
 		}
 	},
+	set_cost_center: function(frm,cdt,cdn){
+		var d = locals[cdt][cdn];
+		return new Promise((resolve)=>{
+			if (d.account){
+				frappe.call({
+					"method":"erpnext.accounts.utils.get_cost_center_from_account",
+					"args":{
+						account:d.account,
+						company:frm.doc.company
+					},
+					callback:r=>{
+						frappe.model.set_value(cdt,cdn,"cost_center", r.message);
+						resolve(r.message)
+					}
+				})
+			}else{
+				frappe.model.set_value(cdt,cdn,"cost_center", "");
+				resolve()
+			}
+		})
+	}
 });
