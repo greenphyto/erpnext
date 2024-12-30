@@ -221,12 +221,12 @@ class AccountsController(TransactionBase):
 	
 	def set_cost_center_by_settings(self):
 		for d in self.items:
-			cost_center = get_cost_center_from_account(self.company, d.expense_account)
+			cost_center = get_cost_center_from_account(d.expense_account, self.company)
 			if cost_center:
 				d.cost_center = cost_center
 
 		for d in self.taxes:
-			cost_center = get_cost_center_from_account(self.company, d.account_head)
+			cost_center = get_cost_center_from_account(d.account_head, self.company)
 			if cost_center:
 				d.cost_center = cost_center
 

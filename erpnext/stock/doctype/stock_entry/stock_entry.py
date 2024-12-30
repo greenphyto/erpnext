@@ -37,6 +37,7 @@ from erpnext.stock.stock_ledger import NegativeStockError, get_previous_sle, get
 from erpnext.stock.utils import get_bin, get_incoming_rate
 from erpnext.stock import get_warehouse_account_map, get_item_account
 from erpnext.controllers.foms import get_previous_operation, get_operation_number,get_default_expense_production_account
+from erpnext.accounts.utils import get_cost_center_from_account
 
 
 class FinishedGoodError(frappe.ValidationError):
@@ -164,6 +165,7 @@ class StockEntry(StockEntryAsset, StockController):
 		self.validate_warehouse()
 		self.validate_work_order()
 		self.validate_bom()
+		self.validate_cost_center()
 		self.validate_purchase_order()
 		self.validate_subcontracting_order()
 		self.calculate_wip_operation_cost()
@@ -264,6 +266,17 @@ class StockEntry(StockEntryAsset, StockController):
 			self.work_order = data.work_order
 			self.from_bom = 1
 			self.bom_no = data.bom_no
+
+	def validate_cost_center(self):
+		for d in self.items:
+			cost_center = get_cost_center_from_account(d.expense_account, self.company)
+			if cost_center:
+				d.cost_center = cost_center
+
+		for d in self.additional_costs:
+			cost_center = get_cost_center_from_account(d.expense_account, self.company)
+			if cost_center:
+				d.cost_center = cost_center
 
 	def validate_wip_additional_cost(self):
 		total = 0
