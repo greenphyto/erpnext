@@ -37,7 +37,7 @@ from erpnext.accounts.party import (
 	get_party_gle_currency,
 	validate_party_frozen_disabled,
 )
-from erpnext.accounts.utils import get_account_currency, get_fiscal_years, validate_fiscal_year
+from erpnext.accounts.utils import get_account_currency, get_fiscal_years, validate_fiscal_year, get_cost_center_from_account
 from erpnext.buying.utils import update_last_purchase_rate
 from erpnext.controllers.print_settings import (
 	set_print_templates_for_item_table,
@@ -153,6 +153,7 @@ class AccountsController(TransactionBase):
 		self.disable_pricing_rule_on_internal_transfer()
 		self.disable_tax_included_prices_for_internal_transfer()
 		self.set_incoming_rate()
+		self.set_cost_center_by_settings()
 
 		if self.meta.get_field("currency"):
 			self.calculate_taxes_and_totals()
@@ -217,6 +218,17 @@ class AccountsController(TransactionBase):
 				"delete from `tabStock Ledger Entry` where voucher_type=%s and voucher_no=%s",
 				(self.doctype, self.name),
 			)
+	
+	def set_cost_center_by_settings(self):
+		for d in self.items:
+			cost_center = get_cost_center_from_account(self.company, d.expense_account)
+			if cost_center:
+				d.cost_center = cost_center
+
+		for d in self.taxes:
+			cost_center = get_cost_center_from_account(self.company, d.account_head)
+			if cost_center:
+				d.cost_center = cost_center
 
 	def validate_deferred_income_expense_account(self):
 		field_map = {
