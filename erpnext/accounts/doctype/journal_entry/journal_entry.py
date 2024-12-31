@@ -47,6 +47,7 @@ class JournalEntry(AccountsController):
 		self.clearance_date = None
 
 		self.validate_party()
+		self.validate_cost_center()
 		self.validate_entries_for_advance()
 		self.validate_multi_currency()
 		self.set_amounts_in_company_currency()
@@ -103,6 +104,12 @@ class JournalEntry(AccountsController):
 
 	def get_title(self):
 		return self.pay_to_recd_from or self.accounts[0].account
+	
+	def validate_cost_center(self):
+		for d in self.get("accounts"):
+			cost_center = frappe.get_value("Cost Center Mapping", {"company": self.company, "account":d.account}, "cost_center")
+			if cost_center:
+				d.cost_center = cost_center
 	
 	def validate_gst_input(self):
 		if not self.voucher_type == "GST Input Tax":

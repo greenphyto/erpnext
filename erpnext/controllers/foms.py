@@ -1139,9 +1139,9 @@ def get_foms_format(date):
 	return getdate(date).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
 
 def update_foms_delivery():
-	sync_controller("Delivery Note", _sync_delivery_note)
+	sync_controller("Delivery Note", _sync_delivery_note2)
 
-def _sync_delivery_note(log, api=None):
+def _sync_delivery_note2(log, api=None):
 	if not api:
 		api = FomsAPI()
 
@@ -1163,7 +1163,12 @@ def _sync_delivery_note(log, api=None):
 	address = get_html_text(address)
 	remarks = get_html_text(doc.instructions)
 
-	sales_orders = ", ".join([d.get("against_sales_order") for d in doc.get("items")])
+	reff_so = []
+	for d in doc.get("items"):
+		if d.get("against_sales_order"):
+			reff_so.append(d.get("against_sales_order"))
+			
+	sales_orders = ", ".join(reff_so)
 
 	data = frappe._dict({
 		"farmId": 0,
@@ -1253,7 +1258,7 @@ def _update_foms_forecast(log, api=None):
 			"orderType": "Internal / Forecast",
 			"startDeliveryDate": delivery_date,
 			"endDeliveryDate": end_delivery_date,
-			"departmentId ": department_foms_id or "",
+			"departmentId": department_foms_id or "",
 			"saleOrder": {
 				"saleOrderNumber":doc.name, 
 				"farmId": farm_id,
@@ -1674,6 +1679,7 @@ def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=Fals
 			request_no.append(so)
 
 	doc.sales_order_no = ", ".join(sales_order_no or [])
+	doc.request_no = ", ".join(request_no or [])
 	doc.use_multi_level_bom = 0 #if use multi level bom it will use exploed items as raw material, but if not it will use bom items
 	doc.insert()
 

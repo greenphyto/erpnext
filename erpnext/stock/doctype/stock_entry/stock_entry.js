@@ -783,7 +783,9 @@ frappe.ui.form.on('Stock Entry Detail', {
 		}
 	},
 	expense_account: function(frm, cdt, cdn) {
-		erpnext.utils.copy_value_in_all_rows(frm.doc, cdt, cdn, "items", "expense_account");
+		frm.cscript.set_cost_center(frm, cdt,cdn).then(()=>{
+			erpnext.utils.copy_value_in_all_rows(frm.doc, cdt, cdn, "items", "expense_account");
+		})
 	},
 	cost_center: function(frm, cdt, cdn) {
 		erpnext.utils.copy_value_in_all_rows(frm.doc, cdt, cdn, "items", "cost_center");
@@ -944,6 +946,20 @@ erpnext.stock.StockEntry = class StockEntry extends erpnext.stock.StockControlle
 
 	after_cancel() {
 		this.clean_up();
+	}
+
+	set_cost_center(frm, cdt, cdn){
+		var d = locals[cdt][cdn];
+		return new Promise((resolve)=>{
+			if (d.expense_account){
+				erpnext.utils.get_cost_center(d.expense_account, frm.doc.company).then(r=>{
+					frappe.model.set_value(cdt,cdn,"cost_center", r);
+				})
+			}else{
+				frappe.model.set_value(cdt,cdn,"cost_center", "");
+				resolve()
+			}
+		})
 	}
 
 	set_default_account(callback) {

@@ -40,6 +40,7 @@ class GLEntry(Document):
 	def validate(self):
 		self.flags.ignore_submit_comment = True
 		self.validate_and_set_fiscal_year()
+		self.force_cost_center_value()
 		self.pl_must_have_cost_center()
 
 		if not self.flags.from_repost and self.voucher_type != "Period Closing Voucher":
@@ -143,6 +144,11 @@ class GLEntry(Document):
 		self.against_party =  ", ".join( list(set(against_party)) )
 		self.against_account_number = ", ".join( list(set(against_account_number)) )
 		self.account_number = frappe.get_value("Account", self.account, "account_number")
+
+	def force_cost_center_value(self):
+		cost_center = frappe.get_value("Cost Center Mapping", {"company":self.company, "account":self.account}, "cost_center")
+		if cost_center:
+			self.cost_center = cost_center
 
 	def check_mandatory(self):
 	 

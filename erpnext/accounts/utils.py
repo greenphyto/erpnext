@@ -1804,3 +1804,19 @@ def remove_account_number(account_name):
 		else:
 			return part[0]
 	return account_name
+
+@frappe.whitelist()
+def get_cost_center_from_account(account, company=""):
+	if not company:
+		company = erpnext.get_default_company()
+
+	default_cost_center = erpnext.get_default_cost_center(company)
+	
+	if not account:
+		return default_cost_center
+
+	cost_center = frappe.get_value("Cost Center Mapping", {"company":company, "account":account}, "cost_center")
+	if not cost_center:
+		cost_center = default_cost_center
+	
+	return cost_center

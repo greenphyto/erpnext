@@ -511,6 +511,20 @@ cur_frm.cscript.cost_center = function(doc, cdt, cdn){
 	refresh_field('items');
 }
 
+cur_frm.cscript['set_cost_center'] = function(frm, cdt, cdn, field_account="expense_account"){
+	var d = locals[cdt][cdn];
+	return new Promise((resolve)=>{
+		if (d[field_account]){
+			erpnext.utils.get_cost_center(d[field_account], frm.doc.company).then(r=>{
+				frappe.model.set_value(cdt,cdn,"cost_center", r);
+			})
+		}else{
+			frappe.model.set_value(cdt,cdn,"cost_center", "");
+			resolve()
+		}
+	})
+}
+
 cur_frm.fields_dict['items'].grid.get_field('project').get_query = function(doc, cdt, cdn) {
 	return{
 		filters:[
@@ -637,4 +651,16 @@ frappe.ui.form.on("Purchase Invoice", {
 			});
 		}
 	},
+})
+
+frappe.ui.form.on("Purchase Invoice Item", {
+	expense_account: function(frm,cdt,cdn){
+		frm.cscript.set_cost_center(frm, cdt,cdn);
+	}
+})
+
+frappe.ui.form.on("Purchase Taxes and Charges", {
+	account_head: function(frm,cdt,cdn){
+		frm.cscript.set_cost_center(frm, cdt,cdn,"account_head");
+	}
 })

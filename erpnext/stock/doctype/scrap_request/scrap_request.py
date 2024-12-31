@@ -39,7 +39,10 @@ def create_material_issue(doc, submit=False):
 	stock_entry = frappe.new_doc("Stock Entry")
 	stock_entry.stock_entry_type_view = "Scrap Materials"
 	stock_entry.purpose = "Material Issue"
+	stock_entry.system_generated = doc.system_generated
 	stock_entry.set_stock_entry_type()
+	stock_entry.request_no = doc.name
+
 	# get warehouse and batch portion
 	if doc.stock_entry:
 		stock_entry = frappe.get_doc("Stock Entry", doc.stock_entry)
@@ -58,7 +61,6 @@ def create_material_issue(doc, submit=False):
 			row.uom = d.uom
 			row.batch_no = d.batch
 			row.is_scrap_item = 1
-			row.request_no = doc.name
 			row.conversion_factor = get_conversion_factor(d.item_code, d.uom).get("conversion_factor", 1)
 			row.s_warehouse = dt.get("warehouse")
 
@@ -136,12 +138,14 @@ def collect_expired_items():
 	
 	sr_name = frappe.get_value("Scrap Request", {
 		"system_generated":1, 
-		"docstatus":0,
-		"workflow_state":"Pending"
+		"docstatus":0
 	}, debug=1)
 
 	if sr_name:
 		doc = frappe.get_doc("Scrap Request", sr_name)
+		# add tollerance approval on progress not more than 14 days ago
+		if doc.workflow_state != "Pending" and getdate(doc.posting_date) > add_days(getdate(), -14):
+			return
 	else:
 		doc = frappe.new_doc("Scrap Request")
 
@@ -157,7 +161,7 @@ def collect_expired_items():
 
 		row.qty = d.batch_qty
 
-		# warehouse
+	doc.posting_date = getdate()
 	doc.reason = "Expired item (system)"
 	doc.system_generated = 1
 	doc.save(ignore_permissions=1)
@@ -205,7 +209,7 @@ def collect_expired_product(date=""):
 
 	# create SE directly
 	stock_entry = frappe.new_doc("Stock Entry")
-	stock_entry.stock_entry_type_view = "Scrap Materials"
+	stock_entry.stock_entry_type_view = "Waste Materials"
 	stock_entry.purpose = "Material Issue"
 	stock_entry.set_stock_entry_type()
 	stock_entry.request_no = "Expired Product"

@@ -551,7 +551,9 @@ frappe.ui.form.on("Journal Entry Account", {
 	},
 
 	account: function(frm, dt, dn) {
-		erpnext.journal_entry.set_account_balance(frm, dt, dn);
+		erpnext.journal_entry.set_cost_center(frm,dt,dn).then(()=>{
+			erpnext.journal_entry.set_account_balance(frm, dt, dn);
+		})
 	},
 
 	debit_in_account_currency: function(frm, cdt, cdn) {
@@ -722,8 +724,8 @@ $.extend(erpnext.journal_entry, {
 	switch_view_based_on_type: function(frm, cdt, cdn){
 		const item_table = "accounts";
 		var table = frm.fields_dict[item_table];
-		var fields_refund = ['account', 'account_code', 'gst_option', "debit", "credit"]
-		var field_std = ['account', 'account_code', 'party_type', "party", "debit", "credit"]
+		var fields_refund = ['account', 'account_code','cost_center', 'gst_option', "debit", "credit"]
+		var field_std = ['account', 'account_code', 'cost_center', "debit", "credit"]
 		if (frm.doc.voucher_type=="Journal Entry with GST"){
 			$.each(table.grid.fields_map, (i,f)=>{
 				if ( in_list(fields_refund, f.fieldname) ){
@@ -994,4 +996,17 @@ $.extend(erpnext.journal_entry, {
 			});
 		}
 	},
+	set_cost_center: function(frm,cdt,cdn){
+		var d = locals[cdt][cdn];
+		return new Promise((resolve)=>{
+			if (d.account){
+				erpnext.utils.get_cost_center(d.account, frm.doc.company).then(r=>{
+					frappe.model.set_value(cdt,cdn,"cost_center", r);
+				})
+			}else{
+				frappe.model.set_value(cdt,cdn,"cost_center", "");
+				resolve()
+			}
+		})
+	}
 });

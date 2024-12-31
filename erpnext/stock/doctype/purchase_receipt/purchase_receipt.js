@@ -320,12 +320,29 @@ frappe.ui.form.on('Purchase Receipt Item', {
 	batch_no: function(frm, cdt, cdn) {
 		validate_sample_quantity(frm, cdt, cdn);
 	},
+	expense_account: function(frm,cdt,cdn){
+		frm.cscript.set_cost_center(frm, cdt,cdn);
+	}
 });
 
 cur_frm.cscript['Make Stock Entry'] = function() {
 	frappe.model.open_mapped_doc({
 		method: "erpnext.stock.doctype.purchase_receipt.purchase_receipt.make_stock_entry",
 		frm: cur_frm,
+	})
+}
+
+cur_frm.cscript['set_cost_center'] = function(frm, cdt, cdn){
+	var d = locals[cdt][cdn];
+	return new Promise((resolve)=>{
+		if (d.expense_account){
+			erpnext.utils.get_cost_center(d.expense_account, frm.doc.company).then(r=>{
+				frappe.model.set_value(cdt,cdn,"cost_center", r);
+			})
+		}else{
+			frappe.model.set_value(cdt,cdn,"cost_center", "");
+			resolve()
+		}
 	})
 }
 
@@ -346,3 +363,9 @@ var validate_sample_quantity = function(frm, cdt, cdn) {
 		});
 	}
 };
+
+frappe.ui.form.on("Purchase Taxes and Charges", {
+	account_head: function(frm,cdt,cdn){
+		frm.cscript.set_cost_center(frm, cdt,cdn,"account_head");
+	}
+})
