@@ -78,6 +78,7 @@
   "reference_date",
   "clearance_date",
   "accounting_dimensions_section",
+  "from_cost_center",
   "project",
   "dimension_col_break",
   "cost_center",
@@ -149,7 +150,7 @@
   {
    "fieldname": "cost_center",
    "fieldtype": "Link",
-   "label": "Cost Center",
+   "label": "To Cost Center",
    "options": "Cost Center"
   },
   {
@@ -587,10 +588,9 @@
    "read_only": 1
   },
   {
-   "collapsible": 1,
    "fieldname": "accounting_dimensions_section",
    "fieldtype": "Section Break",
-   "label": "Accounting Dimensions"
+   "label": "Cost Center"
   },
   {
    "fieldname": "dimension_col_break",
@@ -730,12 +730,18 @@
    "fieldname": "section_break_60",
    "fieldtype": "Section Break",
    "hide_border": 1
+  },
+  {
+   "fieldname": "from_cost_center",
+   "fieldtype": "Link",
+   "label": "From Cost Center",
+   "options": "Cost Center"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-24 14:44:44.349580",
+ "modified": "2024-12-31 16:41:39.377561",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry",
