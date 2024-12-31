@@ -171,21 +171,21 @@ frappe.ui.form.on("Journal Entry", {
 	},
 
 	company: function(frm) {
-		frappe.call({
-			method: "frappe.client.get_value",
-			args: {
-				doctype: "Company",
-				filters: {"name": frm.doc.company},
-				fieldname: "cost_center"
-			},
-			callback: function(r){
-				if(r.message){
-					$.each(frm.doc.accounts || [], function(i, jvd) {
-						frappe.model.set_value(jvd.doctype, jvd.name, "cost_center", r.message.cost_center);
-					});
-				}
-			}
-		});
+		// frappe.call({
+		// 	method: "frappe.client.get_value",
+		// 	args: {
+		// 		doctype: "Company",
+		// 		filters: {"name": frm.doc.company},
+		// 		fieldname: "cost_center"
+		// 	},
+		// 	callback: function(r){
+		// 		if(r.message){
+		// 			$.each(frm.doc.accounts || [], function(i, jvd) {
+		// 				frappe.model.set_value(jvd.doctype, jvd.name, "cost_center", r.message.cost_center);
+		// 			});
+		// 		}
+		// 	}
+		// });
 
 		erpnext.accounts.dimensions.update_dimension(frm, frm.doctype);
 	},

@@ -172,9 +172,11 @@ frappe.ui.form.on('Payment Entry', {
 	},
 
 	company: function(frm) {
-		frm.events.hide_unhide_fields(frm);
-		frm.events.set_dynamic_labels(frm);
-		erpnext.accounts.dimensions.update_dimension(frm, frm.doctype);
+		set_cost_center(frm, frm.doc.paid_to, "cost_center").then(()=>{
+			frm.events.hide_unhide_fields(frm);
+			frm.events.set_dynamic_labels(frm);
+			erpnext.accounts.dimensions.update_dimension(frm, frm.doctype);
+		})
 	},
 
 	contact_person: function(frm) {
@@ -406,35 +408,39 @@ frappe.ui.form.on('Payment Entry', {
 	},
 
 	paid_from: function(frm) {
-		if(frm.set_party_account_based_on_party) return;
+		set_cost_center(frm, frm.doc.paid_from, "from_cost_center").then(()=>{
+			if(frm.set_party_account_based_on_party) return;
 
-		frm.events.set_account_currency_and_balance(frm, frm.doc.paid_from,
-			"paid_from_account_currency", "paid_from_account_balance", function(frm) {
-				if (frm.doc.payment_type == "Pay") {
-					frm.events.paid_amount(frm);
+			frm.events.set_account_currency_and_balance(frm, frm.doc.paid_from,
+				"paid_from_account_currency", "paid_from_account_balance", function(frm) {
+					if (frm.doc.payment_type == "Pay") {
+						frm.events.paid_amount(frm);
+					}
 				}
-			}
-		);
+			);
+		})
 	},
 
 	paid_to: function(frm) {
-		if(frm.set_party_account_based_on_party) return;
+		set_cost_center(frm, frm.doc.paid_to, "cost_center").then(()=>{
+			if(frm.set_party_account_based_on_party) return;
 
-		frm.events.set_account_currency_and_balance(frm, frm.doc.paid_to,
-			"paid_to_account_currency", "paid_to_account_balance", function(frm) {
-				if (frm.doc.payment_type == "Receive") {
-					if(frm.doc.paid_from_account_currency == frm.doc.paid_to_account_currency) {
-						if(frm.doc.source_exchange_rate) {
-							frm.set_value("target_exchange_rate", frm.doc.source_exchange_rate);
+			frm.events.set_account_currency_and_balance(frm, frm.doc.paid_to,
+				"paid_to_account_currency", "paid_to_account_balance", function(frm) {
+					if (frm.doc.payment_type == "Receive") {
+						if(frm.doc.paid_from_account_currency == frm.doc.paid_to_account_currency) {
+							if(frm.doc.source_exchange_rate) {
+								frm.set_value("target_exchange_rate", frm.doc.source_exchange_rate);
+							}
+							frm.set_value("received_amount", frm.doc.paid_amount);
+	
+						} else {
+							frm.events.received_amount(frm);
 						}
-						frm.set_value("received_amount", frm.doc.paid_amount);
-
-					} else {
-						frm.events.received_amount(frm);
 					}
 				}
-			}
-		);
+			);
+		})
 	},
 
 	set_account_currency_and_balance: function(frm, account, currency_field,
@@ -1437,3 +1443,12 @@ frappe.ui.form.on('Payment Entry', {
 		}
 	},
 })
+
+function set_cost_center(frm, account="", field=""){
+	return new Promise((resolve, reject) => {
+		erpnext.utils.get_cost_center(account, frm.doc.company).then(r=>{
+			frm.set_value(field, r)
+			resolve()
+		})
+	})
+}
