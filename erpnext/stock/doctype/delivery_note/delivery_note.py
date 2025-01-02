@@ -154,6 +154,19 @@ class DeliveryNote(SellingController):
 		if self.is_donation and not self.organization_name:
 			frappe.throw("Organization name must be set for Donation.")
 
+		# set account
+		account = None
+		if self.is_donation:
+			account = frappe.get_value("Company", self.company, "donation_account")
+
+		elif self.is_giveaway:
+			account = frappe.get_value("Company", self.company, "giveaway_account")
+
+		if account:
+			for d in self.items:
+				d.expense_account = account
+
+
 	def validate_with_previous_doc(self):
 		super(DeliveryNote, self).validate_with_previous_doc(
 			{
