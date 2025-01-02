@@ -59,6 +59,8 @@
   "exchange_gain_loss_account",
   "unrealized_exchange_gain_loss_account",
   "unrealized_profit_loss_account",
+  "donation_account",
+  "giveaway_account",
   "column_break0",
   "allow_account_creation_against_child_company",
   "default_payable_account",
@@ -781,6 +783,18 @@
    "fieldtype": "Link",
    "label": "Opening Stock from Stock Entry",
    "options": "Account"
+  },
+  {
+   "fieldname": "donation_account",
+   "fieldtype": "Link",
+   "label": "Donation to External Organisation",
+   "options": "Account"
+  },
+  {
+   "fieldname": "giveaway_account",
+   "fieldtype": "Link",
+   "label": "Distribution to Internal Staff Account",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-building",
@@ -788,7 +802,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2024-12-05 20:02:52.074384",
+ "modified": "2025-01-02 11:38:36.960304",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

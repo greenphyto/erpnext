@@ -343,6 +343,8 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 	):
 		args["batch_no"] = ""
 
+	account = expense_account or get_default_expense_account(args, item_defaults, item_group_defaults, brand_defaults)
+
 	out = frappe._dict(
 		{
 			"item_code": item.name,
@@ -352,12 +354,11 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 			"income_account": get_default_income_account(
 				args, item_defaults, item_group_defaults, brand_defaults
 			),
-			"expense_account": expense_account
-			or get_default_expense_account(args, item_defaults, item_group_defaults, brand_defaults),
+			"expense_account": account,
 			"discount_account": get_default_discount_account(args, item_defaults),
 			"provisional_expense_account": get_provisional_account(args, item_defaults),
 			"cost_center": get_default_cost_center(
-				args, item_defaults, item_group_defaults, brand_defaults
+				args, item_defaults, item_group_defaults, brand_defaults, account=account
 			),
 			"has_serial_no": item.has_serial_no,
 			"has_batch_no": item.has_batch_no,
