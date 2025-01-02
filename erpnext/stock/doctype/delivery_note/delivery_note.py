@@ -134,6 +134,7 @@ class DeliveryNote(SellingController):
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_with_previous_doc()
+		self.validate_donation()
 
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 
@@ -148,6 +149,10 @@ class DeliveryNote(SellingController):
 		if not self.installation_status:
 			self.installation_status = "Not Installed"
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
+
+	def validate_donation(self):
+		if self.is_donation and not self.organization_name:
+			frappe.throw("Organization name must be set for Donation.")
 
 	def validate_with_previous_doc(self):
 		super(DeliveryNote, self).validate_with_previous_doc(
