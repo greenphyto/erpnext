@@ -462,7 +462,7 @@ def _update_stock_receipt(log, api=None):
 		supplier_id = cint(frappe.get_value("Supplier", doc.supplier, "foms_id"))
 		raw_id = cint(frappe.get_value("Item", d.item_code, "foms_raw_id"))
 
-		qty = d.qty
+		qty = d.stock_qty
 		if d.item_code in overide_map:
 			qty = d.qty * flt(overide_map[d.item_code])
 
@@ -503,7 +503,7 @@ def _update_stock_entry_receipt(log, api=None):
 		supplier_id = cint(frappe.get_value("Supplier", doc.from_supplier, "foms_id"))
 		raw_id = cint(frappe.get_value("Item", d.item_code, "foms_raw_id"))
 
-		qty = d.qty
+		qty = d.stock_qty
 
 		# need convert current PR receive to item default
 		data = {
@@ -1186,8 +1186,8 @@ def _sync_delivery_note2(log, api=None):
 		data.deliveryOrderDetails.append({
 			"itemCode": d.item_code,
 			"itemName": d.item_name,
-			"qty": d.qty,
-			"uom": d.uom,
+			"qty": d.stock_qty,
+			"uom": d.stock_uom,
 			"remarks": get_html_text(d.description),
 			"warehouse": d.warehouse,
 			"batchNo": d.batch_no,
