@@ -1147,7 +1147,7 @@ def _sync_delivery_note2(log, api=None):
 
 	doc = frappe.get_doc("Delivery Note", log.docname)
 
-	if doc.docstatus != 0:
+	if doc.docstatus != 1:
 		return
 
 	# skip if not stock
@@ -1196,6 +1196,8 @@ def _sync_delivery_note2(log, api=None):
 
 	api.log = log
 	res = api.create_delivery_note(data)
+
+	print(1200, res)
 
 def get_html_text(html_text):
 	soup = bs(html_text or "", "html.parser")
