@@ -1447,7 +1447,7 @@ frappe.ui.form.on('Payment Entry', {
 function set_cost_center(frm, account="", field=""){
 	return new Promise((resolve, reject) => {
 		erpnext.utils.get_cost_center(account, frm.doc.company).then(r=>{
-			frm.set_value(field, r)
+			frm.set_value(field, r.value)
 			resolve()
 		})
 	})

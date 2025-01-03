@@ -1105,7 +1105,7 @@ cur_frm.cscript['set_cost_center'] = function(frm, cdt, cdn, field_account="expe
 	return new Promise((resolve)=>{
 		if (d[field_account]){
 			erpnext.utils.get_cost_center(d[field_account], frm.doc.company).then(r=>{
-				frappe.model.set_value(cdt,cdn,"cost_center", r);
+				frappe.model.set_value(cdt,cdn,"cost_center", r.value);
 			})
 		}else{
 			frappe.model.set_value(cdt,cdn,"cost_center", "");

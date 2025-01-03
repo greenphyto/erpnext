@@ -953,7 +953,7 @@ erpnext.stock.StockEntry = class StockEntry extends erpnext.stock.StockControlle
 		return new Promise((resolve)=>{
 			if (d.expense_account){
 				erpnext.utils.get_cost_center(d.expense_account, frm.doc.company).then(r=>{
-					frappe.model.set_value(cdt,cdn,"cost_center", r);
+					frappe.model.set_value(cdt,cdn,"cost_center", r.value);
 				})
 			}else{
 				frappe.model.set_value(cdt,cdn,"cost_center", "");
