@@ -135,7 +135,9 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 
 	if doc and doc.get("doctype") == "Sales Order":
 		out.uom = ""
-		
+	
+	print(139, args.customer, args.doctype)
+	print(out.expense_account)
 	return out
 
 
@@ -343,7 +345,9 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 	):
 		args["batch_no"] = ""
 
-	account = expense_account or get_default_expense_account(args, item_defaults, item_group_defaults, brand_defaults)
+	donation_account = get_donation_expense_account(args.doctype, args.company, args.customer)
+
+	account = donation_account or expense_account or get_default_expense_account(args, item_defaults, item_group_defaults, brand_defaults)
 
 	out = frappe._dict(
 		{
@@ -466,6 +470,18 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 		out["total_weight"] = out.weight_per_unit * out.stock_qty
 
 	return out
+
+
+def get_donation_expense_account(doctype ,company, customer):
+	# company
+	# yes, overide
+	data = frappe.get_value("Company", company, ['giveaway_account', 'donation_account', 'internal_staff_customer', 'donation_customer'], as_dict=1)
+	print(479, data)
+	if doctype in ['Delivery Note']:
+		if customer == data.get("donation_customer"):
+			return data.get("donation_account")
+		elif customer == data.get("internal_staff_customer"):
+			return data.get("giveaway_account")
 
 
 def get_item_warehouse(item, args, overwrite_warehouse, defaults=None):
