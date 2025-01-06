@@ -83,15 +83,17 @@ frappe.ui.form.on("Delivery Note", {
 
 	is_donation: function(frm){
 		frm.set_value("naming_series", 'DON-.YYYY.-.###');
-		frappe.db.get_value("Company", frm.doc.company, "donation_customer").then(r=>{
-			frm.set_value("customer", r.message.donation_customer)
+		frappe.db.get_value("Company", frm.doc.company, ["donation_customer", "donation_account"]).then(r=>{
+			frm.set_value("customer", r.message.donation_customer);
+			set_donation_expense(frm, r.message.donation_account);
 		});
 	},
 	
 	is_giveaway: function(frm){
 		frm.set_value("naming_series", 'GPO-.YYYY.-.###');
-		frappe.db.get_value("Company", frm.doc.company, "internal_staff_customer").then(r=>{
+		frappe.db.get_value("Company", frm.doc.company, ["internal_staff_customer", "giveaway_account"]).then(r=>{
 			frm.set_value("customer", r.message.internal_staff_customer)
+			set_donation_expense(frm, r.message.giveaway_account);
 		});
 	},
 
@@ -432,3 +434,10 @@ frappe.ui.form.on("Sales Taxes and Charges", {
 		frm.cscript.set_cost_center(frm, cdt,cdn,"account_head");
 	}
 })
+
+function set_donation_expense(frm, account){
+	$.each(frm.doc.items, (i, r)=>{
+		frappe.model.set_value(r.doctype, r.name, "expense_account", account);
+	});
+	frm.refresh_field("items");
+}

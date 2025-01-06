@@ -136,8 +136,6 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 	if doc and doc.get("doctype") == "Sales Order":
 		out.uom = ""
 	
-	print(139, args.customer, args.doctype)
-	print(out.expense_account)
 	return out
 
 
