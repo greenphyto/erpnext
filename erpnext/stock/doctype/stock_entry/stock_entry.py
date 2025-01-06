@@ -269,13 +269,15 @@ class StockEntry(StockEntryAsset, StockController):
 
 	def validate_cost_center(self):
 		for d in self.items:
-			cost_center = get_cost_center_from_account(d.expense_account, self.company).get("value")
-			if cost_center:
+			res = get_cost_center_from_account(d.expense_account, self.company)
+			cost_center = res.get("value")
+			if cost_center or res.get("lock"):
 				d.cost_center = cost_center
 
 		for d in self.additional_costs:
-			cost_center = get_cost_center_from_account(d.expense_account, self.company).get("value")
-			if cost_center:
+			res = get_cost_center_from_account(d.expense_account, self.company)
+			cost_center = res.get("value")
+			if cost_center or res.get("lock"):
 				d.cost_center = cost_center
 
 	def validate_wip_additional_cost(self):

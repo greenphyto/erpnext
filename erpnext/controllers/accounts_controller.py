@@ -221,13 +221,15 @@ class AccountsController(TransactionBase):
 	
 	def set_cost_center_by_settings(self):
 		for d in self.items:
-			cost_center = get_cost_center_from_account(d.expense_account, self.company).get("value")
-			if cost_center:
+			res = get_cost_center_from_account(d.expense_account, self.company)
+			cost_center = res.get("value")
+			if cost_center or res.get("lock"):
 				d.cost_center = cost_center
 
 		for d in self.taxes:
-			cost_center = get_cost_center_from_account(d.account_head, self.company).get("value")
-			if cost_center:
+			res = get_cost_center_from_account(d.account_head, self.company)
+			cost_center = res.get("value")
+			if cost_center or res.get("lock"):
 				d.cost_center = cost_center
 
 	def validate_deferred_income_expense_account(self):
