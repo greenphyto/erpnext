@@ -81,6 +81,20 @@ frappe.ui.form.on("Delivery Note", {
 		frm.set_df_property('packed_items', 'cannot_delete_rows', true);
 	},
 
+	is_donation: function(frm){
+		frm.set_value("naming_series", 'DON-.YYYY.-.###');
+		frappe.db.get_value("Company", frm.doc.company, "donation_customer").then(r=>{
+			frm.set_value("customer", r.message.donation_customer)
+		});
+	},
+	
+	is_giveaway: function(frm){
+		frm.set_value("naming_series", 'GPO-.YYYY.-.###');
+		frappe.db.get_value("Company", frm.doc.company, "internal_staff_customer").then(r=>{
+			frm.set_value("customer", r.message.internal_staff_customer)
+		});
+	},
+
 	print_without_amount: function(frm) {
 		erpnext.stock.delivery_note.set_print_hide(frm.doc);
 	},

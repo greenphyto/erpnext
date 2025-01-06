@@ -59,8 +59,6 @@
   "exchange_gain_loss_account",
   "unrealized_exchange_gain_loss_account",
   "unrealized_profit_loss_account",
-  "donation_account",
-  "giveaway_account",
   "column_break0",
   "allow_account_creation_against_child_company",
   "default_payable_account",
@@ -72,6 +70,12 @@
   "payment_terms",
   "cost_center",
   "default_finance_book",
+  "donation_and_distribution_section",
+  "giveaway_account",
+  "donation_account",
+  "column_break_65",
+  "internal_staff_customer",
+  "donation_customer",
   "auto_accounting_for_stock_settings",
   "enable_perpetual_inventory",
   "enable_provisional_accounting_for_non_stock_items",
@@ -795,6 +799,27 @@
    "fieldtype": "Link",
    "label": "Distribution to Internal Staff Account",
    "options": "Account"
+  },
+  {
+   "fieldname": "donation_and_distribution_section",
+   "fieldtype": "Section Break",
+   "label": "Donation and Distribution"
+  },
+  {
+   "fieldname": "column_break_65",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "internal_staff_customer",
+   "fieldtype": "Link",
+   "label": "Internal Staff Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "donation_customer",
+   "fieldtype": "Link",
+   "label": "Donation Customer",
+   "options": "Customer"
   }
  ],
  "icon": "fa fa-building",
@@ -802,7 +827,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-01-02 11:38:36.960304",
+ "modified": "2025-01-06 10:48:47.232112",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",
