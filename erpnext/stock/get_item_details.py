@@ -22,7 +22,7 @@ from erpnext.stock.doctype.batch.batch import get_batch_no
 from erpnext.stock.doctype.item.item import get_item_defaults, get_uom_conv_factor
 from erpnext.stock.doctype.item_manufacturer.item_manufacturer import get_item_manufacturer_part_no
 from erpnext.stock.doctype.price_list.price_list import get_price_list_details
-from erpnext.accounts.utils import get_company_default
+from erpnext.accounts.utils import get_company_default, get_cost_center_from_account
 
 sales_doctypes = ["Quotation", "Sales Order", "Delivery Note", "Sales Invoice", "POS Invoice"]
 purchase_doctypes = [
@@ -474,7 +474,6 @@ def get_donation_expense_account(doctype ,company, customer):
 	# company
 	# yes, overide
 	data = frappe.get_value("Company", company, ['giveaway_account', 'donation_account', 'internal_staff_customer', 'donation_customer'], as_dict=1)
-	print(479, data)
 	if doctype in ['Delivery Note']:
 		if customer == data.get("donation_customer"):
 			return data.get("donation_account")
@@ -756,9 +755,9 @@ def get_default_cost_center(args, item=None, item_group=None, brand=None, compan
 	if not company and args.get("company"):
 		company = args.get("company")
 
-	cost_center = frappe.get_value("Cost Center Mapping", {"company":company, "account":account}, "cost_center")
-	if cost_center:
-		return cost_center
+	res = get_cost_center_from_account(account, company)
+	if res.get("lock"):
+		return res.get("cost_center")
 
 	if args.get("project"):
 		cost_center = frappe.db.get_value("Project", args.get("project"), "cost_center", cache=True)

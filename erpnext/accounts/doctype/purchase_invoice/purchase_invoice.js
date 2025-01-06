@@ -68,6 +68,12 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 		if (this.frm.doc.supplier && this.frm.doc.__islocal) {
 			this.frm.trigger('supplier');
 		}
+
+		if (this.frm.is_new()){
+			$.each(this.frm.doc.items, (i,r)=>{
+				frappe.model.set_value(r.doctype,r.name,"cost_center", "")
+			})
+		}
 	}
 
 	refresh(doc) {
@@ -391,8 +397,9 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 
 	items_add(doc, cdt, cdn) {
 		var row = frappe.get_doc(cdt, cdn);
+		frappe.model.set_value(cdt,cdn,"cost_center", "");
 		this.frm.script_manager.copy_from_first_row("items", row,
-			["expense_account", "discount_account", "cost_center", "project"]);
+			["expense_account", "discount_account", "project"]);
 	}
 
 	on_submit() {
@@ -521,6 +528,7 @@ cur_frm.cscript['set_cost_center'] = function(frm, cdt, cdn, field_account="expe
 			})
 		}else{
 			frappe.model.set_value(cdt,cdn,"cost_center", "");
+			frappe.model.set_value(cdt,cdn,"lock_cost_center", 0);
 			resolve()
 		}
 	})
