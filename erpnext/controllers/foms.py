@@ -1147,7 +1147,7 @@ def _sync_delivery_note2(log, api=None):
 
 	doc = frappe.get_doc("Delivery Note", log.docname)
 
-	if doc.docstatus != 1:
+	if doc.docstatus != 1 or doc.is_donation or doc.is_giveaway:
 		return
 
 	# skip if not stock
