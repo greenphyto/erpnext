@@ -119,13 +119,18 @@
    "fieldname": "disabled",
    "fieldtype": "Check",
    "label": "Disabled"
+  },
+  {
+   "fieldname": "abbreviation",
+   "fieldtype": "Data",
+   "label": "Abbreviation"
   }
  ],
  "icon": "fa fa-money",
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-04-04 11:31:43.513402",
+ "modified": "2024-04-04 10:54:42.852424",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Cost Center",

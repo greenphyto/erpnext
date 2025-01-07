@@ -13,15 +13,11 @@ class CostCenter(NestedSet):
 	nsm_parent_field = "parent_cost_center"
 
 	def autoname(self):
-		# from erpnext.accounts.utils import get_autoname_with_number
+		from erpnext.accounts.utils import get_autoname_with_number
 
-		# self.name = get_autoname_with_number(
-		# 	self.cost_center_number, self.cost_center_name, self.company
-		# )
-		if self.abbreviation:
-			self.name = f"{self.cost_center_name} ({self.abbreviation})"
-		else:
-			self.name = self.cost_center_name
+		self.name = get_autoname_with_number(
+			self.cost_center_number, self.cost_center_name, self.company
+		)
 
 	def validate(self):
 		self.validate_mandatory()
