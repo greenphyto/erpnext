@@ -1006,8 +1006,10 @@ $.extend(erpnext.journal_entry, {
 				})
 			}else{
 				frappe.model.set_value(cdt,cdn,"cost_center", "");
-				resolve()
+				frappe.model.set_value(cdt,cdn,"lock_cost_center", 0);
 			}
+			frm.refresh_field("items")
+			resolve()
 		})
 	}
 });
