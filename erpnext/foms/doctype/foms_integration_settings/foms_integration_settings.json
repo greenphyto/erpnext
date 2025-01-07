@@ -13,8 +13,9 @@
   "password",
   "section_break_6",
   "farm_id",
-  "column_break_8",
   "country_id",
+  "column_break_8",
+  "disable_woirk_order_operation_update",
   "default_section",
   "product_uom",
   "operation_time",
@@ -236,12 +237,18 @@
    "fieldname": "sync_sle",
    "fieldtype": "Check",
    "label": "Sync Stock Ledger Entry"
+  },
+  {
+   "default": "0",
+   "fieldname": "disable_woirk_order_operation_update",
+   "fieldtype": "Check",
+   "label": "Disable woirk order operation update"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-12-17 15:37:43.328264",
+ "modified": "2025-01-07 18:21:39.573200",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",

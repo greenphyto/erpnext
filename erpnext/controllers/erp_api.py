@@ -311,6 +311,14 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 		"percentage":percentage, 
 		"rawMaterials":rawMaterials, 
 	})
+
+	if cint(get_foms_settings("disable_woirk_order_operation_update")):
+		return {
+			"result": False,
+			"percentage": 0,
+			"message":"Temporary disabled"
+		}
+	
 	operationName = OPERATION_MAP_NAME.get( cint(operationNo) )
 	work_order_name = frappe.db.get_value("Work Order", ERPWorkOrderID)
 	if not work_order_name:
@@ -400,6 +408,12 @@ def submit_work_order_finish_goods(erpWorkOrderID, qty, expiryDate="", draft=Fal
 		"ERPWorkOrderID":ERPWorkOrderID, 
 		"qty":qty
 	})
+
+	if get_foms_settings("disable_woirk_order_operation_update"):
+		return {
+			"ERPStockEntry": "Temporary disabled"
+		}
+	
 	work_order_name, lot_id, status = frappe.db.get_value("Work Order", ERPWorkOrderID, ['name', 'foms_lot_id', 'status']) or ("", "", "")
 
 	if status == "Completed":
