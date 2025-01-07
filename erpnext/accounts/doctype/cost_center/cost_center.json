@@ -13,7 +13,6 @@
   "cost_center_number",
   "parent_cost_center",
   "company",
-  "abbreviation",
   "cb0",
   "is_group",
   "disabled",
@@ -120,12 +119,6 @@
    "fieldname": "disabled",
    "fieldtype": "Check",
    "label": "Disabled"
-  },
-  {
-   "allow_in_quick_entry": 1,
-   "fieldname": "abbreviation",
-   "fieldtype": "Data",
-   "label": "Abbreviation"
   }
  ],
  "icon": "fa fa-money",
