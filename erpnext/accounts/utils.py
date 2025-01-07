@@ -1809,6 +1809,10 @@ def get_cost_center_from_account(account, company=""):
 	if not company:
 		company = erpnext.get_default_company()
 
+	default_cost_center = erpnext.get_default_cost_center(company)
+	if not account:
+		return {"value":default_cost_center, "lock":0}
+
 	cost_center = frappe.get_value("Cost Center Mapping", {"company":company, "account":account}, "cost_center")
 	if cost_center:
 		return {"value":cost_center, "lock":1}
