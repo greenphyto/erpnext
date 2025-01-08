@@ -945,8 +945,7 @@ def get_children(doctype, parent, company, is_root=False):
 		fields += ["root_type", "account_currency"] if doctype == "Account" else []
 		fields += [parent_fieldname + " as parent"]
 
-	acc = frappe.get_list(doctype, fields=fields, filters=filters)
-
+	acc = frappe.get_list(doctype, fields=fields, filters=filters, order_by="lft asc")
 	if doctype == "Account":
 		sort_accounts(acc, is_root, key="value")
 
