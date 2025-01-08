@@ -654,7 +654,9 @@
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
-   "read_only": 1
+   "read_only": 1,
+   "no_copy": 1,
+   "no_amend_copy": 1
   },
   {
    "fieldname": "foms_details_section",
@@ -742,7 +744,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-18 18:37:34.173138",
+ "modified": "2024-12-18 18:37:34.173139",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",

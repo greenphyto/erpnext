@@ -477,7 +477,9 @@
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
-   "read_only": 1
+   "read_only": 1,
+   "no_amend_copy": 1,
+   "no_copy": 1
   },
   {
    "fieldname": "foms_name",
@@ -514,7 +516,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-09-11 19:23:56.614217",
+ "modified": "2024-09-11 19:23:56.614218",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",

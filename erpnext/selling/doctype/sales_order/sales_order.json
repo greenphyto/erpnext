@@ -1679,8 +1679,9 @@
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
-   "no_copy": 1,
-   "read_only": 1
+   "read_only": 1,
+   "no_amend_copy": 1,
+   "no_copy": 1
   },
   {
    "fieldname": "req_id",
@@ -1694,7 +1695,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-10-17 21:08:37.820290",
+ "modified": "2024-10-17 21:08:37.820291",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

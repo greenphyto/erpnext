@@ -585,7 +585,9 @@
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
-   "read_only": 1
+   "read_only": 1,
+   "no_amend_copy": 1,
+   "no_copy": 1
   },
   {
    "default": "0",
@@ -611,7 +613,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-09-11 18:23:25.273690",
+ "modified": "2024-09-11 18:23:25.273691",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

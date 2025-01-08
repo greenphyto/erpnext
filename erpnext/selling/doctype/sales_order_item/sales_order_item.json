@@ -897,8 +897,9 @@
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
+   "read_only": 1,
    "no_copy": 1,
-   "read_only": 1
+   "no_amend_copy": 1
   },
   {
    "fieldname": "foms_detail_section",
@@ -916,7 +917,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-10-17 21:06:13.467154",
+ "modified": "2024-10-17 21:06:13.467155",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

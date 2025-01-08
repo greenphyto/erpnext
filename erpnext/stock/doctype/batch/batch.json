@@ -216,7 +216,9 @@
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "Foms ID",
-   "read_only": 1
+   "read_only": 1,
+   "no_copy": 1,
+   "no_amend_copy": 1
   },
   {
    "fieldname": "foms_name",
@@ -246,7 +248,7 @@
  "image_field": "image",
  "links": [],
  "max_attachments": 5,
- "modified": "2024-12-18 11:52:49.001538",
+ "modified": "2024-12-18 11:52:49.001539",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Batch",

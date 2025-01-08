@@ -87,7 +87,9 @@
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
-   "read_only": 1
+   "read_only": 1,
+   "no_copy": 1,
+   "no_amend_copy": 1
   },
   {
    "fieldname": "package_type",
@@ -97,7 +99,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-24 15:48:25.809371",
+ "modified": "2024-07-24 15:48:25.809372",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Packaging",
