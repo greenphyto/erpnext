@@ -264,7 +264,10 @@ def close_todo(doc, method=""):
 			todo.status = "Completed"
 		else:
 			todo.status = "Planned"
+		
+		todo.flags.ignore_reference_update = 1
 		todo.save()
+
 def update_request(reff_doc, state):
 	# from Asset Repair' and Asset Maintenance Log
 	if reff_doc.doctype not in ('Asset Repair', 'Asset Maintenance Log', 'ToDo'):
@@ -280,6 +283,9 @@ def update_request(reff_doc, state):
 			return
 		
 	if not request_id:
+		return
+	
+	if reff_doc.flags and reff_doc.flags.ignore_reference_update:
 		return
 	
 	doc = frappe.get_doc("Maintenance Request", request_id)
