@@ -89,6 +89,7 @@
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
+   "no_amend_copy": 1,
    "no_copy": 1,
    "read_only": 1
   }
@@ -96,7 +97,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-09-17 12:29:13.116920",
+ "modified": "2025-01-08 16:42:51.970137",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request Items",
