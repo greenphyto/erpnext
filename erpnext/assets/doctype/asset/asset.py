@@ -1535,6 +1535,7 @@ METHOD_NAME = "asset_sync_smart_fm"
 def sync_asset(start_from_log=""):
 	api = SyncAPI()
 	logs = api.get_pending_log({"doc_type":"Asset"}, unique = 1)
+	# logs = [{'doctype': 'Asset', 'docname': '710031', 'name': 'd40ef506c2', 'update_type': 'Cancel'}]
 	send_notif = False
 	sample_doc = None
 	new_assets = []
@@ -1575,10 +1576,18 @@ def send_notif_new_asset(sample_doc,new_assets):
 	notif_doc.send_an_email(sample_doc, context)
 
 from erpnext.smart_fm.doctype.sync_map.sync_map import get_sync_map, create_sync_map
+from frappe.desk.form.linked_with import get_submitted_linked_docs, cancel_all_linked_docs
 def sync_asset_data(log, api=None):
 	source_doc = api.get_resource(log['doctype'], log['docname'])
 	if not source_doc:
 		return
+	
+	def cancel_asset(reff_doc):
+		res = get_submitted_linked_docs(reff_doc.doctype, reff_doc.name)
+		dump_docs = res.get("docs") or []
+		cancel_all_linked_docs( json.dumps(dump_docs) , ignore_doctypes_on_cancel_all=["Sales Invoice", "Purchase Invoice"])
+		reff_doc =  frappe.get_doc(sync_map.destination_doctype, sync_map.destination_name)
+		reff_doc.cancel()
 	
 	sync_map = get_sync_map(source_doc.doctype, source_doc.name, METHOD_NAME)
 	if not sync_map:
@@ -1598,14 +1607,15 @@ def sync_asset_data(log, api=None):
 		if log['update_type'] == 'Delete':
 			frappe.delete_doc("Sync Map", sync_map.name)
 			if reff_doc.docstatus == 1:
-				reff_doc.cancel()
+				cancel_asset(reff_doc)
 			if reff_doc.doctstatus == 0:
 				frappe.delete_doc(reff_doc.doctype, reff_doc.name)
 
 		elif log['update_type'] == 'Cancel':
 			frappe.delete_doc("Sync Map", sync_map.name)
 			if reff_doc.docstatus == 1:
-				reff_doc.cancel()
+				# delete linked document
+				cancel_asset(reff_doc)
 		
 		elif log['update_type'] == 'Update':
 			UpdateExistingAsset(reff_doc, log, source_doc)
@@ -1619,8 +1629,8 @@ ASSET_FIELD_PRIMARY = [
 	'asset_name',
 	'asset_category',
 	'location',
-	'purchase_receipt',
-	'purchase_invoice',
+	# 'purchase_receipt',
+	# 'purchase_invoice',
 	'available_for_use_date',
 	'gross_purchase_amount',
 	'asset_quantity',
@@ -1642,8 +1652,8 @@ ASSET_FIELD_PRIMARY = [
 ASSET_FIELD_OPTIONAL = [
 	'asset_owner',
 	'asset_owner_company',
-	'supplier',
-	'customer',
+	# 'supplier',
+	# 'customer',
 	'image',
 	'journal_entry_for_scrap',
 	'model_number',
