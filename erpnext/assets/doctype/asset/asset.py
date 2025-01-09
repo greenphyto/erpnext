@@ -1532,20 +1532,30 @@ def add_node():
 	frappe.get_doc(args).insert()
 
 METHOD_NAME = "asset_sync_smart_fm"
-def sync_asset():
+def sync_asset(start_from_log=""):
 	api = SyncAPI()
-	logs = api.get_pending_log({"doc_type":"Asset"})
+	logs = api.get_pending_log({"doc_type":"Asset"}, unique = 1)
 	send_notif = False
 	sample_doc = None
 	new_assets = []
+	start = False
 	for log in logs:
-		res = sync_asset_data(log, api)
-		# api.set_success(log['log_name'])
-		if res:
-			new_assets.append(res.name)
-			if not send_notif:
-				send_notif = True
-				sample_doc = res
+		if start_from_log:
+			if not start:
+				if log['name'] == start_from_log:
+					start = True
+		else:
+			start = True
+
+		if start:
+			res = sync_asset_data(log, api)
+			if frappe.db.get_single_value("Sync Doctype Settings","enable_update_log_result"):
+				api.set_success(log['log_name'])
+			if res:
+				new_assets.append(res.name)
+				if not send_notif:
+					send_notif = True
+					sample_doc = res
 
 	if send_notif:
 		send_notif_new_asset(sample_doc, new_assets)
@@ -1566,7 +1576,10 @@ def send_notif_new_asset(sample_doc,new_assets):
 
 from erpnext.smart_fm.doctype.sync_map.sync_map import get_sync_map, create_sync_map
 def sync_asset_data(log, api=None):
-	source_doc = api.get_resource(log['doctype'], log['name'])
+	source_doc = api.get_resource(log['doctype'], log['docname'])
+	if not source_doc:
+		return
+	
 	sync_map = get_sync_map(source_doc.doctype, source_doc.name, METHOD_NAME)
 	if not sync_map:
 		if log['update_type'] == "Update":
@@ -1606,7 +1619,6 @@ ASSET_FIELD_PRIMARY = [
 	'asset_name',
 	'asset_category',
 	'location',
-	'cost_center',
 	'purchase_receipt',
 	'purchase_invoice',
 	'available_for_use_date',
@@ -1664,7 +1676,7 @@ class CreateAsset():
 	
 	def build(self):
 		self.create_asset_location()
-		# self.create_asset_category()
+		self.create_asset_category()
 		self.create_item()
 		self.create_asset()
 		return self.asset
@@ -1719,6 +1731,9 @@ class CreateAsset():
 			return
 		
 		data = remove_base_field(self.api.get_resource("Item", self.source.item_code))
+		if not data:
+			return
+		
 		item = frappe.get_doc(data)
 
 		if data.get("stock_uom") and not frappe.db.exists("UOM", data.get("stock_uom")):
@@ -1759,7 +1774,8 @@ class CreateAsset():
 		asset_category.insert()
 
 	def create_asset_location(self):
-		if not frappe.db.exists("Location", self.source.location):
+		if self.source.location and not frappe.db.exists("Location", self.source.location):
+			print(1771, self.source.location)
 			frappe.get_doc({"doctype": "Location", "location_name": self.source.location}).insert()
 
 class UpdateExistingAsset():
@@ -1812,6 +1828,8 @@ class UpdateExistingAsset():
 		self.asset.set(field, value)
 
 	def save_asset(self):
+		self.asset.flags.ignore_permissions=1
+		self.asset.flags.ignore_mandatory=1
 		self.asset.save()
 
 

@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "enable",
+  "enable_update_log_result",
   "origin_site",
   "user",
   "password",
@@ -44,12 +45,18 @@
    "fieldtype": "Password",
    "label": "Password",
    "mandatory_depends_on": "doc.enable"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_update_log_result",
+   "fieldtype": "Check",
+   "label": "Enable update log result"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-12-27 16:20:49.353496",
+ "modified": "2025-01-09 13:01:44.884281",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Sync Doctype Settings",
