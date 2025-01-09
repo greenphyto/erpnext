@@ -430,7 +430,7 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 	for d in [
 		["Account", "income_account", "default_income_account"],
 		["Account", "expense_account", "default_expense_account"],
-		["Cost Center", "cost_center", "cost_center"],
+		# ["Cost Center", "cost_center", "cost_center"],
 		["Warehouse", "warehouse", ""],
 	]:
 		if not out[d[1]]:
@@ -758,6 +758,8 @@ def get_default_cost_center(args, item=None, item_group=None, brand=None, compan
 	res = get_cost_center_from_account(account, company)
 	if res.get("lock"):
 		return res.get("cost_center")
+	else:
+		return ""
 
 	if args.get("project"):
 		cost_center = frappe.db.get_value("Project", args.get("project"), "cost_center", cache=True)

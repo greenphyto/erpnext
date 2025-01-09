@@ -1323,5 +1323,4 @@ def get_asset_depreciation_date(source_name, target_doc=None, ignore_permissions
 
 @frappe.whitelist()
 def filter_asset_dep_date(doctype, txt, searchfield, start, page_len, filters):
-	print(1326, filters)
 	return frappe.db.get_list("Asset")

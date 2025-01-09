@@ -63,6 +63,12 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 			}
 			return filters;
 		})
+
+		if (this.frm.is_new()){
+			$.each(this.frm.doc.items, (i,r)=>{
+				frappe.model.set_value(r.doctype,r.name,"cost_center", "")
+			})
+		}
 	}
 
 	refresh(doc, dt, dn) {
@@ -393,7 +399,8 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 
 	items_add(doc, cdt, cdn) {
 		var row = frappe.get_doc(cdt, cdn);
-		this.frm.script_manager.copy_from_first_row("items", row, ["income_account", "discount_account", "cost_center"]);
+		frappe.model.set_value(cdt,cdn,"cost_center", "");
+		this.frm.script_manager.copy_from_first_row("items", row, ["income_account", "discount_account"]);
 	}
 
 	set_dynamic_labels() {
@@ -1106,9 +1113,11 @@ cur_frm.cscript['set_cost_center'] = function(frm, cdt, cdn, field_account="expe
 		if (d[field_account]){
 			erpnext.utils.get_cost_center(d[field_account], frm.doc.company).then(r=>{
 				frappe.model.set_value(cdt,cdn,"cost_center", r.value);
+				frappe.model.set_value(cdt,cdn,"lock_cost_center", r.lock);
 			})
 		}else{
 			frappe.model.set_value(cdt,cdn,"cost_center", "");
+			frappe.model.set_value(cdt,cdn,"lock_cost_center", 0);
 			resolve()
 		}
 	})
