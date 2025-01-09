@@ -49,8 +49,19 @@ class SyncAPI():
 		return result.get("message")
 
 	
-	def get_pending_log(self, filters={}):
+	def get_pending_log(self, filters={}, unique=False):
 		res = self.req("GET", "frappe.core.doctype.sync_log.sync_log.get_pending_log", {"filters": json.dumps(filters) })
+		if unique:
+			unique_data = []
+			new_log = []
+			for d in res:
+				name = d.get("docname")
+				if name not in unique_data:
+					unique_data.append(name)
+					new_log.append(d)
+			
+			return new_log
+		
 		return res
 
 	def set_success(self, log_name):
@@ -68,7 +79,9 @@ class SyncAPI():
 		self.get_login()
 		url = urljoin(self.settings.origin_site, f"/api/resource/{doctype}/{docname}")
 		res = self.session.get(url)
-		result =  res.json()
-
-		return frappe._dict(result.get("data"))
+		result =  res.json() or {}
+		if result.get("data"):
+			return frappe._dict(result.get("data"))
+		else:
+			return {}
 	
