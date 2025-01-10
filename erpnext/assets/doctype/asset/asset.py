@@ -1714,7 +1714,7 @@ class CreateAsset():
 				"number_of_depreciations_booked": source.number_of_depreciations_booked,
 				"gross_purchase_amount": source.gross_purchase_amount,
 				"purchase_receipt_amount": source.purchase_receipt_amount,
-				"maintenance_required": source.maintenance_required,
+				"maintenance_required": 1,
 				"available_for_use_date": source.available_for_use_date,
 				"location": source.location,
 				"is_existing_asset": 1,
