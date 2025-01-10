@@ -154,14 +154,14 @@ def update_request(request_no, items, delivery_date=""):
 	
 	for d in items:
 		d = frappe._dict(d)
-		items = doc.get("items", {"item_code":d.item_code})
+		items = doc.get("items", {"name":d.name})
 		if items:
 			item = items[0]
 			item.qty = d.qty
 			item.db_update()
 
 	doc.validate()
-	doc.sync_request_so()
+	# doc.sync_request_so()
 	doc.db_update()
 
 	return request_no

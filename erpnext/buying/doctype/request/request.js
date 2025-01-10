@@ -61,6 +61,17 @@ frappe.ui.form.on("Request", {
 			return erpnext.queries.item(filters);
 		})
 
+		frm.add_custom_button(__('Update Items'), () => {
+			erpnext.utils.update_child_items({
+				frm: frm,
+				child_docname: "items",
+				child_doctype: "Request Items",
+				cannot_add_row: false,
+				// item_query:item_query,
+				// uom_query:uom_query
+			})
+		});
+
 		frm.cscript.change_package_display();
 
 	},
@@ -163,3 +174,110 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 
 frappe.provide("cur_frm.cscript")
 extend_cscript(cur_frm.cscript, new erpnext.selling.RequestController({frm: cur_frm}));
+
+erpnext.utils.update_child_items = function(opts) {
+	const frm = opts.frm;
+	const cannot_add_row = 1;
+	const child_docname = 'items';
+	const child_meta = `Request Item`;
+
+	var item_query = function() {
+		let filters;
+		filters = {"is_sales_item": 1};
+		return {
+			query: "erpnext.controllers.queries.item_query",
+			filters: filters
+		};
+	}
+
+	if (opts.item_query){
+		item_query = opts.item_query;
+	}
+
+	this.data = [];
+	const fields = [{
+		fieldtype:'Data',
+		fieldname:"docname",
+		read_only: 1,
+		hidden: 1,
+	}, {
+		fieldtype:'Link',
+		fieldname:"item_code",
+		options: 'Item',
+		in_list_view: 1,
+		read_only: 1,
+		disabled: 0,
+		label: __('Item Code'),
+	}, {
+		fieldtype:'Link',
+		fieldname:'uom',
+		options: 'UOM',
+		read_only: 1,
+		label: __('UOM'),
+		in_list_view: 1,
+		reqd: 1,
+	}, {
+		fieldtype:'Float',
+		fieldname:"qty",
+		default: 0,
+		read_only: 0,
+		in_list_view: 1,
+		label: __('Qty'),
+		precision: 5
+	}]
+
+	const dialog = new frappe.ui.Dialog({
+		title: __("Update Items"),
+		fields: [
+			{
+				fieldname: "trans_items",
+				fieldtype: "Table",
+				label: "Items",
+				cannot_add_rows: cannot_add_row,
+				in_place_edit: false,
+				reqd: 1,
+				data: this.data,
+				get_data: () => {
+					return this.data;
+				},
+				fields: fields
+			},
+		],
+		primary_action: function() {
+			const trans_items = this.get_values()["trans_items"].filter((item) => !!item.item_code);
+			frappe.call({
+				method: 'erpnext.buying.doctype.request.request.update_request',
+				freeze: true,
+				args: {
+					request_no: frm.doc.name, 
+					items: trans_items, 
+					delivery_date: ''
+				},
+				callback: function() {
+					frm.reload_doc();
+				}
+			});
+			this.hide();
+			refresh_field("items");
+		},
+		size:"large",
+		primary_action_label: __('Update')
+	});
+
+	frm.doc[opts.child_docname].forEach(d => {
+		dialog.fields_dict.trans_items.df.data.push({
+			"docname": d.name,
+			"name": d.name,
+			"item_code": d.item_code,
+			"delivery_date": d.delivery_date,
+			"schedule_date": d.schedule_date,
+			"conversion_factor": d.conversion_factor,
+			"qty": d.qty,
+			"rate": d.rate,
+			"uom": d.uom
+		});
+		this.data = dialog.fields_dict.trans_items.df.data;
+		dialog.fields_dict.trans_items.grid.refresh();
+	})
+	dialog.show();
+}
