@@ -27,6 +27,8 @@ from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 from frappe.utils.file_manager import save_file, save_url
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result
 
+PRECISION_FACTOR = 4
+
 def get_data(data):
 	if isinstance(data, string_types):
 		data = json.loads(data)
@@ -204,7 +206,7 @@ def make_stock_entry_with_materials(source_name, materials, wip_warehouse, opera
 		if uom in ['Unit']:
 			qty = round(qty)
 
-		qty = flt(qty, 7)
+		qty = flt(qty, PRECISION_FACTOR, floor = True)
 		
 		if is_overide_item:
 			# get batch automaticly
@@ -298,8 +300,6 @@ def get_stock_entry_type(operation):
 		return "Harvesting Transfer"
 	else:
 		return "Harvesting Finished Goods"
-
-
 
 @frappe.whitelist()
 def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[], ERPWorkOrderID="", erpWorkOrderID=""):
