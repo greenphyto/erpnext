@@ -1569,7 +1569,7 @@ def send_notif_new_asset(sample_doc,new_assets):
 	context = get_context(sample_doc)
 	text_list = "<table>"
 	for d in new_assets:
-		url = get_url(f"/app/Asset/{d}", full_address=True)
+		url = get_url(f"/app/asset/{d}", full_address=True)
 		text_list += f"<tr><td>{d}</td><td><a href='{url}'>edit</a></td></tr>"
 	text_list+="</table>"
 	context['asset_list'] = text_list
