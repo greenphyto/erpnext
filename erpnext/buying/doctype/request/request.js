@@ -61,16 +61,16 @@ frappe.ui.form.on("Request", {
 			return erpnext.queries.item(filters);
 		})
 
-		frm.add_custom_button(__('Update Items'), () => {
-			erpnext.utils.update_child_items_request({
-				frm: frm,
-				child_docname: "items",
-				child_doctype: "Request Items",
-				cannot_add_row: false,
-				// item_query:item_query,
-				// uom_query:uom_query
-			})
-		});
+		// if (frm.doc.docstatus==1){
+		// 	frm.add_custom_button(__('Update Items'), () => {
+		// 		erpnext.utils.update_child_items_request({
+		// 			frm: frm,
+		// 			child_docname: "items",
+		// 			child_doctype: "Request Items",
+		// 			cannot_add_row: false
+		// 		})
+		// 	});
+		// }
 
 		frm.cscript.change_package_display();
 
