@@ -131,6 +131,7 @@ def create_sales_order(request_name):
 
 @frappe.whitelist()
 def update_request(request_no, items, delivery_date=""):
+	from erpnext.controllers.foms import sync_log
 	"""
 	# only can change qty, not for package
 	# can delete or add?
@@ -163,5 +164,5 @@ def update_request(request_no, items, delivery_date=""):
 	doc.validate()
 	# doc.sync_request_so()
 	doc.db_update()
-
+	sync_log(doc, method="on_update_after_submit")
 	return request_no

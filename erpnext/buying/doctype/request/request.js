@@ -62,7 +62,7 @@ frappe.ui.form.on("Request", {
 		})
 
 		frm.add_custom_button(__('Update Items'), () => {
-			erpnext.utils.update_child_items({
+			erpnext.utils.update_child_items_request({
 				frm: frm,
 				child_docname: "items",
 				child_doctype: "Request Items",
@@ -175,7 +175,7 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 frappe.provide("cur_frm.cscript")
 extend_cscript(cur_frm.cscript, new erpnext.selling.RequestController({frm: cur_frm}));
 
-erpnext.utils.update_child_items = function(opts) {
+erpnext.utils.update_child_items_request = function(opts) {
 	const frm = opts.frm;
 	const cannot_add_row = 1;
 	const child_docname = 'items';
