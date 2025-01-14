@@ -540,7 +540,7 @@ class AccountsController(TransactionBase):
 							if item.get(fieldname) is None or fieldname in force_item_fields:
 								item.set(fieldname, value)
 
-							elif fieldname in ["cost_center", "conversion_factor"] and not item.get(fieldname):
+							elif fieldname in ["conversion_factor"] and not item.get(fieldname):
 								item.set(fieldname, value)
 
 							elif fieldname == "serial_no":
@@ -574,10 +574,10 @@ class AccountsController(TransactionBase):
 
 					# Double check for cost center
 					# Items add via promotional scheme may not have cost center set
-					if hasattr(item, "cost_center") and not item.get("cost_center"):
-						item.set(
-							"cost_center", self.get("cost_center") or erpnext.get_default_cost_center(self.company)
-						)
+					# if hasattr(item, "cost_center") and not item.get("cost_center"):
+					# 	item.set(
+					# 		"cost_center", self.get("cost_center") or erpnext.get_default_cost_center(self.company)
+					# )
 
 					if ret.get("pricing_rules"):
 						self.apply_pricing_rule_on_items(item, ret)
