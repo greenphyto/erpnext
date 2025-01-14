@@ -21,6 +21,7 @@ class AssetMaintenance(Document):
 				throw(_("Row #{}: Please asign task to a member.").format(task.idx))
 
 		self.rename_task()
+		self.validate_tasks()
 
 	def on_update(self):
 		for task in self.get("asset_maintenance_tasks"):
@@ -49,6 +50,16 @@ class AssetMaintenance(Document):
 			if d.is_new():
 				series = "TASK.#####"
 				d.name = parse_naming_series(series, doc=self)
+
+	def validate_tasks(self):
+		for d in self.asset_maintenance_tasks:
+			if not d.next_due_date:
+				d.next_due_date = calculate_next_due_date(
+					d.periodicity,
+					d.start_date,
+					d.end_date,
+					d.last_completion_date
+				)
 
 @frappe.whitelist()
 def assign_tasks(asset_maintenance_name, assign_to_member, maintenance_task, next_due_date):
