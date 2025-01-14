@@ -60,6 +60,15 @@ class AssetMaintenance(Document):
 					d.end_date,
 					d.last_completion_date
 				)
+	
+	def update_due_date(self):
+		for d in self.asset_maintenance_tasks:
+			d.next_due_date = calculate_next_due_date(
+				d.periodicity,
+				d.start_date,
+				d.end_date,
+				d.last_completion_date
+			)
 
 @frappe.whitelist()
 def assign_tasks(asset_maintenance_name, assign_to_member, maintenance_task, next_due_date):
@@ -93,6 +102,12 @@ def calculate_next_due_date(
 		(start_date and last_completion_date > start_date) or not start_date
 	):
 		start_date = last_completion_date
+
+	if getdate(last_completion_date) < getdate():
+		start_date = getdate()
+	if not last_completion_date:
+		start_date = getdate()
+
 	if periodicity == "Daily":
 		next_due_date = add_days(start_date, 1)
 	if periodicity == "Weekly":
