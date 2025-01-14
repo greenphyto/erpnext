@@ -191,7 +191,7 @@ class GLEntry(Document):
 	def pl_must_have_cost_center(self):
 		"""Validate that profit and loss type account GL entries have a cost center."""
 
-		if self.cost_center or self.voucher_type == "Period Closing Voucher":
+		if self.cost_center or self.voucher_type == "Period Closing Voucher" or allow_cost_center_missing(self):
 			return
 
 		if frappe.get_cached_value("Account", self.account, "report_type") == "Profit and Loss":
@@ -811,4 +811,10 @@ def regrenerate_against_account():
 			frappe.db.commit()
 
 
-	
+from frappe.utils import nowdate, getdate
+def allow_cost_center_missing(gl):
+	cur_fiscal_year = get_fiscal_year(nowdate(), as_dict=True)
+	if getdate(gl.posting_date) < cur_fiscal_year.year_start_date:
+		return True
+	else:
+		return False
