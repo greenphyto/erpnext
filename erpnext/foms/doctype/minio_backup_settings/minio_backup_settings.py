@@ -5,30 +5,41 @@ import frappe
 from minio import Minio
 from minio.error import S3Error
 from frappe.model.document import Document
+from frappe.utils.backups import get_backup_path
+from frappe.integrations.offsite_backup_utils import (
+	get_chunk_site,
+	get_latest_backup_file,
+	send_email,
+	validate_file_size,
+)
 
 class MinIOBackupSettings(Document):
 	pass
 
 class MinIO():
-	def __init__(self, key, pwd):
+	def __init__(self, host, key, pwd):
+		self.host = host
 		self.access_key = key
 		self.secret_key = pwd
 
 	def run(self):
 		# Create a client with the MinIO server playground, its access key
 		# and secret key.
-		print(self.access_key, self.secret_key)
-		client = Minio("minio-api.greenphyto.com",
+		client = Minio(self.host,
 			access_key=self.access_key,
 			secret_key=self.secret_key,
 		)
 
 		# The file to upload, change this path if needed
-		source_file = "/workspace/development/gp-frappe-bench/apps/erpnext/erpnext/test-text-file.txt"
+		backup_data = get_latest_backup_file()
+		if not backup_data:
+			return
+		
+		source_file = backup_data[0]
 
 		# The destination bucket and filename on the MinIO server
 		bucket_name = "erp-database-backup"
-		destination_file = "my-test-file.txt"
+		destination_file = source_file.split("/")[-1]
 
 		# Make the bucket if it doesn't exist.
 		found = client.bucket_exists(bucket_name)
@@ -39,9 +50,9 @@ class MinIO():
 			print("Bucket", bucket_name, "already exists")
 
 		# # Upload the file, renaming it in the process
-		# client.fput_object(
-		# 	bucket_name, destination_file, source_file,
-		# )
+		client.fput_object(
+			bucket_name, destination_file, source_file,
+		)
 		print(
 			source_file, "successfully uploaded as object",
 			destination_file, "to bucket", bucket_name,
@@ -49,5 +60,8 @@ class MinIO():
 
 def upload_backup():
 	doc = frappe.get_doc("MinIO Backup Settings")
-	app = MinIO(doc.access_key, doc.get_password("secret_key"))
-	app.upload()
+	if not doc.enable:
+		return
+	
+	app = MinIO(doc.minio_host, doc.access_key, doc.get_password("secret_key"))
+	app.run()

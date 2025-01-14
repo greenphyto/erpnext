@@ -7,6 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "enable",
+  "minio_host",
   "access_key",
   "secret_key"
  ],
@@ -26,12 +27,18 @@
    "fieldname": "secret_key",
    "fieldtype": "Password",
    "label": "Secret Key"
+  },
+  {
+   "default": "minio-api.greenphyto.com",
+   "fieldname": "minio_host",
+   "fieldtype": "Data",
+   "label": "MinIO Host"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-01-13 18:25:33.291423",
+ "modified": "2025-01-14 11:02:39.722991",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "MinIO Backup Settings",
