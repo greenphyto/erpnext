@@ -97,6 +97,7 @@ class WorkOrder(Document):
 
 		self.set_required_items()
 		self.validate_non_stock_items()
+		self.get_packet_size()
 
 	def on_update_after_submit(self):
 		self.validate_cost_editing()
@@ -400,6 +401,8 @@ class WorkOrder(Document):
 		allowance_percentage = flt(
 			frappe.db.get_single_value("Manufacturing Settings", "overproduction_percentage_for_work_order")
 		)
+		if not allowance_percentage:
+			return
 
 		for purpose, fieldname in (
 			("Manufacture", "produced_qty"),
@@ -1068,18 +1071,43 @@ class WorkOrder(Document):
 			self.get_packaging_from_order()
 			self.set_available_qty()
 
+	def get_packet_size(self):
+		
+		data = []
+		if self.sales_order_no:
+			doc_name = self.sales_order_no.replace(" ","").split(",")
+			temp = frappe.db.sql("select uom, conversion_factor from `tabSales Order Item` where parent in %(parent)s and item_code = %(item_code)s", 
+						{"parent":doc_name, "item_code":self.production_item}, as_dict=1)
+			if temp:
+				data += temp
+		
+		if self.request_no:
+			doc_name = self.request_no.replace(" ","").split(",")
+			temp = frappe.db.sql("select uom, unit_weight as conversion_factor from `tabRequest Items` where parent in %(parent)s and item_code = %(item_code)s", 
+						{"parent":doc_name, "item_code":self.production_item}, as_dict=1)
+			if temp:
+				data += temp
+
+		self.packet_size = frappe.db.get_value("Item", self.production_item, "stock_uom")
+		self.conversion_factor = 1
+		for d in data:
+			self.packet_size = d.uom
+			self.conversion_factor = d.conversion_factor
+
 	def get_packaging_from_order(self):
 		total_pcs = 0
 		# from SO
 		if self.sales_order_no:
 			doc_name = self.sales_order_no.replace(" ","").split(",")
-			temp = frappe.db.sql("select sum(qty) as qty from `tabSales Order Item` where parent in %(parent)s", {"parent":doc_name}, as_dict=1)
+			temp = frappe.db.sql("select sum(qty) as qty from `tabSales Order Item` where parent in %(parent)s and item_code = %(item_code)s", 
+						{"parent":doc_name, "item_code":self.production_item}, as_dict=1)
 			if temp:
 				total_pcs = temp[0].get("qty")
 		
 		if self.request_no:
 			doc_name = self.request_no.replace(" ","").split(",")
-			temp = frappe.db.sql("select sum(qty) as qty from `tabRequest Items` where parent in %(parent)s", {"parent":doc_name}, as_dict=1)
+			temp = frappe.db.sql("select sum(qty) as qty from `tabRequest Items` where parent in %(parent)s and item_code = %(item_code)s", 
+						{"parent":doc_name, "item_code":self.production_item}, as_dict=1)
 			if temp:
 				total_pcs = temp[0].get("qty")
 		

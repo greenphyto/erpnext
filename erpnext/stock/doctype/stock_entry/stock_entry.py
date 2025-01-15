@@ -626,6 +626,9 @@ class StockEntry(StockEntryAsset, StockController):
 			frappe.db.get_single_value("Manufacturing Settings", "overproduction_percentage_for_work_order")
 		)
 
+		if not allowance_percentage:
+			return
+
 		for d in prod_order.get("operations"):
 			total_completed_qty = flt(self.fg_completed_qty) + flt(prod_order.produced_qty)
 			completed_qty = d.completed_qty + (allowance_percentage / 100 * d.completed_qty)
@@ -1188,6 +1191,10 @@ class StockEntry(StockEntryAsset, StockController):
 					"Manufacturing Settings", "overproduction_percentage_for_work_order"
 				)
 			)
+
+			if not allowance_percentage:
+				return
+			
 			allowed_qty = wo_qty + ((allowance_percentage / 100) * wo_qty)
 
 			# No work order could mean independent Manufacture entry, if so skip validation
