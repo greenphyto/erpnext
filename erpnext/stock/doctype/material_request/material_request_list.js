@@ -1,5 +1,5 @@
 frappe.listview_settings['Material Request'] = {
-	add_fields: ["material_request_type", "status", "per_ordered", "per_received", "transfer_status"],
+	add_fields: ["purchase_order", "material_request_type", "status", "per_ordered", "per_received", "transfer_status"],
 	get_indicator: function(doc) {
 		var precision = frappe.defaults.get_default("float_precision");
 		if (doc.status=="Stopped") {

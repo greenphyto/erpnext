@@ -17,6 +17,7 @@
   "schedule_date",
   "requested_by",
   "amended_from",
+  "purchase_order",
   "supplier_section",
   "supplier",
   "supplier_name",
@@ -773,7 +774,6 @@
   {
    "fieldname": "set_warehouse",
    "fieldtype": "Link",
-   "in_list_view": 1,
    "label": "Set Target Warehouse",
    "options": "Warehouse"
   },
@@ -891,13 +891,20 @@
    "fieldtype": "Data",
    "label": "Requested By",
    "read_only": 1
+  },
+  {
+   "fieldname": "purchase_order",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Purchase Order",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-ticket",
  "idx": 70,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-20 15:07:14.121935",
+ "modified": "2025-01-15 16:21:07.139135",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request",
