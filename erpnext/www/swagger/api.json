@@ -360,6 +360,7 @@
                 "example": {
                   "erpWorkOrderID": "FOMS-001-005",
                   "qty": 1,
+                  "packets":20,
                   "expiryDate":"2025-01-01"
                 }
               }

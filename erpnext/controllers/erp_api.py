@@ -401,26 +401,32 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	}
 
 @frappe.whitelist()
-def submit_work_order_finish_goods(erpWorkOrderID, qty, expiryDate="", draft=False):
+def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate="", draft=False):
 	ERPWorkOrderID = erpWorkOrderID
 	data_name = f"Finish Work Order {ERPWorkOrderID}"
+	if not packets and not qty:
+		frappe.throw("Number of Packets or Qty must be set")
+
 	save_log("Work Order", data_name, {
 		"ERPWorkOrderID":ERPWorkOrderID, 
 		"qty":qty
 	})
+
 
 	if get_foms_settings("disable_woirk_order_operation_update"):
 		return {
 			"ERPStockEntry": "Temporary disabled"
 		}
 	
-	work_order_name, lot_id, status = frappe.db.get_value("Work Order", ERPWorkOrderID, ['name', 'foms_lot_id', 'status']) or ("", "", "")
+	work_order_name, lot_id, status,packet_size,conversion_factor  = frappe.db.get_value("Work Order", ERPWorkOrderID, ['name', 'foms_lot_id', 'status', 'packet_size', 'conversion_factor']) or ("", "", "", '', '')
+	qty_from_packet = flt(conversion_factor) * flt(packets)
+	qty = qty or qty_from_packet
 
 	if status == "Completed":
 		return {
 			"result":"Already complete"
 		}
-
+	
 	if not work_order_name:
 		frappe.throw(_(f"Work Order {ERPWorkOrderID} not found!"), frappe.DoesNotExistError)
 	
@@ -437,11 +443,16 @@ def submit_work_order_finish_goods(erpWorkOrderID, qty, expiryDate="", draft=Fal
 			row.valuation_rate = row.basic_rate
 			row.set_basic_rate_manually = 1
 
-	se_doc.set_expense_account()	
-	se_doc.save()
+	se_doc.set_expense_account()
 
 	if not draft:
+		se_doc.save()
 		se_doc.submit()
+	else:
+		se_doc.flags.ignore_validate = 1
+		se_doc.flags.ignore_mandatory = 1
+		se_doc.flags.ignore_permissions = 1
+		se_doc.save()
 
 	# Create Draft Delivery Note
 	for d in se_doc.get("items"):

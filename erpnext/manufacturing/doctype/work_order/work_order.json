@@ -15,6 +15,8 @@
   "image",
   "bom_no",
   "operation_no",
+  "packet_size",
+  "conversion_factor",
   "column_break11",
   "company",
   "qty",
@@ -638,6 +640,20 @@
    "fieldtype": "Data",
    "label": "Request No",
    "read_only": 1
+  },
+  {
+   "fieldname": "packet_size",
+   "fieldtype": "Link",
+   "label": "Packet Size",
+   "options": "UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "conversion_factor",
+   "fieldtype": "Float",
+   "label": "Conversion Factor",
+   "precision": "5",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-cogs",
@@ -645,7 +661,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-09 18:24:07.495011",
+ "modified": "2025-01-15 12:31:45.403227",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",
