@@ -97,7 +97,7 @@ class WorkOrder(Document):
 
 		self.set_required_items()
 		self.validate_non_stock_items()
-		self.get_packet_size()
+		self.set_packet_size()
 
 	def on_update_after_submit(self):
 		self.validate_cost_editing()
@@ -1071,7 +1071,7 @@ class WorkOrder(Document):
 			self.get_packaging_from_order()
 			self.set_available_qty()
 
-	def get_packet_size(self):
+	def set_packet_size(self):
 		
 		data = []
 		if self.sales_order_no:
@@ -1088,8 +1088,14 @@ class WorkOrder(Document):
 			if temp:
 				data += temp
 
-		self.packet_size = frappe.db.get_value("Item", self.production_item, "stock_uom")
-		self.conversion_factor = 1
+		res = frappe.db.sql('select packaging, weight from `tabPackaging List Available` where parent = %s and parentfield = "packaging" ', (self.production_item), as_dict=1)
+		if res and len(res)==1:
+			self.packet_size = res[0].packaging
+			self.conversion_factor = res[0].weight
+		else:
+			self.packet_size = frappe.db.get_value("Item", self.production_item, "stock_uom")
+			self.conversion_factor = 1
+
 		for d in data:
 			self.packet_size = d.uom
 			self.conversion_factor = d.conversion_factor

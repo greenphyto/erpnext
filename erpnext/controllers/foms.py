@@ -214,7 +214,7 @@ def start_sync_enquee(log_name):
 
 def sync_controller(doctype, controller):
 	if not is_enable_integration():
-			return 
+		return 
 		
 	api = FomsAPI()
 
@@ -1196,8 +1196,6 @@ def _sync_delivery_note2(log, api=None):
 
 	api.log = log
 	res = api.create_delivery_note(data)
-
-	print(1200, res)
 
 def get_html_text(html_text):
 	soup = bs(html_text or "", "html.parser")
