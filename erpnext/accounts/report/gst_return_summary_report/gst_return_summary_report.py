@@ -183,7 +183,8 @@ class VATAuditReport(object):
 			"""
 			SELECT
 				s.name as parent,
-				t.account_head,
+				t.name, t.tax_amount,
+				t.account_head as account,
 				t.item_wise_tax_detail,
 				%(doctype)s as parenttype,
 				s.posting_date
@@ -207,15 +208,18 @@ class VATAuditReport(object):
 
 		self.tax_details += self.tax_detail_on_deleted 
 
-		# print(210, self.tax_details[0])
-
 		for tax in self.tax_details:
 
+			# primary data
 			parent = tax['parent']
-			account = tax['account_head']
+			account = tax['account']
 			item_wise_tax_detail = tax['item_wise_tax_detail']
 			parenttype = tax['parenttype']
 			posting_date = tax['posting_date']
+
+			# optional data
+			tax_amount = flt(tax.get("tax_amount"))
+
 
 			if item_wise_tax_detail:
 				try:
@@ -229,7 +233,9 @@ class VATAuditReport(object):
 						# to skip items with non-zero tax rate in multiple rows gf
 						#if taxes[0] == 0 and not is_zero_rated:
 							#continue
-						# print(223, item_code, taxes)
+						if taxes[1] == 0 and tax_amount:
+							taxes[1] = tax_amount
+
 						tax_rate = self.get_item_amount_map(parent, parenttype, item_code, taxes)
 
 						if tax_rate is not None:
@@ -245,7 +251,6 @@ class VATAuditReport(object):
 				for item, detail in self.invoice_items.get(parent).items():
 					items.append(item)
 					taxes = [0, 0]
-					# print(218, item, detail)
 					self.get_item_amount_map(parent, parenttype, item, taxes)
 
 				self.items_based_on_tax_rate.setdefault(parent, {}).setdefault(
@@ -259,7 +264,6 @@ class VATAuditReport(object):
 			net_amount = flt(frappe.get_value("Purchase Invoice", parent, "base_value_for_gst_input"))
 			gst_item = True
 
-		# print(251, parent, taxes)
 		tax_rate = taxes[0]
 		tax_amount = taxes[1]
 		gross_amount = net_amount + tax_amount
@@ -406,12 +410,10 @@ class VATAuditReport(object):
 			self.invoices.setdefault(dt.voucher_no, dt)
 			for row in dt.get("items"):
 				row = frappe._dict(row)
-				# print(1000, row.parent, [row.item_code, {"net_amount": 0.0}])
 				self.invoice_items.setdefault(row.parent, {}).setdefault(row.item_code, {"net_amount": 0.0})
 
 			for row in dt.get("taxes"):
 				row = frappe._dict(row)
-				# print(2000, row.parent, [row.account_head, row.item_wise_tax_detail, row.parenttype, getdate(dt.posting_date)])
 				self.tax_detail_on_deleted.append(
 					{
 						"parent":row.parent,
