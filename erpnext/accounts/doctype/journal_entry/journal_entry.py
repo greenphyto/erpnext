@@ -112,11 +112,13 @@ class JournalEntry(AccountsController):
 				d.cost_center = cost_center
 	
 	def validate_gst_input(self):
-		if not self.voucher_type == "GST Input Tax":
-			return
-		
-		if not self.party_name and not self.invoice_no:
-			frappe.throw(_("<b>Party Name/Invoice No</b> should be set for GST Input Tax."))
+		if self.voucher_type == "GST Input Tax":
+			if not self.party_name and not self.invoice_no:
+				frappe.throw(_("<b>Party Name/Invoice No</b> should be set for GST Input Tax."))
+
+		elif self.voucher_type == "Journal Entry with GST":
+			if self.get("gst_entry") and not self.tax_template_:
+				frappe.throw(_("<b>Tax Template</b> Must be set for Journal Entry with GST."))
 
 	def update_advance_paid(self):
 		advance_paid = frappe._dict()
