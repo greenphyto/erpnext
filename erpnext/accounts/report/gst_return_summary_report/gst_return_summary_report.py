@@ -458,6 +458,8 @@ class VATAuditReport(object):
 			dt.posting_date = getdate(d.posting_date)
 			dt.Invoice_No = dt.invoice_no
 			dt.party = dt.party_name
+			tax_amount = flt(dt.total_taxable_amount_debit) or flt(dt.total_taxable_amount_credit) *-1
+
 			if dt.voucher_type == "GST Input Tax":
 				# overide data
 				dt.taxes_and_charges = dt.tax_template
@@ -484,9 +486,10 @@ class VATAuditReport(object):
 						"posting_date":getdate(dt.posting_date)
 					}
 				)
+
 			
 			# Old Journal Entry with GST style summary
-			elif dt.voucher_type == "Journal Entry with GST" and not dt.tax_template_:
+			elif dt.voucher_type == "Journal Entry with GST" and not tax_amount:
 				# overide data
 				rows = frappe.db.get_list("Journal Entry Account", {"parent":dt.name}, "*", ignore_permissions=1, debug=0, order_by="idx")
 				base_row = None
@@ -500,7 +503,7 @@ class VATAuditReport(object):
 						if not base_row:
 							frappe.msgprint("GST Option should be after transaction row, please check on Journal Entry<br> {}".format(get_link_to_form("Journal Entry", dt.name)))
 							continue
-						dt.taxes_and_charges = row.gst_template
+						dt.taxes_and_charges = row.gst_template or dt.tax_template_
 						account_head = ''
 						invoice_type = "Purchase Invoice"
 						temp = {}
