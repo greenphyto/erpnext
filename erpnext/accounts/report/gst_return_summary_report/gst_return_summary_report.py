@@ -202,12 +202,21 @@ class VATAuditReport(object):
 				"tax_doctype":self.tax_doctype,
 				"invoices": [x for x in self.invoices.keys()]
 			}
-			, debug=0
+			, debug=0, as_dict=1
 		))
 
 		self.tax_details += self.tax_detail_on_deleted 
 
-		for parent, account, item_wise_tax_detail, parenttype, posting_date in self.tax_details:
+		# print(210, self.tax_details[0])
+
+		for tax in self.tax_details:
+
+			parent = tax['parent']
+			account = tax['account_head']
+			item_wise_tax_detail = tax['item_wise_tax_detail']
+			parenttype = tax['parenttype']
+			posting_date = tax['posting_date']
+
 			if item_wise_tax_detail:
 				try:
 					# if account in self.sa_vat_accounts:
@@ -220,6 +229,7 @@ class VATAuditReport(object):
 						# to skip items with non-zero tax rate in multiple rows gf
 						#if taxes[0] == 0 and not is_zero_rated:
 							#continue
+						# print(223, item_code, taxes)
 						tax_rate = self.get_item_amount_map(parent, parenttype, item_code, taxes)
 
 						if tax_rate is not None:
@@ -235,6 +245,7 @@ class VATAuditReport(object):
 				for item, detail in self.invoice_items.get(parent).items():
 					items.append(item)
 					taxes = [0, 0]
+					# print(218, item, detail)
 					self.get_item_amount_map(parent, parenttype, item, taxes)
 
 				self.items_based_on_tax_rate.setdefault(parent, {}).setdefault(
@@ -248,6 +259,7 @@ class VATAuditReport(object):
 			net_amount = flt(frappe.get_value("Purchase Invoice", parent, "base_value_for_gst_input"))
 			gst_item = True
 
+		# print(251, parent, taxes)
 		tax_rate = taxes[0]
 		tax_amount = taxes[1]
 		gross_amount = net_amount + tax_amount
@@ -400,7 +412,15 @@ class VATAuditReport(object):
 			for row in dt.get("taxes"):
 				row = frappe._dict(row)
 				# print(2000, row.parent, [row.account_head, row.item_wise_tax_detail, row.parenttype, getdate(dt.posting_date)])
-				self.tax_detail_on_deleted.append((row.parent, row.account_head, row.item_wise_tax_detail, row.parenttype, getdate(dt.posting_date)))
+				self.tax_detail_on_deleted.append(
+					{
+						"parent":row.parent,
+						"account":row.account_head,
+						"item_wise_tax_detail":row.item_wise_tax_detail,
+						"parenttype":row.parenttype,
+						"posting_date":getdate(dt.posting_date)
+					}
+				)
 			
 	def get_journal_entry_data(self, doctype):
 		self.tax_detail_on_deleted = []
@@ -453,7 +473,15 @@ class VATAuditReport(object):
 				tax_detail = json.dumps(temp)
 				self.invoices.setdefault(dt.voucher_no, dt)
 				self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": d.base_value})
-				self.tax_details.append((dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date)))
+				self.tax_details.append(
+					{
+						"parent":dt.name,
+						"account":account_head,
+						"item_wise_tax_detail":tax_detail,
+						"parenttype":invoice_type,
+						"posting_date":getdate(dt.posting_date)
+					}
+				)
 			
 			# Old Journal Entry with GST style summary
 			elif dt.voucher_type == "Journal Entry with GST" and not dt.tax_template_:
@@ -488,7 +516,13 @@ class VATAuditReport(object):
 						tax_detail = json.dumps(temp)
 
 						base_value_map[dt.name] = base_value
-						tax_mapping[dt.name] = (dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date))
+						tax_mapping[dt.name] = {
+							"parent":dt.name,
+							"account":account_head,
+							"item_wise_tax_detail":tax_detail,
+							"parenttype":invoice_type,
+							"posting_date":getdate(dt.posting_date)
+						}
 						base_row = None
 					else:
 						base_row = row
@@ -525,7 +559,13 @@ class VATAuditReport(object):
 				tax_detail = json.dumps(temp)
 				self.invoices.setdefault(dt.voucher_no, dt)
 				self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": base_value})
-				self.tax_details.append((dt.name, account_head, tax_detail, invoice_type, getdate(dt.posting_date)))
+				self.tax_details.append({
+					"parent":dt.name,
+					"account":account_head,
+					"item_wise_tax_detail":tax_detail,
+					"parenttype":invoice_type,
+					"posting_date":getdate(dt.posting_date)
+				})
 
 	def get_consolidated_data(self, doctype):
 		consolidated_data_map = {}
