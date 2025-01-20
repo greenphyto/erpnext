@@ -258,6 +258,7 @@ class Item(Document):
 		if not self.get("packaging"):
 			return
 		
+		default = None
 		for d in self.get("packaging"):
 			row = self.get("uoms", {"uom":d.packaging})
 			if row:
@@ -270,6 +271,17 @@ class Item(Document):
 				row.conversion_factor = flt(d.weight)
 				row.is_packaging = 1
 				row.cf_view = flt(d.weight)
+			if d.default:
+				if not default:
+					default = d.packaging
+				else:
+					frappe.throw("Row {}, Cannot have more than 1 default row packaging".format(d.idx))
+		
+		if not default and self.get("packaging"):
+			self.packaging[0].default = 1
+			default = self.packaging[0].packaging
+		
+		self.default_packaging = default
 		
 		# delete
 		for d in list(self.get("uoms", {"is_packaging":1})):

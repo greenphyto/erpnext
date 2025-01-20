@@ -10,6 +10,7 @@
   "section_break_3",
   "quantity",
   "uom",
+  "default",
   "column_break_6",
   "material",
   "weight"
@@ -71,12 +72,20 @@
    "fieldtype": "Data",
    "label": "Material",
    "read_only": 1
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "default",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Default"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-07-24 16:04:51.296467",
+ "modified": "2025-01-20 14:40:24.149945",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Packaging List Available",
