@@ -220,17 +220,18 @@ class AccountsController(TransactionBase):
 			)
 	
 	def set_cost_center_by_settings(self):
-		for d in self.items:
-			res = get_cost_center_from_account(d.expense_account, self.company)
-			cost_center = res.get("value")
-			if cost_center or res.get("lock"):
-				d.cost_center = cost_center
+		if self.doctype in ("Sales Invoice", "Delivery Note", "Purchase Order","Purchase Invoice", "Purchase Receipt"):
+			for d in self.items:
+				res = get_cost_center_from_account(d.expense_account, self.company)
+				cost_center = res.get("value")
+				if cost_center or res.get("lock"):
+					d.cost_center = cost_center
 
-		for d in self.taxes:
-			res = get_cost_center_from_account(d.account_head, self.company)
-			cost_center = res.get("value")
-			if cost_center or res.get("lock"):
-				d.cost_center = cost_center
+			for d in self.get("taxes") or []:
+				res = get_cost_center_from_account(d.account_head, self.company)
+				cost_center = res.get("value")
+				if cost_center or res.get("lock"):
+					d.cost_center = cost_center
 
 	def validate_deferred_income_expense_account(self):
 		field_map = {
