@@ -408,8 +408,10 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 		frappe.throw("Number of Packets or Qty must be set")
 
 	save_log("Work Order", data_name, {
-		"ERPWorkOrderID":ERPWorkOrderID, 
-		"qty":qty
+		"erpWorkOrderID": erpWorkOrderID,
+		"qty": qty,
+		"packets": packets,
+		"expiryDate": expiryDate
 	})
 
 
