@@ -354,7 +354,9 @@
    "depends_on": "eval:parent.voucher_type==\"Journal Entrry with GST\"",
    "fieldname": "gst_option",
    "fieldtype": "Check",
-   "label": "GST Option"
+   "label": "GST Option",
+   "no_amend_copy": 1,
+   "no_copy": 1
   },
   {
    "default": "0",
@@ -370,7 +372,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-01-16 09:55:10.175350",
+ "modified": "2025-01-20 12:54:34.517281",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry Account",
