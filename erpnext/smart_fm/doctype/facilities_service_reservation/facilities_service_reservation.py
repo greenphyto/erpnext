@@ -349,9 +349,7 @@ class FacilitiesServiceReservation(Document):
 		def _run_date(cond):
 			for i in range(day_count):
 				date = add_days(start_date, i)
-				print(332, date)
 				if cond(date):
-					print(0000, date)
 					self.time_logs.append(date)
 				
 				if date.year > max_year:

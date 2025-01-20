@@ -1785,7 +1785,6 @@ class CreateAsset():
 
 	def create_asset_location(self):
 		if self.source.location and not frappe.db.exists("Location", self.source.location):
-			print(1771, self.source.location)
 			frappe.get_doc({"doctype": "Location", "location_name": self.source.location}).insert()
 
 class UpdateExistingAsset():
