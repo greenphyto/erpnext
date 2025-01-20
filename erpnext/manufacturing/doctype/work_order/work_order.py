@@ -363,6 +363,9 @@ class WorkOrder(Document):
 		return status
 
 	def get_status(self, status=None):
+		single_complete = frappe.db.get_single_value(
+			"Manufacturing Settings", "allow_single_completed_work_order"
+		)
 		"""Return the status based on stock entries against this work order"""
 		if not status:
 			status = self.status
@@ -384,8 +387,11 @@ class WorkOrder(Document):
 				if stock_entries:
 					status = "In Process"
 					produced_qty = stock_entries.get("Manufacture")
-					if flt(produced_qty) >= flt(self.qty):
+
+					if flt(produced_qty) >= flt(self.qty) or (flt(produced_qty) and single_complete):
 						status = "Completed"
+
+					self.db_set("produced_qty", flt(produced_qty))
 		else:
 			status = "Cancelled"
 
@@ -1088,7 +1094,7 @@ class WorkOrder(Document):
 			if temp:
 				data += temp
 
-		res = frappe.db.sql('select packaging, weight from `tabPackaging List Available` where parent = %s and parentfield = "packaging" ', (self.production_item), as_dict=1)
+		res = frappe.db.sql('select packaging, weight from `tabPackaging List Available` where parent = %s and parentfield = "packaging" and `default` = 1', (self.production_item), as_dict=1)
 		if res and len(res)==1:
 			self.packet_size = res[0].packaging
 			self.conversion_factor = res[0].weight
