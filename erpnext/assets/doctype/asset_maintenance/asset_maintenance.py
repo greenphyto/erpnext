@@ -98,36 +98,38 @@ def calculate_next_due_date(
 	if not start_date and not last_completion_date:
 		start_date = frappe.utils.now()
 
-	if last_completion_date and (
-		(start_date and last_completion_date > start_date) or not start_date
-	):
-		start_date = last_completion_date
+	start_date = getdate(start_date)
+	if last_completion_date:
+		start_date = getdate(last_completion_date)
 
-	if getdate(last_completion_date) < getdate():
-		start_date = getdate()
-	if not last_completion_date:
-		start_date = getdate()
+	end_date = getdate(end_date)
 
-	if periodicity == "Daily":
-		next_due_date = add_days(start_date, 1)
-	if periodicity == "Weekly":
-		next_due_date = add_days(start_date, 7)
-	if periodicity == "Monthly":
-		next_due_date = add_months(start_date, 1)
-	if periodicity == "Yearly":
-		next_due_date = add_years(start_date, 1)
-	if periodicity == "2 Yearly":
-		next_due_date = add_years(start_date, 2)
-	if periodicity == "3 Yearly":
-		next_due_date = add_years(start_date, 3)
-	if periodicity == "Quarterly":
-		next_due_date = add_months(start_date, 3)
-	if end_date and (
-		(start_date and start_date >= end_date)
-		or (last_completion_date and last_completion_date >= end_date)
-		or next_due_date
-	):
-		next_due_date = ""
+	def get_next(periodicity, start_date):
+		next_due_date = start_date
+		if periodicity == "Daily":
+			next_due_date = add_days(start_date, 1)
+		elif periodicity == "Weekly":
+			next_due_date = add_days(start_date, 7)
+		elif periodicity == "Monthly":
+			next_due_date = add_months(start_date, 1)
+		elif periodicity == "Yearly":
+			next_due_date = add_years(start_date, 1)
+		elif periodicity == "2 Yearly":
+			next_due_date = add_years(start_date, 2)
+		elif periodicity == "3 Yearly":
+			next_due_date = add_years(start_date, 3)
+		elif periodicity == "Quarterly":
+			next_due_date = add_months(start_date, 3)
+		return next_due_date
+
+	next_due_date = get_next(periodicity, start_date)
+	if next_due_date <= getdate():
+		next_due_date = get_next(periodicity, getdate())
+
+	if next_due_date > end_date:
+		next_due_date = end_date
+
+
 	return next_due_date
 
 
