@@ -657,6 +657,8 @@ class StockEntry(StockEntryAsset, StockController):
 				)
 
 	def check_duplicate_entry_for_work_order(self):
+		if self.flags.ignore_double_entries:
+			return
 		other_ste = [
 			t[0]
 			for t in frappe.db.get_values(
@@ -1262,7 +1264,6 @@ class StockEntry(StockEntryAsset, StockController):
 				sl_entries.append(sle)
 
 	def get_gl_entries(self, warehouse_account):
-		
 		# debug
 		# for d in self.items:
 		# 	print("ITEM: ,{},{},{},{},{},{},{},{},{}".format(d.item_code, d.qty, d.uom, d.s_warehouse,d.t_warehouse, d.basic_rate, d.valuation_rate, d.additional_cost, d.amount))
@@ -1400,13 +1401,14 @@ class StockEntry(StockEntryAsset, StockController):
 								se.docstatus = 1
 									AND se.purpose = 'Material Transfer for Manufacture'
 									AND se.work_order = %s
+						   			AND se.operation = "Harvesting"
 						""", (self.work_order), as_dict=1)
 						data = data[0]
-						debit_amount = data.get("base_amount")
+						debit_amount += flt(data.get("base_amount"))
 						finish_item = self.get("items", {"is_finished_item":1})
 						if finish_item:
 							finish_item = finish_item[0].item_code
-						variance_account = get_item_account(warehouse_account, finish_item, None, get_default=1, operation="")
+						variance_account = get_item_account(warehouse_account, "WIP", finish_item, None, get_default=1, operation="")
 					
 					# cheange remarks
 					for d in gl_entries:
@@ -1438,6 +1440,8 @@ class StockEntry(StockEntryAsset, StockController):
 
 					gl_entries.append(row)
 
+		# for d in gl_entries:
+		# 	print(1446, d.account, d.debit, d.credit, d.remarks )
 		result = process_gl_map(gl_entries, merge_entries=1)
 
 		# print("\nSE RESULT:")

@@ -1,7 +1,6 @@
 import frappe
 from frappe import _
 from frappe.utils import get_link_to_form
-
 install_docs = [
 	{"doctype": "Role", "role_name": "Stock Manager", "name": "Stock Manager"},
 	{"doctype": "Role", "role_name": "Item Manager", "name": "Item Manager"},
@@ -120,10 +119,10 @@ def get_item_account(account_map, warehouse, item="", key="account", get_default
 			if not data or not operation:
 				wip_account = account_map['WIP']['account']
 				if not wip_account:
-					frappe.throw(_("Missing Account for WIP warehouse! please update settings for WIP Warehouse in Manufacturing Settings, and the warehouse account itself."))
+					frappe.msgprint(_("Missing Account for Item Stock, please update the Part Number Settings"))
 
 				data = account_map['WIP'].get(key)
-	
+
 	return data
 
 def get_warehouse_account(warehouse, warehouse_account=None, item=None):

@@ -446,6 +446,7 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 			row.set_basic_rate_manually = 1
 
 	se_doc.set_expense_account()
+	se_doc.flags.ignore_double_entries = 1
 
 	if not draft:
 		se_doc.save()
