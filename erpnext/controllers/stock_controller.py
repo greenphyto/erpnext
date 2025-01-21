@@ -153,8 +153,9 @@ class StockController(AccountsController):
 						# from warehouse account
 
 						stock_value_difference = flt(sle.stock_value_difference)
-						# if self.purpose == "Manufacture" and item_row.s_warehouse:
-						# 	stock_value_difference = item_row.amount * -1
+						if self.purpose == "Manufacture":
+							if item_row.s_warehouse:
+								stock_value_difference = item_row.amount * -1
 
 						sle_rounding_diff += flt(stock_value_difference)
 
@@ -401,6 +402,9 @@ class StockController(AccountsController):
 				)
 
 	def delete_auto_created_batches(self):
+		if self.flags.ignore_links:
+			return
+		
 		for d in self.items:
 			if not d.batch_no:
 				continue
