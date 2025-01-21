@@ -51,6 +51,11 @@
   "scan_barcode",
   "items",
   "get_stock_and_rate",
+  "losses_section",
+  "loss_qty",
+  "loss_rate",
+  "column_break_48",
+  "total_loss_amount",
   "section_break_19",
   "total_outgoing_value",
   "column_break_22",
@@ -654,9 +659,9 @@
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
-   "read_only": 1,
+   "no_amend_copy": 1,
    "no_copy": 1,
-   "no_amend_copy": 1
+   "read_only": 1
   },
   {
    "fieldname": "foms_details_section",
@@ -737,6 +742,31 @@
    "fieldtype": "Check",
    "label": "System Generated",
    "read_only": 1
+  },
+  {
+   "fieldname": "losses_section",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "label": "Losses"
+  },
+  {
+   "fieldname": "loss_qty",
+   "fieldtype": "Float",
+   "label": "Loss Qty"
+  },
+  {
+   "fieldname": "loss_rate",
+   "fieldtype": "Currency",
+   "label": "Loss rate"
+  },
+  {
+   "fieldname": "column_break_48",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_loss_amount",
+   "fieldtype": "Currency",
+   "label": "Total Loss Amount"
   }
  ],
  "icon": "fa fa-file-text",
@@ -744,7 +774,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-18 18:37:34.173139",
+ "modified": "2025-01-21 10:24:52.776761",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",
