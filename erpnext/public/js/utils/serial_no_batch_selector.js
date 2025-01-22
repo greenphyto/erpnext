@@ -1,10 +1,6 @@
 
 erpnext.SerialNoBatchSelector = class SerialNoBatchSelector {
 	constructor(opts, show_dialog) {
-		if($(".batch-selector").is(":visible")){
-			return
-		}
-		
 		$.extend(this, opts);
 		this.show_dialog = show_dialog;
 		// frm, item, warehouse_details, has_batch, oldest
@@ -143,12 +139,8 @@ erpnext.SerialNoBatchSelector = class SerialNoBatchSelector {
 
 		this.dialog = new frappe.ui.Dialog({
 			title: title,
-			fields: fields,
+			fields: fields
 		});
-		this.dialog.onhide = ()=>{
-			$(".modal-backdrop").remove();
-		}
-		this.dialog.$wrapper.addClass("batch-selector");
 
 		this.dialog.set_primary_action(__('Insert'), function() {
 			me.values = me.dialog.get_values();
