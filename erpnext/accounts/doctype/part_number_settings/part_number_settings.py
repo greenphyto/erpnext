@@ -60,6 +60,7 @@ class PartNumberSettings(Document):
 		self.validate_account_change()
 
 	def validate_account_change(self):
+		return
 		old_doc = self.get_doc_before_save()
 		if not old_doc:
 			return
