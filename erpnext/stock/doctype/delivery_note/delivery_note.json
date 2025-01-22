@@ -1488,14 +1488,16 @@
    "depends_on": "eval:!doc.is_giveaway",
    "fieldname": "is_donation",
    "fieldtype": "Check",
-   "label": "For Donation to External Organisation"
+   "label": "For Donation to External Organisation",
+   "set_only_once": 1
   },
   {
    "default": "0",
    "depends_on": "eval:!doc.is_donation",
    "fieldname": "is_giveaway",
    "fieldtype": "Check",
-   "label": "For Distribution to Internal Staff"
+   "label": "For Distribution to Internal Staff",
+   "set_only_once": 1
   },
   {
    "depends_on": "eval:doc.is_donation",
@@ -1508,7 +1510,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-15 17:28:18.776272",
+ "modified": "2025-01-22 11:14:31.845647",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
