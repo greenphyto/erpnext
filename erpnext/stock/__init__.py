@@ -1,4 +1,4 @@
-import frappe
+import frappe, erpnext
 from frappe import _
 from frappe.utils import get_link_to_form
 install_docs = [
@@ -99,6 +99,14 @@ def get_item_account(account_map, warehouse, item="", key="account", get_default
 		data = account_map[item].get(key)
 
 	if not data and item in account_map:
+		company = erpnext.get_default_company()
+		stock_account = frappe.get_cached_value("Company", company, "default_inventory_account")
+		if key=="account":
+			return stock_account
+		else:
+			return frappe.get_value("Account", stock_account, "account_currency")
+	
+
 		link_str = get_link_to_form("Part Number Settings", "", "Part Number Settings")
 		frappe.throw(_(f"Account is Missing for inventory item <b>{item}</b>. Please edit the {link_str}."))
 	
