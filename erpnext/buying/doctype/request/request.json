@@ -8,6 +8,8 @@
  "engine": "InnoDB",
  "field_order": [
   "department",
+  "item_name",
+  "unit_price",
   "foms_id",
   "column_break_3",
   "posting_date",
@@ -77,6 +79,7 @@
    "default": "Today",
    "fieldname": "delivery_date",
    "fieldtype": "Date",
+   "in_list_view": 1,
    "label": "Delivery Date",
    "reqd": 1
   },
@@ -124,12 +127,27 @@
    "no_amend_copy": 1,
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "unit_price",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Unit Price",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-08 16:42:32.932147",
+ "modified": "2025-01-22 17:12:40.331520",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request",
