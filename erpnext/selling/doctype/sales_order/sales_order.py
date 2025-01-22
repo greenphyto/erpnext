@@ -1305,7 +1305,7 @@ def get_packaging_available(doctype, txt, searchfield, start, page_len, filters)
 		item=frappe.db.escape(item)
 	)
 
-	res = frappe.db.sql(query, filters, debug=1, as_list = 1)
+	res = frappe.db.sql(query, filters, debug=0, as_list = 1)
 	return res
 
 @frappe.whitelist()

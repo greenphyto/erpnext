@@ -139,7 +139,7 @@ def collect_expired_items():
 	sr_name = frappe.get_value("Scrap Request", {
 		"system_generated":1, 
 		"docstatus":0
-	}, debug=1)
+	}, debug=0)
 
 	if sr_name:
 		doc = frappe.get_doc("Scrap Request", sr_name)
