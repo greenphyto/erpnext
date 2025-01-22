@@ -1,7 +1,7 @@
 {
  "attach_print": 0,
  "channel": "Email",
- "condition": "doc.system_generated == 1 and doc.stock_entry_type_view == \"Scrap Materials\"",
+ "condition": "doc.system_generated == 1 and doc.stock_entry_type_view == \"Scrap Materials\" and doc.docstatus == 0 and doc.remarks == \"Expired items (system)\"",
  "creation": "2024-12-19 21:02:44.809630",
  "days_in_advance": 0,
  "docstatus": 0,
@@ -13,7 +13,7 @@
  "idx": 0,
  "is_standard": 1,
  "message": "Dear Finance Manager,<br><br>\n\nNew Scrap Issue <a href=\"{{frappe.utils.get_url_to_form(doc.doctype, doc.name)}}\">{{doc.name}}</a> has been created.<br><br>\n\nPlease check the link above to continue and submit. <br><br>\n\nThank you.",
- "modified": "2025-01-07 16:07:26.558743",
+ "modified": "2025-01-22 18:36:46.527801",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "New Draft Stock Entry for Scrap",
