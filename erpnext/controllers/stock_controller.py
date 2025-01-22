@@ -153,7 +153,7 @@ class StockController(AccountsController):
 						# from warehouse account
 
 						stock_value_difference = flt(sle.stock_value_difference)
-						if self.purpose == "Manufacture":
+						if self.get("purpose") == "Manufacture":
 							if item_row.s_warehouse:
 								stock_value_difference = item_row.amount * -1
 
