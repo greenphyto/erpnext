@@ -351,6 +351,7 @@ class PurchaseOrder(BuyingController):
 		self.update_blanket_order()
 
 		update_linked_doc(self.doctype, self.name, self.inter_company_order_reference)
+		self.update_material_request()
 
 	def on_cancel(self):
 		self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry")
@@ -448,6 +449,26 @@ class PurchaseOrder(BuyingController):
 			self.db_set("per_received", flt(received_qty / total_qty) * 100, update_modified=False)
 		else:
 			self.db_set("per_received", 0, update_modified=False)
+
+	def update_material_request(self):
+		mr_list = []
+		for d in self.get("items"):
+			if d.material_request and d.material_request not in mr_list:
+				mr_list.append(d.material_request)
+		
+		for d in mr_list:
+			po_list = []
+			po_exists = frappe.db.get_value("Material Request", d, "purchase_order") or ""
+			for x in po_exists.split(","):
+				if cstr(x):
+					po_list.append(cstr(x).strip())
+
+			if self.name not in po_list:
+				po_list.append(self.name)
+
+			list_view = ", ".join(po_list)
+			if list_view != po_exists:
+				frappe.db.set_value("Material Request", d, "purchase_order", list_view)
 
 
 def item_last_purchase_rate(name, conversion_rate, item_code, conversion_factor=1.0):
