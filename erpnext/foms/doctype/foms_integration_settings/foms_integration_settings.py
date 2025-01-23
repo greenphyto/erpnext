@@ -238,8 +238,17 @@ class FomsAPI():
 			return False
 
 	
-	def update_log(self):
+	def update_log(self, set_success=False, message=""):
 		if not hasattr(self, "log") or not self.log:
+			return
+		
+		if set_success:
+			update_success([{
+				"log":self.log.name,
+				"save_log": self.log.save_log,
+				"status_code":200,
+				"request":{"result":message}
+			}])
 			return
 		
 		if self.last_result.status_code == 200:
@@ -418,6 +427,14 @@ class FomsAPI():
 	def create_delivery_note(self, data):
 		data = self.convert_data(data)
 		res = self.req("POST", "/userportal/ERPNextIntegration/CreateOrUpdateDeliveryOrder", data=data)
+
+		return res
+
+	def cancel_delivery_note(self, do_ids):
+		data = self.convert_data({
+			"id": do_ids
+		})
+		res = self.req("POST", "/api/userportal/ERPNextIntegration/DeleteDeliveryOrder", data=data)
 
 		return res
 	
