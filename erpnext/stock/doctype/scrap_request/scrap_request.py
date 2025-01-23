@@ -126,7 +126,7 @@ def collect_expired_items():
 					AND sle.batch_no IS NOT NULL
 					AND sle.batch_no != ''
 					AND sle.warehouse NOT IN %(wh)s
-					AND b.expiry_date < %(exp)s
+					AND b.expiry_date <= %(exp)s
 					AND b.item_group = 'Raw Material'
 			GROUP BY sle.batch_no , sle.warehouse
 			ORDER BY sle.modified ASC) a
@@ -197,7 +197,7 @@ def collect_expired_product(date=""):
 					AND sle.batch_no IS NOT NULL
 					AND sle.batch_no != ''
 					AND sle.warehouse NOT IN %(wh)s
-					AND b.expiry_date < %(exp)s
+					AND b.expiry_date <= %(exp)s
 					AND b.item_group = 'Products'
 			GROUP BY sle.batch_no , sle.warehouse
 			ORDER BY sle.modified ASC) a
