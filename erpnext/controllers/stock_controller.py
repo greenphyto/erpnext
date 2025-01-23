@@ -81,6 +81,9 @@ class StockController(AccountsController):
 	def validate_serialized_batch(self):
 		from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
 
+		if self.doctype == "Sales Invoice" and not self.update_stock:
+			return
+
 		is_material_issue = False
 		if self.doctype == "Stock Entry" and self.purpose == "Material Issue":
 			is_material_issue = True
