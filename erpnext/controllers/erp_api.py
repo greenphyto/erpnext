@@ -721,16 +721,7 @@ def update_delivery_note_signature(data):
 			)
 			doc.db_set("attachment", file_save.file_url)
 		else:
-			file_save = save_url(
-				image_url,
-				file_name,
-				"Delivery Note",
-				do_number,
-				folder,
-				True,
-				"attachment"
-			)
-			doc.db_set("attachment", file_save.file_url)		
+			doc.db_set("attachment", image_url)		
 
 	# signature
 	if "image/png" not in data.signature:
