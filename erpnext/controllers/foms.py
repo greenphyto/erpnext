@@ -1146,9 +1146,26 @@ def _sync_delivery_note2(log, api=None):
 		api = FomsAPI()
 
 	doc = frappe.get_doc("Delivery Note", log.docname)
+	api.log = log
 
-	if doc.docstatus != 1 or doc.is_donation or doc.is_giveaway:
+	if doc.docstatus == 0 :
 		return
+	
+	if doc.is_donation or doc.is_giveaway:
+		api.update_log(True, "No sync for Donation and Giveaway")
+		return
+	
+	if doc.docstatus == 2:
+		if doc.foms_id:
+			cancel_delivery_note(doc.foms_id, log, api)
+		else:
+			api.update_log(True, "No sync becuase not have FOMS ID at cancel")
+		return
+
+	if doc.foms_id:
+		api.update_log(True, "Already have FOMS ID")
+		return
+
 
 	# skip if not stock
 	non_stock = False
@@ -1179,7 +1196,7 @@ def _sync_delivery_note2(log, api=None):
 		"customerAddress": address,
 		"remarks": remarks,
 		"deliveryOrderDetails": [],
-		"id": 0
+		"id": doc.foms_id
 	})
 
 	for d in doc.get("items"):
@@ -1194,8 +1211,16 @@ def _sync_delivery_note2(log, api=None):
 			"id": 0
 		})
 
-	api.log = log
 	res = api.create_delivery_note(data)
+	if res:
+		frappe.db.set_value("Delivery Note", doc.name, "foms_id", res)
+
+def cancel_delivery_note(foms_id, log, api=None):
+	if not api:
+		api = FomsAPI()
+	foms_id = "49"
+	if foms_id:
+		res = api.cancel_delivery_note(cint(foms_id))
 
 def get_html_text(html_text):
 	soup = bs(html_text or "", "html.parser")

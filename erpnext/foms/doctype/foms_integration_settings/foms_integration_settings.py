@@ -434,7 +434,7 @@ class FomsAPI():
 		data = self.convert_data({
 			"id": do_ids
 		})
-		res = self.req("POST", "/api/userportal/ERPNextIntegration/DeleteDeliveryOrder", data=data)
+		res = self.req("POST", "/userportal/ERPNextIntegration/DeleteDeliveryOrder", data=data)
 
 		return res
 	
