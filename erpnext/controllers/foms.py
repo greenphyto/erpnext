@@ -472,7 +472,7 @@ def _update_stock_receipt(log, api=None):
 			"rawMaterialId": raw_id,
 			"batchRefNo": d.batch_no,
 			"dateOfCreation": doc.creation,
-			"expiryDate": expiry_date,
+			"expiryDate": add_days( getdate(expiry_date), -1),
 			"warehouseId": warehouse_id,
 			"supplierId": supplier_id,
 			"quantity": qty
@@ -511,7 +511,7 @@ def _update_stock_entry_receipt(log, api=None):
 			"rawMaterialId": raw_id,
 			"batchRefNo": d.batch_no,
 			"dateOfCreation": doc.creation,
-			"expiryDate": expiry_date,
+			"expiryDate": add_days( getdate(expiry_date), -1),
 			"warehouseId": warehouse_id,
 			"supplierId": supplier_id,
 			"quantity": qty
@@ -570,7 +570,7 @@ def push_batch():
 			"rawMaterialId": raw_id,
 			"batchRefNo": d.batch_no,
 			"dateOfCreation": getdate(d.creation),
-			"expiryDate": getdate(d.expiry_date),
+			"expiryDate": add_days( getdate(d.expiry_date), -1),
 			"warehouseId": warehouse_id,
 			"supplierId": supplier_id,
 			"quantity": qty

@@ -1,6 +1,6 @@
 import frappe, json, erpnext
 from six import string_types
-from frappe.utils import flt, now_datetime, cint, getdate, cstr, get_datetime
+from frappe.utils import flt, now_datetime, cint, getdate, cstr, get_datetime, add_days
 from erpnext.controllers.foms import (
     create_bom_products, 
     get_bom_for_work_order, 
@@ -406,6 +406,9 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 	data_name = f"Finish Work Order {ERPWorkOrderID}"
 	if not packets and not qty:
 		frappe.throw("Number of Packets or Qty must be set")
+
+	# overwrite expiry date +1 as FOMS still using when batch written to the date but erp expired at the date
+	expiryDate = add_days( getdate(expiryDate), 1)
 
 	save_log("Work Order", data_name, {
 		"erpWorkOrderID": erpWorkOrderID,
