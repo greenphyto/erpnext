@@ -438,6 +438,11 @@ class FomsAPI():
 
 		return res
 	
+	def get_all_delivery_order(self):
+		res = self.req("GET", "/userportal/Delivery/GetAllDeliveryOrder?skipCount=0&maxResultCount=1000")
+
+		return res
+	
 	def delete_customer(self, id):
 		params = {
 			"id": cint(id)
