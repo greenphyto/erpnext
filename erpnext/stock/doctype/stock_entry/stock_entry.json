@@ -59,6 +59,7 @@
   "section_break_19",
   "total_outgoing_value",
   "column_break_22",
+  "total_incoming_receipt",
   "total_incoming_value",
   "value_difference",
   "additional_costs_section",
@@ -397,12 +398,13 @@
   {
    "fieldname": "section_break_19",
    "fieldtype": "Section Break",
+   "label": "Total Value",
    "print_hide": 1
   },
   {
    "fieldname": "total_incoming_value",
    "fieldtype": "Currency",
-   "label": "Total Incoming Value (Receipt)",
+   "label": "Total Incoming Value (Total)",
    "options": "Company:company:default_currency",
    "print_hide": 1,
    "read_only": 1
@@ -746,18 +748,19 @@
   {
    "fieldname": "losses_section",
    "fieldtype": "Section Break",
-   "hidden": 1,
    "label": "Losses"
   },
   {
    "fieldname": "loss_qty",
    "fieldtype": "Float",
-   "label": "Loss Qty"
+   "label": "Loss Qty",
+   "read_only": 1
   },
   {
    "fieldname": "loss_rate",
    "fieldtype": "Currency",
-   "label": "Loss rate"
+   "label": "Loss rate",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_48",
@@ -766,7 +769,14 @@
   {
    "fieldname": "total_loss_amount",
    "fieldtype": "Currency",
-   "label": "Total Loss Amount"
+   "label": "Total Loss Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_incoming_receipt",
+   "fieldtype": "Currency",
+   "label": "Total Incoming Value (Receipt)",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -774,7 +784,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-21 10:24:52.776761",
+ "modified": "2025-01-24 15:20:28.795054",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",
