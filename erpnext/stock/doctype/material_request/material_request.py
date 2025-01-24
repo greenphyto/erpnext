@@ -790,20 +790,17 @@ def validate_purchase_request(doc, workflow=None, transition=None, user=None):
 	if user == "Administrator":
 		return True
 
-	# if doc.name != "PR00057/2024":
-	# 	return False
 
 	condition = []
 	if transition.state == "Pending Approval by Purchasing Manager":
 		res = validate_purchase_request_based_user(doc, user)
 		condition.append(res)
 
-	# print()
-	# print(738, user, doc.name)
-	# print("State :", transition.state)
-	# print("Action :", transition.action)
-	# print("Next State: ", transition.next_state)
-	# print(condition, all(condition))
+	elif transition.state == "To Amend":
+		if doc.owner == user:
+			condition.append(True)
+		else:
+			condition.append(False)
 
 	return all(condition)
 
