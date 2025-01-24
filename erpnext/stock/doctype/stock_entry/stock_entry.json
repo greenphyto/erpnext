@@ -53,8 +53,9 @@
   "get_stock_and_rate",
   "losses_section",
   "loss_qty",
-  "loss_rate",
+  "expense_loss_account",
   "column_break_48",
+  "loss_rate",
   "total_loss_amount",
   "section_break_19",
   "total_outgoing_value",
@@ -777,6 +778,12 @@
    "fieldtype": "Currency",
    "label": "Total Incoming Value (Receipt)",
    "read_only": 1
+  },
+  {
+   "fieldname": "expense_loss_account",
+   "fieldtype": "Link",
+   "label": "Expense Loss Account",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-file-text",
@@ -784,7 +791,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-24 15:20:28.795054",
+ "modified": "2025-01-24 15:56:51.154711",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",

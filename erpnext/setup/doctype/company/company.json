@@ -99,6 +99,7 @@
   "asset_received_but_not_billed",
   "manufacturing_settings_section",
   "default_cost_expense_account",
+  "production_loss_account",
   "cost_center_for_production",
   "cost_center_for_packing",
   "column_break_84",
@@ -820,6 +821,12 @@
    "fieldtype": "Link",
    "label": "Donation Customer",
    "options": "Customer"
+  },
+  {
+   "fieldname": "production_loss_account",
+   "fieldtype": "Link",
+   "label": "Production Loss Account",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-building",
@@ -827,7 +834,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-01-06 10:48:47.232112",
+ "modified": "2025-01-24 15:50:39.788359",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",
