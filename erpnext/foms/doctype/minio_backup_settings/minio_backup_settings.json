@@ -9,7 +9,9 @@
   "enable",
   "minio_host",
   "access_key",
-  "secret_key"
+  "secret_key",
+  "column_break_5",
+  "database_list"
  ],
  "fields": [
   {
@@ -33,12 +35,22 @@
    "fieldname": "minio_host",
    "fieldtype": "Data",
    "label": "MinIO Host"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "the list table appear on new row",
+   "fieldname": "database_list",
+   "fieldtype": "Text",
+   "label": "Database List"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-01-14 11:02:39.722991",
+ "modified": "2025-01-24 12:17:20.263713",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "MinIO Backup Settings",
