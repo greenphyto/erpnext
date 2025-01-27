@@ -1196,7 +1196,7 @@ def _sync_delivery_note2(log, api=None):
 		"customerAddress": address,
 		"remarks": remarks,
 		"deliveryOrderDetails": [],
-		"id": doc.foms_id
+		"id": cint(doc.foms_id)
 	})
 
 	for d in doc.get("items"):
