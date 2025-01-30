@@ -35,7 +35,7 @@ def create_foms_data(data_type, data_name, raw):
 		doc.data_name = data_name
 		doc.created_on = now()
 	
-	doc.raw_data = json.dumps(raw)
+	doc.raw_data = json.dumps(raw, default=str)
 	doc.last_sync = now()
 
 	doc.save()
