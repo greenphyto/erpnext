@@ -26,6 +26,7 @@ from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
 from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 from frappe.utils.file_manager import save_file, save_url
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result
+from datetime import datetime, timedelta
 
 PRECISION_FACTOR = 4
 
@@ -41,6 +42,7 @@ def save_log(doctype, data_name, raw_data):
 		data_type=doctype, 
 		data_name=data_name,
 		raw=raw_data,
+		now=0
 	)
 
 def update_log(doctype, data_name, result):
@@ -48,6 +50,7 @@ def update_log(doctype, data_name, result):
 		data_type=doctype, 
 		data_name=data_name,
 		result_name=result,
+		now=0
 	)
 
 @frappe.whitelist()
@@ -402,8 +405,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 
 @frappe.whitelist()
 def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate="", draft=False):
-	ERPWorkOrderID = erpWorkOrderID
-	data_name = f"Finish Work Order {ERPWorkOrderID}"
+	data_name = f"Finish Work Order {erpWorkOrderID}"
 	if not packets and not qty:
 		frappe.throw("Number of Packets or Qty must be set")
 
@@ -417,6 +419,13 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 		"expiryDate": expiryDate
 	})
 
+	return {
+		"result":"Scheduled"
+	}
+
+def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate="", draft=False):
+	ERPWorkOrderID = erpWorkOrderID
+	data_name = f"Finish Work Order {ERPWorkOrderID}"
 
 	if get_foms_settings("disable_woirk_order_operation_update"):
 		return {
@@ -467,9 +476,19 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 			create_do_based_on_work_order(se_doc.work_order, d.qty, d.t_warehouse, d.batch_no)
 
 	update_log("Work Order", data_name, work_order_name)
+
 	return {
 		"ERPStockEntry":se_doc.name
 	}
+
+def run_pending_harvesting():
+	now_time = get_datetime()
+	end_range = now_time - timedelta(minutes=10)
+	start_range = now_time - timedelta(minutes=70)
+
+	for d in frappe.db.sql("select name, raw_data from `tabFOMS Data Mapping` where status = 'Unknown' and created_on between %s and %s ", (start_range, end_range), as_dict=1):
+		data = json.loads(d.raw_data)
+		_submit_work_order_finish_goods(**data)
 
 def add_wip_additional_cost(stock_entry, work_order):
 	# get all additional from transfer material
