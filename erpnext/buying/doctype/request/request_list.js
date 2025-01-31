@@ -1,7 +1,9 @@
 frappe.listview_settings['Request'] = {
 	add_fields: [
-        {fieldname:"item_code", parent:"Request Items"},
+        // {fieldname:"item_code", parent:"Request Items"},
+        {fieldname:"item_name", parent:"Request Items"},
+        {fieldname:"qty", parent:"Request Items"},
         {fieldname:"rate", parent:"Request Items"},
-        {fieldname:"uom", parent:"Request Items"},
-    ]
+    ],
+    hide_sidebar: 1
 }
