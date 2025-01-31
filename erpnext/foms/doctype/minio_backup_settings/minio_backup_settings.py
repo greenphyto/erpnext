@@ -30,13 +30,11 @@ class MinIO():
 			secret_key=self.secret_key,
 		)
 
-		# The file to upload, change this path if needed
-		backup_data = get_latest_backup_file()
-		if not backup_data:
+		# take backup custom
+		source_file = take_backup()
+		if not source_file:
 			return
 		
-		source_file = backup_data[0]
-
 		# The destination bucket and filename on the MinIO server
 		bucket_name = "erp-database-backup"
 		destination_file = source_file.split("/")[-1]
@@ -58,6 +56,7 @@ class MinIO():
 			destination_file, "to bucket", bucket_name,
 		)
 
+
 def upload_backup():
 	doc = frappe.get_doc("MinIO Backup Settings")
 	if not doc.enable:
@@ -65,3 +64,24 @@ def upload_backup():
 	
 	app = MinIO(doc.minio_host, doc.access_key, doc.get_password("secret_key"))
 	app.run()
+
+from frappe.utils.backups import new_backup
+def take_backup():
+	doc = frappe.get_doc("MinIO Backup Settings")
+	doctype = []
+	for d in doc.get("database_list").split():
+		dt = d.strip()
+		if dt[:3] == 'tab':
+			dt = dt[3:]
+		doctype.append(dt)
+	
+	doctype = ",".join(doctype)
+	odb = new_backup(
+		older_than = 2,
+		ignore_files=True,
+		ignore_conf=0,
+		include_doctypes=doctype,
+		compress=1
+	)
+
+	return odb.backup_path_db
