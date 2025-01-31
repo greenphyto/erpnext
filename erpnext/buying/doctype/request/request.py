@@ -12,7 +12,6 @@ class Request(Document):
 		self.calculate_price()
 		self.calculate_weight()
 		self.validate_date()
-		self.set_item_name_and_price()
 
 	def validate_date(self):
 		if getdate(self.delivery_date) < getdate(self.posting_date):
@@ -50,18 +49,6 @@ class Request(Document):
 		for item in doc.get("items"):
 			item.db_update()
 		doc.db_update()
-
-	def set_item_name_and_price(self):
-		names = []
-		price = []
-		for d in self.get("items"):
-			names.append(d.item_name)
-			price.append(d.get_formatted("rate").replace(" ", ""))
-		
-		name_str = ", ".join(names)
-		price_str = ", ".join(price)
-		self.item_name = name_str
-		self.unit_price = price_str
 
 
 def create_request_form(data):
