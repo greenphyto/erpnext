@@ -28,6 +28,7 @@
   {
    "fieldname": "department",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Department",
    "options": "Department"
   },
@@ -69,7 +70,6 @@
   {
    "fieldname": "total_price",
    "fieldtype": "Currency",
-   "in_list_view": 1,
    "label": "Total Price",
    "read_only": 1
   },
@@ -91,7 +91,6 @@
   {
    "fieldname": "total_weight",
    "fieldtype": "Float",
-   "in_list_view": 1,
    "label": "Total Weight (Kg)",
    "precision": "2",
    "read_only": 1
@@ -130,7 +129,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-31 17:20:00.862572",
+ "modified": "2025-01-31 17:59:59.912072",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request",
