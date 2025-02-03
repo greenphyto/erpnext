@@ -1125,7 +1125,7 @@ def make_packing_slip(source_name, target_doc=None):
 					"item_name": "item_name",
 					"description": "description",
 					"qty": "qty",
-					"stock_uom": "stock_uom",
+					"uom": "stock_uom",
 					"name": "dn_detail",
 				},
 				"condition": lambda doc: not frappe.db.exists(
