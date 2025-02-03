@@ -122,7 +122,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-29 15:15:54.645609",
+ "modified": "2025-02-03 13:44:09.862040",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Data Mapping",
@@ -144,5 +144,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "track_changes": 1
 }
