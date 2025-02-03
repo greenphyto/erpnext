@@ -37,12 +37,13 @@ def get_data(data):
 
 	return data
 
-def save_log(doctype, data_name, raw_data):
+def save_log(doctype, data_name, raw_data, reopen=False):
 	frappe.enqueue("erpnext.foms.doctype.foms_data_mapping.foms_data_mapping.create_foms_data",
 		data_type=doctype, 
 		data_name=data_name,
 		raw=raw_data,
-		now=0
+		reopen=reopen,
+		now=0,
 	)
 
 def update_log(doctype, data_name, result):
@@ -404,7 +405,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	}
 
 @frappe.whitelist()
-def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate="", draft=False):
+def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate="", draft=False, now=False):
 	data_name = f"Finish Work Order {erpWorkOrderID}"
 	if not packets and not qty:
 		frappe.throw("Number of Packets or Qty must be set")
@@ -412,16 +413,22 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 	# overwrite expiry date +1 as FOMS still using when batch written to the date but erp expired at the date
 	expiryDate = add_days( getdate(expiryDate), 1)
 
-	save_log("Work Order", data_name, {
+	log_data = {
 		"erpWorkOrderID": erpWorkOrderID,
 		"qty": qty,
 		"packets": packets,
-		"expiryDate": expiryDate
-	})
-
-	return {
-		"result":"Scheduled"
+		"expiryDate": expiryDate,
+		"draft":draft,
 	}
+
+	save_log("Work Order", data_name, log_data, reopen=1)
+
+	if cint(now):
+		return _submit_work_order_finish_goods(**log_data)
+	else:
+		return {
+			"result":"Scheduled"
+		}
 
 def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate="", draft=False):
 	ERPWorkOrderID = erpWorkOrderID
