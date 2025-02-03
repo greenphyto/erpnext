@@ -70,12 +70,12 @@ from frappe.utils.backups import new_backup
 def take_backup():
 	doc = frappe.get_doc("MinIO Backup Settings")
 	doctype = []
-	for d in doc.get("database_list").split():
+	for d in doc.get("database_list").split("\n"):
 		dt = d.strip()
 		if dt[:3] == 'tab':
 			dt = dt[3:]
 		doctype.append(dt)
-	
+		
 	doctype = ",".join(doctype)
 	odb = new_backup(
 		older_than = 2,
