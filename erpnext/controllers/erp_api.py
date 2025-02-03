@@ -442,6 +442,17 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 	work_order_name, lot_id, status,packet_size,conversion_factor  = frappe.db.get_value("Work Order", ERPWorkOrderID, ['name', 'foms_lot_id', 'status', 'packet_size', 'conversion_factor']) or ("", "", "", '', '')
 	qty_from_packet = flt(conversion_factor) * flt(packets)
 	qty = qty or qty_from_packet
+	
+	# skip before operation 3 has done
+	operation_3_status = frappe.db.get_value("Stock Entry", {
+		"work_order":work_order_name,
+		"operation": OPERATION_MAP_NAME.get(3),
+		"docstatus":1
+	})
+	if not operation_3_status:
+		return {
+			"result":"Operation 3 should be complete first."
+		}
 
 	if status == "Completed":
 		return {
