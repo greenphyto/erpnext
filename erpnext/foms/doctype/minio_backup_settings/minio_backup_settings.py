@@ -57,6 +57,7 @@ class MinIO():
 		)
 
 
+@frappe.whitelist()
 def upload_backup():
 	doc = frappe.get_doc("MinIO Backup Settings")
 	if not doc.enable:

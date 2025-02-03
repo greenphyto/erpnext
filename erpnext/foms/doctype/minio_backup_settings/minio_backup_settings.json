@@ -11,7 +11,8 @@
   "access_key",
   "secret_key",
   "column_break_5",
-  "database_list"
+  "database_list",
+  "take_backup_now"
  ],
  "fields": [
   {
@@ -45,12 +46,17 @@
    "fieldname": "database_list",
    "fieldtype": "Text",
    "label": "Database List"
+  },
+  {
+   "fieldname": "take_backup_now",
+   "fieldtype": "Button",
+   "label": "Take Backup Now"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-01-24 12:17:20.263713",
+ "modified": "2025-02-03 12:12:45.284932",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "MinIO Backup Settings",

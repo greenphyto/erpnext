@@ -2,7 +2,12 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('MinIO Backup Settings', {
-	// refresh: function(frm) {
-
-	// }
+	take_backup_now: function(frm) {
+		frappe.call({
+			"method":"erpnext.foms.doctype.minio_backup_settings.minio_backup_settings.upload_backup",
+			"callback":()=>{
+				frappe.msgprint("Done upload");
+			}
+		})
+	}
 });
