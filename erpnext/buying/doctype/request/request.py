@@ -12,6 +12,10 @@ class Request(Document):
 		self.calculate_price()
 		self.calculate_weight()
 		self.validate_date()
+		self.set_status()
+
+	def on_cancel(self):
+		self.set_status()
 
 	def validate_date(self):
 		if getdate(self.delivery_date) < getdate(self.posting_date):
@@ -49,6 +53,19 @@ class Request(Document):
 		for item in doc.get("items"):
 			item.db_update()
 		doc.db_update()
+
+	def set_status(self, db_update=False):
+		if self.docstatus == 0:
+			self.status = "Draft"
+		elif self.docstatus == 2:
+			self.status = "Cancelled"
+		elif self.delivery_percent >= 100:
+			self.status = "Completed"
+		else:
+			self.status = "Submitted"
+		
+		if db_update:
+			self.db_set("status", self.status)
 
 
 def create_request_form(data):

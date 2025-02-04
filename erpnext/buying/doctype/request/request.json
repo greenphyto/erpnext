@@ -22,7 +22,10 @@
   "section_break_9",
   "amended_from",
   "workflow_state",
-  "req_id"
+  "req_id",
+  "test_barcode",
+  "delivery_percent",
+  "status"
  ],
  "fields": [
   {
@@ -124,12 +127,32 @@
    "no_amend_copy": 1,
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "test_barcode",
+   "fieldtype": "Barcode",
+   "label": "Test Barcode"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nSubmitted\nCancelled\nCompleted",
+   "read_only": 1
+  },
+  {
+   "fieldname": "delivery_percent",
+   "fieldtype": "Percent",
+   "label": "Delivery %",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-31 17:59:59.912072",
+ "modified": "2025-02-04 17:21:34.123356",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request",
