@@ -693,7 +693,10 @@ additional_timeline_content = {
 }
 
 jinja = {
-	"methods": "erpnext.assets.utils.get_qrcode"
+	"methods": [
+        "erpnext.assets.utils.get_qrcode",
+        "erpnext.accounts.utils.get_barcode"
+	]
 }
 
 quick_entry_js = {

@@ -1251,7 +1251,7 @@ def get_voucherwise_gl_entries(future_stock_vouchers, posting_date):
 	Check compare_existing_and_expected_gle function below.
 
 	returns:
-	        Dict[Tuple[voucher_type, voucher_no], List[GL Entries]]
+			Dict[Tuple[voucher_type, voucher_no], List[GL Entries]]
 	"""
 	gl_entries = {}
 	if not future_stock_vouchers:
@@ -1821,3 +1821,22 @@ def get_cost_center_from_account(account, company=""):
 		return {"value":"", "lock":1}
 
 	return {"value":"", "lock":0}
+
+import barcode
+from barcode.writer import SVGWriter
+import base64
+from io import BytesIO
+def get_barcode(text):
+	code128 = barcode.get_barcode_class('code128')
+
+	barcode_instance = code128(text, writer=SVGWriter())
+
+	temp_file = BytesIO()
+	barcode_instance.write(temp_file)
+
+	temp_file.seek(0)
+	base64_encoded = base64.b64encode(temp_file.getvalue()).decode('utf-8')
+
+	res = """<img src="data:image/svg+xml;base64,{}" alt="Barcode">""".format(base64_encoded)
+
+	return res
