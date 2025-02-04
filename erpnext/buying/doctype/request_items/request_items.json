@@ -15,7 +15,8 @@
   "amount",
   "unit_weight",
   "weight",
-  "foms_id"
+  "foms_id",
+  "delivery_percent"
  ],
  "fields": [
   {
@@ -92,12 +93,18 @@
    "no_amend_copy": 1,
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "delivery_percent",
+   "fieldtype": "Percent",
+   "label": "Delivery %",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-01-08 16:42:51.970137",
+ "modified": "2025-02-04 17:30:41.274979",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request Items",

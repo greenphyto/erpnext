@@ -67,6 +67,19 @@ class Request(Document):
 		if db_update:
 			self.db_set("status", self.status)
 
+	def set_delivery_percent(self, db_update=False):
+		percent = []
+		for d in self.items:
+			percent.append(flt(d.delivery_percent))
+
+		pc = sum(percent)/len(percent)
+		self.delivery_percent = pc
+		if db_update:
+			self.db_set("delivery_percent", self.delivery_percent)
+
+		self.set_status(db_update)
+
+
 
 def create_request_form(data):
 
