@@ -266,6 +266,7 @@ class DeliveryNote(SellingController):
 		self.make_gl_entries()
 		self.repost_future_sle_and_gle()
 		# self.set_other_reff()
+		self.close_request_form()
 
 	def set_other_reff(self):
 		for d in self.get("items"):
@@ -308,6 +309,7 @@ class DeliveryNote(SellingController):
 		self.make_gl_entries_on_cancel()
 		self.repost_future_sle_and_gle()
 		self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry", "Repost Item Valuation")
+		self.close_request_form()
 
 	def check_credit_limit(self):
 		from erpnext.selling.doctype.customer.customer import check_credit_limit
@@ -425,6 +427,42 @@ class DeliveryNote(SellingController):
 					"Could not create Credit Note automatically, please uncheck 'Issue Credit Note' and submit again"
 				)
 			)
+
+	def close_request_form(self):
+		for d in self.get("items"):
+			batch = d.batch_no
+			
+			# find stock entry finish
+			reff_no = frappe.db.sql("""
+				SELECT 
+					name, voucher_no, voucher_type, SUM(actual_qty) AS qty, actual_qty as total_qty
+				FROM
+					`tabStock Ledger Entry`
+				WHERE
+					batch_no = %s
+						AND is_cancelled = 0
+				 """, (batch), as_dict=1)
+			if reff_no:
+				for reff in reff_no:
+					# get work order
+					work_order = frappe.db.get_value("Stock Entry", reff.voucher_no, "work_order")
+					if not work_order:
+						continue
+
+					reff_so, reff_req = frappe.db.get_value("Work Order", work_order, ["sales_order_no", "request_no"]) or ("","")
+					if reff_req:
+						for no in reff_req.strip().split(","):
+							percent = (reff.total_qty - reff.qty)/reff.total_qty * 100
+							# finish reference
+							doc = frappe.get_doc("Request", no)
+							for row in doc.get("items"):
+								if row.item_code == d.item_code:
+									row.db_set("delivery_percent", percent)
+
+							doc.set_delivery_percent(db_update=True)
+
+					# not yet for SO
+
 
 
 def update_billed_amount_based_on_so(so_detail, update_modified=True):
