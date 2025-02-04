@@ -1838,7 +1838,6 @@ def get_barcode(text):
 
 	temp_file.seek(0)
 	base64_encoded = base64.b64encode(temp_file.getvalue()).decode('utf-8')
-
+	
 	res = """<img style="width: 100%;height: 100%;" src="data:image/svg+xml;base64,{}" alt="Barcode">""".format(base64_encoded)
-
 	return res
