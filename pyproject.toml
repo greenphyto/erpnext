@@ -22,7 +22,8 @@ dependencies = [
     "taxjar~=1.9.2",
     "tweepy~=3.10.0",
     "imgkit",
-    "minio"
+    "minio",
+    "python-barcode"
 ]
 
 [build-system]
