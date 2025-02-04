@@ -1826,6 +1826,8 @@ import barcode
 from barcode.writer import SVGWriter
 import base64
 from io import BytesIO
+barcode.base.Barcode.default_writer_options['write_text'] = False
+
 def get_barcode(text):
 	code128 = barcode.get_barcode_class('code128')
 
@@ -1837,6 +1839,6 @@ def get_barcode(text):
 	temp_file.seek(0)
 	base64_encoded = base64.b64encode(temp_file.getvalue()).decode('utf-8')
 
-	res = """<img src="data:image/svg+xml;base64,{}" alt="Barcode">""".format(base64_encoded)
+	res = """<img style="width: 100%;height: 100%;" src="data:image/svg+xml;base64,{}" alt="Barcode">""".format(base64_encoded)
 
 	return res
