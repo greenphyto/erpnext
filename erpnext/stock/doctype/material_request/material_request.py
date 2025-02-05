@@ -106,6 +106,7 @@ class MaterialRequest(BuyingController):
 		self.reset_default_field_value("set_from_warehouse", "items", "from_warehouse")
 		self.set_is_low_amount()
 		self.check_attachment()
+		self.set_expense_code()
 
 	def before_update_after_submit(self):
 		self.validate_schedule_date()
@@ -327,6 +328,11 @@ class MaterialRequest(BuyingController):
 		)
 		return attachments
 
+	def set_expense_code(self):
+		stock_expense = frappe.get_value("Company", self.company, "stock_received_but_not_billed")
+		for d in self.get("items"):
+			if frappe.get_value("Item", d.item_code, 'is_stock_item'):
+				d.expense_account = stock_expense
 
 
 def update_completed_and_requested_qty(stock_entry, method):
