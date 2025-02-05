@@ -11,6 +11,7 @@ import json, math
 from erpnext import get_company_currency, get_default_company
 from bs4 import BeautifulSoup as bs
 from erpnext.stock import get_warehouse_account_map, get_item_account
+from erpnext.stock.doctype.batch.batch import get_batch_qty
 
 
 """
@@ -443,46 +444,77 @@ def _update_stock_receipt(log, api=None):
 	if not api:
 		api = FomsAPI()
 
+	api.log = log  # working with log
 	doc = frappe.get_doc("Purchase Receipt", log.docname)
 
-	# find overide
-	settings = frappe.get_doc("FOMS Integration Settings")
-	overide_map = {}
-	for d in settings.get("uom_conversion"):
-		if cint(d.enable):
-			overide_map[d.item_code] = d.conversion_factor
+	is_cancel = doc.docstatus == 2
 
 	for d in doc.get("items"):
-		batch_foms_id = cint(frappe.get_value("Batch", d.batch_no, "foms_id"))
-		if batch_foms_id:
+		sle = get_ledger_info(doc, d.item_code, cancel=is_cancel)
+		qty_data = get_batch_qty(sle.batch_no)
+
+		batch_foms_id = cint(sle.foms_id)
+
+		if batch_foms_id and not is_cancel:
 			continue
-		
-		expiry_date = frappe.get_value("Batch", d.batch_no, "expiry_date")
-		warehouse_id = cint(frappe.get_value("Warehouse", d.warehouse, "foms_id"))
-		supplier_id = cint(frappe.get_value("Supplier", doc.supplier, "foms_id"))
-		raw_id = cint(frappe.get_value("Item", d.item_code, "foms_raw_id"))
 
-		qty = d.stock_qty
-		if d.item_code in overide_map:
-			qty = d.qty * flt(overide_map[d.item_code])
+		if frappe.db.exists("Batch", d.batch_no):
+			expiry_date = frappe.get_value("Batch", d.batch_no, "expiry_date")
+			warehouse_id = cint(frappe.get_value("Warehouse", d.warehouse, "foms_id"))
+			supplier_id = cint(frappe.get_value("Supplier", doc.supplier, "foms_id"))
+			raw_id = cint(frappe.get_value("Item", d.item_code, "foms_raw_id"))
 
-		# need convert current PR receive to item default
-		data = {
-			"id": batch_foms_id,
-			"rawMaterialId": raw_id,
-			"batchRefNo": d.batch_no,
-			"dateOfCreation": doc.creation,
-			"expiryDate": add_days( getdate(expiry_date), -1),
-			"warehouseId": warehouse_id,
-			"supplierId": supplier_id,
-			"quantity": qty
-		}
+			qty = 0
+			for qd in qty_data:
+				if qd.get("warehouse") == d.warehouse:
+					qty = flt(qd.get("qty"))
 
-		api.log = log  # working with log
-		res = api.update_raw_material_receipt(data)
-		if res:
-			frappe.db.set_value("Batch", d.batch_no, "foms_id", res.get('id'))
-			frappe.db.set_value("Batch", d.batch_no, "foms_name", res.get('batchRefNo'))
+			# need convert current PR receive to item default
+			data = {
+				"id": batch_foms_id,
+				"rawMaterialId": raw_id,
+				"batchRefNo": d.batch_no,
+				"dateOfCreation": doc.creation,
+				"expiryDate": add_days( getdate(expiry_date), -1),
+				"warehouseId": warehouse_id,
+				"supplierId": supplier_id,
+				"quantity": qty
+			}
+
+			res = api.update_raw_material_receipt(data)
+			if res:
+				frappe.db.set_value("Batch", d.batch_no, "foms_id", res.get('id'))
+				frappe.db.set_value("Batch", d.batch_no, "foms_name", res.get('batchRefNo'))
+		else:
+			api.delete_batch_no(batch_foms_id)
+
+def get_ledger_info(doc, item_code, cancel=False):
+	# return batch_no, actual_qty, foms_id
+	dt = frappe.db.get_value("Stock Ledger Entry", {
+			"voucher_no":doc.name,
+			"voucher_type":doc.doctype,
+			"item_code":item_code,
+			"is_cancelled":cint(cancel)
+		}, ['batch_no', "actual_qty"]) or ("", "")
+	batch_no, actual_qty = dt 
+
+	if not cancel:
+		foms_id = frappe.get_value("Batch", batch_no, "foms_id")
+	else:
+		# get from deleted
+		data = frappe.db.get_value("Deleted Document", {
+			"deleted_name":batch_no,
+			"deleted_doctype":"Batch",
+			"restored":0
+		}, "data") or "{{}}"
+		data = json.loads(data)
+		foms_id = data.get("foms_id")
+	
+	return frappe._dict({
+		"batch_no":batch_no, 
+		"qty":actual_qty, 
+		"foms_id":foms_id
+	})
 
 # RAW MATERIAL RECEIPT
 def update_stock_entry_receipt():
