@@ -72,6 +72,7 @@ UOM_KG_CONVERTION = {
 }
 
 TRANFER_AGAIN = 'Job Card'
+ITEM_NOT_SYNC = ['ZOT04']
 
 def get_uom(uom_foms, default=""):
 	uom_foms = uom_foms or default or'kg'
@@ -450,6 +451,9 @@ def _update_stock_receipt(log, api=None):
 	is_cancel = doc.docstatus == 2
 
 	for d in doc.get("items"):
+		if d.item_code in ITEM_NOT_SYNC:
+			continue
+
 		sle = get_ledger_info(doc, d.item_code, cancel=is_cancel)
 		qty_data = get_batch_qty(sle.batch_no)
 
