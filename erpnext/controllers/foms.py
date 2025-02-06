@@ -1254,7 +1254,6 @@ def _sync_delivery_note2(log, api=None):
 def cancel_delivery_note(foms_id, log, api=None):
 	if not api:
 		api = FomsAPI()
-	foms_id = "49"
 	if foms_id:
 		res = api.cancel_delivery_note(cint(foms_id))
 
