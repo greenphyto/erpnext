@@ -46,11 +46,12 @@ def save_log(doctype, data_name, raw_data, reopen=False):
 		now=0,
 	)
 
-def update_log(doctype, data_name, result):
+def update_log(doctype, data_name, result_doctype, result):
 	frappe.enqueue("erpnext.foms.doctype.foms_data_mapping.foms_data_mapping.update_data_result",
 		data_type=doctype, 
 		data_name=data_name,
 		result_name=result,
+		result_doctype=result_doctype,
 		now=0
 	)
 
@@ -60,7 +61,7 @@ def ping_data(data):
 	data = get_data(data)
 	if data.create_log == 1:
 		save_log("TEST", "test", data)
-		update_log("TEST", "test", "oke")
+		update_log("TEST", "test", "DOC TEST", "oke")
 
 	return data
 
@@ -76,7 +77,7 @@ def create_bom(data):
 	data_name = f"BOM {item} {version}"
 	save_log("BOM", data_name, data)
 	result = create_bom_products(data, product_id, submit=submit)
-	update_log("BOM", data_name, result)
+	update_log("BOM", data_name, "BOM", result)
 	
 	return {"ERPBomId":result}
 
@@ -121,7 +122,7 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 		"ERPBOMId":doc.bom_no
 	}
 
-	update_log("Work Order", data_name, doc.name)
+	update_log("Work Order", data_name, "Work Order", doc.name)
 
 	return res
 
@@ -337,6 +338,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	operation_name = temp.get("name")
 
 	if temp.get("docstatus") == 1:
+		update_log("Work Order", data_name, "Job Card", temp.get("name"))
 		return {
 			"result": False,
 			"percentage": percentage,
@@ -397,7 +399,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 
 	# frappe.db.commit()
 
-	update_log("Work Order", data_name, job_card_name)
+	update_log("Work Order", data_name, "Job Card", job_card.name)
 
 	return {
 		"result": True,
@@ -455,6 +457,7 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 		}
 
 	if status == "Completed":
+		update_log("Work Order", data_name, "Work Order", work_order_name)
 		return {
 			"result":"Already complete"
 		}
@@ -493,7 +496,7 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 			frappe.db.set_value("Batch", d.batch_no, "expiry_date", getdate(expiryDate))
 			create_do_based_on_work_order(se_doc.work_order, d.qty, d.t_warehouse, d.batch_no)
 
-	update_log("Work Order", data_name, work_order_name)
+	update_log("Work Order", data_name, "Work Order", work_order_name)
 
 	return {
 		"ERPStockEntry":se_doc.name
@@ -642,7 +645,7 @@ def create_material_request(
 	doc.save()
 	apply_workflow(doc, "Submit")
 
-	update_log("Material Request", data_name, doc.name)
+	update_log("Material Request", data_name, "Material Request", doc.name)
 
 	return {
 		"materialRequestNo": doc.name
@@ -686,7 +689,7 @@ def create_material_return(data):
 
 	doc.save()
 
-	update_log("Material Return", data_name, doc.name)
+	update_log("Material Return", data_name, "Purchase Receipt", doc.name)
 
 	return {
 		"purchaseReturnNo":doc.name
@@ -710,7 +713,7 @@ def create_update_packaging(data):
 		row.packaging = pack_name
 		doc.save()
 
-	update_log("Packaging", data_name, pack_name)
+	update_log("Packaging", data_name,"Packaging",  pack_name)
 
 	return {
 		"PackageID":pack_name
@@ -772,7 +775,7 @@ def update_delivery_note_signature(data):
 	doc.db_set("delivery_completed_by", data.completed_by)
 	doc.db_set("taken_at", get_datetime(data.taken_at))
 
-	update_log("Delivery Note", data_name, doc.name)
+	update_log("Delivery Note", data_name, "Delivery Note", doc.name)
 
 	return True
 
@@ -787,7 +790,7 @@ def create_raw_material(data):
 
 	res = _create_raw_material(data)
 
-	update_log("Raw Material", data_name, res)
+	update_log("Raw Material", data_name, "Item", res)
 	
 	return {
 		"rawMaterialNo":res
