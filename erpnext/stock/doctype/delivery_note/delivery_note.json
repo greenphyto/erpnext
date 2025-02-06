@@ -1419,6 +1419,8 @@
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -1510,7 +1512,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-22 11:14:31.845647",
+ "modified": "2025-02-06 20:11:40.525574",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
