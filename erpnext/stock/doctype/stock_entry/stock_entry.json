@@ -53,12 +53,14 @@
   "get_stock_and_rate",
   "losses_section",
   "loss_qty",
-  "loss_rate",
+  "expense_loss_account",
   "column_break_48",
+  "loss_rate",
   "total_loss_amount",
   "section_break_19",
   "total_outgoing_value",
   "column_break_22",
+  "total_incoming_receipt",
   "total_incoming_value",
   "value_difference",
   "additional_costs_section",
@@ -161,6 +163,8 @@
    "depends_on": "eval:in_list([\"Material Transfer for Manufacture\", \"Manufacture\", \"Material Consumption for Manufacture\"], doc.purpose)",
    "fieldname": "work_order",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Work Order",
    "oldfieldname": "production_order",
    "oldfieldtype": "Link",
@@ -397,12 +401,13 @@
   {
    "fieldname": "section_break_19",
    "fieldtype": "Section Break",
+   "label": "Total Value",
    "print_hide": 1
   },
   {
    "fieldname": "total_incoming_value",
    "fieldtype": "Currency",
-   "label": "Total Incoming Value (Receipt)",
+   "label": "Total Incoming Value (Total)",
    "options": "Company:company:default_currency",
    "print_hide": 1,
    "read_only": 1
@@ -550,7 +555,6 @@
   {
    "fieldname": "per_transferred",
    "fieldtype": "Percent",
-   "in_list_view": 1,
    "label": "Per Transferred",
    "no_copy": 1,
    "print_hide": 1,
@@ -746,18 +750,19 @@
   {
    "fieldname": "losses_section",
    "fieldtype": "Section Break",
-   "hidden": 1,
    "label": "Losses"
   },
   {
    "fieldname": "loss_qty",
    "fieldtype": "Float",
-   "label": "Loss Qty"
+   "label": "Loss Qty",
+   "read_only": 1
   },
   {
    "fieldname": "loss_rate",
    "fieldtype": "Currency",
-   "label": "Loss rate"
+   "label": "Loss rate",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_48",
@@ -766,7 +771,20 @@
   {
    "fieldname": "total_loss_amount",
    "fieldtype": "Currency",
-   "label": "Total Loss Amount"
+   "label": "Total Loss Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "expense_loss_account",
+   "fieldtype": "Link",
+   "label": "Expense Loss Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "total_incoming_receipt",
+   "fieldtype": "Currency",
+   "label": "Total Incoming Value (Receipt)",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -774,7 +792,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-21 10:24:52.776761",
+ "modified": "2025-02-06 20:14:14.532559",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",
