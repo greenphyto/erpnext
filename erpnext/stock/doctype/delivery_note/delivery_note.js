@@ -456,6 +456,7 @@ erpnext.add_image_slide = function(frm){
         <button id="prev-slide">&#9665;</button>
         <button id="next-slide">&#9655;</button>
     </div>
+	<div class="page-number-slide" id="page-number">1</div>
 	`)
 
 	$.each(frm.doc.attachment.split(";"), (i, v)=>{
@@ -476,6 +477,29 @@ erpnext.add_image_slide = function(frm){
 		perPage: 1,
 		arrows: false
 	}).mount();
+
+	var pageNumber = wrapper.find('#page-number')[0];
+	var prevButton = wrapper.find('#prev-slide')[0];
+	var nextButton = wrapper.find('#next-slide')[0];
+
+	function updatePageNumber() {
+		var index = frm.slide_image.index + 1;
+		var total = frm.slide_image.length;
+		pageNumber.textContent = index + ' / ' + total;
+		
+		if (total > 1) {
+			pageNumber.style.display = 'block';
+			prevButton.style.display = 'block';
+			nextButton.style.display = 'block';
+		} else {
+			pageNumber.style.display = 'none';
+			prevButton.style.display = 'none';
+			nextButton.style.display = 'none';
+		}
+	}
+	
+	frm.slide_image.on('moved', updatePageNumber);
+	updatePageNumber();
 
 	document.getElementById('prev-slide').addEventListener('click', function() {
 		frm.slide_image.go('<');

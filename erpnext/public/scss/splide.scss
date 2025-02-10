@@ -27,3 +27,16 @@
 button#prev-slide:focus, button#next-slide:focus {
     outline-color: gray;
 }
+
+.page-number-slide {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 11px;
+    font-weight: bold;
+    background: rgb(83 83 83 / 35%);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: none;
+}
