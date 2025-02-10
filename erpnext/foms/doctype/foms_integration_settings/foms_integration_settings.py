@@ -480,6 +480,11 @@ class FomsAPI():
 		res = self.req("POST", "/userportal/ERPNextIntegration/UpdateRawMaterialWarehouse", data=data)
 
 		return res
+	
+	def delete_batch_no(self, id):
+		id = cint(id)
+		res = self.req("DELETE", f"/userportal/RawMaterialUP/DeleteRawMaterialBatch?id={id}")
+		return res
 
 	
 """

@@ -109,7 +109,7 @@ class PurchaseInvoice(BuyingController):
 		self.validate_credit_to_acc()
 		self.clear_unallocated_advances("Purchase Invoice Advance", "advances")
 		self.check_on_hold_or_closed_status()
-		self.validate_with_previous_doc()
+		# self.validate_with_previous_doc()
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
 		self.set_expense_account(for_validate=True)
