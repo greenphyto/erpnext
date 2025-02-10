@@ -11,8 +11,8 @@
   "bugs": {
     "url": "https://github.com/frappe/erpnext/issues"
   },
-  "devDependencies": {},
   "dependencies": {
+    "@splidejs/splide": "^4.1.4",
     "html2canvas": "^1.1.4",
     "onscan.js": "^1.5.2"
   }
