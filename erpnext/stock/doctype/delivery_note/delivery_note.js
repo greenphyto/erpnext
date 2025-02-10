@@ -127,7 +127,7 @@ frappe.ui.form.on("Delivery Note", {
 			}
 		}
 		
-		erpnext.add_image_slide()
+		erpnext.add_image_slide(frm)
 	}
 });
 
@@ -444,20 +444,11 @@ function set_donation_expense(frm, account){
 	frm.refresh_field("items");
 }
 
-erpnext.add_image_slide = function(){
+erpnext.add_image_slide = function(frm){
 	var content = $(`
 	<div id="splide" class="splide">
         <div class="splide__track">
             <ul class="splide__list">
-                <li class="splide__slide" style="background-color: red;">
-					<img src="https://foms-asset-dev-18052021.s3-ap-southeast-1.amazonaws.com/DeliveryOrderImage%5c9275226303-D2545739-E39D-4C4D-B109-022C40503F06.jpg">
-				</li>
-                <li class="splide__slide" style="background-color: blue;">
-					<img src="https://foms-asset-dev-18052021.s3-ap-southeast-1.amazonaws.com/DeliveryOrderImage%5c9275226303-D2545739-E39D-4C4D-B109-022C40503F06.jpg">
-				</li>
-                <li class="splide__slide" style="background-color: green;">
-					<img src="https://foms-asset-dev-18052021.s3-ap-southeast-1.amazonaws.com/DeliveryOrderImage%5c9275226303-D2545739-E39D-4C4D-B109-022C40503F06.jpg">
-				</li>
             </ul>
         </div>
     </div>
@@ -466,10 +457,19 @@ erpnext.add_image_slide = function(){
         <button id="next-slide">&#9655;</button>
     </div>
 	`)
-	var wrapper = cur_frm.fields_dict.attachment_preview.$wrapper;
+
+	$.each(frm.doc.attachment.split(";"), (i, v)=>{
+		content.find(".splide__list").append(`
+			<li class="splide__slide">
+				<img src="${v}">
+			</li>
+		`)
+	})
+
+	var wrapper = frm.fields_dict.attachment_preview.$wrapper;
 	wrapper.empty();
 	wrapper.append(content);
-	cur_frm.slide_image = new erpnext.splide('#splide', {
+	frm.slide_image = new erpnext.splide('#splide', {
 		type: 'loop',
 		autoplay: true,
 		interval: 3000,
@@ -478,10 +478,10 @@ erpnext.add_image_slide = function(){
 	}).mount();
 
 	document.getElementById('prev-slide').addEventListener('click', function() {
-		cur_frm.slide_image.go('<');
+		frm.slide_image.go('<');
 	});
 	
 	document.getElementById('next-slide').addEventListener('click', function() {
-		cur_frm.slide_image.go('>');
+		frm.slide_image.go('>');
 	});
 }

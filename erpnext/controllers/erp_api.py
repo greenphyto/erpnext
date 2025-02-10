@@ -764,6 +764,7 @@ def update_delivery_note_signature(data):
 	doc = frappe.get_doc("Delivery Note", data.doNumber)
 	# convert base64 image from json to data
 
+	image_urls = []
 	for d in data.get("attachments") or []:
 		file_name = d.get("filename")
 		encoded_content = d.get("image")
@@ -784,9 +785,12 @@ def update_delivery_note_signature(data):
 				is_private=1,
 				df="attachment",
 			)
-			doc.db_set("attachment", file_save.file_url)
+			image_urls.append(file_save.file_url)
 		else:
-			doc.db_set("attachment", image_url)		
+			image_urls.append(image_url)
+
+	path_src = ";".join(image_urls)
+	doc.db_set("attachment", path_src)	
 
 	# signature
 	if "image/png" not in data.signature:
