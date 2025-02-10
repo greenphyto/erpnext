@@ -126,6 +126,8 @@ frappe.ui.form.on("Delivery Note", {
 				}, __('Create'));
 			}
 		}
+		
+		erpnext.add_image_slide()
 	}
 });
 
@@ -440,4 +442,46 @@ function set_donation_expense(frm, account){
 		frappe.model.set_value(r.doctype, r.name, "expense_account", account);
 	});
 	frm.refresh_field("items");
+}
+
+erpnext.add_image_slide = function(){
+	var content = $(`
+	<div id="splide" class="splide">
+        <div class="splide__track">
+            <ul class="splide__list">
+                <li class="splide__slide" style="background-color: red;">
+					<img src="https://foms-asset-dev-18052021.s3-ap-southeast-1.amazonaws.com/DeliveryOrderImage%5c9275226303-D2545739-E39D-4C4D-B109-022C40503F06.jpg">
+				</li>
+                <li class="splide__slide" style="background-color: blue;">
+					<img src="https://foms-asset-dev-18052021.s3-ap-southeast-1.amazonaws.com/DeliveryOrderImage%5c9275226303-D2545739-E39D-4C4D-B109-022C40503F06.jpg">
+				</li>
+                <li class="splide__slide" style="background-color: green;">
+					<img src="https://foms-asset-dev-18052021.s3-ap-southeast-1.amazonaws.com/DeliveryOrderImage%5c9275226303-D2545739-E39D-4C4D-B109-022C40503F06.jpg">
+				</li>
+            </ul>
+        </div>
+    </div>
+	<div class="custom-arrows">
+        <button id="prev-slide">&#9665;</button>
+        <button id="next-slide">&#9655;</button>
+    </div>
+	`)
+	var wrapper = cur_frm.fields_dict.attachment_preview.$wrapper;
+	wrapper.empty();
+	wrapper.append(content);
+	cur_frm.slide_image = new erpnext.splide('#splide', {
+		type: 'loop',
+		autoplay: true,
+		interval: 3000,
+		perPage: 1,
+		arrows: false
+	}).mount();
+
+	document.getElementById('prev-slide').addEventListener('click', function() {
+		cur_frm.slide_image.go('<');
+	});
+	
+	document.getElementById('next-slide').addEventListener('click', function() {
+		cur_frm.slide_image.go('>');
+	});
 }
