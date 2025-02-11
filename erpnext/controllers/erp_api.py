@@ -777,6 +777,7 @@ def update_delivery_note_signature(data):
 			image_urls.append(image_url)
 
 	path_src = ";".join(image_urls)
+	print(780, path_src)
 	doc.db_set("attachment", path_src)	
 
 	# signature
