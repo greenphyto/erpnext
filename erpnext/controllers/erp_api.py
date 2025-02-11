@@ -505,11 +505,23 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 def run_pending_harvesting():
 	now_time = get_datetime()
 	end_range = now_time - timedelta(minutes=10)
-	start_range = now_time - timedelta(minutes=360)
 
-	for d in frappe.db.sql("select name, raw_data from `tabFOMS Data Mapping` where status = 'Unknown' and created_on between %s and %s ", (start_range, end_range), as_dict=1):
+	for d in frappe.db.sql("select name, raw_data from `tabFOMS Data Mapping` where status = 'Unknown' and last_sync < %s ", (end_range), as_dict=1):
 		data = json.loads(d.raw_data)
-		_submit_work_order_finish_goods(**data)
+		if "ERPWorkOrderID" in data:
+			data['erpWorkOrderID'] = cstr(data['ERPWorkOrderID'])
+			del data['ERPWorkOrderID']
+
+		if not data.get('erpWorkOrderID'):
+			continue
+
+		_submit_work_order_finish_goods(
+			erpWorkOrderID=data.get('erpWorkOrderID'), 
+			packets=flt(data.get('erpWorkOrderID')), 
+			qty=flt(data.get('erpWorkOrderID')), 
+			expiryDate=data.get('erpWorkOrderID'), 
+			draft=cint(data.get('erpWorkOrderID'))
+		)
 
 def add_wip_additional_cost(stock_entry, work_order):
 	# get all additional from transfer material
