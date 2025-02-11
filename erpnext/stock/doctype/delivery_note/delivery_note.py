@@ -122,12 +122,24 @@ class DeliveryNote(SellingController):
 			for d in self.get("items"):
 				if not d.against_sales_order:
 					frappe.throw(_("Sales Order required for Item {0}").format(d.item_code))
+	
+	def update_reff_order(self):
+		so_list = []
+		si_list = []
+		for d in self.get("items"):
+			if d.against_sales_order:
+				so_list.append(d.against_sales_order)
+			if d.against_sales_invoice:
+				si_list.append(d.against_sales_invoice)
+		self.sales_order_no = ", ".join(list(set(so_list)))
+		self.sales_invoice_no = ", ".join(list(set(si_list)))	
 
 	def validate(self):
 		self.validate_posting_time()
 		super(DeliveryNote, self).validate()
 		self.set_status()
 		self.so_required()
+		self.update_reff_order()
 		self.validate_proj_cust()
 		self.check_sales_order_on_hold_or_close("against_sales_order")
 		self.validate_warehouse()
