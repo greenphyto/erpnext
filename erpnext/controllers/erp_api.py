@@ -420,13 +420,22 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 		"qty": qty,
 		"packets": packets,
 		"expiryDate": expiryDate,
-		"draft":draft,
+		"draft":draft
 	}
+
+	if now:
+		log_data['now'] = now
 
 	save_log("Work Order", data_name, log_data, reopen=1)
 
 	if cint(now):
-		return _submit_work_order_finish_goods(**log_data)
+		return _submit_work_order_finish_goods(
+			erpWorkOrderID = erpWorkOrderID, 
+			packets = packets, 
+			qty = qty, 
+			expiryDate = expiryDate, 
+			draft = draft
+		)
 	else:
 		return {
 			"result":"Scheduled"
@@ -464,7 +473,6 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 	
 	if not work_order_name:
 		frappe.throw(_(f"Work Order {ERPWorkOrderID} not found!"), frappe.DoesNotExistError)
-	
 	
 	se_doc = make_stock_entry_wo(work_order_name,"Manufacture", qty, return_doc=1)
 
@@ -517,10 +525,10 @@ def run_pending_harvesting():
 
 		_submit_work_order_finish_goods(
 			erpWorkOrderID=data.get('erpWorkOrderID'), 
-			packets=flt(data.get('erpWorkOrderID')), 
-			qty=flt(data.get('erpWorkOrderID')), 
-			expiryDate=data.get('erpWorkOrderID'), 
-			draft=cint(data.get('erpWorkOrderID'))
+			packets=flt(data.get('packets')), 
+			qty=flt(data.get('qty')), 
+			expiryDate=data.get('expiryDate'), 
+			draft=cint(data.get('draft'))
 		)
 
 def add_wip_additional_cost(stock_entry, work_order):
