@@ -506,7 +506,7 @@ def run_pending_harvesting():
 	now_time = get_datetime()
 	end_range = now_time - timedelta(minutes=10)
 
-	for d in frappe.db.sql("select name, raw_data from `tabFOMS Data Mapping` where status = 'Unknown' and last_sync < %s ", (end_range), as_dict=1):
+	for d in frappe.db.sql("select name, raw_data from `tabFOMS Data Mapping` where status = 'Unknown' and created_on < %s ", (end_range), as_dict=1):
 		data = json.loads(d.raw_data)
 		if "ERPWorkOrderID" in data:
 			data['erpWorkOrderID'] = cstr(data['ERPWorkOrderID'])
