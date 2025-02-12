@@ -1164,3 +1164,4 @@ def update_BOM_rate(item_list):
 		bom = frappe.get_doc("BOM", b.name)
 		bom.rm_cost_as_per = "Last Purchase Rate"
 		bom.update_cost(update_parent=True, from_child_bom=False, update_hour_rate=False, save=True)
+		bom.save()
