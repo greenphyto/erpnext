@@ -247,19 +247,12 @@ class PurchaseReceipt(BuyingController):
 
 		# save only when any updated rate, if still same => ignore
 		item_list = []
-		item_data = {}
 		for d in self.get("items"):
 			key = d.item_code
 			if key not in item_list:
 				item_list.append(key)
-				item_data[key] = {
-					"rate":d.rate,
-					"uom": d.uom,
-					"stock_uom": d.stock_uom,
-					"conversion_factor": d.conversion_factor
-				}
 		
-		update_BOM_rate(item_data, item_list)
+		update_BOM_rate(item_list)
 
 	def check_next_docstatus(self):
 		submit_rv = frappe.db.sql(
@@ -1152,7 +1145,7 @@ def get_item_account_wise_additional_cost(purchase_document):
 def on_doctype_update():
 	frappe.db.add_index("Purchase Receipt", ["supplier", "is_return", "return_against"])
 
-def update_BOM_rate(item_data, item_list):
+def update_BOM_rate(item_list):
 	bom_list = frappe.db.sql("""
 		SELECT 
 			i.item_code, b.name, i.uom, i.qty, i.rate
