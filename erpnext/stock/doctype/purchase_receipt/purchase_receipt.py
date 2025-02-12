@@ -1163,16 +1163,16 @@ def update_BOM_rate(item_data, item_list):
 		WHERE
 			b.is_active = 1 AND b.is_default = 1
 				AND b.docstatus = 1
-				AND i.item_code IN ('RM-NS-NSB' , 'RM-NS-NSA', 'RM-NS-OA', 'RM-SD-SPC')
+				AND i.item_code IN %(item_list)s
 		GROUP BY b.name
-	""", as_dict=1, debug=0)
+	""", {"item_list":item_list}, as_dict=1, debug=0)
 
 	for b in bom_list:
 		bom = frappe.get_doc("BOM", b.name)
 		bom.flags.ignore_rate = 1
 		for d in bom.get("items"):
 			temp = item_data.get(d.item_code) or {}
-			new_rate = flt(temp.get("rate"))
+			new_rate = flt(temp.get("rate")) / flt(temp.get("conversion_factor"))
 			if new_rate:
 				d.rate = new_rate
 				d.db_update()
