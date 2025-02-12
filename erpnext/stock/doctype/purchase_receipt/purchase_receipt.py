@@ -1169,12 +1169,5 @@ def update_BOM_rate(item_data, item_list):
 
 	for b in bom_list:
 		bom = frappe.get_doc("BOM", b.name)
-		bom.flags.ignore_rate = 1
-		for d in bom.get("items"):
-			temp = item_data.get(d.item_code) or {}
-			new_rate = flt(temp.get("rate")) / flt(temp.get("conversion_factor"))
-			if new_rate:
-				d.rate = new_rate
-				d.db_update()
-
-		bom.update_cost(save=True)
+		bom.rm_cost_as_per = "Last Purchase Rate"
+		bom.update_cost(update_parent=True, from_child_bom=False, update_hour_rate=False, save=True)
