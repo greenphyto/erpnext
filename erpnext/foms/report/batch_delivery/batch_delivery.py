@@ -17,6 +17,12 @@ class Report():
 
 	def setup_condition(self):
 		self.cond = ""
+		if self.filters.get("item_code"):
+			self.cond += (" and i.item_code = %(item_code)s ")
+		if self.filters.get("customer"):
+			self.cond += (" and d.customer = %(customer)s ")
+		if self.filters.get("batch_no"):
+			self.cond += (" and i.batch_no = %(batch_no)s ")
 
 	def setup_column(self):
 		self.columns = [
@@ -53,8 +59,9 @@ class Report():
 			WHERE
 				i.docstatus = 1
 					AND i.batch_no IS NOT NULL
+				{}
 			ORDER BY b.expiry_date DESC , i.batch_no
-		""".format(self.cond), self.filters, as_dict=1)
+		""".format(self.cond), self.filters, as_dict=1, debug=1)
 		self.get_qty_prod_map()
 
 	def get_qty_prod_map(self):
