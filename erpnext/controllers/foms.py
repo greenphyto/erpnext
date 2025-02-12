@@ -1216,18 +1216,12 @@ def _sync_delivery_note2(log, api=None):
 	address = get_html_text(address)
 	remarks = get_html_text(doc.instructions)
 
-	reff_so = []
-	for d in doc.get("items"):
-		if d.get("against_sales_order"):
-			reff_so.append(d.get("against_sales_order"))
-			
-	sales_orders = ", ".join(reff_so)
-
 	data = frappe._dict({
 		"farmId": 0,
 		"deliveryOrderRefNo": doc.name,
 		"erpDeliveryOrderId": doc.name,
-		"erpSaleOrderNo": sales_orders,
+		"erpSaleOrderNo": doc.sales_order_no,
+		"erpPurchaseOrderNo ": doc.po_no,
 		"customer": doc.customer,
 		"customerAddress": address,
 		"remarks": remarks,
