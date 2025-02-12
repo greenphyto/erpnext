@@ -1568,6 +1568,7 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 			bom.foms_recipe_version = log.productVersionName
 			bom.with_operations = 1
 			bom.transfer_material_against = TRANFER_AGAIN
+			bom.rm_cost_as_per = "Last Purchase Rate"
 			bom.operations = []
 			bom.items = []
 						
