@@ -1221,7 +1221,7 @@ def _sync_delivery_note2(log, api=None):
 		"deliveryOrderRefNo": doc.name,
 		"erpDeliveryOrderId": doc.name,
 		"erpSaleOrderNo": doc.sales_order_no,
-		"erpPurchaseOrderNo ": doc.po_no,
+		"erpPurchaseOrderNo": doc.po_no,
 		"customer": doc.customer,
 		"customerAddress": address,
 		"remarks": remarks,
