@@ -1115,6 +1115,7 @@ def _update_foms_sales_order(log, api=None):
 
 		so_id = cint(doc.get("foms_id"))
 		req_id = cint(doc.get("req_id"))
+		weight_order = cint(doc.non_package_item) == 1
 
 		products = []
 		
@@ -1123,15 +1124,18 @@ def _update_foms_sales_order(log, api=None):
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
 			child_id = cint(d.get("foms_id"))
 			item = {
-				"isWeightOrder": True if d.weight_order else False,
+				"isWeightOrder": weight_order,
 				"productId": product_id,
-				"quantity": d.qty,
 				"uom": convert_uom(d.stock_uom),
 				"totalNetWeight": d.stock_qty,
 				"isRootInclude": "false",
 				"unitPrice": d.rate,
 				"id":child_id
 			}
+
+			if not weight_order:
+				item["quantity"] = d.qty
+
 			if package_id:
 				item["packageId"] = cint(package_id)
 
@@ -1297,13 +1301,16 @@ def _update_foms_forecast(log, api=None):
 			item = {
 				"isWeightOrder": weight_order,
 				"productId": cint(product_id),
-				"quantity": d.qty,
 				"uom": convert_uom(stock_uom),
 				"totalNetWeight": d.weight,
 				"isRootInclude": "false",
 				"unitPrice": d.rate,
 				"id":child_id
 			}
+
+			if not weight_order:
+				item["quantity"] = d.qty
+			
 			if package_id:
 				item["packageId"] = cint(package_id)
 
