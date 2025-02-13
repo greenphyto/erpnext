@@ -573,15 +573,6 @@
    "oldfieldtype": "Int"
   },
   {
-   "fieldname": "last_purchase_rate",
-   "fieldtype": "Float",
-   "label": "Last Purchase Rate",
-   "no_copy": 1,
-   "oldfieldname": "last_purchase_rate",
-   "oldfieldtype": "Currency",
-   "read_only": 1
-  },
-  {
    "default": "0",
    "fieldname": "is_customer_provided_item",
    "fieldtype": "Check",
@@ -1028,6 +1019,16 @@
    "label": "Default Packaging",
    "options": "Packaging",
    "read_only": 1
+  },
+  {
+   "fieldname": "last_purchase_rate",
+   "fieldtype": "Float",
+   "label": "Last Purchase Rate",
+   "no_copy": 1,
+   "oldfieldname": "last_purchase_rate",
+   "oldfieldtype": "Currency",
+   "precision": "5",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-tag",
@@ -1036,7 +1037,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2025-01-20 14:39:05.909987",
+ "modified": "2025-02-13 10:22:21.049070",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",
