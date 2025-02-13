@@ -1284,6 +1284,7 @@ def _update_foms_forecast(log, api=None):
 		req_id = cint(doc.get("req_id"))
 		delivery_date = getdate(doc.delivery_date)
 		end_delivery_date = add_days(delivery_date, 1)
+		weight_order = cint(doc.non_package_item) == 1
 
 		products = []
 		
@@ -1294,7 +1295,7 @@ def _update_foms_forecast(log, api=None):
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
 			child_id = cint(d.get("foms_id"))
 			item = {
-				"isWeightOrder": False,
+				"isWeightOrder": weight_order,
 				"productId": cint(product_id),
 				"quantity": d.qty,
 				"uom": convert_uom(stock_uom),
