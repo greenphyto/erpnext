@@ -1080,12 +1080,6 @@ def get_wip_warehouse():
 	return data
 
 # SALES ORDER (POST)
-def sync_log_so(doc, method=""):
-	if doc.get("non_package_item"):
-		return
-	else:
-		sync_log(doc, method)
-		
 def update_foms_sales_order():
 	sync_controller("Sales Order", _update_foms_sales_order)
 
