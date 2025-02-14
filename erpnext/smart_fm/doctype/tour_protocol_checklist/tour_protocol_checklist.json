@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "TPC.###./.YYYY",
  "creation": "2025-02-14 09:27:33.778448",
  "default_view": "List",
  "doctype": "DocType",
@@ -41,6 +42,7 @@
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Date",
+   "options": "Today",
    "reqd": 1
   },
   {
@@ -48,6 +50,7 @@
    "fieldtype": "Time",
    "in_list_view": 1,
    "label": "Time",
+   "options": "Now",
    "reqd": 1
   },
   {
@@ -77,6 +80,8 @@
   {
    "fieldname": "tour_ic",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Tour IC",
    "options": "User"
   },
@@ -89,6 +94,8 @@
   {
    "fieldname": "vip_status",
    "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "VIP Status",
    "options": "Yes\nNo"
   },
@@ -199,10 +206,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-14 10:00:27.636304",
+ "modified": "2025-02-14 12:24:02.681135",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Tour Protocol Checklist",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {
