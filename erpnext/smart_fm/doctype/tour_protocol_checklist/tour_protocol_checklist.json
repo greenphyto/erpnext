@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "TPC.###./.YYYY",
+ "autoname": "TPC.-.YY.###",
  "creation": "2025-02-14 09:27:33.778448",
  "default_view": "List",
  "doctype": "DocType",
@@ -206,7 +206,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-14 12:24:02.681135",
+ "modified": "2025-02-14 20:06:44.139804",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Tour Protocol Checklist",
