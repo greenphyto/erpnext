@@ -1,0 +1,30 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "creation": "2025-02-14 11:34:28.206056",
+ "date_changed": "starts_on",
+ "days_in_advance": 1,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Event",
+ "enabled": 1,
+ "event": "Custom",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "Add your message here",
+ "modified": "2025-02-14 11:34:28.206056",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Upcoming Tour Visit",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_role": "Visit Manager"
+  }
+ ],
+ "send_system_notification": 1,
+ "send_to_all_assignees": 0,
+ "sender": "Smart FM",
+ "sender_email": "foms@greenphyto.com",
+ "subject": "Reminder: Tour Visit Tomorrow"
+}
