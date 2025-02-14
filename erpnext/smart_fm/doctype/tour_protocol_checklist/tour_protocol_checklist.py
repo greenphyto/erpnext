@@ -48,3 +48,25 @@ def get_group(txt=""):
 		filters['group_name'] = ['like', "%"+txt+"%"]
 
 	return frappe.db.get_all("Tour Protocal Checklist", filters, ['group_name'])
+
+from frappe.utils import getdate, add_days
+def send_email_notif(use_date=""):
+	cur_date = getdate(use_date)
+	dt = add_days(cur_date, 1) 
+	doc_list = frappe.db.sql("""
+		SELECT 
+			name,
+			group_name,
+			email,
+			vip_status,
+			TIME_FORMAT(time, %s) AS time,
+			tour_ic
+		FROM
+			`tabTour Protocol Checklist`
+		WHERE
+			date = %s
+	""",('%H:%i', dt), as_dict=1)
+	if doc_list:
+		# send email
+		notif = frappe.get_doc("Notification", "Upcoming Tour Visit")
+		notif.send({"doc_list": doc_list})

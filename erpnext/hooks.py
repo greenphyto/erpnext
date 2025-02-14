@@ -478,6 +478,7 @@ scheduler_events = {
 		"erpnext.accounts.doctype.process_statement_of_accounts.process_statement_of_accounts.send_auto_email",
         "erpnext.assets.doctype.asset_maintenance.asset_maintenance.create_planned_asset_maintenance_log",
         "erpnext.assets.doctype.asset.asset.sync_asset",
+        "smart_fm.smart_fm.doctype.tour_protocol_checklist.tour_protocol_checklist.send_email_notif"
 	],
 	"daily_long": [
 		"erpnext.setup.doctype.email_digest.email_digest.send",
