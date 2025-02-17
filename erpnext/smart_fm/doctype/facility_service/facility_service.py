@@ -16,14 +16,6 @@ class FacilityService(Document):
 		self.validate_time()
 	
 	def set_booking(self, add_qty=0):
-		# if booking qty only max qty for order
-		# self.booking_qty = cint(frappe.db.get_value("Facilities Service Reservation", {
-		# 	"service":self.name,
-		# 	"docstatus":0,
-		# 	"to_time":['>=', get_datetime()],
-		# 	"processed": 0,
-		# 	"status":['not in', ['Rejected', 'Issued']]
-		# }, "max(qty) as qty", debug=1)) + add_qty
 		self.booking_qty = self.booking_qty + add_qty
 
 	def set_rented(self, qty, cancel=False):
