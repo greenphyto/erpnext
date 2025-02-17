@@ -27,6 +27,7 @@ class Report():
 	def setup_column(self):
 		self.columns = [
 			{"fieldname": "batch_no", 		"label": "Batch No", 	"fieldtype": "Link", "width":160, "options":"Batch"},
+			{"fieldname": "lot_id", 		"label": "Lot ID", 		"fieldtype": "Data", "width":160, "options":""},
 			{"fieldname": "item_code", 		"label": "Item", 		"fieldtype": "Data", "width":200, "options":""},
 			{"fieldname": "expiry_date", 	"label": "Exp. Date", 	"fieldtype": "Date", "width":100, "options":""},
 			{"fieldname": "prod_qty_kg", 	"label": "Qty KG", 		"fieldtype": "Float", "width":80, "options":""},
@@ -71,6 +72,7 @@ class Report():
 				l.batch_no,
 				l.name,
 				l.voucher_no,
+				wo.foms_lot_name as lot_id,
 				SUM(l.actual_qty / wo.conversion_factor) AS qty,
 				SUM(l.actual_qty) AS qty_kg,
 				l.item_code,
@@ -124,6 +126,7 @@ class Report():
 			temp = self.qty_map.get(d.batch_no) or {}
 			d.prod_qty = flt(temp.get("qty"))
 			d.prod_qty_kg = flt(temp.get("qty_kg"))
+			d.lot_id = temp.get("lot_id")
 			added.append(d.batch_no)
 			self.data.append(d)
 
