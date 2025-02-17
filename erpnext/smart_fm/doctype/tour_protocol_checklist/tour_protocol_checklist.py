@@ -40,7 +40,6 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 	if isinstance(filters, str):
 		filters = json.loads(filters)
 
-	print(43, filters)
 	filter_condition = get_filters_cond("Tour Protocol Checklist", filters, [])
 
 	events = frappe.db.sql("""
@@ -48,6 +47,7 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 			`tabTour Protocol Checklist`.group_name AS full_name,
 			`tabTour Protocol Checklist`.date,
 			`tabTour Protocol Checklist`.date AS from_time,
+			`tabTour Protocol Checklist`.date AS end_time,
 			`tabTour Protocol Checklist`.name,
 			`tabTour Protocol Checklist`.group_name,
 			`tabTour Protocol Checklist`.status,
