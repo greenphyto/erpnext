@@ -1688,14 +1688,15 @@
    "fieldtype": "Data",
    "label": "REQ ID",
    "no_copy": 1,
-   "read_only": 1
+   "read_only": 1,
+   "no_amend_copy": 1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-10-17 21:08:37.820291",
+ "modified": "2024-10-17 22:08:37.820291",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
