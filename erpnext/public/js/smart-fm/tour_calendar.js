@@ -72,7 +72,7 @@ class TourCalendar{
         fields: [
           {
             "label" : "Group Name",
-            "fieldname": "group_name",
+            "fieldname": "name",
             "fieldtype": "Autocomplete",
             "default": '',
             'get_query':()=>{
@@ -84,8 +84,8 @@ class TourCalendar{
         ],
         primary_action: function(data) {
           d.hide();
-          if (data.group_name){
-            me.filter_values = [['group_name', '=', data.group_name]];
+          if (data.name){
+            me.filter_values = [['name', '=', data.name]];
           }else{
             me.filter_values = [];
           }
@@ -136,7 +136,7 @@ class TourCalendar{
       Rejected: "red",
     };
     $.each(events, (i,d)=>{
-      d.title = d.service+"<br/>Booked by " + d.full_name;
+      d.title = d.group_name;
       d.start = d.from_time;
       d.end = d.to_time;
       d.allDay = d.all_day; 
