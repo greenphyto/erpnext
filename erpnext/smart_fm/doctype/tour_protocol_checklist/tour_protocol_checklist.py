@@ -9,6 +9,29 @@ from six import string_types
 class TourProtocolChecklist(Document):
 	pass
 
+
+COLOR_MAP = {
+	"primary": "#007BFF",
+	"secondary": "#6C757D",
+	"success": "#28A745",
+	"danger": "#DC3545",
+	"warning": "#FFC107",
+	"info": "#17A2B8",
+	"light": "#F8F9FA",
+	"dark": "#343A40",
+}
+
+TEXT_COLOR = {
+	"primary": "#FFFFFF", 
+	"secondary": "#FFFFFF",
+	"success": "#FFFFFF",
+	"danger": "#FFFFFF",
+	"warning": "#212529",  
+	"info": "#FFFFFF",
+	"light": "#212529", 
+	"dark": "#FFFFFF",
+}
+
 @frappe.whitelist()
 def get_events(start, end, user=None, for_reminder=False, filters=None):
 	if not user:
@@ -17,37 +40,33 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 	if isinstance(filters, str):
 		filters = json.loads(filters)
 
-	filter_condition = get_filters_cond("Tour Protocol Checklist", filters, [])
+	filter_condition = []
 
 	events = frappe.db.sql("""
 		SELECT 
-			`tabTour Protocol Checklist`.name,
-			`tabTour Protocol Checklist`.group_name,
-			`tabTour Protocol Checklist`.date,
-			`tabTour Protocol Checklist`.time,
+			t.name, t.group_name, t.status, 1 AS all_day
 		FROM
-			`tabTour Protocol Checklist` {}
+			`tabTour Protocol Checklist` t
+		WHERE
+			t.docstatus = 0
 	""".format(filter_condition), as_dict=1, debug=0)
+
+	style_map = {
+		"Issued": "warning",
+		"Accepted": "primary",
+		"Started": "success",
+		"Finished": "secondary",
+		"Cancelled": "light",
+		"Rejected": "danger",
+	}
+
+	for d in events:
+		ref_color = style_map.get(d.status)
+		if ref_color:
+			d.color = COLOR_MAP[ref_color]
+			d.textColor = TEXT_COLOR[ref_color]
 		
 	return events
-
-@frappe.whitelist()
-def get_tour_list(filters={}):
-	if isinstance(filters, string_types):
-		filters = json.loads(filters)
-
-
-	data = frappe.db.get_list("Tour Protocol Checklist", filters, ['name', 'group_name', 'date', 'time'])
-
-	return data
-
-@frappe.whitelist()
-def get_group(txt=""):
-	filters = {"enable":1}
-	if txt:
-		filters['group_name'] = ['like', "%"+txt+"%"]
-
-	return frappe.db.get_all("Tour Protocal Checklist", filters, ['group_name'])
 
 from frappe.utils import getdate, add_days
 def send_email_notif(use_date=""):

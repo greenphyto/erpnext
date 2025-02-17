@@ -34,7 +34,9 @@
   "vegetable_samples_qty_to_pack_section",
   "vegetable",
   "column_break_fehoc",
-  "qty"
+  "qty",
+  "section_break_29ps7",
+  "status"
  ],
  "fields": [
   {
@@ -202,11 +204,22 @@
    "fieldtype": "HTML",
    "label": "Level 5",
    "options": "Level 5: Meeting Point / Watch Overview Video<br><br>"
+  },
+  {
+   "fieldname": "section_break_29ps7",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending\nActive\nExpired"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-14 20:06:44.139804",
+ "modified": "2025-02-17 12:23:22.442400",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Tour Protocol Checklist",
