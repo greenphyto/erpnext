@@ -360,10 +360,10 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	wip_warehouse = frappe.get_value("Job Card", job_card_name, "wip_warehouse")
 
 	# create stock entry
-	se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
-	if not frappe.db.get_value("Stock Entry", {"job_card": job_card_name, "docstatus":1}, cache=False, debug=1):
-		se_doc.insert(ignore_permissions=1)
+	if not frappe.db.get_value("Stock Entry", {"job_card": job_card_name, "docstatus":1}, cache=False, debug=0):
+		se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
 		se_doc.submit()
+		
 	else:
 		update_log("Work Order", data_name, "Job Card", temp.get("name"))
 		return {
@@ -376,7 +376,6 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 
 	# start job card
 	if not job_card.job_started:
-		employee = frappe.get_value("Employee")
 		args = frappe._dict({
 			"job_card_id": job_card.name,
 			"start_time": now_datetime()
