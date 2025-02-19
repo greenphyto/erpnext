@@ -458,6 +458,10 @@ erpnext.add_image_slide = function(frm){
     </div>
 	`)
 
+	if (is_null(frm.doc.attachment)){
+		return
+	}
+
 	$.each(frm.doc.attachment.split(";"), (i, v)=>{
 		content.find(".splide__list").append(`
 			<li class="splide__slide">
