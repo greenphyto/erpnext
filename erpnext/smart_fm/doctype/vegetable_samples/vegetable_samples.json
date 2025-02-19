@@ -1,0 +1,40 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-02-19 16:39:28.351483",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "vegetable",
+  "qty"
+ ],
+ "fields": [
+  {
+   "fieldname": "vegetable",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Vegetable",
+   "options": "Kai Lan\nKomatsuna\nCoco Lettuce\nMambo Lettuce",
+   "reqd": 1
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Qty"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-02-19 16:42:13.134044",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Vegetable Samples",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

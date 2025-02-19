@@ -1,7 +1,6 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "TPC.-.YY.###",
  "creation": "2025-02-14 09:27:33.778448",
  "default_view": "List",
  "doctype": "DocType",
@@ -16,9 +15,11 @@
   "column_break_whlnc",
   "date",
   "time",
+  "end_time",
   "tour_ic",
   "digital_team_ic",
   "tour_route_section",
+  "tour_type",
   "level_5",
   "meeting_point",
   "level_2",
@@ -32,11 +33,7 @@
   "level_5_closing",
   "closing",
   "vegetable_samples_qty_to_pack_section",
-  "vegetable",
-  "column_break_fehoc",
-  "qty",
-  "section_break_29ps7",
-  "status"
+  "vegetable"
  ],
  "fields": [
   {
@@ -44,15 +41,6 @@
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Date",
-   "options": "Today",
-   "reqd": 1
-  },
-  {
-   "fieldname": "time",
-   "fieldtype": "Time",
-   "in_list_view": 1,
-   "label": "Time",
-   "options": "Now",
    "reqd": 1
   },
   {
@@ -82,8 +70,6 @@
   {
    "fieldname": "tour_ic",
    "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Tour IC",
    "options": "User"
   },
@@ -96,8 +82,6 @@
   {
    "fieldname": "vip_status",
    "fieldtype": "Select",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "VIP Status",
    "options": "Yes\nNo"
   },
@@ -167,21 +151,6 @@
    "label": "Vegetable Samples Qty (To Pack)"
   },
   {
-   "fieldname": "vegetable",
-   "fieldtype": "Select",
-   "label": "Vegetable",
-   "options": "Kai Lan\nKomatsuna\nCoco Lettuce\nMambo Lettuce"
-  },
-  {
-   "fieldname": "column_break_fehoc",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "qty",
-   "fieldtype": "Int",
-   "label": "Qty"
-  },
-  {
    "default": "0",
    "fieldname": "closing",
    "fieldtype": "Check",
@@ -206,24 +175,37 @@
    "options": "Level 5: Meeting Point / Watch Overview Video<br><br>"
   },
   {
-   "fieldname": "section_break_29ps7",
-   "fieldtype": "Section Break"
+   "fieldname": "end_time",
+   "fieldtype": "Time",
+   "label": "End Time"
   },
   {
-   "default": "Pending",
-   "fieldname": "status",
+   "default": "Standard Tour",
+   "fieldname": "tour_type",
    "fieldtype": "Select",
-   "label": "Status",
-   "options": "Pending\nActive\nExpired"
+   "label": "Tour Type",
+   "options": "Standard Tour\nStandard Tour With AMR"
+  },
+  {
+   "fieldname": "vegetable",
+   "fieldtype": "Table",
+   "label": "Vegetable",
+   "options": "Vegetable Samples"
+  },
+  {
+   "fieldname": "time",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "Start Time",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-17 12:23:22.442400",
+ "modified": "2025-02-19 16:44:43.792502",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Tour Protocol Checklist",
- "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {
