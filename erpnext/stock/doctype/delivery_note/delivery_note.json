@@ -321,6 +321,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "po_no",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -332,10 +333,10 @@
    "oldfieldtype": "Data",
    "print_hide": 1,
    "print_width": "100px",
-   "read_only": 1,
    "width": "100px"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "po_date",
    "fieldtype": "Date",
    "label": "Customer's Purchase Order Date",
@@ -888,6 +889,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "terms",
    "fieldtype": "Text Editor",
    "label": "Terms and Conditions Details",
@@ -1522,7 +1524,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-13 17:54:48.526479",
+ "modified": "2025-02-20 20:19:30.066390",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
