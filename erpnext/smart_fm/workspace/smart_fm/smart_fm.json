@@ -20,74 +20,6 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Form",
-   "link_count": 6,
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Emergency Contact Information",
-   "link_count": 0,
-   "link_to": "Emergency Contact Information",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Vendor Registration",
-   "link_count": 0,
-   "link_to": "Vendor Registration",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Inspection Checklist",
-   "link_count": 0,
-   "link_to": "Inspection Checklist",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Tenant Feedback",
-   "link_count": 0,
-   "link_to": "Tenant Feedback",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Building Environment Feedback",
-   "link_count": 0,
-   "link_to": "Building Environment Feedback",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Facilities Service Reservation",
-   "link_count": 0,
-   "link_to": "Facilities Service Reservation",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
    "label": "Master",
    "link_count": 1,
    "onboard": 0,
@@ -198,9 +130,87 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Form",
+   "link_count": 7,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Emergency Contact Information",
+   "link_count": 0,
+   "link_to": "Emergency Contact Information",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Vendor Registration",
+   "link_count": 0,
+   "link_to": "Vendor Registration",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Inspection Checklist",
+   "link_count": 0,
+   "link_to": "Inspection Checklist",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Tenant Feedback",
+   "link_count": 0,
+   "link_to": "Tenant Feedback",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Building Environment Feedback",
+   "link_count": 0,
+   "link_to": "Building Environment Feedback",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Facilities Service Reservation",
+   "link_count": 0,
+   "link_to": "Facilities Service Reservation",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Tour Protocol Checklist",
+   "link_count": 0,
+   "link_to": "Tour Protocol Checklist",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2024-04-03 14:25:57.168583",
+ "modified": "2025-02-20 08:58:30.216351",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Smart FM",
