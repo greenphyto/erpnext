@@ -74,12 +74,37 @@ class SalesOrder(SellingController):
 
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
 
+	def on_update_after_submit(self):
+		self.update_po_no()
+
 	def before_validate(self):
 		self.validate_packaging()
 
 	def validate_packaging(self):
 		for d in self.get("items"):
 			pass
+
+	def update_po_no(self):
+		# detect changes
+		old_doc = self.get_doc_before_save()
+		if not old_doc:
+			return
+		
+		if self.po_no !=  old_doc.get("po_no") or self.po_date != old_doc.get("po_date"):
+			data = frappe.db.sql("""
+				SELECT 
+					i.parent as name, i.item_code, count(d.name), po_no
+				FROM
+					`tabDelivery Note Item` i
+						LEFT JOIN
+					`tabDelivery Note` d ON d.name = i.parent
+				WHERE
+					i.against_sales_order IS NOT NULL and i.against_sales_order = %s
+				GROUP BY d.name , d.po_no 
+			""", (self.name), as_dict=1)
+			for d in data:
+				frappe.db.set_value("Delivery Note", d.name, "po_no", self.po_no)
+				frappe.db.set_value("Delivery Note", d.name, "po_date", self.po_date)
 
 	def validate_working_progress(self, throw=False):
 		progress = False
