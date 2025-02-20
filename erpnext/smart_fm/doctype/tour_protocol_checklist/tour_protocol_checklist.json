@@ -9,13 +9,13 @@
  "engine": "InnoDB",
  "field_order": [
   "group_name",
-  "no_of_participants",
+  "participants",
   "contact_no",
   "email",
   "vip_status",
   "column_break_whlnc",
   "date",
-  "time",
+  "start_time",
   "end_time",
   "tour_ic",
   "digital_team_ic",
@@ -53,11 +53,6 @@
    "in_list_view": 1,
    "label": "Group Name",
    "reqd": 1
-  },
-  {
-   "fieldname": "no_of_participants",
-   "fieldtype": "Int",
-   "label": "No. of Participants"
   },
   {
    "fieldname": "contact_no",
@@ -185,7 +180,9 @@
   {
    "fieldname": "end_time",
    "fieldtype": "Time",
-   "label": "End Time"
+   "label": "End Time",
+   "options": "Now",
+   "reqd": 1
   },
   {
    "default": "Standard Tour",
@@ -201,14 +198,6 @@
    "options": "Vegetable Samples"
   },
   {
-   "fieldname": "time",
-   "fieldtype": "Time",
-   "in_list_view": 1,
-   "label": "Start Time",
-   "options": "Now",
-   "reqd": 1
-  },
-  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
@@ -218,17 +207,31 @@
    "read_only": 1
   },
   {
+   "default": "Sheduled",
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "Pending\nActive\nExpired",
+   "options": "Sheduled\nActive\nExpired",
    "read_only": 1
+  },
+  {
+   "fieldname": "participants",
+   "fieldtype": "Int",
+   "label": "No. of Participants"
+  },
+  {
+   "fieldname": "start_time",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "Start Time",
+   "options": "Now",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-20 09:29:20.222782",
+ "modified": "2025-02-20 16:48:47.996825",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Tour Protocol Checklist",

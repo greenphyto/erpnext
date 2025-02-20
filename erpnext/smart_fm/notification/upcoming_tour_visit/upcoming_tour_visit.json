@@ -11,8 +11,8 @@
  "event": "Custom",
  "idx": 0,
  "is_standard": 1,
- "message": "Add your message here",
- "modified": "2025-02-14 11:37:42.227106",
+ "message": "<div>\n    <style>\n        table {\n            width: 100%;\n            border-collapse: collapse;\n            margin-top: 10px;\n        }\n        th, td {\n            border: 1px solid #ddd;\n            padding: 8px;\n            text-align: left;\n        }\n        th {\n            background-color: #f4f4f4;\n        }\n    </style>\n    <p>Dear Farm Manager,</p>\n    <p>This is an automated notification for tomorrow\u2019s scheduled farm visits on <strong>{{ date }}</strong>.</p>\n    <table>\n        <thead>\n            <tr>\n                <th>Time</th>\n                <th>Group Name</th>\n                <th>Email</th>\n                <th>VIP</th>\n                <th>Tour IC</th>\n            </tr>\n        </thead>\n        <tbody>\n            {% for visit in doc.doc_list %}\n            <tr>\n                <td>{{ visit.time }}</td>\n                <td>{{ visit.group_name }}</td>\n                <td>{{ visit.email or \"-\" }}</td>\n                <td>{{ visit.vip_status }}</td>\n                <td>{{ visit.tour_ic or \"-\" }}</td>\n            </tr>\n            {% endfor %}\n        </tbody>\n    </table>\n    \n    <p>Please ensure the farm is prepared accordingly.</p>\n    \n    {{end_support}}\n</div>",
+ "modified": "2025-02-20 11:23:03.051552",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Upcoming Tour Visit",
@@ -26,5 +26,5 @@
  "send_to_all_assignees": 0,
  "sender": "Smart FM",
  "sender_email": "foms@greenphyto.com",
- "subject": "Reminder: Tour Visit Tomorrow"
+ "subject": "Upcoming Tour Protocol Checklist Details {{group_name}}"
 }

@@ -1,45 +1,54 @@
 <div>
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
             border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
+            border-radius: 5px;
         }
-        th {
+        .header {
             background-color: #f4f4f4;
+            padding: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .content {
+            padding: 10px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
         }
     </style>
-    <p>Dear Farm Manager,</p>
-    <p>This is an automated notification for tomorrow’s scheduled farm visits on <strong>{{ date }}</strong>.</p>
-    <table>
-        <thead>
-            <tr>
-                <th>Time</th>
-                <th>Group Name</th>
-                <th>Email</th>
-                <th>VIP</th>
-                <th>Tour IC</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for visit in doc.doc_list %}
-            <tr>
-                <td>{{ visit.time }}</td>
-                <td>{{ visit.group_name }}</td>
-                <td>{{ visit.email or "-" }}</td>
-                <td>{{ visit.vip_status }}</td>
-                <td>{{ visit.tour_ic or "-" }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    
-    <p>Please ensure the farm is prepared accordingly.</p>
-    
+    <div class="container">
+        <div class="header">
+            Upcoming Tour Protocol Checklist
+        </div>
+        <div class="content">
+            <p>Hello {{ doc.recipient_name }} ,</p>
+            <p>I hope you’re doing well. Below are the details for the upcoming tour:</p>
+            <ul>
+                <li><strong>Group Name:</strong> {{ doc.group_name }}</li>
+                <li><strong>Date:</strong> {{ doc.date }}</li>
+                <li><strong>Time:</strong> {{ doc.start_time }} - {{ doc.end_time }} </li>
+                <li><strong>No. of Participants:</strong> {{ doc.participants }}</li>
+                <li><strong>Contact No.:</strong> {{ doc.contact_no }}</li>
+                <li><strong>Email:</strong> {{ doc.email }}</li>
+                <li><strong>Tour IC:</strong> {{ doc.tour_ic }}</li>
+                <li><strong>Digital Team IC:</strong> {{ doc.digital_team_ic }}</li>
+                <li><strong>VIP Status:</strong> {{ doc.vip_status }}</li>
+                <li><strong>Tour Route:</strong> {{ doc.tour_type }}</li>
+                <li><strong>Packages of Vegetables to Prepare:</strong> {{ doc.vegetable_packages }}</li>
+            </ul>
+            <p>Thank you.</p>
+        </div>
+        <div class="footer">
+            This is an automated message, please do not reply.
+        </div>
+    </div>
     {{end_support}}
 </div>

@@ -90,12 +90,21 @@ def send_email_notif(use_date=""):
 		FROM
 			`tabTour Protocol Checklist`
 		WHERE
-			date = %s
+			date = %s and docstatus = 1
 	""",('%H:%i', dt), as_dict=1)
-	if doc_list:
-		# send email
-		notif = frappe.get_doc("Notification", "Upcoming Tour Visit")
-		notif.send({"doc_list": doc_list})
+	notif = frappe.get_doc("Notification", "Upcoming Tour Visit")
+	for d in doc_list:
+		doc = frappe.get_doc("Tour Protocol Checklist", d.name)
+		recipients, cc, bcc = notif.get_list_of_recipients(doc, {})
+		vgs = []
+		for d in doc.get("vegetable"):
+			vgs.append(f"{d.vegetable} {d.qty} packs")
+		doc.vegetable_packages = ", ".join(vgs)
+		for rec in recipients:
+			notif.single_recipient = rec
+			doc.recipient_name = frappe.get_value("User", rec, "full_name")
+			notif.send(doc)
+			print(106, doc.name, rec)
 
 @frappe.whitelist()
 def get_group(txt=""):
