@@ -31,8 +31,8 @@
   "full_line",
   "level_3",
   "root_removal",
+  "amr",
   "level_5_closing",
-  "closing",
   "vegetable_samples_qty_to_pack_section",
   "vegetable",
   "status",
@@ -106,15 +106,17 @@
   {
    "default": "0",
    "fieldname": "lights_on",
-   "fieldtype": "Check",
-   "label": "Lights On"
+   "fieldtype": "HTML",
+   "label": "Lights On",
+   "options": "- Lights On<br><br>"
   },
   {
    "default": "0",
    "depends_on": "eval:doc.vip_status == 'Yes'",
    "fieldname": "cage_movement",
-   "fieldtype": "Check",
-   "label": "Cage Movement"
+   "fieldtype": "HTML",
+   "label": "Cage Movement",
+   "options": "- Cage Movement<br><br>"
   },
   {
    "fieldname": "level_4",
@@ -126,15 +128,17 @@
    "default": "0",
    "depends_on": "eval:doc.vip_status == 'No'",
    "fieldname": "seeding_or_transplanting",
-   "fieldtype": "Check",
-   "label": "Demo either seeding or transplanting"
+   "fieldtype": "HTML",
+   "label": "Demo either seeding or transplanting",
+   "options": "- Demo either seeding or transplanting<br><br>"
   },
   {
    "default": "0",
    "depends_on": "eval:doc.vip_status == 'Yes'",
    "fieldname": "full_line",
-   "fieldtype": "Check",
-   "label": "Demo full line"
+   "fieldtype": "HTML",
+   "label": "Demo full line",
+   "options": "- Demo full line <br><br>"
   },
   {
    "fieldname": "level_3",
@@ -145,19 +149,14 @@
   {
    "default": "0",
    "fieldname": "root_removal",
-   "fieldtype": "Check",
-   "label": "Must See: root removal and popping of the pots"
+   "fieldtype": "HTML",
+   "label": "Must See: root removal and popping of the pots",
+   "options": "- Must See: root removal and popping of the pots<br><br>"
   },
   {
    "fieldname": "vegetable_samples_qty_to_pack_section",
    "fieldtype": "Section Break",
    "label": "Vegetable Samples Qty (To Pack)"
-  },
-  {
-   "default": "0",
-   "fieldname": "closing",
-   "fieldtype": "Check",
-   "label": "Closing"
   },
   {
    "fieldname": "level_5_closing",
@@ -168,8 +167,9 @@
   {
    "default": "0",
    "fieldname": "meeting_point",
-   "fieldtype": "Check",
-   "label": "Meeting Point / Watch Overview Video"
+   "fieldtype": "HTML",
+   "label": "Meeting Point / Watch Overview Video",
+   "options": "- Meeting Point / Watch Overview Video<br><br>"
   },
   {
    "fieldname": "level_5",
@@ -226,6 +226,13 @@
    "label": "Start Time",
    "options": "Now",
    "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.tour_type == 'Standard Tour With AMR'",
+   "fieldname": "amr",
+   "fieldtype": "HTML",
+   "label": "AMR",
+   "options": "- AMR <br><br>"
   }
  ],
  "index_web_pages_for_search": 1,
