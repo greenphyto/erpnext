@@ -1,10 +1,11 @@
 frappe.views.calendar["Tour Protocol Checklist"] = {
 	field_map: {
-		start: "from_time",
-		end: "to_time",
+		start: "start_time",
+		end: "end_time",
 		id: "name",
 		title: "group_name",
 		status: "status",
+		allDay: "all_day"
 	},
     options:{
         timeFormat: 'HH:mm',

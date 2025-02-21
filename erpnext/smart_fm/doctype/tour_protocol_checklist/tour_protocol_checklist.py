@@ -50,16 +50,15 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 		SELECT 
 			`tabTour Protocol Checklist`.group_name AS full_name,
 			`tabTour Protocol Checklist`.date,
-			`tabTour Protocol Checklist`.date AS from_time,
-			`tabTour Protocol Checklist`.date AS end_time,
+			`tabTour Protocol Checklist`.start_time as st,
+			`tabTour Protocol Checklist`.end_time as nd,
 			`tabTour Protocol Checklist`.name,
 			`tabTour Protocol Checklist`.group_name,
-			`tabTour Protocol Checklist`.status,
-			1 AS all_day
+			`tabTour Protocol Checklist`.status
 		FROM
 			`tabTour Protocol Checklist`
 		WHERE
-			`tabTour Protocol Checklist`.docstatus = 0 {}
+			`tabTour Protocol Checklist`.docstatus = 1 {}
 	""".format(filter_condition), as_dict=1, debug=0)
 
 	style_map = {
@@ -71,8 +70,13 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 		"Rejected": "danger",
 	}
 
+	print(events)
+
 	for d in events:
 		ref_color = style_map.get(d.status)
+		d.start_time = get_datetime("{} {}".format(d.date, d.st or "09:00"))
+		d.end_time = get_datetime("{} {}".format(d.date, d.nd or "18:00"))
+		d.all_day = 0
 		if ref_color:
 			d.color = COLOR_MAP[ref_color]
 			d.textColor = TEXT_COLOR[ref_color]
