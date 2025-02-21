@@ -11,8 +11,8 @@
  "event": "Custom",
  "idx": 0,
  "is_standard": 1,
- "message": "<div>\n    <style>\n        table {\n            width: 100%;\n            border-collapse: collapse;\n            margin-top: 10px;\n        }\n        th, td {\n            border: 1px solid #ddd;\n            padding: 8px;\n            text-align: left;\n        }\n        th {\n            background-color: #f4f4f4;\n        }\n    </style>\n    <p>Dear Farm Manager,</p>\n    <p>This is an automated notification for tomorrow\u2019s scheduled farm visits on <strong>{{ date }}</strong>.</p>\n    <table>\n        <thead>\n            <tr>\n                <th>Time</th>\n                <th>Group Name</th>\n                <th>Email</th>\n                <th>VIP</th>\n                <th>Tour IC</th>\n            </tr>\n        </thead>\n        <tbody>\n            {% for visit in doc.doc_list %}\n            <tr>\n                <td>{{ visit.time }}</td>\n                <td>{{ visit.group_name }}</td>\n                <td>{{ visit.email or \"-\" }}</td>\n                <td>{{ visit.vip_status }}</td>\n                <td>{{ visit.tour_ic or \"-\" }}</td>\n            </tr>\n            {% endfor %}\n        </tbody>\n    </table>\n    \n    <p>Please ensure the farm is prepared accordingly.</p>\n    \n    {{end_support}}\n</div>",
- "modified": "2025-02-20 11:23:03.051552",
+ "message": "<div>\n    <style>\n        .container {\n            max-width: 600px;\n            margin: 20px auto;\n            padding: 20px;\n            border: 1px solid #ddd;\n            border-radius: 5px;\n        }\n        .header {\n            background-color: #f4f4f4;\n            padding: 10px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n        }\n        .content {\n            padding: 10px;\n        }\n        .footer {\n            margin-top: 20px;\n            font-size: 12px;\n            color: #777;\n            text-align: center;\n        }\n    </style>\n    <div class=\"container\">\n        <div class=\"header\">\n            Upcoming Tour Protocol Checklist\n        </div>\n        <div class=\"content\">\n            <p>Hello {{ doc.recipient_name }} ,</p>\n            <p>I hope you\u2019re doing well. Below are the details for the upcoming tour:</p>\n            <ul>\n                <li><strong>Group Name:</strong> {{ doc.group_name }}</li>\n                <li><strong>Date:</strong> {{ doc.date }}</li>\n                <li><strong>Time:</strong> {{ doc.start_time }} - {{ doc.end_time }} </li>\n                <li><strong>No. of Participants:</strong> {{ doc.participants }}</li>\n                <li><strong>Contact No.:</strong> {{ doc.contact_no }}</li>\n                <li><strong>Email:</strong> {{ doc.email }}</li>\n                <li><strong>Tour IC:</strong> {{ doc.tour_ic }}</li>\n                <li><strong>Digital Team IC:</strong> {{ doc.digital_team_ic }}</li>\n                <li><strong>VIP Status:</strong> {{ doc.vip_status }}</li>\n                <li><strong>Tour Route:</strong> {{ doc.tour_type }}</li>\n                <li><strong>Packages of Vegetables to Prepare:</strong> {{ doc.vegetable_packages }}</li>\n            </ul>\n            <p>Thank you.</p>\n        </div>\n        <div class=\"footer\">\n            This is an automated message, please do not reply.\n        </div>\n    </div>\n    {{end_support}}\n</div>",
+ "modified": "2025-02-21 11:49:39.236537",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Upcoming Tour Visit",
@@ -20,6 +20,12 @@
  "recipients": [
   {
    "receiver_by_role": "Visit Manager"
+  },
+  {
+   "receiver_by_document_field": "tour_ic"
+  },
+  {
+   "receiver_by_document_field": "digital_team_ic"
   }
  ],
  "send_system_notification": 1,
