@@ -37,7 +37,6 @@
   "level_5_closing",
   "vegetable_samples_qty_to_pack_section",
   "vegetable",
-  "status",
   "amended_from"
  ],
  "fields": [
@@ -209,14 +208,6 @@
    "read_only": 1
   },
   {
-   "default": "Sheduled",
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Status",
-   "options": "Sheduled\nActive\nExpired",
-   "read_only": 1
-  },
-  {
    "fieldname": "participants",
    "fieldtype": "Int",
    "label": "No. of Participants"
@@ -252,7 +243,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-21 10:19:00.457567",
+ "modified": "2025-02-21 11:42:19.304314",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Tour Protocol Checklist",
