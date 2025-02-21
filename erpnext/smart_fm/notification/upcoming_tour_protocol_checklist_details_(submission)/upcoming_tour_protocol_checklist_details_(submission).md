@@ -38,7 +38,7 @@
                 <li><strong>No. of Participants:</strong> {{ doc.participants }}</li>
                 <li><strong>Contact No.:</strong> {{ doc.contact_no }}</li>
                 <li><strong>Email:</strong> {{ doc.email }}</li>
-                <li><strong>Tour IC:</strong> {{ doc.tour_ic }}</li>
+                <li><strong>Tour IC:</strong> {{ doc.tour_ic_name }}</li>
                 <li><strong>Digital Team IC:</strong> {{ doc.digital_team_ic }}</li>
                 <li><strong>VIP Status:</strong> {{ doc.vip_status }}</li>
                 <li><strong>Tour Route:</strong> {{ doc.tour_type }}</li>
