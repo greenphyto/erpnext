@@ -70,8 +70,6 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 		"Rejected": "danger",
 	}
 
-	print(events)
-
 	for d in events:
 		ref_color = style_map.get(d.status)
 		d.start_time = get_datetime("{} {}".format(d.date, d.st or "09:00"))
@@ -112,7 +110,6 @@ def send_email_notif(use_date=""):
 			notif.single_recipient = rec
 			doc.recipient_name = frappe.get_value("User", rec, "full_name")
 			notif.send(doc)
-			print(106, doc.name, rec)
 
 @frappe.whitelist()
 def get_group(txt=""):
