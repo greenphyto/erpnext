@@ -63,6 +63,12 @@ class TourCalendar{
         el.find(".fc-event-title-container").append(`<div>IC: ${prop.full_name || prop.tour_ic || "-"}<div>`)
       },
 			selectable: true,
+      eventClick: function (info) {
+          let link = info.event.extendedProps.link;
+          if (link) {
+              window.location.href = link;
+          }
+      }
   
     });
 
@@ -150,6 +156,7 @@ class TourCalendar{
       d.end = d.end_time;
       d.allDay = d.all_day; 
       d.id = d.name;
+      d.link = `/app/tour-protocol-checklist/${d.name}`
       d.extendedProps = {
         description : "Booked by " + d.full_name,
       }
