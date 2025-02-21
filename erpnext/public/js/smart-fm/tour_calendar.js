@@ -52,6 +52,15 @@ class TourCalendar{
       eventDidMount: (info)=>{
         const title = info.el.querySelector('.fc-event-title');
         title.innerHTML = info.event.title;
+        var el = $(info.el);
+        var prop = info.event._def.extendedProps
+        var vip = "";
+        if (prop.vip_status=="Yes"){
+          vip =`<span class="vip-title">VIP</span>`
+        }
+        el.find(".fc-event-title").html(`<div>${ info.event.title } ${vip}<div>`);
+        el.find(".fc-event-title-container").append(`<div>${prop.participants || 1} Person<div>`)
+        el.find(".fc-event-title-container").append(`<div>IC: ${prop.full_name || prop.tour_ic || "-"}<div>`)
       },
 			selectable: true,
   
@@ -141,7 +150,9 @@ class TourCalendar{
       d.end = d.end_time;
       d.allDay = d.all_day; 
       d.id = d.name;
-      d.description = "Booked by " + d.full_name;
+      d.extendedProps = {
+        description : "Booked by " + d.full_name,
+      }
       d.backgroundColor = style_map[d.status];
     });
     return events
@@ -149,7 +160,8 @@ class TourCalendar{
 
   get required_libs() {
 		let assets = [
-			"https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"
+			"https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js",
+      "/assets/erpnext/css/tour_calendar.css"
 		];
 		return assets;
 	}

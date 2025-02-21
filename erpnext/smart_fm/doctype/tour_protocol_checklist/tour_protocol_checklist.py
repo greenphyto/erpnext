@@ -50,13 +50,18 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 		SELECT 
 			`tabTour Protocol Checklist`.group_name AS full_name,
 			`tabTour Protocol Checklist`.date,
-			`tabTour Protocol Checklist`.start_time as st,
-			`tabTour Protocol Checklist`.end_time as nd,
+			`tabTour Protocol Checklist`.start_time AS st,
+			`tabTour Protocol Checklist`.end_time AS nd,
 			`tabTour Protocol Checklist`.name,
 			`tabTour Protocol Checklist`.group_name,
-			`tabTour Protocol Checklist`.status
+			`tabTour Protocol Checklist`.vip_status,
+			`tabTour Protocol Checklist`.participants,
+			`tabTour Protocol Checklist`.tour_ic,
+			u.full_name
 		FROM
 			`tabTour Protocol Checklist`
+				LEFT JOIN
+			`tabUser` u ON u.name = `tabTour Protocol Checklist`.tour_ic
 		WHERE
 			`tabTour Protocol Checklist`.docstatus = 1 {}
 	""".format(filter_condition), as_dict=1, debug=0)
