@@ -137,8 +137,8 @@ class TourCalendar{
     };
     $.each(events, (i,d)=>{
       d.title = d.group_name;
-      d.start = d.from_time;
-      d.end = d.to_time;
+      d.start = d.start_time;
+      d.end = d.end_time;
       d.allDay = d.all_day; 
       d.id = d.name;
       d.description = "Booked by " + d.full_name;
