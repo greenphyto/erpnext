@@ -17,6 +17,8 @@
   "date",
   "start_time",
   "end_time",
+  "from_time",
+  "to_time",
   "tour_ic",
   "digital_team_ic",
   "tour_route_section",
@@ -233,12 +235,24 @@
    "fieldtype": "HTML",
    "label": "AMR",
    "options": "- AMR <br><br>"
+  },
+  {
+   "fieldname": "from_time",
+   "fieldtype": "Datetime",
+   "hidden": 1,
+   "label": "From Time"
+  },
+  {
+   "fieldname": "to_time",
+   "fieldtype": "Datetime",
+   "hidden": 1,
+   "label": "To Time"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-20 16:48:47.996825",
+ "modified": "2025-02-21 10:19:00.457567",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Tour Protocol Checklist",

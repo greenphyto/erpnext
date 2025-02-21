@@ -3,11 +3,15 @@
 
 import frappe, json
 from frappe.model.document import Document
+from frappe.utils import getdate, get_datetime, add_days
 from frappe.desk.reportview import get_filters_cond
 from six import string_types
 
 class TourProtocolChecklist(Document):
-	pass
+	def before_validate(self):
+		# setup datetime
+		self.from_time = get_datetime("{} {}".format(self.date, self.start_time))
+		self.to_time = get_datetime("{} {}".format(self.date, self.end_time))
 
 
 COLOR_MAP = {
