@@ -86,6 +86,7 @@ def get_events(start, end, user=None, for_reminder=False, filters=None):
 		
 	return events
 
+
 from frappe.utils import getdate, add_days
 def send_email_notif(use_date=""):
 	cur_date = getdate(use_date)
