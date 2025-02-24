@@ -257,10 +257,6 @@ class StockController(AccountsController):
 						).format(wh, self.company)
 					)
 
-		# debug
-		# for d in gl_list:
-		# 	print("SC:, {}, {}, {}".format(d.account, d.debit, d.credit))
-
 		return process_gl_map(gl_list, precision=precision)
 
 	def get_debit_field_precision(self):
