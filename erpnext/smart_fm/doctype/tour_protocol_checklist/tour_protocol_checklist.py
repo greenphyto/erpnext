@@ -96,13 +96,12 @@ def send_email_notif(use_date=""):
 			group_name,
 			email,
 			vip_status,
-			TIME_FORMAT(time, %s) AS time,
 			tour_ic
 		FROM
 			`tabTour Protocol Checklist`
 		WHERE
 			date = %s and docstatus = 1
-	""",('%H:%i', dt), as_dict=1)
+	""",(dt), as_dict=1)
 	notif = frappe.get_doc("Notification", "Upcoming Tour Visit")
 	for d in doc_list:
 		doc = frappe.get_doc("Tour Protocol Checklist", d.name)
