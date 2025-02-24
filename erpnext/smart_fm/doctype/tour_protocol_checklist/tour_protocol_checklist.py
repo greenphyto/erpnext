@@ -110,10 +110,11 @@ def send_email_notif(use_date=""):
 		for d in doc.get("vegetable"):
 			vgs.append(f"{d.vegetable} {d.qty} packs")
 		doc.vegetable_packages = ", ".join(vgs)
-		for rec in recipients:
-			notif.single_recipient = rec
-			doc.recipient_name = frappe.get_value("User", rec, "full_name")
-			notif.send(doc)
+		# for rec in recipients:
+		# 	notif.single_recipient = rec
+		#	doc.recipient_name = frappe.get_value("User", rec, "full_name")
+		doc.recipient_name = "All"
+		notif.send(doc)
 
 @frappe.whitelist()
 def get_group(txt=""):
