@@ -47,13 +47,20 @@ def save_log(doctype, data_name, raw_data, reopen=False, now=False):
 	)
 
 def update_log(doctype, data_name, result_doctype, result, now=False):
-	return frappe.enqueue("erpnext.foms.doctype.foms_data_mapping.foms_data_mapping.update_data_result",
-		data_type=doctype, 
-		data_name=data_name,
-		result_name=result,
-		result_doctype=result_doctype,
-		now=now
-	)
+	if now:
+		update_data_result(
+			data_type=doctype, 
+			data_name=data_name,
+			result_name=result,
+			result_doctype=result_doctype
+		)
+	else:
+		return frappe.enqueue("erpnext.foms.doctype.foms_data_mapping.foms_data_mapping.update_data_result",
+			data_type=doctype, 
+			data_name=data_name,
+			result_name=result,
+			result_doctype=result_doctype
+		)
 
 @frappe.whitelist()
 def ping_data(data):
@@ -320,8 +327,6 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	if log_res.status != "Unknown":
 		return
 	
-	make_in_progress(log_res.name, commit=1)
-
 	if cint(get_foms_settings("disable_woirk_order_operation_update")):
 		return {
 			"result": False,
@@ -329,6 +334,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 			"message":"Temporary disabled"
 		}
 	
+	data_name = f"Operation {operationNo} Work Order {ERPWorkOrderID}"
 	operationName = OPERATION_MAP_NAME.get( cint(operationNo) )
 	work_order_name = frappe.db.get_value("Work Order", ERPWorkOrderID)
 	if not work_order_name:
@@ -340,7 +346,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 		"docstatus":["!=", 2]
 	}, ['name', 'docstatus'], cache=False , as_dict=1) or {}
 
-	operation_name = temp.get("name")
+	job_card_name = temp.get("name")
 
 	if temp.get("docstatus") == 1:
 		update_log("Work Order", data_name, "Job Card", temp.get("name"))
@@ -349,33 +355,69 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 			"percentage": percentage,
 			"message": "Already updated"
 		}
-
-	if not operation_name:
-		# create
-		wo_doc = frappe.get_doc("Work Order", work_order_name)
-		for d in wo_doc.operations:
-			if d.operation == operationName:
-				row = d.as_dict()
-				row.job_card_qty = wo_doc.qty
-				jc_doc = create_job_card(wo_doc, row, False, True)
-				operation_name = jc_doc.name
 	
-	job_card_name = frappe.db.get_value("Job Card", operation_name)
-
 	wip_warehouse = frappe.get_value("Job Card", job_card_name, "wip_warehouse")
 
 	# create stock entry
-	if not frappe.db.get_value("Stock Entry", {"job_card": job_card_name, "docstatus":1}, cache=False, debug=0):
-		se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
-		se_doc.submit()
-		
-	else:
+	if job_card_name and frappe.db.get_value("Stock Entry", {"job_card": job_card_name, "docstatus":1}, cache=False, debug=0):
 		update_log("Work Order", data_name, "Job Card", temp.get("name"))
 		return {
 			"result": False,
 			"percentage": percentage,
 			"message": "Already updated (se)"
 		}
+
+	if cint(operationNo) == 3:
+		return {
+			"result":"Scheduled"
+		}
+	else:
+		_update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage, rawMaterials)
+	
+def	_update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, percentage, rawMaterials):
+	operationName = OPERATION_MAP_NAME.get( cint(operationNo) )
+	operationNo = cint(operationNo)
+	work_order_name = frappe.db.get_value("Work Order", ERPWorkOrderID)
+	data_name = f"Operation {operationNo} Work Order {ERPWorkOrderID}"
+
+	log = frappe.get_doc("FOMS Data Mapping", log_name)
+
+	temp = frappe.db.get_value("Job Card", {
+		"work_order":work_order_name,
+		"operation": operationName,
+		"docstatus":1
+	}, ['name', 'docstatus'], cache=False , as_dict=1) or {}
+
+	job_card_name = temp.get("name")
+	if job_card_name:
+		update_log("Work Order", data_name, "Job Card", temp.get("name"))
+		return {
+			"result": False,
+			"percentage": percentage,
+			"message": "Already updated (se)"
+		}
+
+	if log.status != "Unknown":
+		return
+	
+	make_in_progress(log.name, commit=1)
+
+	# create
+	wo_doc = frappe.get_doc("Work Order", work_order_name)
+	for d in wo_doc.operations:
+		if d.operation == operationName:
+			row = d.as_dict()
+			row.job_card_qty = wo_doc.qty
+			jc_doc = create_job_card(wo_doc, row, False, True)
+			operation_name = jc_doc.name
+	
+	job_card_name = frappe.db.get_value("Job Card", operation_name)
+
+	wip_warehouse = frappe.get_value("Job Card", job_card_name, "wip_warehouse")
+
+	# create stock entry
+	se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
+	se_doc.submit()
 
 	job_card = frappe.get_doc("Job Card", job_card_name)
 
@@ -406,14 +448,31 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	else:
 		job_card.save()
 
-	# frappe.db.commit()
-
-	update_log("Work Order", data_name, "Job Card", job_card.name)
+	update_log("Work Order", data_name, "Job Card", job_card.name, now=1)
 
 	return {
 		"result": True,
 		"percentage": percentage
 	}
+
+def run_pending_harvesting_transfer():
+	now_time = get_datetime()
+	end_range = now_time - timedelta(minutes=5)
+
+	for d in frappe.db.sql("select name,data_name, raw_data from `tabFOMS Data Mapping` where status = 'Unknown' and created_on < %s ", (end_range), as_dict=1):
+		data = json.loads(d.raw_data)
+
+		if not data.get('ERPWorkOrderID'):
+			continue
+
+		if "Operation 3" in d.data_name:
+			_update_work_order_operation_status(
+				log_name=d.name,
+				ERPWorkOrderID=data.get('ERPWorkOrderID'), 
+				operationNo=flt(data.get('operationNo')), 
+				percentage=flt(data.get('percentage')), 
+				rawMaterials=data.get('rawMaterials'),
+			)
 
 @frappe.whitelist()
 def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate="", draft=False, now=False):
@@ -523,7 +582,7 @@ def run_pending_harvesting():
 	now_time = get_datetime()
 	end_range = now_time - timedelta(minutes=10)
 
-	for d in frappe.db.sql("select name, raw_data from `tabFOMS Data Mapping` where status = 'Unknown' and created_on < %s ", (end_range), as_dict=1):
+	for d in frappe.db.sql("select name, raw_data, data_name from `tabFOMS Data Mapping` where status = 'Unknown' and created_on < %s ", (end_range), as_dict=1):
 		data = json.loads(d.raw_data)
 		if "ERPWorkOrderID" in data:
 			data['erpWorkOrderID'] = cstr(data['ERPWorkOrderID'])
@@ -531,14 +590,15 @@ def run_pending_harvesting():
 
 		if not data.get('erpWorkOrderID'):
 			continue
-
-		_submit_work_order_finish_goods(
-			erpWorkOrderID=data.get('erpWorkOrderID'), 
-			packets=flt(data.get('packets')), 
-			qty=flt(data.get('qty')), 
-			expiryDate=data.get('expiryDate'), 
-			draft=cint(data.get('draft'))
-		)
+		
+		if "Finish Work Order" in d.data_name:
+			_submit_work_order_finish_goods(
+				erpWorkOrderID=data.get('erpWorkOrderID'), 
+				packets=flt(data.get('packets')), 
+				qty=flt(data.get('qty')), 
+				expiryDate=data.get('expiryDate'), 
+				draft=cint(data.get('draft'))
+			)
 
 def add_wip_additional_cost(stock_entry, work_order):
 	# get all additional from transfer material

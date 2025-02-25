@@ -69,7 +69,4 @@ def update_data_result(data_type, data_name, result_name, result_doctype=""):
 		log = frappe.get_doc("FOMS Data Mapping", name)
 		log.doc_name = result_name
 		log.doc_type = result_doctype or log.data_type
-		try:
-			log.save()
-		except:
-			pass
+		log.save()
