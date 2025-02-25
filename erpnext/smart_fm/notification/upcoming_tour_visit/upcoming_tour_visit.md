@@ -50,5 +50,5 @@
             This is an automated message, please do not reply.
         </div>
     </div>
-    {{end_support}}
+    {{frappe.render_template("templates/end_support.html", {})}}
 </div>
