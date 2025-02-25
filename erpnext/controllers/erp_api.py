@@ -25,7 +25,7 @@ from frappe.model.workflow import apply_workflow
 from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
 from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 from frappe.utils.file_manager import save_file, save_url
-from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result
+from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result, make_in_progress
 from datetime import datetime, timedelta
 
 PRECISION_FACTOR = 4
@@ -37,22 +37,22 @@ def get_data(data):
 
 	return data
 
-def save_log(doctype, data_name, raw_data, reopen=False):
-	frappe.enqueue("erpnext.foms.doctype.foms_data_mapping.foms_data_mapping.create_foms_data",
+def save_log(doctype, data_name, raw_data, reopen=False, now=False):
+	return frappe.enqueue("erpnext.foms.doctype.foms_data_mapping.foms_data_mapping.create_foms_data",
 		data_type=doctype, 
 		data_name=data_name,
 		raw=raw_data,
 		reopen=reopen,
-		now=0,
+		now=now,
 	)
 
-def update_log(doctype, data_name, result_doctype, result):
-	frappe.enqueue("erpnext.foms.doctype.foms_data_mapping.foms_data_mapping.update_data_result",
+def update_log(doctype, data_name, result_doctype, result, now=False):
+	return frappe.enqueue("erpnext.foms.doctype.foms_data_mapping.foms_data_mapping.update_data_result",
 		data_type=doctype, 
 		data_name=data_name,
 		result_name=result,
 		result_doctype=result_doctype,
-		now=0
+		now=now
 	)
 
 @frappe.whitelist()
@@ -310,12 +310,17 @@ def get_stock_entry_type(operation):
 def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[], ERPWorkOrderID="", erpWorkOrderID=""):
 	ERPWorkOrderID = ERPWorkOrderID or erpWorkOrderID
 	data_name = f"Operation {operationNo} Work Order {ERPWorkOrderID}"
-	save_log("Work Order", data_name, {
+	log_res = save_log("Work Order", data_name, {
 		"ERPWorkOrderID":ERPWorkOrderID, 
 		"operationNo":operationNo, 
 		"percentage":percentage, 
 		"rawMaterials":rawMaterials, 
-	})
+	}, now=1)
+
+	if log_res.status != "Unknown":
+		return
+	
+	make_in_progress(log_res.name, commit=1)
 
 	if cint(get_foms_settings("disable_woirk_order_operation_update")):
 		return {

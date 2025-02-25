@@ -477,7 +477,7 @@ class JobCard(Document):
 
 		elif self.operation_id:
 			self.validate_produced_quantity(for_quantity, wo)
-			self.update_work_order_data(for_quantity, time_in_mins, wo)
+			# self.update_work_order_data(for_quantity, time_in_mins, wo)
 
 	def update_corrective_in_work_order(self, wo):
 		wo.corrective_operation_cost = 0.0
