@@ -324,8 +324,6 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 		"rawMaterials":rawMaterials, 
 	}, now=1)
 
-	print(327, rawMaterials)
-
 	if log_res.status != "Unknown":
 		return
 	
