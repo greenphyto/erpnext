@@ -324,6 +324,8 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 		"rawMaterials":rawMaterials, 
 	}, now=1)
 
+	print(327, rawMaterials)
+
 	if log_res.status != "Unknown":
 		return
 	
@@ -372,7 +374,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 			"result":"Scheduled"
 		}
 	else:
-		_update_work_order_operation_status(ERPWorkOrderID, operationNo, percentage, rawMaterials)
+		return _update_work_order_operation_status(log_res.name, ERPWorkOrderID, operationNo, percentage, rawMaterials)
 	
 def	_update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, percentage, rawMaterials):
 	operationName = OPERATION_MAP_NAME.get( cint(operationNo) )
