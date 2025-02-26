@@ -314,7 +314,7 @@ def get_stock_entry_type(operation):
 		return "Harvesting Finished Goods"
 
 @frappe.whitelist()
-def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[], ERPWorkOrderID="", erpWorkOrderID=""):
+def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[], ERPWorkOrderID="", erpWorkOrderID="", now=False):
 	ERPWorkOrderID = ERPWorkOrderID or erpWorkOrderID
 	data_name = f"Operation {operationNo} Work Order {ERPWorkOrderID}"
 	log_res = save_log("Work Order", data_name, {
@@ -322,6 +322,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 		"operationNo":operationNo, 
 		"percentage":percentage, 
 		"rawMaterials":rawMaterials, 
+		"now":now
 	}, now=1)
 
 	if log_res.status != "Unknown":
@@ -367,7 +368,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 			"message": "Already updated (se)"
 		}
 
-	if cint(operationNo) == 3:
+	if cint(operationNo) == 3 and not now:
 		return {
 			"result":"Scheduled"
 		}
