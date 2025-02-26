@@ -11,6 +11,7 @@
   "has_item_scanned",
   "item_code",
   "item_name",
+  "marketing_name",
   "col_break1",
   "customer_item_code",
   "section_break_6",
@@ -840,13 +841,20 @@
    "in_list_view": 1,
    "label": "FOMS Lot ID",
    "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.marketing_name",
+   "fetch_if_empty": 1,
+   "fieldname": "marketing_name",
+   "fieldtype": "Data",
+   "label": "Marketing Name"
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-02-25 20:57:31.294542",
+ "modified": "2025-02-26 12:25:32.452496",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note Item",

@@ -15,6 +15,7 @@
   "naming_series",
   "item_code",
   "item_name",
+  "marketing_name",
   "item_group",
   "stock_uom",
   "material_group",
@@ -1029,6 +1030,11 @@
    "oldfieldtype": "Currency",
    "precision": "5",
    "read_only": 1
+  },
+  {
+   "fieldname": "marketing_name",
+   "fieldtype": "Data",
+   "label": "Marketing Name"
   }
  ],
  "icon": "fa fa-tag",
@@ -1037,7 +1043,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2025-02-13 10:22:21.049070",
+ "modified": "2025-02-26 12:24:32.740591",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",
