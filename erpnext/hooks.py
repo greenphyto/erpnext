@@ -492,7 +492,6 @@ scheduler_events = {
         "erpnext.controllers.foms.update_foms_supplier",
         "erpnext.controllers.foms.update_foms_customer",
         "erpnext.controllers.foms.update_foms_sales_order",
-        "erpnext.controllers.foms.update_foms_stock_recon",
         "erpnext.controllers.foms.get_raw_material",
         "erpnext.controllers.foms.get_products",
         "erpnext.controllers.foms.get_recipe",
