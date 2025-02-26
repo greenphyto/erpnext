@@ -19,6 +19,14 @@ frappe.ui.form.on("Request", {
 			}
 		})
 
+		frm.set_query("item_code", "items", function(doc, cdt, cdn) {
+			return {
+				filters: {
+					item_group: "Products"
+				}
+			}
+		});
+
 		frm.set_query("uom", "items", function(doc, cdt, cdn) {
 			var row = locals[cdt][cdn];
 			if (!row.item_code) frappe.throw(__("Please select Item"));
@@ -51,11 +59,8 @@ frappe.ui.form.on("Request", {
 		// }
 
 		frm.set_query("item_code", "items", function(doc, cdt, cdn) {
-			var row = locals[cdt][cdn];
-			var filters = {"is_stock_item": 1, "is_fixed_asset": 0}
-			if (doc.non_package_item){
-				filters['is_package_item']=0;
-			}else{
+			var filters = {"is_stock_item": 1, "is_fixed_asset": 0, "item_group": "Products"}
+			if (!doc.non_package_item){
 				filters['is_package_item']=1;
 			}
 			return erpnext.queries.item(filters);
@@ -83,7 +88,8 @@ frappe.ui.form.on("Request", {
 
 			}
 		});
-	},
+	}
+
 });
 
 frappe.ui.form.on("Request Items", {
@@ -118,8 +124,8 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 		}
 	}
 
-	item_code(){
-		// 
+	item_code(doc,cdt,cdn){
+		this.add_uom_default(doc,cdt,cdn)
 	}
 	
 	uom(doc,cdt,cdn){
@@ -169,6 +175,12 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 		})
 		this.frm.set_value("total_price", total_price);
 		this.frm.set_value("total_weight", total_weight);
+	}
+
+	add_uom_default(doc, cdt, cdn){
+		if (doc.non_package_item){
+			frappe.model.set_value(cdt,cdn, "uom", "Kg")
+		}
 	}
 }
 

@@ -302,6 +302,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "raw_material_cost",
    "fieldtype": "Currency",
    "label": "Raw Material Cost",
@@ -329,6 +330,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "base_raw_material_cost",
    "fieldtype": "Currency",
    "label": "Raw Material Cost (Company Currency)",
@@ -345,6 +347,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_cost",
    "fieldtype": "Currency",
    "in_list_view": 1,
@@ -357,6 +360,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "base_total_cost",
    "fieldtype": "Currency",
    "label": "Total Cost (Company Currency)",
@@ -556,7 +560,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-16 21:03:56.709671",
+ "modified": "2025-02-19 15:03:00.177518",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "BOM",

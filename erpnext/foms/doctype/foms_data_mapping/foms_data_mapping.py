@@ -36,15 +36,29 @@ def create_foms_data(data_type, data_name, raw, reopen=False):
 	else:
 		doc = frappe.new_doc("FOMS Data Mapping")
 		doc.data_type = data_type
-		doc.data_name = data_name
 		doc.created_on = now()
 	
+	if doc.status == "Mapped":
+		doc.status = "Unknown"
+		doc.doc_type = ""
+		doc.doc_name = ""
+
+	doc.data_name = data_name
 	doc.raw_data = json.dumps(raw, default=str)
 	doc.last_sync = now()
 
-	doc.save()
+	try:
+		doc.save()
+	except:
+		pass
 
 	return doc
+
+def make_in_progress(log_name, inprogress=True, commit=False):
+	frappe.db.set_value("FOMS Data Mapping", log_name, "status", "In Progress" if inprogress else "Unknown")
+	if commit:
+		frappe.db.commit()
+	return True
 
 def update_data_result(data_type, data_name, result_name, result_doctype=""):
 	name = frappe.db.exists("FOMS Data Mapping", {

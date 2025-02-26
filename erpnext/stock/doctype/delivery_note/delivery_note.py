@@ -147,6 +147,7 @@ class DeliveryNote(SellingController):
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_with_previous_doc()
 		self.validate_donation()
+		self.add_item_batch_foms_id()
 
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 
@@ -178,6 +179,32 @@ class DeliveryNote(SellingController):
 			for d in self.items:
 				d.expense_account = account
 
+	def add_item_batch_foms_id(self):
+		def get_foms_lot_name(batch):
+			temp = frappe.db.sql("""
+				SELECT 
+					s.name,
+					se.name,
+					s.actual_qty,
+					se.work_order,
+					w.foms_lot_name
+				FROM
+					`tabStock Ledger Entry` s
+						LEFT JOIN
+					`tabStock Entry` se ON se.name = s.voucher_no
+						LEFT JOIN
+					`tabWork Order` w ON w.name = se.work_order
+				WHERE
+					s.batch_no = %s
+						AND s.actual_qty > 0
+						AND s.is_cancelled = 0
+						AND se.purpose = 'Manufacture'
+						""", (batch), as_dict=1)
+			for d in temp:
+				return d.foms_lot_name
+			
+		for d in self.get("items"):
+			d.foms_lot_name = get_foms_lot_name(d.batch_no)
 
 	def validate_with_previous_doc(self):
 		super(DeliveryNote, self).validate_with_previous_doc(

@@ -1080,12 +1080,6 @@ def get_wip_warehouse():
 	return data
 
 # SALES ORDER (POST)
-def sync_log_so(doc, method=""):
-	if doc.get("non_package_item"):
-		return
-	else:
-		sync_log(doc, method)
-		
 def update_foms_sales_order():
 	sync_controller("Sales Order", _update_foms_sales_order)
 
@@ -1115,6 +1109,7 @@ def _update_foms_sales_order(log, api=None):
 
 		so_id = cint(doc.get("foms_id"))
 		req_id = cint(doc.get("req_id"))
+		weight_order = cint(doc.non_package_item) == 1
 
 		products = []
 		
@@ -1123,15 +1118,18 @@ def _update_foms_sales_order(log, api=None):
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
 			child_id = cint(d.get("foms_id"))
 			item = {
-				"isWeightOrder": True if d.weight_order else False,
+				"isWeightOrder": weight_order,
 				"productId": product_id,
-				"quantity": d.qty,
 				"uom": convert_uom(d.stock_uom),
 				"totalNetWeight": d.stock_qty,
 				"isRootInclude": "false",
 				"unitPrice": d.rate,
 				"id":child_id
 			}
+
+			if not weight_order:
+				item["quantity"] = d.qty
+
 			if package_id:
 				item["packageId"] = cint(package_id)
 
@@ -1216,18 +1214,12 @@ def _sync_delivery_note2(log, api=None):
 	address = get_html_text(address)
 	remarks = get_html_text(doc.instructions)
 
-	reff_so = []
-	for d in doc.get("items"):
-		if d.get("against_sales_order"):
-			reff_so.append(d.get("against_sales_order"))
-			
-	sales_orders = ", ".join(reff_so)
-
 	data = frappe._dict({
 		"farmId": 0,
 		"deliveryOrderRefNo": doc.name,
 		"erpDeliveryOrderId": doc.name,
-		"erpSaleOrderNo": sales_orders,
+		"erpSaleOrderNo": doc.sales_order_no,
+		"erpPurchaseOrderNo": doc.po_no,
 		"customer": doc.customer,
 		"customerAddress": address,
 		"remarks": remarks,
@@ -1290,6 +1282,7 @@ def _update_foms_forecast(log, api=None):
 		req_id = cint(doc.get("req_id"))
 		delivery_date = getdate(doc.delivery_date)
 		end_delivery_date = add_days(delivery_date, 1)
+		weight_order = cint(doc.non_package_item) == 1
 
 		products = []
 		
@@ -1300,15 +1293,18 @@ def _update_foms_forecast(log, api=None):
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
 			child_id = cint(d.get("foms_id"))
 			item = {
-				"isWeightOrder": False,
+				"isWeightOrder": weight_order,
 				"productId": cint(product_id),
-				"quantity": d.qty,
 				"uom": convert_uom(stock_uom),
 				"totalNetWeight": d.weight,
 				"isRootInclude": "false",
 				"unitPrice": d.rate,
 				"id":child_id
 			}
+
+			if not weight_order:
+				item["quantity"] = d.qty
+			
 			if package_id:
 				item["packageId"] = cint(package_id)
 
@@ -1574,6 +1570,7 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 			bom.foms_recipe_version = log.productVersionName
 			bom.with_operations = 1
 			bom.transfer_material_against = TRANFER_AGAIN
+			bom.rm_cost_as_per = "Last Purchase Rate"
 			bom.operations = []
 			bom.items = []
 						

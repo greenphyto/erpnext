@@ -388,9 +388,9 @@ doc_events = {
         "on_cancel":"erpnext.controllers.foms.sync_log",
 	},
     "Sales Order": {
-        "on_submit":"erpnext.controllers.foms.sync_log_so",
-        "on_update_after_submit":"erpnext.controllers.foms.sync_log_so",
-        "on_cancel":"erpnext.controllers.foms.sync_log_so",
+        "on_submit":"erpnext.controllers.foms.sync_log",
+        "on_update_after_submit":"erpnext.controllers.foms.sync_log",
+        "on_cancel":"erpnext.controllers.foms.sync_log",
 	},
     "Item": {
         "before_validate":"erpnext.patches.v14_0.fix_part_number.set_part_number"
@@ -429,12 +429,13 @@ scheduler_events = {
 	"cron": {
 		"*/5 * * * *": [
 			"erpnext.manufacturing.doctype.bom_update_log.bom_update_log.resume_bom_cost_update_jobs",
-            "erpnext.controllers.erp_api.run_pending_harvesting"
+            "erpnext.controllers.erp_api.run_pending_harvesting_transfer",
+            "erpnext.controllers.erp_api.run_pending_harvesting",
 		],
 		"0/30 * * * *": [
 			"erpnext.utilities.doctype.video.video.update_youtube_data",
 		],
-        "0 22 * * *": [
+        "55 23 * * *": [
 			"erpnext.foms.doctype.minio_backup_settings.minio_backup_settings.upload_backup",
 		],
 		# Hourly but offset by 30 minutes
@@ -491,7 +492,6 @@ scheduler_events = {
         "erpnext.controllers.foms.update_foms_supplier",
         "erpnext.controllers.foms.update_foms_customer",
         "erpnext.controllers.foms.update_foms_sales_order",
-        "erpnext.controllers.foms.update_foms_stock_recon",
         "erpnext.controllers.foms.get_raw_material",
         "erpnext.controllers.foms.get_products",
         "erpnext.controllers.foms.get_recipe",
