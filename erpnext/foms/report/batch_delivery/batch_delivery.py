@@ -27,7 +27,8 @@ class Report():
 	def setup_column(self):
 		self.columns = [
 			{"fieldname": "batch_no", 		"label": "Batch No", 	"fieldtype": "Link", "width":160, "options":"Batch"},
-			{"fieldname": "lot_id", 		"label": "Lot ID", 		"fieldtype": "Link", "width":140, "options":"Work Order"},
+			{"fieldname": "wo_id", 			"label": "Work Order ID","fieldtype": "Link", "width":120, "options":"Work Order"},
+			{"fieldname": "lot_id", 		"label": "FOMS Lot ID",	"fieldtype": "Data", "width":110, "options":""},
 			{"fieldname": "item_code", 		"label": "Item", 		"fieldtype": "Data", "width":200, "options":""},
 			{"fieldname": "expiry_date", 	"label": "Exp. Date", 	"fieldtype": "Date", "width":100, "options":""},
 			{"fieldname": "prod_qty_kg", 	"label": "Qty KG", 		"fieldtype": "Float", "width":80, "options":""},
@@ -46,7 +47,7 @@ class Report():
 				b.item_name as item_code,
 				b.expiry_date,
 				d.name AS delivery_note,
-				d.posting_date as delivery_date,
+				d.delivery_completed_at as delivery_date,
 				d.customer,
 				i.uom,
 				i.qty,
@@ -62,7 +63,7 @@ class Report():
 					AND i.batch_no IS NOT NULL
 				{}
 			ORDER BY b.expiry_date DESC , i.batch_no
-		""".format(self.cond), self.filters, as_dict=1, debug=1)
+		""".format(self.cond), self.filters, as_dict=1, debug=0)
 		self.get_qty_prod_map()
 
 	def get_qty_prod_map(self):
@@ -72,7 +73,8 @@ class Report():
 				l.batch_no,
 				l.name,
 				l.voucher_no,
-				wo.name as lot_id,
+				wo.name as wo_id,
+				wo.foms_lot_name as lot_id,
 				SUM(l.actual_qty / wo.conversion_factor) AS qty,
 				SUM(l.actual_qty) AS qty_kg,
 				l.item_code,
@@ -126,6 +128,7 @@ class Report():
 			temp = self.qty_map.get(d.batch_no) or {}
 			d.prod_qty = flt(temp.get("qty"))
 			d.prod_qty_kg = flt(temp.get("qty_kg"))
+			d.wo_id = temp.get("wo_id")
 			d.lot_id = temp.get("lot_id")
 			added.append(d.batch_no)
 			self.data.append(d)
