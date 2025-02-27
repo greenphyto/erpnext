@@ -185,6 +185,7 @@ class GetData():
 # ###### TOOLS ###### #
 
 # for create one-by-obe log, based on doctype and name
+DOCTYPE_WITHOUT_DELETE_LOG = ["Stock Reconciliation"]
 def sync_log(doc, method=""):
 	method_id = METHOD_MAP.get(doc.get("doctype"))
 	if not method_id:
@@ -200,7 +201,7 @@ def sync_log(doc, method=""):
 		return
 
 	if cancel:
-		if delete_log(doc.doctype, doc.name):
+		if delete_log(doc.doctype, doc.name) and doc.doctype not in DOCTYPE_WITHOUT_DELETE_LOG:
 			return
 
 	log_name = create_log(doc.doctype, doc.name, method=method_id, doc_method=method)
@@ -1019,13 +1020,13 @@ def sync_sle(doc, method=""):
 	}, "sum(actual_qty) as qty")
 	update_foms_batch(doc.batch_no, doc.item_code, doc.warehouse, qty)
 
-def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False, expiry_date="", batch_id=0):
+def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False, expiry_date="", batch_id=0, force=False, log=None):
 	item_id = frappe.get_value("Item", item_code, "foms_raw_id")
 	if not item_id:
 		# not raw material
 		return
 
-	if not cint(frappe.db.get_single_value("FOMS Integration Settings", "sync_sle")):
+	if not cint(frappe.db.get_single_value("FOMS Integration Settings", "sync_sle")) and not force:
 		return
 
 	# skip sync transfer to WIP
@@ -1034,6 +1035,7 @@ def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False, expiry
 		return
 	
 	api = FomsAPI()
+	api.log = log
 	batch_id = cint(batch_id) or frappe.get_value("Batch", batch_no, "foms_id")
 	batch_exp = expiry_date or frappe.get_value("Batch", batch_no, "expiry_date")
 	warehouse_id = cint(warehouse) or frappe.get_value("Warehouse", warehouse, "foms_id")
@@ -1403,16 +1405,10 @@ def _update_foms_stock_recon(log, api=None):
 			success += 1
 			continue
 
-		if cint(d.foms_sync):
-			success += 1
-			continue
-
 		try:
-			res = update_foms_batch(d.batch_no, d.item_code, d.warehouse, flt(d.qty))
-			if res:
-				d.foms_sync = 1
-				success += 1
-				d.db_update()
+			qty = get_batch_qty(d.batch_no, d.warehouse)
+
+			res = update_foms_batch(d.batch_no, d.item_code, d.warehouse, flt(qty), force=1, log=log)
 		except:
 			pass
 	
