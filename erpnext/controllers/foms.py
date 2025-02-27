@@ -1407,8 +1407,9 @@ def _update_foms_stock_recon(log, api=None):
 
 		try:
 			qty = get_batch_qty(d.batch_no, d.warehouse)
-
 			res = update_foms_batch(d.batch_no, d.item_code, d.warehouse, flt(qty), force=1, log=log)
+			if res:
+				success += 1
 		except:
 			pass
 	
