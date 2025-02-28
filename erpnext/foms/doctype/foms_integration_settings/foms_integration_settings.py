@@ -486,6 +486,17 @@ class FomsAPI():
 		res = self.req("DELETE", f"/userportal/RawMaterialUP/DeleteRawMaterialBatch?id={id}")
 		return res
 
+	def update_batch_recon(self, item_id, batch_id, qty_adjust, reason="Stock Recon from ERP"):
+		data = self.convert_data({
+			"rawMaterialId": cint(item_id),
+			"rawMaterialBatchId": cint(batch_id),
+			"adjustment": flt(qty_adjust),
+			"reason": reason
+		})
+		res = self.req("POST", "/userportal/RawMaterialUP/CreateOrUpdateRawMaterialReconcilliation", data=data)
+		return res
+
+
 	
 """
 TODO:

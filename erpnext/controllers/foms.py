@@ -1398,20 +1398,26 @@ def _update_foms_stock_recon(log, api=None):
 
 	doc = frappe.get_doc("Stock Reconciliation", log.docname)
 	farm_id = get_farm_id()
+	api.log = log
 
 	success = 0
 	for d in doc.get("items"):
 		if d.item_group != "Raw Material":
 			success += 1
 			continue
+		
+		if d.foms_sync:
+			continue
 
-		try:
-			qty = get_batch_qty(d.batch_no, d.warehouse)
-			res = update_foms_batch(d.batch_no, d.item_code, d.warehouse, flt(qty), force=1, log=log)
-			if res:
-				success += 1
-		except:
-			pass
+		item_id = frappe.db.get_value("Item", d.item_code, "foms_raw_id", debug=1)
+		batch_id = frappe.db.get_value("Batch", d.batch_no, "foms_id")
+		qty_adjust = d.quantity_difference
+		if doc.docstatus == 2:
+			qty_adjust *= -1
+		res = api.update_batch_recon(item_id, batch_id, qty_adjust)
+		if res:
+			d.db_set("foms_sync", 1)
+			success += 1
 	
 	doc.sync_percent = success/len(doc.get("items"))*100
 	doc.db_update()
