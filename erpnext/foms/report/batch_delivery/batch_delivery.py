@@ -135,8 +135,6 @@ class Report():
 
 		if self.raw_data:
 			self.data.append({"item_code":"Qty Left", "prod_qty":flt(temp.get("qty"))-total_qty_sent, "prod_qty_kg":flt(temp.get("qty_kg"))-total_qty_sent_kg, "qty":total_qty_sent})
-		else:
-			self.data.append({"item_code":"Qty Left", "prod_qty":0, "prod_qty_kg":0, "qty":0})
 
 
 		
