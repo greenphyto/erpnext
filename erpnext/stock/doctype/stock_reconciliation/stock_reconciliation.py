@@ -84,6 +84,13 @@ class StockReconciliation(StockController):
 		self.repost_future_sle_and_gle()
 		if self.purpose == "Opening Stock":
 			self.delete_auto_created_batches()
+		self.reset_foms_sync()
+	
+	def reset_foms_sync(self):
+		old_doc = self.get_doc_before_save()
+		if old_doc.docstatus == 1 and self.docstatus == 2:
+			for d in self.get("items"):
+				d.db_set("foms_sync", 0)
 
 	def remove_items_with_no_change(self):
 		"""Remove items if qty or rate is not changed"""
