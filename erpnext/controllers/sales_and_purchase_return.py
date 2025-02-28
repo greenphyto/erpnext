@@ -335,6 +335,9 @@ def make_return_doc(doctype: str, source_name: str, target_doc=None):
 		doc.is_return = 1
 		doc.return_against = source.name
 		doc.set_warehouse = ""
+		if doctype == "Delivery Note":
+			doc.naming_series = "DO-RET-.YYYY.-.###"
+
 		if doctype == "Sales Invoice" or doctype == "POS Invoice":
 			doc.is_pos = source.is_pos
 

@@ -128,6 +128,9 @@ frappe.ui.form.on("Delivery Note", {
 		}
 		
 		erpnext.add_image_slide(frm)
+	},
+	is_return: function(frm){
+		frm.set_value("naming_series", "DO-RET-.YYYY.-.###")
 	}
 });
 

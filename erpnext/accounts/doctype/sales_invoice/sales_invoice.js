@@ -784,6 +784,10 @@ frappe.ui.form.on('Sales Invoice', {
 		}
 	},
 
+	is_return: function(frm){
+		frm.set_value("naming_series", "CN.###./.YYYY")
+	},
+
 	onload: function(frm) {
 		frm.redemption_conversion_factor = null;
 	},

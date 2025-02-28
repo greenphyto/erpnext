@@ -252,6 +252,11 @@ class SalesInvoice(SellingController):
 
 		# calculate totals again after applying TDS
 		self.calculate_taxes_and_totals()
+	
+	def before_insert(self):
+		super(SalesInvoice, self).before_insert()
+		if self.is_return:
+			self.naming_series = "CN.###./.YYYY"
 
 	def before_save(self):
 		set_account_for_mode_of_payment(self)
