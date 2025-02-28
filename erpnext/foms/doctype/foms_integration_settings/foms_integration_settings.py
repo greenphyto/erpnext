@@ -493,7 +493,7 @@ class FomsAPI():
 			"adjustment": flt(qty_adjust),
 			"reason": reason
 		})
-		res = self.req("POST", "/userportal/RawMaterialUP/CreateOrUpdateRawMaterialReconcilliation", data=data)
+		res =  self.req("POST", "/userportal/RawMaterialUP/CreateOrUpdateRawMaterialReconcilliation", data=data)
 		return res
 
 

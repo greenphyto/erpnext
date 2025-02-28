@@ -1409,12 +1409,14 @@ def _update_foms_stock_recon(log, api=None):
 		if d.foms_sync:
 			continue
 
-		item_id = frappe.db.get_value("Item", d.item_code, "foms_raw_id", debug=1)
+		item_id = frappe.db.get_value("Item", d.item_code, "foms_raw_id", debug=0)
 		batch_id = frappe.db.get_value("Batch", d.batch_no, "foms_id")
-		qty_adjust = d.quantity_difference
+		qty_adjust = flt(d.quantity_difference)
+		reason = f"Stock Recon {doc.name} from ERP"
 		if doc.docstatus == 2:
-			qty_adjust *= -1
-		res = api.update_batch_recon(item_id, batch_id, qty_adjust)
+			qty_adjust = -1 * qty_adjust
+			reason = f"[Cancel] Stock Recon {doc.name} from ERP"
+		res = api.update_batch_recon(item_id, batch_id, qty_adjust, reason)
 		if res:
 			d.db_set("foms_sync", 1)
 			success += 1
