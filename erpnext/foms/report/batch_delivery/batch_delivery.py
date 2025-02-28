@@ -44,10 +44,10 @@ class Report():
 		self.raw_data = frappe.db.sql("""
 			SELECT 
 				b.name AS batch_no,
-				b.item_name as item_code,
+				b.item_name AS item_code,
 				b.expiry_date,
 				d.name AS delivery_note,
-				d.delivery_completed_at as delivery_date,
+				d.delivery_completed_at AS delivery_date,
 				d.customer,
 				i.uom,
 				i.qty,
@@ -55,19 +55,58 @@ class Report():
 			FROM
 				tabBatch AS b
 					LEFT JOIN
-				`tabDelivery Note Item` i ON i.batch_no = b.name
+				`tabItem` it ON it.name = b.item
 					LEFT JOIN
-				`tabDelivery Note` d ON d.name = i.parent
+				`tabDelivery Note Item` i ON i.batch_no = b.name
+					INNER JOIN
+				`tabDelivery Note` d ON d.name = i.parent AND d.docstatus = 1
+
 			WHERE
-				i.docstatus = 1
-					AND i.batch_no IS NOT NULL
+				b.docstatus = 0
+				AND it.item_group = 'Products' 
 				{}
 			ORDER BY b.expiry_date DESC , i.batch_no
 		""".format(self.cond), self.filters, as_dict=1, debug=0)
 		self.get_qty_prod_map()
+		self.get_scrap_data()
+
+	def get_scrap_data(self):
+		self.qty_scrap = {}
+		temp = frappe.db.sql("""
+			SELECT 
+				b.name AS batch_no,
+				b.item_name AS item_code,
+				b.expiry_date,
+				d.name AS stock_entry,
+				d.posting_date AS delivery_date,
+				i.uom,
+				i.qty,
+				u.conversion_factor,
+				i.qty / u.conversion_factor AS qty_pack,
+				u.uom
+			FROM
+				tabBatch AS b
+					LEFT JOIN
+				`tabItem` it ON it.name = b.item
+					LEFT JOIN
+				`tabStock Entry Detail` i ON i.batch_no = b.name
+					INNER JOIN
+				`tabStock Entry` d ON d.name = i.parent AND d.docstatus = 1
+					LEFT JOIN
+				`tabUOM Conversion Detail` u ON u.parent = it.name
+					AND u.uom = it.default_packaging
+			WHERE
+				b.docstatus = 0
+					AND it.item_group = 'Products'
+					AND i.t_warehouse IS NULL
+		""", as_dict=1)
+
+		for d in temp:
+			self.qty_scrap[d.batch_no] = d
+		
 
 	def get_qty_prod_map(self):
-		self.qty_map = {}
+		self.qty_map = frappe._dict({})
 		data = frappe.db.sql("""
 			SELECT 
 				l.batch_no,
@@ -118,6 +157,17 @@ class Report():
 				continue
 
 			if now_batch:
+				# scrap issue
+				scrap_data = self.qty_scrap.get(d.batch_no)
+				if scrap_data:
+					self.data.append({
+						"delivery_note":scrap_data.stock_entry,
+						"delivery_date":scrap_data.delivery_date,
+						"qty":scrap_data.qty_pack,
+						"uom":scrap_data.uom
+					})
+					total_qty_sent += flt(scrap_data.qty_pack)
+					total_qty_sent_kg += flt(scrap_data.qty)
 				self.data.append({"item_code":"Qty Left", "prod_qty":flt(temp.get("qty"))-total_qty_sent, "prod_qty_kg":flt(temp.get("qty_kg"))-total_qty_sent_kg, "qty":total_qty_sent})
 				total_qty_sent = 0
 				total_qty_sent_kg = 0
@@ -128,12 +178,23 @@ class Report():
 			temp = self.qty_map.get(d.batch_no) or {}
 			d.prod_qty = flt(temp.get("qty"))
 			d.prod_qty_kg = flt(temp.get("qty_kg"))
+			d.delivery_note = d.delivery_note or temp.voucher_type
 			d.wo_id = temp.get("wo_id")
 			d.lot_id = temp.get("lot_id")
 			added.append(d.batch_no)
 			self.data.append(d)
 
 		if self.raw_data:
+			scrap_data = self.qty_scrap.get(now_batch)
+			if scrap_data:
+				self.data.append({
+					"delivery_note":scrap_data.stock_entry,
+					"delivery_date":scrap_data.delivery_date,
+					"qty":scrap_data.qty_pack,
+					"uom":scrap_data.uom
+				})
+				total_qty_sent += flt(scrap_data.qty_pack)
+				total_qty_sent_kg += flt(scrap_data.qty)
 			self.data.append({"item_code":"Qty Left", "prod_qty":flt(temp.get("qty"))-total_qty_sent, "prod_qty_kg":flt(temp.get("qty_kg"))-total_qty_sent_kg, "qty":total_qty_sent})
 
 
