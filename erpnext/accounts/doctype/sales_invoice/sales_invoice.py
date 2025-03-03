@@ -254,7 +254,6 @@ class SalesInvoice(SellingController):
 		self.calculate_taxes_and_totals()
 	
 	def before_insert(self):
-		super(SalesInvoice, self).before_insert()
 		if self.is_return:
 			self.naming_series = "CN.###./.YYYY"
 
