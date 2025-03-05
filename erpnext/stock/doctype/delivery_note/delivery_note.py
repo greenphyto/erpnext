@@ -87,7 +87,6 @@ class DeliveryNote(SellingController):
 			)
 
 	def before_insert(self):
-		super(DeliveryNote, self).before_insert()
 		if self.is_return:
 			self.naming_series = "DO-RET-.YYYY.-.###"
 

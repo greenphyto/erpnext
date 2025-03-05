@@ -435,7 +435,7 @@ scheduler_events = {
 		"0/30 * * * *": [
 			"erpnext.utilities.doctype.video.video.update_youtube_data",
 		],
-        "55 23 * * *": [
+        "0 5 * * *": [
 			"erpnext.foms.doctype.minio_backup_settings.minio_backup_settings.upload_backup",
 		],
 		# Hourly but offset by 30 minutes
