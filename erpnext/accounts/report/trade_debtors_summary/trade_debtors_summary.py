@@ -118,7 +118,7 @@ class TradeDebtorsSummary(DebtorCreditorReport):
 					"paid_in_account_currency":0.0,
 					"credit_note_in_account_currency":0.0,
 					"outstanding_in_account_currency":0.0,
-					"not_due_date":0.0,
+					"not_due_yet":0.0,
 					"range1": 0.0,
 					"range2": 0.0,
 					"range3": 0.0,
@@ -226,7 +226,7 @@ class TradeDebtorsSummary(DebtorCreditorReport):
 		)
 
 	def setup_ageing_columns(self): 
-		self.add_column(label=_("Not Due Date"), fieldname="not_due_date", fieldtype="Currency", options="currency")
+		self.add_column(label=_("Not Due Yet"), fieldname="not_due_yet", fieldtype="Currency", options="currency")
 		for i, label in enumerate(
 			[
 				"0-{range1}".format(range1=self.filters["range1"]),

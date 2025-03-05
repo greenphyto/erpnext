@@ -159,7 +159,7 @@ class DebtorCreditorReport(object):
 			"credit_note_in_account_currency",
 			"outstanding",
 			"outstanding_in_account_currency",
-			"not_due_date",
+			"not_due_yet",
 			"range1",
 			"range2",
 			"range3",
@@ -651,12 +651,12 @@ class DebtorCreditorReport(object):
 
 		row.age = (getdate(self.age_as_on) - getdate(entry_date)).days or 0
 		
-		row.not_due_date = flt(row.get("not_due_date"))
+		row.not_due_yet = flt(row.get("not_due_yet"))
 		if row.age < 0:
 			if self.filters.show_original_currency:
-				row.not_due_date += row.outstanding_in_account_currency
+				row.not_due_yet += row.outstanding_in_account_currency
 			else:
-				row.not_due_date += row.outstanding
+				row.not_due_yet += row.outstanding
 		
 		index = None
 
@@ -1065,7 +1065,7 @@ class DebtorCreditorReport(object):
 		# for chartss
 		self.ageing_column_labels = []
 		self.add_column(label=_("Age {} (Days)".format(self.filters.ageing_based_on)), fieldname="age", fieldtype="Int", width=140)
-		self.add_column(label=_("Not Due Date"), fieldname="not_due_date", fieldtype="Currency", options="currency")
+		self.add_column(label=_("Not Due Yet"), fieldname="not_due_yet", fieldtype="Currency", options="currency")
 
 		for i, label in enumerate(
 			[
