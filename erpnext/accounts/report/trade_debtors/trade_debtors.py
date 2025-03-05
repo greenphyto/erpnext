@@ -650,7 +650,6 @@ class DebtorCreditorReport(object):
 			return
 
 		row.age = (getdate(self.age_as_on) - getdate(entry_date)).days or 0
-		print((getdate(self.age_as_on) - getdate(entry_date)).days, getdate(self.age_as_on), getdate(entry_date), row.voucher_no)
 		
 		row.not_due_date = flt(row.get("not_due_date"))
 		if row.age < 0:
