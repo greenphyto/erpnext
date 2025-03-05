@@ -159,6 +159,7 @@ class DebtorCreditorReport(object):
 			"credit_note_in_account_currency",
 			"outstanding",
 			"outstanding_in_account_currency",
+			"not_due_date",
 			"range1",
 			"range2",
 			"range3",
@@ -640,6 +641,7 @@ class DebtorCreditorReport(object):
 
 		row.total_due = row.range1 + row.range2 + row.range3 + row.range4 + row.range5
 
+	# here
 	def get_ageing_data(self, entry_date, row):
 		# [0-30, 30-60, 60-90, 90-120, 120-above]
 		row.range1 = row.range2 = row.range3 = row.range4 = row.range5 = 0.0
@@ -648,6 +650,15 @@ class DebtorCreditorReport(object):
 			return
 
 		row.age = (getdate(self.age_as_on) - getdate(entry_date)).days or 0
+		print((getdate(self.age_as_on) - getdate(entry_date)).days, getdate(self.age_as_on), getdate(entry_date), row.voucher_no)
+		
+		row.not_due_date = flt(row.get("not_due_date"))
+		if row.age < 0:
+			if self.filters.show_original_currency:
+				row.not_due_date += row.outstanding_in_account_currency
+			else:
+				row.not_due_date += row.outstanding
+		
 		index = None
 
 		if not (
@@ -1054,7 +1065,8 @@ class DebtorCreditorReport(object):
 	def setup_ageing_columns(self):
 		# for chartss
 		self.ageing_column_labels = []
-		self.add_column(label=_("Age (Days)"), fieldname="age", fieldtype="Int", width=80)
+		self.add_column(label=_("Age {} (Days)".format(self.filters.ageing_based_on)), fieldname="age", fieldtype="Int", width=140)
+		self.add_column(label=_("Not Due Date"), fieldname="not_due_date", fieldtype="Currency", options="currency")
 
 		for i, label in enumerate(
 			[
