@@ -139,7 +139,7 @@
    "options": "Company"
   },
   {
-   "depends_on": "eval:doc.asset_owner == \"Supplier\"",
+   "allow_on_submit": 1,
    "fieldname": "supplier",
    "fieldtype": "Link",
    "label": "Supplier",
@@ -584,7 +584,7 @@
    "link_fieldname": "asset"
   }
  ],
- "modified": "2024-07-17 12:28:34.537260",
+ "modified": "2025-03-05 14:44:53.559258",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",
