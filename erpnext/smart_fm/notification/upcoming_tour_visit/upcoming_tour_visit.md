@@ -42,7 +42,12 @@
                 <li><strong>Digital Team IC:</strong> {{ doc.digital_team_ic }}</li>
                 <li><strong>VIP Status:</strong> {{ doc.vip_status }}</li>
                 <li><strong>Tour Route:</strong> {{ doc.tour_type }}</li>
-                <li><strong>Packages of Vegetables to Prepare:</strong> {{ doc.vegetable_packages }}</li>
+                <li>
+                    <strong>Packages of Vegetables to Prepare:</strong> 
+                    {%- for item in doc.vegetable -%}
+                        {{ item.vegetable }} x{{ item.qty }},
+		            {%- endfor -%}
+                </li>
             </ul>
             <p>Thank you.</p>
         </div>
