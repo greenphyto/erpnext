@@ -13,7 +13,6 @@
   "col_break1",
   "delivery_date",
   "item_name",
-  "marketing_name",
   "section_break_5",
   "description",
   "item_group",
@@ -142,6 +141,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "item_code.item_name",
    "fieldname": "item_name",
    "fieldtype": "Data",
@@ -161,6 +161,7 @@
    "label": "Description"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "description",
    "fieldtype": "Text Editor",
    "label": "Description",
@@ -182,12 +183,14 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "image",
    "fieldtype": "Attach",
    "hidden": 1,
    "label": "Image"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "image_view",
    "fieldtype": "Image",
    "label": "Image View",
@@ -562,6 +565,7 @@
    "search_index": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "brand",
    "fieldtype": "Link",
    "hidden": 1,
@@ -912,19 +916,12 @@
    "label": "Lot ID",
    "no_copy": 1,
    "read_only": 1
-  },
-  {
-   "fetch_from": "item_code.marketing_name",
-   "fetch_if_empty": 1,
-   "fieldname": "marketing_name",
-   "fieldtype": "Data",
-   "label": "Marketing Name"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-02-26 12:29:10.135406",
+ "modified": "2025-03-06 15:11:59.820121",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

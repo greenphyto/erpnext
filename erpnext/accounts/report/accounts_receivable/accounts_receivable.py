@@ -160,6 +160,7 @@ class ReceivablePayableReport(object):
 			"paid",
 			"credit_note",
 			"outstanding",
+			"not_due_yet",
 			"range1",
 			"range2",
 			"range3",
@@ -642,6 +643,13 @@ class ReceivablePayableReport(object):
 		row.age = (getdate(self.age_as_on) - getdate(entry_date)).days or 0
 		index = None
 
+		row.not_due_yet = flt(row.get("not_due_yet"))
+		if row.age < 0:
+			if self.filters.show_original_currency:
+				row.not_due_yet += row.outstanding_in_account_currency
+			else:
+				row.not_due_yet += row.outstanding
+
 		if not (
 			self.filters.range1 and self.filters.range2 and self.filters.range3 and self.filters.range4
 		):
@@ -995,8 +1003,8 @@ class ReceivablePayableReport(object):
 	def setup_ageing_columns(self):
 		# for charts
 		self.ageing_column_labels = []
-		self.add_column(label=_("Age (Days)"), fieldname="age", fieldtype="Int", width=80)
-
+		self.add_column(label=_("Age {} (Days)".format(self.filters.ageing_based_on)), fieldname="age", fieldtype="Int", width=140)
+		self.add_column(label=_("Not Due Yet"), fieldname="not_due_yet", fieldtype="Currency", options="currency")
 		for i, label in enumerate(
 			[
 				"0-{range1}".format(range1=self.filters["range1"]),

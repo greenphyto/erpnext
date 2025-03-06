@@ -103,6 +103,7 @@ class AccountsReceivableSummary(ReceivablePayableReport):
 					"range1": 0.0,
 					"range2": 0.0,
 					"range3": 0.0,
+					"not_due_yet": 0.0,
 					"range4": 0.0,
 					"range5": 0.0,
 					"total_due": 0.0,
@@ -173,6 +174,7 @@ class AccountsReceivableSummary(ReceivablePayableReport):
 		)
 
 	def setup_ageing_columns(self):
+		self.add_column(label=_("Not Due Yet"), fieldname="not_due_yet", fieldtype="Currency", options="currency")
 		for i, label in enumerate(
 			[
 				"0-{range1}".format(range1=self.filters["range1"]),

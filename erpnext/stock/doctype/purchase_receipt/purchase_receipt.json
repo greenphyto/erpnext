@@ -213,6 +213,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "supplier_delivery_note",
    "fieldtype": "Data",
    "label": "Supplier Delivery Note"
@@ -297,6 +298,7 @@
    "label": "Supplier Address"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "supplier_address",
    "fieldtype": "Link",
    "label": "Supplier Address",
@@ -304,6 +306,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_person",
    "fieldtype": "Link",
    "label": "Contact Person",
@@ -311,12 +314,14 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "address_display",
    "fieldtype": "Small Text",
    "label": "Address",
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_display",
    "fieldtype": "Small Text",
    "in_global_search": 1,
@@ -324,12 +329,14 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_mobile",
    "fieldtype": "Small Text",
    "label": "Mobile No",
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_email",
    "fieldtype": "Small Text",
    "label": "Contact Email",
@@ -342,6 +349,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "shipping_address",
    "fieldtype": "Link",
    "label": "Shipping Address Template",
@@ -349,6 +357,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "shipping_address_display",
    "fieldtype": "Small Text",
    "label": "Shipping Address",
@@ -596,7 +605,6 @@
   {
    "fieldname": "taxes_charges_section",
    "fieldtype": "Section Break",
-   "hidden": 1,
    "hide_border": 1,
    "label": "Taxes and Charges",
    "oldfieldtype": "Section Break"
@@ -865,6 +873,7 @@
    "label": "Disable Rounded Total"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "tc_name",
    "fieldtype": "Link",
    "label": "Terms",
@@ -874,6 +883,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "terms",
    "fieldtype": "Text Editor",
    "label": "Terms and Conditions",
@@ -1013,6 +1023,7 @@
    "width": "30%"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "instructions",
    "fieldtype": "Small Text",
    "label": "Instructions",
@@ -1020,6 +1031,7 @@
    "oldfieldtype": "Text"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "remarks",
    "fieldtype": "Small Text",
    "label": "Remarks",
@@ -1047,6 +1059,7 @@
    "width": "50%"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "lr_no",
    "fieldtype": "Data",
    "label": "Vehicle Number",
@@ -1057,6 +1070,7 @@
    "width": "100px"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "lr_date",
    "fieldtype": "Date",
    "label": "Vehicle Date",
@@ -1067,6 +1081,7 @@
    "width": "100px"
   },
   {
+   "allow_on_submit": 1,
    "default": "0",
    "fetch_from": "supplier.is_internal_supplier",
    "fieldname": "is_internal_supplier",
@@ -1075,6 +1090,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "inter_company_reference",
    "fieldtype": "Link",
    "label": "Inter Company Reference",
@@ -1090,12 +1106,14 @@
    "options": "Barcode"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "billing_address",
    "fieldtype": "Link",
    "label": "Billing Address",
    "options": "Address"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "billing_address_display",
    "fieldtype": "Small Text",
    "label": "Billing Address",
@@ -1124,6 +1142,7 @@
    "options": "Warehouse"
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "supplier.represents_company",
    "fieldname": "represents_company",
    "fieldtype": "Link",
@@ -1200,6 +1219,7 @@
    "label": "Company Shipping Address"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "billing_address_section",
    "fieldtype": "Section Break",
    "label": "Company Billing Address"
@@ -1246,7 +1266,7 @@
  "idx": 261,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-25 14:47:38.012460",
+ "modified": "2025-03-06 15:07:14.463139",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Purchase Receipt",
