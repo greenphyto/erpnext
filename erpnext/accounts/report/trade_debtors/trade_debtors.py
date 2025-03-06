@@ -113,6 +113,8 @@ class DebtorCreditorReport(object):
 					party_account=ple.account,
 					posting_date=ple.posting_date,
 					account_currency=ple.account_currency,
+					account_code=ple.account_code,
+					account_name=ple.account_name,
 					remarks=ple.remarks,
 					invoiced=0.0,
 					paid=0.0,
@@ -702,6 +704,7 @@ class DebtorCreditorReport(object):
 			self.qb_selection_filter.append(self.ple.posting_date.lte(self.filters.report_date))
 
 		ple = qb.DocType("Payment Ledger Entry")
+		acc_tab = qb.DocType("Account")
 		party_table = qb.DocType(self.party_type)
 		field_code = "customer_code"  if self.party_type == "Customer" else "supplier_code"
 		query = (
@@ -722,9 +725,12 @@ class DebtorCreditorReport(object):
 				ple.amount_in_account_currency,
 				ple.remarks,
 				ple.delinked,
-				party_table[field_code].as_("party_code")
+				party_table[field_code].as_("party_code"),
+				acc_tab.account_number.as_("account_code"),
+				acc_tab.account_name
 			)
 			.left_join(party_table).on(ple.party == party_table.name)
+			.left_join(acc_tab).on(acc_tab.name == ple.account)
 			.where(ple.delinked == 0)
 			.where(
 				((ple.voucher_type == "Journal Entry") & (ple.account == self.against_account)) |
@@ -934,12 +940,26 @@ class DebtorCreditorReport(object):
 			fieldtype="Data",
 			width=100,
 		)
+		# self.add_column(
+		# 	label="Receivable Account" if self.party_type == "Customer" else "Payable Account",
+		# 	fieldname="party_account",
+		# 	fieldtype="Link",
+		# 	options="Account",
+		# 	width=280,
+		# )
+		self.add_column(
+			label="Acc. Code" ,
+			fieldname="account_code",
+			fieldtype="Data",
+			options="",
+			width=100,
+		)
 		self.add_column(
 			label="Receivable Account" if self.party_type == "Customer" else "Payable Account",
-			fieldname="party_account",
-			fieldtype="Link",
-			options="Account",
-			width=280,
+			fieldname="account_name",
+			fieldtype="Data",
+			options="",
+			width=200,
 		)
 
 		if self.party_naming_by == "Naming Series":

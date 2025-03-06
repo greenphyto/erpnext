@@ -134,7 +134,7 @@ class TradeDebtorsSummary(DebtorCreditorReport):
 		keys = (row.party, row.party_account)
 		self.party_total[keys].currency = row.currency
 
-		for key in ("territory", "customer_group", "supplier_group", "party_code"):
+		for key in ("territory", "customer_group", "supplier_group", "party_code", "account_code", "account_name"):
 			if row.get(key):
 				self.party_total[keys][key] = row.get(key)
 
@@ -158,12 +158,26 @@ class TradeDebtorsSummary(DebtorCreditorReport):
 			width=100,
 		)
 
+		# self.add_column(
+		# 	label="Receivable Account" if self.party_type == "Customer" else "Payable Account",
+		# 	fieldname="party_account",
+		# 	fieldtype="Link",
+		# 	options="Account",
+		# 	width=280,
+		# )
+		self.add_column(
+			label="Acc. Code" ,
+			fieldname="account_code",
+			fieldtype="Data",
+			options="",
+			width=100,
+		)
 		self.add_column(
 			label="Receivable Account" if self.party_type == "Customer" else "Payable Account",
-			fieldname="party_account",
-			fieldtype="Link",
-			options="Account",
-			width=280,
+			fieldname="account_name",
+			fieldtype="Data",
+			options="",
+			width=200,
 		)
 
 		if self.party_naming_by == "Naming Series":
