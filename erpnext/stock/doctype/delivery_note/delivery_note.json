@@ -14,19 +14,15 @@
   "organization_name",
   "tax_id",
   "customer_name",
-  "sales_order_no",
-  "sales_invoice_no",
-  "po_no",
-  "po_date",
   "column_break1",
   "posting_date",
   "posting_time",
   "posting_datetime",
   "set_posting_time",
-  "delivery_completed_at",
   "column_break_10",
   "company",
   "amended_from",
+  "delivery_completed_at",
   "delivery_completed_by",
   "is_return",
   "issue_credit_note",
@@ -144,6 +140,10 @@
   "transporter_name",
   "driver_name",
   "lr_date",
+  "customer_po_details",
+  "po_no",
+  "column_break_17",
+  "po_date",
   "sales_team_section_break",
   "sales_partner",
   "amount_eligible_for_commission",
@@ -323,11 +323,8 @@
   {
    "allow_on_submit": 1,
    "fieldname": "po_no",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
+   "fieldtype": "Small Text",
    "label": "Customer's Purchase Order No",
-   "no_amend_copy": 1,
    "no_copy": 1,
    "oldfieldname": "po_no",
    "oldfieldtype": "Data",
@@ -344,10 +341,10 @@
    "oldfieldtype": "Data",
    "print_hide": 1,
    "print_width": "100px",
-   "read_only": 1,
    "width": "100px"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "customer",
    "fieldname": "contact_info",
    "fieldtype": "Section Break",
@@ -355,6 +352,7 @@
    "options": "fa fa-bullhorn"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "shipping_address_name",
    "fieldtype": "Link",
    "label": "Shipping Address",
@@ -363,12 +361,14 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "shipping_address",
    "fieldtype": "Small Text",
    "label": "Shipping Address",
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_person",
    "fieldtype": "Link",
    "label": "Contact Person",
@@ -376,6 +376,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_display",
    "fieldtype": "Small Text",
    "in_global_search": 1,
@@ -383,6 +384,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_mobile",
    "fieldtype": "Small Text",
    "hidden": 1,
@@ -390,6 +392,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_email",
    "fieldtype": "Data",
    "hidden": 1,
@@ -405,6 +408,7 @@
    "width": "50%"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "customer",
    "fieldname": "customer_address",
    "fieldtype": "Link",
@@ -419,18 +423,21 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "address_display",
    "fieldtype": "Small Text",
    "label": "Billing Address",
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "company_address",
    "fieldtype": "Link",
    "label": "Company Address Name",
    "options": "Address"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "company_address_display",
    "fieldtype": "Small Text",
    "label": "Company Address",
@@ -551,6 +558,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "collapsible": 1,
    "collapsible_depends_on": "packed_items",
    "depends_on": "packed_items",
@@ -562,6 +570,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "packed_items",
    "fieldname": "packed_items",
    "fieldtype": "Table",
@@ -572,6 +581,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "product_bundle_help",
    "fieldtype": "HTML",
    "label": "Product Bundle Help",
@@ -657,6 +667,7 @@
    "hidden": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "shipping_rule",
    "fieldtype": "Link",
    "hidden": 1,
@@ -880,6 +891,7 @@
    "width": "150px"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "tc_name",
    "fieldtype": "Link",
    "label": "Terms",
@@ -906,6 +918,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "transporter",
    "fieldtype": "Link",
    "label": "Transporter",
@@ -915,6 +928,7 @@
    "width": "150px"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "driver",
    "fieldtype": "Link",
    "label": "Driver",
@@ -922,6 +936,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "lr_no",
    "fieldtype": "Data",
    "label": "Transport Receipt No",
@@ -932,6 +947,7 @@
    "width": "100px"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "vehicle_no",
    "fieldtype": "Data",
    "label": "Vehicle No",
@@ -944,6 +960,7 @@
    "width": "50%"
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "transporter.name",
    "fieldname": "transporter_name",
    "fieldtype": "Data",
@@ -952,6 +969,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "driver.full_name",
    "fieldname": "driver_name",
    "fieldtype": "Data",
@@ -959,6 +977,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "default": "Today",
    "fieldname": "lr_date",
    "fieldtype": "Date",
@@ -987,6 +1006,7 @@
    "options": "Project"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "campaign",
    "fieldtype": "Link",
    "label": "Campaign",
@@ -996,6 +1016,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "source",
    "fieldtype": "Link",
    "label": "Source",
@@ -1021,6 +1042,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "customer_group",
    "fieldtype": "Link",
    "hidden": 1,
@@ -1029,6 +1051,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "territory",
    "fieldtype": "Link",
    "label": "Territory",
@@ -1064,6 +1087,7 @@
    "report_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "language",
    "fieldtype": "Data",
    "label": "Print Language",
@@ -1119,6 +1143,7 @@
    "depends_on": "eval:!doc.__islocal",
    "fieldname": "per_installed",
    "fieldtype": "Percent",
+   "in_list_view": 1,
    "label": "% Installed",
    "no_copy": 1,
    "oldfieldname": "per_installed",
@@ -1127,6 +1152,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "installation_status",
    "fieldtype": "Select",
    "hidden": 1,
@@ -1138,6 +1164,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "excise_page",
    "fieldtype": "Data",
    "hidden": 1,
@@ -1147,6 +1174,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "instructions",
    "fieldtype": "Text",
    "label": "Instructions",
@@ -1159,6 +1187,7 @@
    "label": "Subscription Section"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "auto_repeat",
    "fieldtype": "Link",
    "label": "Auto Repeat",
@@ -1178,6 +1207,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "sales_partner",
    "fieldtype": "Link",
    "label": "Sales Partner",
@@ -1235,6 +1265,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "pick_list",
    "fieldtype": "Link",
    "hidden": 1,
@@ -1243,6 +1274,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "default": "0",
    "fetch_from": "customer.is_internal_customer",
    "fieldname": "is_internal_customer",
@@ -1251,12 +1283,14 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "inter_company_reference",
    "fieldtype": "Link",
    "label": "Inter Company Reference",
    "options": "Purchase Receipt"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:!doc.__islocal",
    "fieldname": "per_returned",
    "fieldtype": "Percent",
@@ -1278,6 +1312,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "description": "Company which internal customer represents.",
    "fetch_from": "customer.represents_company",
    "fieldname": "represents_company",
@@ -1295,6 +1330,7 @@
    "label": "Disable Rounded Total"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "dispatch_address_name",
    "fieldtype": "Link",
    "label": "Dispatch Address Name",
@@ -1302,6 +1338,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "dispatch_address_name",
    "fieldname": "dispatch_address",
    "fieldtype": "Small Text",
@@ -1347,6 +1384,7 @@
    "label": "More Info"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "connections_tab",
    "fieldtype": "Tab Break",
    "label": "Connections",
@@ -1411,19 +1449,17 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
-   "no_amend_copy": 1,
-   "no_copy": 1,
    "read_only": 1
   },
   {
    "allow_on_submit": 1,
    "fieldname": "delivery_completed_at",
    "fieldtype": "Datetime",
-   "in_list_view": 1,
-   "label": "Delivery Date",
+   "label": "Delivery Completed at",
    "read_only": 1
   },
   {
@@ -1440,33 +1476,38 @@
    "label": "Signature Details"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "signature",
    "fieldtype": "Signature",
    "label": "Signature"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "column_break_161",
    "fieldtype": "Column Break",
    "label": "Attachment"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "attachment",
    "fieldtype": "Attach Image",
-   "hidden": 1,
    "label": "Attachment"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "attachment_preview",
    "fieldtype": "Image",
    "label": "Attachment Preview",
    "options": "attachment"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "signature_by",
    "fieldtype": "Data",
    "label": "Signature By"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "taken_at",
    "fieldtype": "Datetime",
    "label": "Taken At"
@@ -1505,26 +1546,22 @@
    "label": "Organization Name"
   },
   {
-   "fieldname": "sales_order_no",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Sales Order No",
-   "read_only": 1
+   "allow_on_submit": 1,
+   "collapsible": 1,
+   "fieldname": "customer_po_details",
+   "fieldtype": "Section Break",
+   "label": "Customer PO Details"
   },
   {
-   "depends_on": "doc.sales_invoice_no",
-   "fieldname": "sales_invoice_no",
-   "fieldtype": "Data",
-   "label": "Sales Invoice No",
-   "read_only": 1
+   "fieldname": "column_break_17",
+   "fieldtype": "Column Break"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-20 20:19:30.066390",
+ "modified": "2025-03-06 15:21:34.360565",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

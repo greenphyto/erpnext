@@ -355,6 +355,7 @@
    "width": "100px"
   },
   {
+   "allow_on_submit": 1,
    "collapsible": 1,
    "depends_on": "customer",
    "fieldname": "contact_info",
@@ -384,6 +385,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_person",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -393,6 +395,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_display",
    "fieldtype": "Small Text",
    "hide_days": 1,
@@ -402,6 +405,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_mobile",
    "fieldtype": "Small Text",
    "hide_days": 1,
@@ -410,6 +414,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_email",
    "fieldtype": "Data",
    "hidden": 1,
@@ -421,6 +426,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "company_address_display",
    "fieldtype": "Small Text",
    "hide_days": 1,
@@ -429,6 +435,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "company_address",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -465,6 +472,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "customer_group",
    "fieldtype": "Link",
    "hidden": 1,
@@ -475,6 +483,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "territory",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -737,6 +746,7 @@
    "hide_seconds": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "shipping_rule",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -965,6 +975,7 @@
    "width": "150px"
   },
   {
+   "allow_on_submit": 1,
    "description": "In Words will be visible once you save the Sales Order.",
    "fieldname": "base_in_words",
    "fieldtype": "Data",
@@ -1051,6 +1062,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "collapsible": 1,
    "collapsible_depends_on": "packed_items",
    "depends_on": "packed_items",
@@ -1064,6 +1076,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "packed_items",
    "fieldname": "packed_items",
    "fieldtype": "Table",
@@ -1074,6 +1087,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "payment_schedule_section",
    "fieldtype": "Tab Break",
    "hide_days": 1,
@@ -1081,6 +1095,7 @@
    "label": "Terms"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "payment_terms_template",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -1090,6 +1105,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "payment_schedule",
    "fieldtype": "Table",
    "hide_days": 1,
@@ -1110,6 +1126,7 @@
    "options": "fa fa-legal"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "tc_name",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -1191,6 +1208,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "campaign",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -1486,6 +1504,7 @@
    "label": "Update Auto Repeat Reference"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_phone",
    "fieldtype": "Data",
    "hide_days": 1,
@@ -1494,6 +1513,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "default": "0",
    "fieldname": "skip_delivery_note",
    "fieldtype": "Check",
@@ -1504,6 +1524,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "default": "0",
    "fetch_from": "customer.is_internal_customer",
    "fieldname": "is_internal_customer",
@@ -1512,6 +1533,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "customer.represents_company",
    "fieldname": "represents_company",
    "fieldtype": "Link",
@@ -1591,6 +1613,7 @@
    "show_dashboard": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "payment_terms_section",
    "fieldtype": "Section Break",
    "label": "Payment Terms"
@@ -1605,6 +1628,7 @@
    "label": "Billing Address"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "shipping_address_column",
    "fieldtype": "Section Break",
    "label": "Shipping Address"
@@ -1664,6 +1688,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "request_no",
    "fieldtype": "Link",
    "label": "Request No",
@@ -1677,6 +1702,7 @@
    "label": "FOMS Details"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
@@ -1685,6 +1711,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "req_id",
    "fieldtype": "Data",
    "label": "REQ ID",
@@ -1696,7 +1723,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-20 20:19:47.472399",
+ "modified": "2025-03-06 15:11:58.829302",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

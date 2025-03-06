@@ -278,6 +278,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "tax_id",
    "fieldtype": "Data",
    "hide_days": 1,
@@ -394,6 +395,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "due_date",
    "fieldtype": "Date",
    "hide_days": 1,
@@ -440,6 +442,7 @@
    "label": "Update Billed Amount in Sales Order"
   },
   {
+   "allow_on_submit": 1,
    "collapsible": 1,
    "collapsible_depends_on": "po_no",
    "fieldname": "customer_po_details",
@@ -480,6 +483,7 @@
    "label": "Billing Address"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "customer_address",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -489,6 +493,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "address_display",
    "fieldtype": "Small Text",
    "hide_days": 1,
@@ -497,6 +502,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_person",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -507,6 +513,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_display",
    "fieldtype": "Small Text",
    "hide_days": 1,
@@ -515,6 +522,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_mobile",
    "fieldtype": "Small Text",
    "hidden": 1,
@@ -524,6 +532,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "contact_email",
    "fieldtype": "Data",
    "hidden": 1,
@@ -535,6 +544,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "territory",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -550,6 +560,7 @@
    "hide_seconds": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "shipping_address_name",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -559,6 +570,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "shipping_address",
    "fieldtype": "Small Text",
    "hide_days": 1,
@@ -568,6 +580,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "company_address",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -577,6 +590,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "company_address_display",
    "fieldtype": "Small Text",
    "hide_days": 1,
@@ -710,6 +724,7 @@
   },
   {
    "allow_bulk_edit": 1,
+   "allow_on_submit": 1,
    "fieldname": "items",
    "fieldtype": "Table",
    "hide_days": 1,
@@ -736,6 +751,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "packed_items",
    "fieldname": "packing_list",
    "fieldtype": "Section Break",
@@ -746,6 +762,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "packed_items",
    "fieldname": "packed_items",
    "fieldtype": "Table",
@@ -894,6 +911,7 @@
    "hide_seconds": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "shipping_rule",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -1221,6 +1239,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "in_words",
    "fieldtype": "Small Text",
    "hide_days": 1,
@@ -1305,6 +1324,7 @@
    "label": "Payment Terms"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:(!doc.is_pos && !doc.is_return)",
    "fieldname": "payment_terms_template",
    "fieldtype": "Link",
@@ -1316,6 +1336,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:(!doc.is_pos && !doc.is_return)",
    "fieldname": "payment_schedule",
    "fieldtype": "Table",
@@ -1426,6 +1447,7 @@
    "hide_seconds": 1
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "is_pos",
    "fieldname": "change_amount",
    "fieldtype": "Currency",
@@ -1437,6 +1459,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "is_pos",
    "fieldname": "account_for_change_amount",
    "fieldtype": "Link",
@@ -1511,6 +1534,7 @@
    "oldfieldtype": "Section Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "tc_name",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -1522,6 +1546,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "terms",
    "fieldtype": "Text Editor",
    "hide_days": 1,
@@ -1531,6 +1556,7 @@
    "oldfieldtype": "Text Editor"
   },
   {
+   "allow_on_submit": 1,
    "collapsible": 1,
    "fieldname": "edit_printing_settings",
    "fieldtype": "Section Break",
@@ -1561,6 +1587,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "language",
    "fieldtype": "Data",
    "hide_days": 1,
@@ -1619,6 +1646,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "campaign",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -1630,6 +1658,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "default": "0",
    "fieldname": "is_discounted",
    "fieldtype": "Check",
@@ -1661,6 +1690,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "source",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -1729,6 +1759,7 @@
    "print_hide": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "remarks",
    "fieldtype": "Small Text",
    "hide_days": 1,
@@ -1905,6 +1936,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "default": "0",
    "fetch_from": "customer.is_internal_customer",
    "fieldname": "is_internal_customer",
@@ -1915,6 +1947,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "company.tax_id",
    "fieldname": "company_tax_id",
    "fieldtype": "Data",
@@ -1931,6 +1964,7 @@
    "options": "Account"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:doc.is_internal_customer",
    "description": "Company which internal customer represents",
    "fetch_from": "customer.represents_company",
@@ -2110,6 +2144,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "delivery_note",
    "fieldtype": "Data",
    "label": "Delivery Note"
@@ -2137,7 +2172,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2024-12-19 11:43:05.677343",
+ "modified": "2025-03-06 15:17:23.436041",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",
