@@ -626,7 +626,7 @@ erpnext.utils.do_update_child_items = function(opts) {
 		primary_action_label: __('Update')
 	});
 
-	console.log(dialog)
+	// console.log(dialog)
 
 	frm.doc[child_docname].forEach(d => {
 		dialog.fields_dict.trans_items.df.data.push({
