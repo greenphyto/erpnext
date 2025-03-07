@@ -506,7 +506,32 @@ class DeliveryNote(SellingController):
 
 					# not yet for SO
 
+	@frappe.whitelist()
+	def make_only_return_qty(self, data):
+		# it will return qty before have sales invoice, after have sales invoice it should do Sales Return
+		# possibilities only for return qty (not adding)
+		sl_entries = []
+		for d in data:
+			d = frappe._dict(d)
+			row = self.get("items", {"name":d.docname})
+			if not row:
+				continue
+			row = row[0]
+			diff_qty = flt(d.return_qty)
+			if not diff_qty:
+				continue
 
+			item_row = frappe._dict(row.as_dict())
+			item_row.qty = diff_qty * -1
+			sle = self.get_sle_for_source_warehouse(item_row)
+			sl_entries.append(sle)
+
+			# row.qty = d.new_qty
+
+
+
+		self.make_sl_entries(sl_entries)
+		self.repost_future_sle_and_gle()
 
 def update_billed_amount_based_on_so(so_detail, update_modified=True):
 	from frappe.query_builder.functions import Sum
