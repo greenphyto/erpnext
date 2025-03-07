@@ -189,7 +189,33 @@ def get_gl_entries(filters, accounting_dimensions):
 			voucher_type, voucher_no,c.cost_center_name, c.cost_center_number, {dimension_fields}
 			cost_center, project,
 			against_voucher_type, against_voucher, gl.account_currency,
-			remarks, against,against_account,against_party, is_opening, gl.creation {select_fields}
+			remarks, against,against_account,against_party, is_opening, gl.creation,
+			CASE
+				WHEN
+					gl.voucher_type = 'Sales Invoice'
+				THEN
+					(SELECT 
+							GROUP_CONCAT(DISTINCT sii.item_name
+									ORDER BY sii.idx
+									SEPARATOR ', ')
+						FROM
+							`tabSales Invoice Item` sii
+						WHERE
+							sii.parent = gl.voucher_no)
+				WHEN
+					gl.voucher_type = 'Purchase Invoice'
+				THEN
+					(SELECT 
+							GROUP_CONCAT(DISTINCT pii.item_name
+									ORDER BY pii.idx
+									SEPARATOR ', ')
+						FROM
+							`tabPurchase Invoice Item` pii
+						WHERE
+							pii.parent = gl.voucher_no)
+				ELSE NULL
+			END AS description
+			{select_fields}
 		from `tabGL Entry` gl
 			left join `tabCost Center` c on c.name = gl.cost_center
 			left join `tabAccount` a on a.name = gl.account
@@ -202,7 +228,7 @@ def get_gl_entries(filters, accounting_dimensions):
 			order_by_statement=order_by_statement,
 		),
 		filters,
-		as_dict=1,
+		as_dict=1,debug=1
 	)
 
 	if filters.get("presentation_currency"):
@@ -597,6 +623,7 @@ def get_columns(filters):
 			},
 			{"label": _("Supplier Invoice No"), "fieldname": "bill_no", "fieldtype": "Data", "width": 100},
 			{"label": _("Remarks"), "fieldname": "remarks", "width": 400},
+			{"label": _("Description"), "fieldname": "description", "width": 400},
 		]
 	)
 
