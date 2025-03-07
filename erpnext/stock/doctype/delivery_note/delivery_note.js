@@ -128,7 +128,7 @@ frappe.ui.form.on("Delivery Note", {
 		}
 
 		if(frm.doc.docstatus === 1 && frm.doc.status !== 'Closed' && flt(frm.doc.per_billed, 6) < 100) {
-			frm.add_custom_button(__('Update Items'), () => {
+			frm.add_custom_button(__('Return Items'), () => {
 				erpnext.utils.do_update_child_items({
 					frm: frm,
 				})
@@ -571,19 +571,31 @@ erpnext.utils.do_update_child_items = function(opts) {
 		fieldtype:'Float',
 		fieldname:"qty",
 		default: 0,
-		read_only: 0,
+		read_only: 1,
 		in_list_view: 1,
 		label: __('Qty'),
 		precision: get_precision("qty")
 	}, {
-		fieldtype:'Currency',
-		fieldname:"rate",
-		options: "currency",
+		fieldtype:'Float',
+		fieldname:"return_qty",
+		default: 0,
+		read_only: 0,
+		in_list_view: 1,
+		label: __('Return Qty'),
+		precision: get_precision("qty"),
+		onchange: (el, grid)=>{
+			grid.doc.new_qty = flt(grid.doc.qty) - flt(grid.doc.return_qty);
+			grid.refresh();
+		}
+	}, {
+		fieldtype:'Float',
+		fieldname:"new_qty",
+		options: "",
 		default: 0,
 		read_only: 1,
 		in_list_view: 1,
-		label: __('Rate'),
-		precision: get_precision("rate")
+		label: __('New Qty'),
+		precision: get_precision("qty")
 	}];
 
 	const dialog = new frappe.ui.Dialog({
@@ -605,20 +617,23 @@ erpnext.utils.do_update_child_items = function(opts) {
 		],
 		primary_action: function() {
 			const trans_items = this.get_values()["trans_items"].filter((item) => !!item.item_code);
-			console.log("Change item", trans_items);
-			// frappe.call({
-			// 	method: 'erpnext.controllers.accounts_controller.update_child_qty_rate',
-			// 	freeze: true,
-			// 	args: {
-			// 		'parent_doctype': frm.doc.doctype,
-			// 		'trans_items': trans_items,
-			// 		'parent_doctype_name': frm.doc.name,
-			// 		'child_docname': child_docname
-			// 	},
-			// 	callback: function() {
-			// 		frm.reload_doc();
-			// 	}
-			// });
+			$.each(trans_items, (i, row)=>{
+				if (row.return_qty > row.qty){
+					frappe.throw(`Row ${row.idx}, ${row.item_code} Can't return more than actual qty`)
+					return
+				}
+			})
+			frappe.call({
+				method: 'make_only_return_qty',
+				doc:frm.doc,
+				freeze: true,
+				args: {
+					'data': trans_items,
+				},
+				callback: function() {
+					frm.reload_doc();
+				}
+			});
 			this.hide();
 			refresh_field("items");
 		},
@@ -634,6 +649,8 @@ erpnext.utils.do_update_child_items = function(opts) {
 			"name": d.name,
 			"item_code": d.item_code,
 			"qty": d.qty,
+			"return_qty":0,
+			"new_qty":d.qty,
 			"rate": d.rate,
 			"uom": d.uom
 		});
