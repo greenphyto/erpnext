@@ -11,6 +11,7 @@
   "has_item_scanned",
   "item_code",
   "item_name",
+  "marketing_name",
   "col_break1",
   "customer_item_code",
   "section_break_6",
@@ -78,6 +79,7 @@
   "pick_list_item",
   "section_break_40",
   "batch_no",
+  "foms_lot_name",
   "serial_no",
   "actual_batch_qty",
   "actual_qty",
@@ -184,6 +186,7 @@
    "label": "Quantity and Rate"
   },
   {
+   "columns": 1,
    "fieldname": "qty",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -835,13 +838,27 @@
    "fieldname": "material_request_item",
    "fieldtype": "Data",
    "label": "Material Request Item"
+  },
+  {
+   "fetch_from": "item_code.marketing_name",
+   "fieldname": "marketing_name",
+   "fieldtype": "Data",
+   "label": "Marketing Name"
+  },
+  {
+   "columns": 1,
+   "fieldname": "foms_lot_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "FOMS Lot ID",
+   "read_only": 1
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-03-06 15:12:01.976630",
+ "modified": "2025-03-10 12:45:07.176815",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note Item",
