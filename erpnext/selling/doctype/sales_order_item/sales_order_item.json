@@ -13,6 +13,7 @@
   "col_break1",
   "delivery_date",
   "item_name",
+  "marketing_name",
   "section_break_5",
   "description",
   "item_group",
@@ -898,6 +899,7 @@
    "label": "Is weight order?"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
@@ -916,12 +918,18 @@
    "label": "Lot ID",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.marketing_name",
+   "fieldname": "marketing_name",
+   "fieldtype": "Data",
+   "label": "Marketing Name"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-03-06 15:11:59.820121",
+ "modified": "2025-03-10 17:08:17.087386",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",
