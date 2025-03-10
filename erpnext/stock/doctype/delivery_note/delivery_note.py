@@ -526,12 +526,18 @@ class DeliveryNote(SellingController):
 			sle = self.get_sle_for_source_warehouse(item_row)
 			sl_entries.append(sle)
 
-			# row.qty = d.new_qty
+			row.qty = d.new_qty
+			row.db_update()
+			# print(531, row.item_code, row.qty, row.rate, row.amount)
 
+		self.calculate_taxes_and_totals()
+		for d in self.items:
+			d.db_update()
 
-
+		self.calculate_taxes_and_totals()
 		self.make_sl_entries(sl_entries)
 		self.repost_future_sle_and_gle()
+		self.db_update()
 
 def update_billed_amount_based_on_so(so_detail, update_modified=True):
 	from frappe.query_builder.functions import Sum
