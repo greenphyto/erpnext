@@ -50,7 +50,7 @@
  ],
  "login_required": 1,
  "max_attachment_size": 5,
- "modified": "2025-03-04 09:06:09.897507",
+ "modified": "2025-03-10 08:50:15.308808",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "tour-protocol-checklist",
@@ -109,18 +109,6 @@
    "max_length": 0,
    "max_value": 0,
    "options": "Email",
-   "read_only": 0,
-   "reqd": 0,
-   "show_in_filter": 0
-  },
-  {
-   "allow_read_on_all_link_options": 0,
-   "fieldname": "carplate_number",
-   "fieldtype": "Data",
-   "hidden": 0,
-   "label": "Carplate Number",
-   "max_length": 0,
-   "max_value": 0,
    "read_only": 0,
    "reqd": 0,
    "show_in_filter": 0
