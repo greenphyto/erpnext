@@ -9,7 +9,9 @@ from frappe.desk.notifications import clear_doctype_notifications
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.utils import get_fetch_values
 from frappe.utils import cint, flt
-
+from erpnext.accounts.general_ledger import make_reverse_gl_entries
+from erpnext.stock import get_warehouse_account_map, get_item_account
+from erpnext.accounts.general_ledger import make_gl_entries
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.controllers.selling_controller import SellingController
 from erpnext.stock.doctype.batch.batch import set_batch_nos
@@ -511,6 +513,7 @@ class DeliveryNote(SellingController):
 		# it will return qty before have sales invoice, after have sales invoice it should do Sales Return
 		# possibilities only for return qty (not adding)
 		sl_entries = []
+		changes = 1
 		for d in data:
 			d = frappe._dict(d)
 			row = self.get("items", {"name":d.docname})
@@ -521,23 +524,37 @@ class DeliveryNote(SellingController):
 			if not diff_qty:
 				continue
 
-			item_row = frappe._dict(row.as_dict())
-			item_row.qty = diff_qty * -1
-			sle = self.get_sle_for_source_warehouse(item_row)
-			sl_entries.append(sle)
-
 			row.qty = d.new_qty
+			row.returned_qty = diff_qty * -1
+			row.stock_qty = row.qty * flt(row.conversion_factor)
 			row.db_update()
-			# print(531, row.item_code, row.qty, row.rate, row.amount)
+			changes = True
 
-		self.calculate_taxes_and_totals()
-		for d in self.items:
-			d.db_update()
+		if changes:
+			# make_reverse_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
+			self.calculate_taxes_and_totals()
+			for d in self.items:
+				item_row = frappe._dict(d.as_dict())
+				item_row.qty = d.returned_qty * flt(d.conversion_factor)
+				item_row.is_return = 1
+				sle = self.get_sle_for_source_warehouse(item_row)
+				sle.dependant_sle_voucher_detail_no = d.name
+				sl_entries.append(sle)
+				d.db_update()
 
-		self.calculate_taxes_and_totals()
-		self.make_sl_entries(sl_entries)
-		self.repost_future_sle_and_gle()
-		self.db_update()
+			self.calculate_taxes_and_totals()
+			self.make_sl_entries(sl_entries)
+
+			# only make GL on return 
+			warehouse_account = get_warehouse_account_map(self.company)
+			gl_entries = self.get_gl_entries(warehouse_account, from_partial_return=True)
+			make_gl_entries(gl_entries)
+
+			self.repost_future_sle_and_gle()
+			self.db_update()
+			return True
+		else:
+			return False
 
 def update_billed_amount_based_on_so(so_detail, update_modified=True):
 	from frappe.query_builder.functions import Sum

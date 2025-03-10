@@ -133,11 +133,11 @@ class StockController(AccountsController):
 				row.serial_no = clean_serial_no_string(row.serial_no)
 
 	def get_gl_entries(
-		self, warehouse_account=None, default_expense_account=None, default_cost_center=None
+		self, warehouse_account=None, default_expense_account=None, default_cost_center=None, from_partial_return=False
 	):
 		if not warehouse_account:
 			warehouse_account = get_warehouse_account_map(self.company)
-		sle_map = self.get_stock_ledger_details()
+		sle_map = self.get_stock_ledger_details(from_partial_return=from_partial_return)
 		voucher_details = self.get_voucher_details(default_expense_account, default_cost_center, sle_map)
 
 		gl_list = []
@@ -257,7 +257,9 @@ class StockController(AccountsController):
 						).format(wh, self.company)
 					)
 
-		return process_gl_map(gl_list, precision=precision)
+		data = process_gl_map(gl_list, precision=precision)
+
+		return data
 
 	def get_debit_field_precision(self):
 		if not frappe.flags.debit_field_precision:
@@ -320,7 +322,7 @@ class StockController(AccountsController):
 
 		return list(items), list(warehouses)
 
-	def get_stock_ledger_details(self):
+	def get_stock_ledger_details(self, from_partial_return=False):
 		stock_ledger = {}
 		stock_ledger_entries = frappe.db.sql(
 			"""
@@ -338,7 +340,12 @@ class StockController(AccountsController):
 		)
 
 		for sle in stock_ledger_entries:
-			stock_ledger.setdefault(sle.voucher_detail_no, []).append(sle)
+			if from_partial_return:
+				if sle.actual_qty > 0:
+					stock_ledger.setdefault(sle.voucher_detail_no, []).append(sle)
+			else:
+				stock_ledger.setdefault(sle.voucher_detail_no, []).append(sle)
+
 		return stock_ledger
 
 	def make_batches(self, warehouse_field):
