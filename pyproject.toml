@@ -23,7 +23,8 @@ dependencies = [
     "tweepy~=3.10.0",
     "imgkit",
     "minio",
-    "python-barcode"
+    "python-barcode",
+    "openai"
 ]
 
 [build-system]
