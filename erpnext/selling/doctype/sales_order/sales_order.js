@@ -91,19 +91,20 @@ frappe.ui.form.on("Sales Order", {
 			return args;
 		}
 
-		if(frm.doc.docstatus === 1 && frm.doc.status !== 'Closed'
-			&& flt(frm.doc.per_delivered, 6) < 100 && flt(frm.doc.per_billed, 6) < 100 && cint(frm.doc.on_progress) == 0) {
-			frm.add_custom_button(__('Update Items'), () => {
-				erpnext.utils.update_child_items({
-					frm: frm,
-					child_docname: "items",
-					child_doctype: "Sales Order Detail",
-					cannot_add_row: false,
-					item_query:item_query,
-					uom_query:uom_query
-				})
-			});
-		}
+		// note: Hide Update items on Sales Order, 11-03-2025
+		// if(frm.doc.docstatus === 1 && frm.doc.status !== 'Closed'
+		// 	&& flt(frm.doc.per_delivered, 6) < 100 && flt(frm.doc.per_billed, 6) < 100 && cint(frm.doc.on_progress) == 0) {
+		// 	frm.add_custom_button(__('Update Items'), () => {
+		// 		erpnext.utils.update_child_items({
+		// 			frm: frm,
+		// 			child_docname: "items",
+		// 			child_doctype: "Sales Order Detail",
+		// 			cannot_add_row: false,
+		// 			item_query:item_query,
+		// 			uom_query:uom_query
+		// 		})
+		// 	});
+		// }
 
 		if (frm.doc.docstatus === 0 && frm.doc.is_internal_customer) {
 			frm.events.get_items_from_internal_purchase_order(frm);
