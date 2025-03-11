@@ -1101,9 +1101,15 @@ def _update_foms_sales_order(log, api=None):
 		stock_item = frappe.get_value("Item", d.item_code, "is_stock_item")
 		if not stock_item:
 			non_stock = True
-	
-	if non_stock:
+
+	is_product_bundle = len(doc.get("packed_items"))
+
+	if non_stock and not is_product_bundle:
 		return
+
+	table_field = "items"
+	if is_product_bundle:
+		table_field = "packed_items"
 	
 	if doc.docstatus == 1:
 		customer_foms_id = frappe.get_value("Customer", doc.customer, "foms_id")
@@ -1115,7 +1121,7 @@ def _update_foms_sales_order(log, api=None):
 
 		products = []
 		
-		for d in doc.get("items"):
+		for d in doc.get(table_field):
 			product_id = frappe.get_value("Item", d.item_code, "foms_product_id")
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
 			child_id = cint(d.get("foms_id"))
@@ -1160,7 +1166,7 @@ def _update_foms_sales_order(log, api=None):
 				item_code = frappe.get_value("Item", {"foms_product_id": cstr(d['productId'])})
 				packaging = frappe.get_value("Packaging", {"foms_id": cstr(d['packageId'])})
 				# key on product id, package id, uom, quantity, unit price
-				for row in doc.get("items", {
+				for row in doc.get(table_field, {
 					"item_code":item_code,
 					"uom":packaging
 				}):

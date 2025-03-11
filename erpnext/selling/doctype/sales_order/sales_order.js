@@ -73,9 +73,10 @@ frappe.ui.form.on("Sales Order", {
 	},
 	refresh: function(frm) {
 		var item_query = function(row) {
-			var filters = {"is_stock_item": 1, "is_fixed_asset": 0}
+			var filters = {"is_fixed_asset": 0}
 			if (!frm.doc.non_package_item){
 				filters['is_package_item']=1;
+				filters["is_stock_item"]=1;
 			}
 			return erpnext.queries.item(filters);
 		};
