@@ -76,6 +76,8 @@
   "column_break_65",
   "internal_staff_customer",
   "donation_customer",
+  "column_break_68",
+  "replacement_account",
   "auto_accounting_for_stock_settings",
   "enable_perpetual_inventory",
   "enable_provisional_accounting_for_non_stock_items",
@@ -823,6 +825,16 @@
    "options": "Customer"
   },
   {
+   "fieldname": "column_break_68",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "replacement_account",
+   "fieldtype": "Link",
+   "label": "Replacement Account",
+   "options": "Account"
+  },
+  {
    "fieldname": "production_loss_account",
    "fieldtype": "Link",
    "label": "Production Loss Account",
@@ -834,7 +846,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-01-24 15:50:39.788359",
+ "modified": "2025-03-12 11:31:24.640744",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

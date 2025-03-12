@@ -547,7 +547,29 @@ erpnext.buying.PurchaseOrderController = class PurchaseOrderController extends e
 	}
 
 	close_purchase_order(){
-		cur_frm.cscript.update_status('Close', 'Closed')
+		frappe.prompt(
+			[{ fieldname: "reason", fieldtype: "Small Text", label: "Closing Reason", reqd: 1 }],
+			function (val) {
+				var reason = `<b>Closing reason:</b> ${val.reason}`;
+				post_comment(reason);
+			},
+			"Sales Order Closing",
+			"Submit"
+		);
+
+		function post_comment(text){
+			frappe
+				.xcall("frappe.desk.form.utils.add_comment", {
+					reference_doctype: me.frm.doctype,
+					reference_name: me.frm.docname,
+					content: text,
+					comment_email: frappe.session.user,
+					comment_by: frappe.session.user_fullname,
+				})
+				.then((comment) => {
+					me.frm.cscript.update_status("Close", "Closed")
+				})
+		}
 	}
 
 	delivered_by_supplier(){
