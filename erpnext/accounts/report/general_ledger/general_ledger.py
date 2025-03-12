@@ -228,7 +228,7 @@ def get_gl_entries(filters, accounting_dimensions):
 			order_by_statement=order_by_statement,
 		),
 		filters,
-		as_dict=1,debug=1
+		as_dict=1,debug=0
 	)
 
 	if filters.get("presentation_currency"):
