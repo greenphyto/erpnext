@@ -345,7 +345,11 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 
 	donation_account = get_donation_expense_account(args.doctype, args.company, args.customer)
 
-	account = donation_account or expense_account or get_default_expense_account(args, item_defaults, item_group_defaults, brand_defaults)
+	replacement_account = ""
+	if args.get("is_replacement"):
+		replacement_account = frappe.get_value("Company", args.company, "sales_replacement_account")
+
+	account = replacement_account or donation_account or expense_account or get_default_expense_account(args, item_defaults, item_group_defaults, brand_defaults)
 
 	out = frappe._dict(
 		{

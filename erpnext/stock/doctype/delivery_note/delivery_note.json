@@ -25,6 +25,7 @@
   "delivery_completed_at",
   "delivery_completed_by",
   "is_return",
+  "is_replacement",
   "issue_credit_note",
   "return_against",
   "is_donation",
@@ -193,14 +194,14 @@
    "print_hide": 1
   },
   {
-   "default": "DO-.YYYY.-.###",
+   "default": "DO-.YYYY.-.#####",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "DO-.YYYY.-.###\nDO-RET-.YYYY.-.###\nGPO-.YYYY.-.###\nDON-.YYYY.-.###",
+   "options": "DO-.YYYY.-.#####\nDO-RPL-.YYYY.-.###\nGPO-.YYYY.-.###\nDON-.YYYY.-.###\nDO-RET-.YYYY.-.###",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1555,13 +1556,19 @@
   {
    "fieldname": "column_break_17",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_replacement",
+   "fieldtype": "Check",
+   "label": "Is Replacement"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-06 15:21:34.360565",
+ "modified": "2025-03-12 15:17:35.586216",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

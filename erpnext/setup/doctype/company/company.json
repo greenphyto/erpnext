@@ -76,6 +76,8 @@
   "column_break_65",
   "internal_staff_customer",
   "donation_customer",
+  "column_break_68",
+  "sales_replacement_account",
   "auto_accounting_for_stock_settings",
   "enable_perpetual_inventory",
   "enable_provisional_accounting_for_non_stock_items",
@@ -820,6 +822,16 @@
    "fieldtype": "Link",
    "label": "Donation Customer",
    "options": "Customer"
+  },
+  {
+   "fieldname": "column_break_68",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sales_replacement_account",
+   "fieldtype": "Link",
+   "label": "Sales Replacement Account",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-building",
@@ -827,7 +839,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-01-06 10:48:47.232112",
+ "modified": "2025-03-12 15:20:06.573304",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

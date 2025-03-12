@@ -82,7 +82,7 @@ frappe.ui.form.on("Delivery Note", {
 	},
 
 	is_donation: function(frm){
-		frm.set_value("naming_series", 'DON-.YYYY.-.###');
+		frm.set_value("naming_series", 'DON-.YYYY.-.#####');
 		frappe.db.get_value("Company", frm.doc.company, ["donation_customer", "donation_account"]).then(r=>{
 			frm.set_value("customer", r.message.donation_customer);
 			set_donation_expense(frm, r.message.donation_account);
@@ -94,6 +94,13 @@ frappe.ui.form.on("Delivery Note", {
 		frappe.db.get_value("Company", frm.doc.company, ["internal_staff_customer", "giveaway_account"]).then(r=>{
 			frm.set_value("customer", r.message.internal_staff_customer)
 			set_donation_expense(frm, r.message.giveaway_account);
+		});
+	},
+
+	is_replacement: function(frm){
+		frm.set_value("naming_series", 'DO-RPL-.YYYY.-.###');
+		frappe.db.get_value("Company", frm.doc.company, ["sales_replacement_account"]).then(r=>{
+			set_donation_expense(frm, r.message.sales_replacement_account);
 		});
 	},
 

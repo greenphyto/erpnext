@@ -179,6 +179,9 @@ class DeliveryNote(SellingController):
 		elif self.is_giveaway:
 			account = frappe.get_value("Company", self.company, "giveaway_account")
 
+		elif self.is_replacement:
+			account = frappe.get_value("Company", self.company, "sales_replacement_account")
+
 		if account:
 			for d in self.items:
 				d.expense_account = account
