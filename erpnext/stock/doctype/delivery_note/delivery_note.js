@@ -82,7 +82,7 @@ frappe.ui.form.on("Delivery Note", {
 	},
 
 	is_donation: function(frm){
-		frm.set_value("naming_series", 'DON-.YYYY.-.#####');
+		frm.set_value("naming_series", 'DON-.YYYY.-.###');
 		frappe.db.get_value("Company", frm.doc.company, ["donation_customer", "donation_account"]).then(r=>{
 			frm.set_value("customer", r.message.donation_customer);
 			set_donation_expense(frm, r.message.donation_account);
