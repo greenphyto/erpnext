@@ -868,6 +868,12 @@ def make_sales_return(source_name, target_doc=None):
 
 	return make_return_doc("Delivery Note", source_name, target_doc)
 
+@frappe.whitelist()
+def make_sales_replacement(source_name, target_doc=None):
+	from erpnext.controllers.sales_and_purchase_return import make_replacement_doc
+
+	return make_replacement_doc(source_name, target_doc)
+
 
 @frappe.whitelist()
 def update_delivery_note_status(docname, status):

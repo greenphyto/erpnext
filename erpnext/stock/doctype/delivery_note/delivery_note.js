@@ -200,6 +200,11 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 					me.make_sales_return() }, __('Create'));
 			}
 
+			if (doc.docstatus==1) {
+				this.frm.add_custom_button(__('Sales Replacement'), function() {
+					me.make_sales_replacement() }, __('Create'));
+			}
+
 			// if (doc.docstatus==1) {
 			// 	this.frm.add_custom_button(__('Delivery Trip'), function() {
 			// 		me.make_delivery_trip() }, __('Create'));
@@ -297,6 +302,13 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 	make_sales_return() {
 		frappe.model.open_mapped_doc({
 			method: "erpnext.stock.doctype.delivery_note.delivery_note.make_sales_return",
+			frm: this.frm
+		})
+	}
+
+	make_sales_replacement() {
+		frappe.model.open_mapped_doc({
+			method: "erpnext.stock.doctype.delivery_note.delivery_note.make_sales_replacement",
 			frm: this.frm
 		})
 	}

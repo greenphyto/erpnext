@@ -638,3 +638,51 @@ def get_returned_serial_nos(child_doc, parent_doc):
 		serial_nos.extend(get_serial_nos(row.serial_no))
 
 	return serial_nos
+
+def make_replacement_doc(source_name: str, target_doc=None):
+	from frappe.model.mapper import get_mapped_doc
+
+	expense_account = ""
+
+	def set_missing_values(source, target):
+		target.naming_series = "DO-RPL-.YYYY.-.###"
+		target.replacement_against = source.name
+		target.is_replacement = 1
+		target.set_warehouse = ""
+	
+	def update_item(source_doc, target_doc, source_parent):
+		target_doc.qty = source_doc.qty
+		target_doc.stock_qty = source_doc.stock_qty
+		target_doc.against_sales_order = source_doc.against_sales_order
+		target_doc.against_sales_invoice = source_doc.against_sales_invoice
+		target_doc.so_detail = source_doc.so_detail
+		target_doc.si_detail = source_doc.si_detail
+		target_doc.is_free_item = 1
+		target_doc.rate = 0
+		target_doc.price_list_rate = 0
+
+		expense_account = frappe.get_value("Company", source_parent.company, "replacement_account")
+		if not expense_account:
+			frappe.throw("MIssing Account for Replacement in company settings!")
+		target_doc.expense_account = expense_account
+		target_doc.dn_detail = source_doc.name
+	
+	doclist = get_mapped_doc(
+		"Delivery Note",
+		source_name,
+		{
+			"Delivery Note": {
+				"doctype": "Delivery Note",
+				"validation": {"docstatus": ["=", 1]},
+			},
+			"Delivery Note Item": {
+				"doctype": "Delivery Note Item",
+				"field_map": {"serial_no": "serial_no", "batch_no": "batch_no"},
+				"postprocess": update_item,
+			},
+		},
+		target_doc,
+		set_missing_values,
+	)
+
+	return doclist

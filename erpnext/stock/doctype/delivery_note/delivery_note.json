@@ -25,8 +25,10 @@
   "delivery_completed_at",
   "delivery_completed_by",
   "is_return",
+  "is_replacement",
   "issue_credit_note",
   "return_against",
+  "replacement_against",
   "is_donation",
   "is_giveaway",
   "accounting_dimensions_section",
@@ -200,7 +202,7 @@
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "DO-.YYYY.-.###\nDO-RET-.YYYY.-.###\nGPO-.YYYY.-.###\nDON-.YYYY.-.###",
+   "options": "DO-.YYYY.-.###\nDO-RPL-.YYYY.-.###\nGPO-.YYYY.-.###\nDON-.YYYY.-.###\nDO-RET-.YYYY.-.###",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1555,13 +1557,30 @@
   {
    "fieldname": "column_break_17",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_replacement",
+   "fieldtype": "Check",
+   "label": "Is Replacement",
+   "read_only": 1
+  },
+  {
+   "depends_on": "is_replacement",
+   "fieldname": "replacement_against",
+   "fieldtype": "Link",
+   "label": "Replacement Against Delivery Note",
+   "no_copy": 1,
+   "options": "Delivery Note",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-06 15:21:34.360565",
+ "modified": "2025-03-12 11:20:20.863736",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
