@@ -133,7 +133,7 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 
 	out = remove_standard_fields(out)
 
-	if doc and doc.get("doctype") == "Sales Order":
+	if doc and doc.get("doctype") in ("Sales Order", "Sales Invoice", "Request", "Delivery Note"):
 		out.uom = ""
 	
 	return out
