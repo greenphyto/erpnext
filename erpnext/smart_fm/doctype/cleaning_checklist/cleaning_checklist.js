@@ -17,6 +17,11 @@ frappe.ui.form.on('Cleaning Checklist', {
 	level_5_enable: function(frm){
 		frm.cscript.load_area(frm,5);
 	},
+	posting_date: function(frm){
+		const result = extractMonthYear(frm.doc.posting_date);
+		frm.set_value("month", result.month);
+		frm.set_value("year", result.year);
+	}
 });
 
 $.extend(cur_frm.cscript, {
@@ -33,3 +38,11 @@ $.extend(cur_frm.cscript, {
 		})
 	}
 })
+
+function extractMonthYear(dateStr) {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const date = new Date(year, month - 1, day); // Bulan di JS berbasis 0 (Januari = 0)
+    
+    const monthName = date.toLocaleString("en-US", { month: "long" }); // Nama bulan
+    return { month: monthName, year: year.toString() };
+}
