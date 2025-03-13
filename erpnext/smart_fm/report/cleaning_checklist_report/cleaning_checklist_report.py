@@ -14,6 +14,26 @@ class Report():
 	def setup_condition(self):
 		self.cond = ""
 
+		if self.filters.get("month"):
+			self.cond += " and c.`month` = %(month)s "
+		if self.filters.get("year"):
+			self.cond += " and c.`year` = %(year)s "
+		if self.filters.get("posting_date"):
+			self.cond += " and c.`posting_date` = %(posting_date)s "
+		if self.filters.get("cleaned_by"):
+			self.filters.cleaned_by = frappe.get_value("User", self.filters.cleaned_by, "full_name")
+			self.cond += " and c.`cleaned_by` = %(cleaned_by)s "
+		if self.filters.get("location"):
+			map = {
+				"Level 1":"level_1_area",
+				"Level 2":"level_2_area",
+				"Level 3":"level_3_area",
+				"Level 4":"level_4_area",
+				"Level 5":"level_5_area",
+			}
+			self.filters.location = map[self.filters.location]
+			self.cond += " and  ci.parentfield = %(location)s "
+
 	def setup_column(self):
 		self.columns = [
 			{"fieldname": "date", 				"label": "Date", 			"fieldtype": "Date", "width":120, "options":""},
@@ -46,8 +66,11 @@ class Report():
 				`tabCleaning Checklist Items` ci
 					LEFT JOIN
 				`tabCleaning Checklist` c ON c.name = ci.parent
+			WHERE 
+				c.docstatus = 1
+				{}
 			ORDER BY c.posting_date DESC , c.name , ci.parentfield , ci.idx
-		""".format(self.cond), self.filters, as_dict=1)
+		""".format(self.cond), self.filters, as_dict=1, debug=0)
 	
 	def process_data(self):
 		self.data = self.raw_data
