@@ -1,0 +1,53 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-03-13 11:22:09.904556",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "area",
+  "general_cleaning",
+  "regulary_inspection"
+ ],
+ "fields": [
+  {
+   "fieldname": "area",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Area",
+   "options": "Cleaning Area",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "columns": 2,
+   "default": "0",
+   "fieldname": "general_cleaning",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "General Cleaning"
+  },
+  {
+   "columns": 2,
+   "default": "0",
+   "fieldname": "regulary_inspection",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Regulary Inspection"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-03-13 11:49:33.072187",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Cleaning Checklist Items",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
