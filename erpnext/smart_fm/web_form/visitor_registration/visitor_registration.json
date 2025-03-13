@@ -60,7 +60,7 @@
  ],
  "login_required": 1,
  "max_attachment_size": 2,
- "modified": "2025-02-19 09:08:55.569641",
+ "modified": "2025-03-10 08:51:31.270000",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "visitor-registration",
@@ -143,6 +143,18 @@
    "max_length": 0,
    "max_value": 0,
    "options": "Email",
+   "read_only": 0,
+   "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "fieldname": "carplate_no",
+   "fieldtype": "Data",
+   "hidden": 0,
+   "label": "Carplate No.",
+   "max_length": 0,
+   "max_value": 0,
    "read_only": 0,
    "reqd": 0,
    "show_in_filter": 0
