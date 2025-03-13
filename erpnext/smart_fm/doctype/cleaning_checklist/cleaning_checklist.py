@@ -3,11 +3,20 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import cint, cstr
+from frappe.utils import cint, cstr, getdate
+from erpnext.accounts.utils import get_fiscal_year
 
 class CleaningChecklist(Document):
 	def validate(self):
 		self.add_user_name()
+		self.set_period()
+
+	def set_period(self):
+		date_obj = getdate(self.posting_date, "%d-%m-%Y")
+		month = date_obj.strftime("%B")  # Nama bulan
+		year = get_fiscal_year(date = date_obj)[0]   # Tahun
+		self.month = month
+		self.year = year
 
 	def add_user_name(self):
 		full_name = frappe.db.get_value("User", frappe.session.user, "full_name")
