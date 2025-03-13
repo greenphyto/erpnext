@@ -18,6 +18,14 @@
   "location_section",
   "level_1_enable",
   "level_1_area",
+  "level_2_enable",
+  "level_2_area",
+  "level_3_enable",
+  "level_3_area",
+  "level_4_enable",
+  "level_4_area",
+  "level_5_enable",
+  "level_5_area",
   "amended_from",
   "column_break_aycus",
   "remarks"
@@ -66,17 +74,69 @@
    "label": "Location"
   },
   {
-   "default": "0",
-   "fieldname": "level_1_enable",
-   "fieldtype": "Check",
-   "label": "Level 1"
+    "default": "0",
+    "fieldname": "level_1_enable",
+    "fieldtype": "Check",
+    "label": "Level 1"
   },
   {
-   "depends_on": "level_1_enable",
-   "fieldname": "level_1_area",
-   "fieldtype": "Table",
-   "label": "Checklist Level 1",
-   "options": "Cleaning Checklist Items"
+    "depends_on": "level_1_enable",
+    "fieldname": "level_1_area",
+    "fieldtype": "Table",
+    "label": "Checklist Level 1",
+    "options": "Cleaning Checklist Items"
+  },
+  {
+    "default": "0",
+    "fieldname": "level_2_enable",
+    "fieldtype": "Check",
+    "label": "Level 2"
+  },
+  {
+    "depends_on": "level_2_enable",
+    "fieldname": "level_2_area",
+    "fieldtype": "Table",
+    "label": "Checklist Level 2",
+    "options": "Cleaning Checklist Items"
+  },
+  {
+    "default": "0",
+    "fieldname": "level_3_enable",
+    "fieldtype": "Check",
+    "label": "Level 3"
+  },
+  {
+    "depends_on": "level_3_enable",
+    "fieldname": "level_3_area",
+    "fieldtype": "Table",
+    "label": "Checklist Level 3",
+    "options": "Cleaning Checklist Items"
+  },
+  {
+    "default": "0",
+    "fieldname": "level_4_enable",
+    "fieldtype": "Check",
+    "label": "Level 4"
+  },
+  {
+    "depends_on": "level_4_enable",
+    "fieldname": "level_4_area",
+    "fieldtype": "Table",
+    "label": "Checklist Level 4",
+    "options": "Cleaning Checklist Items"
+  },
+  {
+    "default": "0",
+    "fieldname": "level_5_enable",
+    "fieldtype": "Check",
+    "label": "Level 5"
+  },
+  {
+    "depends_on": "level_5_enable",
+    "fieldname": "level_5_area",
+    "fieldtype": "Table",
+    "label": "Checklist Level 5",
+    "options": "Cleaning Checklist Items"
   },
   {
    "fieldname": "amended_from",
@@ -101,7 +161,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-13 12:15:06.023232",
+ "modified": "2025-03-13 12:15:06.023233",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Cleaning Checklist",

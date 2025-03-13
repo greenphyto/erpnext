@@ -1,14 +1,14 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:room",
+ "autoname": "field:area",
  "creation": "2025-03-13 10:58:35.081733",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "room",
+  "area",
   "priority",
   "availibility_section",
   "level_1",
@@ -19,12 +19,6 @@
   "level"
  ],
  "fields": [
-  {
-   "fieldname": "room",
-   "fieldtype": "Data",
-   "label": "Room",
-   "unique": 1
-  },
   {
    "description": "1 - Highest\n<br>\n5 - Lowest",
    "fieldname": "priority",
@@ -75,11 +69,17 @@
    "in_list_view": 1,
    "label": "Level",
    "read_only": 1
+  },
+  {
+   "fieldname": "area",
+   "fieldtype": "Data",
+   "label": "Area",
+   "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-13 11:17:57.107321",
+ "modified": "2025-03-13 12:29:48.519601",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Cleaning Area",

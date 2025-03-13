@@ -3,6 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe.utils import cint, cstr
 
 class CleaningChecklist(Document):
 	def validate(self):
@@ -11,3 +12,39 @@ class CleaningChecklist(Document):
 	def add_user_name(self):
 		full_name = frappe.db.get_value("User", frappe.session.user, "full_name")
 		self.cleaned_by = full_name
+
+	def get_template_area(self):
+		data = frappe.db.sql("""
+			SELECT 
+				area, priority, level_1, level_2, level_3, level_4, level_5
+			FROM
+				`tabCleaning Area`
+			ORDER BY priority		
+		""",as_dict=1)
+		map_level = {}
+		for i in range(1,6):
+			level = get_level_name(i)
+			map_level[level] = []
+			for d in data:
+				if d.get(level):
+					map_level[level].append(d)
+
+		return map_level
+
+	@frappe.whitelist()
+	def load_area(self, level):
+		map_area = self.get_template_area()
+		level_name = get_level_name(level)
+		table_field = level_name + "_area"
+		if not self.get(table_field):
+			self.set(table_field, [])
+			areas = map_area[level_name]
+			for d in areas:
+				row = self.append(table_field)
+				row.area = d.area
+
+def get_level_name(idx):
+	return "level_"+cstr(cint(idx))
+
+def get_level_index(level):
+	return cint(level.repalce("level_"))
