@@ -346,6 +346,14 @@ def set_account_and_due_date(
 
 	return out
 
+def supplier_mapping_account(company):
+	temp = frappe.db.get_all("Supplier Code Account", {"parent":"Buying Settings", "company":company}, ["code", "account"])
+	map = {}
+	for d in temp:
+		code = d.code.replace(".", "")
+		map[code] = d.account
+
+	return map
 
 @frappe.whitelist()
 def get_party_account(party_type, party=None, company=None):
@@ -353,8 +361,16 @@ def get_party_account(party_type, party=None, company=None):
 	Will first search in party (Customer / Supplier) record, if not found,
 	will search in group (Customer Group / Supplier Group),
 	finally will return default."""
+
 	if not company:
 		frappe.throw(_("Please select a Company"))
+
+	if party_type == "Supplier":
+		supp_code = frappe.get_value("Supplier", party, "supplier_code")
+		map_acc = supplier_mapping_account(company)
+		for code, account in map_acc.items():
+			if code in supp_code:
+				return account
 
 	if not party and party_type in ["Customer", "Supplier"]:
 		default_account_name = (
