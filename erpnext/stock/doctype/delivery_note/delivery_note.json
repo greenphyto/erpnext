@@ -14,6 +14,7 @@
   "organization_name",
   "tax_id",
   "customer_name",
+  "delivery_date",
   "column_break1",
   "posting_date",
   "posting_time",
@@ -1562,13 +1563,19 @@
    "fieldname": "is_replacement",
    "fieldtype": "Check",
    "label": "Is Replacement"
+  },
+  {
+   "fieldname": "delivery_date",
+   "fieldtype": "Data",
+   "label": "Delivery Date",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-12 15:17:35.586216",
+ "modified": "2025-03-14 12:18:25.781032",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

@@ -8,7 +8,7 @@ from frappe.contacts.doctype.address.address import get_company_address
 from frappe.desk.notifications import clear_doctype_notifications
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.utils import get_fetch_values
-from frappe.utils import cint, flt
+from frappe.utils import cint, flt,format_date
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from erpnext.stock import get_warehouse_account_map, get_item_account
 from erpnext.accounts.general_ledger import make_gl_entries
@@ -132,13 +132,17 @@ class DeliveryNote(SellingController):
 	def update_reff_order(self):
 		so_list = []
 		si_list = []
+		delivery_date = []
 		for d in self.get("items"):
 			if d.against_sales_order:
 				so_list.append(d.against_sales_order)
+				deliv_date = frappe.get_value("Sales Order", d.against_sales_order, "delivery_date")
+				delivery_date.append( format_date(deliv_date) )
 			if d.against_sales_invoice:
 				si_list.append(d.against_sales_invoice)
 		self.sales_order_no = ", ".join(list(set(so_list)))
 		self.sales_invoice_no = ", ".join(list(set(si_list)))	
+		self.delivery_date = ", ".join(list(set(delivery_date)))	
 
 	def validate(self):
 		self.validate_posting_time()
