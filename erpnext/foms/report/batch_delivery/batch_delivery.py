@@ -126,6 +126,7 @@ class Report():
 			.where(
 				(sle.docstatus < 2)
 				& (sle.is_cancelled == 0)
+				& (item_db.item_group == "Products")
 			)
 			.orderby(sle.batch_no, order=Order.desc)
 			.orderby(CombineDatetime(sle.posting_date, sle.posting_time))

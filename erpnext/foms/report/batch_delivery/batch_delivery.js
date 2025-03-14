@@ -24,11 +24,11 @@ frappe.query_reports["Batch Delivery"] = {
 				}
 			}
 		},
-		{
-			"fieldname":"customer",
-			"label": __("Customer"),
-			"fieldtype": "Link",
-			"options":"Customer"
-		}
+		// {
+		// 	"fieldname":"customer",
+		// 	"label": __("Customer"),
+		// 	"fieldtype": "Link",
+		// 	"options":"Customer"
+		// }
 	]
 };
