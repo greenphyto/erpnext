@@ -1,8 +1,21 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
 
-erpnext.get_sales_trends_filters = function() {
-	return[
+erpnext.get_sales_trends_filters = function(cdt="") {
+	var deff = [
+		{ "value": "Item", "label": __("Item") },
+		{ "value": "Item Group", "label": __("Item Group") },
+		{ "value": "Customer", "label": __("Customer") },
+		{ "value": "Customer Group", "label": __("Customer Group") },
+		{ "value": "Territory", "label": __("Territory") },
+		{ "value": "Project", "label": __("Project") }
+	]
+
+	if (cdt=="Delivery Note"){
+		deff.push({ "value": "Outlets", "label": __("Outlets") })
+	}
+
+	return [
 		{
 			"fieldname":"period",
 			"label": __("Period"),
@@ -19,14 +32,7 @@ erpnext.get_sales_trends_filters = function() {
 			"fieldname":"based_on",
 			"label": __("Based On"),
 			"fieldtype": "Select",
-			"options": [
-				{ "value": "Item", "label": __("Item") },
-				{ "value": "Item Group", "label": __("Item Group") },
-				{ "value": "Customer", "label": __("Customer") },
-				{ "value": "Customer Group", "label": __("Customer Group") },
-				{ "value": "Territory", "label": __("Territory") },
-				{ "value": "Project", "label": __("Project") }
-			],
+			"options": deff,
 			"default": "Item",
 			"dashboard_config": {
 				"read_only": 1,

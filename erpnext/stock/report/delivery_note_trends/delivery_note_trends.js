@@ -3,6 +3,6 @@
 
 frappe.require("assets/erpnext/js/sales_trends_filters.js", function() {
 	frappe.query_reports["Delivery Note Trends"] = {
-		filters: erpnext.get_sales_trends_filters()
+		filters: erpnext.get_sales_trends_filters("Delivery Note")
 	}
 });
