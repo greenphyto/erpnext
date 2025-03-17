@@ -40,8 +40,9 @@ class Report():
 			{"fieldname": "scrap_material", "label": "Scrap Material", "fieldtype": "Link", "width":150, "options":"Stock Entry"},
 			{"fieldname": "dis_date",		"label": "Disposal Date",  "fieldtype": "Date", "width":120, "options":""},
 			{"fieldname": "qty", 			"label": "Qty Sent", 	"fieldtype": "Float", "width":80, "options":""},
-			{"fieldname": "uom_pack", 			"label": "UOM", 		"fieldtype": "Data", "width":130, "options":""},
+			{"fieldname": "uom_pack", 		"label": "UOM", 		"fieldtype": "Data", "width":130, "options":""},
 			{"fieldname": "customer", 		"label": "Customer", 	"fieldtype": "Link", "width":220, "options":"Customer"},
+			{"fieldname": "address_title", 	"label": "Shipping Address", 	"fieldtype": "", "width":400, "options":""},
 		]
 		
 
@@ -94,6 +95,7 @@ class Report():
 		sle = frappe.qb.DocType("Stock Ledger Entry")
 		dn_doc = frappe.qb.DocType("Delivery Note")
 		item_db = frappe.qb.DocType("Item")
+		addr_db = frappe.qb.DocType("Address")
 		uom_db = frappe.qb.DocType("UOM Conversion Detail")
 		query = (
 			frappe.qb.from_(sle)
@@ -119,9 +121,11 @@ class Report():
 				dn_doc.posting_date.as_("delivery_date"),
 				item_db.default_packaging.as_("uom_pack"),
 				uom_db.conversion_factor.as_("conv_factor"),
+				addr_db.address_title.as_("address_title"),
 			)
 			.left_join(dn_doc).on(sle.voucher_no == dn_doc.name)
 			.left_join(item_db).on(sle.item_code == item_db.name)
+			.left_join(addr_db).on(addr_db.name == dn_doc.shipping_address_name)
 			.left_join(uom_db).on((uom_db.parent == sle.item_code) & (uom_db.uom == item_db.default_packaging))
 			.where(
 				(sle.docstatus < 2)
