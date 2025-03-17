@@ -42,7 +42,7 @@ class Report():
 			{"fieldname": "qty", 			"label": "Qty Sent", 	"fieldtype": "Float", "width":80, "options":""},
 			{"fieldname": "uom_pack", 		"label": "UOM", 		"fieldtype": "Data", "width":130, "options":""},
 			{"fieldname": "customer", 		"label": "Customer", 	"fieldtype": "Link", "width":220, "options":"Customer"},
-			{"fieldname": "address_title", 	"label": "Shipping Address", 	"fieldtype": "", "width":400, "options":""},
+			{"fieldname": "address_title", 	"label": "Outlets", 	"fieldtype": "", "width":400, "options":""},
 		]
 		
 
