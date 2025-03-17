@@ -193,7 +193,7 @@ def get_data(filters, conditions):
 			""" select %s from `tab%s` t1, `tab%s Item` t2 %s
 					where t2.parent = t1.name and t1.company = %s and %s between %s and %s and
 					t1.docstatus = 1 %s %s
-					group by %s
+					group by %s order by total_all desc
 				"""
 			% (
 				query_details,
@@ -209,7 +209,7 @@ def get_data(filters, conditions):
 				conditions["group_by"],
 			),
 			(filters.get("company"), year_start_date, year_end_date),
-			as_list=1,
+			as_list=1,debug=0
 		)
 
 	return data
@@ -242,7 +242,7 @@ def period_wise_columns_query(filters, trans):
 		]
 		query_details = " SUM(t2.stock_qty), SUM(t2.base_net_amount),"
 
-	query_details += "SUM(t2.stock_qty), SUM(t2.base_net_amount)"
+	query_details += "SUM(t2.stock_qty), SUM(t2.base_net_amount) as total_all"
 	return pwc, query_details
 
 
@@ -364,6 +364,13 @@ def based_wise_columns_query(based_on, trans):
 		based_on_details["based_on_select"] = "t1.territory,"
 		based_on_details["based_on_group_by"] = "t1.territory"
 		based_on_details["addl_tables"] = ""
+	
+	elif based_on == "Outlets":
+		based_on_details["based_on_cols"] = ["Address:Link/Address:400"]
+		based_on_details["based_on_select"] = "adr.address_title,"
+		based_on_details["based_on_group_by"] = "adr.address_title"
+		based_on_details["addl_tables"] = " ,`tabAddress` adr "
+		based_on_details["addl_tables_relational_cond"] = " and adr.name = t1.shipping_address_name "
 
 	elif based_on == "Project":
 		if trans in ["Sales Invoice", "Delivery Note", "Sales Order"]:

@@ -345,8 +345,14 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 
 	donation_account = get_donation_expense_account(args.doctype, args.company, args.customer)
 
-	account = donation_account or expense_account or get_default_expense_account(args, item_defaults, item_group_defaults, brand_defaults)
+	replacement_account = ""
+	if args.get("is_replacement"):
+		replacement_account = frappe.get_value("Company", args.company, "sales_replacement_account")
 
+	account = replacement_account or donation_account or expense_account or get_default_expense_account(args, item_defaults, item_group_defaults, brand_defaults)
+	cost_center = get_default_cost_center(
+			args, item_defaults, item_group_defaults, brand_defaults, account=account
+		)
 	out = frappe._dict(
 		{
 			"item_code": item.name,
@@ -359,9 +365,7 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 			"expense_account": account,
 			"discount_account": get_default_discount_account(args, item_defaults),
 			"provisional_expense_account": get_provisional_account(args, item_defaults),
-			"cost_center": get_default_cost_center(
-				args, item_defaults, item_group_defaults, brand_defaults, account=account
-			),
+			"cost_center": cost_center,
 			"has_serial_no": item.has_serial_no,
 			"has_batch_no": item.has_batch_no,
 			"batch_no": args.get("batch_no"),
@@ -757,7 +761,7 @@ def get_default_cost_center(args, item=None, item_group=None, brand=None, compan
 
 	res = get_cost_center_from_account(account, company)
 	if res.get("lock"):
-		return res.get("cost_center")
+		return res.get("value")
 	else:
 		return ""
 

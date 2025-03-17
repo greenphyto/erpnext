@@ -661,7 +661,7 @@ def make_replacement_doc(source_name: str, target_doc=None):
 		target_doc.rate = 0
 		target_doc.price_list_rate = 0
 
-		expense_account = frappe.get_value("Company", source_parent.company, "replacement_account")
+		expense_account = frappe.get_value("Company", source_parent.company, "sales_replacement_account")
 		if not expense_account:
 			frappe.throw("MIssing Account for Replacement in company settings!")
 		target_doc.expense_account = expense_account
