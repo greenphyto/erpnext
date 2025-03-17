@@ -1,0 +1,105 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:area",
+ "creation": "2025-03-13 10:58:35.081733",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "area",
+  "priority",
+  "availibility_section",
+  "level_1",
+  "level_2",
+  "level_3",
+  "level_4",
+  "level_5",
+  "level"
+ ],
+ "fields": [
+  {
+   "description": "1 - Highest\n<br>\n5 - Lowest",
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Priority",
+   "options": "1\n2\n3\n4\n5"
+  },
+  {
+   "fieldname": "availibility_section",
+   "fieldtype": "Section Break",
+   "label": "Availibility"
+  },
+  {
+   "default": "0",
+   "fieldname": "level_1",
+   "fieldtype": "Check",
+   "label": "Level 1"
+  },
+  {
+   "default": "0",
+   "fieldname": "level_2",
+   "fieldtype": "Check",
+   "label": "Level 2"
+  },
+  {
+   "default": "0",
+   "fieldname": "level_3",
+   "fieldtype": "Check",
+   "label": "Level 3"
+  },
+  {
+   "default": "0",
+   "fieldname": "level_4",
+   "fieldtype": "Check",
+   "label": "Level 4"
+  },
+  {
+   "default": "0",
+   "fieldname": "level_5",
+   "fieldtype": "Check",
+   "label": "Level 5"
+  },
+  {
+   "fieldname": "level",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "in_list_view": 1,
+   "label": "Level",
+   "read_only": 1
+  },
+  {
+   "fieldname": "area",
+   "fieldtype": "Data",
+   "label": "Area",
+   "unique": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-03-13 12:29:48.519601",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Cleaning Area",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "priority",
+ "sort_order": "ASC",
+ "states": []
+}

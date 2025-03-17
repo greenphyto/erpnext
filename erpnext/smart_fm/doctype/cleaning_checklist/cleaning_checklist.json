@@ -1,0 +1,233 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "CLN-.YYYY.-.####",
+ "creation": "2025-03-13 11:42:14.138688",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "posting_date",
+  "column_break_xfnxl",
+  "cleaned_by",
+  "section_break_zhp66",
+  "month",
+  "column_break_spbwu",
+  "year",
+  "location_section",
+  "level_1_enable",
+  "level_1_area",
+  "level_2_enable",
+  "level_2_area",
+  "level_3_enable",
+  "level_3_area",
+  "level_4_enable",
+  "level_4_area",
+  "level_5_enable",
+  "level_5_area",
+  "amended_from",
+  "column_break_aycus",
+  "remarks",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "column_break_aycus",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date"
+  },
+  {
+   "default": "January",
+   "fieldname": "month",
+   "fieldtype": "Select",
+   "label": "Month",
+   "options": "January\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember"
+  },
+  {
+   "fieldname": "year",
+   "fieldtype": "Link",
+   "label": "Year",
+   "options": "Fiscal Year"
+  },
+  {
+   "fieldname": "section_break_zhp66",
+   "fieldtype": "Section Break",
+   "label": "Period"
+  },
+  {
+   "fieldname": "column_break_spbwu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "location_section",
+   "fieldtype": "Section Break",
+   "label": "Location"
+  },
+  {
+   "default": "0",
+   "fieldname": "level_1_enable",
+   "fieldtype": "Check",
+   "label": "Level 1"
+  },
+  {
+   "depends_on": "level_1_enable",
+   "fieldname": "level_1_area",
+   "fieldtype": "Table",
+   "label": "Checklist Level 1",
+   "options": "Cleaning Checklist Items"
+  },
+  {
+   "default": "0",
+   "fieldname": "level_2_enable",
+   "fieldtype": "Check",
+   "label": "Level 2"
+  },
+  {
+   "depends_on": "level_2_enable",
+   "fieldname": "level_2_area",
+   "fieldtype": "Table",
+   "label": "Checklist Level 2",
+   "options": "Cleaning Checklist Items"
+  },
+  {
+   "default": "0",
+   "fieldname": "level_3_enable",
+   "fieldtype": "Check",
+   "label": "Level 3"
+  },
+  {
+   "depends_on": "level_3_enable",
+   "fieldname": "level_3_area",
+   "fieldtype": "Table",
+   "label": "Checklist Level 3",
+   "options": "Cleaning Checklist Items"
+  },
+  {
+   "default": "0",
+   "fieldname": "level_4_enable",
+   "fieldtype": "Check",
+   "label": "Level 4"
+  },
+  {
+   "depends_on": "level_4_enable",
+   "fieldname": "level_4_area",
+   "fieldtype": "Table",
+   "label": "Checklist Level 4",
+   "options": "Cleaning Checklist Items"
+  },
+  {
+   "default": "0",
+   "fieldname": "level_5_enable",
+   "fieldtype": "Check",
+   "label": "Level 5"
+  },
+  {
+   "depends_on": "level_5_enable",
+   "fieldname": "level_5_area",
+   "fieldtype": "Table",
+   "label": "Checklist Level 5",
+   "options": "Cleaning Checklist Items"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Cleaning Checklist",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "cleaned_by",
+   "fieldtype": "Data",
+   "label": "Cleaned & Checked by",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_xfnxl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nCleaned",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-03-17 18:16:08.325042",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Cleaning Checklist",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Navix Personnel",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Building Management (Team)",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Security",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
