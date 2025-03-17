@@ -88,6 +88,10 @@ class DeliveryNote(SellingController):
 				]
 			)
 
+	def set_missing_values(self,for_validate=False):
+		self.get_sales_order_delivery_date()
+		super(DeliveryNote, self).set_missing_values(for_validate)
+
 	def before_insert(self):
 		if self.is_return:
 			self.naming_series = "DO-RET-.YYYY.-.###"
@@ -132,17 +136,25 @@ class DeliveryNote(SellingController):
 	def update_reff_order(self):
 		so_list = []
 		si_list = []
-		delivery_date = []
 		for d in self.get("items"):
 			if d.against_sales_order:
 				so_list.append(d.against_sales_order)
-				deliv_date = frappe.get_value("Sales Order", d.against_sales_order, "delivery_date")
-				delivery_date.append( deliv_date )
 			if d.against_sales_invoice:
 				si_list.append(d.against_sales_invoice)
 		self.sales_order_no = ", ".join(list(set(so_list)))
-		self.sales_invoice_no = ", ".join(list(set(si_list)))	
-		self.delivery_date = min(delivery_date)
+		self.sales_invoice_no = ", ".join(list(set(si_list)))
+		self.get_sales_order_delivery_date()
+
+	def get_sales_order_delivery_date(self):
+		delivery_date = []
+		for d in self.get("items"):
+			if d.against_sales_order:
+				deliv_date = frappe.get_value("Sales Order", d.against_sales_order, "delivery_date")
+				if deliv_date:
+					delivery_date.append( deliv_date )
+
+		if not self.delivery_date and delivery_date:
+			self.delivery_date = min(delivery_date)
 
 	def validate(self):
 		self.validate_posting_time()
