@@ -73,6 +73,7 @@ class SalesOrder(SellingController):
 			self.delivery_status = "Not Delivered"
 
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
+		self.load_bom_items()
 
 	def on_update_after_submit(self):
 		self.update_po_no()
@@ -412,6 +413,22 @@ class SalesOrder(SellingController):
 
 	def on_update(self):
 		pass
+
+	def load_bom_items(self):
+		self.bom_item = []
+		for d in self.items:
+			is_salad, bom_name = frappe.get_value("Item", d.item_code, ["salad_product", "default_bom"])
+			if not is_salad:
+				continue
+			
+			bom = frappe.get_doc("BOM", bom_name)
+			for item in bom.get("items"):
+				row = self.append("bom_item")
+				row.item_code = item.item_code
+				row.qty = item.qty * d.qty
+				row.uom = item.uom
+				row.rate = item.rate
+				row.amount = item.amount * item.qty
 
 	def before_update_after_submit(self):
 		self.validate_po()

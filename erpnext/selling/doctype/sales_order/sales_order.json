@@ -92,6 +92,8 @@
   "discount_amount",
   "sec_tax_breakup",
   "other_charges_calculation",
+  "bom_items_section",
+  "bom_item",
   "packing_list",
   "packed_items",
   "pricing_rule_details",
@@ -1717,13 +1719,25 @@
    "label": "REQ ID",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "bom_items_section",
+   "fieldtype": "Section Break",
+   "label": "BOM Items"
+  },
+  {
+   "fieldname": "bom_item",
+   "fieldtype": "Table",
+   "label": "BOM Item",
+   "options": "BOM Item",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-06 15:11:58.829302",
+ "modified": "2025-03-17 17:40:57.664327",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

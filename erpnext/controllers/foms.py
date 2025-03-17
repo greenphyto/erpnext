@@ -1107,11 +1107,7 @@ def _update_foms_sales_order(log, api=None):
 	if non_stock and not is_product_bundle:
 		return
 
-	table_field = "items"
-	if is_product_bundle:
-		table_field = "packed_items"
-	
-	if doc.docstatus == 1:
+	def loop_table(table_field):
 		customer_foms_id = frappe.get_value("Customer", doc.customer, "foms_id")
 		farm_id = get_farm_id()
 
@@ -1173,6 +1169,10 @@ def _update_foms_sales_order(log, api=None):
 					row.foms_id = d['id']
 					row.db_update()
 			doc.db_update()
+	
+	if doc.docstatus == 1:
+		for field in ['items', 'packed_items', 'bom_item']:
+			loop_table(field)
 	
 	if doc.docstatus == 2:
 		res = api.cancel_sales_order(doc.foms_id)
