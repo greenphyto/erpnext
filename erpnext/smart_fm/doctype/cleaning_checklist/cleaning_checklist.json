@@ -28,7 +28,8 @@
   "level_5_area",
   "amended_from",
   "column_break_aycus",
-  "remarks"
+  "remarks",
+  "status"
  ],
  "fields": [
   {
@@ -156,12 +157,20 @@
   {
    "fieldname": "column_break_xfnxl",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nCleaned",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-13 15:24:01.129298",
+ "modified": "2025-03-17 18:16:08.325042",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Cleaning Checklist",

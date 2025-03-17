@@ -10,6 +10,7 @@ class CleaningChecklist(Document):
 	def validate(self):
 		self.add_user_name()
 		self.set_period()
+		self.set_status()
 
 	def set_period(self):
 		date_obj = getdate(self.posting_date, "%d-%m-%Y")
@@ -39,6 +40,10 @@ class CleaningChecklist(Document):
 					map_level[level].append(d)
 
 		return map_level
+
+	def set_status(self):
+		if self.docstatus == 1:
+			self.status = "Cleaned"
 
 	@frappe.whitelist()
 	def load_area(self, level):
