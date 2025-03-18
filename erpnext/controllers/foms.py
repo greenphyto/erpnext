@@ -1970,4 +1970,79 @@ def get_cost_center(operation_name, company):
 			frappe.throw(_("Missing Cost Center for Packing, please update the Company Settings"))
 		return cc
 
-# def make_salad_product(doc, method=""):
+def detect_salad_items(doc, method=""):
+	if not doc.stock_entry_type == "Manufacture" or not doc.work_order:
+		return
+	
+	is_salad_item = frappe.get_value("Work Order", doc.work_order, "is_salad_item")
+	if not is_salad_item:
+		return 
+	
+	wo_doc = frappe.get_doc("Work Order", doc.work_order)
+	req_list = []
+	so_list = []
+	if wo_doc.request_no:
+		req_list = wo_doc.request_no.split(", ")
+	if wo_doc.sales_order_no:
+		so_list = wo_doc.sales_order_no.split(", ")
+
+	if req_list:
+		for req in req_list:
+			make_salad_product(req, wo_doc.production_item)
+
+	# not yet for SO
+
+
+def make_salad_product(req_name, item_code):
+	req_doc = frappe.get_doc("Request", req_name)
+	parent_item = ""
+	for d in req_doc.get("salad_items"):
+		if d.item_code == item_code:
+			parent_item = d.parent_item
+			d.progress = 100
+			d.db_update()
+			break
+	
+	if not parent_item:
+		return
+
+	def get_progress(salad_item):
+		progress = []
+		for d in req_doc.salad_items:
+			if d.parent_item == salad_item:
+				progress.append(d.progress)
+		
+		parent_progress = sum(progress)/len(progress)
+		return parent_progress
+	
+	for d in req_doc.get("items"):
+		if d.item_code == parent_item:
+			progress = get_progress(d.item_code)
+			d.db_set("progress", progress)
+			if not d.stock_entry and progress>=100:
+				name = create_repack_entry(d.salad_recipe, d.qty, submit=1)
+				d.db_set("stock_entry", name)
+
+
+def create_repack_entry(bom_name, qty, submit=False):
+	se = frappe.new_doc("Stock Entry")
+	se.stock_entry_type_view = "Repack"
+	se.naming_series = frappe.get_value("Stock Entry Type", se.stock_entry_type_view, "series")
+	se.purpose = "Repack"
+	se.bom_no = bom_name
+	se.from_bom = 1
+	se.fg_completed_qty = qty
+	warehouse = frappe.db.get_single_value('Manufacturing Settings', "default_fg_warehouse")
+	se.from_warehouse = warehouse
+	se.to_warehouse = warehouse
+	se.use_multi_level_bom = 0
+	se.get_items()
+	se.flags.ignore_permissions = 1
+	se.save()
+	if submit:
+		se.submit()
+
+	return se.name
+
+
+

@@ -1142,6 +1142,9 @@ class StockEntry(StockEntryAsset, StockController):
 		"""
 		production_item, wo_qty, finished_items = None, 0, []
 
+		if not self.work_order:
+			return
+
 		wo_details = frappe.db.get_value("Work Order", self.work_order, ["production_item", "qty"])
 		if wo_details:
 			production_item, wo_qty = wo_details

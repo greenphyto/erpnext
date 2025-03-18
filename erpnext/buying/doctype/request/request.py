@@ -65,6 +65,11 @@ class Request(Document):
 					row.uom = item.uom
 					row.rate = item.rate
 					row.amount = item.amount * item.qty
+					row.bom = bom.name
+					row.parent_item = d.item_code
+					row.bom_no = frappe.get_value("Item", row.item_code, "default_bom")
+					if row.bom_no:
+						row.progress = 100
 
 
 

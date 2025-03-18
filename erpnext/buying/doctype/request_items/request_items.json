@@ -18,7 +18,10 @@
   "foms_id",
   "salad_product_section",
   "is_salad_product",
-  "salad_recipe"
+  "salad_recipe",
+  "column_break_14",
+  "progress",
+  "stock_entry"
  ],
  "fields": [
   {
@@ -117,12 +120,28 @@
    "label": "Salad Recipe",
    "options": "BOM",
    "read_only": 1
+  },
+  {
+   "fieldname": "stock_entry",
+   "fieldtype": "Data",
+   "label": "Stock Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "progress",
+   "fieldtype": "Percent",
+   "label": "Progress",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-03-18 14:35:38.633861",
+ "modified": "2025-03-18 17:23:05.976755",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request Items",
