@@ -1294,7 +1294,10 @@ def _update_foms_forecast(log, api=None):
 
 		products = []
 		
-		for d in doc.get("items"):
+		for d in doc.get("items") + doc.get("salad_items"):
+			if d.get("is_salad_product"):
+				continue
+			
 			temp = frappe.get_value("Item", d.item_code, ["foms_product_id", "stock_uom"], as_dict=1)
 			product_id = temp.foms_product_id
 			stock_uom = temp.stock_uom
@@ -1304,7 +1307,7 @@ def _update_foms_forecast(log, api=None):
 				"isWeightOrder": weight_order,
 				"productId": cint(product_id),
 				"uom": convert_uom(stock_uom),
-				"totalNetWeight": d.weight,
+				"totalNetWeight": flt(d.get("weight")) or flt(d.get("stock_qty")),
 				"isRootInclude": "false",
 				"unitPrice": d.rate,
 				"id":child_id
@@ -1967,3 +1970,4 @@ def get_cost_center(operation_name, company):
 			frappe.throw(_("Missing Cost Center for Packing, please update the Company Settings"))
 		return cc
 
+# def make_salad_product(doc, method=""):

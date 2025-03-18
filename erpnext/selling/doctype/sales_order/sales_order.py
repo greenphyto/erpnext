@@ -426,6 +426,8 @@ class SalesOrder(SellingController):
 				row = self.append("bom_item")
 				row.item_code = item.item_code
 				row.qty = item.qty * d.qty
+				row.stock_qty = item.stock_qty * d.qty
+				row.conversion_factor = item.conversion_factor
 				row.uom = item.uom
 				row.rate = item.rate
 				row.amount = item.amount * item.qty

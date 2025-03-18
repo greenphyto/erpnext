@@ -52,6 +52,7 @@ class Request(Document):
 		doc.db_update()
 
 	def export_salad_items(self):
+		self.salad_items = []
 		for d in self.items:
 			if d.is_salad_product:
 				bom = frappe.get_doc("BOM", d.salad_recipe)
@@ -59,6 +60,8 @@ class Request(Document):
 					row = self.append("salad_items")
 					row.item_code = item.item_code
 					row.qty = item.qty * d.qty
+					row.stock_qty = item.stock_qty * d.qty
+					row.conversion_factor = item.conversion_factor
 					row.uom = item.uom
 					row.rate = item.rate
 					row.amount = item.amount * item.qty
