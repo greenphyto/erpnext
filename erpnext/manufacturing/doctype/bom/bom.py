@@ -212,6 +212,7 @@ class BOM(WebsiteGenerator):
 		self.update_stock_qty()
 		self.update_cost(update_parent=False, from_child_bom=True, update_hour_rate=False, save=False)
 		self.validate_scrap_items()
+		self.control_salad_recipe()
 
 	def get_context(self, context):
 		context.parents = [{"name": "boms", "title": _("All BOMs")}]
@@ -242,6 +243,16 @@ class BOM(WebsiteGenerator):
 			frappe.throw(_("Item: {0} does not exist in the system").format(item_code))
 
 		return item
+
+	def control_salad_recipe(self):
+		if not cint(frappe.get_value("Item", self.item, "salad_product")):
+			return
+
+		self.rm_cost_as_per = "Last Purchase Rate"
+		self.storage_duration = cint(self.storage_duration) or 14
+		for d in self.items:
+			d.do_not_explode = 1
+
 
 	@frappe.whitelist()
 	def get_routing(self):

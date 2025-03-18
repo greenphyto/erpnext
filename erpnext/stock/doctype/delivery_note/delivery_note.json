@@ -1576,9 +1576,8 @@
   },
   {
    "fieldname": "delivery_date",
-   "fieldtype": "Data",
-   "label": "Delivery Date",
-   "read_only": 1
+   "fieldtype": "Date",
+   "label": "Delivery Date"
   },
   {
    "depends_on": "eval:doc.is_donation",
@@ -1591,7 +1590,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-17 10:21:02.724373",
+ "modified": "2025-03-17 14:37:51.160362",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

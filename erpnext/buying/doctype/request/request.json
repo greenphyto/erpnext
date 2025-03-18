@@ -19,6 +19,8 @@
   "total_price",
   "column_break_10",
   "total_weight",
+  "salad_ingredients_section",
+  "salad_items",
   "section_break_9",
   "amended_from",
   "workflow_state",
@@ -145,14 +147,25 @@
   {
    "fieldname": "delivery_percent",
    "fieldtype": "Percent",
-   "label": "Delivery %",
+   "label": "Delivery %"
+  },
+  {
+   "fieldname": "salad_ingredients_section",
+   "fieldtype": "Section Break",
+   "label": "Salad Ingredients"
+  },
+  {
+   "fieldname": "salad_items",
+   "fieldtype": "Table",
+   "label": "Salad Items",
+   "options": "BOM Item",
    "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-04 17:21:34.123356",
+ "modified": "2025-03-18 14:32:34.879468",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request",

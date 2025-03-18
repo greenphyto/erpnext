@@ -17,6 +17,7 @@
   "operation_no",
   "packet_size",
   "conversion_factor",
+  "is_salad_item",
   "column_break11",
   "company",
   "qty",
@@ -638,8 +639,7 @@
   {
    "fieldname": "request_no",
    "fieldtype": "Data",
-   "label": "Request No",
-   "read_only": 1
+   "label": "Request No"
   },
   {
    "fieldname": "packet_size",
@@ -654,6 +654,13 @@
    "label": "Conversion Factor",
    "precision": "5",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_salad_item",
+   "fieldtype": "Check",
+   "label": "Is Salad Item",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-cogs",
@@ -661,7 +668,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-15 12:31:45.403227",
+ "modified": "2025-03-18 18:01:10.374479",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",
