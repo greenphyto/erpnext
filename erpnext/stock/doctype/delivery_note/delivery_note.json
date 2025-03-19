@@ -1568,12 +1568,15 @@
    "read_only": 1
   },
   {
-   "fieldtype": "Link",
-   "label": "Replacement Against Delivery Note",
-   "no_copy": 1,
-   "options": "Delivery Note",
-   "print_hide": 1
-  },
+    "depends_on": "is_replacement",
+    "fieldname": "replacement_against",
+    "fieldtype": "Link",
+    "label": "Replacement Against Delivery Note",
+    "no_copy": 1,
+    "options": "Delivery Note",
+    "print_hide": 1,
+    "read_only": 1
+   },
   {
    "fieldname": "delivery_date",
    "fieldtype": "Date",
