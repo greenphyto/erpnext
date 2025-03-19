@@ -133,11 +133,11 @@ class StockController(AccountsController):
 				row.serial_no = clean_serial_no_string(row.serial_no)
 
 	def get_gl_entries(
-		self, warehouse_account=None, default_expense_account=None, default_cost_center=None, from_partial_return=False
+		self, warehouse_account=None, default_expense_account=None, default_cost_center=None, from_partial_return=False, only_for_item=[]
 	):
 		if not warehouse_account:
 			warehouse_account = get_warehouse_account_map(self.company)
-		sle_map = self.get_stock_ledger_details(from_partial_return=from_partial_return)
+		sle_map = self.get_stock_ledger_details(from_partial_return=from_partial_return, only_for_item=only_for_item)
 		voucher_details = self.get_voucher_details(default_expense_account, default_cost_center, sle_map)
 
 		gl_list = []
@@ -322,8 +322,11 @@ class StockController(AccountsController):
 
 		return list(items), list(warehouses)
 
-	def get_stock_ledger_details(self, from_partial_return=False):
+	def get_stock_ledger_details(self, from_partial_return=False, only_for_item=[]):
 		stock_ledger = {}
+		cond = ""
+		if only_for_item:
+			cond += " and item_code in %(only_for_item)s "
 		stock_ledger_entries = frappe.db.sql(
 			"""
 			select
@@ -333,9 +336,13 @@ class StockController(AccountsController):
 			from
 				`tabStock Ledger Entry`
 			where
-				voucher_type=%s and voucher_no=%s and is_cancelled = 0
-		""",
-			(self.doctype, self.name),
+				voucher_type=%(doctype)s and voucher_no=%(name)s and is_cancelled = 0 {}
+		""".format(cond),
+			{
+				"doctype":self.doctype, 
+				"name":self.name,
+				"only_for_item":only_for_item
+			},
 			as_dict=True,
 		)
 
@@ -492,7 +499,7 @@ class StockController(AccountsController):
 
 	def make_sl_entries(self, sl_entries, allow_negative_stock=False, via_landed_cost_voucher=False):
 		from erpnext.stock.stock_ledger import make_sl_entries
-
+		print(495, sl_entries)
 		make_sl_entries(sl_entries, allow_negative_stock, via_landed_cost_voucher)
 
 	def make_gl_entries_on_cancel(self):
