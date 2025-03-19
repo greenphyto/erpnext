@@ -83,6 +83,9 @@ def make_sl_entries(sl_entries, allow_negative_stock=False, via_landed_cost_vouc
 				# preserve previous_qty_after_transaction for qty reposting
 				args.previous_qty_after_transaction = sle.get("previous_qty_after_transaction")
 
+			if not args.get("item_code"):
+				return
+			
 			is_stock_item = frappe.get_cached_value("Item", args.get("item_code"), "is_stock_item")
 			if is_stock_item:
 				bin_name = get_or_make_bin(args.get("item_code"), args.get("warehouse"))
@@ -1458,6 +1461,7 @@ def validate_negative_qty_in_future_sle(args, allow_negative_stock=False):
 		return
 
 	neg_batch_sle = get_future_sle_with_negative_batch_qty(args)
+	print(1463, neg_batch_sle)
 	if is_negative_with_precision(neg_batch_sle, is_batch=True):
 		message = _(
 			"{0} units of {1} needed in {2} on {3} {4} for {5} to complete this transaction."
@@ -1484,6 +1488,7 @@ def is_negative_with_precision(neg_sle, is_batch=False):
 	field = "cumulative_total" if is_batch else "qty_after_transaction"
 	precision = cint(frappe.db.get_default("float_precision")) or 2
 	qty_deficit = flt(neg_sle[0][field], precision)
+	print(1490, qty_deficit)
 
 	return qty_deficit < 0 and abs(qty_deficit) > 0.0001
 
@@ -1522,6 +1527,7 @@ def get_future_sle_with_negative_batch_qty(args):
 				item_code = %(item_code)s
 				and warehouse = %(warehouse)s
 				and batch_no=%(batch_no)s
+				and voucher_no != %(voucher_no)s
 				and is_cancelled = 0
 			order by posting_date, posting_time, creation
 		)
@@ -1532,7 +1538,7 @@ def get_future_sle_with_negative_batch_qty(args):
 		limit 1
 	""",
 		args,
-		as_dict=1,
+		as_dict=1
 	)
 
 

@@ -708,11 +708,11 @@ erpnext.utils.do_update_child_items = function(opts) {
 				})
 			}
 			frappe.call({
-				method: 'make_only_return_qty',
+				method: 'update_items',
 				doc:frm.doc,
 				freeze: true,
 				args: {
-					"type":update,
+					"types": opts.update,
 					'data': trans_items,
 				},
 				callback: function() {

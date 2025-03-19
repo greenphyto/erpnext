@@ -528,11 +528,86 @@ class DeliveryNote(SellingController):
 					# not yet for SO
 
 	@frappe.whitelist()
-	def make_only_return_qty(self, data):
+	def update_items(self,types, data):
 		# it will return qty before have sales invoice, after have sales invoice it should do Sales Return
 		# possibilities only for return qty (not adding)
+		if types == "qty":
+			self.make_only_return_qty(data)
+		else:
+			self.update_item_batch(data)
+
+	def update_item_batch(self, data):
+		changes = 0
+		return_data = []
+		changed_list = []
+		for d in data:
+			d = frappe._dict(d)
+			row = self.get("items", {"name":d.docname})
+			if not row:
+				continue
+			row= row[0]
+			if d.batch_no != row.batch_no:
+				changed_list.append(d.name)
+				changes = True
+				return_data.append({
+					"docname": d.name,
+					"name": d.name,
+					"item_code": d.item_code,
+					"qty": d.qty,
+					"return_qty": d.qty, #return all qty
+					"new_qty": 0,
+					"rate": d.rate,
+					"uom": d.uom,
+				})
+		
+		self.make_only_return_qty(return_data)
+
+		# update batch, calculate rate, and make new input
 		sl_entries = []
-		changes = 1
+		only_for_item = []
+		for d in data:
+			d = frappe._dict(d)
+			row = self.get("items", {"name":d.docname})
+			if not row:
+				continue
+			row= row[0]
+			if d.batch_no != row.batch_no:
+				only_for_item.append(row.item_code)
+				row.qty = d.new_qty
+				row.stock_qty = d.new_qty * flt(row.conversion_factor)
+				row.return_qty =  d.new_qty - d.qty
+				# chaneg batch to new
+				row.batch_no = d.batch_no
+				row.db_update()
+
+				item_row = frappe._dict(row.as_dict())
+				item_row.qty = row.qty * flt(row.conversion_factor)
+				sle = self.get_sle_for_source_warehouse(item_row)
+				sle.dependant_sle_voucher_detail_no = d.name
+				sl_entries.append(sle)
+		
+		if changes:
+			self.calculate_taxes_and_totals()
+			for d in self.items:
+				d.db_update()
+			self.db_update()
+
+			self.make_sl_entries(sl_entries)
+
+			warehouse_account = get_warehouse_account_map(self.company)
+			gl_entries = self.get_gl_entries(warehouse_account, only_for_item=only_for_item)
+			make_gl_entries(gl_entries)
+
+			self.repost_future_sle_and_gle()
+			self.db_update()
+			return True
+		else:
+			return False
+
+
+	def make_only_return_qty(self, data):
+		sl_entries = []
+		changes = 0
 		for d in data:
 			d = frappe._dict(d)
 			row = self.get("items", {"name":d.docname})
