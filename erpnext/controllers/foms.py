@@ -1119,6 +1119,9 @@ def _update_foms_sales_order(log, api=None):
 		
 		for d in doc.get(table_field):
 			product_id = frappe.get_value("Item", d.item_code, "foms_product_id")
+			if not product_id:
+				continue
+
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
 			child_id = cint(d.get("foms_id"))
 			item = {
@@ -1300,6 +1303,9 @@ def _update_foms_forecast(log, api=None):
 			
 			temp = frappe.get_value("Item", d.item_code, ["foms_product_id", "stock_uom"], as_dict=1)
 			product_id = temp.foms_product_id
+			if not product_id:
+				continue
+			
 			stock_uom = temp.stock_uom
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
 			child_id = cint(d.get("foms_id"))
