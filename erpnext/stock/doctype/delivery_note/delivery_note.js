@@ -135,11 +135,19 @@ frappe.ui.form.on("Delivery Note", {
 		}
 
 		if(frm.doc.docstatus === 1 && frm.doc.status !== 'Closed' && flt(frm.doc.per_billed, 6) < 100) {
-			frm.add_custom_button(__('Return Items'), () => {
+			frm.add_custom_button(__('Quantity'), () => {
 				erpnext.utils.do_update_child_items({
 					frm: frm,
+					update: "qty"
 				})
-			});
+			}, __("Update Items"));
+
+			frm.add_custom_button(__('Batch'), () => {
+				erpnext.utils.do_update_child_items({
+					frm: frm,
+					update: "batch"
+				})
+			}, __("Update Items"));
 		}
 		
 		erpnext.add_image_slide(frm)
@@ -542,44 +550,91 @@ erpnext.utils.do_update_child_items = function(opts) {
 		read_only: 1,
 		disabled: 0,
 		label: __('Item Code'),
-		get_query: item_query
+		get_query: item_query,
+		columns:2
 	}, {
 		fieldtype:'Link',
 		fieldname:'uom',
 		options: 'UOM',
 		read_only: 1,
 		label: __('UOM'),
-		in_list_view: 1
-	}, {
-		fieldtype:'Float',
-		fieldname:"qty",
-		default: 0,
-		read_only: 1,
 		in_list_view: 1,
-		label: __('Qty'),
-		precision: get_precision("qty")
-	}, {
-		fieldtype:'Float',
-		fieldname:"return_qty",
-		default: 0,
-		read_only: 0,
-		in_list_view: 1,
-		label: __('Return Qty'),
-		precision: get_precision("qty"),
-		onchange: (el, grid)=>{
-			grid.doc.new_qty = flt(grid.doc.qty) - flt(grid.doc.return_qty);
-			grid.refresh();
-		}
-	}, {
-		fieldtype:'Float',
-		fieldname:"new_qty",
-		options: "",
-		default: 0,
-		read_only: 1,
-		in_list_view: 1,
-		label: __('New Qty'),
-		precision: get_precision("qty")
-	}];
+		columns:2
+	}]
+	
+	if (opts.update == "qty"){
+		var new_fields = [{
+				fieldtype:'Float',
+				fieldname:"qty",
+				default: 0,
+				read_only: 1,
+				in_list_view: 1,
+				label: __('Qty'),
+				precision: get_precision("qty")
+			}, {
+				fieldtype:'Float',
+				fieldname:"return_qty",
+				default: 0,
+				read_only: 0,
+				in_list_view: 1,
+				label: __('Return Qty'),
+				precision: get_precision("qty"),
+				onchange: (el, grid)=>{
+					grid.doc.new_qty = flt(grid.doc.qty) - flt(grid.doc.return_qty);
+					grid.refresh();
+				}
+			}, {
+				fieldtype:'Float',
+				fieldname:"new_qty",
+				options: "",
+				default: 0,
+				read_only: 1,
+				in_list_view: 1,
+				label: __('New Qty'),
+				precision: get_precision("qty")
+			}] 
+		fields.push(...new_fields);
+	} else {
+		var new_fields = [{
+			fieldtype:'Link',
+			fieldname:"warehouse",
+			options: "Warehouse",
+			default: 0,
+			read_only: 1,
+			in_list_view: 1,
+			label: __('Warehouse'),
+			columns:2
+		},
+		{
+			fieldtype:'Link',
+			fieldname:"batch_no",
+			options: "Batch",
+			default: 0,
+			read_only: 1,
+			in_list_view: 1,
+			label: __('Batch'),
+			columns:4,
+			reqd:1,
+			get_query:function(item){
+				let filters = {
+					'item_code': item.item_code,
+					'posting_date': frm.doc.posting_date || frappe.datetime.nowdate(),
+				}
+	
+				// if (doc.is_return) {
+				// 	filters["is_return"] = 1;
+				// }
+	
+				if (item.warehouse) filters["warehouse"] = item.warehouse;
+	
+				return {
+					query : "erpnext.controllers.queries.get_batch_no",
+					filters: filters
+				}
+			}
+		}]
+		fields.push(...new_fields);
+	}
 
 	const dialog = new frappe.ui.Dialog({
 		title: __("Update Items"),
@@ -600,17 +655,28 @@ erpnext.utils.do_update_child_items = function(opts) {
 		],
 		primary_action: function() {
 			const trans_items = this.get_values()["trans_items"].filter((item) => !!item.item_code);
-			$.each(trans_items, (i, row)=>{
-				if (row.return_qty > row.qty){
-					frappe.throw(`Row ${row.idx}, ${row.item_code} Can't return more than actual qty`)
-					return
-				}
-			})
+			if (opts.update=="qty"){
+				$.each(trans_items, (i, row)=>{
+					if (row.return_qty > row.qty){
+						frappe.throw(`Row ${row.idx}, Can't return more than actual qty`)
+						return
+					}
+				})
+			}
+			else{
+				$.each(trans_items, (i, row)=>{
+					if (!row.batch_no){
+						frappe.throw(`Row ${row.idx}, <b>Batch</b> can't be empty.`)
+						return
+					}
+				})
+			}
 			frappe.call({
 				method: 'make_only_return_qty',
 				doc:frm.doc,
 				freeze: true,
 				args: {
+					"type":update,
 					'data': trans_items,
 				},
 				callback: function() {
@@ -635,7 +701,9 @@ erpnext.utils.do_update_child_items = function(opts) {
 			"return_qty":0,
 			"new_qty":d.qty,
 			"rate": d.rate,
-			"uom": d.uom
+			"uom": d.uom,
+			"warehouse": d.warehouse,
+			"batch_no": d.batch_no
 		});
 		this.data = dialog.fields_dict.trans_items.df.data;
 		dialog.fields_dict.trans_items.grid.refresh();
