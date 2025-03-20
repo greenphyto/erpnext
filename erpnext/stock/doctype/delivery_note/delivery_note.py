@@ -538,6 +538,7 @@ class DeliveryNote(SellingController):
 		changes = 0
 		return_data = []
 		changed_list = []
+		changed_text = ["<b>Batch Update!</b>"]
 		for d in data:
 			d = frappe._dict(d)
 			row = self.get("items", {"name":d.docname})
@@ -557,6 +558,8 @@ class DeliveryNote(SellingController):
 					"rate": d.rate,
 					"uom": d.uom,
 				})
+				txt = f"{frappe.session.user} changed batch {row.batch_no} to {d.batch_no} on row {row.idx}"
+				changed_text.append(txt)
 		
 		self.make_only_return_qty(return_data)
 
@@ -598,6 +601,11 @@ class DeliveryNote(SellingController):
 
 			self.repost_future_sle_and_gle()
 			self.db_update()
+
+			# make comment
+			if changed_text:
+				txt = "<br>".join(changed_text)
+				self.add_comment("Comment", txt)
 			return True
 		else:
 			return False
