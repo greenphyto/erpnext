@@ -2059,15 +2059,30 @@ def create_repack_entry(bom_name, qty, submit=False):
 	return se.name
 
 
-from erpnext.manufacturing.doctype.bom.bom import get_bom_items_as_dict
-from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
 
 def get_data_dummy_work_order(item='', qty=10, work_order="", lot_id='', reff=[], operation_no=None):
+	import erpnext
+	from erpnext.manufacturing.doctype.bom.bom import get_bom_items_as_dict
+	from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
+	from frappe.utils import add_days, getdate
+	OPERATION_MAP_NAME = {
+		1:"Seeding",
+		2:"Transplanting",
+		3:"Harvesting",
+	}
+	UOM_MAP_REV = {
+		"Litre": "L",
+		"Gram": "g",
+		"Kg": "kg",
+		"Unit": "unit",
+		"Millilitre": "ml"
+	}
 	"""
 	Operation 0: creating Work order
-	Operation 1: creating Work order
-	Operation 2: creating Work order
-	Operation 3: creating Work order
+	Operation 1: finish operation 1
+	Operation 2: finish operation 2
+	Operation 3: finish operation 3
+	Operation 4: finish goods
 	"""
 	default_bom = ""
 	if not item and work_order:
@@ -2102,6 +2117,15 @@ def get_data_dummy_work_order(item='', qty=10, work_order="", lot_id='', reff=[]
 			"gross_weight":qty * 1.8
 		}
 
+	if operation_no == 4:
+		# finish
+		payload = {
+			"erpWorkOrderID": work_order,
+			"qty": qty,
+			"expiryDate": add_days(getdate(), 30),
+			"now": 1
+		}
+
 	elif operation_no:
 		payload = {
 			"ERPWorkOrderID": work_order,
@@ -2126,7 +2150,13 @@ def get_data_dummy_work_order(item='', qty=10, work_order="", lot_id='', reff=[]
 					"qty": val.qty * qty,
 					"uom": UOM_MAP_REV.get(val.uom)
 				})
+				if not frappe.get_value("Item", key, "is_stock_item"):
+					continue
+
 				batch_list = get_available_batch(item_code, item.qty)
+				if not batch_list:
+					print("WARNING: Missing stock for {}".format(key))
+					continue
 
 				batch, warehouse = "", ""
 				for dt in batch_list:

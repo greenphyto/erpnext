@@ -96,8 +96,15 @@ class Request(Document):
 					row.bom = bom.name
 					row.parent_item = d.item_code
 					row.bom_no = frappe.get_value("Item", row.item_code, "default_bom")
-					if row.bom_no:
+					if not row.bom_no:
 						row.progress = 100
+				
+				progress = []
+				for d in self.salad_items:
+					if d.progress:
+						progress.append(d.progress)
+				
+				d.progress = sum(progress)/len(progress)
 
 
 
