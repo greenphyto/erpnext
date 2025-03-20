@@ -31,7 +31,7 @@ def create_foms_data(data_type, data_name, raw, reopen=False):
 			doc.doc_type = ""
 			doc.doc_name = ""
 
-		elif not frappe.db.exists(doc.doc_type, doc.doc_name):
+		elif doc.doc_type and not frappe.db.exists(doc.doc_type, doc.doc_name):
 			doc.doc_name = ""
 	else:
 		doc = frappe.new_doc("FOMS Data Mapping")
