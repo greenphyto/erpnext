@@ -762,7 +762,7 @@ def make_sales_invoice(source_name, target_doc=None):
 				"doctype": "Sales Invoice",
 				"field_map": {
 					"is_return": "is_return",
-					"delivery_note": "name"
+					"name": "delivery_note"
 				},
 				"validation": {"docstatus": ["=", 1]},
 			},
