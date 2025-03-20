@@ -8,7 +8,7 @@ from frappe.contacts.doctype.address.address import get_company_address
 from frappe.desk.notifications import clear_doctype_notifications
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.utils import get_fetch_values
-from frappe.utils import cint, flt,format_date
+from frappe.utils import cint, flt,format_date, get_datetime, get_time, getdate
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from erpnext.stock import get_warehouse_account_map, get_item_account
 from erpnext.accounts.general_ledger import make_gl_entries
@@ -532,15 +532,18 @@ class DeliveryNote(SellingController):
 		# it will return qty before have sales invoice, after have sales invoice it should do Sales Return
 		# possibilities only for return qty (not adding)
 		if types == "qty":
-			self.make_only_return_qty(data)
+			self.make_only_return_qty(data, update_modified=True)
 		else:
-			self.update_item_batch(data)
+			self.update_item_batch(data, update_modified=True)
 
-	def update_item_batch(self, data):
+	def update_item_batch(self, data, update_modified=False):
 		changes = 0
 		return_data = []
 		changed_list = []
 		changed_text = ["<b>Batch Update!</b>"]
+		now = get_datetime()
+		posting_date = getdate(now)
+		posting_time = get_time(now)
 		for d in data:
 			d = frappe._dict(d)
 			row = self.get("items", {"name":d.docname})
@@ -587,6 +590,8 @@ class DeliveryNote(SellingController):
 				item_row.qty = row.qty * flt(row.conversion_factor)
 				sle = self.get_sle_for_source_warehouse(item_row)
 				sle.dependant_sle_voucher_detail_no = d.name
+				sle.posting_date = posting_date
+				sle.posting_time = posting_time
 				sl_entries.append(sle)
 		
 		if changes:
@@ -599,9 +604,14 @@ class DeliveryNote(SellingController):
 
 			warehouse_account = get_warehouse_account_map(self.company)
 			gl_entries = self.get_gl_entries(warehouse_account, only_for_item=only_for_item)
+			for d in gl_entries:
+				d.posting_date = posting_date
 			make_gl_entries(gl_entries)
 
 			self.repost_future_sle_and_gle()
+			if update_modified:
+				self.modified = now
+				self.modified_by = frappe.session.user
 			self.db_update()
 
 			# make comment
@@ -613,9 +623,12 @@ class DeliveryNote(SellingController):
 			return False
 
 
-	def make_only_return_qty(self, data):
+	def make_only_return_qty(self, data, update_modified=False):
 		sl_entries = []
 		changes = 0
+		now = get_datetime()
+		posting_date = getdate(now)
+		posting_time = get_time(now)
 		for d in data:
 			d = frappe._dict(d)
 			row = self.get("items", {"name":d.docname})
@@ -641,6 +654,8 @@ class DeliveryNote(SellingController):
 				item_row.is_return = 1
 				sle = self.get_sle_for_source_warehouse(item_row)
 				sle.dependant_sle_voucher_detail_no = d.name
+				sle.posting_date = posting_date
+				sle.posting_time = posting_time
 				sl_entries.append(sle)
 				d.db_update()
 
@@ -650,9 +665,15 @@ class DeliveryNote(SellingController):
 			# only make GL on return 
 			warehouse_account = get_warehouse_account_map(self.company)
 			gl_entries = self.get_gl_entries(warehouse_account, from_partial_return=True)
+			for d in gl_entries:
+				d.remarks = "Returning Stock"
+				d.posting_date = posting_date
 			make_gl_entries(gl_entries)
 
 			self.repost_future_sle_and_gle()
+			if update_modified:
+				self.modified = now
+				self.modified_by = frappe.session.user
 			self.db_update()
 			return True
 		else:
