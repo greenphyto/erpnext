@@ -50,6 +50,14 @@ UOM_MAP = {
 	"ml":"Millilitre",
 }
 
+UOM_MAP_REV = {
+    "Litre": "L",
+    "Gram": "g",
+    "Kg": "kg",
+    "Unit": "unit",
+    "Millilitre": "ml"
+}
+
 # see on hooks.py on sync_log_method
 METHOD_MAP = {
 	"Supplier":1,
@@ -1119,6 +1127,9 @@ def _update_foms_sales_order(log, api=None):
 		
 		for d in doc.get(table_field):
 			product_id = frappe.get_value("Item", d.item_code, "foms_product_id")
+			if not product_id:
+				continue
+
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
 			child_id = cint(d.get("foms_id"))
 			item = {
@@ -1300,6 +1311,9 @@ def _update_foms_forecast(log, api=None):
 			
 			temp = frappe.get_value("Item", d.item_code, ["foms_product_id", "stock_uom"], as_dict=1)
 			product_id = temp.foms_product_id
+			if not product_id:
+				continue
+
 			stock_uom = temp.stock_uom
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
 			child_id = cint(d.get("foms_id"))
@@ -2045,4 +2059,89 @@ def create_repack_entry(bom_name, qty, submit=False):
 	return se.name
 
 
+from erpnext.manufacturing.doctype.bom.bom import get_bom_items_as_dict
+from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
 
+def get_data_dummy_work_order(item='', qty=10, work_order="", lot_id='', reff=[], operation_no=None):
+	"""
+	Operation 0: creating Work order
+	Operation 1: creating Work order
+	Operation 2: creating Work order
+	Operation 3: creating Work order
+	"""
+	default_bom = ""
+	if not item and work_order:
+		item = frappe.get_value("Work Order", work_order, "production_item")
+		default_bom = frappe.get_value("Work Order", work_order, "bom_no")
+
+	if not default_bom:
+		default_bom = frappe.get_value("Item", item, "default_bom")
+
+	company = erpnext.get_default_company()
+	item_dict = get_bom_items_as_dict(
+			default_bom,
+			company,
+			qty=qty,
+			fetch_exploded=0,
+			fetch_qty_in_stock_uom=False,
+		)
+
+	payload = {}
+	if operation_no == 0 or lot_id:
+		import random
+		# create WO
+		item_id = frappe.get_value('Item', item, "foms_product_id")
+		payload = {
+			"fomsWorkOrderID": random.randint(10,9999),
+			"fomsLotID": lot_id,
+			"productID": item_id,
+			"salesOrderNo": reff,
+			"qty": qty,
+			"uom": "Kg",
+			"submit": True,
+			"gross_weight":qty * 1.8
+		}
+
+	elif operation_no:
+		payload = {
+			"ERPWorkOrderID": work_order,
+			"operationNo": cint(operation_no),
+			"percentage": 100,
+			"rawMaterials": [],
+		}
+		if operation_no == 3:
+			payload['now'] = 1
+
+		operation = OPERATION_MAP_NAME.get( cint(operation_no) )
+		item_list = []
+		for key, val in item_dict.items():
+			if key[1] == operation:
+				item_code = key[0]
+				item = frappe._dict({
+					"sourceWarehouseId": "",
+					"sourceWarehouseRefNo": "",
+					"rawMaterialId": "",
+					"rawMaterialRefNo": "",
+					"rawMaterialBatchRefNo": "",
+					"qty": val.qty * qty,
+					"uom": UOM_MAP_REV.get(val.uom)
+				})
+				batch_list = get_available_batch(item_code, item.qty)
+
+				batch, warehouse = "", ""
+				for dt in batch_list:
+					batch = dt.batch_id
+					warehouse = dt.warehouse
+				if not batch:
+					print(f"WARNING: {item_code}, Not found for batch available")
+				
+				item.sourceWarehouseId = frappe.get_value("Warehouse", warehouse, 'foms_id')
+				item.sourceWarehouseRefNo = warehouse
+				item.rawMaterialId = frappe.get_value("Item", item_code, 'foms_raw_id')
+				item.rawMaterialRefNo = item_code
+				item.rawMaterialBatchRefNo = batch
+				item_list.append(item)
+		
+		payload['rawMaterials'] = item_list
+
+	return json.dumps(payload)
