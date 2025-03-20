@@ -499,7 +499,6 @@ class StockController(AccountsController):
 
 	def make_sl_entries(self, sl_entries, allow_negative_stock=False, via_landed_cost_voucher=False):
 		from erpnext.stock.stock_ledger import make_sl_entries
-		print(495, sl_entries)
 		make_sl_entries(sl_entries, allow_negative_stock, via_landed_cost_voucher)
 
 	def make_gl_entries_on_cancel(self):
