@@ -539,9 +539,6 @@ class DeliveryNote(SellingController):
 		return_data = []
 		changed_list = []
 		changed_text = ["<b>Batch Update!</b>"]
-		now = get_datetime()
-		posting_date = getdate(now)
-		posting_time = get_time(now)
 		for d in data:
 			d = frappe._dict(d)
 			row = self.get("items", {"name":d.docname})
@@ -569,6 +566,9 @@ class DeliveryNote(SellingController):
 		# update batch, calculate rate, and make new input
 		sl_entries = []
 		only_for_item = []
+		now = get_datetime()
+		posting_date = getdate(now)
+		posting_time = get_time(now)
 		for d in data:
 			d = frappe._dict(d)
 			row = self.get("items", {"name":d.docname})
@@ -592,6 +592,7 @@ class DeliveryNote(SellingController):
 				sle.posting_time = posting_time
 				sl_entries.append(sle)
 		
+
 		if changes:
 			self.calculate_taxes_and_totals()
 			for d in self.items:
