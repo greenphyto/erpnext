@@ -1563,7 +1563,8 @@
    "default": "0",
    "fieldname": "is_replacement",
    "fieldtype": "Check",
-   "label": "Is Replacement"
+   "label": "Is Replacement",
+   "read_only": 0
   },
   {
    "fieldname": "delivery_date",
