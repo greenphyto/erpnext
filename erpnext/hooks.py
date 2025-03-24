@@ -416,7 +416,8 @@ doc_events = {
             "erpnext.controllers.foms.detect_salad_items"
 		],
         "before_cancel":[
-            "erpnext.controllers.foms.detect_salad_items"
+            "erpnext.controllers.foms.detect_salad_items",
+            "erpnext.controllers.foms.cancel_repack_se"
 		]
 	},
     "Stock Ledger Entry": {

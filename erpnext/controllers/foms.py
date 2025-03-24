@@ -1983,6 +1983,12 @@ def get_cost_center(operation_name, company):
 		if not cc:
 			frappe.throw(_("Missing Cost Center for Packing, please update the Company Settings"))
 		return cc
+	
+def cancel_repack_se(doc, method=""):
+	if not doc.purpose == "Repack":
+		return
+	
+	frappe.db.set_value("Request Items", {"stock_entry":doc.name}, "stock_entry", "")
 
 def detect_salad_items(doc, method=""):
 	if not doc.stock_entry_type == "Manufacture" or not doc.work_order:
