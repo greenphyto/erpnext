@@ -2013,7 +2013,7 @@ def detect_salad_items(doc, method=""):
 
 	if req_list:
 		for req in req_list:
-			make_salad_product(req, wo_doc.production_item, wo_doc.name, cancelled=cancelled)
+			make_salad_product(req, wo_doc.production_item, wo_name=wo_doc.name, cancelled=cancelled)
 
 	# not yet for SO
 
@@ -2023,11 +2023,8 @@ def manually_create_salad(req_name):
 	done_list = []
 	txt = ""
 	for d in doc.get("items"):
-		print(2026, d.is_salad_product, d.item_code, d.stock_entry)
 		if not d.is_salad_product or d.stock_entry:
-			print(2027)
 			continue
-		print(2030, d.item_code)
 		se_name = make_salad_product(req_name, parent_item=d.item_code)
 		done_list.append(se_name)
 
