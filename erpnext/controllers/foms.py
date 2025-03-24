@@ -2111,6 +2111,7 @@ def make_salad_product(req_name, item_code="", parent_item="", wo_name="", cance
 	return se_name
 
 def create_repack_entry(bom_name, qty,expiry_date, submit=False):
+	from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
 	se = frappe.new_doc("Stock Entry")
 	se.stock_entry_type_view = "Repack"
 	se.naming_series = frappe.get_value("Stock Entry Type", se.stock_entry_type_view, "series")
