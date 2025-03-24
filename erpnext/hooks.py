@@ -414,6 +414,9 @@ doc_events = {
         "on_submit":[
 			"erpnext.controllers.foms.sync_log",
             "erpnext.controllers.foms.detect_salad_items"
+		],
+        "before_cancel":[
+            "erpnext.controllers.foms.detect_salad_items"
 		]
 	},
     "Stock Ledger Entry": {

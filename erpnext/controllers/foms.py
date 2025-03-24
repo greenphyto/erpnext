@@ -1991,6 +1991,8 @@ def detect_salad_items(doc, method=""):
 	is_salad_item = frappe.get_value("Work Order", doc.work_order, "is_salad_item")
 	if not is_salad_item:
 		return 
+
+	cancelled = doc.docstatus == 2
 	
 	wo_doc = frappe.get_doc("Work Order", doc.work_order)
 	req_list = []
@@ -2002,12 +2004,12 @@ def detect_salad_items(doc, method=""):
 
 	if req_list:
 		for req in req_list:
-			make_salad_product(req, wo_doc.production_item, wo_doc.name)
+			make_salad_product(req, wo_doc.production_item, wo_doc.name, cancelled=cancelled)
 
 	# not yet for SO
 
 
-def make_salad_product(req_name, item_code, wo_name=""):
+def make_salad_product(req_name, item_code, wo_name="", cancelled=False):
 	def get_batch_produced(wo_name):
 		temp = frappe.db.sql("""
 			SELECT 
@@ -2028,8 +2030,12 @@ def make_salad_product(req_name, item_code, wo_name=""):
 	for d in req_doc.get("salad_items"):
 		if d.item_code == item_code:
 			parent_item = d.parent_item
-			d.progress = 100
-			d.batch_no = get_batch_produced(wo_name)
+			if not cancelled:
+				d.progress = 100
+				d.batch_no = get_batch_produced(wo_name)
+			else:
+				d.progress = 0
+				d.batch_no = ""
 			d.db_update()
 			break
 	
@@ -2049,6 +2055,13 @@ def make_salad_product(req_name, item_code, wo_name=""):
 		if d.item_code == parent_item:
 			progress = get_progress(d.item_code)
 			d.db_set("progress", progress)
+
+			if d.stock_entry and progress < 100:
+				# cancel repack entry
+				repack = frappe.get_doc("Stock Entry", d.stock_entry)
+				repack.cancel()
+				d.stock_entry = ""
+				d.db_update()
 
 			if not d.stock_entry and progress>=100:
 				# find longest date
