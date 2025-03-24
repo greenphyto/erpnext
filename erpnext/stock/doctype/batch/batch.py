@@ -402,7 +402,7 @@ def validate_serial_no_with_batch(serial_nos, item_code):
 def make_batch(args):
 	if frappe.db.get_value("Item", args.item, "has_batch_no"):
 		args.doctype = "Batch"
-		frappe.get_doc(args).insert().name
+		return frappe.get_doc(args).insert().name
 
 
 @frappe.whitelist()

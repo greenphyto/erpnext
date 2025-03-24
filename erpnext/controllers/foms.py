@@ -1,7 +1,7 @@
 import frappe, erpnext
 from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
 from frappe.core.doctype.sync_log.sync_log import get_pending_log
-from frappe.utils import cint, flt, cstr, get_time, getdate,add_days, get_datetime, now
+from frappe.utils import cint, flt, cstr, get_time, getdate,add_days, get_datetime, now, get_link_to_form
 from erpnext.accounts.party import get_party_details
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
@@ -11,7 +11,7 @@ import json, math
 from erpnext import get_company_currency, get_default_company
 from bs4 import BeautifulSoup as bs
 from erpnext.stock import get_warehouse_account_map, get_item_account
-from erpnext.stock.doctype.batch.batch import get_batch_qty
+from erpnext.stock.doctype.batch.batch import get_batch_qty, make_batch
 
 
 """
@@ -538,6 +538,9 @@ def _update_stock_entry_receipt(log, api=None):
 		api = FomsAPI()
 
 	doc = frappe.get_doc("Stock Entry", log.docname)
+
+	if doc.purpose in ['Repack', 'Manufacture']:
+		return
 
 	# find overide
 	for d in doc.get("items"):
@@ -1983,6 +1986,12 @@ def get_cost_center(operation_name, company):
 		if not cc:
 			frappe.throw(_("Missing Cost Center for Packing, please update the Company Settings"))
 		return cc
+	
+def cancel_repack_se(doc, method=""):
+	if not doc.purpose == "Repack":
+		return
+	
+	frappe.db.set_value("Request Items", {"stock_entry":doc.name}, "stock_entry", "")
 
 def detect_salad_items(doc, method=""):
 	if not doc.stock_entry_type == "Manufacture" or not doc.work_order:
@@ -1991,6 +2000,8 @@ def detect_salad_items(doc, method=""):
 	is_salad_item = frappe.get_value("Work Order", doc.work_order, "is_salad_item")
 	if not is_salad_item:
 		return 
+
+	cancelled = doc.docstatus == 2
 	
 	wo_doc = frappe.get_doc("Work Order", doc.work_order)
 	req_list = []
@@ -2002,20 +2013,60 @@ def detect_salad_items(doc, method=""):
 
 	if req_list:
 		for req in req_list:
-			make_salad_product(req, wo_doc.production_item)
+			make_salad_product(req, wo_doc.production_item, wo_doc.name, cancelled=cancelled)
 
 	# not yet for SO
 
+@frappe.whitelist()
+def manually_create_salad(req_name):
+	doc = frappe.get_doc("Request", req_name)
+	done_list = []
+	txt = ""
+	for d in doc.get("items"):
+		print(2026, d.is_salad_product, d.item_code, d.stock_entry)
+		if not d.is_salad_product or d.stock_entry:
+			print(2027)
+			continue
+		print(2030, d.item_code)
+		se_name = make_salad_product(req_name, parent_item=d.item_code)
+		done_list.append(se_name)
 
-def make_salad_product(req_name, item_code):
+		link = get_link_to_form("Stock Entry", se_name)
+		msg = f"Created salad product <b>{d.item_code}</b> ({link})<br>"
+		txt += msg
+
+	return txt
+
+def make_salad_product(req_name, item_code="", parent_item="", wo_name="", cancelled=False):
+	def get_batch_produced(wo_name):
+		temp = frappe.db.sql("""
+			SELECT 
+				si.batch_no
+			FROM
+				`tabStock Entry Detail` si
+					LEFT JOIN
+				`tabStock Entry` s ON s.name = si.parent
+			WHERE
+				s.work_order = %s
+					AND si.is_finished_item = 1
+					   """, (wo_name), as_dict=1, debug=0)
+		if temp:
+			return temp[0].get("batch_no")
+		
 	req_doc = frappe.get_doc("Request", req_name)
-	parent_item = ""
-	for d in req_doc.get("salad_items"):
-		if d.item_code == item_code:
-			parent_item = d.parent_item
-			d.progress = 100
-			d.db_update()
-			break
+	if wo_name:
+		for d in req_doc.get("salad_items"):
+			if d.item_code == item_code:
+				parent_item = d.parent_item
+				if not cancelled:
+					d.progress = 100
+					d.batch_no = get_batch_produced(wo_name)
+					d.work_order = wo_name
+				else:
+					d.progress = 0
+					d.batch_no = ""
+				d.db_update()
+				break
 	
 	if not parent_item:
 		return
@@ -2029,16 +2080,40 @@ def make_salad_product(req_name, item_code):
 		parent_progress = sum(progress)/len(progress)
 		return parent_progress
 	
+	se_name = ""
 	for d in req_doc.get("items"):
 		if d.item_code == parent_item:
 			progress = get_progress(d.item_code)
 			d.db_set("progress", progress)
+
+			if d.stock_entry and progress < 100:
+				# cancel repack entry
+				repack = frappe.get_doc("Stock Entry", d.stock_entry)
+				repack.cancel()
+				d.stock_entry = ""
+				d.db_update()
+
 			if not d.stock_entry and progress>=100:
-				name = create_repack_entry(d.salad_recipe, d.qty, submit=1)
-				d.db_set("stock_entry", name)
+				# find longest date
+				exp_list = []
+				for s in req_doc.get("salad_items"):
+					if s.parent_item == d.item_code:
+						if s.batch_no:
+							exp_date = frappe.get_value("Batch", s.batch_no, "expiry_date")
+							exp_list.append(getdate(exp_date))
 
+				if exp_list:
+					expiry_date = max(exp_list)
+				else:
+					# add default 2 weeks
+					expiry_date = add_days(getdate(), 14)
 
-def create_repack_entry(bom_name, qty, submit=False):
+				se_name = create_repack_entry(d.salad_recipe, d.qty,expiry_date, submit=1)
+				d.db_set("stock_entry", se_name)
+
+	return se_name
+
+def create_repack_entry(bom_name, qty,expiry_date, submit=False):
 	se = frappe.new_doc("Stock Entry")
 	se.stock_entry_type_view = "Repack"
 	se.naming_series = frappe.get_value("Stock Entry Type", se.stock_entry_type_view, "series")
@@ -2051,6 +2126,31 @@ def create_repack_entry(bom_name, qty, submit=False):
 	se.to_warehouse = warehouse
 	se.use_multi_level_bom = 0
 	se.get_items()
+	finish_batch = ""
+
+	# change warehouse for non finish goods
+	for d in se.items:
+		is_manufacture_item = frappe.get_value("Item", d.item_code, "default_bom")
+		if not is_manufacture_item:
+			data = get_available_batch(d.item_code, d.qty)
+			if data:
+				d.s_warehouse = data[0].get("warehouse")
+				d.batch_no = data[0].get("batch_id")
+
+		if d.is_finished_item:
+			d.batch_no = make_batch(frappe._dict(
+				{
+					"item": d.item_code,
+					"qty_to_produce": d.qty,
+					"reference_doctype": se.doctype,
+					"expiry_date":expiry_date
+				}
+			))
+			finish_batch = d.batch_no
+
+	if finish_batch:
+		frappe.db.set_value("Batch", finish_batch, "reference_name", se.name)
+
 	se.flags.ignore_permissions = 1
 	se.save()
 	if submit:
