@@ -11,7 +11,7 @@ import json, math
 from erpnext import get_company_currency, get_default_company
 from bs4 import BeautifulSoup as bs
 from erpnext.stock import get_warehouse_account_map, get_item_account
-from erpnext.stock.doctype.batch.batch import get_batch_qty
+from erpnext.stock.doctype.batch.batch import get_batch_qty, make_batch
 
 
 """
@@ -2002,18 +2002,34 @@ def detect_salad_items(doc, method=""):
 
 	if req_list:
 		for req in req_list:
-			make_salad_product(req, wo_doc.production_item)
+			make_salad_product(req, wo_doc.production_item, wo_doc.name)
 
 	# not yet for SO
 
 
-def make_salad_product(req_name, item_code):
+def make_salad_product(req_name, item_code, wo_name=""):
+	def get_batch_produced(wo_name):
+		temp = frappe.db.sql("""
+			SELECT 
+				si.batch_no
+			FROM
+				`tabStock Entry Detail` si
+					LEFT JOIN
+				`tabStock Entry` s ON s.name = si.parent
+			WHERE
+				s.work_order = %s
+					AND si.is_finished_item = 1
+					   """, (wo_name), as_dict=1, debug=0)
+		if temp:
+			return temp[0].get("batch_no")
+		
 	req_doc = frappe.get_doc("Request", req_name)
 	parent_item = ""
 	for d in req_doc.get("salad_items"):
 		if d.item_code == item_code:
 			parent_item = d.parent_item
 			d.progress = 100
+			d.batch_no = get_batch_produced(wo_name)
 			d.db_update()
 			break
 	
@@ -2033,12 +2049,27 @@ def make_salad_product(req_name, item_code):
 		if d.item_code == parent_item:
 			progress = get_progress(d.item_code)
 			d.db_set("progress", progress)
+
 			if not d.stock_entry and progress>=100:
-				name = create_repack_entry(d.salad_recipe, d.qty, submit=1)
+				# find longest date
+				exp_list = []
+				for s in req_doc.get("salad_items"):
+					if s.parent_item == d.item_code:
+						if s.batch_no:
+							exp_date = frappe.get_value("Batch", s.batch_no, "expiry_date")
+							exp_list.append(getdate(exp_date))
+
+				if exp_list:
+					expiry_date = max(exp_list)
+				else:
+					# add default 2 weeks
+					expiry_date = add_days(getdate(), 14)
+
+				name = create_repack_entry(d.salad_recipe, d.qty,expiry_date, submit=1)
 				d.db_set("stock_entry", name)
 
 
-def create_repack_entry(bom_name, qty, submit=False):
+def create_repack_entry(bom_name, qty,expiry_date, submit=False):
 	se = frappe.new_doc("Stock Entry")
 	se.stock_entry_type_view = "Repack"
 	se.naming_series = frappe.get_value("Stock Entry Type", se.stock_entry_type_view, "series")
@@ -2051,6 +2082,31 @@ def create_repack_entry(bom_name, qty, submit=False):
 	se.to_warehouse = warehouse
 	se.use_multi_level_bom = 0
 	se.get_items()
+	finish_batch = ""
+
+	# change warehouse for non finish goods
+	for d in se.items:
+		is_manufacture_item = frappe.get_value("Item", d.item_code, "default_bom")
+		if not is_manufacture_item:
+			data = get_available_batch(d.item_code, d.qty)
+			if data:
+				d.s_warehouse = data[0].get("warehouse")
+				d.batch_no = data[0].get("batch_id")
+
+		if d.is_finished_item:
+			d.batch_no = make_batch(frappe._dict(
+				{
+					"item": d.item_code,
+					"qty_to_produce": d.qty,
+					"reference_doctype": se.doctype,
+					"expiry_date":expiry_date
+				}
+			))
+			finish_batch = d.batch_no
+
+	if finish_batch:
+		frappe.db.set_value("Batch", finish_batch, "reference_name", se.name)
+
 	se.flags.ignore_permissions = 1
 	se.save()
 	if submit:

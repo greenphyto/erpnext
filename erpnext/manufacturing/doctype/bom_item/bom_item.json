@@ -42,7 +42,8 @@
   "column_break_33",
   "sourced_by_supplier",
   "foms_id",
-  "progress"
+  "progress",
+  "batch_no"
  ],
  "fields": [
   {
@@ -319,13 +320,20 @@
    "fieldtype": "Percent",
    "label": "Progress",
    "read_only": 1
+  },
+  {
+   "fieldname": "batch_no",
+   "fieldtype": "Link",
+   "label": "Batch No",
+   "options": "Batch",
+   "read_only": 1
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-03-18 17:17:04.259158",
+ "modified": "2025-03-24 10:29:13.733053",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "BOM Item",
