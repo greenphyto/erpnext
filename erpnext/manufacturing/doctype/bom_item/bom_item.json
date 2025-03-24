@@ -43,7 +43,8 @@
   "sourced_by_supplier",
   "foms_id",
   "progress",
-  "batch_no"
+  "batch_no",
+  "work_order"
  ],
  "fields": [
   {
@@ -327,13 +328,19 @@
    "label": "Batch No",
    "options": "Batch",
    "read_only": 1
+  },
+  {
+   "fieldname": "work_order",
+   "fieldtype": "Data",
+   "label": "Work Order",
+   "read_only": 1
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-03-24 10:29:13.733053",
+ "modified": "2025-03-24 15:59:43.358077",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "BOM Item",

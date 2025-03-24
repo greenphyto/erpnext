@@ -2061,6 +2061,7 @@ def make_salad_product(req_name, item_code="", parent_item="", wo_name="", cance
 				if not cancelled:
 					d.progress = 100
 					d.batch_no = get_batch_produced(wo_name)
+					d.work_order = wo_name
 				else:
 					d.progress = 0
 					d.batch_no = ""
