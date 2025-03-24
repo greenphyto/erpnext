@@ -1,7 +1,7 @@
 import frappe, erpnext
 from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
 from frappe.core.doctype.sync_log.sync_log import get_pending_log
-from frappe.utils import cint, flt, cstr, get_time, getdate,add_days, get_datetime, now
+from frappe.utils import cint, flt, cstr, get_time, getdate,add_days, get_datetime, now, get_link_to_form
 from erpnext.accounts.party import get_party_details
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
@@ -2017,8 +2017,27 @@ def detect_salad_items(doc, method=""):
 
 	# not yet for SO
 
+@frappe.whitelist()
+def manually_create_salad(req_name):
+	doc = frappe.get_doc("Request", req_name)
+	done_list = []
+	txt = ""
+	for d in doc.get("items"):
+		print(2026, d.is_salad_product, d.item_code, d.stock_entry)
+		if not d.is_salad_product or d.stock_entry:
+			print(2027)
+			continue
+		print(2030, d.item_code)
+		se_name = make_salad_product(req_name, parent_item=d.item_code)
+		done_list.append(se_name)
 
-def make_salad_product(req_name, item_code, wo_name="", cancelled=False):
+		link = get_link_to_form("Stock Entry", se_name)
+		msg = f"Created salad product <b>{d.item_code}</b> ({link})<br>"
+		txt += msg
+
+	return txt
+
+def make_salad_product(req_name, item_code="", parent_item="", wo_name="", cancelled=False):
 	def get_batch_produced(wo_name):
 		temp = frappe.db.sql("""
 			SELECT 
@@ -2035,18 +2054,18 @@ def make_salad_product(req_name, item_code, wo_name="", cancelled=False):
 			return temp[0].get("batch_no")
 		
 	req_doc = frappe.get_doc("Request", req_name)
-	parent_item = ""
-	for d in req_doc.get("salad_items"):
-		if d.item_code == item_code:
-			parent_item = d.parent_item
-			if not cancelled:
-				d.progress = 100
-				d.batch_no = get_batch_produced(wo_name)
-			else:
-				d.progress = 0
-				d.batch_no = ""
-			d.db_update()
-			break
+	if wo_name:
+		for d in req_doc.get("salad_items"):
+			if d.item_code == item_code:
+				parent_item = d.parent_item
+				if not cancelled:
+					d.progress = 100
+					d.batch_no = get_batch_produced(wo_name)
+				else:
+					d.progress = 0
+					d.batch_no = ""
+				d.db_update()
+				break
 	
 	if not parent_item:
 		return
@@ -2060,6 +2079,7 @@ def make_salad_product(req_name, item_code, wo_name="", cancelled=False):
 		parent_progress = sum(progress)/len(progress)
 		return parent_progress
 	
+	se_name = ""
 	for d in req_doc.get("items"):
 		if d.item_code == parent_item:
 			progress = get_progress(d.item_code)
@@ -2087,9 +2107,10 @@ def make_salad_product(req_name, item_code, wo_name="", cancelled=False):
 					# add default 2 weeks
 					expiry_date = add_days(getdate(), 14)
 
-				name = create_repack_entry(d.salad_recipe, d.qty,expiry_date, submit=1)
-				d.db_set("stock_entry", name)
+				se_name = create_repack_entry(d.salad_recipe, d.qty,expiry_date, submit=1)
+				d.db_set("stock_entry", se_name)
 
+	return se_name
 
 def create_repack_entry(bom_name, qty,expiry_date, submit=False):
 	se = frappe.new_doc("Stock Entry")
