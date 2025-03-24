@@ -539,6 +539,9 @@ def _update_stock_entry_receipt(log, api=None):
 
 	doc = frappe.get_doc("Stock Entry", log.docname)
 
+	if doc.purpose in ['Repack', 'Manufacture']:
+		return
+
 	# find overide
 	for d in doc.get("items"):
 		batch_foms_id = cint(frappe.get_value("Batch", d.batch_no, "foms_id"))
