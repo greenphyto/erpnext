@@ -729,3 +729,5 @@ sync_log_method = {
     10:"erpnext.controllers.foms._update_foms_forecast",
     11:"erpnext.controllers.foms.update_stock_entry"
 }
+
+get_email_default = "erpnext.controllers.email.get_last_email_default"
