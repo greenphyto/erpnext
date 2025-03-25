@@ -1318,7 +1318,7 @@ def _update_foms_forecast(log, api=None):
 				continue
 
 			weight_order = False
-			if d.get("is_salad_product") or use_weight_order:
+			if d.parentfield == "salad_items" or use_weight_order:
 				weight_order = True
 				
 			stock_uom = temp.stock_uom

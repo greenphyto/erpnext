@@ -82,7 +82,7 @@ class Request(Document):
 	def export_salad_items(self):
 		self.salad_items = []
 		for d in self.items:
-			if d.is_salad_product:
+			if d.get("is_salad_product"):
 				bom = frappe.get_doc("BOM", d.salad_recipe)
 				for item in bom.get("items"):
 					row = self.append("salad_items")
