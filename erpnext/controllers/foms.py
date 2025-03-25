@@ -1304,7 +1304,7 @@ def _update_foms_forecast(log, api=None):
 		req_id = cint(doc.get("req_id"))
 		delivery_date = getdate(doc.delivery_date)
 		end_delivery_date = add_days(delivery_date, 1)
-		weight_order = cint(doc.non_package_item) == 1
+		use_weight_order = cint(doc.non_package_item) == 1
 
 		products = []
 		
@@ -1317,6 +1317,10 @@ def _update_foms_forecast(log, api=None):
 			if not product_id:
 				continue
 
+			weight_order = False
+			if d.get("is_salad_product") or use_weight_order:
+				weight_order = True
+				
 			stock_uom = temp.stock_uom
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
 			child_id = cint(d.get("foms_id"))
