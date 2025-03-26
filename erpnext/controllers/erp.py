@@ -12,9 +12,8 @@ def check_email_status(log, method=""):
     if not doc.reference_doctype and doc.reference_name:
         return
     
-    frappe.flags.in_test = 1
+    if doc.reference_doctype in ["Purchase Order"]:
+        frappe.db.set_value(doc.reference_doctype, doc.reference_name, "email_status", "Y")
+
     notif = frappe.get_doc("Notification", "Email Sent Status")
     notif.send(doc)
-    
-
-    
