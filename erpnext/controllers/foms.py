@@ -1114,8 +1114,9 @@ def _update_foms_sales_order(log, api=None):
 			non_stock = True
 
 	is_product_bundle = len(doc.get("packed_items"))
+	is_salad_order = any(d.get("is_salad_product") for d in doc.get("items"))
 
-	if non_stock and not is_product_bundle:
+	if non_stock and not is_product_bundle and not is_salad_order:
 		return
 
 	def loop_table(table_field):
@@ -1124,7 +1125,7 @@ def _update_foms_sales_order(log, api=None):
 
 		so_id = cint(doc.get("foms_id"))
 		req_id = cint(doc.get("req_id"))
-		weight_order = cint(doc.non_package_item) == 1
+		use_weight_order = cint(doc.non_package_item) == 1
 
 		products = []
 		
@@ -1132,6 +1133,10 @@ def _update_foms_sales_order(log, api=None):
 			product_id = frappe.get_value("Item", d.item_code, "foms_product_id")
 			if not product_id:
 				continue
+
+			weight_order = False
+			if d.get("is_salad_product") or use_weight_order:
+				weight_order = True
 
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
 			child_id = cint(d.get("foms_id"))
