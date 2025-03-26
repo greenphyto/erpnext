@@ -2,6 +2,14 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Cleaning Checklist', {
+	onload: function(frm){
+		frm.cscript.set_period(frm);
+	},
+	refresh: function(frm){
+		if (frm.is_dirty()){
+			frm.cscript.set_period(frm);
+		}
+	},
 	level_1_enable: function(frm){
 		frm.cscript.load_area(frm,1);
 	},
@@ -18,9 +26,7 @@ frappe.ui.form.on('Cleaning Checklist', {
 		frm.cscript.load_area(frm,5);
 	},
 	posting_date: function(frm){
-		const result = extractMonthYear(frm.doc.posting_date);
-		frm.set_value("month", result.month);
-		frm.set_value("year", result.year);
+		frm.cscript.set_period(frm);
 	}
 });
 
@@ -36,6 +42,11 @@ $.extend(cur_frm.cscript, {
 				frm.refresh()
 			}
 		})
+	},
+	set_period(frm){
+		const result = extractMonthYear(frm.doc.posting_date);
+		frm.set_value("month", result.month);
+		frm.set_value("year", result.year);
 	}
 })
 
