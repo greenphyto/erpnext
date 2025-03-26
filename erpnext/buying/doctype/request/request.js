@@ -191,7 +191,8 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 				frappe.call({
 					method:"erpnext.controllers.foms.manually_create_salad",
 					args:{
-						req_name:doc.name
+						doctype:"Request",
+						name:doc.name
 					},
 					callback:(r)=>{
 						me.frm.reload_doc();

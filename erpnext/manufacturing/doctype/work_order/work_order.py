@@ -1301,7 +1301,7 @@ class WorkOrder(Document):
 		so_list = []
 		if self.request_no:
 			req_list = self.request_no.split(", ")
-		if self.sales_order:
+		if self.sales_order_no:
 			so_list = self.sales_order_no.split(", ")
 
 		def valid_order(doctype, req_name):
