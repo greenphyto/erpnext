@@ -1,7 +1,7 @@
 import frappe, erpnext
 from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
 from frappe.core.doctype.sync_log.sync_log import get_pending_log
-from frappe.utils import cint, flt, cstr, get_time, getdate,add_days, get_datetime, now
+from frappe.utils import cint, flt, cstr, get_time, getdate,add_days, get_datetime, now, get_link_to_form
 from erpnext.accounts.party import get_party_details
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
@@ -11,7 +11,7 @@ import json, math
 from erpnext import get_company_currency, get_default_company
 from bs4 import BeautifulSoup as bs
 from erpnext.stock import get_warehouse_account_map, get_item_account
-from erpnext.stock.doctype.batch.batch import get_batch_qty
+from erpnext.stock.doctype.batch.batch import get_batch_qty, make_batch
 
 
 """
@@ -48,6 +48,14 @@ UOM_MAP = {
 	"kg":"Kg",
 	"unit":"Unit",
 	"ml":"Millilitre",
+}
+
+UOM_MAP_REV = {
+    "Litre": "L",
+    "Gram": "g",
+    "Kg": "kg",
+    "Unit": "unit",
+    "Millilitre": "ml"
 }
 
 # see on hooks.py on sync_log_method
@@ -530,6 +538,9 @@ def _update_stock_entry_receipt(log, api=None):
 		api = FomsAPI()
 
 	doc = frappe.get_doc("Stock Entry", log.docname)
+
+	if doc.purpose in ['Repack', 'Manufacture']:
+		return
 
 	# find overide
 	for d in doc.get("items"):
@@ -1101,22 +1112,32 @@ def _update_foms_sales_order(log, api=None):
 		stock_item = frappe.get_value("Item", d.item_code, "is_stock_item")
 		if not stock_item:
 			non_stock = True
-	
-	if non_stock:
+
+	is_product_bundle = len(doc.get("packed_items"))
+	is_salad_order = any(d.get("is_salad_product") for d in doc.get("items"))
+
+	if non_stock and not is_product_bundle and not is_salad_order:
 		return
-	
-	if doc.docstatus == 1:
+
+	def loop_table(table_field):
 		customer_foms_id = frappe.get_value("Customer", doc.customer, "foms_id")
 		farm_id = get_farm_id()
 
 		so_id = cint(doc.get("foms_id"))
 		req_id = cint(doc.get("req_id"))
-		weight_order = cint(doc.non_package_item) == 1
+		use_weight_order = cint(doc.non_package_item) == 1
 
 		products = []
 		
-		for d in doc.get("items"):
+		for d in doc.get(table_field):
 			product_id = frappe.get_value("Item", d.item_code, "foms_product_id")
+			if not product_id:
+				continue
+
+			weight_order = False
+			if d.get("is_salad_product") or use_weight_order:
+				weight_order = True
+
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
 			child_id = cint(d.get("foms_id"))
 			item = {
@@ -1160,13 +1181,17 @@ def _update_foms_sales_order(log, api=None):
 				item_code = frappe.get_value("Item", {"foms_product_id": cstr(d['productId'])})
 				packaging = frappe.get_value("Packaging", {"foms_id": cstr(d['packageId'])})
 				# key on product id, package id, uom, quantity, unit price
-				for row in doc.get("items", {
+				for row in doc.get(table_field, {
 					"item_code":item_code,
 					"uom":packaging
 				}):
 					row.foms_id = d['id']
 					row.db_update()
 			doc.db_update()
+	
+	if doc.docstatus == 1:
+		for field in ['items', 'packed_items', 'bom_item']:
+			loop_table(field)
 	
 	if doc.docstatus == 2:
 		res = api.cancel_sales_order(doc.foms_id)
@@ -1286,13 +1311,23 @@ def _update_foms_forecast(log, api=None):
 		req_id = cint(doc.get("req_id"))
 		delivery_date = getdate(doc.delivery_date)
 		end_delivery_date = add_days(delivery_date, 1)
-		weight_order = cint(doc.non_package_item) == 1
+		use_weight_order = cint(doc.non_package_item) == 1
 
 		products = []
 		
-		for d in doc.get("items"):
+		for d in doc.get("items") + doc.get("salad_items"):
+			if d.get("is_salad_product"):
+				continue
+			
 			temp = frappe.get_value("Item", d.item_code, ["foms_product_id", "stock_uom"], as_dict=1)
 			product_id = temp.foms_product_id
+			if not product_id:
+				continue
+
+			weight_order = False
+			if d.get("is_salad_product") or use_weight_order:
+				weight_order = True
+				
 			stock_uom = temp.stock_uom
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
 			child_id = cint(d.get("foms_id"))
@@ -1300,7 +1335,7 @@ def _update_foms_forecast(log, api=None):
 				"isWeightOrder": weight_order,
 				"productId": cint(product_id),
 				"uom": convert_uom(stock_uom),
-				"totalNetWeight": d.weight,
+				"totalNetWeight": flt(d.get("weight")) or flt(d.get("stock_qty")),
 				"isRootInclude": "false",
 				"unitPrice": d.rate,
 				"id":child_id
@@ -1962,4 +1997,266 @@ def get_cost_center(operation_name, company):
 		if not cc:
 			frappe.throw(_("Missing Cost Center for Packing, please update the Company Settings"))
 		return cc
+	
+def cancel_repack_se(doc, method=""):
+	if not doc.purpose == "Repack":
+		return
+	
+	frappe.db.set_value("Request Items", {"stock_entry":doc.name}, "stock_entry", "")
+	frappe.db.set_value("Sales Order Item", {"stock_entry":doc.name}, "stock_entry", "")
 
+def detect_salad_items(doc, method=""):
+	if not doc.stock_entry_type == "Manufacture" or not doc.work_order:
+		return
+	
+	is_salad_item = frappe.get_value("Work Order", doc.work_order, "is_salad_item")
+	if not is_salad_item:
+		return 
+
+	cancelled = doc.docstatus == 2
+	
+	wo_doc = frappe.get_doc("Work Order", doc.work_order)
+	req_list = []
+	so_list = []
+	if wo_doc.request_no:
+		req_list = wo_doc.request_no.split(", ")
+	if wo_doc.sales_order_no:
+		so_list = wo_doc.sales_order_no.split(", ")
+
+	if req_list:
+		for req in req_list:
+			make_salad_product(req, "Request", wo_doc.production_item, wo_name=wo_doc.name, cancelled=cancelled)
+	if so_list:
+		for so in so_list:
+			make_salad_product(so, "Sales Order", wo_doc.production_item, wo_name=wo_doc.name, cancelled=cancelled)
+
+	# not yet for SO
+
+@frappe.whitelist()
+def manually_create_salad(doctype, name):
+	doc = frappe.get_doc(doctype, name)
+	done_list = []
+	txt = ""
+	for d in doc.get("items"):
+		if not d.is_salad_product or d.stock_entry:
+			continue
+		se_name = make_salad_product(name,doctype, parent_item=d.item_code)
+		done_list.append(se_name)
+
+		link = get_link_to_form("Stock Entry", se_name)
+		msg = f"Created salad product <b>{d.item_code}</b> ({link})<br>"
+		txt += msg
+
+	return txt
+
+def make_salad_product(name,doctype, item_code="", parent_item="", wo_name="", cancelled=False):
+	def get_batch_produced(wo_name):
+		temp = frappe.db.sql("""
+			SELECT 
+				si.batch_no
+			FROM
+				`tabStock Entry Detail` si
+					LEFT JOIN
+				`tabStock Entry` s ON s.name = si.parent
+			WHERE
+				s.work_order = %s
+					AND si.is_finished_item = 1
+					   """, (wo_name), as_dict=1, debug=0)
+		if temp:
+			return temp[0].get("batch_no")
+		
+	salad_table = "salad_items" if doctype == "Request" else "bom_item"
+
+	req_doc = frappe.get_doc(doctype, name)
+	if wo_name:
+		for d in req_doc.get(salad_table):
+			if d.item_code == item_code:
+				parent_item = d.parent_item
+				if not cancelled:
+					d.progress = 100
+					d.batch_no = get_batch_produced(wo_name)
+					d.work_order = wo_name
+				else:
+					d.progress = 0
+					d.batch_no = ""
+				d.db_update()
+				break
+	
+	if not parent_item:
+		return
+
+	def get_progress(salad_item):
+		progress = []
+		for d in req_doc.get(salad_table):
+			if d.parent_item == salad_item:
+				progress.append(d.progress)
+		
+		parent_progress = sum(progress)/len(progress)
+		return parent_progress
+	
+	se_name = ""
+	for d in req_doc.get("items"):
+		if d.item_code == parent_item:
+			progress = get_progress(d.item_code)
+			d.db_set("progress", progress)
+
+			if d.stock_entry and progress < 100:
+				# cancel repack entry
+				repack = frappe.get_doc("Stock Entry", d.stock_entry)
+				repack.cancel()
+				d.stock_entry = ""
+				d.db_update()
+
+			if not d.stock_entry and progress>=100:
+				# find longest date
+				exp_list = []
+				for s in req_doc.get(salad_table):
+					if s.parent_item == d.item_code:
+						if s.batch_no:
+							exp_date = frappe.get_value("Batch", s.batch_no, "expiry_date")
+							exp_list.append(getdate(exp_date))
+
+				if exp_list:
+					expiry_date = max(exp_list)
+				else:
+					# add default 2 weeks
+					expiry_date = add_days(getdate(), 14)
+
+				se_name = create_repack_entry(d.salad_recipe, d.qty,expiry_date, submit=1)
+				d.db_set("stock_entry", se_name)
+
+	return se_name
+
+def create_repack_entry(bom_name, qty,expiry_date, submit=False):
+	from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
+	se = frappe.new_doc("Stock Entry")
+	se.stock_entry_type_view = "Repack"
+	se.naming_series = frappe.get_value("Stock Entry Type", se.stock_entry_type_view, "series")
+	se.purpose = "Repack"
+	se.bom_no = bom_name
+	se.from_bom = 1
+	se.fg_completed_qty = qty
+	warehouse = frappe.db.get_single_value('Manufacturing Settings', "default_fg_warehouse")
+	se.from_warehouse = warehouse
+	se.to_warehouse = warehouse
+	se.use_multi_level_bom = 0
+	se.get_items()
+	finish_batch = ""
+
+	# change warehouse for non finish goods
+	for d in se.items:
+		is_manufacture_item = frappe.get_value("Item", d.item_code, "default_bom")
+		if not is_manufacture_item:
+			data = get_available_batch(d.item_code, d.qty)
+			if data:
+				d.s_warehouse = data[0].get("warehouse")
+				d.batch_no = data[0].get("batch_id")
+
+		if d.is_finished_item:
+			d.batch_no = make_batch(frappe._dict(
+				{
+					"item": d.item_code,
+					"qty_to_produce": d.qty,
+					"reference_doctype": se.doctype,
+					"expiry_date":expiry_date
+				}
+			))
+			finish_batch = d.batch_no
+
+	if finish_batch:
+		frappe.db.set_value("Batch", finish_batch, "reference_name", se.name)
+
+	se.flags.ignore_permissions = 1
+	se.save()
+	if submit:
+		se.submit()
+
+	return se.name
+
+
+from erpnext.manufacturing.doctype.bom.bom import get_bom_items_as_dict
+from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
+
+def get_data_dummy_work_order(item='', qty=10, work_order="", lot_id='', reff=[], operation_no=None):
+	"""
+	Operation 0: creating Work order
+	Operation 1: creating Work order
+	Operation 2: creating Work order
+	Operation 3: creating Work order
+	"""
+	default_bom = ""
+	if not item and work_order:
+		item = frappe.get_value("Work Order", work_order, "production_item")
+		default_bom = frappe.get_value("Work Order", work_order, "bom_no")
+
+	if not default_bom:
+		default_bom = frappe.get_value("Item", item, "default_bom")
+
+	company = erpnext.get_default_company()
+	item_dict = get_bom_items_as_dict(
+			default_bom,
+			company,
+			qty=qty,
+			fetch_exploded=0,
+			fetch_qty_in_stock_uom=False,
+		)
+
+	payload = {}
+	if operation_no == 0 or lot_id:
+		import random
+		# create WO
+		item_id = frappe.get_value('Item', item, "foms_product_id")
+		payload = {
+			"fomsWorkOrderID": random.randint(10,9999),
+			"fomsLotID": lot_id,
+			"productID": item_id,
+			"salesOrderNo": reff,
+			"qty": qty,
+			"uom": "Kg",
+			"submit": True,
+			"gross_weight":qty * 1.8
+		}
+
+	elif operation_no:
+		payload = {
+			"ERPWorkOrderID": work_order,
+			"operationNo": cint(operation_no),
+			"percentage": 100,
+			"rawMaterials": [],
+		}
+		if operation_no == 3:
+			payload['now'] = 1
+
+		operation = OPERATION_MAP_NAME.get( cint(operation_no) )
+		item_list = []
+		for key, val in item_dict.items():
+			if key[1] == operation:
+				item_code = key[0]
+				item = frappe._dict({
+					"sourceWarehouseId": "",
+					"sourceWarehouseRefNo": "",
+					"rawMaterialId": "",
+					"rawMaterialRefNo": "",
+					"rawMaterialBatchRefNo": "",
+					"qty": val.qty * qty,
+					"uom": UOM_MAP_REV.get(val.uom)
+				})
+				batch_list = get_available_batch(item_code, item.qty)
+
+				batch, warehouse = "", ""
+				for dt in batch_list:
+					batch = dt.batch_id
+					warehouse = dt.warehouse
+				if not batch:
+					print(f"WARNING: {item_code}, Not found for batch available")
+				
+				item.sourceWarehouseId = frappe.get_value("Warehouse", warehouse, 'foms_id')
+				item.sourceWarehouseRefNo = warehouse
+				item.rawMaterialId = frappe.get_value("Item", item_code, 'foms_raw_id')
+				item.rawMaterialRefNo = item_code
+				item.rawMaterialBatchRefNo = batch
+				item_list.append(item)
+		
+		payload['rawMaterials'] = item_list
+
+	return json.dumps(payload)

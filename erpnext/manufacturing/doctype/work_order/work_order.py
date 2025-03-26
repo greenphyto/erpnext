@@ -98,6 +98,7 @@ class WorkOrder(Document):
 		self.set_required_items()
 		self.validate_non_stock_items()
 		self.set_packet_size()
+		self.set_is_salad_item()
 
 	def on_update_after_submit(self):
 		self.validate_cost_editing()
@@ -1294,6 +1295,36 @@ class WorkOrder(Document):
 				)[0][0]
 
 				frappe.db.set_value("Batch", row.batch_no, "produced_qty", flt(qty))
+
+	def set_is_salad_item(self):
+		req_list = []
+		so_list = []
+		if self.request_no:
+			req_list = self.request_no.split(", ")
+		if self.sales_order_no:
+			so_list = self.sales_order_no.split(", ")
+
+		def valid_order(doctype, req_name):
+			temp = frappe.db.sql("""
+				SELECT 
+					parent
+				FROM
+					`tabBOM Item`
+				WHERE
+					parenttype = %s
+						AND parent = %s
+						AND docstatus = 1
+						""", (doctype, req_name), as_dict=1 )
+			
+			return temp
+		
+		for req in req_list:
+			if valid_order("Request", req):
+				self.is_salad_item = 1
+
+		for req in so_list:
+			if valid_order("Sales Order", req):
+				self.is_salad_item = 1
 
 
 @frappe.whitelist()

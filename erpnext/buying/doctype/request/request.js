@@ -78,6 +78,7 @@ frappe.ui.form.on("Request", {
 		// }
 
 		frm.cscript.change_package_display();
+		frm.cscript.add_button_make_salad(frm.doc);
 
 	},
 	non_package_item: function(frm){
@@ -180,6 +181,25 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 	add_uom_default(doc, cdt, cdn){
 		if (doc.non_package_item){
 			frappe.model.set_value(cdt,cdn, "uom", "Kg")
+		}
+	}
+
+	add_button_make_salad(doc, cdt, cdn){
+		var me = this;
+		if (doc.items.some(row => row.is_salad_product && !row.stock_entry && cint(row.progress) == 100 )){
+			me.frm.add_custom_button(__('Make Salad'), function () {
+				frappe.call({
+					method:"erpnext.controllers.foms.manually_create_salad",
+					args:{
+						doctype:"Request",
+						name:doc.name
+					},
+					callback:(r)=>{
+						me.frm.reload_doc();
+						frappe.msgprint(r.message);
+					}
+				})
+			});
 		}
 	}
 }

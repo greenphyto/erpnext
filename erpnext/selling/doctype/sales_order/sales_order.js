@@ -73,9 +73,10 @@ frappe.ui.form.on("Sales Order", {
 	},
 	refresh: function(frm) {
 		var item_query = function(row) {
-			var filters = {"is_stock_item": 1, "is_fixed_asset": 0}
+			var filters = {"is_fixed_asset": 0}
 			if (!frm.doc.non_package_item){
 				filters['is_package_item']=1;
+				filters["is_stock_item"]=1;
 			}
 			return erpnext.queries.item(filters);
 		};
@@ -120,6 +121,9 @@ frappe.ui.form.on("Sales Order", {
 		})
 
 		frm.cscript.change_package_display();
+		if (frm.doc.docstatus == 1 && frm.doc.status=="To Deliver and Bill"){
+			frm.cscript.add_button_make_salad(frm.doc);
+		}
 	},
 
 	get_items_from_internal_purchase_order(frm) {
@@ -939,6 +943,24 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 				frappe.ui.form.is_saving = false;
 			}
 		});
+	}
+	add_button_make_salad(doc, cdt, cdn){
+		var me = this;
+		if (doc.items.some(row => row.is_salad_product && !row.stock_entry && cint(row.progress) == 100 )){
+			me.frm.add_custom_button(__('Make Salad'), function () {
+				frappe.call({
+					method:"erpnext.controllers.foms.manually_create_salad",
+					args:{
+						doctype: doc.doctype,
+						name:doc.name
+					},
+					callback:(r)=>{
+						me.frm.reload_doc();
+						frappe.msgprint(r.message);
+					}
+				})
+			});
+		}
 	}
 };
 

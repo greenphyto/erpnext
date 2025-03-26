@@ -12,6 +12,7 @@ class Request(Document):
 		self.calculate_price()
 		self.calculate_weight()
 		self.validate_date()
+		self.export_salad_items()
 
 	def validate_date(self):
 		if getdate(self.delivery_date) < getdate(self.posting_date):
@@ -49,6 +50,27 @@ class Request(Document):
 		for item in doc.get("items"):
 			item.db_update()
 		doc.db_update()
+
+	def export_salad_items(self):
+		self.salad_items = []
+		for d in self.items:
+			if d.is_salad_product:
+				bom = frappe.get_doc("BOM", d.salad_recipe)
+				for item in bom.get("items"):
+					row = self.append("salad_items")
+					row.item_code = item.item_code
+					row.qty = item.qty * d.qty
+					row.stock_qty = item.stock_qty * d.qty
+					row.conversion_factor = item.conversion_factor
+					row.uom = item.uom
+					row.rate = item.rate
+					row.amount = item.amount * item.qty
+					row.bom = bom.name
+					row.parent_item = d.item_code
+					row.bom_no = frappe.get_value("Item", row.item_code, "default_bom")
+					if not row.bom_no:
+						row.progress = 100
+
 
 
 def create_request_form(data):
