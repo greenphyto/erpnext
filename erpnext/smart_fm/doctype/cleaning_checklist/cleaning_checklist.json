@@ -51,9 +51,9 @@
   },
   {
    "fieldname": "year",
-   "fieldtype": "Link",
+   "fieldtype": "Select",
    "label": "Year",
-   "options": "Fiscal Year"
+   "options": "2024\n2025\n2026\n2027\n2028\n2029\n2030\n2031\n2032\n2033\n2034\n2035"
   },
   {
    "fieldname": "section_break_zhp66",
@@ -170,7 +170,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-18 05:15:50.653476",
+ "modified": "2025-03-26 17:05:05.238478",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Cleaning Checklist",
