@@ -1114,8 +1114,9 @@ def _update_foms_sales_order(log, api=None):
 			non_stock = True
 
 	is_product_bundle = len(doc.get("packed_items"))
+	is_salad_order = any(d.get("is_salad_product") for d in doc.get("items"))
 
-	if non_stock and not is_product_bundle:
+	if non_stock and not is_product_bundle and not is_salad_order:
 		return
 
 	def loop_table(table_field):
@@ -1124,7 +1125,7 @@ def _update_foms_sales_order(log, api=None):
 
 		so_id = cint(doc.get("foms_id"))
 		req_id = cint(doc.get("req_id"))
-		weight_order = cint(doc.non_package_item) == 1
+		use_weight_order = cint(doc.non_package_item) == 1
 
 		products = []
 		
@@ -1132,6 +1133,10 @@ def _update_foms_sales_order(log, api=None):
 			product_id = frappe.get_value("Item", d.item_code, "foms_product_id")
 			if not product_id:
 				continue
+
+			weight_order = False
+			if d.get("is_salad_product") or use_weight_order:
+				weight_order = True
 
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
 			child_id = cint(d.get("foms_id"))
@@ -1996,6 +2001,7 @@ def cancel_repack_se(doc, method=""):
 		return
 	
 	frappe.db.set_value("Request Items", {"stock_entry":doc.name}, "stock_entry", "")
+	frappe.db.set_value("Sales Order Item", {"stock_entry":doc.name}, "stock_entry", "")
 
 def detect_salad_items(doc, method=""):
 	if not doc.stock_entry_type == "Manufacture" or not doc.work_order:
@@ -2017,19 +2023,22 @@ def detect_salad_items(doc, method=""):
 
 	if req_list:
 		for req in req_list:
-			make_salad_product(req, wo_doc.production_item, wo_name=wo_doc.name, cancelled=cancelled)
+			make_salad_product(req, "Request", wo_doc.production_item, wo_name=wo_doc.name, cancelled=cancelled)
+	if so_list:
+		for so in so_list:
+			make_salad_product(so, "Sales Order", wo_doc.production_item, wo_name=wo_doc.name, cancelled=cancelled)
 
 	# not yet for SO
 
 @frappe.whitelist()
-def manually_create_salad(req_name):
-	doc = frappe.get_doc("Request", req_name)
+def manually_create_salad(doctype, name):
+	doc = frappe.get_doc(doctype, name)
 	done_list = []
 	txt = ""
 	for d in doc.get("items"):
 		if not d.is_salad_product or d.stock_entry:
 			continue
-		se_name = make_salad_product(req_name, parent_item=d.item_code)
+		se_name = make_salad_product(name,doctype, parent_item=d.item_code)
 		done_list.append(se_name)
 
 		link = get_link_to_form("Stock Entry", se_name)
@@ -2038,7 +2047,7 @@ def manually_create_salad(req_name):
 
 	return txt
 
-def make_salad_product(req_name, item_code="", parent_item="", wo_name="", cancelled=False):
+def make_salad_product(name,doctype, item_code="", parent_item="", wo_name="", cancelled=False):
 	def get_batch_produced(wo_name):
 		temp = frappe.db.sql("""
 			SELECT 
@@ -2054,9 +2063,11 @@ def make_salad_product(req_name, item_code="", parent_item="", wo_name="", cance
 		if temp:
 			return temp[0].get("batch_no")
 		
-	req_doc = frappe.get_doc("Request", req_name)
+	salad_table = "salad_items" if doctype == "Request" else "bom_item"
+
+	req_doc = frappe.get_doc(doctype, name)
 	if wo_name:
-		for d in req_doc.get("salad_items"):
+		for d in req_doc.get(salad_table):
 			if d.item_code == item_code:
 				parent_item = d.parent_item
 				if not cancelled:
@@ -2074,7 +2085,7 @@ def make_salad_product(req_name, item_code="", parent_item="", wo_name="", cance
 
 	def get_progress(salad_item):
 		progress = []
-		for d in req_doc.salad_items:
+		for d in req_doc.get(salad_table):
 			if d.parent_item == salad_item:
 				progress.append(d.progress)
 		
@@ -2097,7 +2108,7 @@ def make_salad_product(req_name, item_code="", parent_item="", wo_name="", cance
 			if not d.stock_entry and progress>=100:
 				# find longest date
 				exp_list = []
-				for s in req_doc.get("salad_items"):
+				for s in req_doc.get(salad_table):
 					if s.parent_item == d.item_code:
 						if s.batch_no:
 							exp_date = frappe.get_value("Batch", s.batch_no, "expiry_date")
