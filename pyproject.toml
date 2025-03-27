@@ -24,7 +24,8 @@ dependencies = [
     "imgkit",
     "minio",
     "python-barcode",
-    "openai"
+    "openai",
+    "pymupdf"
 ]
 
 [build-system]
