@@ -1,5 +1,6 @@
 import frappe, json
-from frappe.utils import cint
+from frappe.utils import cint, flt, getdate
+from six import string_types
 
 def check_email_status(log, method=""):
 	if log.status != "Sent":
@@ -41,6 +42,11 @@ def read_email_inbox(doc, method=""):
 		"attached_to_doctype":"Communication",
 		"attached_to_name":doc.name
 	})
+	
+	# temporary detect invoice/not by attachment
+	if not file_doc_name:
+		return
+	
 	for file_name in file_doc_name:
 		
 		fn = frappe.get_doc('File', file_name)
@@ -57,7 +63,13 @@ def read_email_inbox(doc, method=""):
 			"data":res
 		})
 
-	return result
+	so = []
+	for res in result:
+		args = res.get("data")
+		name = make_sales_order(args)
+		so.append(name)
+
+	return so
 
 
 def convert_pdf_to_img(path):
@@ -157,3 +169,35 @@ def get_customer_context():
 			}
 	
 	return json.dumps(context)
+
+def shipping_context():
+	pass
+
+def package_context():
+	pass
+
+def make_sales_order(args):
+	if isinstance(args, string_types):
+		args = json.loads(args)
+	doc = frappe.new_doc("Sales Order")
+	doc.customer = args.get("company_name") #should check exist or not
+	for d in args.get("items"):
+		item_code = d.get("item_code")
+		# temporary use default
+		uom = frappe.get_value("Item", item_code, "default_packaging")
+		row = doc.append("items")
+		row.item_code = item_code
+		row.qty = flt(d.get("qty"))
+		row.uom = uom
+	doc.delivery_date = getdate(args.get("delivery_date"))
+	# temporary
+	doc.pending_po = 1
+
+	# temporary use default address
+	addr = frappe.get_value("Customer", doc.customer, 'customer_primary_address')
+	doc.customer_address = addr
+	doc.shipping_address_name = addr
+	doc.ai_doc = 1
+	# add attachment
+	doc.save()
+	return doc.name

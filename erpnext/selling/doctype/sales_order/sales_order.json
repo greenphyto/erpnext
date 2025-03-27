@@ -27,6 +27,7 @@
   "company",
   "skip_delivery_note",
   "amended_from",
+  "ai_doc",
   "accounting_dimensions_section",
   "cost_center",
   "dimension_col_break",
@@ -1717,13 +1718,35 @@
    "label": "REQ ID",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "bom_items_section",
+   "fieldtype": "Section Break",
+   "label": "BOM Items"
+  },
+  {
+   "fieldname": "bom_item",
+   "fieldtype": "Table",
+   "label": "BOM Item",
+   "options": "BOM Item",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.ai_doc",
+   "fieldname": "ai_doc",
+   "fieldtype": "Check",
+   "label": "Created with AI",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-06 15:11:58.829302",
+ "modified": "2025-03-27 16:54:52.916768",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
