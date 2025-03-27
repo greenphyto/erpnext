@@ -230,7 +230,7 @@ class DeliveryNote(SellingController):
 				return d.foms_lot_name, d.foms_work_order
 			
 		for d in self.get("items"):
-			d.foms_lot_name, d.foms_work_order = get_foms_lot_name(d.batch_no)
+			d.foms_lot_name, d.foms_work_order = get_foms_lot_name(d.batch_no) or ("", "")
 
 	def validate_with_previous_doc(self):
 		super(DeliveryNote, self).validate_with_previous_doc(
