@@ -1,6 +1,6 @@
 from openai import OpenAI
 import frappe, json
-
+from erpnext.controllers.erp import get_item_context, get_customer_context
 
 class deepseekAI():
 	def __init__(self):
