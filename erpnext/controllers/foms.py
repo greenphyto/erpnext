@@ -1119,44 +1119,45 @@ def _update_foms_sales_order(log, api=None):
 	if non_stock and not is_product_bundle and not is_salad_order:
 		return
 
-	def loop_table(table_field):
-		customer_foms_id = frappe.get_value("Customer", doc.customer, "foms_id")
-		farm_id = get_farm_id()
-
-		so_id = cint(doc.get("foms_id"))
-		req_id = cint(doc.get("req_id"))
-		use_weight_order = cint(doc.non_package_item) == 1
-
+	if doc.docstatus == 1:
 		products = []
-		
-		for d in doc.get(table_field):
-			product_id = frappe.get_value("Item", d.item_code, "foms_product_id")
-			if not product_id:
-				continue
+		for table_field in ['items', 'packed_items', 'bom_item']:
+			customer_foms_id = frappe.get_value("Customer", doc.customer, "foms_id")
+			farm_id = get_farm_id()
 
-			weight_order = False
-			if d.get("is_salad_product") or use_weight_order:
-				weight_order = True
+			so_id = cint(doc.get("foms_id"))
+			req_id = cint(doc.get("req_id"))
+			use_weight_order = cint(doc.non_package_item) == 1
 
-			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
-			child_id = cint(d.get("foms_id"))
-			item = {
-				"isWeightOrder": weight_order,
-				"productId": product_id,
-				"uom": convert_uom(d.stock_uom),
-				"totalNetWeight": d.stock_qty,
-				"isRootInclude": "false",
-				"unitPrice": d.rate,
-				"id":child_id
-			}
+			
+			for d in doc.get(table_field):
+				product_id = frappe.get_value("Item", d.item_code, "foms_product_id")
+				if not product_id:
+					continue
 
-			if not weight_order:
-				item["quantity"] = d.qty
+				weight_order = False
+				if d.get("is_salad_product") or use_weight_order:
+					weight_order = True
 
-			if package_id:
-				item["packageId"] = cint(package_id)
+				package_id = frappe.get_value("Packaging", d.uom, "foms_id")
+				child_id = cint(d.get("foms_id"))
+				item = {
+					"isWeightOrder": weight_order,
+					"productId": product_id,
+					"uom": convert_uom(d.stock_uom),
+					"totalNetWeight": d.stock_qty,
+					"isRootInclude": "false",
+					"unitPrice": d.rate,
+					"id":child_id
+				}
 
-			products.append(item)
+				if not weight_order:
+					item["quantity"] = d.qty
+
+				if package_id:
+					item["packageId"] = cint(package_id)
+
+				products.append(item)
 
 		data = {
 			"orderType": "One-off",
@@ -1188,11 +1189,7 @@ def _update_foms_sales_order(log, api=None):
 					row.foms_id = d['id']
 					row.db_update()
 			doc.db_update()
-	
-	if doc.docstatus == 1:
-		for field in ['items', 'packed_items', 'bom_item']:
-			loop_table(field)
-	
+		
 	if doc.docstatus == 2:
 		res = api.cancel_sales_order(doc.foms_id)
 
