@@ -169,10 +169,10 @@ class SalesInvoice(SellingController):
 			validate_loyalty_points(self, self.loyalty_points)
 
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
-		try:
-			self.set_other_reff()
-		except:
-			pass
+		# try:
+		# 	self.set_other_reff()
+		# except:
+		# 	pass
 
 	def set_other_reff(self):
 		for d in self.get("items"):
