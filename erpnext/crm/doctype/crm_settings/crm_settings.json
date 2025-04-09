@@ -81,7 +81,7 @@
   },
   {
    "default": "0",
-   "description": "All the Comments and Emails will be copied from one document to another newly created document (Lead -> Opportunity -> Quotation) throughout the CRM documents.",
+   "description": "All the Comments and Emails will be copied from one document to another newly created document (Lead -> Opportunity -> Quotation) throughout the CRM documents. TEST",
    "fieldname": "carry_forward_communication_and_comments",
    "fieldtype": "Check",
    "label": "Carry Forward Communication and Comments"
@@ -91,7 +91,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-04-09 15:19:34.149803",
+ "modified": "2025-04-09 17:38:24.978564",
  "modified_by": "Administrator",
  "module": "CRM",
  "name": "CRM Settings",
