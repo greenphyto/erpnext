@@ -59,6 +59,28 @@ jobs:
           docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto-aws.yaml up -d
           docker ps
           echo 'finished deployment'
+    - name: executing remote ssh commands using ssh key (staging)
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.STAGING_HOST }}
+        username: ${{ secrets.STAGING_USERNAME }}
+        key: ${{ secrets.PROD_KEY }}
+        port: ${{ secrets.PORT }}
+        command_timeout: 30m
+        script_stop: true
+        script: |
+          cd greenphyto_docker/frappe_docker/
+          docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto-aws.yaml down
+          docker ps
+          docker image prune -a -f
+          aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com
+          docker pull 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext:latest
+          docker pull 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext.worker:latest
+          docker pull 277077783554.dkr.ecr.ap-southeast-1.amazonaws.com/greenphyto.erpnext:socketio-latest
+          docker ps
+          docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto-aws.yaml up -d
+          docker ps
+          echo 'finished deployment'
     - name: Send mail
       uses: dawidd6/action-send-mail@v3
       with:
@@ -71,7 +93,7 @@ jobs:
         # Required mail server password:
         password: ${{secrets.MAIL_PASSWORD}}
         # Required mail subject:
-        subject: ERPNext Candidate Deployment Done
+        subject: ERPNext Candidate and ERP NL Deployment Done
         # Required recipients' addresses:
         to: weiquan@greenphyto.com,myo@greenphyto.com,rizky@greenphyto.com
         # Required sender full name (address can be skipped):
@@ -79,5 +101,11 @@ jobs:
         # Optional whether this connection use TLS (default is true if server_port is 465)
         secure: true
         # Optional plain body:
-        body: ERPNext deployment done for candidate env! Branch - gpcandidate.v14.3.1, Commit Description - ${{github.event.head_commit.message}} URL-https://erp-candidate-01.greenphyto.com
+        body: |
+          ERPNext deployment completed for the candidate environment.
+          • Branch: gpcandidate.v14.3.1  
+          • Commit: ${{github.event.head_commit.message}}  
+          • Candidate URL: https://erp-candidate-01.greenphyto.com  
+          • NL Environment URL: https://erp-nl.greenphyto.com
+      
        
