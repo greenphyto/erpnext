@@ -53,6 +53,10 @@ class Supplier(TransactionBase):
 
 	def set_code(self, force=False):
 		series = self.supplier_code_series or "S0.####"
+		exists = frappe.db.get_value("Supplier", {"name":["!=", self.name], "supplier_code":self.supplier_code})
+		if exists:
+			frappe.throw("Supplier code <b>{}</b> already used.".format(self.supplier_code))
+
 		if self.supplier_code and not force:
 			return
 		
