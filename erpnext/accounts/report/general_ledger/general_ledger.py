@@ -141,8 +141,6 @@ def set_account_currency(filters):
 		if filters.account_currency != filters.company_currency and not filters.presentation_currency:
 			filters.presentation_currency = filters.account_currency
 
-	if not filters.presentation_currency:
-		filters.presentation_currency = filters.account_currency
 	return filters
 
 
