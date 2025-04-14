@@ -317,6 +317,7 @@
    "depends_on": "is_return",
    "fieldname": "return_against",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Return Against Delivery Note",
    "no_copy": 1,
    "options": "Delivery Note",
@@ -1563,8 +1564,7 @@
    "default": "0",
    "fieldname": "is_replacement",
    "fieldtype": "Check",
-   "label": "Is Replacement",
-   "read_only": 0
+   "label": "Is Replacement"
   },
   {
    "fieldname": "delivery_date",
@@ -1582,7 +1582,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-18 10:40:20.866345",
+ "modified": "2025-04-14 16:00:46.463691",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
