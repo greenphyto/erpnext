@@ -330,7 +330,10 @@ class DeliveryNote(SellingController):
 		self.update_stock_ledger()
 		self.make_gl_entries()
 		self.repost_future_sle_and_gle()
-		# self.set_other_reff()
+		try:
+			self.set_other_reff()
+		except:
+			pass
 
 	def set_other_reff(self):
 		for d in self.get("items"):

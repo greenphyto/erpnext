@@ -725,6 +725,7 @@
   {
    "fieldname": "delivery_note",
    "fieldtype": "Link",
+   "ignore_link": 1,
    "label": "Delivery Note",
    "no_copy": 1,
    "oldfieldname": "delivery_note",
@@ -920,7 +921,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-03-10 12:43:05.412822",
+ "modified": "2025-04-14 11:41:32.447805",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice Item",
