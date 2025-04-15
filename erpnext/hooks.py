@@ -731,8 +731,3 @@ sync_log_method = {
 }
 
 get_email_default = "erpnext.controllers.email.get_last_email_default"
-
-sidebar_list = [
-    "Home",
-    "CRM"
-]
