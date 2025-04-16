@@ -21,45 +21,51 @@ class Report():
 
 	def setup_column(self):
 		self.columns = [
+			{"fieldname": "index", 			"label": "No", 	"fieldtype": "Int", "width":50, "options":""},
 			{"fieldname": "outlet_name", 	"label": "Outlet Name", 	"fieldtype": "Data", "width":300, "options":""},
 		]
 		self.get_day_columns()
 
+
 	def get_day_columns(self):
-		start_date = getdate("2025-02-01")
-		end_date = getdate("2025-02-28")
+		start_date = getdate(self.filters.start_date)
+		end_date = getdate(self.filters.end_date)
 		
 		column_map = {}
 		columns = []
 
 		current = start_date
+		nd_col = {"outlet_column":""}
 		while current <= end_date:
 			# Buat name dan label
-			name = f"{current.day}_{current.strftime('%b').lower()}_{current.year % 100}"
+			# name = f"{current.day}_{current.strftime('%b').lower()}_{current.year % 100}"
 			label = current.strftime('%d %b')
 
-			column = frappe._dict({
-				"range_start": current,
-				"range_end": current,
-				"label": label,
-				"name": name
-			})
+			# column = frappe._dict({
+			# 	"range_start": current,
+			# 	"range_end": current,
+			# 	"label": label,
+			# 	"name": name
+			# })
 
-			column_map[name] = column
-
-			columns.append({
-				"fieldname": name,
-				"label": label,
-				"fieldtype": "Float",
-				"width": 100
-			})
+			# column_map[name] = column
+			for item in self.items:
+				name = self.get_item_column_name(current, item)
+				nd_col[name] = item.split("-")[-1]
+				# label = "{} ({})".format(current.strftime('%d %b'), nd_col[name])
+				columns.append({
+					"fieldname": name,
+					"label": label,
+					"fieldtype": "Float",
+					"width": 110
+				})
+				label = ''
 
 			current += timedelta(days=1)
 
-
+		self.data.append(nd_col)
 		self.columns += columns
 		self.column_map = column_map
-		print(self.column_map)
 		return columns, column_map
 
 	
@@ -71,7 +77,7 @@ class Report():
 				d.posting_date,
 				di.item_code,
 				di.parent AS delivery_note,
-				COUNT(di.qty)
+				COUNT(di.qty) as qty
 			FROM
 				`tabDelivery Note Item` di
 					LEFT JOIN
@@ -94,24 +100,34 @@ class Report():
 	
 	def process_data(self):
 		self.data = []
-		self.outle_map = {}
+		self.outlet_map = {}
 		items = []
 		for d in self.raw_data:
-			if d.outlet_name not in self.outle_map:
-				self.outle_map[d.outlet_name] = [{
+			col_name = self.get_item_column_name(d.posting_date, d.item_code)
+			if d.outlet_name not in self.outlet_map:
+				dt = {"outlet_name":d.outlet_name}
+				self.outlet_map[d.outlet_name] = dt
 
-				}]
-			else:
-				self.outle_map[d.outlet_name].append({
+			self.outlet_map[d.outlet_name][col_name] = d.qty
 
-				})
+			if d.item_code not in items:
+				items.append(d.item_code)
 
+		self.items = items
+
+	def post_data(self):
+		idx = 0
+		for key, val in self.outlet_map.items():
+			idx += 1
+			val['index'] = idx
+			self.data.append(val)
 
 	def execute(self):
-		print(78)
 		self.setup_condition()
-		self.setup_column()
 		self.get_data()
 		self.process_data()
+		
+		self.setup_column()
+		self.post_data()
 
 		return self.columns, self.data 
