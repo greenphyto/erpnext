@@ -369,7 +369,7 @@ def get_party_account(party_type, party=None, company=None):
 		supp_code = frappe.get_value("Supplier", party, "supplier_code")
 		map_acc = supplier_mapping_account(company)
 		for code, account in map_acc.items():
-			if code in supp_code:
+			if supp_code and code in supp_code:
 				return account
 
 	if not party and party_type in ["Customer", "Supplier"]:
