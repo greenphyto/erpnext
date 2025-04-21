@@ -814,6 +814,8 @@ def make_sales_invoice(source_name, target_doc=None):
 	invoiced_qty_map = get_invoiced_qty_map(source_name)
 
 	def set_missing_values(source, target):
+		if target.is_return:
+			target.naming_series = 'CN.###./.YYYY'
 		target.run_method("set_missing_values")
 		target.run_method("set_po_nos")
 
