@@ -109,7 +109,7 @@ frappe.ui.form.on("Delivery Note", {
 	},
 
 	refresh: function(frm) {
-		if (frm.doc.docstatus === 1 && frm.doc.is_return === 1 && frm.doc.per_billed !== 100) {
+		if (frm.doc.docstatus === 1 && frm.doc.is_return === 1 && frm.doc.per_billed == 100) {
 			frm.add_custom_button(__('Credit Note'), function() {
 				frappe.model.open_mapped_doc({
 					method: "erpnext.stock.doctype.delivery_note.delivery_note.make_sales_invoice",
