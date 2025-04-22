@@ -816,6 +816,23 @@ def make_sales_invoice(source_name, target_doc=None):
 	def set_missing_values(source, target):
 		if target.is_return:
 			target.naming_series = 'CN.###./.YYYY'
+			# Find based on Item
+			for d in target.items:
+				if d.so_detail:
+					value = frappe.db.sql("""
+						SELECT 
+							s.name
+						FROM
+							`tabSales Invoice Item` si
+								LEFT JOIN
+							`tabSales Invoice` s ON s.name = si.parent
+						WHERE
+							s.docstatus = 1 AND s.is_return = 0
+								AND si.so_detail = %s
+								AND s.outstanding_amount >= {}
+						   """.format(abs(flt(target.rounded_total))), (d.so_detail), as_dict=1)
+					if value:
+						target.return_against = value[0].name
 		target.run_method("set_missing_values")
 		target.run_method("set_po_nos")
 
