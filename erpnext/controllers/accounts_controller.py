@@ -1269,6 +1269,10 @@ class AccountsController(TransactionBase):
 				item.item_code, item_allowance, global_qty_allowance, global_amount_allowance, "amount"
 			)
 
+			# not allowance as zero value
+			if allowance == 0:
+				return
+
 			max_allowed_amt = flt(ref_amt * (100 + allowance) / 100)
 
 			if total_billed_amt < 0 and max_allowed_amt < 0:
