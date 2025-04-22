@@ -24,7 +24,9 @@ dependencies = [
     "imgkit",
     "minio",
     "python-barcode",
-    "openai"
+    "openai",
+    "pymupdf",
+    "vision-agent @ git+https://github.com/rizkyGP/vision-agent.git@deepseek-enable"
 ]
 
 [build-system]

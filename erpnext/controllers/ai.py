@@ -1,6 +1,6 @@
 from openai import OpenAI
 import frappe, json
-
+from erpnext.controllers.erp import get_item_context, get_customer_context
 
 class deepseekAI():
 	def __init__(self):
@@ -55,71 +55,3 @@ return as json like this format: {example}"""
 	res = json.loads(res)
 
 	return res
-
-
-
-	
-def get_item_context():
-	# build item list as base knowledge / context for AI
-	context = {}
-	# we limit to products and enable
-	items = frappe.db.sql("""
-		SELECT 
-			i.name AS item_code, i.item_name, i.marketing_name
-		FROM
-			`tabItem` i
-		WHERE
-			i.disabled = 0
-				AND i.item_group = 'Products'
-	""", as_dict=1)
-	for d in items:
-		if not d.item_code in context:
-			context[d.item_code] = {
-				"keyword": f'{d.item_name}/{d.marketing_name or ""}'
-			}
-	
-	return json.dumps(context)
-
-def get_customer_context():
-	context = {}
-	items = frappe.db.sql("""
-		SELECT 
-			c.name, c.customer_name
-		FROM
-			`tabCustomer` c
-		WHERE
-			c.disabled = 0 AND c.is_frozen = 0
-	""", as_dict=1)
-
-	contacts = frappe.db.sql("""
-		SELECT 
-			dl.link_name,
-			c.email_id,
-			c.first_name,
-			c.company_name,
-			(SELECT 
-					GROUP_CONCAT(DISTINCT ce.email_id
-							ORDER BY ce.idx
-							SEPARATOR ', ')
-				FROM
-					`tabContact Email` ce
-				WHERE
-					ce.parent = c.name AND ce.is_primary = 0) AS other_email
-		FROM
-			`tabDynamic Link` dl
-				LEFT JOIN
-			`tabContact` c ON c.name = dl.parent
-		WHERE
-			dl.link_doctype = 'Customer'
-	""", as_dict=1)
-
-	# not yet
-	# join contacts to customer
-
-	for d in items:
-		if not d.name in context:
-			context[d.item_code] = {
-				"keyword": d.name
-			}
-	
-	return json.dumps(context)

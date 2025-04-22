@@ -422,6 +422,12 @@ doc_events = {
 	},
     "Stock Ledger Entry": {
         "on_submit":"erpnext.controllers.foms.sync_sle",
+	},
+    "Email Queue": {
+        "validate":"erpnext.controllers.erp.check_email_status"
+	},
+    "Communication": {
+        "after_insert":"erpnext.controllers.erp.read_email_inbox"
 	}
 }
 
