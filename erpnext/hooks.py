@@ -427,7 +427,7 @@ doc_events = {
         "validate":"erpnext.controllers.erp.check_email_status"
 	},
     "Communication": {
-        "after_insert":"erpnext.controllers.erp.read_email_inbox"
+        "validate":"erpnext.controllers.erp.read_email_inbox"
 	}
 }
 
