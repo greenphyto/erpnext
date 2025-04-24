@@ -15,10 +15,7 @@
   "folder_in",
   "folder_out",
   "testing_section",
-  "get_file_list",
-  "test_upload",
-  "test_download",
-  "test_download_encrypted"
+  "get_file_list"
  ],
  "fields": [
   {
@@ -56,21 +53,6 @@
    "label": "Testing"
   },
   {
-   "fieldname": "test_upload",
-   "fieldtype": "Button",
-   "label": "Test Upload"
-  },
-  {
-   "fieldname": "test_download",
-   "fieldtype": "Button",
-   "label": "Test Download"
-  },
-  {
-   "fieldname": "test_download_encrypted",
-   "fieldtype": "Button",
-   "label": "Test Download Encrypted"
-  },
-  {
    "fieldname": "section_break_4",
    "fieldtype": "Column Break"
   },
@@ -93,7 +75,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-04-24 16:38:10.516285",
+ "modified": "2025-04-24 18:19:37.113388",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "UOB Integration Settings",
