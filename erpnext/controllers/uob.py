@@ -7,7 +7,6 @@ class UOBAPI():
 	# API
 	def __init__(self, settings=None):
 		self.settings = settings or frappe.get_single("UOB Integration Settings")
-		print(self.settings, self.settings.as_dict())
 		self.token = ""
 		self.init_request()
 
@@ -28,7 +27,6 @@ class UOBAPI():
 			host = self.settings.host
 
 		url = urljoin(host, method)
-		print(url)
 		return url
 	
 	def get_login(self):
@@ -121,7 +119,8 @@ class UOBAPI():
 
 	def get_flle_list(self, limit=10):
 		url = self.get_url("/file/list")
-		res = self.req("GET", url, params={"limit":limit})
+		dest = self.settings.folder_in
+		res = self.req("GET", url, params={"limit":limit, "dest":dest})
 		return res
 
 	def upload_bank_tx(self, file_path):
