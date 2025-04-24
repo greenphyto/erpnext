@@ -15,6 +15,7 @@
   "folder_in",
   "folder_out",
   "testing_section",
+  "get_file_list",
   "test_upload",
   "test_download",
   "test_download_encrypted"
@@ -82,12 +83,17 @@
   {
    "fieldname": "section_break_2",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "get_file_list",
+   "fieldtype": "Button",
+   "label": "Get File List"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-04-24 16:11:02.519370",
+ "modified": "2025-04-24 16:38:10.516285",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "UOB Integration Settings",
