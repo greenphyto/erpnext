@@ -177,8 +177,12 @@ def package_context():
 	pass
 
 def make_sales_order(args):
+	if not args:
+		return
+	
 	if isinstance(args, string_types):
 		args = json.loads(args)
+
 	doc = frappe.new_doc("Sales Order")
 	doc.customer = args.get("company_name") #should check exist or not
 	for d in args.get("items"):
