@@ -336,6 +336,7 @@ class DeliveryNote(SellingController):
 			pass
 
 	def set_other_reff(self):
+		invoice = False
 		for d in self.get("items"):
 			if d.get("si_detail"):
 				# get So from SI
@@ -357,6 +358,10 @@ class DeliveryNote(SellingController):
 					frappe.db.set_value("Sales Invoice", si_name, "delivery_note", self.name)
 					d.si_detail = si_detail
 					d.against_sales_invoice = si_name
+					invoice = True
+		
+		if invoice:
+			self.per_billed = 100
 
 	def on_cancel(self):
 		super(DeliveryNote, self).on_cancel()
@@ -431,7 +436,11 @@ class DeliveryNote(SellingController):
 			(self.name),
 		)
 		if submit_rv:
-			frappe.throw(_("Sales Invoice {0} has already been submitted").format(submit_rv[0][0]))
+			frappe.db.sql("""
+				update `tabSales Invoice Item` set delivery_note = "", dn_detail=""
+				where parent = %s	 
+			""", submit_rv[0][0])
+			# frappe.throw(_("Sales Invoice {0} has already been submitted").format(submit_rv[0][0]))
 
 		submit_in = frappe.db.sql(
 			"""select t1.name

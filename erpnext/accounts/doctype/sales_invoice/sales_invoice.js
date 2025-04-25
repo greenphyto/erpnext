@@ -175,7 +175,7 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 
 		this.frm.cscript.change_package_display();
 
-		frm.set_query("item_code", "items", function(doc, cdt, cdn) {
+		this.frm.set_query("item_code", "items", function(doc, cdt, cdn) {
 			var row = locals[cdt][cdn];
 			var filters = {"is_fixed_asset": 0}
 			if (!frm.doc.non_package_item){
