@@ -12,7 +12,7 @@ import frappe
 USING DEEPSEEK
 """
 
-def extract_invoice_data(image_path: str, item_context={}, customer_context={}, email_sender=""):
+def extract_invoice_data2(image_path: str, item_context={}, customer_context={}, email_sender=""):
 	"""
 	Extracts the specified invoice fields as JSON from the given invoice image using 'document_qa'.
 	
@@ -71,4 +71,63 @@ hint:
 	except Exception as e:
 		error = e
 		print("ERROR", error)
+	return res
+
+def extract_invoice_data(image_path: str, prompt: str):
+	"""
+	Extracts the specified invoice fields as JSON from the given invoice image using 'document_qa'.
+	
+	Parameters:
+		image_path (str): Path to the invoice image file.
+	
+	Returns:
+		str: A JSON string with the keys:
+			 - company_name
+			 - items (list of {description, qty, uom})
+			 - shipping_address
+			 - delivery_date
+	"""
+	from vision_agent.tools import load_image, document_qa
+	os.environ['VISION_AGENT_API_KEY'] = frappe.conf.vision_agent_token
+	os.environ['OPENAI_API_KEY'] = frappe.conf.deepseek_token
+	result = ""
+	image = load_image(image_path)
+	result = document_qa(prompt, image) or {}
+	result_json = {
+		"result":result
+	}
+	return result_json
+
+def get_po_number(image_path):
+	prompt = f"""
+Extract data from image document given, get Purchase Order/P.O/PO from given document.
+The name like PO000171/2025, PO1001123/2025, PO000100/2023, PO100072/2024
+Just return the name only
+	"""
+	res = extract_invoice_data(image_path, prompt)
+
+	return res
+
+def get_item_detail(image_path, reference_item=[]):
+	prompt = f"""
+Extract item details from image document given, and return data like this format:
+{
+	json.dumps([
+		{"item_code":"item1", "qty":2, "rate":20, "uom":"Unit", "currency":"USD"},
+		{"item_code":"item2", "qty":10, "rate":12, "uom":"Kg", "currency":"USD"}
+	])
+}
+
+reference item:
+{
+	json.dumps(reference_item)
+}
+
+hint:
+1. Use reference item to matching with the invoice
+2. Use "item_code" from reference as item_code key of the result
+3. Return as JSON data without markdown format
+4. if not found return []
+"""
+	res = extract_invoice_data(image_path, prompt)
 	return res
