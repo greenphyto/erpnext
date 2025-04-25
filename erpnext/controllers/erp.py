@@ -21,7 +21,7 @@ def check_email_status(log, method=""):
 	notif.send(doc)
 
 def read_email_inbox(doc, method=""):
-	from erpnext.controllers.va2 import extract_invoice_data
+	from erpnext.controllers.va2 import extract_invoice_data, get_po_number, get_item_detail
 	if doc.communication_type != "Communication":
 		return
 	
@@ -55,22 +55,41 @@ def read_email_inbox(doc, method=""):
 		if ".pdf" in full_path:
 			full_path = convert_pdf_to_img(full_path)
 
-		item_data = get_item_context()
-		customer_data = get_customer_context()
-		res = extract_invoice_data(full_path, item_data, customer_data, doc.sender)
-		result.append({
-			"file_name":fn_name,
-			"data":res
-		})
+		temp = get_po_number(full_path)
+		if temp and temp.get("result"):
+			if not frappe.db.exists("Purchase Order", temp.get("result")):
+				continue
 
-	so = []
+			po = frappe.get_doc("Purchase Order", temp.get("result"))
+			items = []
+			for d in po.items:
+				items.append(
+					{"item_code": d.item_name, "qty":d.qty, "rate":d.rate, "uom":d.uom}
+				)
+
+			# temporary not used
+			# items = get_item_detail(full_path, items)
+			result.append({
+				"po_no":temp.get("result"),
+				"items":items
+			})
+
+	pi = []
 	for res in result:
-		args = res.get("data")
-		name = make_sales_order(args)
-		so.append(name)
+		name = create_purchase_invoice(res)
+		pi.append(name)
 
-	return so
+	return pi
 
+from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_invoice
+def create_purchase_invoice(data):
+	# make PI
+	doc = make_purchase_invoice(data.get("po_no"))
+	doc.created_with_ai = 1
+	doc.save()
+
+	# update item
+	return doc.name
 
 def convert_pdf_to_img(path):
 	import fitz  # PyMuPDF
