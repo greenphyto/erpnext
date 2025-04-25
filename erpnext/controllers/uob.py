@@ -72,7 +72,7 @@ class UOBAPI():
 		res = json.dumps(data, default=str)
 		return res
 	
-	def req(self, req="POST", method="", data={}, params={}, files=None):
+	def req(self, req="POST", method="", data={}, params={}, files=None, raw=False):
 		if not self.settings.enable:
 			return {"error":"Not enable"}
 		
@@ -104,6 +104,8 @@ class UOBAPI():
 			print(res.status_code)
 			print(res.text)
 
+		if raw:
+			return res
 		try:
 			result =  res.json()
 			if "error" in result and result['error']:
@@ -114,12 +116,16 @@ class UOBAPI():
 			result =  res.text
 			return False
 		
-	def download_bank_tx(self, fname):
-		pass
+	def download_bank_tx(self, fname=""):
+		# if not fname, download latest
+		url = self.get_url("/bank/download")
+		dest = self.settings.folder_out
+		res = self.req("GET", url, params={"fname":fname,"dest":dest})
+		return res
 
-	def get_flle_list(self, limit=10):
+	def get_file_list(self, limit=10):
 		url = self.get_url("/file/list")
-		dest = self.settings.folder_in
+		dest = self.settings.folder_out
 		res = self.req("GET", url, params={"limit":limit, "dest":dest})
 		return res
 
