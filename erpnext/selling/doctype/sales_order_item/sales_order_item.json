@@ -343,11 +343,13 @@
    "width": "70px"
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "price_list_rate",
    "fieldname": "discount_amount",
    "fieldtype": "Currency",
    "label": "Discount Amount",
-   "options": "currency"
+   "options": "currency",
+   "read_only_depends_on": "doc.docstatus==1"
   },
   {
    "depends_on": "eval:doc.margin_type && doc.price_list_rate && doc.margin_rate_or_amount",
@@ -981,7 +983,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-03-11 17:08:17.087386",
+ "modified": "2025-03-21 11:49:23.693419",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

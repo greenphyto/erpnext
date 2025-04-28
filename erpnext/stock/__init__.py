@@ -1,6 +1,6 @@
 import frappe, erpnext
 from frappe import _
-from frappe.utils import get_link_to_form
+from frappe.utils import get_link_to_form, cint
 install_docs = [
 	{"doctype": "Role", "role_name": "Stock Manager", "name": "Stock Manager"},
 	{"doctype": "Role", "role_name": "Item Manager", "name": "Item Manager"},
@@ -86,6 +86,11 @@ def get_part_number_account_settings():
 			"account":d.account_code,
 			"account_currency":d.account_currency
 		}))
+		if d.part_number not in item_account:
+			item_account.setdefault(d.part_number, frappe._dict({
+				"account":d.account_code,
+				"account_currency":d.account_currency
+			}))
 	
 	return item_account
 
@@ -94,9 +99,15 @@ def get_item_account(account_map, warehouse, item="", key="account", get_default
 	if not warehouse and not get_default:
 		return None
 	
-	if item and account_map.get(item):
+	part_number = "--"
+	if item:
+		part_number = cint(frappe.get_value("Item", item, "material_number"))
 
-		data = account_map[item].get(key)
+	if item and (account_map.get(item) or account_map.get(part_number)):
+		dt = account_map.get(item)
+		if not dt:
+			dt = account_map.get(part_number)
+		data = dt.get(key)
 
 	if not data and item in account_map:
 		company = erpnext.get_default_company()

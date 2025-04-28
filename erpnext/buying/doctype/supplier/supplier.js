@@ -105,8 +105,8 @@ frappe.ui.form.on("Supplier", {
 		frm.set_df_property("supplier_code_series", "options", [
 			{"label":"S0.#### (AP Trade Creditors)", "value":"S0.####"},
 			{"label":"S1.#### (Other Creditors)", "value":"S1.####"},
-			{"label":"S1.#### (Indirect Creditors)", "value":"S2.####"},
-			{"label":"S1.#### (Bank Accounts / Hire Purchase)", "value":"S3.####"},
+			{"label":"S2.#### (Bank Accounts)", "value":"S2.####"},
+			{"label":"S3.#### (Hire Purchase)", "value":"S3.####"},
 		])
 	},
 	supplier_code_series: function(frm){

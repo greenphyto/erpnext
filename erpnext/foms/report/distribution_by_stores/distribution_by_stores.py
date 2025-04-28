@@ -3,7 +3,7 @@
 
 
 import frappe
-from frappe.utils import getdate
+from frappe.utils import getdate, flt
 from datetime import timedelta
 
 def execute(filters=None):
@@ -24,6 +24,10 @@ class Report():
 			{"fieldname": "index", 			"label": "No", 	"fieldtype": "Int", "width":50, "options":""},
 			{"fieldname": "outlet_name", 	"label": "Outlet Name", 	"fieldtype": "Data", "width":300, "options":""},
 		]
+		if self.filters.get("show_customer"):
+			self.columns += [
+				{"fieldname": "customer", 	"label": "Customer", 	"fieldtype": "Link", "width":250, "options":"Customer"}
+			]
 		self.get_day_columns()
 
 
@@ -38,25 +42,15 @@ class Report():
 		nd_col = {"outlet_column":""}
 		while current <= end_date:
 			# Buat name dan label
-			# name = f"{current.day}_{current.strftime('%b').lower()}_{current.year % 100}"
 			label = current.strftime('%d %b')
 
-			# column = frappe._dict({
-			# 	"range_start": current,
-			# 	"range_end": current,
-			# 	"label": label,
-			# 	"name": name
-			# })
-
-			# column_map[name] = column
 			for item in self.items:
 				name = self.get_item_column_name(current, item)
 				nd_col[name] = item.split("-")[-1]
-				# label = "{} ({})".format(current.strftime('%d %b'), nd_col[name])
 				columns.append({
 					"fieldname": name,
 					"label": label,
-					"fieldtype": "Float",
+					"fieldtype": "Int",
 					"width": 110
 				})
 				label = ''
@@ -74,10 +68,11 @@ class Report():
 			SELECT 
 				d.shipping_address_name,
 				a.outlet_name,
+				d.customer,
 				d.posting_date,
 				di.item_code,
 				di.parent AS delivery_note,
-				COUNT(di.qty) as qty
+				di.qty
 			FROM
 				`tabDelivery Note Item` di
 					LEFT JOIN
@@ -87,13 +82,16 @@ class Report():
 			WHERE
 				di.docstatus = 1
 					AND d.non_package_item = 0
-					AND d.name LIKE 'DO-%%'
+					AND d.is_return = 0
+					AND d.is_replacement = 0
+					AND d.is_donation = 0
+					AND d.is_giveaway = 0
 				{}
-			GROUP BY d.shipping_address_name , di.item_code
+
 		""".format(self.cond), self.filters, as_dict=1)
 
 	def get_item_column_name(self, posting_date, item_code):
-		item = item_code.split("-")[-1]
+		item = frappe.scrub(item_code)
 		date = getdate(posting_date)
 		dt = f"{date.day}_{date.month}_{date.year % 100}"
 		return f"{dt}_{item}"
@@ -105,10 +103,9 @@ class Report():
 		for d in self.raw_data:
 			col_name = self.get_item_column_name(d.posting_date, d.item_code)
 			if d.outlet_name not in self.outlet_map:
-				dt = {"outlet_name":d.outlet_name}
+				dt = {"outlet_name":d.outlet_name, "customer":d.customer}
 				self.outlet_map[d.outlet_name] = dt
-
-			self.outlet_map[d.outlet_name][col_name] = d.qty
+			self.outlet_map[d.outlet_name][col_name] = d.qty + flt(self.outlet_map[d.outlet_name].get(col_name))
 
 			if d.item_code not in items:
 				items.append(d.item_code)

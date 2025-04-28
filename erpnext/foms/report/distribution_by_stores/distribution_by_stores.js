@@ -16,6 +16,12 @@ frappe.query_reports["Distribution by Stores"] = {
 			"fieldtype": "Date",
 			"options":""
 		},
+		{
+			"fieldname":"show_customer",
+			"label": __("Show Customer"),
+			"fieldtype": "Check",
+			"options":""
+		},
 	],
 	"onload": function(report) {
 		const today = frappe.datetime.get_today();

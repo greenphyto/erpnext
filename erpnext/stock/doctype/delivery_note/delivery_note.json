@@ -12,7 +12,7 @@
   "naming_series",
   "customer",
   "organization_name",
-  "organization_adress",
+  "organization_address",
   "tax_id",
   "customer_name",
   "delivery_date",
@@ -318,6 +318,7 @@
    "depends_on": "is_return",
    "fieldname": "return_against",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Return Against Delivery Note",
    "no_copy": 1,
    "options": "Delivery Note",
@@ -1584,16 +1585,16 @@
   },
   {
    "depends_on": "eval:doc.is_donation",
-   "fieldname": "organization_adress",
+   "fieldname": "organization_address",
    "fieldtype": "Small Text",
-   "label": "Organization Adress"
+   "label": "Organization Address"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-17 14:37:51.160362",
+ "modified": "2025-04-14 16:00:46.463691",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

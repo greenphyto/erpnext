@@ -80,6 +80,7 @@
   "section_break_40",
   "batch_no",
   "foms_lot_name",
+  "foms_work_order",
   "serial_no",
   "actual_batch_qty",
   "actual_qty",
@@ -639,6 +640,7 @@
   {
    "fieldname": "against_sales_invoice",
    "fieldtype": "Link",
+   "ignore_link": 1,
    "label": "Against Sales Invoice",
    "no_copy": 1,
    "options": "Sales Invoice",
@@ -852,13 +854,19 @@
    "in_list_view": 1,
    "label": "FOMS Lot ID",
    "read_only": 1
+  },
+  {
+   "fieldname": "foms_work_order",
+   "fieldtype": "Data",
+   "label": "FOMS Work Order",
+   "read_only": 1
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-03-10 12:45:07.176815",
+ "modified": "2025-04-14 11:40:02.235540",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note Item",

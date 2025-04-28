@@ -425,9 +425,6 @@ doc_events = {
 	},
     "Email Queue": {
         "validate":"erpnext.controllers.erp.check_email_status"
-	},
-    "Communication": {
-        "validate":"erpnext.controllers.erp.read_email_inbox"
 	}
 }
 

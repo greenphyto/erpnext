@@ -3,22 +3,22 @@ from frappe.utils import cint, flt, getdate
 from six import string_types
 
 def check_email_status(log, method=""):
-	if log.status != "Sent":
-		return
-	
-	comm_name = frappe.get_value("Communication", {"message_id":log.message_id})
-	if not comm_name:
-		return
-	
-	doc = frappe.get_doc("Communication", comm_name)
-	if not doc.reference_doctype and doc.reference_name:
-		return
-	
-	if doc.reference_doctype in ["Purchase Order"]:
-		frappe.db.set_value(doc.reference_doctype, doc.reference_name, "email_status", "Y")
+    if log.status != "Sent":
+        return
+    
+    comm_name = frappe.get_value("Communication", {"message_id":log.message_id})
+    if not comm_name:
+        return
+    
+    doc = frappe.get_doc("Communication", comm_name)
+    if not doc.reference_doctype and doc.reference_name:
+        return
+    
+    if doc.reference_doctype in ["Purchase Order"]:
+        frappe.db.set_value(doc.reference_doctype, doc.reference_name, "email_status", "Y")
 
-	notif = frappe.get_doc("Notification", "Email Sent Status")
-	notif.send(doc)
+    notif = frappe.get_doc("Notification", "Email Sent Status")
+    notif.send(doc)
 
 def read_email_inbox(doc, method=""):
 	from erpnext.controllers.va2 import extract_invoice_data, get_po_number, get_item_detail

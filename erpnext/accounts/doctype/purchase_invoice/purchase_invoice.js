@@ -69,7 +69,7 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 			this.frm.trigger('supplier');
 		}
 
-		if (this.frm.is_new()){
+		if (this.frm.is_new() && !this.frm.doc.hasOwnProperty("__run_link_triggers")){
 			$.each(this.frm.doc.items, (i,r)=>{
 				frappe.model.set_value(r.doctype,r.name,"cost_center", "")
 			})

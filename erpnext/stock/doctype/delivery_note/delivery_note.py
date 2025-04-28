@@ -212,7 +212,8 @@ class DeliveryNote(SellingController):
 					se.name,
 					s.actual_qty,
 					se.work_order,
-					w.foms_lot_name
+					w.foms_lot_name,
+					w.foms_work_order
 				FROM
 					`tabStock Ledger Entry` s
 						LEFT JOIN
@@ -224,12 +225,12 @@ class DeliveryNote(SellingController):
 						AND s.actual_qty > 0
 						AND s.is_cancelled = 0
 						AND se.purpose = 'Manufacture'
-						""", (batch), as_dict=1)
+						""", (batch), as_dict=1, debug=0)
 			for d in temp:
-				return d.foms_lot_name
+				return d.foms_lot_name, d.foms_work_order
 			
 		for d in self.get("items"):
-			d.foms_lot_name = get_foms_lot_name(d.batch_no)
+			d.foms_lot_name, d.foms_work_order = get_foms_lot_name(d.batch_no) or ("", "")
 
 	def validate_with_previous_doc(self):
 		super(DeliveryNote, self).validate_with_previous_doc(
@@ -329,8 +330,10 @@ class DeliveryNote(SellingController):
 		self.update_stock_ledger()
 		self.make_gl_entries()
 		self.repost_future_sle_and_gle()
-		# self.set_other_reff()
-		self.close_request_form()
+		try:
+			self.set_other_reff()
+		except:
+			pass
 
 	def set_other_reff(self):
 		for d in self.get("items"):
@@ -571,6 +574,9 @@ class DeliveryNote(SellingController):
 		# update batch, calculate rate, and make new input
 		sl_entries = []
 		only_for_item = []
+		now = get_datetime()
+		posting_date = getdate(now)
+		posting_time = get_time(now)
 		for d in data:
 			d = frappe._dict(d)
 			row = self.get("items", {"name":d.docname})
@@ -887,7 +893,7 @@ def make_sales_invoice(source_name, target_doc=None):
 				"doctype": "Sales Invoice",
 				"field_map": {
 					"is_return": "is_return",
-					"delivery_note": "name"
+					"name": "delivery_note"
 				},
 				"validation": {"docstatus": ["=", 1]},
 			},

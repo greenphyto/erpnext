@@ -815,6 +815,12 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 		# Get the advance paid Journal Entries in Sales Invoice Advance
 		if target.get("allocate_advances_automatically"):
 			target.set_advances()
+		
+		for d in target.get("items"):
+			dn_name = frappe.get_value("Delivery Note Item", {"so_detail":d.so_detail, "docstatus":1}, "parent")
+			if dn_name:
+				break
+		target.delivery_note = dn_name
 
 	def set_missing_values(source, target):
 		target.flags.ignore_permissions = True

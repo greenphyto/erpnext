@@ -1,0 +1,29 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "creation": "2025-03-26 10:47:52.540704",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Communication",
+ "enabled": 1,
+ "event": "Custom",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "Your email {{doc.name}} has been sent!\n<br>\nSource document <b>{{frappe.utils.get_link_to_form(doc.reference_doctype, doc.reference_name)}} </b>\n<br>\nThank you.",
+ "modified": "2025-03-26 11:56:16.674040",
+ "modified_by": "Administrator",
+ "module": "FOMS",
+ "name": "Email Sent Status",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_document_field": "sender"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "sender": "ERP",
+ "sender_email": "erp@greenphyto.com",
+ "subject": "Email: {{doc.reference_doctype}} {{doc.reference_name}} has been sent!"
+}
