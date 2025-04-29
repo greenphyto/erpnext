@@ -3,7 +3,7 @@
 
 
 import frappe
-from frappe.utils import flt
+from frappe.utils import flt, cint
 
 def execute(filters=None):
 	return Report(filters).execute()
@@ -14,6 +14,14 @@ class Report():
 
 	def setup_condition(self):
 		self.cond = ""
+		if self.filters.get("customer"):
+			self.cond += " and s.customer = %(customer)s "
+		if self.filters.get("sales_invoice"):
+			self.cond += " and s.name = %(sales_invoice)s "
+		self.cond += " and s.posting_date between %(start_date)s and %(end_date)s "
+
+		if not cint(self.filters.get("show_credit_note")):
+			self.cond += " and s.is_return = 0 "
 
 	def setup_column(self):
 		self.columns = [
@@ -58,8 +66,11 @@ class Report():
 				`tabSales Taxes and Charges` t ON t.parent = s.name
 					left join
 				`tabAddress` a on a.name = s.shipping_address_name
+			WHERE 
+				s.docstatus = 1
+				{}
 			ORDER BY s.posting_date desc
-		""".format(self.cond), self.filters, as_dict=1)
+		""".format(self.cond), self.filters, as_dict=1, debug=1)
 	
 	def process_data(self):
 		self.data = []
