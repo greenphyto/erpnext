@@ -83,8 +83,8 @@ frappe.query_reports["GST Return Summary Report"] = {
 
 			column.link_onclick =
 				"open_general_ledger(" + JSON.stringify(data) + ")";
+
 			column.is_tree = true;
-			
 		}
 
 		value = default_formatter(value, row, column, data);
@@ -101,6 +101,12 @@ frappe.query_reports["GST Return Summary Report"] = {
 
 			value = $value.wrap("<p></p>").parent().html();
 		}
+
+		if (column.fieldname=="posting_date" && data.voucher_type && data.voucher_no){
+			var url = get_url_to_form(data.voucher_type, data.voucher_no);
+			value = `<a target="_blank" href="${url}">${data.voucher_no}</a>`
+		}
+
 
 		return value;
 	},
@@ -151,4 +157,19 @@ function open_general_ledger(data,query_report) {
 	}
 
 	frappe.set_route("query-report", report);
+}
+
+function slug(name) {
+	return name.toLowerCase().replace(/ /g, '-');
+  }
+  
+function quoted(url) {
+	return encodeURIComponent(url).replace(/[!'()*]/g, function(c) {
+		// Perbaikan karena encodeURIComponent terlalu strict dibandingkan Python quote(safe=...)
+		return '%' + c.charCodeAt(0).toString(16);
+	});
+}
+  
+function get_url_to_form(doctype, name) {
+	return `/app/${quoted(slug(doctype))}/${quoted(name)}`;
 }

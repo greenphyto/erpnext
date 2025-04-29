@@ -105,7 +105,7 @@ class VATAuditReport(object):
 		invoice_data = frappe.db.sql(
 			"""
 			SELECT
-				docstatus, posting_date as inv_date, 
+				docstatus, posting_date as inv_date, '{doctype}' as voucher_type,
 				{select_columns}
 			FROM
 				`tab{doctype}`
@@ -396,6 +396,7 @@ class VATAuditReport(object):
 			# overide data
 			dt.voucher_no = dt.name
 			dt.docstatus = 3
+			dt.voucher_type = doctype
 			dt.posting_date = getdate(dt.posting_date)
 			if doctype == "Purchase Invoice":
 				dt.Invoice_No = dt.bill_no
@@ -606,6 +607,7 @@ class VATAuditReport(object):
 						row["Date"] = formatdate(inv_data.get("posting_date"), "dd-mm-yyyy")
 						#row["voucher_type"] = ""
 						row["voucher_no"] = inv
+						row["voucher_type"] = inv_data.get("voucher_type")
 						row["party_type"] = "Customer" if doctype == "Sales Invoice" else "Supplier"
 						row["party"] = inv_data.get("party")
 						row["remarks"] = inv_data.get("remarks")
