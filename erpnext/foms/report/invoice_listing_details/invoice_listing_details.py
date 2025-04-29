@@ -3,6 +3,7 @@
 
 
 import frappe
+from frappe.utils import flt
 
 def execute(filters=None):
 	return Report(filters).execute()
@@ -36,6 +37,7 @@ class Report():
 				s.posting_date,
 				s.name AS sales_invoice,
 				s.customer,
+				s.total,
 				a.outlet_name,
 				si.item_code,
 				si.qty,
@@ -46,8 +48,8 @@ class Report():
 				si.net_amount,
 				t.name AS tx_row,
 				t.charge_type,
-				t.rate,
-				t.tax_amount
+				t.rate as gst,
+				t.tax_amount as gst_amount
 			FROM
 				`tabSales Invoice` s
 					LEFT JOIN
@@ -56,11 +58,17 @@ class Report():
 				`tabSales Taxes and Charges` t ON t.parent = s.name
 					left join
 				`tabAddress` a on a.name = s.shipping_address_name
+			ORDER BY s.posting_date desc
 		""".format(self.cond), self.filters, as_dict=1)
 	
 	def process_data(self):
 		self.data = []
 		for d in self.raw_data:
+			# calculate tax amount
+			if d.total:
+				d.gst_amount = flt(d.amount)/flt(d.total)*flt(d.gst_amount)
+				d.total_amount = d.gst_amount + flt(d.amount)
+
 			self.data.append(d)
 
 	def execute(self):
