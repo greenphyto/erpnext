@@ -25,8 +25,8 @@ def read_email_inbox(doc, method=""):
 	if doc.communication_type != "Communication":
 		return
 	
-	enable = cint(frappe.get_value("Selling Settings","Selling Settings", 'enable_supplier_invoice'))
-	invoice_email_default = frappe.get_value("Selling Settings","Selling Settings", 'default_email_inbox')
+	enable = cint(frappe.get_value("Buying Settings","Buying Settings", 'enable_supplier_invoice'))
+	invoice_email_default = frappe.get_value("Buying Settings","Buying Settings", 'default_email_inbox')
 	if not enable or not invoice_email_default:
 		return
 	
