@@ -70,7 +70,7 @@ def read_email_inbox(doc, method=""):
 				)
 
 			# temporary not used
-			# items = get_item_detail(full_path, items)
+			items = get_item_detail(full_path, items)
 			result.append({
 				"po_no":po_no,
 				"items":items
@@ -97,9 +97,15 @@ def create_purchase_invoice(data):
 	# make PI
 	doc = make_purchase_invoice(data.get("po_no"))
 	doc.created_with_ai = 1
+
+	for d in data.get("items"):
+		rows = doc.get("items", {"item_code":d['item_code']})
+		if rows:
+			row = rows[0]
+			row.rate = flt(d['rate'])
+			row.qty = flt(d['qty'])
 	doc.save()
 
-	# update item
 	return doc.name
 
 def convert_pdf_to_img(path):
