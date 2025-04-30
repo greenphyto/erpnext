@@ -25,8 +25,8 @@ def read_email_inbox(doc, method=""):
 	if doc.communication_type != "Communication":
 		return
 	
-	enable = cint(frappe.get_value("Selling Settings","Selling Settings", 'enable_supplier_invoice'))
-	invoice_email_default = frappe.get_value("Selling Settings","Selling Settings", 'default_email_inbox')
+	enable = cint(frappe.get_value("Buying Settings","Buying Settings", 'enable_supplier_invoice'))
+	invoice_email_default = frappe.get_value("Buying Settings","Buying Settings", 'default_email_inbox')
 	if not enable or not invoice_email_default:
 		return
 	
@@ -57,10 +57,12 @@ def read_email_inbox(doc, method=""):
 
 		temp = get_po_number(full_path)
 		if temp and temp.get("result"):
-			if not frappe.db.exists("Purchase Order", temp.get("result")):
+			# here
+			po_no = find_po_exist(temp.get("result"))
+			if not po_no:
 				continue
 
-			po = frappe.get_doc("Purchase Order", temp.get("result"))
+			po = frappe.get_doc("Purchase Order", po_no)
 			items = []
 			for d in po.items:
 				items.append(
@@ -70,7 +72,7 @@ def read_email_inbox(doc, method=""):
 			# temporary not used
 			# items = get_item_detail(full_path, items)
 			result.append({
-				"po_no":temp.get("result"),
+				"po_no":po_no,
 				"items":items
 			})
 
@@ -80,6 +82,15 @@ def read_email_inbox(doc, method=""):
 		pi.append(name)
 
 	return pi
+
+def find_po_exist(po_no):
+	ranges = len(po_no)
+	for i in range(ranges):
+		res = frappe.db.exists("Purchase Order", {"name":['like', "%"+po_no[i:]]})
+		if res:
+			return res
+		
+	return res
 
 from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_invoice
 def create_purchase_invoice(data):
