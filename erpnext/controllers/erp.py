@@ -70,10 +70,11 @@ def read_email_inbox(doc, method=""):
 				)
 
 			# temporary not used
-			# items = get_item_detail(full_path, items)
+			items = get_item_detail(full_path, items)
 			result.append({
 				"po_no":po_no,
-				"items":items
+				"items":items,
+				"file":file_name
 			})
 
 	pi = []
@@ -97,9 +98,26 @@ def create_purchase_invoice(data):
 	# make PI
 	doc = make_purchase_invoice(data.get("po_no"))
 	doc.created_with_ai = 1
+
+	for d in data.get("items"):
+		rows = doc.get("items", {"item_code":d['item_code']})
+		if rows:
+			row = rows[0]
+			row.rate = flt(d['rate'])
+			row.qty = flt(d['qty'])
 	doc.save()
 
-	# update item
+	file = frappe.get_doc('File', data.get("file"))
+	attachment = frappe.get_doc({
+        'doctype': 'File',
+        'attached_to_doctype': doc.doctype,  # e.g., 'Sales Invoice', 'Purchase Order', etc.
+        'attached_to_name': doc.name,    # The name of the document to attach to
+        'file_name': file.file_name,
+        'file_url': file.file_url,
+        'is_private': file.is_private,   # Whether the file is private or public
+    })
+	attachment.insert()
+
 	return doc.name
 
 def convert_pdf_to_img(path):

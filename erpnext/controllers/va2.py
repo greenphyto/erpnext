@@ -98,36 +98,61 @@ def extract_invoice_data(image_path: str, prompt: str):
 	}
 	return result_json
 
+def get_inv_data(image_path, reference_item):
+	pass
+
 def get_po_number(image_path):
 	prompt = f"""
-Extract data from image document given, get Purchase Order/P.O/PO from given document.
-The name like PO000171/2025, PO1001123/2025, PO000100/2023, PO100072/2024
-Just return the name only
+Extract the Purchase Order number from the given document. The PO number format could be:
+- PO000171/2025
+- PO1001123/2025
+- P0000171/2025 (with or without the "O" after "P")
+- PO100072/2024
+- Or other similar variations where the number may start with "P", "PO", or a similar pattern.
+
+Return only the PO number(s) found in the document, in a clean format without any additional explanation, text, or markdown. If multiple PO numbers are found, return them as a list of strings.
+
+If no PO numbers are found, return an empty list: []
 	"""
 	res = extract_invoice_data(image_path, prompt)
 
 	return res
 
 def get_item_detail(image_path, reference_item=[]):
-	prompt = f"""
-Extract item details from image document given, and return data like this format:
-{
-	json.dumps([
-		{"item_code":"item1", "qty":2, "rate":20, "uom":"Unit", "currency":"USD"},
-		{"item_code":"item2", "qty":10, "rate":12, "uom":"Kg", "currency":"USD"}
-	])
-}
+	prompt = """
+Extract item details from the provided invoice image and match them with the given Reference Item list.
 
-reference item:
-{
-	json.dumps(reference_item)
-}
+Your task:
+1. Use the Reference Item list to match the item descriptions or names found in the invoice image. Supplier item names may differ, so match them as best as possible based on semantic similarity or known aliases.
+2. Return a list of matched items in the following JSON format (no markdown):
+   [
+     {"item_code": "from Reference Item", "qty": ..., "rate": ..., "uom": "...", "currency": "..."},
+     ...
+   ]
+3. Use the "item_code" from the Reference Item for each matched item.
+4. If no items match, return an empty list: []
 
-hint:
-1. Use reference item to matching with the invoice
-2. Use "item_code" from reference as item_code key of the result
-3. Return as JSON data without markdown format
-4. if not found return []
-"""
-	res = extract_invoice_data(image_path, prompt)
-	return res
+Notes:
+- Invoice images may use different item names or terms — do not rely on exact string match.
+- Focus on meaning, context, quantity, unit, and rate when matching.
+- Always return array in JSON string format, no markdown, no explanations.
+
+Reference Item:
+"""+json.dumps(reference_item, indent=2)
+
+	# res = extract_invoice_data(image_path, prompt)
+	res = """ {'result': '[{"item_code": "Waterflow Prototype 2", "qty": 2.0, "rate": 2200.0, "uom": "unit S", "currency": "SGD"}]'} """
+	result = []
+
+	try:
+		start_index = res.find('[') 
+		end_index = res.find(']') + 1 
+
+		json_str = res[start_index:end_index]
+
+		result = json.loads(json_str)
+		
+	except:
+		return result
+		
+	return result
