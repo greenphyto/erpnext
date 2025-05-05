@@ -25,7 +25,11 @@ def execute(filters=None):
 
 	data = get_entries(filters)
 
-	balance_as_per_system = get_balance_on(filters["account"], filters["report_date"])
+	in_account_currency = True
+	if account_currency == frappe.get_cached_value("Company", filters.company, "default_currency"):
+		in_account_currency = False
+
+	balance_as_per_system = get_balance_on(filters["account"], filters["report_date"], in_account_currency=in_account_currency)
 
 	total_debit, total_credit = 0, 0
 	for d in data:
