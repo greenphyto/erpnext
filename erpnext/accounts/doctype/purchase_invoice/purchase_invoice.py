@@ -1673,6 +1673,12 @@ class PurchaseInvoice(BuyingController):
 		if log:
 			frappe.db.set_value("Deleted Document", log, "document_date", self.posting_date)
 
+	def create_auto_bank_transfer(self):
+		# formats: Tx ID | date | Bank Acc | amount | type | notes
+		# create format 
+		# send 
+		pass
+		
 
 # to get details of purchase invoice/receipt from which this doc was created for exchange rate difference handling
 def get_purchase_document_details(doc):
