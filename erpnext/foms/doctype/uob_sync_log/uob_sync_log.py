@@ -18,7 +18,6 @@ def create_log(csv_data, filename=""):
 
 	# make CSV
 	url = save_csv_to_file(csv_data, filename, doc.doctype, doc.name)
-	return url, name
 	# send
 	doc.send_file()
 
