@@ -3,7 +3,7 @@
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, flt, get_datetime_str, nowdate, getdate, get_first_day, cstr, get_datetime
+from frappe.utils import add_days, flt, get_datetime_str, nowdate, getdate,cint, get_first_day, cstr, get_datetime
 from frappe.utils.data import now_datetime
 from frappe.utils.nestedset import get_ancestors_of, get_root_of  # noqa
 import datetime
@@ -48,7 +48,7 @@ def before_tests():
 
 
 @frappe.whitelist()
-def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=None, err_journal=False):
+def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=None, err_journal=False, from_scheduler=False):
 	if not (from_currency and to_currency):
 		# manqala 19/09/2016: Should this be an empty return or should it throw and exception?
 		return
@@ -98,13 +98,13 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 	if entries:
 		data = entries[0]
 		if getdate(data.date) != getdate(transaction_date):
-			return get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck)
+			return get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck, from_scheduler=from_scheduler)
 
 		return flt(data.exchange_rate)
 	
-	return get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck)
+	return get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck, from_scheduler=from_scheduler)
 
-def get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck=None):
+def get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck=None, from_scheduler=0):
 	if settingscheck.use_rate_as_first_day_of_month_rate:
 		temp = get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, settingscheck)
 	else:
@@ -125,7 +125,7 @@ def get_exchange_rate_from_api(from_currency, to_currency, transaction_date, set
 	if value:
 		fetch_on = get_datetime(temp.get("fetch_on"))
 		bank_date = getdate(temp.get("bank_date"))
-		save_currency_exchange(from_currency, to_currency, transaction_date, value, fetch_on=fetch_on, bank_date=bank_date)
+		save_currency_exchange(from_currency, to_currency, transaction_date, value, fetch_on=fetch_on, bank_date=bank_date, from_scheduler=from_scheduler)
 
 	return value
 
@@ -180,7 +180,6 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 					# expire in 6 hours
 					response.raise_for_status()
 					result = response.json()
-					print(175, result)
 				else:
 					result = dummy
 
@@ -261,7 +260,7 @@ def get_exchange_rate_from_api2(from_currency, to_currency, transaction_date, se
 	except:
 		return data
 
-def save_currency_exchange(from_currency, to_currency, date="", rate=0, fetch_on="", bank_date=""):
+def save_currency_exchange(from_currency, to_currency, date="", rate=0, fetch_on="", bank_date="", from_scheduler=0):
 	from_currency = from_currency.upper()
 	to_currency = to_currency.upper()
 	
@@ -288,6 +287,7 @@ def save_currency_exchange(from_currency, to_currency, date="", rate=0, fetch_on
 	doc.exchange_rate = rate
 	doc.fetch_on = fetch_on
 	doc.bank_date = bank_date
+	doc.from_scheduler = cint(from_scheduler)
 	doc.insert(ignore_if_duplicate=1)
 
 	return doc.name

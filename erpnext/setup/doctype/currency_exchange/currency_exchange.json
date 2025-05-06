@@ -16,6 +16,7 @@
   "for_selling",
   "log_section",
   "bank_date",
+  "from_scheduler",
   "column_break_10",
   "fetch_on"
  ],
@@ -93,12 +94,19 @@
   {
    "fieldname": "column_break_10",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "from_scheduler",
+   "fieldtype": "Check",
+   "label": "From Scheduler",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-exchange",
  "idx": 1,
  "links": [],
- "modified": "2025-05-06 15:33:40.752190",
+ "modified": "2025-05-06 15:48:40.380627",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Currency Exchange",
