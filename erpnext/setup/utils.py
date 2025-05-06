@@ -3,7 +3,7 @@
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, flt, get_datetime_str, nowdate, getdate, get_first_day, cstr
+from frappe.utils import add_days, flt, get_datetime_str, nowdate, getdate, get_first_day, cstr, get_datetime
 from frappe.utils.data import now_datetime
 from frappe.utils.nestedset import get_ancestors_of, get_root_of  # noqa
 import datetime
@@ -106,9 +106,11 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 
 def get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck=None):
 	if settingscheck.use_rate_as_first_day_of_month_rate:
-		value = get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, settingscheck)
+		temp = get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, settingscheck)
 	else:
-		value = get_exchange_rate_from_api2(from_currency, to_currency, transaction_date, settingscheck)
+		temp = get_exchange_rate_from_api2(from_currency, to_currency, transaction_date, settingscheck)
+	
+	value = temp.get("rate")
 		
 	if not value:
 		frappe.log_error("Unable to fetch exchange rate")
@@ -121,14 +123,20 @@ def get_exchange_rate_from_api(from_currency, to_currency, transaction_date, set
 		return 0.0
 
 	if value:
-		save_currency_exchange(from_currency, to_currency, transaction_date, value)
+		fetch_on = get_datetime(temp.get("fetch_on"))
+		bank_date = getdate(temp.get("bank_date"))
+		save_currency_exchange(from_currency, to_currency, transaction_date, value, fetch_on=fetch_on, bank_date=bank_date)
 
 	return value
 
 def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, settingscheck=None, dummy={}):
 	from_currency = from_currency.lower()
 	to_currency = to_currency.lower()
-	
+	data = {
+		"fetch_on": cstr(now_datetime()),
+		"bank_date":"",
+		"rate":0
+	}
 	try:
 		# if any holiday and missing result, will be back -1 day
 		idx = 0
@@ -172,6 +180,7 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 					# expire in 6 hours
 					response.raise_for_status()
 					result = response.json()
+					print(175, result)
 				else:
 					result = dummy
 
@@ -197,6 +206,8 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 									val = flt(val)/100
 
 								cache.setex(name=key_c, time=21600, value=cstr(val))
+							if ky == "end_of_day":
+								data["bank_date"] = val
 
 						if k in value[0]:
 							value = value[0][k]
@@ -204,6 +215,7 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 							value = flt(value[0][k+"_100"])/100
 						else:
 							value = 0
+						
 
 				cache.setex(name=key, time=21600, value=flt(value))
 
@@ -212,13 +224,19 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 
 			else:
 				break
-
-		return flt(value)
+		
+		data["rate"] = flt(value)
+		return data
 	except:
-		return 0.0
+		return data
 		
 # unused
 def get_exchange_rate_from_api2(from_currency, to_currency, transaction_date, settingscheck=None):
+	data = {
+		"fetch_on":cstr(now_datetime()),
+		"bank_date":"",
+		"rate":0
+	}
 	try:
 		cache = frappe.cache()
 		key = "currency_exchange_rate_{0}:{1}:{2}".format(transaction_date, from_currency, to_currency)
@@ -236,18 +254,23 @@ def get_exchange_rate_from_api2(from_currency, to_currency, transaction_date, se
 				value = flt(res['rates'].get(to_currency.upper()))
 
 			cache.setex(name=key, time=21600, value=flt(value))
+			data["rate"] = flt(value)
+			data["bank_date"] = res.get("date")
 		
-		return value
+		return data
 	except:
-		return 0.0
+		return data
 
-def save_currency_exchange(from_currency, to_currency, date="", rate=0):
+def save_currency_exchange(from_currency, to_currency, date="", rate=0, fetch_on="", bank_date=""):
 	from_currency = from_currency.upper()
 	to_currency = to_currency.upper()
 	
 	date = getdate(date)
 	if not rate:
-		rate = get_exchange_rate_from_api(from_currency, to_currency, date)
+		data = get_exchange_rate_from_api(from_currency, to_currency, date)
+		rate = data.get("rate")
+		fetch_on = data.get("fetch_on")
+		bank_date = data.get("bank_date")
 	
 	params = {
 		"date":date,
@@ -263,6 +286,8 @@ def save_currency_exchange(from_currency, to_currency, date="", rate=0):
 	doc = frappe.new_doc("Currency Exchange")
 	doc.update(params)
 	doc.exchange_rate = rate
+	doc.fetch_on = fetch_on
+	doc.bank_date = bank_date
 	doc.insert(ignore_if_duplicate=1)
 
 	return doc.name
