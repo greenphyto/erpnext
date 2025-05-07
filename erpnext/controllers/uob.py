@@ -114,17 +114,21 @@ class UOBAPI():
 			print(res.status_code)
 			print(res.text)
 
+		result = {
+			'status_code':res.status_code
+		}
 		if raw:
 			return res
 		try:
-			result =  res.json()
-			if "error" in result and result['error']:
-				print("ERROR: ", result['error'])
+			temp = res.json()
+			result["result"] = temp
+			if "error" in temp and temp['error']:
+				print("ERROR: ", temp['error'])
 
 			return result
 		except:
-			result =  res.text
-			return {}
+			result["result"] =  res.text
+			return result
 		
 	def download_bank_tx(self, fname=""):
 		# if not fname, download latest

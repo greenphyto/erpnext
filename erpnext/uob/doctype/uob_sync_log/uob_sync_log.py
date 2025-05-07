@@ -1,10 +1,10 @@
 # Copyright (c) 2025, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-import frappe
+import frappe, json
 import csv
 import io
-from frappe.utils import now_datetime
+from frappe.utils import now_datetime, cint
 from frappe.model.document import Document
 from erpnext.controllers.uob import UOBAPI
 import traceback
@@ -18,12 +18,14 @@ class UOBSyncLog(Document):
 		filepath = fn.get_full_path()
 		filename = fn.file_name
 		res = uob.upload_bank_tx(filepath, filename)
-		if "filename" in res:
+		print(21, res)
+		self.db_set("status_code", cint(res.get("status_code")))
+		if res.get("status_code") == 200:
 			self.db_set("status", "Complete")
 		else:
 			self.db_set("status", "Error")
-			error = res.get("error") or "Unknown"
-			self.db_set("error", error)
+			error = res.get("result") or res.get("error")
+			self.db_set("error", json.dumps(error))
 
 def create_log(csv_data, filename=""):
 	# create log
@@ -42,6 +44,7 @@ def create_log(csv_data, filename=""):
 		tb_str = traceback.format_exc()
 		doc.db_set("status", "Error")
 		doc.db_set("error", tb_str)
+		doc.db_set("status_code", 0)
 	
 
 def save_csv_to_file(data: list[list[str]], filename: str = None, attach_to_doctype="", attach_to_name="") -> str:

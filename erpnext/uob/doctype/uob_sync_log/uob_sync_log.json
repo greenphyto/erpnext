@@ -16,6 +16,7 @@
   "file",
   "filepath",
   "section_break_10",
+  "status_code",
   "error"
  ],
  "fields": [
@@ -84,19 +85,26 @@
   },
   {
    "fieldname": "section_break_10",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Result"
   },
   {
    "fieldname": "error",
    "fieldtype": "Code",
    "label": "Error",
    "read_only": 1
+  },
+  {
+   "fieldname": "status_code",
+   "fieldtype": "Data",
+   "label": "Status Code",
+   "read_only": 1
   }
  ],
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-05-07 15:58:11.577264",
+ "modified": "2025-05-07 16:16:50.754940",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "UOB Sync Log",
