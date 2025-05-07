@@ -2,6 +2,7 @@ import frappe, requests, json, os
 from urllib.parse import urljoin
 from six import string_types
 from frappe.utils import cint, flt
+from requests.adapters import HTTPAdapter
 
 class UOBAPI():
 	# API
@@ -12,10 +13,9 @@ class UOBAPI():
 
 	def init_request(self):
 		self.session = requests.Session()
-		self.update_header({
-			'accept': 'application/json',
-			'Content-Type': 'application/json',
-		})
+		adapter = HTTPAdapter(max_retries=3)
+		self.session.mount("http://", adapter)
+		self.session.mount("https://", adapter)
 
 	def update_header(self, header):
 		self.session.headers.update(header)
@@ -78,6 +78,16 @@ class UOBAPI():
 		
 		url = self.get_url(method)
 		self.get_login()
+		if files:
+			self.update_header({
+				'accept': 'application/json',
+			})
+		else:
+			self.update_header({
+				'accept': 'application/json',
+				'Content-Type': 'application/json',
+			})
+
 		if req == "POST":
 			res = self.session.post(url, data=data, params=params, files=files)
 		elif req == "DELETE":
@@ -114,7 +124,7 @@ class UOBAPI():
 			return result
 		except:
 			result =  res.text
-			return False
+			return {}
 		
 	def download_bank_tx(self, fname=""):
 		# if not fname, download latest
@@ -129,16 +139,17 @@ class UOBAPI():
 		res = self.req("GET", url, params={"limit":limit, "dest":dest})
 		return res
 
-	def upload_bank_tx(self, file_path):
+	def upload_bank_tx(self, file_path, filename):
 		if not os.path.exists(file_path):
 			return {"error": "File not exist!"}
 
 		with open(file_path, "rb") as f:
 			url = self.get_url("/bank/upload")
 			dest = self.settings.folder_in
-			files = {"file": (file_path, f, "text/csv")}
-			data = {"dest": dest}
-			res = self.req("POST", url, files=files, data=data)
-			print(100, res.status_code)
-			print(122, res.json())
+			files = {
+				"file": (filename, f),
+				'dest': (None, dest) 
+			}
+			res = self.req("POST", url, files=files)
+			return res
 	
