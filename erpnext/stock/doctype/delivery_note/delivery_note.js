@@ -98,7 +98,7 @@ frappe.ui.form.on("Delivery Note", {
 	},
 
 	is_replacement: function(frm){
-		frm.set_value("naming_series", 'DO-RPL-.YYYY.-.###');
+		frm.set_value("naming_series", 'DO-RPL-.YYYY.-.#####');
 		frappe.db.get_value("Company", frm.doc.company, ["sales_replacement_account"]).then(r=>{
 			set_donation_expense(frm, r.message.sales_replacement_account);
 		});
