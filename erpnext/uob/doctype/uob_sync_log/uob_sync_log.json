@@ -26,6 +26,20 @@
    "read_only": 1
   },
   {
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Pending\nSent\nError",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
    "default": "Today",
    "fieldname": "posting_date",
    "fieldtype": "Date",
@@ -43,16 +57,6 @@
    "read_only": 1
   },
   {
-   "default": "Pending",
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Status",
-   "options": "Pending\nSent\nError",
-   "read_only": 1
-  },
-  {
    "fieldname": "section_break_5",
    "fieldtype": "Section Break"
   },
@@ -61,18 +65,14 @@
    "fieldtype": "Data",
    "label": "File Signature",
    "read_only": 1
-  },
-  {
-   "fieldname": "column_break_3",
-   "fieldtype": "Column Break"
   }
  ],
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-05-05 15:06:43.720951",
+ "modified": "2025-05-07 10:55:09.685610",
  "modified_by": "Administrator",
- "module": "FOMS",
+ "module": "UOB",
  "name": "UOB Sync Log",
  "naming_rule": "Autoincrement",
  "owner": "Administrator",
