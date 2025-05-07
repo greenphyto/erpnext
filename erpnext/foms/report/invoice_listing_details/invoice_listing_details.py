@@ -36,8 +36,10 @@ class Report():
 			{"fieldname": "posting_date", 	"label": "Date", 		"fieldtype": "Date", 	"width":120, "options":""},
 			{"fieldname": "sales_invoice", 	"label": "Invoice No", 	"fieldtype": "Link", 	"width":120, "options":"Sales Invoice"},
 			{"fieldname": "customer", 		"label": "Customer", 	"fieldtype": "Link", 	"width":220, "options":"Customer"},
-			{"fieldname": "outlet_name", 	"label": "Store Name", 	"fieldtype": "Data", 	"width":120, "options":""},
-			{"fieldname": "item_code", 		"label": "Item", 		"fieldtype": "Link", 	"width":120, "options":"Item"},
+			{"fieldname": "outlet_name", 	"label": "Store Name", 	"fieldtype": "Data", 	"width":180, "options":""},
+			{"fieldname": "delivery_note", 	"label": "Delivery Note","fieldtype": "Link", 	"width":140, "options":"Delivery Note"},
+			{"fieldname": "delivery_date", 	"label": "Delivery Date","fieldtype": "Date", 	"width":120, "options":""},
+			{"fieldname": "item_code", 		"label": "Item", 		"fieldtype": "Link", 	"width":100, "options":"Item"},
 			{"fieldname": "qty", 			"label": "Qty", 		"fieldtype": "Float", 	"width":80, "options":""},
 			{"fieldname": "uom", 			"label": "UOM", 		"fieldtype": "Link", 	"width":180, "options":"UOM"},
 			{"fieldname": "weight", 		"label": "Weight (KG)", "fieldtype": "Float", 	"width":100, "options":""},
@@ -65,6 +67,9 @@ class Report():
 				p.total_weight as weight,
 				si.amount,
 				si.net_amount,
+				dn.name as delivery_note,
+				dn.posting_date as delivery_date,
+				si.net_amount,
 				t.name AS tx_row,
 				t.charge_type,
 				t.rate as gst,
@@ -82,6 +87,8 @@ class Report():
 				`tabPackaging` p ON p.name = si.uom
 					LEFT JOIN
 				`tabDelivery Note Item` dni ON dni.name = si.dn_detail
+					LEFT JOIN
+				`tabDelivery Note` dn ON dn.name = dni.parent
 					LEFT JOIN
 				(SELECT 
 					voucher_detail_no, item_code, batch_no, valuation_rate
