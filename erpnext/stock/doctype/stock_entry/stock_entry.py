@@ -1543,6 +1543,7 @@ class StockEntry(StockEntryAsset, StockController):
 				se.item_code,
 				se.parent,
 				se.basic_rate,
+				se.batch_no,
 				se.transfer_qty as stock_qty,
 				se.basic_amount as basic_amount
 			FROM
@@ -1560,14 +1561,14 @@ class StockEntry(StockEntryAsset, StockController):
 		total_item_amount = 0
 		for d in temp:
 			pred_amount = d.stock_qty * d.basic_rate
-			if not d.item_code in data_item_amount:
+			if not d.batch_no in data_item_amount:
 				d.pred_amount = pred_amount
-				data_item_amount[d.item_code] = d
-				data_rate_map[d.item_code] = d.basic_rate
+				data_item_amount[d.batch_no] = d
+				data_rate_map[d.batch_no] = d.basic_rate
 			else:
-				data_item_amount[d.item_code]['stock_qty'] += d.stock_qty
-				data_item_amount[d.item_code]['basic_amount'] += d.basic_amount
-				data_item_amount[d.item_code]['pred_amount'] += pred_amount
+				data_item_amount[d.batch_no]['stock_qty'] += d.stock_qty
+				data_item_amount[d.batch_no]['basic_amount'] += d.basic_amount
+				data_item_amount[d.batch_no]['pred_amount'] += pred_amount
 				
 			total_item_amount += flt(d.pred_amount)
 
@@ -1604,7 +1605,7 @@ class StockEntry(StockEntryAsset, StockController):
 
 			# find new rate with add cost
 			new_rate  = basic_rate + rate_cost
-			rate_map[d.item_code] = round(new_rate, 5)
+			rate_map[d.batch_no] = round(new_rate, 5)
 			total += new_rate
 			
 		return rate_map

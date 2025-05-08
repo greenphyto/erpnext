@@ -551,7 +551,7 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 	rate_map = se_doc.get_previous_rate()
 	for row in se_doc.get("items"):
 		if row.s_warehouse:
-			row.basic_rate = flt(rate_map.get(row.item_code), 5)
+			row.basic_rate = flt(rate_map.get(row.batch_no), 5)
 			row.valuation_rate = row.basic_rate
 			row.set_basic_rate_manually = 1
 
