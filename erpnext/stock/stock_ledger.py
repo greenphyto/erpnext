@@ -431,13 +431,13 @@ class update_entries_after(object):
 		# fixing here about previous_stock_value 
 		# becuase wrong when qty_after_transaction x valuation_rate
 		# so, we use calculation 
-		prev_stock_value = flt(previous_sle.get("qty_after_transaction")) * flt(previous_sle.get("valuation_rate"))
-		if prev_stock_value != flt(previous_sle.get("stock_value")):
+		prev_stock_value = flt(flt(previous_sle.get("qty_after_transaction")) * flt(previous_sle.get("valuation_rate")), 2)
+		if flt(previous_sle.get("stock_value")) and prev_stock_value != flt(previous_sle.get("stock_value")):
 			self.fix_note = "Start fixing previous stock value sle: {} | wrong value : {}".format(previous_sle.get("name"), previous_sle.get("stock_value"))
 
 		warehouse_dict.update(
 			{
-				"prev_stock_value": flt(previous_sle.qty_after_transaction) * flt(previous_sle.valuation_rate),
+				"prev_stock_value": prev_stock_value,
 				"stock_queue": json.loads(previous_sle.stock_queue or "[]"),
 				"stock_value_difference": 0.0,
 			}
