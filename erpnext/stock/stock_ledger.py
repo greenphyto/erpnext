@@ -375,6 +375,7 @@ class update_entries_after(object):
 		self.allow_negative_stock = allow_negative_stock or is_negative_stock_allowed(
 			item_code=self.item_code
 		)
+		self.fix_note = ""
 
 		self.args = frappe._dict(args)
 		if self.args.sle_id:
@@ -426,9 +427,17 @@ class update_entries_after(object):
 		for key in ("qty_after_transaction", "valuation_rate", "stock_value"):
 			setattr(warehouse_dict, key, flt(previous_sle.get(key)))
 
+		# 09-05-2025
+		# fixing here about previous_stock_value 
+		# becuase wrong when qty_after_transaction x valuation_rate
+		# so, we use calculation 
+		prev_stock_value = flt(previous_sle.get("qty_after_transaction")) * flt(previous_sle.get("valuation_rate"))
+		if prev_stock_value != flt(previous_sle.get("stock_value")):
+			self.fix_note = "Start fixing previous stock value sle: {} | wrong value : {}".format(previous_sle.get("name"), previous_sle.get("stock_value"))
+
 		warehouse_dict.update(
 			{
-				"prev_stock_value": previous_sle.stock_value or 0.0,
+				"prev_stock_value": flt(previous_sle.qty_after_transaction) * flt(previous_sle.valuation_rate),
 				"stock_queue": json.loads(previous_sle.stock_queue or "[]"),
 				"stock_value_difference": 0.0,
 			}
@@ -603,6 +612,7 @@ class update_entries_after(object):
 		sle.stock_value = self.wh_data.stock_value
 		sle.stock_queue = json.dumps(self.wh_data.stock_queue)
 		sle.stock_value_difference = stock_value_difference
+		sle.fix_note = self.fix_note
 		sle.doctype = "Stock Ledger Entry"
 
 		frappe.get_doc(sle).db_update()

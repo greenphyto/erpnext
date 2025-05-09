@@ -36,7 +36,8 @@
   "fiscal_year",
   "serial_no",
   "is_cancelled",
-  "to_rename"
+  "to_rename",
+  "fix_note"
  ],
  "fields": [
   {
@@ -311,6 +312,12 @@
    "label": "Recalculate Incoming/Outgoing Rate",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "fix_note",
+   "fieldtype": "Small Text",
+   "label": "Fix Note",
+   "read_only": 1
   }
  ],
  "hide_toolbar": 1,
@@ -319,7 +326,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-19 14:39:50.955593",
+ "modified": "2025-05-09 19:17:32.357240",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Ledger Entry",
