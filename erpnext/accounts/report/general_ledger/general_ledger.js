@@ -189,7 +189,20 @@ frappe.query_reports["General Ledger"] = {
 			"label": __("Show Net Values in Party Account"),
 			"fieldtype": "Check"
 		}
-	]
+	],
+	formatter: function (value, row, column, data, default_formatter) {
+		value = default_formatter(value, row, column, data);
+	
+		if (column.fieldname === "account_number" && data.account_no) {
+		  return `<a href="#" onclick='
+			frappe.query_report.set_filter_value("account", "${data.account_no}");
+			return false;
+		  '>${value}</a>`;
+		}
+	
+		return value;
+
+	}
 }
 
 erpnext.utils.add_dimensions('General Ledger', 15)
