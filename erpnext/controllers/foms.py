@@ -1258,7 +1258,7 @@ def _sync_delivery_note2(log, api=None):
 			"qty": d.stock_qty,
 			"uom": d.stock_uom,
 			"fomsLotId":d.foms_lot_name,
-			"fomsWorkOrderId":d.foms_work_order,
+			"fomsWorkOrderId": cint(d.foms_work_order),
 			"remarks": get_html_text(d.description),
 			"warehouse": d.warehouse,
 			"batchNo": d.batch_no,
