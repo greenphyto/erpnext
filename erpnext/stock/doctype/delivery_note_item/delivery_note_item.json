@@ -849,23 +849,27 @@
    "label": "Marketing Name"
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fieldname": "foms_lot_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "FOMS Lot ID"
+   "label": "FOMS Lot ID",
+   "read_only_depends_on": "eval:cur_frm.doc.foms_id"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "foms_work_order",
    "fieldtype": "Data",
-   "label": "FOMS Work Order"
+   "label": "FOMS Work Order",
+   "read_only_depends_on": "eval:cur_frm.doc.foms_id"
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-05-14 11:56:17.176781",
+ "modified": "2025-05-14 13:04:48.272933",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note Item",
