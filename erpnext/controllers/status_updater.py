@@ -476,7 +476,7 @@ class StatusUpdater(Document):
 					% args
 				)
 
-			if update_modified:
+			if update_modified and args["target_parent_dt"] and args["name"]:
 				target = frappe.get_doc(args["target_parent_dt"], args["name"])
 				target.set_status(update=True)
 				target.notify_update()
