@@ -30,6 +30,7 @@ class SerialNoExistsInFutureTransaction(frappe.ValidationError):
 
 
 def make_sl_entries(sl_entries, allow_negative_stock=False, via_landed_cost_voucher=False):
+	from erpnext.stock.doctype.batch.batch import get_batch_qty
 	"""Create SL entries from SL entry dicts
 
 	args:
@@ -50,6 +51,33 @@ def make_sl_entries(sl_entries, allow_negative_stock=False, via_landed_cost_vouc
 
 		args = get_args_for_future_sle(sl_entries[0])
 		future_sle_exists(args, sl_entries)
+
+		# validate negative
+		qty_map = {}
+		if not cancel and not allow_negative_stock:
+			for sle in sl_entries:
+				key = (sle.batch_no, sle.warehouse)
+				if key not in qty_map:
+					qty_map[key]=get_batch_qty(sle.batch_no, sle.warehouse)
+				
+				cur_qty = -flt(sle.get("actual_qty"))
+				diff = qty_map[key]-cur_qty
+				if diff >= 0:
+					qty_map[key]-=cur_qty
+				else:
+					link_name = frappe.get_desk_link("Batch", sle.batch_no)
+					message = _(
+						"{0} units of {1} needed in {2} on {3} {4} for {5} to complete this transaction."
+					).format(
+						abs(diff),
+						link_name,
+						frappe.get_desk_link("Warehouse", sle.warehouse),
+						sle.posting_date,
+						sle.posting_time,
+						frappe.get_desk_link(sle.voucher_type, sle.voucher_no),
+					)
+
+					frappe.throw(message, NegativeStockError, title=_("Insufficient Stock"))
 
 		for sle in sl_entries:
 			if sle.serial_no and not via_landed_cost_voucher:
