@@ -131,7 +131,7 @@ def collect_expired_items():
 			GROUP BY sle.batch_no , sle.warehouse
 			ORDER BY sle.modified ASC) a
 		WHERE
-			a.batch_qty != 0
+			a.batch_qty > 0
 	""", {"wh":wip_warehouse, "exp":use_date}, as_dict=1)
 
 	if not data:
@@ -202,7 +202,7 @@ def collect_expired_product(date=""):
 			GROUP BY sle.batch_no , sle.warehouse
 			ORDER BY sle.modified ASC) a
 		WHERE
-			a.batch_qty != 0
+			a.batch_qty > 0
 	""", {"wh":wip_warehouse, "exp":use_date}, as_dict=1)
 
 	if not data:
