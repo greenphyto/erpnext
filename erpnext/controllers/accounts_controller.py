@@ -1229,6 +1229,10 @@ class AccountsController(TransactionBase):
 			)
 
 	def validate_multiple_billing(self, ref_dt, item_ref_dn, based_on, parentfield):
+		if cint(self.is_return):
+			# in future: should be able validate over return qty
+			return
+		
 		from erpnext.controllers.status_updater import get_allowance_for
 
 		item_allowance = {}
