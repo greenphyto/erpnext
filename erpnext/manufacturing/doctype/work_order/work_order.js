@@ -191,7 +191,7 @@ frappe.ui.form.on("Work Order", {
 			});
 
 			if (non_consumed_items && non_consumed_items.length) {
-				frm.add_custom_button(__("Return Components"), function() {
+				frm.add_custom_button(__("Scrap Components"), function() {
 					frm.trigger("create_stock_return_entry");
 				}).addClass("btn-primary");
 			}
@@ -200,7 +200,7 @@ frappe.ui.form.on("Work Order", {
 
 	create_stock_return_entry: function(frm) {
 		frappe.call({
-			method: "erpnext.manufacturing.doctype.work_order.work_order.make_stock_return_entry",
+			method: "erpnext.manufacturing.doctype.work_order.work_order.make_scrap_materials",
 			args: {
 				"work_order": frm.doc.name,
 			},

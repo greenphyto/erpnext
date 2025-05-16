@@ -1802,3 +1802,59 @@ def make_stock_return_entry(work_order):
 	stock_entry.set_stock_entry_type()
 
 	return stock_entry
+
+@frappe.whitelist()
+def make_scrap_materials(work_order):
+	from erpnext.controllers.foms import get_wip_warehouse
+	from erpnext.stock.doctype.stock_entry.stock_entry import get_available_materials
+	
+	wip_warehouse = get_wip_warehouse()
+	if wip_warehouse:
+		wip_warehouse = wip_warehouse[0]
+	else:
+		wip_warehouse=""
+
+	non_consumed_items = get_available_materials(work_order)
+	if not non_consumed_items:
+		return
+
+	wo_doc = frappe.get_cached_doc("Work Order", work_order)
+
+	stock_entry = frappe.new_doc("Stock Entry")
+	stock_entry.from_bom = 1
+	stock_entry.is_return = 1
+	stock_entry.work_order = work_order
+	stock_entry.purpose = "Material Transfer for Manufacture"
+	stock_entry.bom_no = wo_doc.bom_no
+	stock_entry.add_transfered_raw_materials_in_items()
+
+	stock_entry.stock_entry_type_view = "Waste Materials"
+	stock_entry.purpose = "Material Issue"
+	stock_entry.operation = get_current_operation(work_order)
+	stock_entry.set_stock_entry_type()
+	stock_entry.request_no = "Scrap Item from Stoped Work Order"
+	expense_account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
+
+	for row in stock_entry.items:
+		row.is_scrap_item = 1
+		row.conversion_factor = 1
+		row.expense_account = expense_account
+
+	stock_entry.remarks = "Waste materials from Work Order"
+	stock_entry.set_missing_values()
+
+	return stock_entry
+
+def get_current_operation(work_order):
+	temp = frappe.db.sql("""
+		SELECT 
+			operation
+		FROM
+			`tabStock Entry`
+		WHERE
+			purpose = 'Material Transfer for Manufacture'
+				AND docstatus = 1
+				AND work_order = %s
+		ORDER BY creation desc
+	""", work_order)
+	return temp[0][0]
