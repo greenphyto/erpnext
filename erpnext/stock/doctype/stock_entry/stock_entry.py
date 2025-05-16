@@ -38,6 +38,7 @@ from erpnext.stock.utils import get_bin, get_incoming_rate
 from erpnext.stock import get_warehouse_account_map, get_item_account
 from erpnext.controllers.foms import get_previous_operation, get_operation_number,get_default_expense_production_account
 from erpnext.accounts.utils import get_cost_center_from_account
+from erpnext.controllers.foms import get_wip_warehouse
 
 
 class FinishedGoodError(frappe.ValidationError):
@@ -364,7 +365,11 @@ class StockEntry(StockEntryAsset, StockController):
 
 	def validate_partially_issue(self):
 		if self.purpose == "Material Issue":
+			wip_warehouse = get_wip_warehouse()
 			for d in self.get("items"):
+				if d.s_warehouse in wip_warehouse:
+					continue
+				
 				qty = get_batch_qty(d.batch_no, d.s_warehouse)
 				if qty and flt(qty, 2) != flt(d.qty, 2):
 					frappe.throw(f"Row {d.idx}, Cannot issuing stock partially, qty should be {qty}")
