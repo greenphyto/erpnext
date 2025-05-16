@@ -333,7 +333,7 @@ def make_return_doc(doctype: str, source_name: str, target_doc=None):
 	def set_missing_values(source, target):
 		doc = frappe.get_doc(target)
 		doc.is_return = 1
-		doc.return_against = source.name
+		# doc.return_against = source.name
 		doc.set_warehouse = ""
 		if doctype == "Delivery Note":
 			doc.naming_series = "DO-RET-.YYYY.-.###"
