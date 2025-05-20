@@ -11,6 +11,16 @@ frappe.ui.form.on('Payment Approval', {
 				}
 			}
 		})
+
+		frm.set_query("supplier_bank_no", "invoices", (doc, cdt, cdn)=>{
+			var d = locals[cdt][cdn]
+			return{
+				filters:{
+					party: d.party,
+					party_type:"Supplier"
+				}
+			}
+		})
 	},
 	after_save: function(frm) {
         frm.reload_doc();
