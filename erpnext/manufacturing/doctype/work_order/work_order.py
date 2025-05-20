@@ -1840,7 +1840,7 @@ def make_scrap_materials(work_order):
 		row.conversion_factor = 1
 		row.expense_account = expense_account
 
-	stock_entry.remarks = "Waste materials from Work Order"
+	stock_entry.remarks = f"Waste materials from Work Order {work_order}"
 	stock_entry.set_missing_values()
 
 	return stock_entry
