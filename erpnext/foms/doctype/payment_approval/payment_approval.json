@@ -45,10 +45,11 @@
    "label": "Time"
   },
   {
+   "default": "GIRO",
    "fieldname": "payment_type",
    "fieldtype": "Select",
    "label": "Payment Type",
-   "options": "GIRO\nFAST\nTT"
+   "options": "GIRO\nFAST\nPayNow\nTT\nMEPS\nCHQ\nCO"
   },
   {
    "fieldname": "section_break_5",
@@ -108,7 +109,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-05-20 11:07:28.384435",
+ "modified": "2025-05-20 11:41:19.781808",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Payment Approval",
