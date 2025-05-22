@@ -101,12 +101,18 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 					__('Create')
 				);
 			} else if (!doc.on_hold) {
+				
 				this.frm.add_custom_button(
 					__('Block Invoice'),
 					function() {me.block_invoice()},
 					__('Create')
 				);
 			}
+			this.frm.add_custom_button(
+					__('Payment Approval'),
+					function() {me.create_payment_approval()},
+					__('Create')
+				);
 		}
 
 		if(doc.docstatus == 1 && doc.outstanding_amount != 0
@@ -214,6 +220,13 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 		} else {
 			return true;
 		}
+	}
+
+	create_payment_approval(){
+		frappe.model.open_mapped_doc({
+			method: "erpnext.accounts.doctype.purchase_invoice.purchase_invoice.make_payment_approval",
+			frm: cur_frm
+		})
 	}
 
 	make_comment_dialog_and_block_invoice(){

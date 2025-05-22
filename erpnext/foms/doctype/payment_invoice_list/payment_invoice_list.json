@@ -46,9 +46,10 @@
    "columns": 1,
    "fetch_from": "invoice_no.currency",
    "fieldname": "currency",
-   "fieldtype": "Currency",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Currency",
+   "options": "Currency",
    "read_only": 1
   },
   {

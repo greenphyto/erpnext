@@ -1881,3 +1881,42 @@ def hide_older_cancelled_document():
 
 
 	return data
+
+@frappe.whitelist()
+@frappe.read_only()
+def make_payment_approval(source_name, target_doc=None):
+	def postprocess(source_doc, target_doc):
+		row = target_doc.append("invoices")
+		row.invoice_no = source_doc.name
+		row.party = source_doc.supplier
+		row.amount = flt(source_doc.outstanding_amount)
+		row.basic_amount = flt(source_doc.outstanding_amount)
+		row.currency = source_doc.currency
+		row.exchange_rate = flt(source_doc.conversion_rate)
+
+		# Fetch bank information from supplier's default bank account
+		supplier = frappe.get_doc("Supplier", source_doc.supplier)
+		if supplier.default_bank_account_no:
+			row.supplier_bank_no = supplier.default_bank_account_no
+			bank_account = frappe.get_doc("Bank Number", supplier.default_bank_account_no)
+			if bank_account.bank:
+				row.supplier_bank = bank_account.bank
+				bank = frappe.get_doc("Bank", bank_account.bank)
+				row.swift = bank.swift_number
+
+	doc = get_mapped_doc(
+		"Purchase Invoice",
+		source_name,
+		{
+			"Purchase Invoice": {
+				"doctype": "Payment Approval",
+				"validation": {
+					"docstatus": ["=", 1],
+				},
+			}
+		},
+		target_doc,
+		postprocess
+	)
+
+	return doc
