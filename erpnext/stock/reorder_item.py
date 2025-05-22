@@ -7,7 +7,7 @@ from math import ceil
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, cint, flt, nowdate
+from frappe.utils import add_days, cint, flt, nowdate, getdate, cstr
 
 import erpnext
 
@@ -145,21 +145,66 @@ def create_material_request(material_requests):
 
 		mr.log_error("Unable to create material request")
 
+	def find_existing_row(mr, item_row):
+		for row in mr.items:
+			row.schedule_date = cstr(row.schedule_date)
+			if (
+				row.item_code == item_row["item_code"]
+				and row.warehouse == item_row["warehouse"]
+				and row.schedule_date == item_row["schedule_date"]
+				and flt(row.qty) == flt(item_row["qty"])
+				and row.uom == item_row["uom"]
+				and row.stock_uom == item_row["stock_uom"]
+				and row.item_name == item_row["item_name"]
+				and row.description == item_row["description"]
+				and row.item_group == item_row["item_group"]
+				and row.brand == item_row["brand"]
+				and cint(row.from_reorder_level) == 1
+			):
+				return row  # return the existing matching row
+		
+		return None 
+
 	for request_type in material_requests:
 		for company in material_requests[request_type]:
 			try:
+				mr = None
 				items = material_requests[request_type][company]
 				if not items:
 					continue
 
-				mr = frappe.new_doc("Material Request")
-				mr.update(
-					{
-						"company": company,
-						"transaction_date": nowdate(),
-						"material_request_type": "Material Transfer" if request_type == "Transfer" else request_type,
-					}
-				)
+				# find exists
+				parent_args = {
+					"company": company,
+					"transaction_date": nowdate(),
+					"material_request_type": "Material Transfer" if request_type == "Transfer" else request_type,
+					"from_reorder_level":1
+				}
+				draft_mr = frappe.db.sql("""
+					SELECT
+						mr.name,
+						mr.status,
+						mr.workflow_state,
+						mr.docstatus
+					FROM
+						`tabMaterial Request` mr
+					WHERE
+						mr.from_reorder_level = 1
+						AND mr.docstatus = 0
+						AND mr.workflow_state = "Draft"
+						AND mr.schedule_date > CURDATE()
+						AND mr.material_request_type = %(material_request_type)s
+						AND mr.company = %(company)s
+					ORDER BY
+						mr.creation DESC
+					LIMIT 1
+				""", parent_args, as_dict=1, debug=1)
+
+				if draft_mr:
+					mr = frappe.get_doc("Material Request", draft_mr[0].name)
+				else:
+					mr = frappe.new_doc("Material Request")
+					mr.update(parent_args)
 
 				for d in items:
 					d = frappe._dict(d)
@@ -182,9 +227,7 @@ def create_material_request(material_requests):
 					if must_be_whole_number:
 						qty = ceil(qty)
 
-					mr.append(
-						"items",
-						{
+					item_row = {
 							"doctype": "Material Request Item",
 							"item_code": d.item_code,
 							"schedule_date": add_days(nowdate(), cint(item.lead_time_days)),
@@ -196,18 +239,24 @@ def create_material_request(material_requests):
 							"description": item.description,
 							"item_group": item.item_group,
 							"brand": item.brand,
-						},
-					)
+							"from_reorder_level":1
+						}
+					exist_row = find_existing_row(mr, item_row)
+					if not exist_row:
+						row = mr.append(
+							"items", item_row
+						)
+						row.insert()
 
-				schedule_dates = [d.schedule_date for d in mr.items]
-				mr.schedule_date = max(schedule_dates or [nowdate()])
+				schedule_dates = [ cstr(d.schedule_date) for d in mr.items ] + [ nowdate()]
+				mr.schedule_date = min(schedule_dates)
 				mr.flags.ignore_mandatory = True
-				mr.insert()
-				mr.submit()
+				mr.save()
 				mr_list.append(mr)
 
 			except Exception:
-				_log_exception(mr)
+				if mr:
+					_log_exception(mr)
 
 	if mr_list:
 		if getattr(frappe.local, "reorder_email_notify", None) is None:
@@ -241,7 +290,7 @@ def send_email_notification(mr_list):
 
 
 def notify_errors(exceptions_list):
-	subject = _("[Important] [ERPNext] Auto Reorder Errors")
+	subject = _("[Important] [ERP] Auto Reorder Errors")
 	content = (
 		_("Dear System Manager,")
 		+ "<br>"
