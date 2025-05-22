@@ -133,7 +133,7 @@ class MaterialRequest(BuyingController):
 		self.set_status(update=True)
 
 	def check_attachment(self):
-		if self.is_new():
+		if self.is_new() or self.flags.ignore_mandatory:
 			return
 		
 		attachments = self.get_attachments()

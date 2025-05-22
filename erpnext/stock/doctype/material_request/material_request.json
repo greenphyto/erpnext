@@ -106,6 +106,7 @@
   "job_card",
   "is_low_amount",
   "column_break_35",
+  "from_reorder_level",
   "work_order",
   "connections_tab",
   "get_items_from_open_material_requests"
@@ -898,13 +899,20 @@
    "in_list_view": 1,
    "label": "Purchase Order",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "from_reorder_level",
+   "fieldtype": "Check",
+   "label": "From Reorder Level",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-ticket",
  "idx": 70,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-15 16:21:07.139135",
+ "modified": "2025-05-22 12:07:12.050235",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request",
