@@ -22,7 +22,8 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Invoice No",
-   "options": "Purchase Invoice"
+   "options": "Purchase Invoice",
+   "reqd": 1
   },
   {
    "fetch_from": "invoice_no.supplier",
@@ -31,7 +32,8 @@
    "in_list_view": 1,
    "label": "Supplier",
    "options": "Supplier",
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1
   },
   {
    "columns": 1,
@@ -40,7 +42,8 @@
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Amount",
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1
   },
   {
    "columns": 1,
@@ -82,7 +85,8 @@
    "in_list_view": 1,
    "label": "Bank",
    "options": "Bank",
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1
   },
   {
    "fetch_from": "supplier_bank.swift_number",
@@ -95,7 +99,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-05-20 15:54:55.607606",
+ "modified": "2025-05-23 11:14:22.704713",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Payment Invoice List",
