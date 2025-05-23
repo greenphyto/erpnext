@@ -27,14 +27,18 @@ frappe.ui.form.on('Payment Approval', {
     },
 	before_workflow_action: function(frm){
 		return new Promise((resolve, reject) => {
-			frm.cscript.reject_payment_approval().then(resolve());
+			frm.cscript.reject_payment_approval().then((r)=>{
+				if (r){
+					resolve()
+				}
+			});
 		})
 	}
 })
 
 $.extend(cur_frm.cscript, {
 	reject_payment_approval(){
-		return new Promise((resolve, reject) => {
+		return new Promise((resolve) => {
 			var me = this;
 			if (me.frm.selected_workflow_action == "Reject"){
 				var d = new frappe.ui.Dialog({
@@ -62,15 +66,22 @@ $.extend(cur_frm.cscript, {
 							},
 							callback: function(r) {
 								me.frm.reload_doc()
-								console.log(123)
-								resolve();
+								d.finish = true;
+								d.hide();
 							}
 						});
+					},
+					onhide:()=>{
+						if (d.finish){
+							resolve(true);
+						}else{
+							resolve(false);
+						}
 					}
 				});
 				d.show();
 			}else{
-				resolve();
+				resolve(true);
 			}
 		})
 	}
