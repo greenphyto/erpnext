@@ -4,7 +4,8 @@
 import frappe
 from frappe.model.document import Document
 from frappe.utils import flt
-
+from frappe.utils.file_manager import save_file
+from erpnext.controllers.uob import create_payment_xml
 """ TODO
 1. calculate total OK
 2. set requested by 
@@ -18,6 +19,7 @@ class PaymentApproval(Document):
 	def validate(self):
 		self.set_requested_by()
 		self.validate_data()
+		self.process_xml_file()
 
 	def validate_data(self):
 		self.validate_invoice()
@@ -69,3 +71,60 @@ class PaymentApproval(Document):
 		
 		self.total_amount = total
 
+	def process_xml_file(self):
+		if self.workflow_state != "Approved" and self.docstatus != 1:
+			return
+		
+		invoices = []
+		for d in self.invoices:
+			bic = frappe.get_value("Bank",d.bank_account_name,"swift_number")
+			row = {
+				'invoice_number': d.invoice_no,
+				'amount': d.amount,
+				'creditor_name': d.bank_account_name,
+				'creditor_bic': bic,
+				'creditor_account': d.supplier_bank_no,
+				'remarks': 'Payment invoice'
+			}
+			invoices.append(row)
+
+		bic = frappe.get_value("Bank", self.bank, "swift_number")
+		debtor_info = {
+			'name': self.bank_account_name,
+			'account_number': self.bank_account_no,
+			'bic': bic
+		}
+
+		return self.create_xml_file(invoices, debtor_info)
+
+	def create_xml_file(self, invoices, debtor_info):
+		"""
+		Saves XML content as a File in ERPNext and links it to a Payment Approval.
+		
+		Args:
+			xml_content (str): Generated XML string (ISO 20022 format).
+			payment_approval_name (str): Name of the Payment Approval doc (e.g., "PAY-001").
+		"""
+
+		xml_content = create_payment_xml(invoices, debtor_info)
+
+		# Validate inputs
+		if not xml_content:
+			frappe.throw("XML content cannot be empty.")
+		
+		# Define file properties
+		file_name = f"payment_export_{frappe.utils.nowdate()}.xml"
+		doc_type = "Payment Approval"
+		doc_name = self.name
+		
+		# Save the file to ERPNext
+		save_file(
+			fname=file_name,
+			content=xml_content,
+			dt=doc_type,
+			dn=doc_name,
+			folder="Home/Attachments",
+			is_private=1,  # Restrict access to authorized users
+		)
+		
+		return True
