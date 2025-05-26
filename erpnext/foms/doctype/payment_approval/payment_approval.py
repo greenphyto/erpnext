@@ -71,7 +71,7 @@ class PaymentApproval(Document):
 		
 		self.total_amount = total
 
-	def process_xml_file(self):
+	def process_xml_file(self, filepath=""):
 		if self.workflow_state != "Approved" and self.docstatus != 1:
 			return
 		
@@ -84,7 +84,8 @@ class PaymentApproval(Document):
 				'creditor_name': d.bank_account_name,
 				'creditor_bic': bic,
 				'creditor_account': d.supplier_bank_no,
-				'remarks': 'Payment invoice'
+				'remarks': 'Payment invoice',
+				'currency': d.currency,
 			}
 			invoices.append(row)
 
@@ -92,12 +93,13 @@ class PaymentApproval(Document):
 		debtor_info = {
 			'name': self.bank_account_name,
 			'account_number': self.bank_account_no,
-			'bic': bic
+			'bic': bic,
+			"purpose":self.purpose
 		}
 
-		return self.create_xml_file(invoices, debtor_info)
+		return self.create_xml_file(invoices, debtor_info, filepath=filepath)
 
-	def create_xml_file(self, invoices, debtor_info):
+	def create_xml_file(self, invoices, debtor_info, filepath=""):
 		"""
 		Saves XML content as a File in ERPNext and links it to a Payment Approval.
 		
@@ -106,7 +108,7 @@ class PaymentApproval(Document):
 			payment_approval_name (str): Name of the Payment Approval doc (e.g., "PAY-001").
 		"""
 
-		xml_content = create_payment_xml(invoices, debtor_info)
+		xml_content = create_payment_xml(invoices, debtor_info, filepath=filepath)
 
 		# Validate inputs
 		if not xml_content:
@@ -118,13 +120,14 @@ class PaymentApproval(Document):
 		doc_name = self.name
 		
 		# Save the file to ERPNext
-		save_file(
-			fname=file_name,
-			content=xml_content,
-			dt=doc_type,
-			dn=doc_name,
-			folder="Home/Attachments",
-			is_private=1,  # Restrict access to authorized users
-		)
+		if not filepath:
+			save_file(
+				fname=file_name,
+				content=xml_content,
+				dt=doc_type,
+				dn=doc_name,
+				folder="Home/Attachments",
+				is_private=1,  # Restrict access to authorized users
+			)
 		
 		return True
