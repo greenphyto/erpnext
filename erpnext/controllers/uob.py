@@ -161,7 +161,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 from xml.dom import minidom
 
-def create_payment_xml(invoices, debtor_info):
+def create_payment_xml(invoices, debtor_info, filepath=""):
 	# Namespace definitions
 	ns = {
 		'': 'urn:iso:std:iso:20022:tech:xsd:pain.001.001.03',
@@ -203,7 +203,7 @@ def create_payment_xml(invoices, debtor_info):
 	svc_lvl = ET.SubElement(pmt_tp_inf, 'SvcLvl')
 	ET.SubElement(svc_lvl, 'Cd').text = 'URNS'
 	ctgy_purp = ET.SubElement(pmt_tp_inf, 'CtgyPurp')
-	ET.SubElement(ctgy_purp, 'Cd').text = 'EDUC'
+	ET.SubElement(ctgy_purp, 'Cd').text = debtor_info['purpose']
 	
 	ET.SubElement(pmt_inf, 'ReqdExctnDt').text = datetime.now().strftime('%Y-%m-%d')
 	
@@ -292,13 +292,11 @@ def create_payment_xml(invoices, debtor_info):
 		
 		# Remittance Information
 		rmt_inf = ET.SubElement(cdt_trf_tx_inf, 'RmtInf')
-		ET.SubElement(rmt_inf, 'Ustrd').text = f"1:Bene Details {invoice['invoice_number']}"
 		ET.SubElement(rmt_inf, 'Ustrd').text = "H1:INVOICE REF\t\tAMOUNT\tCURRENCY1"
 		
 		# Split amount for multiple invoice lines (as in example)
-		half_amount = invoice['amount'] / 2
-		ET.SubElement(rmt_inf, 'Ustrd').text = f"3:{invoice['invoice_number']}A\t\t{half_amount:.2f}\tSGD"
-		ET.SubElement(rmt_inf, 'Ustrd').text = f"3:{invoice['invoice_number']}B\t\t{half_amount:.2f}\tSGD"
+		inv_amount = invoice['amount']
+		ET.SubElement(rmt_inf, 'Ustrd').text = f"3:{invoice['invoice_number']}\t\t{inv_amount:.2f}\t{invoice['currency']}"
 		
 		strd = ET.SubElement(rmt_inf, 'Strd')
 		invcee = ET.SubElement(strd, 'Invcee')
@@ -312,7 +310,8 @@ def create_payment_xml(invoices, debtor_info):
 	xml_output = pretty_xml.decode('utf-8')
 	
 	# Save to file
-	with open('payment_initiation.xml', 'w') as f:
-		f.write(xml_output)
+	if filepath:
+		with open(filepath, 'w') as f:
+			f.write(xml_output)
 
 	return xml_output

@@ -8,6 +8,8 @@
  "engine": "InnoDB",
  "field_order": [
   "payment_type",
+  "purpose",
+  "purpose_description",
   "requested_by",
   "approved_by",
   "column_break_2",
@@ -164,12 +166,26 @@
    "fieldtype": "Data",
    "label": "Bank Account No",
    "read_only": 1
+  },
+  {
+   "fieldname": "purpose",
+   "fieldtype": "Link",
+   "label": "Purpose",
+   "options": "Bank Purpose",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "purpose.purpose",
+   "fieldname": "purpose_description",
+   "fieldtype": "Data",
+   "label": "Purpose Description",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-05-23 18:06:11.675084",
+ "modified": "2025-05-26 15:59:08.411401",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Payment Approval",
