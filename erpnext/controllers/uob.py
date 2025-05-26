@@ -197,11 +197,15 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	# Create Payment Information
 	pmt_inf = ET.SubElement(cstmr_cdt_trf_initn, 'PmtInf')
 	ET.SubElement(pmt_inf, 'PmtInfId').text = f"{datetime.now().strftime('%Y%m%d')}FSTwadv"
-	ET.SubElement(pmt_inf, 'PmtMtd').text = 'TRF'
+	ET.SubElement(pmt_inf, 'PmtMtd').text = debtor_info['type']
 	
 	pmt_tp_inf = ET.SubElement(pmt_inf, 'PmtTpInf')
 	svc_lvl = ET.SubElement(pmt_tp_inf, 'SvcLvl')
-	ET.SubElement(svc_lvl, 'Cd').text = 'URNS'
+	ET.SubElement(svc_lvl, 'Cd').text = debtor_info['method']
+	if debtor_info['method']:
+		svc_lvl = ET.SubElement(pmt_tp_inf, 'LclInstrm')
+		ET.SubElement(svc_lvl, 'Cd').text = debtor_info['property']
+
 	ctgy_purp = ET.SubElement(pmt_tp_inf, 'CtgyPurp')
 	ET.SubElement(ctgy_purp, 'Cd').text = debtor_info['purpose']
 	

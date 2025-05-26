@@ -22,8 +22,43 @@ class PaymentApproval(Document):
 		self.process_xml_file()
 
 	def validate_data(self):
+		self.validate_payment()
 		self.validate_invoice()
 		self.calculate_amount()
+
+	def validate_payment(self):
+		self.method = {
+			"type":"",
+			"method":"",
+			"property":""
+		}
+		property = {
+			"PayNow":"PAYNOW",
+			"CHQ":"CCHQ",
+			"CO":"BCHQ"
+		}
+		if self.payment_type == "Transfer":
+			self.method["type"] = "TRF"
+			self.method["property"] = ""
+			if self.payment_method == "TT":
+				self.method["method"] = "URGP"
+				self.payment_property = ""
+			if self.payment_method == "FAST":
+				self.method["method"] = "URNS"
+				self.method["property"] = property.get(self.payment_property)
+			if self.payment_method == "IBG":
+				self.method["method"] = "NURG"
+				self.method["property"] = property.get(self.payment_property)
+			if self.payment_method == "IBG Express":
+				self.method["method"] = "BOOK"
+				self.payment_property = ""
+			
+		else:
+			self.method["type"] = "CHK"
+			self.method["method"] = ""
+			self.payment_method = ""
+			self.method["property"] = property.get(self.payment_property)
+
 
 	def set_requested_by(self):
 		if not self.requested_by:
@@ -75,6 +110,7 @@ class PaymentApproval(Document):
 		if self.workflow_state != "Approved" and self.docstatus != 1:
 			return
 		
+		self.validate_payment()
 		invoices = []
 		for d in self.invoices:
 			bic = frappe.get_value("Bank",d.bank_account_name,"swift_number")
@@ -96,6 +132,7 @@ class PaymentApproval(Document):
 			'bic': bic,
 			"purpose":self.purpose
 		}
+		debtor_info.update(self.method)
 
 		return self.create_xml_file(invoices, debtor_info, filepath=filepath)
 
