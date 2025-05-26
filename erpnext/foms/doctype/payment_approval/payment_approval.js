@@ -21,10 +21,21 @@ frappe.ui.form.on('Payment Approval', {
 				}
 			}
 		})
+
+		if(!frm.doc.requested_by && frm.is_dirty()){
+			frm.set_value("requested_by", frappe.session.user)
+		}
+		frm.cscript.setup_method();
 	},
 	after_save: function(frm) {
-        frm.reload_doc();
+		frm.reload_doc();
     },
+	payment_method: function(frm){
+		frm.cscript.setup_method();
+	},
+	payment_type: function(frm){
+		frm.cscript.setup_method();
+	},
 	before_workflow_action: function(frm){
 		return new Promise((resolve, reject) => {
 			frm.cscript.reject_payment_approval().then((r)=>{
@@ -37,6 +48,27 @@ frappe.ui.form.on('Payment Approval', {
 })
 
 $.extend(cur_frm.cscript, {
+	setup_method(){
+		var me = this.frm;
+		var doc = this.frm.doc;
+		var payment_method_field = me.fields_dict.payment_method;
+		var payment_property_field = me.fields_dict.payment_property;
+		if (doc.payment_type=="Transfer" && in_list(["IBG", "FAST"], doc.payment_method)){
+			payment_property_field.df.options = "\nPayNow"
+			payment_property_field.df.hidden = 0
+			payment_method_field.df.hidden = 0
+		} else if (doc.payment_type=="Cheque"){
+			payment_property_field.df.options = "CHQ\nCO"
+			payment_property_field.df.hidden = 0
+			payment_method_field.df.hidden = 1
+		} else{
+			payment_property_field.df.options = ""
+			payment_property_field.df.hidden = 1
+			payment_method_field.df.hidden = 0
+		}
+		payment_property_field.refresh()
+		payment_method_field.refresh()
+	},
 	reject_payment_approval(){
 		return new Promise((resolve) => {
 			var me = this;
