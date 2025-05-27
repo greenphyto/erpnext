@@ -3,7 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt
+from frappe.utils import flt, cint
 from frappe.utils.file_manager import save_file
 from erpnext.controllers.uob import create_payment_xml
 """ TODO
@@ -20,11 +20,16 @@ class PaymentApproval(Document):
 		self.set_requested_by()
 		self.validate_data()
 		self.process_xml_file()
+		self.set_batch_number()
 
 	def validate_data(self):
 		self.validate_payment()
 		self.validate_invoice()
 		self.calculate_amount()
+
+	def set_batch_number(self):
+		if not self.batch_number and "PAY" in self.name:
+			self.batch_number = cint(self.name.split("-")[1][-4:])
 
 	def validate_payment(self):
 		self.method = {

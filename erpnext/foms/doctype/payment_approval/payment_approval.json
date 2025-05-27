@@ -33,6 +33,7 @@
   "section_break_6",
   "status",
   "transfer_date",
+  "batch_number",
   "amended_from"
  ],
  "fields": [
@@ -205,12 +206,18 @@
    "fieldname": "payment_property",
    "fieldtype": "Select",
    "label": "Payment Property"
+  },
+  {
+   "fieldname": "batch_number",
+   "fieldtype": "Int",
+   "label": "Batch Number",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-05-26 17:10:15.377793",
+ "modified": "2025-05-27 17:45:52.016528",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Payment Approval",
