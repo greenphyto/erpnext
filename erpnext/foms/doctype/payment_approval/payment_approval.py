@@ -53,20 +53,23 @@ class PaymentApproval(Document):
 				self.payment_property = ""
 			if self.payment_method == "FAST":
 				self.method["method"] = "URNS"
-				self.method["property"] = property.get(self.payment_property)
 			if self.payment_method == "IBG":
 				self.method["method"] = "NURG"
-				self.method["property"] = property.get(self.payment_property)
 			if self.payment_method == "IBG Express":
 				self.method["method"] = "BOOK"
 				self.payment_property = ""
+			else:
+				frappe.throw(_("Payment Method must be set."))
+
 			
 		else:
 			self.method["type"] = "CHK"
 			self.method["method"] = ""
 			self.payment_method = ""
-			self.method["property"] = property.get(self.payment_property)
+			if not self.payment_property:
+				frappe.throw(_("Payment Property must be set."))
 
+			self.method["property"] = property.get(self.payment_property)
 
 	def set_requested_by(self):
 		if not self.requested_by:

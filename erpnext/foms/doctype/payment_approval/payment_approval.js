@@ -54,8 +54,7 @@ $.extend(cur_frm.cscript, {
 		var payment_method_field = me.fields_dict.payment_method;
 		var payment_property_field = me.fields_dict.payment_property;
 		if (doc.payment_type=="Transfer" && in_list(["IBG", "FAST"], doc.payment_method)){
-			payment_property_field.df.options = "\nPayNow"
-			payment_property_field.df.hidden = 0
+			payment_property_field.df.hidden = 1
 			payment_method_field.df.hidden = 0
 		} else if (doc.payment_type=="Cheque"){
 			payment_property_field.df.options = "CHQ\nCO"
