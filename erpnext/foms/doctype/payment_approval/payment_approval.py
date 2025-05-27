@@ -105,7 +105,7 @@ class PaymentApproval(Document):
 			total += flt(d.basic_amount)
 		
 		self.total_amount = total
-
+ 
 	def process_xml_file(self, filepath=""):
 		if self.workflow_state != "Approved" and self.docstatus != 1:
 			return
@@ -130,7 +130,9 @@ class PaymentApproval(Document):
 			'name': self.bank_account_name,
 			'account_number': self.bank_account_no,
 			'bic': bic,
-			"purpose":self.purpose
+			"purpose":self.purpose,
+			"batch":self.name,
+			"company_id": ""
 		}
 		debtor_info.update(self.method)
 
