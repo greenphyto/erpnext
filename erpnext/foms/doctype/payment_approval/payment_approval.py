@@ -6,6 +6,7 @@ from frappe.model.document import Document
 from frappe.utils import flt, cint, getdate
 from frappe.utils.file_manager import save_file
 from erpnext.controllers.uob import create_payment_xml
+from frappe import _
 """ TODO
 1. calculate total OK
 2. set requested by 
@@ -51,11 +52,11 @@ class PaymentApproval(Document):
 			if self.payment_method == "TT":
 				self.method["method"] = "URGP"
 				self.payment_property = ""
-			if self.payment_method == "FAST":
+			elif self.payment_method == "FAST":
 				self.method["method"] = "URNS"
-			if self.payment_method == "IBG":
+			elif self.payment_method == "IBG":
 				self.method["method"] = "NURG"
-			if self.payment_method == "IBG Express":
+			elif self.payment_method == "IBG Express":
 				self.method["method"] = "BOOK"
 				self.payment_property = ""
 			else:
@@ -122,6 +123,10 @@ class PaymentApproval(Document):
 			return
 		
 		self.validate_payment()
+
+		# other information
+		tax_id = frappe.get_value("Company", self.company, "tax_id")
+
 		invoices = []
 		for d in self.invoices:
 			bic = frappe.get_value("Bank",d.bank_account_name,"swift_number")
@@ -143,7 +148,7 @@ class PaymentApproval(Document):
 			'bic': bic,
 			"purpose":self.purpose,
 			"batch":self.name,
-			"company_id": ""
+			"company_id": tax_id
 		}
 		debtor_info.update(self.method)
 

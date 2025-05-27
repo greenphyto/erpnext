@@ -7,6 +7,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "company",
   "requested_by",
   "approved_by",
   "column_break_2",
@@ -103,7 +104,8 @@
    "fieldtype": "Link",
    "label": "Requested By",
    "options": "User",
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1
   },
   {
    "fieldname": "approved_by",
@@ -212,12 +214,19 @@
    "fieldtype": "Int",
    "label": "Batch Number",
    "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-05-27 17:45:52.016528",
+ "modified": "2025-05-27 18:18:40.781981",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Payment Approval",
