@@ -161,7 +161,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 from xml.dom import minidom
 
-def create_payment_xml(invoices, debtor_info):
+def create_payment_xml(invoices, debtor_info, filepath=""):
 	# Namespace definitions
 	ns = {
 		'': 'urn:iso:std:iso:20022:tech:xsd:pain.001.001.03',
@@ -183,7 +183,7 @@ def create_payment_xml(invoices, debtor_info):
 	
 	# Create Group Header
 	grp_hdr = ET.SubElement(cstmr_cdt_trf_initn, 'GrpHdr')
-	ET.SubElement(grp_hdr, 'MsgId').text = f"PA{datetime.now().strftime('%Y%m%d%H%M%S')}"
+	ET.SubElement(grp_hdr, 'MsgId').text = debtor_info["msg_id"]
 	ET.SubElement(grp_hdr, 'CreDtTm').text = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.00')
 	ET.SubElement(grp_hdr, 'NbOfTxs').text = str(len(invoices))
 	total_amount = sum(invoice['amount'] for invoice in invoices)
@@ -192,18 +192,23 @@ def create_payment_xml(invoices, debtor_info):
 	initg_pty = ET.SubElement(grp_hdr, 'InitgPty')
 	initg_pty_id = ET.SubElement(initg_pty, 'Id')
 	initg_pty_org_id = ET.SubElement(initg_pty_id, 'OrgId')
-	ET.SubElement(initg_pty_org_id, 'BICOrBEI').text = debtor_info['bic']
+	print(195, debtor_info['company_id'])
+	ET.SubElement(initg_pty_org_id, 'BICOrBEI').text = debtor_info['company_id']
 	
 	# Create Payment Information
 	pmt_inf = ET.SubElement(cstmr_cdt_trf_initn, 'PmtInf')
-	ET.SubElement(pmt_inf, 'PmtInfId').text = f"{datetime.now().strftime('%Y%m%d')}FSTwadv"
-	ET.SubElement(pmt_inf, 'PmtMtd').text = 'TRF'
+	ET.SubElement(pmt_inf, 'PmtInfId').text = f"{datetime.now().strftime('%Y%m%d')}-{debtor_info['batch']}"
+	ET.SubElement(pmt_inf, 'PmtMtd').text = debtor_info['type']
 	
 	pmt_tp_inf = ET.SubElement(pmt_inf, 'PmtTpInf')
 	svc_lvl = ET.SubElement(pmt_tp_inf, 'SvcLvl')
-	ET.SubElement(svc_lvl, 'Cd').text = 'URNS'
+	ET.SubElement(svc_lvl, 'Cd').text = debtor_info['method']
+	if debtor_info['property']:
+		svc_lvl = ET.SubElement(pmt_tp_inf, 'LclInstrm')
+		ET.SubElement(svc_lvl, 'Cd').text = debtor_info['property']
+
 	ctgy_purp = ET.SubElement(pmt_tp_inf, 'CtgyPurp')
-	ET.SubElement(ctgy_purp, 'Cd').text = 'EDUC'
+	ET.SubElement(ctgy_purp, 'Cd').text = debtor_info['purpose']
 	
 	ET.SubElement(pmt_inf, 'ReqdExctnDt').text = datetime.now().strftime('%Y-%m-%d')
 	
@@ -212,28 +217,28 @@ def create_payment_xml(invoices, debtor_info):
 	ET.SubElement(dbtr, 'Nm').text = debtor_info['name']
 	
 	dbtr_pstl_adr = ET.SubElement(dbtr, 'PstlAdr')
-	ET.SubElement(dbtr_pstl_adr, 'Ctry').text = 'SG'
+	ET.SubElement(dbtr_pstl_adr, 'Ctry').text = 'SG' # -- not yet
 	
 	dbtr_id = ET.SubElement(dbtr, 'Id')
 	dbtr_org_id = ET.SubElement(dbtr_id, 'OrgId')
 	ET.SubElement(dbtr_org_id, 'BICOrBEI').text = debtor_info['bic']
 	dbtr_othr = ET.SubElement(dbtr_org_id, 'Othr')
-	ET.SubElement(dbtr_othr, 'Id').text = 'RC200600531C'
+	ET.SubElement(dbtr_othr, 'Id').text = debtor_info["company_id"]
 	
 	# Debtor account
 	dbtr_acct = ET.SubElement(pmt_inf, 'DbtrAcct')
 	dbtr_acct_id = ET.SubElement(dbtr_acct, 'Id')
 	dbtr_acct_othr = ET.SubElement(dbtr_acct_id, 'Othr')
 	ET.SubElement(dbtr_acct_othr, 'Id').text = debtor_info['account_number']
-	ET.SubElement(dbtr_acct, 'Ccy').text = 'SGD'
-	ET.SubElement(dbtr_acct, 'Nm').text = f"{debtor_info['name']}1"
+	ET.SubElement(dbtr_acct, 'Ccy').text = 'SGD' # -- not yet
+	ET.SubElement(dbtr_acct, 'Nm').text = f"{debtor_info['company_name']}"
 	
 	# Debtor agent
 	dbtr_agt = ET.SubElement(pmt_inf, 'DbtrAgt')
 	dbtr_agt_fin_instn_id = ET.SubElement(dbtr_agt, 'FinInstnId')
 	ET.SubElement(dbtr_agt_fin_instn_id, 'BIC').text = debtor_info['bic']
 	dbtr_agt_pstl_adr = ET.SubElement(dbtr_agt_fin_instn_id, 'PstlAdr')
-	ET.SubElement(dbtr_agt_pstl_adr, 'Ctry').text = 'SG'
+	ET.SubElement(dbtr_agt_pstl_adr, 'Ctry').text = 'SG' # -- not yet
 	
 	# Create Credit Transfer Transaction Information for each invoice
 	for i, invoice in enumerate(invoices, start=1):
@@ -241,12 +246,12 @@ def create_payment_xml(invoices, debtor_info):
 		
 		# Payment ID
 		pmt_id = ET.SubElement(cdt_trf_tx_inf, 'PmtId')
-		ET.SubElement(pmt_id, 'InstrId').text = f"{datetime.now().strftime('%y%m%d')}FASTwadv{i*2-1}"
-		ET.SubElement(pmt_id, 'EndToEndId').text = f"{datetime.now().strftime('%y%m%d')}FASTwadv{i*2}"
+		ET.SubElement(pmt_id, 'InstrId').text = invoice["instruction_start"]
+		ET.SubElement(pmt_id, 'EndToEndId').text = invoice["instruction_end"]
 		
 		# Amount
 		amt = ET.SubElement(cdt_trf_tx_inf, 'Amt')
-		instd_amt = ET.SubElement(amt, 'InstdAmt', attrib={'Ccy': 'SGD'})
+		instd_amt = ET.SubElement(amt, 'InstdAmt', attrib={'Ccy': invoice['currency']})
 		instd_amt.text = f"{invoice['amount']:.2f}"
 		
 		# Creditor Agent
@@ -259,11 +264,12 @@ def create_payment_xml(invoices, debtor_info):
 		ET.SubElement(cdtr, 'Nm').text = invoice['creditor_name']
 		
 		cdtr_pstl_adr = ET.SubElement(cdtr, 'PstlAdr')
-		ET.SubElement(cdtr_pstl_adr, 'PstCd').text = '102898'
-		ET.SubElement(cdtr_pstl_adr, 'Ctry').text = 'SG'
-		ET.SubElement(cdtr_pstl_adr, 'AdrLine').text = 'TOA PAYOH NORTH 123 588'
-		ET.SubElement(cdtr_pstl_adr, 'AdrLine').text = 'MEI LING STREET 234 888 BLOCK 828 #06-1123'
-		ET.SubElement(cdtr_pstl_adr, 'AdrLine').text = 'Singapore 102898'
+		if invoice.get("address"):
+			addr = invoice.get("address")
+			cdtr_adr = ET.SubElement(cdtr_pstl_adr, 'Adr')
+			ET.SubElement(cdtr_adr, 'PstCd').text = addr.get("postal_code")
+			ET.SubElement(cdtr_adr, 'Ctry').text = addr.get("country")
+			ET.SubElement(cdtr_adr, 'AdrLine').text = addr.get("address_line")
 		
 		# Creditor Account
 		cdtr_acct = ET.SubElement(cdt_trf_tx_inf, 'CdtrAcct')
@@ -274,35 +280,35 @@ def create_payment_xml(invoices, debtor_info):
 		
 		# Purpose
 		purp = ET.SubElement(cdt_trf_tx_inf, 'Purp')
-		ET.SubElement(purp, 'Cd').text = 'EDUC'
+		ET.SubElement(purp, 'Cd').text = debtor_info['purpose']
 		
 		# Related Remittance Information
 		rltd_rmt_inf = ET.SubElement(cdt_trf_tx_inf, 'RltdRmtInf')
-		ET.SubElement(rltd_rmt_inf, 'RmtLctnMtd').text = 'EMAL'
-		ET.SubElement(rltd_rmt_inf, 'RmtLctnElctrncAdr').text = 'MICHAEL@XXX.COM'
+		if invoice.get("email"):
+			ET.SubElement(rltd_rmt_inf, 'RmtLctnMtd').text = 'EMAL'
+			ET.SubElement(rltd_rmt_inf, 'RmtLctnElctrncAdr').text = invoice['email']
 		
 		rmt_lctn_pstl_adr = ET.SubElement(rltd_rmt_inf, 'RmtLctnPstlAdr')
-		ET.SubElement(rmt_lctn_pstl_adr, 'Nm').text = 'Michael Zhichao Ding'
+		ET.SubElement(rmt_lctn_pstl_adr, 'Nm').text = invoice['creditor_name']
 		
-		rmt_adr = ET.SubElement(rmt_lctn_pstl_adr, 'Adr')
-		ET.SubElement(rmt_adr, 'PstCd').text = '139935'
-		ET.SubElement(rmt_adr, 'Ctry').text = 'SG'
-		ET.SubElement(rmt_adr, 'AdrLine').text = '2 AYER RAJAH CRESENT'
-		ET.SubElement(rmt_adr, 'AdrLine').text = 'SINGAPORE 139935'
+		if invoice.get("remitence_address"):
+			addr = invoice.get("remitence_address")
+			rmt_adr = ET.SubElement(rmt_lctn_pstl_adr, 'Adr')
+			ET.SubElement(rmt_adr, 'PstCd').text = addr.get("postal_code")
+			ET.SubElement(rmt_adr, 'Ctry').text = addr.get("country")
+			ET.SubElement(rmt_adr, 'AdrLine').text = addr.get("address_line")
 		
 		# Remittance Information
 		rmt_inf = ET.SubElement(cdt_trf_tx_inf, 'RmtInf')
-		ET.SubElement(rmt_inf, 'Ustrd').text = f"1:Bene Details {invoice['invoice_number']}"
 		ET.SubElement(rmt_inf, 'Ustrd').text = "H1:INVOICE REF\t\tAMOUNT\tCURRENCY1"
 		
 		# Split amount for multiple invoice lines (as in example)
-		half_amount = invoice['amount'] / 2
-		ET.SubElement(rmt_inf, 'Ustrd').text = f"3:{invoice['invoice_number']}A\t\t{half_amount:.2f}\tSGD"
-		ET.SubElement(rmt_inf, 'Ustrd').text = f"3:{invoice['invoice_number']}B\t\t{half_amount:.2f}\tSGD"
+		inv_amount = invoice['amount']
+		ET.SubElement(rmt_inf, 'Ustrd').text = f"3:{invoice['invoice_number']}\t\t{inv_amount:.2f}\t{invoice['currency']}"
 		
 		strd = ET.SubElement(rmt_inf, 'Strd')
 		invcee = ET.SubElement(strd, 'Invcee')
-		ET.SubElement(invcee, 'Nm').text = 'Michael Zhichao Ding'
+		ET.SubElement(invcee, 'Nm').text = debtor_info["name"]
 	
 	# Convert to XML string with pretty formatting
 	xml_str = ET.tostring(root, encoding='utf-8', method='xml')
@@ -312,7 +318,8 @@ def create_payment_xml(invoices, debtor_info):
 	xml_output = pretty_xml.decode('utf-8')
 	
 	# Save to file
-	with open('payment_initiation.xml', 'w') as f:
-		f.write(xml_output)
+	if filepath:
+		with open(filepath, 'w') as f:
+			f.write(xml_output)
 
 	return xml_output
