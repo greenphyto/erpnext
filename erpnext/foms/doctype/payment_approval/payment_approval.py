@@ -143,6 +143,7 @@ class PaymentApproval(Document):
 
 		bic = frappe.get_value("Bank", self.bank, "swift_number")
 		debtor_info = {
+			'company_name': self.company,
 			'name': self.bank_account_name,
 			'account_number': self.bank_account_no,
 			'bic': bic,

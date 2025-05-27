@@ -192,7 +192,8 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	initg_pty = ET.SubElement(grp_hdr, 'InitgPty')
 	initg_pty_id = ET.SubElement(initg_pty, 'Id')
 	initg_pty_org_id = ET.SubElement(initg_pty_id, 'OrgId')
-	ET.SubElement(initg_pty_org_id, 'BICOrBEI').text = debtor_info['bic']
+	print(195, debtor_info['company_id'])
+	ET.SubElement(initg_pty_org_id, 'BICOrBEI').text = debtor_info['company_id']
 	
 	# Create Payment Information
 	pmt_inf = ET.SubElement(cstmr_cdt_trf_initn, 'PmtInf')
@@ -202,7 +203,7 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	pmt_tp_inf = ET.SubElement(pmt_inf, 'PmtTpInf')
 	svc_lvl = ET.SubElement(pmt_tp_inf, 'SvcLvl')
 	ET.SubElement(svc_lvl, 'Cd').text = debtor_info['method']
-	if debtor_info['method']:
+	if debtor_info['property']:
 		svc_lvl = ET.SubElement(pmt_tp_inf, 'LclInstrm')
 		ET.SubElement(svc_lvl, 'Cd').text = debtor_info['property']
 
@@ -230,7 +231,7 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	dbtr_acct_othr = ET.SubElement(dbtr_acct_id, 'Othr')
 	ET.SubElement(dbtr_acct_othr, 'Id').text = debtor_info['account_number']
 	ET.SubElement(dbtr_acct, 'Ccy').text = 'SGD' # -- not yet
-	ET.SubElement(dbtr_acct, 'Nm').text = f"{debtor_info['name']}1"
+	ET.SubElement(dbtr_acct, 'Nm').text = f"{debtor_info['company_name']}"
 	
 	# Debtor agent
 	dbtr_agt = ET.SubElement(pmt_inf, 'DbtrAgt')
