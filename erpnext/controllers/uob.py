@@ -183,7 +183,7 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	
 	# Create Group Header
 	grp_hdr = ET.SubElement(cstmr_cdt_trf_initn, 'GrpHdr')
-	ET.SubElement(grp_hdr, 'MsgId').text = f"SG{datetime.now().strftime('%Y%m%d%H%M%S')}"
+	ET.SubElement(grp_hdr, 'MsgId').text = debtor_info["msg_id"]
 	ET.SubElement(grp_hdr, 'CreDtTm').text = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.00')
 	ET.SubElement(grp_hdr, 'NbOfTxs').text = str(len(invoices))
 	total_amount = sum(invoice['amount'] for invoice in invoices)
@@ -246,8 +246,8 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 		
 		# Payment ID
 		pmt_id = ET.SubElement(cdt_trf_tx_inf, 'PmtId')
-		ET.SubElement(pmt_id, 'InstrId').text = f"{datetime.now().strftime('%y%m%d')}FASTwadv{i*2-1}"
-		ET.SubElement(pmt_id, 'EndToEndId').text = f"{datetime.now().strftime('%y%m%d')}FASTwadv{i*2}"
+		ET.SubElement(pmt_id, 'InstrId').text = invoice["instruction_start"]
+		ET.SubElement(pmt_id, 'EndToEndId').text = invoice["instruction_end"]
 		
 		# Amount
 		amt = ET.SubElement(cdt_trf_tx_inf, 'Amt')

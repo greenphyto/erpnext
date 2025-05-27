@@ -130,6 +130,9 @@ class PaymentApproval(Document):
 		invoices = []
 		for d in self.invoices:
 			bic = frappe.get_value("Bank",d.bank_account_name,"swift_number")
+			doc = frappe.get_doc("Purchase Invoice", d.invoice_no)
+			ins_start = "{}{}-BILL:{}-DATE:{}".format(get_date_simple(self.posting_date), self.payment_method, doc.bill_no, get_date_simple(doc.bill_date))
+			ins_end = "GP.INV:{}-DATE:{}".format(doc.name, get_date_simple(doc.posting_date))
 			row = {
 				'invoice_number': d.invoice_no,
 				'amount': d.amount,
@@ -138,10 +141,13 @@ class PaymentApproval(Document):
 				'creditor_account': d.supplier_bank_no,
 				'remarks': 'Payment invoice',
 				'currency': d.currency,
+				"instruction_start":ins_start,
+				"instruction_end":ins_end
 			}
 			invoices.append(row)
 
 		bic = frappe.get_value("Bank", self.bank, "swift_number")
+		file_name = self.get_file_name()
 		debtor_info = {
 			'company_name': self.company,
 			'name': self.bank_account_name,
@@ -149,7 +155,8 @@ class PaymentApproval(Document):
 			'bic': bic,
 			"purpose":self.purpose,
 			"batch":self.name,
-			"company_id": tax_id
+			"company_id": tax_id,
+			"msg_id": file_name
 		}
 		debtor_info.update(self.method)
 
@@ -194,3 +201,6 @@ class PaymentApproval(Document):
 		number = f"{n:03d}"
 		file_name = f"{COUNTRY_CODE}_PA113{dates}{number}.xml"
 		return file_name
+
+def get_date_simple(value):
+	return getdate(value).strftime("%y%m%d")
