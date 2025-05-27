@@ -3,7 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt, cint
+from frappe.utils import flt, cint, getdate
 from frappe.utils.file_manager import save_file
 from erpnext.controllers.uob import create_payment_xml
 """ TODO
@@ -14,6 +14,9 @@ from erpnext.controllers.uob import create_payment_xml
 5. filter invoice (submitted and unpaid)
 
 """
+
+COUNTRY_CODE = "SG"
+
 
 class PaymentApproval(Document):
 	def validate(self):
@@ -159,7 +162,7 @@ class PaymentApproval(Document):
 			frappe.throw("XML content cannot be empty.")
 		
 		# Define file properties
-		file_name = f"payment_export_{frappe.utils.nowdate()}.xml"
+		file_name = self.get_file_name()
 		doc_type = "Payment Approval"
 		doc_name = self.name
 		
@@ -175,3 +178,10 @@ class PaymentApproval(Document):
 			)
 		
 		return True
+
+	def get_file_name(self):
+		dates = getdate(self.posting_date).strftime("%d%m")
+		n = self.batch_number
+		number = f"{n:03d}"
+		file_name = f"{COUNTRY_CODE}_PA113{dates}{number}.xml"
+		return file_name
