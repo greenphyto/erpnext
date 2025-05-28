@@ -138,7 +138,7 @@ class PaymentApproval(Document):
 				'amount': d.amount,
 				'creditor_name': d.bank_account_name,
 				'creditor_bic': bic,
-				'creditor_account': d.supplier_bank_no,
+				'creditor_account': d.bank_account_no,
 				'remarks': 'Payment invoice',
 				'currency': d.currency,
 				"instruction_start":ins_start,
@@ -199,7 +199,7 @@ class PaymentApproval(Document):
 		dates = getdate(self.posting_date).strftime("%d%m")
 		n = self.batch_number
 		number = f"{n:03d}"
-		file_name = f"{COUNTRY_CODE}_PA113{dates}{number}.xml"
+		file_name = f"PA113{dates}{number}.xml"
 		return file_name
 
 def get_date_simple(value):
