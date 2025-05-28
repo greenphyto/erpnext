@@ -1,11 +1,13 @@
 # Copyright (c) 2025, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-import frappe
+import frappe, os
 from frappe.model.document import Document
 from frappe.utils import flt, cint, getdate
 from frappe.utils.file_manager import save_file
 from erpnext.controllers.uob import create_payment_xml
+from erpnext.controllers.uob import UOBAPI
+
 from frappe import _
 """ TODO
 1. calculate total OK
@@ -160,7 +162,11 @@ class PaymentApproval(Document):
 		}
 		debtor_info.update(self.method)
 
-		return self.create_xml_file(invoices, debtor_info, filepath=filepath)
+		doc = self.create_xml_file(invoices, debtor_info, filepath=filepath)
+
+		# upload
+		self.upload_xml(doc)
+
 
 	def create_xml_file(self, invoices, debtor_info, filepath=""):
 		"""
@@ -184,7 +190,7 @@ class PaymentApproval(Document):
 		
 		# Save the file to ERPNext
 		if not filepath:
-			save_file(
+			doc = save_file(
 				fname=file_name,
 				content=xml_content,
 				dt=doc_type,
@@ -193,7 +199,14 @@ class PaymentApproval(Document):
 				is_private=1,  # Restrict access to authorized users
 			)
 		
-		return True
+			return doc
+		
+	def upload_xml(self,file_doc):
+		uob = UOBAPI()
+		file_name = self.get_file_name()
+		file_path = os.path.join(frappe.get_site_path("private", "files"), os.path.basename(file_doc.file_url))
+		absolute_path = os.path.abspath(file_path)
+		res = uob.upload_bank_tx(absolute_path, file_name)
 
 	def get_file_name(self):
 		dates = getdate(self.posting_date).strftime("%d%m")

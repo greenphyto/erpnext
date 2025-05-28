@@ -144,6 +144,9 @@ class UOBAPI():
 		return res
 
 	def upload_bank_tx(self, file_path, filename):
+		if not self.settings.enable:
+			return "Disabled"
+		
 		if not os.path.exists(file_path):
 			return {"error": "File not exist!"}
 
