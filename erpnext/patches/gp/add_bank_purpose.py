@@ -1,5 +1,8 @@
 import frappe
 
+def execute():
+    insert_default_bank_purposes()
+
 def insert_default_bank_purposes():
     print("Inserting new Bank Purpose..")
     bank_purposes = [
