@@ -144,6 +144,9 @@ class UOBAPI():
 		return res
 
 	def upload_bank_tx(self, file_path, filename):
+		if not self.settings.enable:
+			return "Disabled"
+		
 		if not os.path.exists(file_path):
 			return {"error": "File not exist!"}
 
@@ -183,7 +186,7 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	
 	# Create Group Header
 	grp_hdr = ET.SubElement(cstmr_cdt_trf_initn, 'GrpHdr')
-	ET.SubElement(grp_hdr, 'MsgId').text = debtor_info["msg_id"]
+	ET.SubElement(grp_hdr, 'MsgId').text = debtor_info["msg_id"].replace(".xml", "")
 	ET.SubElement(grp_hdr, 'CreDtTm').text = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.00')
 	ET.SubElement(grp_hdr, 'NbOfTxs').text = str(len(invoices))
 	total_amount = sum(invoice['amount'] for invoice in invoices)
@@ -263,9 +266,9 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 		cdtr = ET.SubElement(cdt_trf_tx_inf, 'Cdtr')
 		ET.SubElement(cdtr, 'Nm').text = invoice['creditor_name']
 		
-		cdtr_pstl_adr = ET.SubElement(cdtr, 'PstlAdr')
 		if invoice.get("address"):
 			addr = invoice.get("address")
+			cdtr_pstl_adr = ET.SubElement(cdtr, 'PstlAdr')
 			cdtr_adr = ET.SubElement(cdtr_pstl_adr, 'Adr')
 			ET.SubElement(cdtr_adr, 'PstCd').text = addr.get("postal_code")
 			ET.SubElement(cdtr_adr, 'Ctry').text = addr.get("country")
