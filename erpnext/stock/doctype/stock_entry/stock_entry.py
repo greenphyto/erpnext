@@ -160,7 +160,7 @@ class StockEntry(StockEntryAsset, StockController):
 		self.validate_qty()
 		self.set_transfer_qty()
 		self.validate_batch_splitting()
-		self.validate_partially_issue()
+		# self.validate_partially_issue()
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_uom_is_integer("stock_uom", "transfer_qty")
 		self.validate_warehouse()
