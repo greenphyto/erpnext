@@ -60,7 +60,6 @@
   "section_break_19",
   "total_outgoing_value",
   "column_break_22",
-  "total_incoming_receipt",
   "total_incoming_value",
   "value_difference",
   "additional_costs_section",
@@ -401,13 +400,12 @@
   {
    "fieldname": "section_break_19",
    "fieldtype": "Section Break",
-   "label": "Total Value",
    "print_hide": 1
   },
   {
    "fieldname": "total_incoming_value",
    "fieldtype": "Currency",
-   "label": "Total Incoming Value (Total)",
+   "label": "Total Incoming Value (Receipt)",
    "options": "Company:company:default_currency",
    "print_hide": 1,
    "read_only": 1
@@ -750,19 +748,18 @@
   {
    "fieldname": "losses_section",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Losses"
   },
   {
    "fieldname": "loss_qty",
    "fieldtype": "Float",
-   "label": "Loss Qty",
-   "read_only": 1
+   "label": "Loss Qty"
   },
   {
    "fieldname": "loss_rate",
    "fieldtype": "Currency",
-   "label": "Loss rate",
-   "read_only": 1
+   "label": "Loss rate"
   },
   {
    "fieldname": "column_break_48",
@@ -771,20 +768,7 @@
   {
    "fieldname": "total_loss_amount",
    "fieldtype": "Currency",
-   "label": "Total Loss Amount",
-   "read_only": 1
-  },
-  {
-   "fieldname": "total_incoming_receipt",
-   "fieldtype": "Currency",
-   "label": "Total Incoming Value (Receipt)",
-   "read_only": 1
-  },
-  {
-   "fieldname": "expense_loss_account",
-   "fieldtype": "Link",
-   "label": "Expense Loss Account",
-   "options": "Account"
+   "label": "Total Loss Amount"
   }
  ],
  "icon": "fa fa-file-text",

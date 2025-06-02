@@ -755,12 +755,10 @@ class StockEntry(StockEntryAsset, StockController):
 		self.calculate_rate_and_amount()
 
 	def calculate_rate_and_amount(self, reset_outgoing_rate=True, raise_error_if_no_rate=True):
-		self.calculate_loss_qty()
 		self.set_basic_rate(reset_outgoing_rate, raise_error_if_no_rate)
 		init_landed_taxes_and_totals(self)
 		self.distribute_additional_costs()
 		self.update_valuation_rate()
-		self.calculate_loss_amount()
 		self.set_total_incoming_outgoing_value()
 		self.set_total_amount()
 
@@ -774,7 +772,7 @@ class StockEntry(StockEntryAsset, StockController):
 		)
 		finished_item_qty = sum(
 			d.transfer_qty for d in self.items if d.is_finished_item or d.is_process_loss
-		) + flt(self.loss_qty)
+		)
 
 		# Set basic rate for incoming items
 		for d in self.get("items"):
@@ -787,8 +785,6 @@ class StockEntry(StockEntryAsset, StockController):
 					d.basic_rate = self.get_basic_rate_for_manufactured_item(
 						finished_item_qty, outgoing_items_cost
 					)
-					self.loss_rate = d.basic_rate
-
 				elif self.purpose == "Repack":
 					d.basic_rate = self.get_basic_rate_for_repacked_items(d.transfer_qty, outgoing_items_cost)
 
@@ -899,16 +895,14 @@ class StockEntry(StockEntryAsset, StockController):
 				d.valuation_rate = flt(d.basic_rate) + (flt(d.additional_cost) / flt(d.transfer_qty))
 
 	def set_total_incoming_outgoing_value(self):
-		self.total_incoming_receipt = self.total_outgoing_value = 0.0
-		self.total_incoming_value = flt(self.total_loss_amount)
+		self.total_incoming_value = self.total_outgoing_value = 0.0
 		for d in self.get("items"):
 			if d.t_warehouse:
-				self.total_incoming_receipt += flt(d.amount)
 				self.total_incoming_value += flt(d.amount)
 			if d.s_warehouse:
 				self.total_outgoing_value += flt(d.amount)
 
-		self.value_difference = self.total_incoming_value - self.total_outgoing_value 
+		self.value_difference = self.total_incoming_value - self.total_outgoing_value
 
 	def set_total_amount(self):
 		self.total_amount = None
@@ -2785,28 +2779,8 @@ class StockEntry(StockEntryAsset, StockController):
 		self.set_actual_qty()
 		self.calculate_rate_and_amount()
 
-	def calculate_loss_qty(self):
-		if self.purpose != "Manufacture":
-			return
-		
-		if not frappe.db.get_single_value("Manufacturing Settings", "allow_single_completed_work_order"):
-			return
-		
-		finish_qty = 0
-		for d in self.get("items"):
-			if d.is_finished_item:
-				finish_qty += flt(d.qty)
-		
-		wo_qty = flt(frappe.get_value("Work Order", self.work_order, "qty"))
-		self.loss_qty = wo_qty - finish_qty
 
-	def calculate_loss_amount(self):
-		if not self.loss_qty:
-			self.loss_rate = 0
-			self.total_loss_amount = 0
-			return
 
-		self.total_loss_amount = self.loss_qty * self.loss_rate
 
 	@frappe.whitelist()
 	def set_production_loss_account(self, force=False):
