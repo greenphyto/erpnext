@@ -160,7 +160,7 @@ class StockEntry(StockEntryAsset, StockController):
 		self.validate_qty()
 		self.set_transfer_qty()
 		self.validate_batch_splitting()
-		# self.validate_partially_issue()
+		self.validate_partially_issue()
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_uom_is_integer("stock_uom", "transfer_qty")
 		self.validate_warehouse()
@@ -366,6 +366,10 @@ class StockEntry(StockEntryAsset, StockController):
 	def validate_partially_issue(self):
 		if self.purpose == "Material Issue":
 			for d in self.get("items"):
+				material_group = frappe.get_value("Item", d.item_code, "material_group")
+				if material_group in ["Other Packaging"]:
+					continue
+				
 				qty = get_batch_qty(d.batch_no, d.s_warehouse)
 				if qty and flt(qty, 2) != flt(d.qty, 2):
 					frappe.throw(f"Row {d.idx}, Cannot issuing stock partially, qty should be {qty}")
