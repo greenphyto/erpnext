@@ -729,6 +729,11 @@ def get_default_expense_account(args, item, item_group, brand):
 		or args.expense_account
 	)
 
+	# enable_perpetual = get_company_default(args.company, "enable_perpetual_inventory")
+	# is_buying = args.doctype in ["Purchase Invoice", "Purchase Invoice", "Purchase Invoice"]
+	# if is_buying and item.get("is_stock_item") and enable_perpetual:
+	# 	account = ""
+
 	if not account and args.get("doctype") in ['Purchase Receipt', 'Purchase Invoice', 'Purchase Order']:
 		return get_company_default(args.company, "stock_received_but_not_billed" )
 	
