@@ -1284,7 +1284,7 @@ class StockEntry(StockEntryAsset, StockController):
 		gl_entries = super(StockEntry, self).get_gl_entries(warehouse_account)
 
 		if self.purpose in ("Repack", "Manufacture"):
-			total_basic_amount = sum(flt(t.basic_amount) for t in self.get("items") if t.is_finished_item) + flt(self.total_loss_amount)
+			total_basic_amount = sum(flt(t.basic_amount) for t in self.get("items") if t.is_finished_item)
 		else:
 			total_basic_amount = sum(flt(t.basic_amount) for t in self.get("items") if t.t_warehouse)
 
@@ -1448,38 +1448,6 @@ class StockEntry(StockEntryAsset, StockController):
 
 					gl_entries.append(row)
 
-		# Production Loss
-		if self.purpose == "Manufacture" and flt(self.loss_qty):
-			expense_account = self.expense_loss_account
-
-			account = frappe.db.get_value("Company", self.company, "stock_adjustment_account")
-			cost_center = frappe.db.get_value("Company", self.company, "cost_center_for_production")
-
-			gl_entries.append(
-				self.get_gl_dict(
-					{
-						"account": account,
-						"against": expense_account,
-						"cost_center": cost_center,
-						"remarks": _("Accounting Entry for Production Loss"),
-						"credit_in_account_currency": flt(self.total_loss_amount),
-						"credit": flt(self.total_loss_amount),
-					}
-				)
-			)
-
-			gl_entries.append(
-				self.get_gl_dict(
-					{
-						"account": expense_account,
-						"against": account,
-						"cost_center": cost_center,
-						"remarks": _("Accounting Entry for Production Loss"),
-						"credit": -1 * self.total_loss_amount,  # put it as negative credit instead of debit purposefully
-					}
-				)
-			)
-
 		# for d in gl_entries:
 		# 	print(1446, d.account, d.debit, d.credit, d.remarks )
 		result = process_gl_map(gl_entries, merge_entries=1)
@@ -1494,7 +1462,7 @@ class StockEntry(StockEntryAsset, StockController):
 		# print("VALUE DIFFERENT      :", self.value_difference)
 
 		# for d in result:
-		# 	print( "{}, {}, {}, {} >> {}".format("RESULT", d.account, d.debit, d.credit, d.remarks))
+		# 	print( "{}, {}, {}, {}".format("RESULT", d.account, d.debit, d.credit))
 
 		return result
 	
