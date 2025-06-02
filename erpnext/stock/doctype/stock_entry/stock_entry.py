@@ -1462,7 +1462,7 @@ class StockEntry(StockEntryAsset, StockController):
 		# print("VALUE DIFFERENT      :", self.value_difference)
 
 		# for d in result:
-		# 	print( "{}, {}, {}, {}".format("RESULT", d.account, d.debit, d.credit))
+		# 	print( "{}, {}, {}, {}, {}".format("RESULT", d.account, d.debit, d.credit, d.remarks))
 
 		return result
 	
