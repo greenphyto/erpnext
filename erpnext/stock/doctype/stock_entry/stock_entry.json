@@ -75,6 +75,7 @@
   "supplier_address",
   "address_display",
   "accounting_dimensions_section",
+  "expense_loss_account",
   "project",
   "dimension_col_break",
   "printing_settings",
@@ -778,7 +779,7 @@
   {
    "fieldname": "expense_loss_account",
    "fieldtype": "Link",
-   "label": "Expense Loss Account",
+   "label": "Production Variance Account",
    "options": "Account"
   },
   {

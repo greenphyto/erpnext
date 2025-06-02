@@ -833,6 +833,12 @@
    "fieldtype": "Column Break"
   },
   {
+   "fieldname": "production_loss_account",
+   "fieldtype": "Link",
+   "label": "Production Variance Account",
+   "options": "Account"
+  },
+  {
    "fieldname": "sales_replacement_account",
    "fieldtype": "Link",
    "label": "Sales Replacement Account",
