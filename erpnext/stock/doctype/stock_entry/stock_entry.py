@@ -370,6 +370,10 @@ class StockEntry(StockEntryAsset, StockController):
 				if d.s_warehouse in wip_warehouse:
 					continue
 				
+				material_group = frappe.get_value("Item", d.item_code, "material_group")
+				if material_group in ["Other Packaging"]:
+					continue
+				
 				qty = get_batch_qty(d.batch_no, d.s_warehouse)
 				if qty and flt(qty, 2) != flt(d.qty, 2):
 					frappe.throw(f"Row {d.idx}, Cannot issuing stock partially, qty should be {qty}")
