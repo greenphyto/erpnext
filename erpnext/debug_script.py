@@ -1,7 +1,7 @@
 import frappe, os
 
 # change site name and sites path
-SITE_NAME = "test5"
+SITE_NAME = "test6"
 SITES_PATH = "/workspace/development/gp-frappe-bench/sites"
 
 # 1. change your python path to frappe's env 
