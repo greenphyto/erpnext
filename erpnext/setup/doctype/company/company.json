@@ -828,6 +828,12 @@
    "fieldtype": "Column Break"
   },
   {
+   "fieldname": "production_loss_account",
+   "fieldtype": "Link",
+   "label": "Production Variance Account",
+   "options": "Account"
+  },
+  {
    "fieldname": "sales_replacement_account",
    "fieldtype": "Link",
    "label": "Sales Replacement Account",
@@ -839,7 +845,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-03-12 15:20:06.573304",
+ "modified": "2025-06-02 19:56:32.783010",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",
