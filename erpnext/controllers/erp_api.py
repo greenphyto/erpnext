@@ -85,7 +85,6 @@ def create_bom(data):
 	save_log("BOM", data_name, data)
 	result = create_bom_products(data, product_id, submit=submit)
 	update_log("BOM", data_name, "BOM", result)
-	
 	return {"ERPBomId":result}
 
 @frappe.whitelist()
