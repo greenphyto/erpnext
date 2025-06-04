@@ -216,6 +216,8 @@ class AssetValueAdjustment(Document):
 					row.accumulated_depreciation_amount = start_dep_amount
 					row.insert()
 					
+		comment = "Asset Value Adjustment: {}".format(self.remarks)
+		asset.add_comment("Comment", comment)
 		asset.db_update()
 
 
