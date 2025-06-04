@@ -5,7 +5,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import cint, date_diff, flt, formatdate, getdate
+from frappe.utils import cint, date_diff, flt, formatdate, getdate, add_months
 
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 	get_checks_for_pl_and_bs_accounts,
@@ -23,6 +23,7 @@ class AssetValueAdjustment(Document):
 
 	def on_submit(self):
 		self.make_depreciation_entry()
+		self.modify_depreciations()
 		self.reschedule_depreciations(self.new_asset_value)
 
 	def on_cancel(self):
@@ -164,6 +165,59 @@ class AssetValueAdjustment(Document):
 			if not asset_data.journal_entry:
 				asset_data.db_update()
 
+	
+	def modify_depreciations(self):
+		if cint(self.total_number_of_depreciations) == cint(self.cur_total_number_of_depreciations):
+			return
+		
+		asset = frappe.get_doc("Asset", self.asset)
+		asset.clear_depreciation_schedule_ondate(use_date=self.date)
+		dep_months_ready = len(asset.schedules)
+		accum_dep_amount = 0
+		if dep_months_ready:
+			accum_dep_amount = asset.schedules[-1].accumulated_depreciation_amount
+			depreciation_start_date = asset.schedules[-1].schedule_date
+
+		for finance_book in asset.get("finance_books"):
+			finance_book.total_number_of_depreciations = self.total_number_of_depreciations
+			month_dep = finance_book.total_number_of_depreciations - dep_months_ready
+			depreciable_value = asset.gross_purchase_amount-accum_dep_amount
+			start_dep_amount = flt(accum_dep_amount)
+			for n in range(cint(month_dep)):
+				if finance_book.depreciation_method in ("Straight Line", "Manual"):
+					use_amount = asset.gross_purchase_amount
+					depreciation_amount = (
+						(flt(use_amount) - flt(asset.opening_accumulated_depreciation) - flt(accum_dep_amount) - flt(finance_book.expected_value_after_useful_life))
+					) / (flt(finance_book.total_number_of_depreciations) - flt(asset.number_of_depreciations_booked) - flt(dep_months_ready) - 1)
+
+					# add the last value to the last row, based on chat with WQ 03/06/25
+					if depreciable_value < depreciation_amount*1.25:
+						depreciation_amount = depreciable_value
+					
+					depreciable_value -= depreciation_amount
+
+				# not yet for percent basis
+				# else:
+				# 	depreciation_amount = flt(depreciable_value * (flt(row.rate_of_depreciation) / 100))
+
+				schedule_date = add_months(
+					depreciation_start_date, (n+1) * cint(finance_book.frequency_of_depreciation)
+				)
+				if depreciable_value >= 0 and depreciation_amount:
+					start_dep_amount += depreciation_amount
+					row = asset._add_depreciation_row(
+						schedule_date,
+						depreciation_amount,
+						finance_book.depreciation_method,
+						finance_book.finance_book,
+						finance_book.idx,
+					)
+					row.docstatus = 1
+					row.accumulated_depreciation_amount = start_dep_amount
+					row.insert()
+					
+		asset.db_update()
+
 
 @frappe.whitelist()
 def get_current_asset_value(asset, finance_book=None):
@@ -181,9 +235,11 @@ def get_current_asset_data(asset, finance_book=None):
 
 	return frappe.db.get_value("Asset Finance Book", cond, [
 		"value_after_depreciation as current_asset_value",
+		"value_after_depreciation as new_asset_value",
 		"total_number_of_depreciations as cur_total_number_of_depreciations",
 		"frequency_of_depreciation as cur_frequency_of_depreciation",
 		"depreciation_method as cur_depreciation_method",
 		"frequency_of_depreciation",
 		"depreciation_method",
+		"total_number_of_depreciations"
 	], as_dict=1)

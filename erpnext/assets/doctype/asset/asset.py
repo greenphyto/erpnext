@@ -378,7 +378,7 @@ class Asset(AccountsController):
 	def _add_depreciation_row(
 		self, schedule_date, depreciation_amount, depreciation_method, finance_book, finance_book_id
 	):
-		self.append(
+		return self.append(
 			"schedules",
 			{
 				"schedule_date": schedule_date,
@@ -399,6 +399,18 @@ class Asset(AccountsController):
 			)
 
 		return value_after_depreciation
+
+	def clear_depreciation_schedule_ondate(self, use_date=""):
+		today = getdate(use_date)
+		depr_schedule = []
+		for d in self.schedules:
+			if getdate(d.schedule_date) < today:
+				depr_schedule.append(d)
+			else:
+				self.remove(d)
+
+		frappe.db.sql("delete from `tabDepreciation Schedule` where parent = %s and schedule_date > %s ", (self.name, today))
+		self.schedules = depr_schedule
 
 	# depreciation schedules need to be cleared before modification due to increase in asset life/asset sales
 	# JE: Journal Entry, FB: Finance Book
