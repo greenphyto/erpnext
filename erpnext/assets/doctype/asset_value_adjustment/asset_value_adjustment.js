@@ -47,14 +47,14 @@ frappe.ui.form.on('Asset Value Adjustment', {
 	set_current_asset_value: function(frm) {
 		if (frm.doc.asset) {
 			frm.call({
-				method: "erpnext.assets.doctype.asset_value_adjustment.asset_value_adjustment.get_current_asset_value",
+				method: "erpnext.assets.doctype.asset_value_adjustment.asset_value_adjustment.get_current_asset_data",
 				args: {
 					asset: frm.doc.asset,
 					finance_book: frm.doc.finance_book
 				},
 				callback: function(r) {
 					if (r.message) {
-						frm.set_value('current_asset_value', r.message);
+						frm.set_value(r.message);
 					}
 				}
 			});

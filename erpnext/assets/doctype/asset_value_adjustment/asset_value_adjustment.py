@@ -16,6 +16,7 @@ from erpnext.assets.doctype.asset.depreciation import get_depreciation_accounts
 
 class AssetValueAdjustment(Document):
 	def validate(self):
+		self.validate_value()
 		self.validate_date()
 		self.set_current_asset_value()
 		self.set_difference_amount()
@@ -36,15 +37,32 @@ class AssetValueAdjustment(Document):
 				),
 				title=_("Incorrect Date"),
 			)
+	
+	def validate_value(self):
+		if not self.new_asset_value and not self.total_number_of_depreciations:
+			frappe.throw(_("The new Asset Value or new Number of Depreciation must be set"))
+
+		not_change_value = flt(self.difference_amount) == 0
+		not_change_depreciation = flt(self.total_number_of_depreciations) == flt(self.cur_total_number_of_depreciations)
+
+		if not_change_value and not_change_depreciation:
+			frappe.throw(_("Nothing change on the asset value, please check again on your document."))
 
 	def set_difference_amount(self):
-		self.difference_amount = flt(self.current_asset_value - self.new_asset_value)
+		self.new_asset_value = flt(self.new_asset_value) or self.current_asset_value
+		self.difference_amount = flt(self.current_asset_value) - flt(self.new_asset_value)
+
+		self.total_number_of_depreciations = flt(self.total_number_of_depreciations) or self.cur_total_number_of_depreciations
+
 
 	def set_current_asset_value(self):
 		if not self.current_asset_value and self.asset:
 			self.current_asset_value = get_current_asset_value(self.asset, self.finance_book)
 
 	def make_depreciation_entry(self):
+		if not self.difference_amount:
+			return
+		
 		asset = frappe.get_doc("Asset", self.asset)
 		(
 			fixed_asset_account,
@@ -104,6 +122,9 @@ class AssetValueAdjustment(Document):
 		self.db_set("journal_entry", je.name)
 
 	def reschedule_depreciations(self, asset_value):
+		if not self.difference_amount:
+			return
+		
 		asset = frappe.get_doc("Asset", self.asset)
 		country = frappe.get_value("Company", self.company, "country")
 
@@ -151,3 +172,18 @@ def get_current_asset_value(asset, finance_book=None):
 		cond.update({"finance_book": finance_book})
 
 	return frappe.db.get_value("Asset Finance Book", cond, "value_after_depreciation")
+
+@frappe.whitelist()
+def get_current_asset_data(asset, finance_book=None):
+	cond = {"parent": asset, "parenttype": "Asset"}
+	if finance_book:
+		cond.update({"finance_book": finance_book})
+
+	return frappe.db.get_value("Asset Finance Book", cond, [
+		"value_after_depreciation as current_asset_value",
+		"total_number_of_depreciations as cur_total_number_of_depreciations",
+		"frequency_of_depreciation as cur_frequency_of_depreciation",
+		"depreciation_method as cur_depreciation_method",
+		"frequency_of_depreciation",
+		"depreciation_method",
+	], as_dict=1)

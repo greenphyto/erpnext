@@ -14,13 +14,23 @@
   "amended_from",
   "value_details_section",
   "current_asset_value",
-  "new_asset_value",
-  "column_break_11",
   "difference_amount",
+  "column_break_10",
+  "new_asset_value",
   "journal_entry",
+  "depreciation_months_section",
+  "cur_depreciation_method",
+  "cur_total_number_of_depreciations",
+  "cur_frequency_of_depreciation",
+  "column_break_5",
+  "depreciation_method",
+  "total_number_of_depreciations",
+  "frequency_of_depreciation",
   "accounting_dimensions_section",
   "cost_center",
-  "dimension_col_break"
+  "remarks_section",
+  "remarks",
+  "column_break_26"
  ],
  "fields": [
   {
@@ -61,6 +71,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "Today",
    "fieldname": "date",
    "fieldtype": "Date",
    "label": "Date",
@@ -78,8 +89,7 @@
    "fieldname": "new_asset_value",
    "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "New Asset Value",
-   "reqd": 1
+   "label": "New Asset Value"
   },
   {
    "fieldname": "difference_amount",
@@ -109,23 +119,87 @@
    "label": "Accounting Dimensions"
   },
   {
-   "fieldname": "dimension_col_break",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "value_details_section",
    "fieldtype": "Section Break",
    "label": "Value Details"
   },
   {
-   "fieldname": "column_break_11",
+   "fieldname": "depreciation_months_section",
+   "fieldtype": "Section Break",
+   "label": "Depreciation Months"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cur_depreciation_method",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Current Depreciation Method",
+   "options": "\nStraight Line\nDouble Declining Balance\nWritten Down Value\nManual",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "cur_total_number_of_depreciations",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Current Total Number of Depreciations",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "cur_frequency_of_depreciation",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Current Frequency of Depreciation (Months)",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "depreciation_method",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Depreciation Method",
+   "options": "\nStraight Line\nDouble Declining Balance\nWritten Down Value\nManual"
+  },
+  {
+   "fieldname": "total_number_of_depreciations",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Total Number of Depreciations"
+  },
+  {
+   "fieldname": "frequency_of_depreciation",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Frequency of Depreciation (Months)"
+  },
+  {
+   "fieldname": "remarks_section",
+   "fieldtype": "Section Break",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_26",
    "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-01-22 14:10:23.085181",
+ "modified": "2025-06-04 11:33:54.247193",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset Value Adjustment",
@@ -180,6 +254,7 @@
  "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "asset",
  "track_changes": 1
 }
