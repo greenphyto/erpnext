@@ -27,6 +27,7 @@ class AssetValueAdjustment(Document):
 		self.reschedule_depreciations(self.new_asset_value)
 
 	def on_cancel(self):
+		self.modify_depreciations(cancel=True)
 		self.reschedule_depreciations(self.current_asset_value)
 
 	def validate_date(self):
@@ -166,7 +167,7 @@ class AssetValueAdjustment(Document):
 				asset_data.db_update()
 
 	
-	def modify_depreciations(self):
+	def modify_depreciations(self, cancel=False):
 		if cint(self.total_number_of_depreciations) == cint(self.cur_total_number_of_depreciations):
 			return
 		
@@ -178,8 +179,13 @@ class AssetValueAdjustment(Document):
 			accum_dep_amount = asset.schedules[-1].accumulated_depreciation_amount
 			depreciation_start_date = asset.schedules[-1].schedule_date
 
+		if not cancel:
+			total_number_of_depreciations = self.total_number_of_depreciations
+		else:
+			total_number_of_depreciations = self.cur_total_number_of_depreciations
+
 		for finance_book in asset.get("finance_books"):
-			finance_book.total_number_of_depreciations = self.total_number_of_depreciations
+			finance_book.total_number_of_depreciations = total_number_of_depreciations
 			month_dep = finance_book.total_number_of_depreciations - dep_months_ready
 			depreciable_value = asset.gross_purchase_amount-accum_dep_amount
 			start_dep_amount = flt(accum_dep_amount)
@@ -216,8 +222,13 @@ class AssetValueAdjustment(Document):
 					row.accumulated_depreciation_amount = start_dep_amount
 					row.insert()
 					
-		comment = "Asset Value Adjustment: {}".format(self.remarks)
-		asset.add_comment("Comment", comment)
+		if cancel:
+			frappe.delete_doc("Comment", self.comment_reff)
+		else:
+			comment = "Asset Value Adjustment: {}".format(self.remarks)
+			comm = asset.add_comment("Comment", comment)
+			self.comment_reff = comm.name
+			
 		asset.db_update()
 
 

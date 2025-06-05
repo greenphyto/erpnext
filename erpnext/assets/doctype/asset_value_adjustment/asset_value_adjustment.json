@@ -30,7 +30,7 @@
   "cost_center",
   "remarks_section",
   "remarks",
-  "column_break_26"
+  "comment_reff"
  ],
  "fields": [
   {
@@ -192,14 +192,16 @@
    "reqd": 1
   },
   {
-   "fieldname": "column_break_26",
-   "fieldtype": "Column Break"
+   "fieldname": "comment_reff",
+   "fieldtype": "Data",
+   "label": "Comment Reff",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-06-04 17:24:44.915882",
+ "modified": "2025-06-05 14:04:21.451775",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset Value Adjustment",
