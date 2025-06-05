@@ -142,20 +142,29 @@ class AssetValueAdjustment(Document):
 			total_number_of_depreciations = self.cur_total_number_of_depreciations
 
 		for finance_book in asset.get("finance_books"):
+			if not cancel:
+				finance_book.value_after_depreciation = self.new_asset_value
+			else:
+				finance_book.value_after_depreciation = self.current_asset_value
+
 			finance_book.total_number_of_depreciations = total_number_of_depreciations
 			month_dep = finance_book.total_number_of_depreciations - dep_months_ready
 			start_dep_amount = flt(accum_dep_amount)
 			if not self.difference_amount:
-				use_amount = asset.gross_purchase_amount - flt(accum_dep_amount)
-				depreciable_value = asset.gross_purchase_amount-accum_dep_amount
+				use_amount = self.current_asset_value
+				depreciable_value = self.current_asset_value
 			else:
 				use_amount = self.new_asset_value
 				depreciable_value = flt(self.new_asset_value)
 
+			if cancel:
+				use_amount = asset.accumulated_depreciation_amount + finance_book.value_after_depreciation - asset.schedules[-1].accumulated_depreciation_amount
+				start_dep_amount = asset.schedules[-1].accumulated_depreciation_amount
+
 			for n in range(cint(month_dep)):
 				if finance_book.depreciation_method in ("Straight Line", "Manual"):
 					depreciation_amount = (
-						(flt(use_amount) - flt(asset.opening_accumulated_depreciation) - flt(finance_book.expected_value_after_useful_life))
+						(flt(use_amount) - flt(finance_book.expected_value_after_useful_life))
 					) / (flt(finance_book.total_number_of_depreciations) - flt(asset.number_of_depreciations_booked) - flt(dep_months_ready))
 
 					# add the last value to the last row, based on chat with WQ 03/06/25
@@ -183,14 +192,15 @@ class AssetValueAdjustment(Document):
 					row.docstatus = 1
 					row.accumulated_depreciation_amount = start_dep_amount
 					row.insert()
-					
+
+			finance_book.db_update()
+
 		if cancel:
 			frappe.delete_doc("Comment", self.comment_reff)
 		else:
 			comment = "Asset Value Adjustment: {}".format(self.remarks)
 			comm = asset.add_comment("Comment", comment)
 			self.comment_reff = comm.name
-
 		asset.db_update()
 
 
