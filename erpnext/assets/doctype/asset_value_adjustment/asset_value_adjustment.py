@@ -24,11 +24,9 @@ class AssetValueAdjustment(Document):
 	def on_submit(self):
 		self.make_depreciation_entry()
 		self.modify_depreciations()
-		self.reschedule_depreciations(self.new_asset_value)
 
 	def on_cancel(self):
 		self.modify_depreciations(cancel=True)
-		self.reschedule_depreciations(self.current_asset_value)
 
 	def validate_date(self):
 		asset_purchase_date = frappe.db.get_value("Asset", self.asset, "purchase_date")
@@ -122,50 +120,6 @@ class AssetValueAdjustment(Document):
 		je.submit()
 
 		self.db_set("journal_entry", je.name)
-
-	def reschedule_depreciations(self, asset_value):
-		if not self.difference_amount:
-			return
-		
-		asset = frappe.get_doc("Asset", self.asset)
-		country = frappe.get_value("Company", self.company, "country")
-
-		for d in asset.finance_books:
-			d.value_after_depreciation = asset_value
-
-			if d.depreciation_method in ("Straight Line", "Manual"):
-				end_date = max(s.schedule_date for s in asset.schedules if cint(s.finance_book_id) == d.idx)
-				total_days = date_diff(end_date, self.date)
-				rate_per_day = flt(d.value_after_depreciation) / flt(total_days)
-				from_date = self.date
-			else:
-				no_of_depreciations = len(
-					[
-						s.name for s in asset.schedules if (cint(s.finance_book_id) == d.idx and not s.journal_entry)
-					]
-				)
-
-			value_after_depreciation = d.value_after_depreciation
-			for data in asset.schedules:
-				if cint(data.finance_book_id) == d.idx and not data.journal_entry:
-					if d.depreciation_method in ("Straight Line", "Manual"):
-						days = date_diff(data.schedule_date, from_date)
-						depreciation_amount = days * rate_per_day
-						from_date = data.schedule_date
-					else:
-						depreciation_amount = get_depreciation_amount(asset, value_after_depreciation, d)
-
-					if depreciation_amount:
-						value_after_depreciation -= flt(depreciation_amount)
-						data.depreciation_amount = depreciation_amount
-
-			d.db_update()
-
-		asset.set_accumulated_depreciation(ignore_booked_entry=True)
-		for asset_data in asset.schedules:
-			if not asset_data.journal_entry:
-				asset_data.db_update()
-
 	
 	def modify_depreciations(self, cancel=False):
 		if cint(self.total_number_of_depreciations) == cint(self.cur_total_number_of_depreciations):
@@ -176,8 +130,11 @@ class AssetValueAdjustment(Document):
 		dep_months_ready = len(asset.schedules)
 		accum_dep_amount = 0
 		if dep_months_ready:
-			accum_dep_amount = asset.schedules[-1].accumulated_depreciation_amount
 			depreciation_start_date = asset.schedules[-1].schedule_date
+			if not self.difference_amount:
+				accum_dep_amount = asset.schedules[-1].accumulated_depreciation_amount
+			else:
+				accum_dep_amount = asset.gross_purchase_amount - self.new_asset_value
 
 		if not cancel:
 			total_number_of_depreciations = self.total_number_of_depreciations
@@ -187,14 +144,19 @@ class AssetValueAdjustment(Document):
 		for finance_book in asset.get("finance_books"):
 			finance_book.total_number_of_depreciations = total_number_of_depreciations
 			month_dep = finance_book.total_number_of_depreciations - dep_months_ready
-			depreciable_value = asset.gross_purchase_amount-accum_dep_amount
 			start_dep_amount = flt(accum_dep_amount)
+			if not self.difference_amount:
+				use_amount = asset.gross_purchase_amount - flt(accum_dep_amount)
+				depreciable_value = asset.gross_purchase_amount-accum_dep_amount
+			else:
+				use_amount = self.new_asset_value
+				depreciable_value = flt(self.new_asset_value)
+
 			for n in range(cint(month_dep)):
 				if finance_book.depreciation_method in ("Straight Line", "Manual"):
-					use_amount = asset.gross_purchase_amount
 					depreciation_amount = (
-						(flt(use_amount) - flt(asset.opening_accumulated_depreciation) - flt(accum_dep_amount) - flt(finance_book.expected_value_after_useful_life))
-					) / (flt(finance_book.total_number_of_depreciations) - flt(asset.number_of_depreciations_booked) - flt(dep_months_ready) - 1)
+						(flt(use_amount) - flt(asset.opening_accumulated_depreciation) - flt(finance_book.expected_value_after_useful_life))
+					) / (flt(finance_book.total_number_of_depreciations) - flt(asset.number_of_depreciations_booked) - flt(dep_months_ready))
 
 					# add the last value to the last row, based on chat with WQ 03/06/25
 					if depreciable_value < depreciation_amount*1.25:
@@ -228,7 +190,7 @@ class AssetValueAdjustment(Document):
 			comment = "Asset Value Adjustment: {}".format(self.remarks)
 			comm = asset.add_comment("Comment", comment)
 			self.comment_reff = comm.name
-			
+
 		asset.db_update()
 
 
