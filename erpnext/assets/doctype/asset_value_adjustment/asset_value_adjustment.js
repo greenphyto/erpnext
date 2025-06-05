@@ -45,6 +45,7 @@ frappe.ui.form.on('Asset Value Adjustment', {
 	},
 
 	set_current_asset_value: function(frm) {
+		console.log("from SVA")
 		if (frm.doc.asset) {
 			frm.call({
 				method: "erpnext.assets.doctype.asset_value_adjustment.asset_value_adjustment.get_current_asset_data",
