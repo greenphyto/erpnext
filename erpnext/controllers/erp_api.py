@@ -545,6 +545,7 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 	se_doc = make_stock_entry_wo(work_order_name,"Manufacture", qty, return_doc=1)
 
 	se_doc.stock_entry_type_view = get_stock_entry_type("Harvesting Finish")
+	se_doc.expense_loss_account = frappe.get_value("Company", se_doc.company , "production_loss_account")
 
 	# get rate from incoming rate from prev process, and get prorate until near prev amount 109.5
 	rate_map = se_doc.get_previous_rate()
