@@ -206,41 +206,6 @@ class StockController(AccountsController):
 						)
 						gl_list.append(row)
 
-						if self.doctype == "Stock Entry" and self.purpose == "Manufacture" and item_row.t_warehouse:
-							gross_qty = frappe.db.get_value("Work Order", self.work_order, "gross_weight") or 1
-							finish_portion = flt(self.fg_completed_qty) / flt(gross_qty) * flt(self.total_incoming_value)
-							var_portion = (flt(self.total_incoming_value) - finish_portion) * -1
-							var_expense_account = self.expense_loss_account
-
-							row = self.get_gl_dict(
-								{
-									"account": item_account,
-									"against": var_expense_account,
-									"cost_center": item_row.cost_center,
-									"project": item_row.project or self.get("project"),
-									"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
-									"debit": flt(var_portion, precision),
-									"is_opening": item_row.get("is_opening") or self.get("is_opening") or "No",
-								},
-								item_account_currency,
-								item=item_row,
-							)
-							gl_list.append(row)
-
-							row = self.get_gl_dict(
-								{
-									"account": var_expense_account,
-									"against": item_account,
-									"cost_center": item_row.cost_center,
-									"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
-									"debit": -1 * flt(var_portion, precision),
-									"project": item_row.get("project") or self.get("project"),
-									"is_opening": item_row.get("is_opening") or self.get("is_opening") or "No",
-								},
-								item=item_row,
-							)
-							gl_list.append(row)
-
 					elif sle.warehouse not in warehouse_with_no_account:
 						warehouse_with_no_account.append(sle.warehouse)
 
