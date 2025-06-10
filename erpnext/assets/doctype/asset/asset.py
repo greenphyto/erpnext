@@ -1130,10 +1130,10 @@ def get_depreciation_amount(asset, depreciable_value, row):
 		if not asset.flags.increase_in_asset_life:
 			depreciation_amount = (
 				(flt(asset.gross_purchase_amount) - flt(asset.opening_accumulated_depreciation)) - flt(row.expected_value_after_useful_life)
-			) / (flt(row.total_number_of_depreciations) - flt(asset.number_of_depreciations_booked) - 1)
+			) / (flt(row.total_number_of_depreciations) - flt(asset.number_of_depreciations_booked))
 
 			# add the last value to the last row, based on chat with WQ 03/06/25
-			if depreciable_value < depreciation_amount*2:
+			if depreciable_value < depreciation_amount*1.5:
 				depreciation_amount = depreciable_value
 
 		# if the Depreciation Schedule is being modified after Asset Repair
