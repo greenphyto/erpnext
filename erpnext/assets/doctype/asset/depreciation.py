@@ -327,7 +327,7 @@ def depreciate_asset(asset, date):
 	asset.prepare_depreciation_data(date_of_disposal=date)
 	asset.save()
 
-	make_depreciation_entry(asset.name, date)
+	make_depreciation_entry([asset.name], date)
 
 
 def reset_depreciation_schedule(asset, date):
