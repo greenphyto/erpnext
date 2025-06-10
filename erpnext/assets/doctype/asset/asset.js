@@ -156,6 +156,18 @@ frappe.ui.form.on('Asset', {
 		}
 
 		erpnext.asset.add_dashboard_qrimage(frm);
+
+		if (frm.doc.docstatus == 1){
+			if (frm.doc.disabled==0){
+				me.frm.add_custom_button(__('Disable Asset'), function () {
+					erpnext.disable_asset(me.frm, 1);
+				}, "Manage");
+			}else{
+				me.frm.add_custom_button(__('Enable Asset'), function () {
+					erpnext.disable_asset(me.frm);
+				}, "Manage");
+			}
+		}
 	},
 
 	toggle_reference_doc: function(frm) {
@@ -547,6 +559,44 @@ frappe.ui.form.on('Depreciation Schedule', {
 	}
 
 })
+
+erpnext.disable_asset = function(frm, disabled){
+	function update_now(reason, disabled){
+		frappe.call({
+			method: "erpnext.assets.doctype.asset.asset.disable_asset",
+			args: {
+				disable: disabled, 
+				asset_name: frm.doc.name, 
+				reason: reason
+			},
+			callback: function(r) {
+				me.frm.reload_doc()
+				d.finish = true;
+				d.hide();
+			}
+		});
+	}
+	if (disabled==1){
+		var d = new frappe.ui.Dialog({
+			title: __('Disable reason'),
+			fields: [
+				{
+					"fieldname": "reason",
+					"fieldtype": "Small Text",
+					"label": "Reason:",
+					"reqd": 1,
+				}
+			],
+			primary_action: function() {
+				var data = d.get_values();
+				update_now(data.reason, 1)
+			}
+		});
+		d.show();
+	} else {
+		update_now("", 0)
+	}
+}
 
 erpnext.asset.add_dashboard_qrimage = function(frm){
 	var img_path = frm.doc.qrcode_image;

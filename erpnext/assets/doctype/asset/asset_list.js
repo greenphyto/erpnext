@@ -33,6 +33,8 @@ frappe.listview_settings['Asset'] = {
 
 		} else if (doc.status === "Draft") {
 			return [__("Draft"), "red", "status,=,Draft"];
+		} else if (doc.status === "Disabled") {
+			return [__("Disabled"), "gray", "status,=,Disabled"];
 		}
 	},
 	onload: function(me) {
