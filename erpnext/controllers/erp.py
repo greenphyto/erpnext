@@ -3,22 +3,22 @@ from frappe.utils import cint, flt, getdate
 from six import string_types
 
 def check_email_status(log, method=""):
-    if log.status != "Sent":
-        return
-    
-    comm_name = frappe.get_value("Communication", {"message_id":log.message_id})
-    if not comm_name:
-        return
-    
-    doc = frappe.get_doc("Communication", comm_name)
-    if not doc.reference_doctype and doc.reference_name:
-        return
-    
-    if doc.reference_doctype in ["Purchase Order"]:
-        frappe.db.set_value(doc.reference_doctype, doc.reference_name, "email_status", "Y")
+	if log.status != "Sent":
+		return
+	
+	comm_name = frappe.get_value("Communication", {"message_id":log.message_id})
+	if not comm_name:
+		return
+	
+	doc = frappe.get_doc("Communication", comm_name)
+	if not doc.reference_doctype and doc.reference_name:
+		return
+	
+	if doc.reference_doctype in ["Purchase Order"]:
+		frappe.db.set_value(doc.reference_doctype, doc.reference_name, "email_status", "Y")
 
-    notif = frappe.get_doc("Notification", "Email Sent Status")
-    notif.send(doc)
+	notif = frappe.get_doc("Notification", "Email Sent Status")
+	notif.send(doc)
 
 def read_email_inbox(doc, method=""):
 	from erpnext.controllers.va2 import extract_invoice_data, get_po_number, get_item_detail
@@ -58,7 +58,8 @@ def read_email_inbox(doc, method=""):
 		temp = get_po_number(full_path)
 		if temp and temp.get("result"):
 			# here
-			po_no = find_po_exist(temp.get("result"))
+			data = clear_result(temp.get("result"))
+			po_no = find_po_exist(data)
 			if not po_no:
 				continue
 
@@ -84,10 +85,22 @@ def read_email_inbox(doc, method=""):
 
 	return pi
 
+def clear_result(data):
+	result = []
+	try:
+		start_index = data.find('[') 
+		end_index = data.find(']') + 1 
+
+		json_str = data[start_index:end_index]
+
+		result = json.loads(json_str)
+		return result
+	except:
+		return result
+
 def find_po_exist(po_no):
-	ranges = len(po_no)
-	for i in range(ranges):
-		res = frappe.db.exists("Purchase Order", {"name":['like', "%"+po_no[i:]]})
+	for po in po_no:
+		res = frappe.db.exists("Purchase Order", {"name":['like', "%"+po+"%"]})
 		if res:
 			return res
 		
@@ -109,13 +122,13 @@ def create_purchase_invoice(data):
 
 	file = frappe.get_doc('File', data.get("file"))
 	attachment = frappe.get_doc({
-        'doctype': 'File',
-        'attached_to_doctype': doc.doctype,  # e.g., 'Sales Invoice', 'Purchase Order', etc.
-        'attached_to_name': doc.name,    # The name of the document to attach to
-        'file_name': file.file_name,
-        'file_url': file.file_url,
-        'is_private': file.is_private,   # Whether the file is private or public
-    })
+		'doctype': 'File',
+		'attached_to_doctype': doc.doctype,  # e.g., 'Sales Invoice', 'Purchase Order', etc.
+		'attached_to_name': doc.name,    # The name of the document to attach to
+		'file_name': file.file_name,
+		'file_url': file.file_url,
+		'is_private': file.is_private,   # Whether the file is private or public
+	})
 	attachment.insert()
 
 	return doc.name

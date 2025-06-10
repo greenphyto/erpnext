@@ -28,7 +28,10 @@
   "allow_multiple_items",
   "allow_against_multiple_purchase_orders",
   "hide_tax_id",
-  "enable_discount_accounting"
+  "enable_discount_accounting",
+  "supplier_invoice_auto_section",
+  "enable_supplier_invoice",
+  "default_email_inbox"
  ],
  "fields": [
   {
@@ -172,6 +175,23 @@
    "fieldname": "enable_discount_accounting",
    "fieldtype": "Check",
    "label": "Enable Discount Accounting for Selling"
+  },
+  {
+   "fieldname": "supplier_invoice_auto_section",
+   "fieldtype": "Section Break",
+   "label": "Supplier Invoice Auto"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_supplier_invoice",
+   "fieldtype": "Check",
+   "label": "Enable Supplier Invoice"
+  },
+  {
+   "fieldname": "default_email_inbox",
+   "fieldtype": "Link",
+   "label": "Default Email Inbox",
+   "options": "Email Account"
   }
  ],
  "icon": "fa fa-cog",

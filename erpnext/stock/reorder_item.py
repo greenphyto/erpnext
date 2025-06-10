@@ -198,7 +198,7 @@ def create_material_request(material_requests):
 					ORDER BY
 						mr.creation DESC
 					LIMIT 1
-				""", parent_args, as_dict=1, debug=1)
+				""", parent_args, as_dict=1, debug=0)
 
 				if draft_mr:
 					mr = frappe.get_doc("Material Request", draft_mr[0].name)
