@@ -67,6 +67,7 @@ def get_depreciable_assets(date, asset_category=[]):
 		where 
 			a.name = ds.parent 
 			and a.docstatus=1 
+			and a.disabled = 0
 			and DATE_FORMAT(ds.schedule_date, "%%m %%Y") = %(date)s 
 			and a.calculate_depreciation = 1
 			and a.status in ('Submitted', 'Partially Depreciated')

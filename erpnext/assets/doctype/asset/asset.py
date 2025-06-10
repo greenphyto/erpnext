@@ -1146,6 +1146,21 @@ def get_depreciation_amount(asset, depreciable_value, row):
 
 	return depreciation_amount
 
+@frappe.whitelist()
+def disable_asset(disable, asset_name, reason):
+	doc = frappe.get_doc("Asset", asset_name)
+	if cint(disable):
+		doc.disabled = 1
+		doc.status = "Disabled"
+		doc.save()
+		doc.add_comment("Comment", "Disable reason: {}".format(reason))
+	else:
+		status = doc.get_status()
+		doc.disabled = 0
+		doc.status = status
+		doc.save()
+		user_name = frappe.get_value("User", frappe.session.user, "full_name")
+		doc.add_comment("Comment", "Enable by {}".format(user_name))
 
 @frappe.whitelist()
 def split_asset(asset_name, split_qty):
