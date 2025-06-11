@@ -33,6 +33,9 @@ def read_email_inbox(doc, method=""):
 	if doc.email_account != invoice_email_default:
 		return
 	
+	if doc.reference_doctype and doc.reference_name:
+		return
+	
 	result = []
 	msg = doc.content
 
@@ -81,6 +84,8 @@ def read_email_inbox(doc, method=""):
 	pi = []
 	for res in result:
 		name = create_purchase_invoice(res)
+		doc.db_set("reference_doctype", "Purchase Invoice")
+		doc.db_set("reference_name", name)
 		pi.append(name)
 
 	return pi
