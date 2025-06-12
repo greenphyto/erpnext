@@ -327,3 +327,4 @@ erpnext.patches.v14_0.add_operation_default
 erpnext.patches.v14_0.set_default_warehouse_production
 erpnext.patches.v14_0.update_company_settings
 erpnext.patches.gp.add_bank_purpose
+erpnext.patches.gp.add_bank_standart_sg
