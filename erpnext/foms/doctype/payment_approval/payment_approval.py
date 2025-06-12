@@ -159,7 +159,8 @@ class PaymentApproval(Document):
 				'currency': d.currency,
 				"instruction_start":ins_start,
 				"instruction_end":ins_end,
-				"email":email
+				"email":email,
+				"country":"SG"
 			}
 			invoices.append(row)
 

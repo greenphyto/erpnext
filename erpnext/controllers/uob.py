@@ -194,14 +194,8 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	
 	initg_pty = ET.SubElement(grp_hdr, 'InitgPty')
 	initg_pty_id = ET.SubElement(initg_pty, 'Id')
-	initg_pty_org_id = ET.SubElement(initg_pty_id, 'OrgId')
-	# print(195, debtor_info['company_id'])
-	# ET.SubElement(initg_pty_org_id, 'BICOrBEI').text = debtor_info['company_id']
-
 	comp_org_id = ET.SubElement(initg_pty_id, 'OrgId')
 	ET.SubElement(comp_org_id, 'BICOrBEI').text = debtor_info['dummy_bic']
-	dbtr_othr = ET.SubElement(comp_org_id, 'Othr')
-	ET.SubElement(dbtr_othr, 'Id').text = debtor_info["company_id"]
 	
 	# Create Payment Information
 	pmt_inf = ET.SubElement(cstmr_cdt_trf_initn, 'PmtInf')
@@ -229,7 +223,6 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	
 	dbtr_id = ET.SubElement(dbtr, 'Id')
 	dbtr_org_id = ET.SubElement(dbtr_id, 'OrgId')
-	ET.SubElement(dbtr_org_id, 'BICOrBEI').text = debtor_info['bic']
 	dbtr_othr = ET.SubElement(dbtr_org_id, 'Othr')
 	ET.SubElement(dbtr_othr, 'Id').text = debtor_info["company_id"]
 	
@@ -278,13 +271,12 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 			ET.SubElement(cdtr_adr, 'PstCd').text = addr.get("postal_code")
 			ET.SubElement(cdtr_adr, 'Ctry').text = addr.get("country")
 			ET.SubElement(cdtr_adr, 'AdrLine').text = addr.get("address_line")
-		
+
 		# Creditor Account
 		cdtr_acct = ET.SubElement(cdt_trf_tx_inf, 'CdtrAcct')
 		cdtr_acct_id = ET.SubElement(cdtr_acct, 'Id')
 		cdtr_acct_othr = ET.SubElement(cdtr_acct_id, 'Othr')
 		ET.SubElement(cdtr_acct_othr, 'Id').text = invoice['creditor_account']
-		ET.SubElement(cdtr_acct, 'UltmtCdtr').text = f"UltimateCreditor {i:02d}"
 		
 		# Purpose
 		purp = ET.SubElement(cdt_trf_tx_inf, 'Purp')
@@ -299,12 +291,14 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 		rmt_lctn_pstl_adr = ET.SubElement(rltd_rmt_inf, 'RmtLctnPstlAdr')
 		ET.SubElement(rmt_lctn_pstl_adr, 'Nm').text = invoice['creditor_name']
 		
+		rmt_adr = ET.SubElement(rmt_lctn_pstl_adr, 'Adr')
 		if invoice.get("remitence_address"):
 			addr = invoice.get("remitence_address")
-			rmt_adr = ET.SubElement(rmt_lctn_pstl_adr, 'Adr')
 			ET.SubElement(rmt_adr, 'PstCd').text = addr.get("postal_code")
 			ET.SubElement(rmt_adr, 'Ctry').text = addr.get("country")
 			ET.SubElement(rmt_adr, 'AdrLine').text = addr.get("address_line")
+		else:
+			ET.SubElement(rmt_adr, 'Ctry').text = invoice.get("country")
 		
 		# Remittance Information
 		rmt_inf = ET.SubElement(cdt_trf_tx_inf, 'RmtInf')
