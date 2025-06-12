@@ -7,6 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "enable",
+  "env",
   "section_break_2",
   "host",
   "username",
@@ -15,6 +16,8 @@
   "folder_in",
   "folder_out",
   "testing_section",
+  "remitance_email_dummy",
+  "company_bic_dummy",
   "get_file_list"
  ],
  "fields": [
@@ -70,12 +73,30 @@
    "fieldname": "get_file_list",
    "fieldtype": "Button",
    "label": "Get File List"
+  },
+  {
+   "fieldname": "remitance_email_dummy",
+   "fieldtype": "Data",
+   "label": "Remitance Email Dummy"
+  },
+  {
+   "description": "for tag &lt;BICOrBEI&gt; in &lt;OrgId&gt;",
+   "fieldname": "company_bic_dummy",
+   "fieldtype": "Data",
+   "label": "Company BIC Dummy"
+  },
+  {
+   "default": "Staging",
+   "fieldname": "env",
+   "fieldtype": "Select",
+   "label": "Environment",
+   "options": "Local\nStaging\nProduction"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-04-24 18:19:37.113388",
+ "modified": "2025-06-12 14:01:04.193123",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "UOB Integration Settings",

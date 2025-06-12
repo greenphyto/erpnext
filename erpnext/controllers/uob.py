@@ -195,12 +195,17 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	initg_pty = ET.SubElement(grp_hdr, 'InitgPty')
 	initg_pty_id = ET.SubElement(initg_pty, 'Id')
 	initg_pty_org_id = ET.SubElement(initg_pty_id, 'OrgId')
-	print(195, debtor_info['company_id'])
-	ET.SubElement(initg_pty_org_id, 'BICOrBEI').text = debtor_info['company_id']
+	# print(195, debtor_info['company_id'])
+	# ET.SubElement(initg_pty_org_id, 'BICOrBEI').text = debtor_info['company_id']
+
+	comp_org_id = ET.SubElement(initg_pty_id, 'OrgId')
+	ET.SubElement(comp_org_id, 'BICOrBEI').text = debtor_info['dummy_bic']
+	dbtr_othr = ET.SubElement(comp_org_id, 'Othr')
+	ET.SubElement(dbtr_othr, 'Id').text = debtor_info["company_id"]
 	
 	# Create Payment Information
 	pmt_inf = ET.SubElement(cstmr_cdt_trf_initn, 'PmtInf')
-	ET.SubElement(pmt_inf, 'PmtInfId').text = f"{datetime.now().strftime('%Y%m%d')}-{debtor_info['batch']}"
+	ET.SubElement(pmt_inf, 'PmtInfId').text = f"{debtor_info['batch']}"
 	ET.SubElement(pmt_inf, 'PmtMtd').text = debtor_info['type']
 	
 	pmt_tp_inf = ET.SubElement(pmt_inf, 'PmtTpInf')

@@ -125,16 +125,30 @@ class PaymentApproval(Document):
 			return
 		
 		self.validate_payment()
+		settings = frappe.get_single("UOB Integration Settings")
+		env = settings.env
+		dummy = env != "Production"
+
+		def change_to_dummy_bic(bic):
+			index = 7
+			if index < 0 or index >= len(bic):
+				raise ValueError("Index out of range.")
+			return bic[:index] + "0" + bic[index + 1:]
 
 		# other information
 		tax_id = frappe.get_value("Company", self.company, "tax_id")
 
 		invoices = []
 		for d in self.invoices:
-			bic = frappe.get_value("Bank",d.bank_account_name,"swift_number")
+			bic = frappe.get_value("Bank",d.supplier_bank,"swift_number", debug=0)
+			if dummy:
+				bic = change_to_dummy_bic(bic)
+
 			doc = frappe.get_doc("Purchase Invoice", d.invoice_no)
-			ins_start = "{}{}-BILL:{}-DATE:{}".format(get_date_simple(self.posting_date), self.payment_method, doc.bill_no, get_date_simple(doc.bill_date))
-			ins_end = "GP.INV:{}-DATE:{}".format(doc.name, get_date_simple(doc.posting_date))
+			doc_name = doc.name[:-5]
+			ins_start = "{}-{}".format(doc.bill_no, get_date_simple(doc.bill_date)[:-2])
+			ins_end = "{}-{}".format(doc_name, get_date_simple(doc.posting_date)[:-2])
+			email = settings.remitance_email_dummy
 			row = {
 				'invoice_number': d.invoice_no,
 				'amount': d.amount,
@@ -144,20 +158,25 @@ class PaymentApproval(Document):
 				'remarks': 'Payment invoice',
 				'currency': d.currency,
 				"instruction_start":ins_start,
-				"instruction_end":ins_end
+				"instruction_end":ins_end,
+				"email":email
 			}
 			invoices.append(row)
 
 		bic = frappe.get_value("Bank", self.bank, "swift_number")
+		if dummy:
+			bic = change_to_dummy_bic(bic)
 		file_name = self.get_file_name()
+		batch = self.name.replace("-", "")
 		debtor_info = {
 			'company_name': self.company,
 			'name': self.bank_account_name,
 			'account_number': self.bank_account_no,
 			'bic': bic,
 			"purpose":self.purpose,
-			"batch":self.name,
+			"batch":batch,
 			"company_id": tax_id,
+			"dummy_bic": settings.company_bic_dummy,
 			"msg_id": file_name
 		}
 		debtor_info.update(self.method)
@@ -165,7 +184,10 @@ class PaymentApproval(Document):
 		doc = self.create_xml_file(invoices, debtor_info, filepath=filepath)
 
 		# upload
-		self.upload_xml(doc)
+		if not filepath:
+			self.upload_xml(doc)
+		else:
+			return filepath
 
 
 	def create_xml_file(self, invoices, debtor_info, filepath=""):
