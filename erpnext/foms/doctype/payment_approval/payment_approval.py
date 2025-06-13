@@ -6,7 +6,7 @@ from frappe.model.document import Document
 from frappe.utils import flt, cint, getdate
 from frappe.utils.file_manager import save_file
 from erpnext.controllers.uob import create_payment_xml
-from erpnext.controllers.uob import UOBAPI
+from erpnext.controllers.uob import UOBAPI, get_country_code
 
 from frappe import _
 """ TODO
@@ -149,6 +149,14 @@ class PaymentApproval(Document):
 			ins_start = "{}-{}".format(doc.bill_no, get_date_simple(doc.bill_date)[:-2])
 			ins_end = "{}-{}".format(doc_name, get_date_simple(doc.posting_date)[:-2])
 			email = settings.remitance_email_dummy
+			address = None
+			if doc.supplier_address:
+				addr = frappe.get_doc("Address", doc.supplier_address)
+				address = {
+					"address_line":addr.address_line1,
+					"postal_code":addr.pincode,
+					"country": get_country_code(addr.country)
+				}
 			row = {
 				'invoice_number': d.invoice_no,
 				'amount': d.amount,
@@ -160,7 +168,9 @@ class PaymentApproval(Document):
 				"instruction_start":ins_start,
 				"instruction_end":ins_end,
 				"email":email,
-				"country":"SG"
+				"country": get_country_code("Singapore"),
+				"address": address,
+				"remitence_address": address
 			}
 			invoices.append(row)
 

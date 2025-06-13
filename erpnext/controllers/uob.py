@@ -267,10 +267,9 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 		if invoice.get("address"):
 			addr = invoice.get("address")
 			cdtr_pstl_adr = ET.SubElement(cdtr, 'PstlAdr')
-			cdtr_adr = ET.SubElement(cdtr_pstl_adr, 'Adr')
-			ET.SubElement(cdtr_adr, 'PstCd').text = addr.get("postal_code")
-			ET.SubElement(cdtr_adr, 'Ctry').text = addr.get("country")
-			ET.SubElement(cdtr_adr, 'AdrLine').text = addr.get("address_line")
+			ET.SubElement(cdtr_pstl_adr, 'PstCd').text = addr.get("postal_code")
+			ET.SubElement(cdtr_pstl_adr, 'Ctry').text = addr.get("country")
+			ET.SubElement(cdtr_pstl_adr, 'AdrLine').text = addr.get("address_line")
 
 		# Creditor Account
 		cdtr_acct = ET.SubElement(cdt_trf_tx_inf, 'CdtrAcct')
@@ -325,3 +324,7 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 			f.write(xml_output)
 
 	return xml_output
+
+def get_country_code(country):
+	from iso3166 import countries
+	return countries.get(country).alpha2
