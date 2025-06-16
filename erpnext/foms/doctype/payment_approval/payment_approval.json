@@ -34,6 +34,7 @@
   "section_break_6",
   "status",
   "transfer_date",
+  "column_break_28",
   "batch_number",
   "amended_from"
  ],
@@ -52,13 +53,15 @@
    "default": "Today",
    "fieldname": "posting_date",
    "fieldtype": "Date",
-   "label": "Posting Date"
+   "label": "Posting Date",
+   "no_copy": 1
   },
   {
    "default": "Now",
    "fieldname": "time",
    "fieldtype": "Time",
-   "label": "Time"
+   "label": "Time",
+   "no_copy": 1
   },
   {
    "default": "Transfer",
@@ -103,6 +106,8 @@
    "fieldname": "requested_by",
    "fieldtype": "Link",
    "label": "Requested By",
+   "no_amend_copy": 1,
+   "no_copy": 1,
    "options": "User",
    "read_only": 1,
    "reqd": 1
@@ -111,6 +116,8 @@
    "fieldname": "approved_by",
    "fieldtype": "Link",
    "label": "Approved By",
+   "no_amend_copy": 1,
+   "no_copy": 1,
    "options": "User",
    "read_only": 1
   },
@@ -213,6 +220,8 @@
    "fieldname": "batch_number",
    "fieldtype": "Int",
    "label": "Batch Number",
+   "no_amend_copy": 1,
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -221,12 +230,16 @@
    "label": "Company",
    "options": "Company",
    "reqd": 1
+  },
+  {
+   "fieldname": "column_break_28",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-06-16 11:58:43.983002",
+ "modified": "2025-06-16 16:17:51.646589",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Payment Approval",

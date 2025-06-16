@@ -23,6 +23,7 @@ COUNTRY_CODE = "SG"
 
 class PaymentApproval(Document):
 	def validate(self):
+		self.set_status()
 		self.set_requested_by()
 		self.validate_data()
 		self.process_xml_file()
@@ -32,6 +33,10 @@ class PaymentApproval(Document):
 		self.validate_payment()
 		self.validate_invoice()
 		self.calculate_amount()
+
+	def set_status(self):
+		if self.docstatus == 0 and self.is_new():
+			self.status = "Draft"
 
 	def set_batch_number(self):
 		if not self.batch_number and "PAY" in self.name:
@@ -146,7 +151,11 @@ class PaymentApproval(Document):
 
 			doc = frappe.get_doc("Purchase Invoice", d.invoice_no)
 			doc_name = doc.name[:-5]
-			ins_start = "{}-{}".format(doc.bill_no, get_date_simple(doc.bill_date)[:-2])
+			if len(doc.bill_no or "") < 10:
+				ins_start = "{}-{}".format(doc.bill_no or "*", get_date_simple(doc.bill_date)[:-2])
+			else:
+				ins_start = doc.bill_no
+				
 			ins_end = "{}-{}".format(doc_name, get_date_simple(doc.posting_date)[:-2])
 			email = settings.remitance_email_dummy
 			address = None
@@ -155,7 +164,7 @@ class PaymentApproval(Document):
 				address = {
 					"address_line":addr.address_line1,
 					"postal_code":addr.pincode,
-					"country": get_country_code(addr.country)
+					"country": get_country_code(addr.country),
 				}
 			row = {
 				'invoice_number': d.invoice_no,
@@ -187,7 +196,7 @@ class PaymentApproval(Document):
 			"purpose":self.purpose,
 			"batch":batch,
 			"company_id": tax_id,
-			"dummy_bic": settings.company_bic_dummy,
+			"dummy_bic": bic,
 			"msg_id": file_name
 		}
 		debtor_info.update(self.method)
