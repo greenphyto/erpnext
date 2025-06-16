@@ -36,6 +36,10 @@ def read_email_inbox(doc, method=""):
 	if doc.reference_doctype and doc.reference_name:
 		return
 	
+	message = "Subject: {}\nMessage: {}".format(doc.subject, doc.content)
+	if not is_invoice(message):
+		return
+	
 	result = []
 	msg = doc.content
 
@@ -88,6 +92,61 @@ def read_email_inbox(doc, method=""):
 		pi.append(name)
 
 	return pi
+
+def filter_email_invoice(doc):
+	# return yes/no
+	pass
+
+def is_invoice(text):
+    text = text.lower()
+    
+    invoice_keywords = [
+        # English
+        "invoice", "tax invoice", "bill to", "invoice number",
+        "date of invoice", "tax amount", "invoice total", "amount due",
+        
+        # Chinese (Simplified)
+        "发票", "税务发票", "发票号码", "发票日期", "金额", "总金额",
+        
+        # Japanese
+        "請求書", "税請求書", "請求日", "請求番号", "合計金額", "金額",
+        
+        # Korean
+        "세금계산서", "계산서", "송장", "청구서", "총액", "청구 금액",
+        
+        # Spanish
+        "factura", "factura fiscal", "número de factura", "fecha de factura", "importe", "total a pagar",
+        
+        # French
+        "facture", "numéro de facture", "date de facture", "montant", "total à payer",
+        
+        # German
+        "rechnung", "rechnungsnummer", "rechnungsdatum", "gesamtbetrag", "betrag",
+        
+        # Portuguese
+        "fatura", "número da fatura", "data da fatura", "valor", "total a pagar",
+        
+        # Italian
+        "fattura", "numero fattura", "data fattura", "importo", "totale da pagare",
+
+        # Dutch
+        "factuur", "factuurnummer", "factuurdatum", "totaalbedrag", "te betalen bedrag",
+
+        # Russian
+        "счет-фактура", "счет", "номер счета", "дата счета", "сумма", "итого к оплате",
+
+        # Arabic (with and without diacritics)
+        "فاتورة", "رقم الفاتورة", "تاريخ الفاتورة", "المبلغ", "إجمالي المبلغ", "المبلغ المستحق",
+
+        # Hindi (Devanagari)
+        "चालान", "इनवॉइस", "इनवॉइस संख्या", "चालान संख्या", "तिथि", "राशि", "कुल राशि",
+
+		# Indonesia"
+		"faktur", "faktur pajak", "tagihan ke", "nomor faktur",
+		"tanggal faktur", "jumlah pajak", "total faktur", "jumlah yang harus dibayar",
+    ]
+
+    return any(keyword in text for keyword in invoice_keywords)
 
 def find_po_exist(po_no):
 	ranges = len(po_no)
