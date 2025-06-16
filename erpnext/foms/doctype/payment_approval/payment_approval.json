@@ -202,7 +202,7 @@
    "fieldname": "payment_method",
    "fieldtype": "Select",
    "label": "Payment Method",
-   "options": "\nTT\nFAST\nIBG\nIBG Express"
+   "options": "\nTT\nMEPS\nIAFT\nFAST\nIBG\nIBG Express"
   },
   {
    "fieldname": "payment_property",
@@ -226,7 +226,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-05-27 18:18:40.781981",
+ "modified": "2025-06-16 11:58:43.983002",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Payment Approval",

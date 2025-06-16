@@ -51,7 +51,7 @@ class PaymentApproval(Document):
 		if self.payment_type == "Transfer":
 			self.method["type"] = "TRF"
 			self.method["property"] = ""
-			if self.payment_method == "TT":
+			if self.payment_method in ("TT", "MEPS", "IAFT"):
 				self.method["method"] = "URGP"
 				self.payment_property = ""
 			elif self.payment_method == "FAST":
