@@ -259,6 +259,8 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 		cdtr_agt = ET.SubElement(cdt_trf_tx_inf, 'CdtrAgt')
 		cdtr_agt_fin_instn_id = ET.SubElement(cdtr_agt, 'FinInstnId')
 		ET.SubElement(cdtr_agt_fin_instn_id, 'BIC').text = invoice['creditor_bic']
+		cdtr_pstl_adr_fin = ET.SubElement(cdtr_agt_fin_instn_id, 'PstlAdr')
+		ET.SubElement(cdtr_pstl_adr_fin, 'Ctry').text = invoice.get("country")
 		
 		# Creditor
 		cdtr = ET.SubElement(cdt_trf_tx_inf, 'Cdtr')
