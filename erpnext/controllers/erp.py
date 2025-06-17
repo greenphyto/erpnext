@@ -21,7 +21,6 @@ def check_email_status(log, method=""):
 	notif.send(doc)
 
 def read_email_inbox(doc, method=""):
-	from erpnext.controllers.va2 import extract_invoice_data, get_po_number, get_item_detail
 	if doc.communication_type != "Communication":
 		return
 	
@@ -36,122 +35,68 @@ def read_email_inbox(doc, method=""):
 	if doc.reference_doctype and doc.reference_name:
 		return
 	
-	result = []
-	msg = doc.content
-
-	# should check if this invoice or not
-
-	file_doc_name = frappe.db.get_list("File", {
-		"attached_to_doctype":"Communication",
-		"attached_to_name":doc.name
-	})
-	
-	# temporary detect invoice/not by attachment
-	if not file_doc_name:
+	message = "Subject: {}\nMessage: {}".format(doc.subject, doc.content)
+	if not is_invoice(message):
 		return
-	
-	for file_name in file_doc_name:
-		
-		fn = frappe.get_doc('File', file_name)
-		fn_name = fn.file_name
-		full_path = fn.get_full_path()
-		if ".pdf" in full_path:
-			full_path = convert_pdf_to_img(full_path)
 
-		temp = get_po_number(full_path)
-		if temp and temp.get("result"):
-			# here
-			data = clear_result(temp.get("result"))
-			po_no = find_po_exist(data)
-			if not po_no:
-				continue
+	# create email invoice
+	em = frappe.new_doc("Email Invoice")
+	em.sync_email(doc = doc)
+	em.save()
 
-			po = frappe.get_doc("Purchase Order", po_no)
-			items = []
-			for d in po.items:
-				items.append(
-					{"item_code": d.item_name, "qty":d.qty, "rate":d.rate, "uom":d.uom}
-				)
 
-			# temporary not used
-			items = get_item_detail(full_path, items)
-			result.append({
-				"po_no":po_no,
-				"items":items,
-				"file":file_name
-			})
+def is_invoice(text):
+    text = text.lower()
+    
+    invoice_keywords = [
+        # English
+        "invoice", "tax invoice", "bill to", "invoice number",
+        "date of invoice", "tax amount", "invoice total", "amount due",
+        
+        # Chinese (Simplified)
+        "发票", "税务发票", "发票号码", "发票日期", "金额", "总金额",
+        
+        # Japanese
+        "請求書", "税請求書", "請求日", "請求番号", "合計金額", "金額",
+        
+        # Korean
+        "세금계산서", "계산서", "송장", "청구서", "총액", "청구 금액",
+        
+        # Spanish
+        "factura", "factura fiscal", "número de factura", "fecha de factura", "importe", "total a pagar",
+        
+        # French
+        "facture", "numéro de facture", "date de facture", "montant", "total à payer",
+        
+        # German
+        "rechnung", "rechnungsnummer", "rechnungsdatum", "gesamtbetrag", "betrag",
+        
+        # Portuguese
+        "fatura", "número da fatura", "data da fatura", "valor", "total a pagar",
+        
+        # Italian
+        "fattura", "numero fattura", "data fattura", "importo", "totale da pagare",
 
-	pi = []
-	for res in result:
-		name = create_purchase_invoice(res)
-		doc.db_set("reference_doctype", "Purchase Invoice")
-		doc.db_set("reference_name", name)
-		pi.append(name)
+        # Dutch
+        "factuur", "factuurnummer", "factuurdatum", "totaalbedrag", "te betalen bedrag",
 
-	return pi
+        # Russian
+        "счет-фактура", "счет", "номер счета", "дата счета", "сумма", "итого к оплате",
 
-def clear_result(data):
-	result = []
-	try:
-		start_index = data.find('[') 
-		end_index = data.find(']') + 1 
+        # Arabic (with and without diacritics)
+        "فاتورة", "رقم الفاتورة", "تاريخ الفاتورة", "المبلغ", "إجمالي المبلغ", "المبلغ المستحق",
 
-		json_str = data[start_index:end_index]
+        # Hindi (Devanagari)
+        "चालान", "इनवॉइस", "इनवॉइस संख्या", "चालान संख्या", "तिथि", "राशि", "कुल राशि",
 
-		result = json.loads(json_str)
-		return result
-	except:
-		return result
+		# Indonesia"
+		"faktur", "faktur pajak", "tagihan ke", "nomor faktur",
+		"tanggal faktur", "jumlah pajak", "total faktur", "jumlah yang harus dibayar",
+    ]
 
-def find_po_exist(po_no):
-	for po in po_no:
-		res = frappe.db.exists("Purchase Order", {"name":['like', "%"+po+"%"]})
-		if res:
-			return res
-		
-	return res
+    return any(keyword in text for keyword in invoice_keywords)
 
-from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_invoice
-def create_purchase_invoice(data):
-	# make PI
-	doc = make_purchase_invoice(data.get("po_no"))
-	doc.created_with_ai = 1
 
-	for d in data.get("items"):
-		rows = doc.get("items", {"item_code":d['item_code']})
-		if rows:
-			row = rows[0]
-			row.rate = flt(d['rate'])
-			row.qty = flt(d['qty'])
-	doc.save()
-
-	file = frappe.get_doc('File', data.get("file"))
-	attachment = frappe.get_doc({
-		'doctype': 'File',
-		'attached_to_doctype': doc.doctype,  # e.g., 'Sales Invoice', 'Purchase Order', etc.
-		'attached_to_name': doc.name,    # The name of the document to attach to
-		'file_name': file.file_name,
-		'file_url': file.file_url,
-		'is_private': file.is_private,   # Whether the file is private or public
-	})
-	attachment.insert()
-
-	return doc.name
-
-def convert_pdf_to_img(path):
-	import fitz  # PyMuPDF
-	import numpy as np
-	from PIL import Image
-
-	doc = fitz.open(path)
-
-	page = doc[0]
-
-	pix = page.get_pixmap()
-
-	image_np = np.array(Image.frombytes("RGB", [pix.width, pix.height], pix.samples))
-
-	return image_np
 
 def get_item_context():
 	# build item list as base knowledge / context for AI
