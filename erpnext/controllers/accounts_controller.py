@@ -201,6 +201,23 @@ class AccountsController(TransactionBase):
 		if self.doctype != "Material Request":
 			apply_pricing_rule_on_transaction(self)
 
+	def set_default_number_fields(self):
+		# Ambil meta dari dokumen saat ini
+		meta = self.meta
+		
+		# Tipe field yang ingin diset default-nya ke 0
+		number_fieldtypes = ("Currency", "Float", "Int")
+
+		# Looping semua field
+		for df in meta.fields:
+			if df.fieldtype in number_fieldtypes:
+				fieldname = df.fieldname
+				current_value = self.get(fieldname)
+
+				if current_value in (None, ''):
+					# Set nilai default sesuai tipe data
+					self.set(fieldname, flt(0))
+
 	def before_cancel(self):
 		validate_einvoice_fields(self)
 
@@ -1000,9 +1017,9 @@ class AccountsController(TransactionBase):
 	def update_against_document_in_jv(self):
 		"""
 		Links invoice and advance voucher:
-		        1. cancel advance voucher
-		        2. split into multiple rows if partially adjusted, assign against voucher
-		        3. submit advance voucher
+				1. cancel advance voucher
+				2. split into multiple rows if partially adjusted, assign against voucher
+				3. submit advance voucher
 		"""
 
 		if self.doctype == "Sales Invoice":
@@ -1589,7 +1606,7 @@ class AccountsController(TransactionBase):
 		date = self.get("due_date")
 		due_date = date or posting_date
 
-		base_grand_total = self.get("base_rounded_total") or self.base_grand_total
+		base_grand_total = flt(self.get("base_rounded_total") or self.base_grand_total)
 		grand_total = self.get("rounded_total") or self.grand_total
 
 		if self.doctype in ("Sales Invoice", "Purchase Invoice"):
@@ -1651,15 +1668,17 @@ class AccountsController(TransactionBase):
 				)
 
 	def get_order_details(self):
-		if self.doctype == "Sales Invoice":
-			po_or_so = self.get("items")[0].get("sales_order")
-			po_or_so_doctype = "Sales Order"
-			po_or_so_doctype_name = "sales_order"
+		po_or_so, po_or_so_doctype, po_or_so_doctype_name = "", "", ""
+		if self.get("items"):
+			if self.doctype == "Sales Invoice":
+				po_or_so = self.get("items")[0].get("sales_order")
+				po_or_so_doctype = "Sales Order"
+				po_or_so_doctype_name = "sales_order"
 
-		else:
-			po_or_so = self.get("items")[0].get("purchase_order")
-			po_or_so_doctype = "Purchase Order"
-			po_or_so_doctype_name = "purchase_order"
+			else:
+				po_or_so = self.get("items")[0].get("purchase_order")
+				po_or_so_doctype = "Purchase Order"
+				po_or_so_doctype_name = "purchase_order"
 
 		return po_or_so, po_or_so_doctype, po_or_so_doctype_name
 
@@ -2586,7 +2605,7 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 
 		1. Change rate of subcontracting - regardless of other changes.
 		2. Change qty and/or add new items and/or remove items
-		        Exception: Transfer/Consumption is already made, qty change not allowed.
+				Exception: Transfer/Consumption is already made, qty change not allowed.
 		"""
 
 		supplied_items_processed = any(

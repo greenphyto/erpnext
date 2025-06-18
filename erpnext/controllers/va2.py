@@ -1,4 +1,4 @@
-import os, json
+import os, json, re
 import numpy as np
 from vision_agent.tools import *
 from vision_agent.tools.planner_tools import judge_od_results
@@ -90,16 +90,116 @@ def extract_invoice_data(image_path: str, prompt: str):
 	from vision_agent.tools import load_image, document_qa
 	os.environ['VISION_AGENT_API_KEY'] = frappe.conf.vision_agent_token
 	os.environ['OPENAI_API_KEY'] = frappe.conf.deepseek_token
-	result = ""
 	image = load_image(image_path)
-	result = document_qa(prompt, image) or {}
+	raw_result = document_qa(prompt, image) or {}
+	result = clear_result(raw_result)
+
 	result_json = {
 		"result":result
 	}
 	return result_json
 
+def clear_result(raw_result):
+	result = {}
+	try:
+		result = json.loads(raw_result)
+	except:
+		result = {}
+
+	if not result:
+		try:
+			cleaned = re.sub(r"^```(?:json)?\n|\n```$", "", raw_result.strip())
+			result = json.loads(cleaned)
+		except:
+			result = {}
+
+	if not result:
+		result = {
+			"purchase_order":[],
+			"items":[]
+		}
+
+	return result
+
 def get_inv_data(image_path, reference_item):
 	pass
+
+def get_po_and_items(image_path, reference_supplier, email):
+	prompt = """
+Extract structured information from the provided invoice document.
+
+Your task is to extract:
+1. Purchase Order number(s)
+2. Item details
+3. Supplier identity (matched from a reference supplier list), and now we have senfer from """+email+"""
+
+---
+
+Part 1: Extract Purchase Order Number
+- Identify PO number(s) in the document with formats such as:
+  - PO000171/2025
+  - PO1001123/2025
+  - P0000171/2025 (with or without the "O" after "P")
+  - PO100072/2024
+  - Or similar patterns where the prefix may be "P", "PO", etc.
+- Return PO number(s) as a list of strings. If none found, return an empty list.
+
+---
+
+Part 2: Extract Item Details
+- Extract all items listed in the invoice document.
+- Include the following fields for each item:
+  - `"item_name"`: the name of the item exactly as stated in the invoice
+  - `"qty"`: quantity
+  - `"rate"`: per-unit price
+  - `"uom"`: unit of measure
+  - `"currency"`: currency used
+- Return item data as a list of objects.
+- If no items found, return an empty list.
+
+---
+
+Part 3: Extract Supplier
+- Remember this facts: In header there is a Company name, and Company name in the PDF is a supplier in our side
+- Match the supplier identity by comparing the invoice's sender or contact information with the entries in the provided Reference Supplier list.
+- Match until the email domain if possible
+- Matching should be based on exact or close matches in:
+  - Email
+  - Supplier name
+  - Address
+- Return the full `supplier_name`, `email`, and `address` from the matched supplier.
+- If no match is found, return null.
+
+---
+
+Return result in this JSON structure (no explanation, no markdown):
+
+```json
+{
+  "purchase_order": [...],
+  "supplier": {
+    "supplier_name": "...",
+    "email": "...",
+    "address": "..."
+  },
+  "items": [
+    {
+      "item_name": "...",
+      "qty": ...,
+      "rate": ...,
+      "uom": "...",
+      "currency": "..."
+    }
+  ],
+  "email": "email company in header or any email with @ mark", 
+  "company": "company name in header, use reference supplier as company name existing in system or use orignal name if not found"
+}
+
+Reference Supplier:
+"""+json.dumps(reference_supplier, indent=2)
+	print("PROMPT", prompt)
+	res = extract_invoice_data(image_path, prompt)
+	return res
 
 def get_po_number(image_path):
 	prompt = f"""

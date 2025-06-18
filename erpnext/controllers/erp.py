@@ -109,7 +109,7 @@ def get_item_context():
 			`tabItem` i
 		WHERE
 			i.disabled = 0
-				AND i.item_group = 'Products' and i.item_name not like "(R&D)%"
+				AND i.item_group = 'Products' and i.item_name not like "(R&D)%" limit 10
 	""", as_dict=1)
 	for d in items:
 		if not d.item_code in context:
@@ -179,6 +179,66 @@ def get_customer_context():
 				"emails":emails
 			}
 	
+	return json.dumps(context)
+
+def get_supplier_context():
+	context = {}
+	
+	# Ambil semua supplier aktif
+	suppliers = frappe.db.sql("""
+		SELECT 
+			s.name, s.supplier_name
+		FROM
+			`tabSupplier` s
+		WHERE
+			s.disabled = 0
+	""", as_dict=1)
+
+	# Ambil kontak yang terhubung ke supplier
+	contacts = frappe.db.sql("""
+		SELECT 
+			dl.link_name as supplier_code,
+			c.email_id,
+			c.first_name,
+			c.company_name,
+			(SELECT 
+					GROUP_CONCAT(DISTINCT ce.email_id
+							ORDER BY ce.idx
+							SEPARATOR ',')
+				FROM
+					`tabContact Email` ce
+				WHERE
+					ce.parent = c.name AND ce.is_primary = 0) AS other_email
+		FROM
+			`tabDynamic Link` dl
+				LEFT JOIN
+			`tabContact` c ON c.name = dl.parent
+		WHERE
+			dl.link_doctype = 'Supplier'
+	""", as_dict=1)
+
+	# Gabungkan kontak berdasarkan supplier_code
+	email_map = {}
+	for d in contacts:
+		other_email = (d.other_email or "").split(",") if d.other_email else []
+
+		if not other_email and not d.email_id:
+			continue
+		
+		if d.supplier_code not in email_map:
+			email_map[d.supplier_code] = [d.email_id] + other_email if d.email_id else other_email
+		else:
+			em = [d.email_id] + other_email if d.email_id else other_email
+			email_map[d.supplier_code] += em
+
+	# Bangun context dictionary
+	for s in suppliers:
+		emails = email_map.get(s.name) or []
+		context[s.name] = {
+			"keyword": s.supplier_name,
+			"emails": emails
+		}
+
 	return json.dumps(context)
 
 def shipping_context():
