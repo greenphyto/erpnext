@@ -43,8 +43,7 @@ def _reorder_item():
 				or (variant_of is not null and variant_of != ''
 				and exists (select name from `tabItem Reorder` ir where ir.parent=item.variant_of))
 			)""",
-		{"today": nowdate()},
-	debug=1)
+		{"today": nowdate()})
 
 	if not items_to_consider:
 		return
@@ -52,7 +51,7 @@ def _reorder_item():
 	item_warehouse_projected_qty = get_item_warehouse_projected_qty(items_to_consider)
 
 	def add_to_material_request(
-		item_code, warehouse, reorder_level, reorder_qty, material_request_type, warehouse_group=None
+		item_code, warehouse, reorder_level, reorder_qty, material_request_type, warehouse_group=None, pic=None
 	):
 		if warehouse not in warehouse_company:
 			# a disabled warehouse
@@ -74,8 +73,13 @@ def _reorder_item():
 
 			company = warehouse_company.get(warehouse) or default_company
 
-			material_requests[material_request_type].setdefault(company, []).append(
-				{"item_code": item_code, "warehouse": warehouse, "reorder_qty": reorder_qty}
+			material_requests[material_request_type].setdefault(company, {}).setdefault(pic, []).append(
+				{
+					"item_code": item_code, 
+	 				"warehouse": warehouse, 
+					"reorder_qty": reorder_qty,
+					"pic":pic,
+				}
 			)
 
 	for item_code in items_to_consider:
@@ -93,6 +97,7 @@ def _reorder_item():
 					d.warehouse_reorder_qty,
 					d.material_request_type,
 					warehouse_group=d.warehouse_group,
+					pic=d.pic
 				)
 
 	if material_requests:
@@ -167,97 +172,102 @@ def create_material_request(material_requests):
 
 	for request_type in material_requests:
 		for company in material_requests[request_type]:
-			try:
-				mr = None
-				items = material_requests[request_type][company]
-				if not items:
-					continue
+			for pic in material_requests[request_type][company]:
+				try:
+					mr = None
+					items = material_requests[request_type][company][pic]
+					if not items:
+						continue
 
-				# find exists
-				parent_args = {
-					"company": company,
-					"transaction_date": nowdate(),
-					"material_request_type": "Material Transfer" if request_type == "Transfer" else request_type,
-					"from_reorder_level":1
-				}
-				draft_mr = frappe.db.sql("""
-					SELECT
-						mr.name,
-						mr.status,
-						mr.workflow_state,
-						mr.docstatus
-					FROM
-						`tabMaterial Request` mr
-					WHERE
-						mr.from_reorder_level = 1
-						AND mr.docstatus = 0
-						AND mr.workflow_state = "Draft"
-						AND mr.schedule_date > CURDATE()
-						AND mr.material_request_type = %(material_request_type)s
-						AND mr.company = %(company)s
-					ORDER BY
-						mr.creation DESC
-					LIMIT 1
-				""", parent_args, as_dict=1, debug=0)
+					# find exists
+					parent_args = {
+						"company": company,
+						"transaction_date": nowdate(),
+						"material_request_type": "Material Transfer" if request_type == "Transfer" else request_type,
+						"from_reorder_level":1,
+						"pic":pic
+					}
+					draft_mr = frappe.db.sql("""
+						SELECT
+							mr.name,
+							mr.status,
+							mr.workflow_state,
+							mr.docstatus
+						FROM
+							`tabMaterial Request` mr
+						WHERE
+							mr.from_reorder_level = 1
+							AND mr.docstatus = 0
+							AND mr.workflow_state = "Draft"
+							AND mr.schedule_date > CURDATE()
+							AND mr.material_request_type = %(material_request_type)s
+							AND mr.company = %(company)s
+							AND mr.pic = %(pic)s
+						ORDER BY
+							mr.creation DESC
+						LIMIT 1
+					""", parent_args, as_dict=1, debug=0)
 
-				if draft_mr:
-					mr = frappe.get_doc("Material Request", draft_mr[0].name)
-				else:
-					mr = frappe.new_doc("Material Request")
-					mr.update(parent_args)
+					if draft_mr:
+						mr = frappe.get_doc("Material Request", draft_mr[0].name)
+					else:
+						mr = frappe.new_doc("Material Request")
+						mr.update(parent_args)
 
-				for d in items:
-					d = frappe._dict(d)
-					item = frappe.get_doc("Item", d.item_code)
-					uom = item.stock_uom
-					conversion_factor = 1.0
+					for d in items:
+						d = frappe._dict(d)
+						item = frappe.get_doc("Item", d.item_code)
+						uom = item.stock_uom
+						conversion_factor = 1.0
 
-					if request_type == "Purchase":
-						uom = item.purchase_uom or item.stock_uom
-						if uom != item.stock_uom:
-							conversion_factor = (
-								frappe.db.get_value(
-									"UOM Conversion Detail", {"parent": item.name, "uom": uom}, "conversion_factor"
+						if request_type == "Purchase":
+							uom = item.purchase_uom or item.stock_uom
+							if uom != item.stock_uom:
+								conversion_factor = (
+									frappe.db.get_value(
+										"UOM Conversion Detail", {"parent": item.name, "uom": uom}, "conversion_factor"
+									)
+									or 1.0
 								)
-								or 1.0
-							)
 
-					must_be_whole_number = frappe.db.get_value("UOM", uom, "must_be_whole_number", cache=True)
-					qty = d.reorder_qty / conversion_factor
-					if must_be_whole_number:
-						qty = ceil(qty)
+						must_be_whole_number = frappe.db.get_value("UOM", uom, "must_be_whole_number", cache=True)
+						qty = d.reorder_qty / conversion_factor
+						if must_be_whole_number:
+							qty = ceil(qty)
 
-					item_row = {
-							"doctype": "Material Request Item",
-							"item_code": d.item_code,
-							"schedule_date": add_days(nowdate(), cint(item.lead_time_days)),
-							"qty": qty,
-							"uom": uom,
-							"stock_uom": item.stock_uom,
-							"warehouse": d.warehouse,
-							"item_name": item.item_name,
-							"description": item.description,
-							"item_group": item.item_group,
-							"conversion_factor":1,
-							"brand": item.brand,
-							"from_reorder_level":1
-						}
-					exist_row = find_existing_row(mr, item_row)
-					if not exist_row:
-						row = mr.append("items")
-						row.update(item_row)
-						if not mr.is_new():
-							row.insert()
+						item_row = {
+								"doctype": "Material Request Item",
+								"item_code": d.item_code,
+								"schedule_date": add_days(nowdate(), cint(item.lead_time_days)),
+								"qty": qty,
+								"uom": uom,
+								"stock_uom": item.stock_uom,
+								"warehouse": d.warehouse,
+								"item_name": item.item_name,
+								"description": item.description,
+								"item_group": item.item_group,
+								"conversion_factor":1,
+								"brand": item.brand,
+								"from_reorder_level":1
+							}
+						exist_row = find_existing_row(mr, item_row)
+						if not exist_row:
+							row = mr.append("items")
+							row.update(item_row)
+							if not mr.is_new():
+								row.insert()
 
-				schedule_dates = [ cstr(d.schedule_date) for d in mr.items ] + [ nowdate()]
-				mr.schedule_date = min(schedule_dates)
-				mr.flags.ignore_mandatory = True
-				mr.save()
-				mr_list.append(mr)
+					schedule_dates = [ cstr(d.schedule_date) for d in mr.items ] + [ nowdate()]
+					mr.schedule_date = min(schedule_dates)
+					mr.pic = pic
+					mr.from_reorder_level = 1
+					mr.flags.ignore_mandatory = True
+					mr.save()
+					mr_list.append(mr)
 
-			except Exception:
-				if mr:
-					_log_exception(mr)
+				except Exception:
+					if mr:
+						_log_exception(mr)
 
 	if mr_list:
 		if getattr(frappe.local, "reorder_email_notify", None) is None:
@@ -277,17 +287,10 @@ def create_material_request(material_requests):
 def send_email_notification(mr_list):
 	"""Notify user about auto creation of indent"""
 
-	email_list = frappe.db.sql_list(
-		"""select distinct r.parent
-		from `tabHas Role` r, tabUser p
-		where p.name = r.parent and p.enabled = 1 and p.docstatus < 2
-		and r.role in ('Purchase Manager','Stock Manager')
-		and p.name not in ('Administrator', 'All', 'Guest')"""
-	)
-
-	msg = frappe.render_template("templates/emails/reorder_item.html", {"mr_list": mr_list})
-
-	frappe.sendmail(recipients=email_list, subject=_("Auto Material Requests Generated"), message=msg)
+	# send to each item PIC based on chat: 18/06/25
+	for mr in mr_list:
+		msg = frappe.render_template("templates/emails/reorder_item.html", {"mr_list": [mr]})
+		frappe.sendmail(recipients=[mr.pic], subject=_("Auto Material Requests Generated"), message=msg)
 
 
 def notify_errors(exceptions_list):

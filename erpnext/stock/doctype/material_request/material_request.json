@@ -12,6 +12,7 @@
   "title",
   "material_request_type",
   "payment_terms",
+  "pic",
   "column_break_2",
   "transaction_date",
   "schedule_date",
@@ -105,8 +106,8 @@
   "reference",
   "job_card",
   "is_low_amount",
-  "column_break_35",
   "from_reorder_level",
+  "column_break_35",
   "work_order",
   "connections_tab",
   "get_items_from_open_material_requests"
@@ -901,6 +902,12 @@
    "read_only": 1
   },
   {
+   "fieldname": "pic",
+   "fieldtype": "Data",
+   "label": "Item PIC",
+   "read_only": 1
+  },
+  {
    "default": "0",
    "fieldname": "from_reorder_level",
    "fieldtype": "Check",
@@ -912,7 +919,7 @@
  "idx": 70,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-05-22 12:07:12.050235",
+ "modified": "2025-06-19 14:19:42.768381",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request",
