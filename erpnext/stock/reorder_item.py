@@ -79,6 +79,7 @@ def _reorder_item():
 	 				"warehouse": warehouse, 
 					"reorder_qty": reorder_qty,
 					"pic":pic,
+					"safety_stock":reorder_level
 				}
 			)
 
@@ -248,6 +249,7 @@ def create_material_request(material_requests):
 								"item_group": item.item_group,
 								"conversion_factor":1,
 								"brand": item.brand,
+								"safety_stock": d.safety_stock,
 								"from_reorder_level":1
 							}
 						exist_row = find_existing_row(mr, item_row)
@@ -288,10 +290,35 @@ def send_email_notification(mr_list):
 	"""Notify user about auto creation of indent"""
 
 	# send to each item PIC based on chat: 18/06/25
+	item_list = []
+	done_list = []
 	for mr in mr_list:
 		msg = frappe.render_template("templates/emails/reorder_item.html", {"mr_list": [mr]})
 		frappe.sendmail(recipients=[mr.pic], subject=_("Auto Material Requests Generated"), message=msg)
 
+		for d in mr.get("items"):
+			key = (d.item_code, d.warehouse)
+			if key not in done_list:
+				item_list.append({
+					"item_code":d.item_code, 
+					"actual_qty":d.actual_qty,
+					"safety_stock":d.safety_stock,
+					"warehouse":d.warehouse
+				})
+				done_list.append(key)
+	
+	send_email_alert_low_stock(item_list)
+
+def send_email_alert_low_stock(item_list):
+	email_list = frappe.db.sql_list(
+		"""select distinct r.parent
+		from `tabHas Role` r, tabUser p
+		where p.name = r.parent and p.enabled = 1 and p.docstatus < 2
+		and r.role in ('Purchase Manager','Stock Manager')
+		and p.name not in ('Administrator', 'All', 'Guest')"""
+	)
+	msg = frappe.render_template("templates/emails/low_stock_alert.html", {"item_list": item_list})
+	frappe.sendmail(recipients=email_list, subject=_("Low Stock Alert: Items Below Safety Stock"), message=msg)
 
 def notify_errors(exceptions_list):
 	subject = _("[Important] [ERP] Auto Reorder Errors")
