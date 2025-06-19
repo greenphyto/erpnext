@@ -19,7 +19,8 @@
   "price",
   "account_section",
   "account_code",
-  "account_currency"
+  "account_currency",
+  "pic"
  ],
  "fields": [
   {
@@ -52,7 +53,7 @@
    "label": "Description"
   },
   {
-   "columns": 3,
+   "columns": 2,
    "fieldname": "account_code",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -77,12 +78,13 @@
   },
   {
    "columns": 1,
+   "default": "MAP",
    "fetch_from": "material_group.price_control",
    "fieldname": "price",
-   "fieldtype": "Data",
+   "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Price",
-   "read_only": 1
+   "options": "MAP\nStandard Price"
   },
   {
    "fieldname": "column_break_3",
@@ -116,12 +118,20 @@
    "fieldtype": "Data",
    "label": "Account Currency",
    "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "pic",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "PIC",
+   "options": "User"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-09-25 13:07:24.910055",
+ "modified": "2025-06-19 14:32:57.045737",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Part Number Details",
