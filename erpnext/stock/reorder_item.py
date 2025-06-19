@@ -44,7 +44,7 @@ def _reorder_item():
 				and exists (select name from `tabItem Reorder` ir where ir.parent=item.variant_of))
 			)""",
 		{"today": nowdate()},
-	)
+	debug=1)
 
 	if not items_to_consider:
 		return
@@ -238,15 +238,16 @@ def create_material_request(material_requests):
 							"item_name": item.item_name,
 							"description": item.description,
 							"item_group": item.item_group,
+							"conversion_factor":1,
 							"brand": item.brand,
 							"from_reorder_level":1
 						}
 					exist_row = find_existing_row(mr, item_row)
 					if not exist_row:
-						row = mr.append(
-							"items", item_row
-						)
-						row.insert()
+						row = mr.append("items")
+						row.update(item_row)
+						if not mr.is_new():
+							row.insert()
 
 				schedule_dates = [ cstr(d.schedule_date) for d in mr.items ] + [ nowdate()]
 				mr.schedule_date = min(schedule_dates)
