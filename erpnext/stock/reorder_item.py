@@ -153,11 +153,9 @@ def create_material_request(material_requests):
 
 	def find_existing_row(mr, item_row):
 		for row in mr.items:
-			row.schedule_date = cstr(row.schedule_date)
 			if (
 				row.item_code == item_row["item_code"]
 				and row.warehouse == item_row["warehouse"]
-				and row.schedule_date == item_row["schedule_date"]
 				and flt(row.qty) == flt(item_row["qty"])
 				and row.uom == item_row["uom"]
 				and row.stock_uom == item_row["stock_uom"]
@@ -293,8 +291,9 @@ def send_email_notification(mr_list):
 	item_list = []
 	done_list = []
 	for mr in mr_list:
-		msg = frappe.render_template("templates/emails/reorder_item.html", {"mr_list": [mr]})
-		frappe.sendmail(recipients=[mr.pic], subject=_("Auto Material Requests Generated"), message=msg)
+		subject = f"Auto-Generated Material Request – {mr.name}"
+		msg = frappe.render_template("templates/emails/reorder_item.html", {"mr_list": [mr]})	
+		frappe.sendmail(recipients=[mr.pic], subject=_(subject), message=msg)
 
 		for d in mr.get("items"):
 			key = (d.item_code, d.warehouse)
