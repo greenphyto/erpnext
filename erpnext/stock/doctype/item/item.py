@@ -1528,3 +1528,35 @@ def get_asset_naming_series_map(asset_code):
 	from erpnext.assets.doctype.asset.asset import get_asset_naming_series_mapping
 
 	return get_asset_naming_series_mapping(asset_code)
+
+
+def update_item_pic(doc, method=None):
+
+	def update_data_mapping(item, pic):
+		frappe.db.set_value("Item Reorder", {"parent":item}, "pic", pic)
+
+		
+	if doc.doctype == "Item":
+		# update from Item
+		for d in doc.get("reorder_levels"):
+			frappe.db.set_value("Part Number Details", {"code":doc.name}, "pic", d.pic)
+	else:
+		# from part number settings
+		doc_old = doc.get_doc_before_save()
+		if not doc_old:
+			pass
+
+		for d in doc.get("data_mapping"):
+			row_old = None
+			if doc_old:
+				row_old = doc_old.get("data_mapping", {"name":d.name})
+			
+			if not row_old and d.pic:
+				update_data_mapping(d.code, d.pic)
+			else:
+				row_old = row_old[0]
+				if row_old.pic != d.pic:
+					update_data_mapping(d.code, d.pic)
+
+
+			
