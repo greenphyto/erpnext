@@ -393,7 +393,11 @@ doc_events = {
         "on_cancel":"erpnext.controllers.foms.sync_log",
 	},
     "Item": {
-        "before_validate":"erpnext.patches.v14_0.fix_part_number.set_part_number"
+        "before_validate":"erpnext.patches.v14_0.fix_part_number.set_part_number",
+        "validate":"erpnext.stock.doctype.item.item.update_item_pic"
+	},
+    "Part Number Settings":{
+        "validate":"erpnext.stock.doctype.item.item.update_item_pic"
 	},
     "Scrap Request": {
         "on_submit":"erpnext.controllers.foms.sync_log",
