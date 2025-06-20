@@ -1558,5 +1558,8 @@ def update_item_pic(doc, method=None):
 				if row_old.pic != d.pic:
 					update_data_mapping(d.code, d.pic)
 
+@frappe.whitelist()
+def get_default_pic(code):
+	return frappe.db.get_value("Part Number Details", {"code":code}, "pic")
 
 			

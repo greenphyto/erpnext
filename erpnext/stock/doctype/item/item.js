@@ -290,6 +290,16 @@ frappe.ui.form.on('Item Reorder', {
 		var row = frappe.get_doc(cdt, cdn);
 		var type = frm.doc.default_material_request_type
 		row.material_request_type = (type == 'Material Transfer')? 'Transfer' : type;
+
+		frappe.call({
+			method:"erpnext.stock.doctype.item.item.get_default_pic",
+			args:{
+				"code":frm.doc.name
+			},
+			callback:r=>{
+				frappe.model.set_value(cdt,cdn,"pic", r.message.pic)
+			}
+		})
 	}
 })
 
