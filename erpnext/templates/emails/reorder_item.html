@@ -1,31 +1,46 @@
-<p>{{ _("Following Material Requests have been raised automatically based on Item's re-order level") + ":" }}<p>
-{% for mr in mr_list -%}
+<p>Dear Team,</p>
+<br>
+<p>Please be informed that the following Material Request(s) have been automatically raised based on the item's re-order level:</p>
+<br>
+{% for mr in mr_list %}
 <div style="margin-bottom: 30px;">
-	<h4 style="margin-bottom: 5px;">{{ frappe.utils.get_link_to_form("Material Request", mr.name) }}</h4>
-	<table style="width: 100%; border-spacing: 0; border-collapse: collapse;">
-		<thead>
+	<p style="margin: 10px 0;">
+		🔹 <strong>Material Request No.:</strong> 
+		{{ frappe.utils.get_link_to_form("Material Request", mr.name) }}
+	</p>
+
+	<table style="width: 100%; border: 1px solid #d1d8dd; border-collapse: collapse;">
+		<thead style="background-color: #f5f7fa;">
 			<tr>
-				<th style="border: 1px solid #d1d8dd; width: 35%; text-align: left; padding: 5px;">{{ _("Item") }}</th>
-				<th style="border: 1px solid #d1d8dd; width: 35%; text-align: left; padding: 5px;">{{ _("Warehouse") }}</th>
-				<th style="border: 1px solid #d1d8dd; width: 10%; text-align: right; padding: 5px;">{{ _("Quantity") }}</th>
-				<th style="border: 1px solid #d1d8dd; width: 10%; text-align: left; padding: 5px;">{{ _("UOM") }}</th>
-				<th style="border: 1px solid #d1d8dd; width: 10%; text-align: left; padding: 5px;">{{ _("Projected Qty") }}</th>
+				<th style="border: 1px solid #d1d8dd; padding: 8px; text-align: left;">Item Code</th>
+				<th style="border: 1px solid #d1d8dd; padding: 8px; text-align: left;">Warehouse</th>
+				<th style="border: 1px solid #d1d8dd; padding: 8px; text-align: right;">Requested Qty</th>
+				<th style="border: 1px solid #d1d8dd; padding: 8px; text-align: left;">UOM</th>
+				<th style="border: 1px solid #d1d8dd; padding: 8px; text-align: right;">Current Projected Qty</th>
 			</tr>
 		</thead>
 		<tbody>
-			{% for item in mr.get("items") -%}
+			{% for item in mr.get("items") %}
 			<tr>
-				<td style="border: 1px solid #d1d8dd; text-align: left; padding: 5px;">
+				<td style="border: 1px solid #d1d8dd; padding: 8px;">
 					<b>{{ item.item_code }}</b>
-					{% if item.item_code != item.item_name -%} <br> {{ item.item_name }} {%- endif %}
+					{% if item.item_code != item.item_name %}
+						({{ item.item_name }})
+					{% endif %}
 				</td>
-				<td style="border: 1px solid #d1d8dd; text-align: left; padding: 5px;">{{ item.warehouse }}</td>
-				<td style="border: 1px solid #d1d8dd; text-align: right; padding: 5px;">{{ item.qty }}</td>
-				<td style="border: 1px solid #d1d8dd; text-align: left; padding: 5px;">{{ item.uom }}</td>
-				<td style="border: 1px solid #d1d8dd; text-align: left; padding: 5px;">{{ frappe.utils.flt(item.projected_qty) + frappe.utils.flt(item.qty) }}</td>
+				<td style="border: 1px solid #d1d8dd; padding: 8px;">{{ item.warehouse }}</td>
+				<td style="border: 1px solid #d1d8dd; padding: 8px; text-align: right;">{{ item.qty }}</td>
+				<td style="border: 1px solid #d1d8dd; padding: 8px;">{{ item.uom }}</td>
+				<td style="border: 1px solid #d1d8dd; padding: 8px; text-align: right;">
+					{{ frappe.utils.flt(item.projected_qty) + frappe.utils.flt(item.qty) }}
+				</td>
 			</tr>
-			{%- endfor %}
+			{% endfor %}
 		</tbody>
 	</table>
+
+	<p style="margin-top: 10px;">
+		This request ensures inventory continuity and was triggered as the projected stock approached the defined threshold.
+	</p>
 </div>
-{%- endfor %}
+{% endfor %}
