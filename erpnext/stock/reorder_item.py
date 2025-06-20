@@ -313,7 +313,7 @@ def send_email_alert_low_stock(item_list):
 		"""select distinct r.parent
 		from `tabHas Role` r, tabUser p
 		where p.name = r.parent and p.enabled = 1 and p.docstatus < 2
-		and r.role in ('Purchase Manager','Stock Manager')
+		and r.role in ('Purchase Manager','Stock Manager', 'Purchase User')
 		and p.name not in ('Administrator', 'All', 'Guest')"""
 	)
 	msg = frappe.render_template("templates/emails/low_stock_alert.html", {"item_list": item_list})
