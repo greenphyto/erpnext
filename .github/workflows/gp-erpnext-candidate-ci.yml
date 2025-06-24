@@ -93,7 +93,7 @@ jobs:
         # Required mail server password:
         password: ${{secrets.MAIL_PASSWORD}}
         # Required mail subject:
-        subject: ERPNext Candidate and ERP NL Deployment Done
+        subject: ERPNext Candidate and ERP NL Deployment Done (clear cache)
         # Required recipients' addresses:
         to: weiquan@greenphyto.com,myo@greenphyto.com,rizky@greenphyto.com
         # Required sender full name (address can be skipped):
@@ -107,5 +107,6 @@ jobs:
           • Commit: ${{github.event.head_commit.message}}  
           • Candidate URL: https://erp-candidate-01.greenphyto.com  
           • NL Environment URL: https://erp-nl.greenphyto.com
+          
       
        
