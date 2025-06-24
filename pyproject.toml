@@ -26,7 +26,7 @@ dependencies = [
     "python-barcode",
     "openai",
     "pymupdf",
-    "vision-agent @ git+https://github.com/greenphyto/vision-agent.git@deepseek-enable"
+    "vision-agent @ git+https://myogreenphyto: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@github.com/greenphyto/vision-agent.git@deepseek-enable"
 ]
 
 [build-system]
