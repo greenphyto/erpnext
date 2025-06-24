@@ -73,3 +73,6 @@ def get_data(
 			}
 		)
 	return items
+	
+def test_myo():
+	return ""
