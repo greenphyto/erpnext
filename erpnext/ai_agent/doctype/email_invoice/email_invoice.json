@@ -90,7 +90,6 @@
    "options": "Purchase Invoice"
   },
   {
-   "collapsible": 1,
    "fieldname": "more_information_section",
    "fieldtype": "Section Break",
    "label": "More Information"
@@ -133,7 +132,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-17 16:42:29.857412",
+ "modified": "2025-06-24 14:48:56.213281",
  "modified_by": "Administrator",
  "module": "AI Agent",
  "name": "Email Invoice",
