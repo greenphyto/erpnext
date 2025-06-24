@@ -21,7 +21,7 @@ def check_email_status(log, method=""):
 	notif.send(doc)
 
 def read_email_inbox(doc, method=""):
-	if doc.communication_type != "Communication":
+	if doc.communication_type != "Communication" and doc.is_new():
 		return
 	
 	enable = cint(frappe.get_value("Buying Settings","Buying Settings", 'enable_supplier_invoice'))
