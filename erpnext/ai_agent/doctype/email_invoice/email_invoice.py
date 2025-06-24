@@ -119,6 +119,7 @@ class EmailInvoice(Document):
 
 		doc.flags.ignore_mandatory = 1
 		doc.flags.ignore_permissions = 1
+		doc.flags.ignore_links = 1
 		doc.save()
 
 		file = frappe.get_doc('File', data.get("file"))
@@ -153,6 +154,7 @@ class EmailInvoice(Document):
 		
 		doc.flags.ignore_mandatory = 1
 		doc.flags.ignore_permissions = 1
+		doc.flags.ignore_links = 1
 		doc.save()
 
 		file = frappe.get_doc('File', file_name)
