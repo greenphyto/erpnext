@@ -34,6 +34,12 @@ frappe.query_reports["Invoice Listing Details"] = {
 			"fieldtype": "Check",
 			"options":""
 		},
+		{
+			"fieldname":"show_missing_invoice",
+			"label": __("Show Missing Invoice"),
+			"fieldtype": "Check",
+			"options":""
+		}
 	],
 	"onload": function(report) {
 		const today = frappe.datetime.get_today();
