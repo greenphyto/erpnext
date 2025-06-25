@@ -307,8 +307,11 @@ def send_email_notification(mr_list):
 	send_email_alert_low_stock(item_list)
 
 def send_email_alert_low_stock(item_list):
-	doc_notif = frappe.get_doc("Notification", "Auto-Generated Material Request")
-	
+	doc_notif = frappe.get_doc("Notification", "Low Stock Alert")
+	doc = frappe._dict({
+		"item_list":item_list
+	})
+	doc_notif.send(doc)
 
 def notify_errors(exceptions_list):
 	subject = _("[Important] [ERP] Auto Reorder Errors")
