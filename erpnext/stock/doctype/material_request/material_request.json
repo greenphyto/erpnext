@@ -106,7 +106,6 @@
   "reference",
   "job_card",
   "is_low_amount",
-  "from_reorder_level",
   "column_break_35",
   "work_order",
   "connections_tab",
@@ -904,14 +903,8 @@
   {
    "fieldname": "pic",
    "fieldtype": "Data",
-   "label": "Item PIC",
-   "read_only": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "from_reorder_level",
-   "fieldtype": "Check",
-   "label": "From Reorder Level",
+   "label": "PIC",
+   "options": "Email",
    "read_only": 1
   }
  ],
@@ -919,7 +912,7 @@
  "idx": 70,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-06-19 14:19:42.768381",
+ "modified": "2025-06-25 11:00:09.939572",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request",

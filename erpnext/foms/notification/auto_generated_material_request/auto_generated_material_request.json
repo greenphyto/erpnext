@@ -1,0 +1,29 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "creation": "2025-06-25 09:59:10.152840",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Material Request",
+ "enabled": 1,
+ "event": "Custom",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<p>Dear Team,</p>\n<br>\n<p>Please be informed that the following Material Request(s) have been automatically raised based on the item's re-order level:</p>\n<br>\n<div style=\"margin-bottom: 30px;\">\n\t<p style=\"margin: 10px 0;\">\n\t\t\ud83d\udd39 <strong>Material Request No.:</strong> \n\t\t{{ frappe.utils.get_link_to_form(\"Material Request\", doc.name) }}\n\t</p>\n\n\t<table style=\"width: 100%; border: 1px solid #d1d8dd; border-collapse: collapse;\">\n\t\t<thead style=\"background-color: #f5f7fa;\">\n\t\t\t<tr>\n\t\t\t\t<th style=\"border: 1px solid #d1d8dd; padding: 8px; text-align: left;\">Item Code</th>\n\t\t\t\t<th style=\"border: 1px solid #d1d8dd; padding: 8px; text-align: left;\">Warehouse</th>\n\t\t\t\t<th style=\"border: 1px solid #d1d8dd; padding: 8px; text-align: right;\">Requested Qty</th>\n\t\t\t\t<th style=\"border: 1px solid #d1d8dd; padding: 8px; text-align: left;\">UOM</th>\n\t\t\t\t<th style=\"border: 1px solid #d1d8dd; padding: 8px; text-align: right;\">Current Projected Qty</th>\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody>\n\t\t\t{% for item in doc.get(\"items\") %}\n\t\t\t<tr>\n\t\t\t\t<td style=\"border: 1px solid #d1d8dd; padding: 8px;\">\n\t\t\t\t\t<b>{{ item.item_code }}</b>\n\t\t\t\t\t{% if item.item_code != item.item_name %}\n\t\t\t\t\t\t({{ item.item_name }})\n\t\t\t\t\t{% endif %}\n\t\t\t\t</td>\n\t\t\t\t<td style=\"border: 1px solid #d1d8dd; padding: 8px;\">{{ item.warehouse }}</td>\n\t\t\t\t<td style=\"border: 1px solid #d1d8dd; padding: 8px; text-align: right;\">{{ item.qty }}</td>\n\t\t\t\t<td style=\"border: 1px solid #d1d8dd; padding: 8px;\">{{ item.uom }}</td>\n\t\t\t\t<td style=\"border: 1px solid #d1d8dd; padding: 8px; text-align: right;\">\n\t\t\t\t\t{{ frappe.utils.flt(item.projected_qty) + frappe.utils.flt(item.qty) }}\n\t\t\t\t</td>\n\t\t\t</tr>\n\t\t\t{% endfor %}\n\t\t</tbody>\n\t</table>\n\n\t<p style=\"margin-top: 10px;\">\n\t\tThis request ensures inventory continuity and was triggered as the projected stock approached the defined threshold.\n\t</p>\n</div>\n",
+ "modified": "2025-06-25 11:05:28.096195",
+ "modified_by": "Administrator",
+ "module": "FOMS",
+ "name": "Auto-Generated Material Request",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_document_field": "pic"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "sender": "ERP",
+ "sender_email": "erp@greenphyto.com",
+ "subject": "Auto-Generated Material Request \u2013 {{doc.name}}"
+}

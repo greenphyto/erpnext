@@ -290,11 +290,9 @@ def send_email_notification(mr_list):
 	# send to each item PIC based on chat: 18/06/25
 	item_list = []
 	done_list = []
+	doc_notif = frappe.get_doc("Notification", "Auto-Generated Material Request")
 	for mr in mr_list:
-		subject = f"Auto-Generated Material Request – {mr.name}"
-		msg = frappe.render_template("templates/emails/reorder_item.html", {"mr_list": [mr]})	
-		frappe.sendmail(recipients=[mr.pic], subject=_(subject), message=msg)
-
+		# doc_notif.send(mr)
 		for d in mr.get("items"):
 			key = (d.item_code, d.warehouse)
 			if key not in done_list:
@@ -309,15 +307,8 @@ def send_email_notification(mr_list):
 	send_email_alert_low_stock(item_list)
 
 def send_email_alert_low_stock(item_list):
-	email_list = frappe.db.sql_list(
-		"""select distinct r.parent
-		from `tabHas Role` r, tabUser p
-		where p.name = r.parent and p.enabled = 1 and p.docstatus < 2
-		and r.role in ('Purchase Manager','Stock Manager', 'Purchase User')
-		and p.name not in ('Administrator', 'All', 'Guest')"""
-	)
-	msg = frappe.render_template("templates/emails/low_stock_alert.html", {"item_list": item_list})
-	frappe.sendmail(recipients=email_list, subject=_("Low Stock Alert: Items Below Safety Stock"), message=msg)
+	doc_notif = frappe.get_doc("Notification", "Auto-Generated Material Request")
+	
 
 def notify_errors(exceptions_list):
 	subject = _("[Important] [ERP] Auto Reorder Errors")
