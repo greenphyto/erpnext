@@ -1,0 +1,29 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "creation": "2025-06-25 14:37:41.602751",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Sales Invoice",
+ "enabled": 1,
+ "event": "Custom",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<p>Dear Manager,</p>\n<br>\n<p>Here is the list of <strong>Sales Invoices</strong> that are still in <strong>Draft</strong> status as of the end of {{ frappe.utils.formatdate(frappe.utils.nowdate(), \"MMMM YYYY\") }}. Please review and submit them if appropriate.</p>\n<br>\n<table style=\"width: 100%; border-collapse: collapse;\" border=\"1\">\n    <thead>\n        <tr>\n            <th style=\"padding: 6px;\">Invoice Name</th>\n            <th style=\"padding: 6px;\">Customer</th>\n            <th style=\"padding: 6px;\">Posting Date</th>\n            <th style=\"padding: 6px;\">Grand Total</th>\n            <th style=\"padding: 6px;\">Link</th>\n        </tr>\n    </thead>\n    <tbody>\n        {% for si in doc.doc_list %}\n        <tr>\n            <td style=\"padding: 6px;\">{{ si.name }}</td>\n            <td style=\"padding: 6px;\">{{ si.customer }}</td>\n            <td style=\"padding: 6px;\">{{ frappe.utils.formatdate(si.posting_date) }}</td>\n            <td style=\"padding: 6px;\">{{ frappe.utils.fmt_money(si.grand_total, symbol=si.currency) }}</td>\n            <td style=\"padding: 6px;\">\n                <a href=\"{{ frappe.utils.get_url('/app/sales-invoice/' + si.name) }}\" target=\"_blank\">View</a>\n            </td>\n        </tr>\n        {% endfor %}\n    </tbody>\n</table>\n<br>\n<p>Thank you.</p>\n",
+ "modified": "2025-06-25 14:51:50.537091",
+ "modified_by": "Administrator",
+ "module": "FOMS",
+ "name": "Submit Invoice Draft",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_role": "Sales Manager"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "sender": "ERP",
+ "sender_email": "erp@greenphyto.com",
+ "subject": "Reminder: Unsubmitted Sales Invoices \u2013 {{ frappe.utils.formatdate(frappe.utils.nowdate(), \"MMMM YYYY\") }}"
+}
