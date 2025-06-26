@@ -3,6 +3,10 @@ from urllib.parse import urljoin
 from six import string_types
 from frappe.utils import cint, flt
 from requests.adapters import HTTPAdapter
+from frappe.utils import get_datetime, now
+from frappe.utils.file_manager import save_file
+from frappe.core.api.file import create_new_folder
+from six import string_types
 
 class UOBAPI():
 	# API
@@ -136,6 +140,18 @@ class UOBAPI():
 		dest = self.settings.folder_out
 		res = self.req("GET", url, params={"fname":fname,"dest":dest})
 		return res
+	
+	def download_bank_tx_bulk(self, fname="", limit=9999, above_date=""):
+		# if not fname, download latest
+		url = self.get_url("/bank/download/bulk")
+		dest = self.settings.folder_out
+		if above_date:
+			dt = get_datetime(above_date)
+			above_date = dt.isoformat()
+			
+		res = self.req("GET", url, params={"fname":fname,"dest":dest, limit:limit, "above_date":above_date})
+		return res
+
 
 	def get_file_list(self, limit=10):
 		url = self.get_url("/file/list")
@@ -330,3 +346,44 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 def get_country_code(country):
 	from iso3166 import countries
 	return countries.get(country).alpha2
+
+def sync_uob_file():
+	settings = frappe.get_single("UOB Integration Settings")
+	if settings.stop_sync_file:
+		return
+	
+	latest_date = get_datetime(settings.last_download_date or "2000-06-24 19:18:25")
+	uob = UOBAPI()
+
+	# downlaod file
+	result = uob.download_bank_tx_bulk(above_date=latest_date)
+	if isinstance(result, string_types):
+		result = json.loads(result)
+
+	# create log
+	# convert base64 to csv and create the log
+	set_date = False
+	for d in result.get("result") or []:
+		log = frappe.new_doc("UOB File Log")
+		log.filename = d['filename']
+		log.filepath = settings.folder_out
+		log.insert(ignore_permissions=1)
+
+		create_new_folder("Bank", "Home")
+		filedoc = save_file(
+			fname=log.filename,
+			content=d['file'],
+			dt=log.doctype,
+			dn=log.name,
+			is_private=1,
+			folder="Home/Bank"
+		)
+
+		if not set_date:
+			set_date = True
+			settings.last_file_name = log.filename
+			settings.last_download_date = get_datetime(d['modified'])
+
+	# update file settings
+	settings.last_sync_date = now()
+	settings.save()
