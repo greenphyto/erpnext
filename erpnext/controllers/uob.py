@@ -3,7 +3,7 @@ from urllib.parse import urljoin
 from six import string_types
 from frappe.utils import cint, flt
 from requests.adapters import HTTPAdapter
-from frappe.utils import get_datetime, now
+from frappe.utils import get_datetime, now, getdate
 from frappe.utils.file_manager import save_file
 from frappe.core.api.file import create_new_folder
 from six import string_types
@@ -350,6 +350,11 @@ def get_country_code(country):
 def sync_uob_file():
 	settings = frappe.get_single("UOB Integration Settings")
 	if settings.stop_sync_file:
+		return
+	
+	today = getdate()
+	# no sync if holiday
+	if today.weekday() in (5,6):
 		return
 	
 	latest_date = get_datetime(settings.last_download_date or "2000-06-24 19:18:25")
