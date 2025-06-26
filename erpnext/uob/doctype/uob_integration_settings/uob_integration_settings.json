@@ -15,6 +15,12 @@
   "section_break_4",
   "folder_in",
   "folder_out",
+  "uob_file_log_section",
+  "last_file_name",
+  "last_sync_date",
+  "last_download_date",
+  "column_break_14",
+  "stop_sync_file",
   "testing_section",
   "remitance_email_dummy",
   "company_bic_dummy",
@@ -91,12 +97,45 @@
    "fieldtype": "Select",
    "label": "Environment",
    "options": "Local\nStaging\nProduction"
+  },
+  {
+   "fieldname": "uob_file_log_section",
+   "fieldtype": "Section Break",
+   "label": "UOB File Log"
+  },
+  {
+   "fieldname": "last_file_name",
+   "fieldtype": "Data",
+   "label": "Last File Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_sync_date",
+   "fieldtype": "Datetime",
+   "label": "Last Sync Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_download_date",
+   "fieldtype": "Datetime",
+   "label": "Last Download Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "stop_sync_file",
+   "fieldtype": "Check",
+   "label": "Stop Sync File"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-06-12 14:01:04.193123",
+ "modified": "2025-06-26 11:17:19.459931",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "UOB Integration Settings",
