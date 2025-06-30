@@ -42,6 +42,9 @@ def reminder_submit_invoice():
             posting_date ASC
     """, as_dict=1)
 
+    if not doc_list:
+        return
+
     doc = frappe._dict({
         "doc_list":doc_list
     })
