@@ -7,6 +7,7 @@ from frappe.utils import get_datetime, now, getdate
 from frappe.utils.file_manager import save_file
 from frappe.core.api.file import create_new_folder
 from six import string_types
+import base64
 
 class UOBAPI():
 	# API
@@ -375,9 +376,10 @@ def sync_uob_file():
 		log.insert(ignore_permissions=1)
 
 		create_new_folder("Bank", "Home")
+		xml_content = base64.b64decode(d['file'])
 		filedoc = save_file(
 			fname=log.filename,
-			content=d['file'],
+			content=xml_content,
 			dt=log.doctype,
 			dn=log.name,
 			is_private=1,

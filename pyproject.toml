@@ -24,7 +24,8 @@ dependencies = [
     "imgkit",
     "minio",
     "python-barcode",
-    "iso3166"
+    "iso3166",
+    "xmltodict"
 ]
 
 [build-system]

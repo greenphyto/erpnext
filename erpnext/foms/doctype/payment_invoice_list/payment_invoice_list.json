@@ -16,7 +16,8 @@
   "amount",
   "currency",
   "exchange_rate",
-  "basic_amount"
+  "basic_amount",
+  "status"
  ],
  "fields": [
   {
@@ -110,12 +111,19 @@
    "fieldtype": "Data",
    "label": "Bank Account No",
    "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nReceived\nAccepted\nRejected\nComplete",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-05-28 15:03:35.566425",
+ "modified": "2025-06-30 18:00:07.073082",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Payment Invoice List",
