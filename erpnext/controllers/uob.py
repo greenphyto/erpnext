@@ -386,6 +386,9 @@ def sync_uob_file():
 			folder="Home/Bank"
 		)
 
+		log.file = filedoc.name
+		log.update()
+
 		if not set_date:
 			set_date = True
 			settings.last_file_name = log.filename

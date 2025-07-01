@@ -17,7 +17,8 @@
   "currency",
   "exchange_rate",
   "basic_amount",
-  "status"
+  "status",
+  "error_code"
  ],
  "fields": [
   {
@@ -116,14 +117,21 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "\nReceived\nAccepted\nRejected\nComplete",
+   "options": "\nSuccess\nFailed",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.status==\"Failed\"",
+   "fieldname": "error_code",
+   "fieldtype": "Data",
+   "label": "Error Code",
    "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-06-30 18:00:07.073082",
+ "modified": "2025-07-01 15:00:47.511662",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Payment Invoice List",

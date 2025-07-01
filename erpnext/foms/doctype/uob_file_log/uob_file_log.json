@@ -66,13 +66,14 @@
    "fieldname": "file",
    "fieldtype": "Link",
    "label": "File",
-   "options": "File"
+   "options": "File",
+   "read_only": 1
   }
  ],
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-26 19:11:42.115632",
+ "modified": "2025-07-01 16:03:43.650472",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "UOB File Log",

@@ -38,6 +38,76 @@ class PaymentApproval(Document):
 		if self.docstatus == 0 and self.is_new():
 			self.status = "Draft"
 
+	def update_payment_status(self, process_id, transactions=[]):
+		# sync with L1,2,3,4 abnd when any riject
+		if cint(self.process_id) > cint(process_id):
+			return
+		
+		self.process_id = process_id
+
+		for tr in transactions:
+			invoice_no = ""
+			account_no = ""
+			
+			if tr["result"] == "ACCP":
+				status = "Success"
+			else:
+				status = "Failed"
+
+			for row in self.get("invoices"):
+				if row.invoice_no == invoice_no and row.bank_account_no == account_no:
+					row.status = status
+					if row.status == "Failed":
+						row.error_code = tr["error_code"]
+					
+					row.update()
+
+		self.sync_status(db_update=True)
+
+	def sync_status(self, db_update=False):
+		tr_success = 0
+		tr_len = len(self.get("invoices"))
+		tr_comp = 0
+		for d in self.get("invoices"):
+			if d.status == "Success":
+				tr_comp += 1
+
+		if tr_comp:
+			tr_success = tr_comp/tr_len*100 
+
+		if self.docstatus == 0:
+			# Draft
+			self.status = "Draft"
+		elif self.docstatus == 1:
+			# this is based on workflow:
+			# Pending
+			# Approved
+			# Rejected
+			if self.process_id == 1:
+				# Received
+				self.status = "Received"
+			elif self.process_id == 2:
+				# Failed
+				self.status = "Failed"
+			elif self.process_id == 3:
+				# In Progress
+				self.status = "In Progress"
+			elif self.process_id == 4:
+				if tr_success == 100:
+					# Complete
+					self.status = "Complete"
+				else:
+					# Partially Complete
+					self.status = "Partially Complete"
+			else:
+				self.status = "Failed"
+		else:
+			# Cancelled
+			self.status = "Cancelled"
+
+		if db_update:
+			self.db_update()
+
 	def set_batch_number(self):
 		if not self.batch_number and "PAY" in self.name:
 			self.batch_number = cint(self.name.split("-")[1][-4:])

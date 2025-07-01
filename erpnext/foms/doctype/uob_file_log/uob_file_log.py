@@ -7,7 +7,15 @@ import xmltodict
 import base64
 
 class UOBFileLog(Document):
-	def sync_payment_status(self, file, filename, raw=False):
+	def sync_payment_status(self, file="", filename="", raw=False):
+		if self.file:
+			file = frappe.get_doc("File", self.file)
+			filename = self.filename
+			self._sync_payment_status(file, filename)
+		else:
+			self._sync_payment_status(file, filename, raw=True)
+
+	def _sync_payment_status(self, file, filename="", raw=False):
 		if "PA213" not in filename:
 			return
 		
@@ -42,15 +50,16 @@ class UOBFileLog(Document):
 
 		
 		payment_id = get_nested(data, ["Document", "CstmrPmtStsRpt", "OrgnlPmtInfAndSts", "OrgnlPmtInfId"])
-		if frappe.db.exists(payment_id):
-
-		# data['Document']['CstmrPmtStsRpt']['OrgnlPmtInfAndSts']['OrgnlPmtInfId']
-		# read XML
-
+		payment_id = payment_id.replace("PAY", "PAY-")
 		# get the payment number
+		if not frappe.db.exists("Payment Approval", payment_id):
+			return
+
+		doc = frappe.get_doc("Payment Approval", payment_id)
+		doc.update_payment_status(ProcessID)
 		# match status
 		# update payment
-			pass
+		pass
 
 def get_nested(data, keys, default=None):
     for key in keys:

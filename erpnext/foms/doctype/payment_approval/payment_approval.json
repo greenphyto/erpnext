@@ -36,7 +36,8 @@
   "transfer_date",
   "column_break_28",
   "batch_number",
-  "amended_from"
+  "amended_from",
+  "process_id"
  ],
  "fields": [
   {
@@ -46,7 +47,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Draft\nApprove\nUpload\nComplete\nOverdue",
+   "options": "Draft\nPending\nApproved\nRejected\nCancelled\nReceived\nIn Progress\nPartially Complete\nComplete\nFailed",
    "read_only": 1
   },
   {
@@ -234,12 +235,19 @@
   {
    "fieldname": "column_break_28",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "process_id",
+   "fieldtype": "Int",
+   "label": "Process ID",
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-06-16 16:17:51.646589",
+ "modified": "2025-07-01 16:15:49.859796",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Payment Approval",
