@@ -46,20 +46,22 @@ def save_log(doctype, data_name, raw_data, reopen=False, now=False):
 		now=now,
 	)
 
-def update_log(doctype, data_name, result_doctype, result, now=False):
+def update_log(doctype, data_name, result_doctype, result, now=False, name_id=None):
 	if now:
 		update_data_result(
 			data_type=doctype, 
 			data_name=data_name,
 			result_name=result,
-			result_doctype=result_doctype
+			result_doctype=result_doctype,
+			name_id=name_id
 		)
 	else:
 		return frappe.enqueue("erpnext.foms.doctype.foms_data_mapping.foms_data_mapping.update_data_result",
 			data_type=doctype, 
 			data_name=data_name,
 			result_name=result,
-			result_doctype=result_doctype
+			result_doctype=result_doctype,
+			name_id=name_id
 		)
 
 @frappe.whitelist()
@@ -448,7 +450,7 @@ def	_update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 	else:
 		job_card.save()
 
-	update_log("Work Order", data_name, "Job Card", job_card.name, now=1)
+	update_log("Work Order", data_name, "Job Card", job_card.name, now=1, name_id=log_name)
 
 	return {
 		"result": True,
@@ -459,7 +461,8 @@ def run_pending_harvesting_transfer():
 	now_time = get_datetime()
 	end_range = now_time - timedelta(minutes=5)
 
-	for d in frappe.db.sql("select name,data_name, raw_data from `tabFOMS Data Mapping` where status = 'Unknown' and created_on < %s ", (end_range), as_dict=1):
+	for d in frappe.db.sql("select name,data_name, raw_data from `tabFOMS Data Mapping` where status = 'Unknown' and data_type = 'Work Order' and created_on < %s ", (end_range), as_dict=1):
+		print(d)
 		data = json.loads(d.raw_data)
 
 		if not data.get('ERPWorkOrderID'):
@@ -509,7 +512,7 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 			"result":"Scheduled"
 		}
 
-def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate="", draft=False):
+def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate="", draft=False, log_name=None):
 	ERPWorkOrderID = erpWorkOrderID
 	data_name = f"Finish Work Order {ERPWorkOrderID}"
 
@@ -572,7 +575,7 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 			frappe.db.set_value("Batch", d.batch_no, "expiry_date", getdate(expiryDate))
 			create_do_based_on_work_order(se_doc.work_order, d.qty, d.t_warehouse, d.batch_no)
 
-	update_log("Work Order", data_name, "Work Order", work_order_name)
+	update_log("Work Order", data_name, "Work Order", work_order_name, name_id=log_name)
 
 	return {
 		"ERPStockEntry":se_doc.name
@@ -597,7 +600,8 @@ def run_pending_harvesting():
 				packets=flt(data.get('packets')), 
 				qty=flt(data.get('qty')), 
 				expiryDate=data.get('expiryDate'), 
-				draft=cint(data.get('draft'))
+				draft=cint(data.get('draft')),
+				log_name=d.name
 			)
 
 def add_wip_additional_cost(stock_entry, work_order):

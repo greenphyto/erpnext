@@ -60,13 +60,15 @@ def make_in_progress(log_name, inprogress=True, commit=False):
 		frappe.db.commit()
 	return True
 
-def update_data_result(data_type, data_name, result_name, result_doctype=""):
-	name = frappe.db.exists("FOMS Data Mapping", {
-		"data_type":data_type,
-		"data_name":data_name,
-	})
-	if name:
-		log = frappe.get_doc("FOMS Data Mapping", name)
+def update_data_result(data_type, data_name, result_name, result_doctype="", name_id=None):
+	if not name_id:
+		name_id = frappe.db.exists("FOMS Data Mapping", {
+			"data_type":data_type,
+			"data_name":data_name,
+		})
+		
+	if name_id:
+		log = frappe.get_doc("FOMS Data Mapping", name_id)
 		log.doc_name = result_name
 		log.doc_type = result_doctype or log.data_type
 		log.save()
