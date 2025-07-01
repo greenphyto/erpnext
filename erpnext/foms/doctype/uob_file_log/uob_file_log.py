@@ -47,7 +47,26 @@ class UOBFileLog(Document):
 		if not ProcessID:
 			return
 		
+		def convert_inv_no(inv_txt):
+			part, yymm = inv_txt.split("-")
+			year = "20" + yymm[:2]
+			formatted = f"{part}/{year}"
+			return formatted
 
+		transactions = []
+		txs = get_nested(data, ["Document", "CstmrPmtStsRpt", "OrgnlPmtInfAndSts", "TxInfAndSts"]) or []
+		if txs and isinstance(txs, dict):
+			txs = [txs]
+
+		for tx in txs:
+			invoice_no = convert_inv_no(tx["OrgnlEndToEndId"])
+			dt = {
+				"result":tx["TxSts"],
+				"invoice_no": invoice_no,
+				"account_no": tx["OrgnlTxRef"]["CdtrAcct"]["Id"]["Othr"]["Id"],
+				"error_code": tx["StsRsnInf"]["Rsn"]["Cd"]
+			}
+			transactions.append(dt)
 		
 		payment_id = get_nested(data, ["Document", "CstmrPmtStsRpt", "OrgnlPmtInfAndSts", "OrgnlPmtInfId"])
 		payment_id = payment_id.replace("PAY", "PAY-")
@@ -56,7 +75,7 @@ class UOBFileLog(Document):
 			return
 
 		doc = frappe.get_doc("Payment Approval", payment_id)
-		doc.update_payment_status(ProcessID)
+		doc.update_payment_status(ProcessID, transactions)
 		# match status
 		# update payment
 		pass

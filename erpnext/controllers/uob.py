@@ -389,6 +389,9 @@ def sync_uob_file():
 		log.file = filedoc.name
 		log.update()
 
+		# sync status
+		log.sync_payment_status(d['file'], log.filename, raw=True)
+
 		if not set_date:
 			set_date = True
 			settings.last_file_name = log.filename

@@ -46,8 +46,8 @@ class PaymentApproval(Document):
 		self.process_id = process_id
 
 		for tr in transactions:
-			invoice_no = ""
-			account_no = ""
+			invoice_no = tr['invoice_no']
+			account_no = tr['account_no']
 			
 			if tr["result"] == "ACCP":
 				status = "Success"
@@ -60,7 +60,7 @@ class PaymentApproval(Document):
 					if row.status == "Failed":
 						row.error_code = tr["error_code"]
 					
-					row.update()
+					row.db_update()
 
 		self.sync_status(db_update=True)
 
