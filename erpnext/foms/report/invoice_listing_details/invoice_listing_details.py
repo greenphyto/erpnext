@@ -85,7 +85,7 @@ class Report():
 			FROM
 				`tabSales Invoice` s
 					LEFT JOIN
-				`tabSales Invoice Item` si ON si.parent = s.name
+				`tabSales Invoice Item` si ON si.parent = s.name 
 					LEFT JOIN
 				`tabSales Taxes and Charges` t ON t.parent = s.name
 					left join
@@ -107,6 +107,7 @@ class Report():
 						AND is_cancelled = 0) sle_out ON sle_out.voucher_detail_no = dni.name
 					AND sle_out.item_code = dni.item_code
 					AND sle_out.batch_no = dni.batch_no
+					
 			WHERE 
 				s.docstatus = 1
 				{}
@@ -186,14 +187,25 @@ class Report():
 	def process_data(self):
 		self.data = []
 
+		total_row = {
+			"sales_invoice":"TOTAL",
+			"amount":0,
+			"gst_amount":0,
+			"total_amount":0
+		}
 		if not self.filters.get("show_missing_invoice"):
 			for d in self.raw_data:
 				# calculate tax amount
 				if d.total:
 					d.gst_amount = flt(d.amount)/flt(d.total)*flt(d.gst_amount)
 					d.total_amount = d.gst_amount + flt(d.amount)
+				
+				total_row["gst_amount"] += d.gst_amount
+				total_row["total_amount"] += d.total_amount
+				total_row["amount"] += d.amount
 
 				self.data.append(d)
+			self.data.append(total_row)
 
 		if self.raw_data_single:
 			self.data.append({})
