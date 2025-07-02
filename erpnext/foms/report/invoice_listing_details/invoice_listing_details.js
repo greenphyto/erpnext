@@ -17,6 +17,13 @@ frappe.query_reports["Invoice Listing Details"] = {
 			"options":"Today"
 		},
 		{
+			"fieldname":"income_account",
+			"label": __("Income Account"),
+			"fieldtype": "Link",
+			"options":"Account",
+			"reqd":1
+		},
+		{
 			"fieldname":"customer",
 			"label": __("Customer"),
 			"fieldtype": "Link",
@@ -48,6 +55,13 @@ frappe.query_reports["Invoice Listing Details"] = {
 
 		frappe.query_report.set_filter_value("start_date", startOfMonth);
 		frappe.query_report.set_filter_value("end_date", endOfMonth);
+
+		frappe.db.get_value('Company', frappe.defaults.get_default('company'), 'default_income_account')
+		.then(r => {
+			if (r && r.message) {
+				frappe.query_report.set_filter_value("income_account", r.message.default_income_account);
+			}}
+		)
 
 	}
 };

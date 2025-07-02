@@ -15,7 +15,7 @@ class Report():
 		self.filters = filters
 
 	def setup_condition(self):
-		self.cond = ""
+		self.cond = " AND si.income_account = %(income_account)s "
 		self.cond_delete = ""
 		self.cond_dn = ""
 
@@ -107,12 +107,11 @@ class Report():
 						AND is_cancelled = 0) sle_out ON sle_out.voucher_detail_no = dni.name
 					AND sle_out.item_code = dni.item_code
 					AND sle_out.batch_no = dni.batch_no
-					
 			WHERE 
 				s.docstatus = 1
 				{}
 			ORDER BY s.posting_date desc
-		""".format(self.cond), self.filters, as_dict=1, debug=0)
+		""".format(self.cond), self.filters, as_dict=1, debug=1)
 
 		self.raw_data_single = frappe.db.sql("""
 			SELECT 
@@ -151,7 +150,7 @@ class Report():
 					AND dni.si_detail is null
 					{}  
 			ORDER BY dn.posting_date desc
-		""".format(self.cond_dn), self.filters, as_dict=1, debug=1)
+		""".format(self.cond_dn), self.filters, as_dict=1, debug=0)
 
 		self.raw_data_deleted = frappe.db.sql("""
 			SELECT 
@@ -205,7 +204,8 @@ class Report():
 				total_row["amount"] += d.amount
 
 				self.data.append(d)
-			self.data.append(total_row)
+			if self.raw_data:
+				self.data.append(total_row)
 
 		if self.raw_data_single:
 			self.data.append({})
