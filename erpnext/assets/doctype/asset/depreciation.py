@@ -72,6 +72,7 @@ def get_depreciable_assets(date, asset_category=[]):
 			and a.calculate_depreciation = 1
 			and a.status in ('Submitted', 'Partially Depreciated')
 			and ifnull(ds.journal_entry, '')=''
+			and ds.skip = 0
 			{}
 		order by 
 			ds.schedule_date asc
