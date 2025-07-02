@@ -5,6 +5,10 @@ import frappe
 from frappe.model.document import Document
 import xmltodict
 import base64
+import pandas as pd
+import io
+from typing import Tuple, Optional, Union
+from erpnext.accounts.doctype.payment_entry.payment_entry import get_payment_entry
 
 class UOBFileLog(Document):
 	def sync_payment_status(self, file="", filename="", raw=False):
@@ -12,24 +16,83 @@ class UOBFileLog(Document):
 			file = frappe.get_doc("File", self.file)
 			filename = self.filename
 			self._sync_payment_status(file, filename)
+			self.sync_payment_entry(file, filename)
 		else:
 			self._sync_payment_status(file, filename, raw=True)
+			self.sync_payment_entry(file, filename, raw=True)
+
+	def get_file_data(self, file, typ="XML", raw=False):
+		# get XML
+		data = None
+		if not raw:
+			file_path = frappe.get_site_path(file.file_url.strip("/"))
+			if typ == "XML":
+				with open(file_path, 'r', encoding='utf-8') as f:
+					data = xmltodict.parse(f.read())
+			else:
+				return self.parse_uob_statement(file_path=file_path)
+				# data = pd.read_csv(file_path)
+				# data.columns = data.columns.str.replace(r'[\t\r\n]', '', regex=True).str.strip()
+
+		else:
+			if typ == "XML":
+				file_bytes = base64.b64decode(file)
+				file_text = file_bytes.decode("utf-8")
+				data = xmltodict.parse(file_text)
+			else:
+				return self.parse_uob_statement(base64_file_str=file)
+
+		return data
+	
+	def parse_uob_statement(self, 
+			base64_file_str: Optional[str] = None,
+			file_path: Optional[Union[str, io.TextIOWrapper]] = None
+		) -> Tuple[pd.DataFrame, pd.DataFrame]:
+		# Decode base64 ke string teks
+		if base64_file_str:
+			file_bytes = base64.b64decode(base64_file_str)
+			file_text = file_bytes.decode("utf-8", errors="ignore")
+		elif file_path:
+			with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+				file_text = f.read()
+		else:
+			raise ValueError("❌ Harus mengisi salah satu dari base64_file_str atau file_path")
+
+		# Bagi menjadi baris-baris
+		lines = file_text.splitlines()
+
+		# Temukan indeks baris transaksi (yang mengandung "Transaction Amount")
+		tx_start = None
+		for i, line in enumerate(lines):
+			if "Transaction Amount" in line:
+				tx_start = i
+				break
+
+		if tx_start is None:
+			raise ValueError("❌ Tidak ditemukan header transaksi (mis. kolom 'Transaction Amount')")
+
+		# Bagian atas = data akun
+		acc_part = lines[:tx_start]
+		acc_data = [line.split(",") for line in acc_part if "," in line]
+
+		if len(acc_data) >= 2:
+			# Baris 0 = header, Baris 1 = data
+			df_acc = pd.DataFrame([dict(zip(acc_data[0], acc_data[1]))])
+		else:
+			df_acc = pd.DataFrame()
+
+		# Bagian bawah = transaksi
+		tx_csv = "\n".join(lines[tx_start:])
+		df_tx = pd.read_csv(io.StringIO(tx_csv))
+		df_tx.columns = df_tx.columns.str.strip()  # bersihkan nama kolom
+
+		return df_acc, df_tx
 
 	def _sync_payment_status(self, file, filename="", raw=False):
 		if "PA213" not in filename:
 			return
 		
-		# get XML
-		data = None
-		if not raw:
-			file_path = frappe.get_site_path(file.file_url.strip("/"))
-			with open(file_path, 'r', encoding='utf-8') as f:
-				data = xmltodict.parse(f.read())
-		else:
-			xml_bytes = base64.b64decode(file)
-			xml_text = xml_bytes.decode("utf-8")
-			data = xmltodict.parse(xml_text)
-
+		data = self.get_file_data(file, "XML", raw)
 		if not data:
 			return
 		
@@ -46,12 +109,6 @@ class UOBFileLog(Document):
 		
 		if not ProcessID:
 			return
-		
-		def convert_inv_no(inv_txt):
-			part, yymm = inv_txt.split("-")
-			year = "20" + yymm[:2]
-			formatted = f"{part}/{year}"
-			return formatted
 
 		transactions = []
 		txs = get_nested(data, ["Document", "CstmrPmtStsRpt", "OrgnlPmtInfAndSts", "TxInfAndSts"]) or []
@@ -79,6 +136,33 @@ class UOBFileLog(Document):
 		# match status
 		# update payment
 		pass
+
+	def sync_payment_entry(self, file, filename="", raw=False):
+		if "ES3_" not in filename:
+			return
+		
+		df_acc, df_tx = self.get_file_data(file, "CSV", raw)
+		if df_tx is None or df_tx.empty:
+			return
+		
+		print(df_tx[["Account Number", "Transaction Amount", "Your Reference", "Our Reference", "Cheque Number"]])
+
+		for idx, row in df_tx.iterrows():
+			# get PI
+			invoice_no = convert_inv_no(row["Your Reference"])
+			pi_name = frappe.db.exists("Purchase Invoice", invoice_no)
+			if not pi_name:
+				return
+			
+			# create PE
+			pe = get_payment_entry(dt="Purchase Invoice", dn=pi_name)
+			print(pe)
+
+def convert_inv_no(inv_txt):
+	part, yymm = inv_txt.split("-")
+	year = "20" + yymm[:2]
+	formatted = f"{part}/{year}"
+	return formatted
 
 def get_nested(data, keys, default=None):
     for key in keys:
