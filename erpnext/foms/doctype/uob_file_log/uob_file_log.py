@@ -163,7 +163,11 @@ class UOBFileLog(Document):
 			invoice_no = convert_inv_no(row["Your Reference"])
 			pi_name = frappe.db.exists("Purchase Invoice", invoice_no)
 			if not pi_name:
-				return
+				continue
+			
+			docstatus, status = frappe.db.get_value("Purchase Invoice", pi_name, ["docstatus", "status"]) or (0, "")
+			if docstatus != 1 or status == "Paid":
+				continue
 			
 			cheque_no = None
 			if flt(row["Cheque Number"]):
