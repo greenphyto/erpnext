@@ -50,7 +50,6 @@ class UOBFileLog(Document):
 			base64_file_str: Optional[str] = None,
 			file_path: Optional[Union[str, io.TextIOWrapper]] = None
 		) -> Tuple[pd.DataFrame, pd.DataFrame]:
-		# Decode base64 ke string teks
 		if base64_file_str:
 			file_bytes = base64.b64decode(base64_file_str)
 			file_text = file_bytes.decode("utf-8", errors="ignore")
@@ -58,12 +57,10 @@ class UOBFileLog(Document):
 			with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
 				file_text = f.read()
 		else:
-			raise ValueError("❌ Harus mengisi salah satu dari base64_file_str atau file_path")
+			raise ValueError("❌ Must fill in either base64_file_str or file_path")
 
-		# Bagi menjadi baris-baris
 		lines = file_text.splitlines()
 
-		# Temukan indeks baris transaksi (yang mengandung "Transaction Amount")
 		tx_start = None
 		for i, line in enumerate(lines):
 			if "Transaction Amount" in line:
@@ -71,19 +68,16 @@ class UOBFileLog(Document):
 				break
 
 		if tx_start is None:
-			raise ValueError("❌ Tidak ditemukan header transaksi (mis. kolom 'Transaction Amount')")
+			raise ValueError("❌ No transaction header found (e.g. 'Transaction Amount' column)")
 
-		# Bagian atas = data akun
 		acc_part = lines[:tx_start]
 		acc_data = [line.split(",") for line in acc_part if "," in line]
 
 		if len(acc_data) >= 2:
-			# Baris 0 = header, Baris 1 = data
 			df_acc = pd.DataFrame([dict(zip(acc_data[0], acc_data[1]))])
 		else:
 			df_acc = pd.DataFrame()
 
-		# Bagian bawah = transaksi
 		tx_csv = "\n".join(lines[tx_start:])
 		df_tx = pd.read_csv(io.StringIO(tx_csv))
 		df_tx.columns = df_tx.columns.str.strip()  # bersihkan nama kolom
@@ -135,9 +129,7 @@ class UOBFileLog(Document):
 
 		doc = frappe.get_doc("Payment Approval", payment_id)
 		doc.update_payment_status(ProcessID, transactions)
-		# match status
-		# update payment
-		pass
+
 
 	def sync_payment_entry(self, file, filename="", raw=False):
 		if "ES3_" not in filename:

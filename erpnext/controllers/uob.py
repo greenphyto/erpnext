@@ -369,6 +369,9 @@ def sync_uob_file():
 	# create log
 	# convert base64 to csv and create the log
 	set_date = False
+	if not isinstance(result.get("result"), list):
+		return
+	
 	for d in result.get("result") or []:
 		log = frappe.new_doc("UOB File Log")
 		log.filename = d['filename']
@@ -387,7 +390,7 @@ def sync_uob_file():
 		)
 
 		log.file = filedoc.name
-		log.update()
+		log.db_update()
 
 		# sync status
 		log.sync_payment_status(d['file'], log.filename, raw=True)
