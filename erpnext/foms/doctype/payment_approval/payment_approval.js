@@ -22,6 +22,14 @@ frappe.ui.form.on('Payment Approval', {
 			}
 		})
 
+		frm.set_query("bank_account", ()=>{
+			return{
+				filters:{
+					"swift_number":["like", "UOVB%"]
+				}
+			}
+		})
+
 		if(!frm.doc.requested_by && frm.is_dirty()){
 			frm.set_value("requested_by", frappe.session.user)
 		}

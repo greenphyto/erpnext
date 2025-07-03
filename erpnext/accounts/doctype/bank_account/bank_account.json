@@ -23,6 +23,7 @@
   "party_type",
   "party",
   "account_details_section",
+  "swift_number",
   "iban",
   "column_break_12",
   "branch_code",
@@ -207,10 +208,17 @@
    "fieldtype": "Data",
    "label": "Bank Account Name",
    "reqd": 1
+  },
+  {
+   "fetch_from": "bank.swift_number",
+   "fieldname": "swift_number",
+   "fieldtype": "Data",
+   "label": "SWIFT number",
+   "read_only": 1
   }
  ],
  "links": [],
- "modified": "2025-05-23 17:47:59.226404",
+ "modified": "2025-07-03 17:47:32.892015",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Bank Account",
