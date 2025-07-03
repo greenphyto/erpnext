@@ -9,6 +9,8 @@ import pandas as pd
 import io
 from typing import Tuple, Optional, Union
 from erpnext.accounts.doctype.payment_entry.payment_entry import get_payment_entry
+from frappe.utils import flt, cint, getdate, cstr
+import datetime
 
 class UOBFileLog(Document):
 	def sync_payment_status(self, file="", filename="", raw=False):
@@ -144,9 +146,18 @@ class UOBFileLog(Document):
 		df_acc, df_tx = self.get_file_data(file, "CSV", raw)
 		if df_tx is None or df_tx.empty:
 			return
-		
-		print(df_tx[["Account Number", "Transaction Amount", "Your Reference", "Our Reference", "Cheque Number"]])
 
+		# clean data
+		df_tx["Cheque Number"] = df_tx["Cheque Number"].astype(str).str.strip('="')
+		for d in ["Transaction Date", "Statement Date", "Value Date"]:
+			df_tx[d] = (
+				df_tx[d]
+				.astype(str)
+				.str.strip('="')
+				.apply(lambda x: datetime.datetime.strptime(x, "%d/%m/%Y").date())
+			)
+
+		
 		for idx, row in df_tx.iterrows():
 			# get PI
 			invoice_no = convert_inv_no(row["Your Reference"])
@@ -154,9 +165,43 @@ class UOBFileLog(Document):
 			if not pi_name:
 				return
 			
+			cheque_no = None
+			if flt(row["Cheque Number"]):
+				cheque_no = row["Cheque Number"]
+			
 			# create PE
 			pe = get_payment_entry(dt="Purchase Invoice", dn=pi_name)
-			print(pe)
+			pe.bank_account = self.get_bank_account(row["Account Number"])
+			pe.mode_of_payment = "Bank Draft"
+			pe.paid_amount = flt(row["Transaction Amount"])
+			pe.reference_no = cheque_no or row["Our Reference"]
+			pe.bank = frappe.get_value("Bank Account", pe.bank_account, "bank")
+			pe.reference_date = row["Transaction Date"]
+			pe.additional_info = self.get_transfer_info(row)
+			pe.auto_generated = 1
+			pe.insert(ignore_permissions=1)
+			pe.submit()
+
+	def get_bank_account(self, account_no):
+		bank_name = frappe.db.get_value("Bank Account", {"bank_account_no":account_no}, "name")
+		return bank_name
+	
+	def clear_date_format(self, date_str):
+		cleaned = date_str.strip('="')
+		parsed_date = datetime.datetime.strptime(cleaned, "%d/%m/%Y").date()
+		return getdate(parsed_date)
+	
+	def get_transfer_info(self, row):
+		row["Statement Date"] = row["Statement Date"].strftime("%d-%m-%Y")
+		row["Value Date"] = row["Value Date"].strftime("%d-%m-%Y")
+
+		txt = f"""Statement Date: {row["Statement Date"]}
+		Value Date: {row["Value Date"]}
+		Transaction Description: {row["Transaction Description"]}
+		Teller ID: {row["Teller ID"]}
+		Remarks: {row["Remarks"]}"""
+		txt = txt.replace("\t", "")
+		return txt
 
 def convert_inv_no(inv_txt):
 	part, yymm = inv_txt.split("-")
