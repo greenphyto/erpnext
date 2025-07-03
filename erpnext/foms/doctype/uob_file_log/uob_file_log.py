@@ -60,6 +60,8 @@ class UOBFileLog(Document):
 			raise ValueError("❌ Must fill in either base64_file_str or file_path")
 
 		lines = file_text.splitlines()
+		df_acc = pd.DataFrame()
+		df_tx = pd.DataFrame()
 
 		tx_start = None
 		for i, line in enumerate(lines):
@@ -67,20 +69,18 @@ class UOBFileLog(Document):
 				tx_start = i
 				break
 
-		if tx_start is None:
-			raise ValueError("❌ No transaction header found (e.g. 'Transaction Amount' column)")
+		if tx_start:
+			acc_part = lines[:tx_start]
+			acc_data = [line.split(",") for line in acc_part if "," in line]
 
-		acc_part = lines[:tx_start]
-		acc_data = [line.split(",") for line in acc_part if "," in line]
+			if len(acc_data) >= 2:
+				df_acc = pd.DataFrame([dict(zip(acc_data[0], acc_data[1]))])
+			else:
+				df_acc = pd.DataFrame()
 
-		if len(acc_data) >= 2:
-			df_acc = pd.DataFrame([dict(zip(acc_data[0], acc_data[1]))])
-		else:
-			df_acc = pd.DataFrame()
-
-		tx_csv = "\n".join(lines[tx_start:])
-		df_tx = pd.read_csv(io.StringIO(tx_csv))
-		df_tx.columns = df_tx.columns.str.strip()  # bersihkan nama kolom
+			tx_csv = "\n".join(lines[tx_start:])
+			df_tx = pd.read_csv(io.StringIO(tx_csv))
+			df_tx.columns = df_tx.columns.str.strip()  # bersihkan nama kolom
 
 		return df_acc, df_tx
 
