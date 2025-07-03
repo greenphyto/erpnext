@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestUOBSyncLog(FrappeTestCase):
+class TestUOBFileLog(FrappeTestCase):
 	pass

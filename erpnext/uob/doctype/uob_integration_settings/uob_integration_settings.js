@@ -16,6 +16,8 @@ frappe.ui.form.on('UOB Integration Settings', {
 							<td>${flt(file.size)/1000}Kb</td>
 							<td>${file.modified}</td>
 							<td>${file.type}</td>
+							<td><a target="" href="http://${frm.doc.host}/bank/download?dest=${frm.doc.folder_out}&fname=${file.name}&decrypt=0&raw=1">Raw</a></td>
+							<td><a target="" href="http://${frm.doc.host}/bank/download?dest=${frm.doc.folder_out}&fname=${file.name}&decrypt=1&raw=1">CSV</a></td>
 						</tr>
 					`).join('');
 
@@ -33,6 +35,7 @@ frappe.ui.form.on('UOB Integration Settings', {
 											<th>Size</th>
 											<th>Modified</th>
 											<th>Type</th>
+											<th colspan="2">Download</th>
 										</tr>
 									</thead>
 									<tbody>${file_rows}</tbody>

@@ -3,6 +3,11 @@ from urllib.parse import urljoin
 from six import string_types
 from frappe.utils import cint, flt
 from requests.adapters import HTTPAdapter
+from frappe.utils import get_datetime, now, getdate
+from frappe.utils.file_manager import save_file
+from frappe.core.api.file import create_new_folder
+from six import string_types
+import base64
 
 class UOBAPI():
 	# API
@@ -136,6 +141,18 @@ class UOBAPI():
 		dest = self.settings.folder_out
 		res = self.req("GET", url, params={"fname":fname,"dest":dest})
 		return res
+	
+	def download_bank_tx_bulk(self, fname="", limit=9999, above_date=""):
+		# if not fname, download latest
+		url = self.get_url("/bank/download/bulk")
+		dest = self.settings.folder_out
+		if above_date:
+			dt = get_datetime(above_date)
+			above_date = dt.isoformat()
+			
+		res = self.req("GET", url, params={"fname":fname,"dest":dest, limit:limit, "above_date":above_date})
+		return res
+
 
 	def get_file_list(self, limit=10):
 		url = self.get_url("/file/list")
@@ -194,13 +211,12 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	
 	initg_pty = ET.SubElement(grp_hdr, 'InitgPty')
 	initg_pty_id = ET.SubElement(initg_pty, 'Id')
-	initg_pty_org_id = ET.SubElement(initg_pty_id, 'OrgId')
-	print(195, debtor_info['company_id'])
-	ET.SubElement(initg_pty_org_id, 'BICOrBEI').text = debtor_info['company_id']
+	comp_org_id = ET.SubElement(initg_pty_id, 'OrgId')
+	ET.SubElement(comp_org_id, 'BICOrBEI').text = debtor_info['dummy_bic']
 	
 	# Create Payment Information
 	pmt_inf = ET.SubElement(cstmr_cdt_trf_initn, 'PmtInf')
-	ET.SubElement(pmt_inf, 'PmtInfId').text = f"{datetime.now().strftime('%Y%m%d')}-{debtor_info['batch']}"
+	ET.SubElement(pmt_inf, 'PmtInfId').text = f"{debtor_info['batch']}"
 	ET.SubElement(pmt_inf, 'PmtMtd').text = debtor_info['type']
 	
 	pmt_tp_inf = ET.SubElement(pmt_inf, 'PmtTpInf')
@@ -224,7 +240,6 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	
 	dbtr_id = ET.SubElement(dbtr, 'Id')
 	dbtr_org_id = ET.SubElement(dbtr_id, 'OrgId')
-	ET.SubElement(dbtr_org_id, 'BICOrBEI').text = debtor_info['bic']
 	dbtr_othr = ET.SubElement(dbtr_org_id, 'Othr')
 	ET.SubElement(dbtr_othr, 'Id').text = debtor_info["company_id"]
 	
@@ -261,6 +276,8 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 		cdtr_agt = ET.SubElement(cdt_trf_tx_inf, 'CdtrAgt')
 		cdtr_agt_fin_instn_id = ET.SubElement(cdtr_agt, 'FinInstnId')
 		ET.SubElement(cdtr_agt_fin_instn_id, 'BIC').text = invoice['creditor_bic']
+		cdtr_pstl_adr_fin = ET.SubElement(cdtr_agt_fin_instn_id, 'PstlAdr')
+		ET.SubElement(cdtr_pstl_adr_fin, 'Ctry').text = invoice.get("country")
 		
 		# Creditor
 		cdtr = ET.SubElement(cdt_trf_tx_inf, 'Cdtr')
@@ -269,17 +286,15 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 		if invoice.get("address"):
 			addr = invoice.get("address")
 			cdtr_pstl_adr = ET.SubElement(cdtr, 'PstlAdr')
-			cdtr_adr = ET.SubElement(cdtr_pstl_adr, 'Adr')
-			ET.SubElement(cdtr_adr, 'PstCd').text = addr.get("postal_code")
-			ET.SubElement(cdtr_adr, 'Ctry').text = addr.get("country")
-			ET.SubElement(cdtr_adr, 'AdrLine').text = addr.get("address_line")
-		
+			ET.SubElement(cdtr_pstl_adr, 'PstCd').text = addr.get("postal_code")
+			ET.SubElement(cdtr_pstl_adr, 'Ctry').text = addr.get("country")
+			ET.SubElement(cdtr_pstl_adr, 'AdrLine').text = addr.get("address_line")
+
 		# Creditor Account
 		cdtr_acct = ET.SubElement(cdt_trf_tx_inf, 'CdtrAcct')
 		cdtr_acct_id = ET.SubElement(cdtr_acct, 'Id')
 		cdtr_acct_othr = ET.SubElement(cdtr_acct_id, 'Othr')
 		ET.SubElement(cdtr_acct_othr, 'Id').text = invoice['creditor_account']
-		ET.SubElement(cdtr_acct, 'UltmtCdtr').text = f"UltimateCreditor {i:02d}"
 		
 		# Purpose
 		purp = ET.SubElement(cdt_trf_tx_inf, 'Purp')
@@ -294,12 +309,14 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 		rmt_lctn_pstl_adr = ET.SubElement(rltd_rmt_inf, 'RmtLctnPstlAdr')
 		ET.SubElement(rmt_lctn_pstl_adr, 'Nm').text = invoice['creditor_name']
 		
+		rmt_adr = ET.SubElement(rmt_lctn_pstl_adr, 'Adr')
 		if invoice.get("remitence_address"):
 			addr = invoice.get("remitence_address")
-			rmt_adr = ET.SubElement(rmt_lctn_pstl_adr, 'Adr')
 			ET.SubElement(rmt_adr, 'PstCd').text = addr.get("postal_code")
 			ET.SubElement(rmt_adr, 'Ctry').text = addr.get("country")
 			ET.SubElement(rmt_adr, 'AdrLine').text = addr.get("address_line")
+		else:
+			ET.SubElement(rmt_adr, 'Ctry').text = invoice.get("country")
 		
 		# Remittance Information
 		rmt_inf = ET.SubElement(cdt_trf_tx_inf, 'RmtInf')
@@ -326,3 +343,60 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 			f.write(xml_output)
 
 	return xml_output
+
+def get_country_code(country):
+	from iso3166 import countries
+	return countries.get(country).alpha2
+
+def sync_uob_file():
+	settings = frappe.get_single("UOB Integration Settings")
+	if settings.stop_sync_file:
+		return
+	
+	today = getdate()
+	# no sync if holiday
+	if today.weekday() in (5,6):
+		return
+	
+	latest_date = get_datetime(settings.last_download_date or "2000-06-24 19:18:25")
+	uob = UOBAPI()
+
+	# downlaod file
+	result = uob.download_bank_tx_bulk(above_date=latest_date)
+	if isinstance(result, string_types):
+		result = json.loads(result)
+
+	# create log
+	# convert base64 to csv and create the log
+	set_date = False
+	for d in result.get("result") or []:
+		log = frappe.new_doc("UOB File Log")
+		log.filename = d['filename']
+		log.filepath = settings.folder_out
+		log.insert(ignore_permissions=1)
+
+		create_new_folder("Bank", "Home")
+		xml_content = base64.b64decode(d['file'])
+		filedoc = save_file(
+			fname=log.filename,
+			content=xml_content,
+			dt=log.doctype,
+			dn=log.name,
+			is_private=1,
+			folder="Home/Bank"
+		)
+
+		log.file = filedoc.name
+		log.update()
+
+		# sync status
+		log.sync_payment_status(d['file'], log.filename, raw=True)
+
+		if not set_date:
+			set_date = True
+			settings.last_file_name = log.filename
+			settings.last_download_date = get_datetime(d['modified'])
+
+	# update file settings
+	settings.last_sync_date = now()
+	settings.save()

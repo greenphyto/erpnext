@@ -25,8 +25,9 @@ dependencies = [
     "minio",
     "python-barcode",
     "openai",
-    "pymupdf"
-    
+    "pymupdf",
+    "iso3166",
+    "xmltodict"
 ]
 
 [build-system]
