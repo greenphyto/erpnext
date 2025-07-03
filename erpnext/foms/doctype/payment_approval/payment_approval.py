@@ -3,7 +3,7 @@
 
 import frappe, os
 from frappe.model.document import Document
-from frappe.utils import flt, cint, getdate
+from frappe.utils import flt, cint, getdate, get_link_to_form
 from frappe.utils.file_manager import save_file
 from erpnext.controllers.uob import create_payment_xml
 from erpnext.controllers.uob import UOBAPI, get_country_code
@@ -30,9 +30,23 @@ class PaymentApproval(Document):
 		self.set_batch_number()
 
 	def validate_data(self):
+		self.validate_bank()
 		self.validate_payment()
 		self.validate_invoice()
 		self.calculate_amount()
+
+	def validate_bank(self):
+		bic = frappe.get_value("Bank", self.bank, "swift_number")
+		if not bic:
+			frappe.throw(_(f"Missing BIC/SWIFT for Bank <b>{self.bank}</b>"))
+		
+		if "UOVB" not in bic:
+			frappe.throw(_(f"This transaction requires a UOB bank account. Please select a valid UOB account to proceed."))
+
+		account_no, account_name = frappe.db.get_value("Bank Account", self.bank_account, ["bank_account_no", "bank_account_name"]) or ("", "")
+		if not account_no or not account_name:
+			links = get_link_to_form("Bank Account", self.bank_account)
+			frappe.throw(_(f"Please update the <b>Bank Account No</b> and <b>Bank Account Name</b> for {links}"))
 
 	def set_status(self):
 		if self.docstatus == 0 and self.is_new():
@@ -206,8 +220,8 @@ class PaymentApproval(Document):
 
 		def change_to_dummy_bic(bic):
 			index = 7
-			if index < 0 or index >= len(bic):
-				raise ValueError("Index out of range.")
+			if not bic or index < 0 or index >= len(bic):
+				return bic
 			return bic[:index] + "0" + bic[index + 1:]
 
 		# other information
