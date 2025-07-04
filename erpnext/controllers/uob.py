@@ -387,7 +387,7 @@ def sync_uob_file():
 		)
 
 		log.file = filedoc.name
-		log.update()
+		log.db_update()
 
 		# sync status
 		log.sync_payment_status(d['file'], log.filename, raw=True)

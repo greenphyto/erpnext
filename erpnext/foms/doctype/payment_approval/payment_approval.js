@@ -27,9 +27,6 @@ frappe.ui.form.on('Payment Approval', {
 		}
 		frm.cscript.setup_method();
 	},
-	after_save: function(frm) {
-		frm.reload_doc();
-    },
 	payment_method: function(frm){
 		frm.cscript.setup_method();
 	},
