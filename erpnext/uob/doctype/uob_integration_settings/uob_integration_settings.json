@@ -118,8 +118,7 @@
   {
    "fieldname": "last_download_date",
    "fieldtype": "Datetime",
-   "label": "Last Download Date",
-   "read_only": 1
+   "label": "Last Download Date"
   },
   {
    "fieldname": "column_break_14",
@@ -135,7 +134,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-06-26 11:17:19.459931",
+ "modified": "2025-07-04 17:29:44.730073",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "UOB Integration Settings",

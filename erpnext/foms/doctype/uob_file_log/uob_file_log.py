@@ -118,14 +118,17 @@ class UOBFileLog(Document):
 			txs = [txs]
 
 		for tx in txs:
-			invoice_no = convert_inv_no(tx["OrgnlEndToEndId"])
-			dt = {
-				"result":tx["TxSts"],
-				"invoice_no": invoice_no,
-				"account_no": tx["OrgnlTxRef"]["CdtrAcct"]["Id"]["Othr"]["Id"],
-				"error_code": tx["StsRsnInf"]["Rsn"]["Cd"]
-			}
-			transactions.append(dt)
+			temp = tx.get("OrgnlEndToEndId")
+			if temp:
+				invoice_no = convert_inv_no(temp)
+				error_code = get_nested(tx, ["StsRsnInf", "Rsn", "Cd"] )
+				dt = {
+					"result":tx["TxSts"],
+					"invoice_no": invoice_no,
+					"account_no": tx["OrgnlTxRef"]["CdtrAcct"]["Id"]["Othr"]["Id"],
+					"error_code": error_code
+				}
+				transactions.append(dt)
 		
 		payment_id = get_nested(data, ["Document", "CstmrPmtStsRpt", "OrgnlPmtInfAndSts", "OrgnlPmtInfId"])
 		payment_id = payment_id.replace("PAY", "PAY-")

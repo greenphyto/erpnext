@@ -13,6 +13,8 @@
   "column_break_2",
   "posting_date",
   "time",
+  "currency_section",
+  "currency",
   "transfer_method_section",
   "payment_type",
   "purpose",
@@ -242,12 +244,24 @@
    "label": "Process ID",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "fieldname": "currency_section",
+   "fieldtype": "Section Break",
+   "label": "Currency"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-07-01 16:15:49.859796",
+ "modified": "2025-07-04 12:06:31.566132",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Payment Approval",
