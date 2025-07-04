@@ -81,7 +81,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-05-20 15:53:28.836469",
+ "modified": "2025-07-04 11:43:42.484855",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Bank Number",
@@ -101,6 +101,7 @@
    "write": 1
   }
  ],
+ "quick_entry": 1,
  "search_fields": "bank_account_name, bank_number",
  "sort_field": "modified",
  "sort_order": "DESC",
