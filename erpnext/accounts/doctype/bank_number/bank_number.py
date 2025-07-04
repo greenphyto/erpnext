@@ -8,7 +8,7 @@ from frappe import _
 class BankNumber(Document):
 	def validate(self):
 		self.validate_bank_number()
-		# self.set_default_to_party()
+		self.set_default_to_party()
 
 	def validate_bank_number(self):
 		exists = frappe.db.get_value("Bank Number", {"name":["!=", self.name], "bank_number":self.bank_number})
@@ -16,7 +16,7 @@ class BankNumber(Document):
 			frappe.throw(_(f"Bank number {self.bank_number} already used"))
 
 	def set_default_to_party(self):
-		default = frappe.get_value(self.party_type, self.party, "default_bank_account_no")
+		default = frappe.db.get_value(self.party_type, self.party, "default_bank_account_no")
 		if default:
 			return
 		
