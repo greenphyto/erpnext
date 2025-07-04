@@ -76,7 +76,7 @@ frappe.ui.form.on("Supplier", {
 			frappe.contacts.clear_address_and_contact(frm);
 		}
 		else {
-			unhide_field(['address_html','contact_html']);
+			unhide_field(['address_html','contact_html', 'bank_list_html']);
 			frappe.contacts.render_address_and_contact(frm);
 
 			// custom buttons
@@ -117,6 +117,11 @@ frappe.ui.form.on("Supplier", {
 			{"label":"S2.#### (Bank Accounts)", "value":"S2.####"},
 			{"label":"S3.#### (Hire Purchase)", "value":"S3.####"},
 		])
+
+		if(frappe.flags.hard_reload){
+			frm.reload_doc()
+			frappe.flags.hard_reload = 0
+		}
 	},
 	supplier_code_series: function(frm){
 		frappe.call({
@@ -258,10 +263,10 @@ $.extend(frappe.contacts, {
 				});
 
 			// Set default bank if available
-			let default_bank = frm.doc.__onload.bank_account_list.find(x => x.is_default);
-			if (default_bank && default_bank.bank_number) {
-				frm.set_value("default_bank_account_no", default_bank.bank_number);
-			}
+			// let default_bank = frm.doc.__onload.bank_account_list.find(x => x.is_default);
+			// if (default_bank && default_bank.bank_number) {
+			// 	frm.set_value("default_bank_account_no", default_bank.bank_number);
+			// }
 		}
 	},
 
