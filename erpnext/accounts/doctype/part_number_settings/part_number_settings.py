@@ -58,6 +58,20 @@ class PartNumberSettings(Document):
 
 	def validate(self):
 		self.validate_account_change()
+		self.update_item_name()
+
+	def update_item_name(self):
+		data = [ d.code.strip() for d in self.data_mapping ]
+		item_exists = frappe.db.sql(" select name, item_name from `tabItem` where name in %s ", (data,), as_dict=1)
+		item_map = {}
+		for item in item_exists:
+			item_map[item.name] = item.item_name
+		
+		for d in self.data_mapping:
+			key = d.code.strip()
+			cur_name = item_map.get(key)
+			if d.title != cur_name:
+				frappe.db.set_value("Item", key, "item_name", cur_name)
 
 	def validate_account_change(self):
 		return
