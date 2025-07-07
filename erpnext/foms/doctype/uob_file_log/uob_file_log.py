@@ -50,6 +50,8 @@ class UOBFileLog(Document):
 			base64_file_str: Optional[str] = None,
 			file_path: Optional[Union[str, io.TextIOWrapper]] = None
 		) -> Tuple[pd.DataFrame, pd.DataFrame]:
+		df_acc = pd.DataFrame()
+		df_tx = pd.DataFrame()
 		# Decode base64 ke string teks
 		if base64_file_str:
 			file_bytes = base64.b64decode(base64_file_str)
@@ -58,7 +60,7 @@ class UOBFileLog(Document):
 			with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
 				file_text = f.read()
 		else:
-			raise ValueError("❌ Harus mengisi salah satu dari base64_file_str atau file_path")
+			return df_acc, df_tx
 
 		# Bagi menjadi baris-baris
 		lines = file_text.splitlines()
@@ -71,7 +73,7 @@ class UOBFileLog(Document):
 				break
 
 		if tx_start is None:
-			raise ValueError("❌ Tidak ditemukan header transaksi (mis. kolom 'Transaction Amount')")
+			return df_acc, df_tx
 
 		# Bagian atas = data akun
 		acc_part = lines[:tx_start]
@@ -211,15 +213,18 @@ class UOBFileLog(Document):
 		return txt
 
 def convert_inv_no(inv_txt):
-	part, yymm = inv_txt.split("-")
+	if "-" in inv_txt:
+		part, yymm = inv_txt.split("-")
+	else:
+		part, yymm = inv_txt[:-4], inv_txt[-4:]
 	year = "20" + yymm[:2]
 	formatted = f"{part}/{year}"
 	return formatted
 
 def get_nested(data, keys, default=None):
-    for key in keys:
-        if isinstance(data, dict):
-            data = data.get(key, default)
-        else:
-            return default
-    return data
+	for key in keys:
+		if isinstance(data, dict):
+			data = data.get(key, default)
+		else:
+			return default
+	return data
