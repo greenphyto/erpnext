@@ -131,9 +131,8 @@ class UOBFileLog(Document):
 					"error_code": error_code
 				}
 				transactions.append(dt)
-		
-		payment_id = get_nested(data, ["Document", "CstmrPmtStsRpt", "OrgnlPmtInfAndSts", "OrgnlPmtInfId"])
-		payment_id = payment_id.replace("PAY", "PAY-")
+		temp = get_nested(data, ["Document", "CstmrPmtStsRpt", "OrgnlPmtInfAndSts", "OrgnlPmtInfId"]) or ""
+		payment_id = temp.replace("PAY", "PAY-")
 		# get the payment number
 		if not frappe.db.exists("Payment Approval", payment_id):
 			return
