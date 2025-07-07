@@ -50,6 +50,9 @@ class UOBFileLog(Document):
 			base64_file_str: Optional[str] = None,
 			file_path: Optional[Union[str, io.TextIOWrapper]] = None
 		) -> Tuple[pd.DataFrame, pd.DataFrame]:
+		df_acc = pd.DataFrame()
+		df_tx = pd.DataFrame()
+		# Decode base64 ke string teks
 		if base64_file_str:
 			file_bytes = base64.b64decode(base64_file_str)
 			file_text = file_bytes.decode("utf-8", errors="ignore")
@@ -57,11 +60,9 @@ class UOBFileLog(Document):
 			with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
 				file_text = f.read()
 		else:
-			raise ValueError("❌ Must fill in either base64_file_str or file_path")
+			return df_acc, df_tx
 
 		lines = file_text.splitlines()
-		df_acc = pd.DataFrame()
-		df_tx = pd.DataFrame()
 
 		tx_start = None
 		for i, line in enumerate(lines):
@@ -123,9 +124,8 @@ class UOBFileLog(Document):
 					"error_code": error_code
 				}
 				transactions.append(dt)
-		
-		payment_id = get_nested(data, ["Document", "CstmrPmtStsRpt", "OrgnlPmtInfAndSts", "OrgnlPmtInfId"])
-		payment_id = payment_id.replace("PAY", "PAY-")
+		temp = get_nested(data, ["Document", "CstmrPmtStsRpt", "OrgnlPmtInfAndSts", "OrgnlPmtInfId"]) or ""
+		payment_id = temp.replace("PAY", "PAY-")
 		# get the payment number
 		if not frappe.db.exists("Payment Approval", payment_id):
 			return
@@ -203,15 +203,18 @@ class UOBFileLog(Document):
 		return txt
 
 def convert_inv_no(inv_txt):
-	part, yymm = inv_txt.split("-")
+	if "-" in inv_txt:
+		part, yymm = inv_txt.split("-")
+	else:
+		part, yymm = inv_txt[:-4], inv_txt[-4:]
 	year = "20" + yymm[:2]
 	formatted = f"{part}/{year}"
 	return formatted
 
 def get_nested(data, keys, default=None):
-    for key in keys:
-        if isinstance(data, dict):
-            data = data.get(key, default)
-        else:
-            return default
-    return data
+	for key in keys:
+		if isinstance(data, dict):
+			data = data.get(key, default)
+		else:
+			return default
+	return data
