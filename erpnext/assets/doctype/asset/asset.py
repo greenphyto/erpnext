@@ -250,18 +250,12 @@ class Asset(AccountsController):
 		if not self.available_for_use_date:
 			return
 
-
-		skip_date = []
-		for d in self.get("schedules") or []:
-			if d.skip:
-				skip_date.append( getdate(d.schedule_date).strftime("%b-%Y") )
-
 		start = self.clear_depreciation_schedule()
 
 		for finance_book in self.get("finance_books"):
-			self._make_depreciation_schedule(finance_book, start, date_of_disposal, skip_date=skip_date)
+			self._make_depreciation_schedule(finance_book, start, date_of_disposal)
 
-	def _make_depreciation_schedule(self, finance_book, start, date_of_disposal, skip_date=[]):
+	def _make_depreciation_schedule(self, finance_book, start, date_of_disposal):
 		self.validate_asset_finance_books(finance_book)
 
 		value_after_depreciation = self._get_value_after_depreciation(finance_book)
@@ -372,11 +366,6 @@ class Asset(AccountsController):
 				depreciation_amount += value_after_depreciation - finance_book.expected_value_after_useful_life
 				skip_row = True
 
-			# match by month and year
-			skip=0
-			if getdate(schedule_date).strftime("%b-%Y") in skip_date:
-				skip=1
-
 			if depreciation_amount > 0:
 				self._add_depreciation_row(
 					schedule_date,
@@ -384,11 +373,10 @@ class Asset(AccountsController):
 					finance_book.depreciation_method,
 					finance_book.finance_book,
 					finance_book.idx,
-					skip=skip
 				)
 
 	def _add_depreciation_row(
-		self, schedule_date, depreciation_amount, depreciation_method, finance_book, finance_book_id, skip=0
+		self, schedule_date, depreciation_amount, depreciation_method, finance_book, finance_book_id
 	):
 		self.append(
 			"schedules",
@@ -398,7 +386,6 @@ class Asset(AccountsController):
 				"depreciation_method": depreciation_method,
 				"finance_book": finance_book,
 				"finance_book_id": finance_book_id,
-				"skip":skip
 			},
 		)
 
