@@ -57,6 +57,12 @@ class Report():
 				"label": "Replacement Only",
 				"fieldtype": "Float",
 				"width": 150
+			},
+			{
+				"fieldname": "percent",
+				"label": "Replacement %",
+				"fieldtype": "Percent",
+				"width": 120
 			}
 		]
 	
@@ -65,7 +71,8 @@ class Report():
 			SELECT
 				{} AS period,
 				SUM(dni.qty) AS total_delivery,
-				SUM(CASE WHEN dn.is_replacement = 1 THEN dni.qty ELSE 0 END) AS replacement_delivery
+				SUM(CASE WHEN dn.is_replacement = 1 THEN dni.qty ELSE 0 END) AS replacement_delivery,
+				SUM(CASE WHEN dn.is_replacement = 1 THEN dni.qty ELSE 0 END)/SUM(dni.qty)*100 as percent
 			FROM
 				`tabDelivery Note` AS dn
 			JOIN
