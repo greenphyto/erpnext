@@ -15,8 +15,9 @@ frappe.query_reports["Delivery Note Analysis"] = {
         {
             fieldname: "year",
             label: "Year",
-            fieldtype: "Int",
+            fieldtype: "Link",
             default: frappe.datetime.get_today().split("-")[0],
+            options: "Fiscal Year",
             reqd: 1
         },
         {
