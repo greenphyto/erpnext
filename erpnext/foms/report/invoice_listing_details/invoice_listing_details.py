@@ -49,6 +49,7 @@ class Report():
 			{"fieldname": "qty", 			"label": "Qty", 		"fieldtype": "Float", 	"width":80, "options":""},
 			{"fieldname": "uom", 			"label": "UOM", 		"fieldtype": "Link", 	"width":180, "options":"UOM"},
 			{"fieldname": "weight", 		"label": "Weight (KG)", "fieldtype": "Float", 	"width":100, "options":""},
+			{"fieldname": "total_weight", 		"label": "Total Weight (KG)", "fieldtype": "Float", 	"width":140, "options":""},
 			{"fieldname": "cos", 			"label": "COS", 		"fieldtype": "Currency", "width":100, "options":""},
 			{"fieldname": "rate", 			"label": "Price", 		"fieldtype": "Currency", "width":100, "options":""},
 			{"fieldname": "amount", 		"label": "Amount", 		"fieldtype": "Currency", "width":120, "options":""},
@@ -72,6 +73,7 @@ class Report():
 				si.rate,
 				si.uom,
 				p.total_weight as weight,
+				si.stock_qty as total_weight,
 				si.amount,
 				si.net_amount,
 				dn.name as delivery_note,
@@ -119,9 +121,12 @@ class Report():
 				dni.item_code,
 				dni.qty,
 				dni.uom,
+				dni.rate,
+				dni.amount,
 				p.total_weight as weight,
 				a.outlet_name,
 				dn.name AS delivery_note,
+				dni.stock_qty as total_weight,
 				dn.posting_date AS delivery_date,
 				sle_out.valuation_rate AS cos
 			FROM
@@ -190,6 +195,8 @@ class Report():
 			"sales_invoice":"TOTAL",
 			"amount":0,
 			"gst_amount":0,
+			"total_weight":0,
+			"gst_amount":0,
 			"total_amount":0
 		}
 		if not self.filters.get("show_missing_invoice"):
@@ -200,6 +207,7 @@ class Report():
 					d.total_amount = d.gst_amount + flt(d.amount)
 				
 				total_row["gst_amount"] += d.gst_amount
+				total_row["total_weight"] += d.total_weight
 				total_row["total_amount"] += d.total_amount
 				total_row["amount"] += d.amount
 
@@ -207,9 +215,22 @@ class Report():
 			if self.raw_data:
 				self.data.append(total_row)
 
+		total_row_single = {
+			"sales_invoice":"TOTAL",
+			"amount":0,
+			"total_weight":0,
+			"gst_amount":0,
+			"total_amount":0
+		}
 		if self.raw_data_single:
 			self.data.append({})
-			self.data += self.raw_data_single
+			for d in self.raw_data_single:
+				self.data.append(d)
+				total_row_single["total_weight"] += d.total_weight
+				total_row_single["amount"] += d.amount
+
+			if self.raw_data_single:
+				self.data.append(total_row_single)
 
 		if not self.filters.get("show_missing_invoice"):
 			if self.raw_data_deleted:
