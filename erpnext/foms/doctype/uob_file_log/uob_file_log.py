@@ -168,8 +168,7 @@ class UOBFileLog(Document):
 		
 		for idx, row in df_tx.iterrows():
 			# get PI
-			invoice_no = convert_inv_no(row["Your Reference"])
-			pi_name = frappe.db.exists("Purchase Invoice", invoice_no)
+			pi_name = get_inv_no(row["Your Reference"], flt(row["Transaction Amount"]))
 			if not pi_name:
 				continue
 			
@@ -216,13 +215,27 @@ class UOBFileLog(Document):
 		return txt
 
 def convert_inv_no(inv_txt):
-	if "-" in inv_txt:
-		part, yymm = inv_txt.split("-")
+	if "PAY" in inv_txt:
+		return inv_txt.replace("PAY", "PAY-")
 	else:
-		part, yymm = inv_txt[:-4], inv_txt[-4:]
-	year = "20" + yymm[:2]
-	formatted = f"{part}/{year}"
-	return formatted
+		if "-" in inv_txt:
+			part, yymm = inv_txt.split("-")
+		else:
+			part, yymm = inv_txt[:-4], inv_txt[-4:]
+		year = "20" + yymm[:2]
+		formatted = f"{part}/{year}"
+		return formatted
+
+def get_inv_no(reff_no, amount):
+	invoice_no = convert_inv_no(reff_no)
+	if "PAY" in invoice_no and frappe.db.exists("Payment Approval", invoice_no):
+		doc = frappe.get_doc("Payment Approval", invoice_no)
+		for d in doc.get("invoices"):
+			if flt(d.amount) == flt(amount):
+				return d.invoice_no
+	else:
+		pi_name = frappe.db.exists("Purchase Invoice", invoice_no)
+		return pi_name
 
 def get_nested(data, keys, default=None, collect_multiple=False):
     for i, key in enumerate(keys):
