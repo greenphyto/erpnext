@@ -18,9 +18,6 @@ from frappe import _
 
 """
 
-COUNTRY_CODE = "SG"
-
-
 class PaymentApproval(Document):
 	def validate(self):
 		self.set_status()
