@@ -17,11 +17,12 @@
   "currency",
   "transfer_method_section",
   "payment_type",
-  "purpose",
-  "purpose_description",
-  "column_break_1",
   "payment_method",
   "payment_property",
+  "cheque_method",
+  "column_break_1",
+  "purpose",
+  "purpose_description",
   "bank_account_section",
   "bank_account",
   "bank",
@@ -267,6 +268,8 @@
    "fieldname": "file_id",
    "fieldtype": "Data",
    "label": "File ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -282,12 +285,20 @@
    "fieldtype": "Small Text",
    "label": "Error Message",
    "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.payment_type == \"Cheque\"",
+   "fieldname": "cheque_method",
+   "fieldtype": "Select",
+   "label": "Cheque Method",
+   "mandatory_depends_on": "eval:doc.payment_type == \"Cheque\"",
+   "options": "MLCD\nMLFA\nPUDB"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-07-09 11:35:12.423121",
+ "modified": "2025-07-09 12:57:45.038800",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Payment Approval",
