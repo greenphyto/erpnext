@@ -3,7 +3,7 @@
 
 import frappe, os
 from frappe.model.document import Document
-from frappe.utils import flt, cint, getdate, get_link_to_form
+from frappe.utils import flt, cint, getdate, get_datetime, get_link_to_form
 from frappe.utils.file_manager import save_file
 from erpnext.controllers.uob import create_payment_xml
 from erpnext.controllers.uob import UOBAPI, get_country_code
@@ -52,7 +52,7 @@ class PaymentApproval(Document):
 		if self.docstatus == 0 and self.is_new():
 			self.status = "Draft"
 
-	def update_payment_status(self, process_id, transactions=[]):
+	def update_payment_status(self, process_id, transactions=[], file_date="", error_message=""):
 		# sync with L1,2,3,4 abnd when any riject
 		if cint(self.process_id) > cint(process_id):
 			return
@@ -75,10 +75,10 @@ class PaymentApproval(Document):
 						row.error_code = tr["error_code"]
 					
 					row.db_update()
+		self.update_on = get_datetime(file_date)
+		self.sync_status(db_update=True, error_message=error_message)
 
-		self.sync_status(db_update=True)
-
-	def sync_status(self, db_update=False):
+	def sync_status(self, db_update=False, error_message=""):
 		tr_success = 0
 		tr_len = len(self.get("invoices"))
 		tr_comp = 0
@@ -110,14 +110,19 @@ class PaymentApproval(Document):
 				if tr_success == 100:
 					# Complete
 					self.status = "Complete"
+					self.transfer_date = self.update_on
 				else:
 					# Partially Complete
 					self.status = "Partially Complete"
 			else:
 				self.status = "Failed"
+
 		else:
 			# Cancelled
 			self.status = "Cancelled"
+
+		if self.status == "Failed":
+			self.error_message = error_message
 
 		if db_update:
 			self.db_update()
@@ -281,7 +286,8 @@ class PaymentApproval(Document):
 			"batch":batch,
 			"company_id": tax_id,
 			"dummy_bic": bic,
-			"msg_id": file_name
+			"msg_id": file_name,
+			"cheque_method": self.cheque_method
 		}
 		debtor_info.update(self.method)
 
@@ -339,6 +345,7 @@ class PaymentApproval(Document):
 		n = self.batch_number
 		number = f"{n:03d}"
 		file_name = f"PA113{dates}{number}.xml"
+		self.file_id = f"PA113{dates}{number}"
 		return file_name
 
 def get_date_simple(value):

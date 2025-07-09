@@ -271,6 +271,12 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 		amt = ET.SubElement(cdt_trf_tx_inf, 'Amt')
 		instd_amt = ET.SubElement(amt, 'InstdAmt', attrib={'Ccy': invoice['currency']})
 		instd_amt.text = f"{invoice['amount']:.2f}"
+
+		# Cheque
+		if debtor_info['type'] == "CHK" and debtor_info.get("cheque_method"):
+			chq_instr = ET.SubElement(cdt_trf_tx_inf, 'ChqInstr')
+			dlvry_mtd = ET.SubElement(chq_instr, 'DlvryMtd')
+			ET.SubElement(dlvry_mtd, 'Cd').text = debtor_info["cheque_method"]
 		
 		# Creditor Agent
 		cdtr_agt = ET.SubElement(cdt_trf_tx_inf, 'CdtrAgt')

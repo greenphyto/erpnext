@@ -124,14 +124,27 @@ class UOBFileLog(Document):
 					"error_code": error_code
 				}
 				transactions.append(dt)
-		temp = get_nested(data, ["Document", "CstmrPmtStsRpt", "OrgnlPmtInfAndSts", "OrgnlPmtInfId"]) or ""
-		payment_id = temp.replace("PAY", "PAY-")
+
+		# Additional Information
+		file_date = get_nested(data, ["Document", "CstmrPmtStsRpt", "GrpHdr", "CreDtTm"]) or ""
+		temp = get_nested(data, [
+			'Document', 
+			'CstmrPmtStsRpt', 
+			'OrgnlGrpInfAndSts', 
+			'StsRsnInf', 
+			'AddtlInf'
+		], collect_multiple=True) or []
+		error_message = "\n".join(temp)
+			
+		# Get Payment Approval
+		temp = get_nested(data, ["Document", "CstmrPmtStsRpt", "OrgnlGrpInfAndSts", "OrgnlMsgId"]) or ""
+		payment_id = frappe.db.get_value("Payment Approval", {"file_id":temp})
 		# get the payment number
-		if not frappe.db.exists("Payment Approval", payment_id):
+		if not payment_id:
 			return
 
 		doc = frappe.get_doc("Payment Approval", payment_id)
-		doc.update_payment_status(ProcessID, transactions)
+		doc.update_payment_status(ProcessID, transactions, file_date=file_date, error_message=error_message)
 
 
 	def sync_payment_entry(self, file, filename="", raw=False):
@@ -211,10 +224,19 @@ def convert_inv_no(inv_txt):
 	formatted = f"{part}/{year}"
 	return formatted
 
-def get_nested(data, keys, default=None):
-	for key in keys:
-		if isinstance(data, dict):
-			data = data.get(key, default)
-		else:
-			return default
-	return data
+def get_nested(data, keys, default=None, collect_multiple=False):
+    for i, key in enumerate(keys):
+        if isinstance(data, dict):
+            data = data.get(key, default)
+        elif isinstance(data, list):
+            # If asked collect_multiple and this is the final stage
+            if collect_multiple and i == len(keys) - 1:
+                return [item.get(key, default) for item in data if isinstance(item, dict)]
+            else:
+                # Take the first element as default traversal
+                data = data[0] if data else default
+                if isinstance(data, dict):
+                    data = data.get(key, default)
+        else:
+            return default
+    return data

@@ -58,6 +58,7 @@ $.extend(cur_frm.cscript, {
 		var doc = this.frm.doc;
 		var payment_method_field = me.fields_dict.payment_method;
 		var payment_property_field = me.fields_dict.payment_property;
+		var cheque_type_field = me.fields_dict.cheque_method;
 		if (doc.payment_type=="Transfer" && in_list(["IBG", "FAST"], doc.payment_method)){
 			payment_property_field.df.hidden = 1
 			payment_method_field.df.hidden = 0
@@ -70,6 +71,12 @@ $.extend(cur_frm.cscript, {
 			payment_property_field.df.hidden = 1
 			payment_method_field.df.hidden = 0
 		}
+		cheque_type_field.df.options = [
+			{label:"MLCD - Mail to Creditor (Beneficiary)", value:"MLCD"},
+			{label:"MLFA - Mail to Final Agent (Debtor or Agent)", value:"MLFA"},
+			{label:"PUDB - Pick up by Debtor (Payer)", value:"PUDB"},
+		]
+		cheque_type_field.refresh()
 		payment_property_field.refresh()
 		payment_method_field.refresh()
 	},
