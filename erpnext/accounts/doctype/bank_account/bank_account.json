@@ -12,6 +12,7 @@
   "bank",
   "bank_account_no",
   "bank_account_name",
+  "currency",
   "column_break_7",
   "is_default",
   "is_company_account",
@@ -215,10 +216,19 @@
    "fieldtype": "Data",
    "label": "SWIFT number",
    "read_only": 1
+  },
+  {
+   "fetch_from": "account.account_currency",
+   "fetch_if_empty": 1,
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
   }
  ],
  "links": [],
- "modified": "2025-07-03 17:47:32.892015",
+ "modified": "2025-07-09 16:56:36.190307",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Bank Account",

@@ -248,7 +248,7 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	dbtr_acct_id = ET.SubElement(dbtr_acct, 'Id')
 	dbtr_acct_othr = ET.SubElement(dbtr_acct_id, 'Othr')
 	ET.SubElement(dbtr_acct_othr, 'Id').text = debtor_info['account_number']
-	ET.SubElement(dbtr_acct, 'Ccy').text = 'SGD' # -- not yet
+	ET.SubElement(dbtr_acct, 'Ccy').text = debtor_info['currency'] # -- not yet
 	ET.SubElement(dbtr_acct, 'Nm').text = f"{debtor_info['company_name']}"
 	
 	# Debtor agent

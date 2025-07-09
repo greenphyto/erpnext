@@ -287,6 +287,7 @@ class PaymentApproval(Document):
 			"company_id": tax_id,
 			"dummy_bic": bic,
 			"msg_id": file_name,
+			"currency": self.currency,
 			"cheque_method": self.cheque_method
 		}
 		debtor_info.update(self.method)

@@ -22,9 +22,14 @@ frappe.ui.form.on('Payment Approval', {
 			}
 		})
 
-		frm.set_query("bank_account", ()=>{
+		frm.set_query("bank_account", (doc, cdt, cdn)=>{
+			var currency = doc.currency;
+			if (!currency){
+				frappe.throw("Please set currency.")
+			}
 			return{
 				filters:{
+					"currency":currency,
 					"swift_number":["like", "UOVB%"]
 				}
 			}
