@@ -15,11 +15,12 @@
   "time",
   "transfer_method_section",
   "payment_type",
-  "purpose",
-  "purpose_description",
-  "column_break_1",
   "payment_method",
   "payment_property",
+  "cheque_method",
+  "column_break_1",
+  "purpose",
+  "purpose_description",
   "bank_account_section",
   "currency",
   "bank_account",
@@ -255,8 +256,32 @@
   {
    "fieldname": "filename",
    "fieldtype": "Data",
-   "label": "File Name",
+   "label": "File ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "description": "Time update by UOB's File",
+   "fieldname": "update_on",
+   "fieldtype": "Datetime",
+   "label": "Update On",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.status == \"Failed\"",
+   "fieldname": "error_message",
+   "fieldtype": "Small Text",
+   "label": "Error Message",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.payment_type == \"Cheque\"",
+   "fieldname": "cheque_method",
+   "fieldtype": "Select",
+   "label": "Cheque Method",
+   "mandatory_depends_on": "eval:doc.payment_type == \"Cheque\"",
+   "options": "MLCD\nMLFA\nPUDB"
   }
  ],
  "index_web_pages_for_search": 1,
