@@ -21,4 +21,3 @@ Bulk Transaction
 E-commerce
 Subcontracting
 FOMS
-AI Agent
