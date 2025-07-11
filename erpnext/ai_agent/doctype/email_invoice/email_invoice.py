@@ -52,9 +52,16 @@ class EmailInvoice(Document):
 		for file_name in file_doc_name:
 			
 			fn = frappe.get_doc('File', file_name)
+
+			# copy attachment to current email
+			self.add_attachment_copy(fn)
+
 			full_path = fn.get_full_path()
 			if ".pdf" in full_path:
-				full_path = convert_pdf_to_img(full_path)
+				res, full_path = convert_pdf_to_img(full_path)
+
+			if not res:
+				continue
 
 			temp = get_po_and_items(full_path, supp_context, self.sender)
 			if temp and temp.get("result"):
@@ -103,6 +110,19 @@ class EmailInvoice(Document):
 
 		self.set_status()
 		return pi
+	
+	def add_attachment_copy(self, source_file):
+		new_file = frappe.new_doc("File")
+		new_file.update({
+
+			"doctype": "File",
+			"file_name": source_file.file_name,
+			"file_url": source_file.file_url,
+			"is_private": source_file.is_private,
+			"attached_to_doctype": self.doctype,
+			"attached_to_name": self.name
+		})
+		new_file.insert()
 
 	def create_invoice(self, data):
 		# make PI
@@ -175,15 +195,21 @@ def convert_pdf_to_img(path):
 	import numpy as np
 	from PIL import Image
 
-	doc = fitz.open(path)
+	try:
+		doc = fitz.open(path)
 
-	page = doc[0]
+		if doc.needs_pass:
+			return False, "Encrypted PDF"
 
-	pix = page.get_pixmap()
+		page = doc[0]
+		pix = page.get_pixmap()
 
-	image_np = np.array(Image.frombytes("RGB", [pix.width, pix.height], pix.samples))
+		image_np = np.array(Image.frombytes("RGB", [pix.width, pix.height], pix.samples))
+		return True, image_np
 
-	return image_np
+	except Exception as e:
+		frappe.log_error(f"convert_pdf_to_img error: {e}")
+		return False, str(e)
 
 def find_po_exist(po_list):
 	if po_list:

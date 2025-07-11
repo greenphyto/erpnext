@@ -197,7 +197,6 @@ Return result in this JSON structure (no explanation, no markdown):
 
 Reference Supplier:
 """+json.dumps(reference_supplier, indent=2)
-	print("PROMPT", prompt)
 	res = extract_invoice_data(image_path, prompt)
 	return res
 
