@@ -41,9 +41,10 @@ def read_email_inbox(doc, method=""):
 
 	# create email invoice
 	em = frappe.new_doc("Email Invoice")
-	em.sync_email(doc = doc)
 	em.flags.ignore_links = True
 	em.flags.ignore_permissions = True
+	em.insert()
+	em.sync_email(doc = doc)
 	em.save()
 
 
