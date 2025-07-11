@@ -220,8 +220,9 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	ET.SubElement(pmt_inf, 'PmtMtd').text = debtor_info['type']
 	
 	pmt_tp_inf = ET.SubElement(pmt_inf, 'PmtTpInf')
-	svc_lvl = ET.SubElement(pmt_tp_inf, 'SvcLvl')
-	ET.SubElement(svc_lvl, 'Cd').text = debtor_info['method']
+	if debtor_info['method']:
+		svc_lvl = ET.SubElement(pmt_tp_inf, 'SvcLvl')
+		ET.SubElement(svc_lvl, 'Cd').text = debtor_info['method']
 	if debtor_info['property']:
 		svc_lvl = ET.SubElement(pmt_tp_inf, 'LclInstrm')
 		ET.SubElement(svc_lvl, 'Cd').text = debtor_info['property']
