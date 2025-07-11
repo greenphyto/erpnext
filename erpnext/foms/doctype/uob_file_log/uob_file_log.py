@@ -13,6 +13,7 @@ from frappe.utils import flt, cint, getdate, cstr
 import datetime
 
 class UOBFileLog(Document):
+	@frappe.whitelist()
 	def sync_payment_status(self, file="", filename="", raw=False):
 		if self.file:
 			file = frappe.get_doc("File", self.file)
