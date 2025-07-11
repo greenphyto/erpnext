@@ -52,6 +52,10 @@ class EmailInvoice(Document):
 		for file_name in file_doc_name:
 			
 			fn = frappe.get_doc('File', file_name)
+
+			# copy attachment to current email
+			self.add_attachment_copy(fn)
+
 			full_path = fn.get_full_path()
 			if ".pdf" in full_path:
 				res, full_path = convert_pdf_to_img(full_path)
@@ -107,8 +111,18 @@ class EmailInvoice(Document):
 		self.set_status()
 		return pi
 	
-	def add_attachment_copy(self, file):
-		pass
+	def add_attachment_copy(self, source_file):
+		new_file = frappe.new_doc("File")
+		new_file.update({
+
+			"doctype": "File",
+			"file_name": source_file.file_name,
+			"file_url": source_file.file_url,
+			"is_private": source_file.is_private,
+			"attached_to_doctype": self.doctype,
+			"attached_to_name": self.name
+		})
+		new_file.insert()
 
 	def create_invoice(self, data):
 		# make PI
