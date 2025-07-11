@@ -2,7 +2,6 @@
 # For license information, please see license.txt
 
 import frappe, requests, json, copy
-from frappe.model.document import Document
 from urllib.parse import urljoin
 from six import string_types
 from frappe.model.document import Document
