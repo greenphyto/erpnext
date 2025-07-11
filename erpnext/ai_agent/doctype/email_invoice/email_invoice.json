@@ -128,11 +128,10 @@
    "read_only": 1
   }
  ],
- "hide_toolbar": 1,
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-24 14:48:56.213281",
+ "modified": "2025-07-11 22:57:16.452155",
  "modified_by": "Administrator",
  "module": "AI Agent",
  "name": "Email Invoice",
