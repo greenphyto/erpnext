@@ -56,6 +56,9 @@ def make_sl_entries(sl_entries, allow_negative_stock=False, via_landed_cost_vouc
 		qty_map = {}
 		if not cancel and not allow_negative_stock:
 			for sle in sl_entries:
+				if not sle.batch_no:
+					continue
+
 				key = (sle.batch_no, sle.warehouse)
 				if key not in qty_map:
 					qty_map[key]=get_batch_qty(sle.batch_no, sle.warehouse)
@@ -1192,6 +1195,7 @@ def get_stock_ledger_entries(
 	if operator in (">", "<=") and previous_sle.get("name"):
 		conditions += " and name!=%(name)s"
 
+	debug=1
 	return frappe.db.sql(
 		"""
 		select *, timestamp(posting_date, posting_time) as "timestamp"
