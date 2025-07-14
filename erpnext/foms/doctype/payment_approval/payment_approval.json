@@ -13,8 +13,6 @@
   "column_break_2",
   "posting_date",
   "time",
-  "currency_section",
-  "currency",
   "transfer_method_section",
   "payment_type",
   "payment_method",
@@ -24,6 +22,7 @@
   "purpose",
   "purpose_description",
   "bank_account_section",
+  "currency",
   "bank_account",
   "bank",
   "account",
@@ -35,15 +34,15 @@
   "invoices",
   "total_amount",
   "section_break_6",
-  "file_id",
+  "filename",
   "status",
-  "error_message",
+  "transfer_date",
   "column_break_28",
   "batch_number",
   "amended_from",
   "process_id",
   "update_on",
-  "transfer_date"
+  "error_message"
  ],
  "fields": [
   {
@@ -73,9 +72,9 @@
   {
    "default": "Transfer",
    "fieldname": "payment_type",
-   "fieldtype": "Select",
+   "fieldtype": "Data",
    "label": "Payment Type",
-   "options": "Transfer\nCheque",
+   "read_only": 1,
    "reqd": 1
   },
   {
@@ -90,19 +89,16 @@
    "options": "Payment Invoice List"
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_6",
-   "fieldtype": "Section Break",
-   "label": "More Information"
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "column_break_2",
    "fieldtype": "Column Break"
   },
   {
-   "description": "Successful Transfer",
    "fieldname": "transfer_date",
-   "fieldtype": "Datetime",
+   "fieldtype": "Date",
    "label": "Transfer Date",
    "read_only": 1
   },
@@ -193,6 +189,7 @@
    "read_only": 1
   },
   {
+   "default": "SUPP",
    "fieldname": "purpose",
    "fieldtype": "Link",
    "label": "Purpose",
@@ -260,19 +257,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "currency_section",
-   "fieldtype": "Section Break",
-   "label": "Currency"
-  },
-  {
-   "fieldname": "file_id",
-   "fieldtype": "Data",
-   "label": "File ID",
-   "no_amend_copy": 1,
-   "no_copy": 1,
-   "read_only": 1
-  },
-  {
    "description": "Time update by UOB's File",
    "fieldname": "update_on",
    "fieldtype": "Datetime",
@@ -293,12 +277,20 @@
    "label": "Cheque Method",
    "mandatory_depends_on": "eval:doc.payment_type == \"Cheque\"",
    "options": "MLCD\nMLFA\nPUDB"
+  },
+  {
+   "fieldname": "filename",
+   "fieldtype": "Data",
+   "label": "File ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-07-09 12:57:45.038800",
+ "modified": "2025-07-14 11:53:39.464012",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Payment Approval",
