@@ -80,6 +80,7 @@
   "printing_settings",
   "select_print_heading",
   "print_settings_col_break",
+  "return_work_order",
   "letter_head",
   "more_info",
   "is_opening",
@@ -785,6 +786,14 @@
    "fieldtype": "Currency",
    "label": "Total Incoming Value (Receipt)",
    "read_only": 1
+  },
+  {
+   "fieldname": "return_work_order",
+   "fieldtype": "Data",
+   "label": "Return Work Order",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -792,7 +801,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-06 20:14:14.532559",
+ "modified": "2025-07-14 12:20:50.522382",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",

@@ -232,6 +232,7 @@ class StockEntry(StockEntryAsset, StockController):
 			self.set_material_request_transfer_status("Completed")
 		
 		self.create_asset_stock()
+		self.set_close_materials()
 
 	def on_cancel(self):
 		self.update_subcontract_order_supplied_items()
@@ -257,6 +258,19 @@ class StockEntry(StockEntryAsset, StockController):
 			self.set_material_request_transfer_status("Not Started")
 		if self.purpose == "Material Transfer" and self.outgoing_stock_entry:
 			self.set_material_request_transfer_status("In Transit")
+		self.set_close_materials()
+
+	def set_close_materials(self):
+		if not self.return_work_order:
+			return
+		
+		cancel = self.docstatus == 2
+
+		if not cancel:
+			frappe.db.set_value("Work Order", self.return_work_order, "material_returned", 1)
+		else:
+			frappe.db.set_value("Work Order", self.return_work_order, "material_returned", 0)
+
 
 	def set_job_card_data(self):
 		if self.job_card and not self.work_order:

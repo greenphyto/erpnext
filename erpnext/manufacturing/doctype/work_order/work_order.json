@@ -84,7 +84,8 @@
   "production_plan_item",
   "production_plan_sub_assembly_item",
   "product_bundle_item",
-  "amended_from"
+  "amended_from",
+  "material_returned"
  ],
  "fields": [
   {
@@ -661,6 +662,16 @@
    "fieldtype": "Check",
    "label": "Is Salad Item",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.status == \"CLosed\"",
+   "fieldname": "material_returned",
+   "fieldtype": "Check",
+   "label": "Material Returned",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "icon": "fa fa-cogs",
@@ -668,7 +679,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-18 18:01:10.374479",
+ "modified": "2025-07-14 12:24:17.396538",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",

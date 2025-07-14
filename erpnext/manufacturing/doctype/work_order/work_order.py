@@ -1823,7 +1823,7 @@ def make_scrap_materials(work_order):
 	stock_entry = frappe.new_doc("Stock Entry")
 	stock_entry.from_bom = 1
 	stock_entry.is_return = 1
-	stock_entry.work_order = work_order
+	stock_entry.return_work_order = work_order
 	stock_entry.purpose = "Material Transfer for Manufacture"
 	stock_entry.bom_no = wo_doc.bom_no
 	stock_entry.add_transfered_raw_materials_in_items()
