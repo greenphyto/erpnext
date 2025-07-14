@@ -232,6 +232,7 @@ class StockEntry(StockEntryAsset, StockController):
 			self.set_material_request_transfer_status("Completed")
 		
 		self.create_asset_stock()
+		self.set_close_materials()
 
 	def on_cancel(self):
 		self.update_subcontract_order_supplied_items()
@@ -267,6 +268,9 @@ class StockEntry(StockEntryAsset, StockController):
 		if self.fg_completed_qty != wo_qty:
 			return
 				
+		if not self.return_work_order:
+			return
+		
 		cancel = self.docstatus == 2
 
 		if not cancel:

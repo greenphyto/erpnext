@@ -190,8 +190,8 @@ frappe.ui.form.on("Work Order", {
 				return flt(d.consumed_qty) < flt(d.transferred_qty - d.returned_qty)
 			});
 
-			if (non_consumed_items && non_consumed_items.length) {
-				frm.add_custom_button(__("Return Components"), function() {
+			if (non_consumed_items && non_consumed_items.length && cint(frm.doc.material_returned)==0) {
+				frm.add_custom_button(__("Scrap Components"), function() {
 					frm.trigger("create_stock_return_entry");
 				}).addClass("btn-primary");
 			}

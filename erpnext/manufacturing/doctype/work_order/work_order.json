@@ -85,7 +85,8 @@
   "production_plan_item",
   "production_plan_sub_assembly_item",
   "product_bundle_item",
-  "amended_from"
+  "amended_from",
+  "material_returned"
  ],
  "fields": [
   {
