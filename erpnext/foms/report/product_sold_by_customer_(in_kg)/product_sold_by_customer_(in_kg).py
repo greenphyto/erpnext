@@ -1,13 +1,11 @@
 # Copyright (c) 2013, erfidner.id and contributors
 # For license information, please see license.txt
 
-"""
-Report for daily accumulation broker vs stock
-"""
 
 import frappe
 from datetime import datetime
 import calendar
+from frappe.utils import getdate
 
 def execute(filters=None):
 	return Report(filters).execute()
@@ -21,12 +19,16 @@ class Report():
 		self.filters = filters
 
 	def setup_condition(self):
-		self.cond = " AND YEAR(si.posting_date) = %(year)s "
+		self.cond = ""
+		if self.filters.get("year"):
+			date = frappe.get_value("Fiscal Year", self.filters.year, "year_start_date")
+			self.filters.year = getdate(date).strftime("%Y")
+			self.cond += " and YEAR(si.posting_date) = %(year)s "
 
 		if self.filters.get("customer"):
-			self.cond += " AND si.customer = %(customer)s"
+			self.cond += " AND si.customer = %(customer)s "
 		if self.filters.get("item_code"):
-			self.cond += " AND sii.item_code = %(item_code)s"
+			self.cond += " AND sii.item_code = %(item_code)s "
 
 	def setup_column(self):
 		columns = [

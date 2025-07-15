@@ -2,15 +2,16 @@
 // For license information, please see license.txt
 /* eslint-disable */
 
-frappe.query_reports["Product Sold by Customer"] = {
+frappe.query_reports["Product Sold by Customer (in Kg)"] = {
 	"filters": [
-		{
-			"fieldname": "year",
-			"label": "Year",
-			"fieldtype": "Int",
-			"default": 2025,
-			"reqd":1
-		},
+        {
+            fieldname: "year",
+            label: "Year",
+            fieldtype: "Link",
+            default: frappe.datetime.get_today().split("-")[0],
+            options: "Fiscal Year",
+            reqd: 1
+        },
 		{
 			"fieldname": "customer",
 			"label": "Customer",
