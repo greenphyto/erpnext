@@ -46,6 +46,7 @@ class VATAuditReport(object):
 			self.setup_data()
 			self.get_journal_entry_data(doctype)
 			self.get_invoice_data(doctype)
+			self.get_tax_from_gl_entry(doctype)
 
 			if self.invoices:
 				self.get_invoice_items(doctype)
@@ -149,7 +150,42 @@ class VATAuditReport(object):
 		for d in items:
 			self.invoice_items.setdefault(d.parent, {}).setdefault(d.item_code, {"net_amount": 0.0})
 			self.invoice_items[d.parent][d.item_code]["net_amount"] += d.get("base_net_amount", 0)
-		##	self.invoice_items[d.parent][d.item_code]["is_zero_rated"] = d.is_zero_rated
+	
+	def get_tax_from_gl_entry(self, doctype):
+		tax_table = (
+			"tabSales Taxes and Charges" if doctype == "Sales Invoice"
+			else "tabPurchase Taxes and Charges"
+		)
+
+		voucher_no = list(self.invoices.keys())
+
+		gl_tax = frappe.db.sql("""
+			SELECT
+				gle.voucher_type,
+				gle.voucher_no,
+				SUM(gle.credit_in_account_currency - gle.debit_in_account_currency) AS tax_amount
+			FROM
+				`tabGL Entry` gle
+			INNER JOIN
+				`{}` tax
+				ON gle.account = tax.account_head
+				AND gle.voucher_no = tax.parent
+			WHERE
+				gle.docstatus = 1
+				AND gle.voucher_type = %(voucher_type)s
+				AND gle.voucher_no IN %(voucher_no)s
+			GROUP BY
+				gle.voucher_type, gle.voucher_no
+		""".format(tax_table), {
+			"voucher_type":doctype, 
+			"voucher_no":voucher_no
+		}, as_dict=1, debug=0)
+		
+		self.tax_amount_map = {}
+		for row in gl_tax:
+			self.tax_amount_map[(row.voucher_type, row.voucher_no)] = flt(row.tax_amount)
+
+	
 	def get_tax_types(self, doctype):
 		tax_type = frappe._dict()
 		tax_doctype = (
@@ -321,19 +357,12 @@ class VATAuditReport(object):
 				if (self.filters.show_details):
 					invoice_detail.append(row)
 
-				total_gross += 0 if  row["gross_amount"]=="" else flt(row["gross_amount"])
 				total_tax += 0 if  row["tax_amount"] =="" else  flt(row["tax_amount"])
-				total_net += 0 if row["net_amount"] =="" else flt(row["net_amount"])
-			
-			# add cancelled
-			# if self.filters.show_details:
-			# 	invoice_detail += pi_cancel
-			# 	invoice_detail += si_cancel
+				total_gross += 0 if  row["gross_amount"]=="" else flt(row["gross_amount"])
+				if row['voucher_type'] == "Sales Invoice":
+					print(300,row['posting_date'],row['voucher_no'], row["tax_amount"], total_tax)
 
-			def sort_by_data(dt):
-				return getdate(dt.get("inv_date"))
-			
-			# invoice_detail.sort(key = sort_by_data)
+			total_net = total_gross - total_tax
 			
 			self.data += invoice_detail
 			totalstr = _("Total value of taxable ") if doctype == "Purchase Invoice" else _("Total value of taxable ")
@@ -344,7 +373,6 @@ class VATAuditReport(object):
 				"tax_amount": fmt_money(total_tax),
 				"net_amount": fmt_money(total_net),
 				"bold": 0,
-				#"voucher_type":"noclick",
 			}
 			
 			self.data.append(total)
@@ -636,13 +664,17 @@ class VATAuditReport(object):
 						rowgross_amount = 0.0 if item_details.get("gross_amount") =="" else item_details.get("gross_amount")
 
 						row["gross_amount"] += item_details.get("gross_amount")
-						row["tax_amount"] +=  item_details.get("tax_amount")
-						row["net_amount"] += item_details.get("net_amount")
+						key = (inv_data.get("voucher_type"), inv)
+						gl_tax_amount = self.tax_amount_map.get(key)
+
+						if gl_tax_amount is not None:
+							row["tax_amount"] = flt(gl_tax_amount)
+						else:
+							row["tax_amount"] += item_details.get("tax_amount")
 						row["tax_charge"] = inv_data.get("taxes_and_charges")
       
-				 	
+					row["net_amount"] = fmt_money( flt(row["gross_amount"]) - row["tax_amount"] )
 					row["tax_amount"] = fmt_money(row["tax_amount"] )
-					row["net_amount"] = fmt_money(row["net_amount"] )
 					row["gross_amount"] = fmt_money(row["gross_amount"] )
 					consolidated_data_map[taxType]["data"].append(row)
 
