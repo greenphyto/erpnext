@@ -21,8 +21,16 @@ def check_email_status(log, method=""):
 	notif.send(doc)
 
 def read_email_inbox(doc, method=""):
+	ignore_list = ["google.com"]
 	if doc.communication_type != "Communication" and doc.is_new():
 		return
+	
+	# because this email has "invoice" in his name (invoices@gmail.com)
+	# so we need to ignore the sender if from google itself
+	# exp: email security etc
+	for d in ignore_list:
+		if d in doc.sender:
+			return
 	
 	enable = cint(frappe.get_value("Buying Settings","Buying Settings", 'enable_supplier_invoice'))
 	invoice_email_default = frappe.get_value("Buying Settings","Buying Settings", 'default_email_inbox')
