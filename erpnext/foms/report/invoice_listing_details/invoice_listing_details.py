@@ -113,7 +113,7 @@ class Report():
 				s.docstatus = 1
 				{}
 			ORDER BY s.posting_date desc
-		""".format(self.cond), self.filters, as_dict=1, debug=1)
+		""".format(self.cond), self.filters, as_dict=1)
 
 		self.raw_data_single = frappe.db.sql("""
 			SELECT 

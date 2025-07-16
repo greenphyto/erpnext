@@ -1195,7 +1195,6 @@ def get_stock_ledger_entries(
 	if operator in (">", "<=") and previous_sle.get("name"):
 		conditions += " and name!=%(name)s"
 
-	debug=1
 	return frappe.db.sql(
 		"""
 		select *, timestamp(posting_date, posting_time) as "timestamp"
