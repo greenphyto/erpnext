@@ -17,6 +17,7 @@ from frappe.custom.doctype.custom_field.custom_field import (
 )
 from frappe.model.document import Document
 from frappe.utils.data import format_datetime
+from frappe.utils import safe_abs as abs
 
 from erpnext import encode_company_abbr
 from erpnext.accounts.doctype.account.chart_of_accounts.chart_of_accounts import create_charts

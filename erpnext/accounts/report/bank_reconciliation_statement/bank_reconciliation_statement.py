@@ -8,6 +8,7 @@ from frappe.query_builder.custom import ConstantColumn
 from frappe.query_builder.functions import Sum
 from frappe.utils import flt, getdate
 from pypika import CustomFunction
+from frappe.utils import safe_abs as abs
 
 from erpnext.accounts.utils import get_balance_on
 

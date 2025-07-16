@@ -19,6 +19,7 @@ from frappe.utils import (
 	nowdate,
 	safe_json_loads,
 )
+from frappe.utils import safe_abs as abs
 
 from erpnext.controllers.stock_controller import StockController
 from erpnext.stock.get_item_details import get_reserved_qty_for_so

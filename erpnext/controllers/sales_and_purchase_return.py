@@ -6,6 +6,7 @@ import frappe
 from frappe import _
 from frappe.model.meta import get_field_precision
 from frappe.utils import flt, format_datetime, get_datetime
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.stock.utils import get_incoming_rate

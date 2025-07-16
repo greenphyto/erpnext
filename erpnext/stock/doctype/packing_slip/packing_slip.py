@@ -7,6 +7,7 @@ from frappe import _
 from frappe.model import no_value_fields
 from frappe.model.document import Document
 from frappe.utils import cint, flt
+from frappe.utils import safe_abs as abs
 
 
 class PackingSlip(Document):

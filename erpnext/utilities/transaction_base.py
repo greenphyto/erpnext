@@ -6,6 +6,7 @@ import frappe
 import frappe.share
 from frappe import _
 from frappe.utils import cint, flt, get_time, now_datetime, get_datetime
+from frappe.utils import safe_abs as abs
 
 from erpnext.controllers.status_updater import StatusUpdater
 

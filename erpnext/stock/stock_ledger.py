@@ -10,6 +10,7 @@ from frappe import _
 from frappe.model.meta import get_field_precision
 from frappe.query_builder.functions import CombineDatetime, Sum
 from frappe.utils import cint, cstr, flt, get_link_to_form, getdate, now, nowdate
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.stock.doctype.bin.bin import update_qty as update_bin_qty

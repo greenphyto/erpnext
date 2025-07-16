@@ -21,6 +21,7 @@ from frappe.utils import (
 	nowdate,
 	today,
 )
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (

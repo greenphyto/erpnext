@@ -9,6 +9,7 @@ from frappe import _, qb, scrub
 from frappe.query_builder import Criterion
 from frappe.query_builder.functions import Date
 from frappe.utils import cint, cstr, flt, getdate, nowdate
+from frappe.utils import safe_abs as abs
 
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 	get_accounting_dimensions,

@@ -9,6 +9,7 @@ from frappe.model.mapper import get_mapped_doc
 from frappe.query_builder.functions import CombineDatetime
 from frappe.utils import cint, flt, getdate, nowdate
 from pypika import functions as fn
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.accounts.utils import get_account_currency

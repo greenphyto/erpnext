@@ -8,6 +8,7 @@ from frappe.model.document import Document
 from frappe.query_builder.custom import ConstantColumn
 from frappe.query_builder.functions import IfNull
 from frappe.utils import flt, getdate, nowdate, today
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.accounts.utils import (

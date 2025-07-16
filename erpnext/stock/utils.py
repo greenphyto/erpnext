@@ -9,6 +9,7 @@ import frappe
 from frappe import _
 from frappe.query_builder.functions import CombineDatetime
 from frappe.utils import cstr, flt, get_link_to_form, nowdate, nowtime
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.stock.valuation import FIFOValuation, LIFOValuation

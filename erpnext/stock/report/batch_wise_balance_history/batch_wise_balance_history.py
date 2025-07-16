@@ -6,6 +6,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, flt, getdate
 from pypika import functions as fn
+from frappe.utils import safe_abs as abs
 
 from erpnext.stock.doctype.warehouse.warehouse import apply_warehouse_filter
 

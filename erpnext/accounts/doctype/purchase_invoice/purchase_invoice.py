@@ -6,6 +6,7 @@ import frappe
 from frappe import _, throw
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cint, cstr, flt, formatdate, get_link_to_form, getdate, nowdate
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.accounts.deferred_revenue import validate_service_stop_date

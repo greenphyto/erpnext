@@ -6,6 +6,7 @@ from functools import reduce
 
 import frappe
 from frappe.utils import flt
+from frappe.utils import safe_abs as abs
 
 from erpnext.controllers.status_updater import StatusUpdater
 
