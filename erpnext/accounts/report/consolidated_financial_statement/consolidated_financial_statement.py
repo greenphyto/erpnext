@@ -7,6 +7,7 @@ from collections import defaultdict
 import frappe
 from frappe import _
 from frappe.utils import cint, flt, getdate
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.accounts.report.balance_sheet.balance_sheet import (

@@ -7,6 +7,7 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 from frappe.utils.nestedset import get_descendants_of
+from frappe.utils import safe_abs as abs
 
 SLE_FIELDS = (
 	"name",

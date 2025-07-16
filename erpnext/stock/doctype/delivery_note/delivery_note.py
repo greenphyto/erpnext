@@ -12,6 +12,9 @@ from frappe.utils import cint, flt,format_date, get_datetime, get_time, getdate
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from erpnext.stock import get_warehouse_account_map, get_item_account
 from erpnext.accounts.general_ledger import make_gl_entries
+from frappe.utils import cint, flt
+from frappe.utils import safe_abs as abs
+
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.controllers.selling_controller import SellingController
 from erpnext.stock.doctype.batch.batch import set_batch_nos

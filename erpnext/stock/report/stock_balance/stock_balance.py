@@ -10,6 +10,7 @@ from frappe import _
 from frappe.query_builder.functions import CombineDatetime
 from frappe.utils import cint, date_diff, flt, getdate
 from frappe.utils.nestedset import get_descendants_of
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.stock.doctype.inventory_dimension.inventory_dimension import get_inventory_dimensions

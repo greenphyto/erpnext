@@ -5,6 +5,8 @@
 import frappe, json
 from frappe import _
 from frappe.utils import add_months, cint, flt, getdate, nowdate, today
+from frappe.utils import safe_abs as abs
+from frappe.utils import safe_abs as abs
 
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 	get_checks_for_pl_and_bs_accounts,

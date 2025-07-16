@@ -6,6 +6,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import comma_or, flt, getdate, now, nowdate
+from frappe.utils import safe_abs as abs
 
 
 class OverAllowanceError(frappe.ValidationError):

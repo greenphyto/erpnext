@@ -8,6 +8,7 @@ import math
 import frappe
 from frappe.utils import flt
 from frappe.utils.nestedset import NestedSet, update_nsm
+from frappe.utils import safe_abs as abs
 
 EARTH_RADIUS = 6378137
 

@@ -4,6 +4,7 @@
 import frappe
 from frappe import _
 from frappe.utils import flt
+from frappe.utils import safe_abs as abs
 
 
 def execute(filters=None):

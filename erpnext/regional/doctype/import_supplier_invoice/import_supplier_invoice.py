@@ -13,6 +13,7 @@ from frappe.model.document import Document
 from frappe.utils import flt, get_datetime_str, today
 from frappe.utils.data import format_datetime
 from frappe.utils.file_manager import save_file
+from frappe.utils import safe_abs as abs
 
 import erpnext
 

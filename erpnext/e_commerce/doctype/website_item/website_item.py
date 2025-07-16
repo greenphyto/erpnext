@@ -13,6 +13,7 @@ from frappe import _
 from frappe.utils import cint, cstr, flt, random_string
 from frappe.website.doctype.website_slideshow.website_slideshow import get_slideshow
 from frappe.website.website_generator import WebsiteGenerator
+from frappe.utils import safe_abs as abs
 
 from erpnext.e_commerce.doctype.item_review.item_review import get_item_reviews
 from erpnext.e_commerce.redisearch_utils import (

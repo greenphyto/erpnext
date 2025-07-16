@@ -8,6 +8,7 @@ from typing import Dict, List, Tuple, Union
 import frappe
 from frappe import _
 from frappe.utils import cint, date_diff, flt
+from frappe.utils import safe_abs as abs
 
 from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
 

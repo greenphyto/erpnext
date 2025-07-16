@@ -15,7 +15,7 @@ from erpnext.controllers.sales_and_purchase_return import get_rate_for_return
 from erpnext.controllers.subcontracting_controller import SubcontractingController
 from erpnext.stock.get_item_details import get_conversion_factor
 from erpnext.stock.utils import get_incoming_rate
-
+from frappe.utils import safe_abs as abs
 
 class QtyMismatchError(ValidationError):
 	pass

@@ -6,6 +6,7 @@ import frappe
 from frappe import _, qb, scrub
 from frappe.query_builder import Order
 from frappe.utils import cint, flt, formatdate
+from frappe.utils import safe_abs as abs
 
 from erpnext.controllers.queries import get_match_cond
 from erpnext.stock.report.stock_ledger.stock_ledger import get_item_group_condition

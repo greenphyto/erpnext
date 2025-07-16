@@ -15,6 +15,7 @@ from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 )
 from erpnext.accounts.doctype.budget.budget import validate_expense_against_budget
 from erpnext.accounts.utils import create_payment_ledger_entry
+from frappe.utils import safe_abs as abs
 
 
 class ClosedAccountingPeriod(frappe.ValidationError):
