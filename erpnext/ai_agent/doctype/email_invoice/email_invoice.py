@@ -9,9 +9,9 @@ from frappe.utils import flt, getdate, get_time
 from erpnext.controllers.erp import get_supplier_context
 import os
 
-MAX_DISPLAY_LENGTH = 2000
-SHORT_HEAD = 600
-SHORT_TAIL = 1400
+MAX_DISPLAY_LENGTH = 1000
+SHORT_HEAD = 300
+SHORT_TAIL = 700
 class EmailInvoice(Document):
 	def validate(self):
 		self.set_status()
@@ -61,6 +61,7 @@ class EmailInvoice(Document):
 		
 		# temporary detect invoice/not by attachment
 		if not file_doc_name:
+			self.unknown_reason = "Something issue with attachemnt"
 			return
 		
 		supp_context = get_supplier_context()
@@ -71,6 +72,7 @@ class EmailInvoice(Document):
 			# check valid file
 			full_path = fn.get_full_path()
 			if not os.path.exists(full_path):
+				self.unknown_reason = "Missing file on server"
 				continue
 
 			# copy attachment to current email
@@ -80,6 +82,7 @@ class EmailInvoice(Document):
 				res, full_path = convert_pdf_to_img(full_path)
 
 			if not res:
+				self.unknown_reason = full_path[-500:]
 				continue
 
 			temp = get_po_and_items(full_path, supp_context, self.sender)
