@@ -249,3 +249,170 @@ def find_po_exist(po_list):
 				return res
 			
 		return res
+
+import requests, json
+def get_erp_data(url_path, filters="", fields="", limit=100):
+	# get from ERP prod
+	BASE_URL = "https://erp.greenphyto.com"
+	API_KEY = frappe.local.conf.prod_api_key
+	API_SECRET = frappe.local.conf.prod_api_secret
+
+	api = requests.Session()
+	api.headers.update({
+		"Authorization": f"token {API_KEY}:{API_SECRET}"
+	})
+
+	params = {
+		"filters": filters,
+		"fields": fields,
+		"limit_page_length": limit,
+		"order_by": "creation desc"
+	}
+
+	res = api.get(f"{BASE_URL}/{url_path}", params=params)
+
+	if res.status_code == 200:
+		temp = res.json()
+		data = temp.get("data")
+		if data:
+			return data
+		else:
+			return {}
+	else:
+		return {}
+	
+# pull PO from ERP Production for testing
+def pull_erp_po():
+	if not frappe.local.conf.enable_pull_po:
+		return
+	
+	filters = [["docstatus", "=", 1]]
+	fields = ["name"]
+
+	# filter only on above creation of comment
+	# save creation on comment
+
+	po_list = []
+	po_list = get_erp_data("api/resource/Purchase Order", json.dumps(filters), json.dumps(fields), 10)
+
+	for p in po_list:
+		po_name = p.get("name")
+		temp = frappe.db.get_value("Purchase Order", po_name, ["name", "docstatus"], as_dict=1)
+		if temp:
+			if temp.docstatus == 0:
+				doc = frappe.get_doc("Purchase Order", temp.name)
+				doc.submit()
+			continue
+
+		po = get_erp_data(f"api/resource/Purchase Order/{po_name}")
+		
+		po = frappe._dict(po)
+		doc = frappe.new_doc("Purchase Order")
+		doc.__newname = po_name
+		doc.name = po_name
+
+		fields_map = [
+			# parent
+			"supplier", "transaction_date", "schedule_date", "taxes_and_charges",
+			"address_display", "contact_display", "currency", "non_stock_item"
+
+			# child items
+			"items.item_code", "items.item_name", "items.item_group", "items.schedule_date", "items.qty", "items.description", 
+			"items.uom", "items.rate", "items.price_list_rate",
+
+			# child taxes
+			"taxes.category", "taxes.add_deduct_tax", "taxes.charge_type", 
+			"taxes.account_head", "taxes.description", "taxes.rate"
+		]
+
+		tables = {}
+		for f in fields_map:
+			if "." in f:
+				table, field = f.split(".")
+				tables.setdefault(table, {})
+				for d in po.get(table):
+					d = frappe._dict(d)
+					tables[table].setdefault(d.name, {})
+					tables[table][d.name][field] = d.get(field)
+
+			else:
+				doc.set(f, po.get(f))
+		
+		for nm, val in tables['items'].items():
+			row = doc.append("items")
+			row.update(val)
+			val = frappe._dict(val)
+			row.schedule_date = getdate(row.schedule_date)
+			row.uom = get_uom(row.uom)
+			row.item_code = get_item_copy(val)
+
+
+		for nm, val in tables['taxes'].items():
+			# not yet for account head copy
+			row = doc.append("taxes")
+			row.update(val)
+			val = frappe._dict(val)
+		
+		doc.supplier = get_supplier_copy(doc.supplier, doc.currency)
+		doc.transaction_date = getdate(doc.transaction_date)
+		doc.schedule_date = getdate(doc.schedule_date)
+		doc.save()
+		doc.submit()
+
+	return
+
+
+def get_supplier_copy(supplier, currency):
+	exists = frappe.db.exists("Supplier", supplier)
+	if exists:
+		return exists
+	
+	doc = frappe.new_doc("Supplier")
+	doc.supplier_group = "All Supplier Groups"
+	doc.supplier_type = "Company"
+	doc.supplier_name = supplier
+	doc.default_currency = currency
+	doc.insert()
+
+	return doc.name
+
+def get_item_copy(args):
+	exists = frappe.db.exists("Item", args.item_code)
+	if exists:
+		return exists
+	
+	item = frappe.new_doc("Item")
+	item.item_code = args.item_code
+	item.item_name = args.item_name
+	item.item_group = get_item_group(args.item_group)
+	item.stock_uom = get_uom(args.uom)
+	item.description = args.description
+	item.insert()
+
+	return item.name
+
+def get_uom(uom):
+	exists = frappe.db.exists("UOM", uom)
+	if exists:
+		return exists
+	
+	doc = frappe.new_doc("UOM")
+	doc.uom_name = uom
+	doc.insert()
+
+	return doc.name
+
+def get_item_group(item_group):
+	exists = frappe.db.exists("Item Group", item_group)
+	if exists:
+		return exists
+	
+	doc = frappe.new_doc("UOM")
+	doc.item_group_name = item_group
+	doc.insert()
+
+	return doc.name
+
+
+
+
