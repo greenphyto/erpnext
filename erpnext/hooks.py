@@ -429,9 +429,6 @@ doc_events = {
 	},
     "Email Queue": {
         "validate":"erpnext.controllers.erp.check_email_status"
-	},
-    "Communication": {
-        "validate":"erpnext.controllers.erp.read_email_inbox"
 	}
 }
 
@@ -450,7 +447,8 @@ scheduler_events = {
             "erpnext.controllers.erp_api.run_pending_harvesting",
 		],
         "*/10 * * * *": [
-			"erpnext.controllers.uob.sync_uob_file"
+			"erpnext.controllers.uob.sync_uob_file",
+			"erpnext.controllers.erp.read_email_inbox"
 		],
 		"0/30 * * * *": [
 			"erpnext.utilities.doctype.video.video.update_youtube_data",

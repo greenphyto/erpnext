@@ -20,41 +20,103 @@ def check_email_status(log, method=""):
 	notif = frappe.get_doc("Notification", "Email Sent Status")
 	notif.send(doc)
 
-def read_email_inbox(doc, method=""):
-	ignore_list = ["google.com"]
-	if doc.communication_type != "Communication" and doc.is_new():
-		return
-	
-	# because this email has "invoice" in his name (invoices@gmail.com)
-	# so we need to ignore the sender if from google itself
-	# exp: email security etc
-	for d in ignore_list:
-		if d in doc.sender:
-			return
-	
+# change to scheduler 5 minutes each
+def read_email_inbox():
+	# settings
 	enable = cint(frappe.get_value("Buying Settings","Buying Settings", 'enable_supplier_invoice'))
 	invoice_email_default = frappe.get_value("Buying Settings","Buying Settings", 'default_email_inbox')
 	if not enable or not invoice_email_default:
 		return
-	
-	if doc.email_account != invoice_email_default:
-		return
-	
-	if doc.reference_doctype and doc.reference_name:
-		return
-	
-	message = "Subject: {}\nMessage: {}".format(doc.subject, doc.content)
-	if not is_invoice(message):
-		return
 
-	# create email invoice
-	em = frappe.new_doc("Email Invoice")
-	em.flags.ignore_links = True
-	em.flags.ignore_permissions = True
-	em.insert()
-	em.sync_email(doc = doc)
-	em.save()
+	# get all communication coming
+	email_list = frappe.db.sql("""
+	SELECT 
+		c.name,
+		c.subject,
+		c.sender,
+		c.creation
+	FROM
+		`tabCommunication` c
+			LEFT JOIN
+		`tabComment` com ON com.reference_doctype = 'Communication'
+			AND com.reference_name = c.name
+			AND com.comment_type = 'Info'
+			AND com.content = 'Checked by AI Agent'
+	WHERE
+		c.communication_type = 'Communication'
+			AND c.sent_or_received = 'Received'
+			AND com.name IS NULL
+			AND c.email_account = %s
+			AND (c.reference_name IS NULL
+			AND c.reference_doctype IS NULL)
+	ORDER BY c.creation ASC;
+		""", (invoice_email_default), as_dict=1 )
+	
+	# filters
+	ignore_list = ["google.com"]
+	def check_ignore(sender):
+		# because this email has "invoice" in his name (invoices@gmail.com)
+		# so we need to ignore the sender if from google itself
+		# exp: email security etc
+		for d in ignore_list:
+			if d in sender:
+				return True
+		return False
 
+
+	# process
+	for comm in email_list:
+		set_checked_ai_status("Communication", comm.name)
+		
+		if check_ignore(comm.sender):
+			continue
+
+		if not is_invoice(comm.subject):
+			continue
+
+		_read_email_inbox(comm.name)
+
+def _read_email_inbox(doc_name):
+
+	doc = frappe.get_doc("Communication", doc_name)
+	
+	# check more deep
+	if not is_invoice(doc.content):
+		return
+	
+	exists = frappe.db.exists("Email Invoice", {"inbox":doc.name})
+	if exists:
+		return
+	else:
+		# create email invoice
+		em = frappe.new_doc("Email Invoice")
+		em.flags.ignore_links = True
+		em.flags.ignore_permissions = True
+		em.insert()
+		em.sync_email(doc = doc)
+		em.save()
+		print("Create", doc.name, em.name)
+
+def get_checked_ai_status(cdt, com_name):
+	# get checked status on email receive
+	exists = frappe.db.exists("Comment", {
+		"reference_name":com_name,
+		"reference_doctype": cdt,
+		"content":"Checked by AI Agent",
+		"comment_type":"Info"
+	})
+	return exists
+
+def set_checked_ai_status(cdt, com_name):
+	# get checked status on email receive
+	frappe.get_doc({
+		"doctype": "Comment",
+		"comment_type": "Info",
+		"reference_doctype": cdt,
+		"reference_name": com_name,
+		"content": "Checked by AI Agent",
+		"comment_by": "AI Agent"
+	}).insert(ignore_permissions=True)
 
 def is_invoice(text):
     text = text.lower()

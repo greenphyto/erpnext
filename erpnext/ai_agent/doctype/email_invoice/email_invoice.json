@@ -21,6 +21,7 @@
   "status",
   "po_no",
   "invoice_no",
+  "unknown_reason",
   "more_information_section",
   "message_id",
   "inbox"
@@ -126,12 +127,19 @@
    "fieldtype": "Small Text",
    "label": "Bcc",
    "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.status == \"Unkown\"",
+   "fieldname": "unknown_reason",
+   "fieldtype": "Small Text",
+   "label": "Unknown Reason",
+   "read_only": 1
   }
  ],
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-11 23:15:43.633975",
+ "modified": "2025-07-17 13:02:24.560824",
  "modified_by": "Administrator",
  "module": "AI Agent",
  "name": "Email Invoice",
