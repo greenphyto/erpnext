@@ -10,7 +10,6 @@ from frappe import _
 from frappe.contacts.report.addresses_and_contacts import test_addresses_and_contacts
 from frappe.utils import formatdate, get_link_to_form, flt,fmt_money, getdate, get_url_to_form
 
-
 def execute(filters=None):
 
 	return VATAuditReport(filters).run()
@@ -163,7 +162,8 @@ class VATAuditReport(object):
 			SELECT
 				gle.voucher_type,
 				gle.voucher_no,
-				SUM(gle.credit_in_account_currency - gle.debit_in_account_currency) AS tax_amount
+				SUM(gle.credit - gle.debit) AS tax_amount_output,
+				SUM(gle.debit - gle.credit) AS tax_amount_input
 			FROM
 				`tabGL Entry` gle
 			INNER JOIN
@@ -183,7 +183,11 @@ class VATAuditReport(object):
 		
 		self.tax_amount_map = {}
 		for row in gl_tax:
-			self.tax_amount_map[(row.voucher_type, row.voucher_no)] = flt(row.tax_amount)
+			if doctype == "Sales Invoice":
+				self.tax_amount_map[(row.voucher_type, row.voucher_no)] = flt(row.tax_amount_output)
+			else:
+				self.tax_amount_map[(row.voucher_type, row.voucher_no)] = flt(row.tax_amount_input)
+
 
 	
 	def get_tax_types(self, doctype):
@@ -670,7 +674,7 @@ class VATAuditReport(object):
 						if gl_tax_amount is not None:
 							row["tax_amount"] = flt(gl_tax_amount)
 						else:
-							row["tax_amount"] += item_details.get("tax_amount")
+							row["tax_amount"] += flt(item_details.get("tax_amount"))
 						row["tax_charge"] = inv_data.get("taxes_and_charges")
       
 					row["net_amount"] = fmt_money( flt(row["gross_amount"]) - row["tax_amount"] )
