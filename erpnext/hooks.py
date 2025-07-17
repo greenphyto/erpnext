@@ -418,9 +418,6 @@ doc_events = {
 	},
     "Email Queue": {
         "validate":"erpnext.controllers.erp.check_email_status"
-	},
-    "Communication": {
-        "validate":"erpnext.controllers.erp.read_email_inbox"
 	}
 }
 
@@ -437,6 +434,9 @@ scheduler_events = {
 			"erpnext.manufacturing.doctype.bom_update_log.bom_update_log.resume_bom_cost_update_jobs",
             "erpnext.controllers.erp_api.run_pending_harvesting_transfer",
             "erpnext.controllers.erp_api.run_pending_harvesting",
+		],
+        "*/10 * * * *": [
+			"erpnext.controllers.erp.read_email_inbox"
 		],
 		"0/30 * * * *": [
 			"erpnext.utilities.doctype.video.video.update_youtube_data",

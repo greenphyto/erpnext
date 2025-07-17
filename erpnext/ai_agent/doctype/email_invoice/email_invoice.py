@@ -7,6 +7,11 @@ from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_i
 from erpnext.controllers.va2 import extract_invoice_data, get_po_number, get_item_detail, get_po_and_items
 from frappe.utils import flt, getdate, get_time
 from erpnext.controllers.erp import get_supplier_context
+import os
+
+MAX_DISPLAY_LENGTH = 2000
+SHORT_HEAD = 600
+SHORT_TAIL = 1400
 class EmailInvoice(Document):
 	def validate(self):
 		self.set_status()
@@ -26,7 +31,17 @@ class EmailInvoice(Document):
 		self.sender = doc.sender
 		self.cc = doc.cc
 		self.bcc = doc.bcc
-		self.message = doc.content
+		content = ""
+		if len(doc.content or "") > MAX_DISPLAY_LENGTH:
+			content = (
+				(doc.content or "")[:SHORT_HEAD]
+				+ "<br><br><--- Message hidden because too long ---><br><br>"
+				+ (doc.content or "")[-SHORT_TAIL:]
+			)
+		else:
+			content = doc.content or ""
+
+		self.message = content
 		self.received_date = getdate(doc.communication_date)
 		self.time = get_time(doc.communication_date)
 		self.subject = doc.subject
@@ -53,10 +68,14 @@ class EmailInvoice(Document):
 			
 			fn = frappe.get_doc('File', file_name)
 
+			# check valid file
+			full_path = fn.get_full_path()
+			if not os.path.exists(full_path):
+				continue
+
 			# copy attachment to current email
 			self.add_attachment_copy(fn)
 
-			full_path = fn.get_full_path()
 			if ".pdf" in full_path:
 				res, full_path = convert_pdf_to_img(full_path)
 
