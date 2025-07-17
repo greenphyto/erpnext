@@ -80,10 +80,13 @@ class EmailInvoice(Document):
 
 			if ".pdf" in full_path:
 				res, full_path = convert_pdf_to_img(full_path)
+				if not res:
+					self.unknown_reason = full_path[-500:]
+					continue
+			else:
+				# not pdf
+				continue 
 
-			if not res:
-				self.unknown_reason = full_path[-500:]
-				continue
 
 			temp = get_po_and_items(full_path, supp_context, self.sender)
 			if temp and temp.get("result"):
