@@ -84,7 +84,8 @@ def _read_email_inbox(doc_name):
 	doc = frappe.get_doc("Communication", doc_name)
 	
 	# check more deep
-	if not is_invoice(doc.content):
+	message = f"{doc.subject}|{doc.content}"
+	if not is_invoice(message):
 		return
 	
 	exists = frappe.db.exists("Email Invoice", {"inbox":doc.name})
