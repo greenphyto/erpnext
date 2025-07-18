@@ -192,6 +192,7 @@ Return result in this JSON structure (no explanation, no markdown):
     }
   ],
   "email": "email company in header or any email with @ mark", 
+  "currency": "in capitalize what is the currency is using"
   "company": "company name in header, use reference supplier as company name existing in system or use orignal name if not found"
 }
 
