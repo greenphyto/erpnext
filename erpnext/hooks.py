@@ -434,8 +434,6 @@ scheduler_events = {
 			"erpnext.manufacturing.doctype.bom_update_log.bom_update_log.resume_bom_cost_update_jobs",
             "erpnext.controllers.erp_api.run_pending_harvesting_transfer",
             "erpnext.controllers.erp_api.run_pending_harvesting",
-		],
-        "*/10 * * * *": [
 			"erpnext.controllers.erp.read_email_inbox"
 		],
 		"0/30 * * * *": [
@@ -503,6 +501,7 @@ scheduler_events = {
         "erpnext.controllers.foms.get_recipe",
 		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_items",
 		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_product",
+        "erpnext.ai_agent.doctype.email_invoice.email_invoice.pull_erp_po"
 	],
 	"weekly": [
 		"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_weekly",
