@@ -52,6 +52,9 @@ class EmailInvoice(Document):
 
 	def process_email(self, doc=None):
 		result = []
+		if not doc and self.inbox:
+			doc = frappe.get_doc("Communication", self.inbox)
+
 		msg = doc.content
 
 		# should check if this invoice or not
@@ -131,8 +134,13 @@ class EmailInvoice(Document):
 				if res.get("po_no"):
 					name = self.create_invoice(res)
 				else:
-					name = self.create_purchase_invoice_non_stock(res)
+					r, name = self.create_purchase_invoice_non_stock(res)
+					if not r:
+						self.unknown_reason = name
+						frappe.throw(name)
+
 			except Exception as e:
+				name = ""
 				self.unknown_reason = f"error system: {e}"
 				self.error_trace = get_traceback()
 
@@ -160,7 +168,13 @@ class EmailInvoice(Document):
 		})
 		new_file.insert()
 
-	def create_invoice(self, data):
+	def create_invoice(self, data=""):
+		if not data:
+			data = json.loads(self.data_result)
+
+		if not data:
+			return
+	
 		# make PI
 		doc = make_purchase_invoice(data.get("po_no"))
 		doc.set_default_number_fields()
@@ -173,6 +187,9 @@ class EmailInvoice(Document):
 				row = rows[0]
 				row.rate = flt(d['rate'])
 				row.qty = flt(d['qty'])
+
+		# add GST 
+		doc.taxes_and_charges = get_gst_template(data.get("gst_percent"))
 
 		doc.flags.ignore_mandatory = 1
 		doc.flags.ignore_permissions = 1
@@ -192,15 +209,21 @@ class EmailInvoice(Document):
 
 		return doc.name
 	
-	def create_purchase_invoice_non_stock(self, data):
+	def create_purchase_invoice_non_stock(self, data=None):
+		if not data:
+			data = json.loads(self.data_result)
+
+		if not data:
+			return False, "Missing data"
+		
 		supplier=data.get("supplier")
-		currency=data.get("currency") or "SGD"
 		items=data.get("items")
 		file_name=data.get("file")
 		doc = frappe.new_doc("Purchase Invoice")
-		doc.supplier = get_supplier_copy(supplier, currency) #temporary
+		doc.supplier = frappe.db.exists("Supplier", supplier)
 		doc.non_stock_item = 1
 		doc.created_with_ai = 1
+		currency = []
 		for d in items:
 			row = doc.append("items")
 			row.item_code = "Non-stock"
@@ -210,6 +233,19 @@ class EmailInvoice(Document):
 			row.rate = flt(d.get("rate"))
 			row.uom = get_uom(d.get("uom") or "Nos")
 			row.amount = flt(d.get("amount"))
+			curr = d.get("currency")
+			if curr and curr not in currency:
+				currency.append(curr)
+		
+		if len(currency) > 1:
+			return False, "Multiple currency used on invoice"
+		if currency:
+			doc.currency = currency[0]
+		else:
+			doc.currency = "SGD"			
+
+		# add GST
+		doc.taxes_and_charges = get_gst_template(data.get("gst_percent"))
 		
 		doc.flags.ignore_mandatory = 1
 		doc.flags.ignore_permissions = 1
@@ -227,7 +263,26 @@ class EmailInvoice(Document):
 		})
 		attachment.insert()
 
-		return doc.name
+		return True, doc.name
+	
+def get_gst_template(rate):
+	rate = flt(rate)
+	res = frappe.db.sql("""
+	SELECT DISTINCT
+		stct.name
+	FROM
+		`tabPurchase Taxes and Charges Template` stct
+			JOIN
+		`tabPurchase Taxes and Charges` stc ON stct.name = stc.parent
+	WHERE
+		stc.rate = %i
+			AND stc.parenttype = 'Purchase Taxes and Charges Template';
+
+			   """, (rate), as_dict=1)
+	if res and res.get("name"):
+		return res.name
+	else:
+		return  ""
 
 def convert_pdf_to_img(path):
 	import fitz  # PyMuPDF
