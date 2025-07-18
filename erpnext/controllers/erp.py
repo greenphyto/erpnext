@@ -35,6 +35,7 @@ def read_email_inbox():
 		c.subject,
 		c.sender,
 		c.creation,
+		c.email_account,
 		c.reference_name,
 		c.reference_doctype
 	FROM
@@ -49,8 +50,8 @@ def read_email_inbox():
 			AND c.sent_or_received = 'Received'
 			AND com.name IS NULL
 			AND c.email_account = %s
-			AND (c.reference_name IN (NULL , '')
-			OR c.reference_doctype IN (NULL , ''))
+			AND (COALESCE(c.reference_name, '') = ''
+			OR COALESCE(c.reference_doctype, '') = '')
 	ORDER BY c.creation ASC limit 5
 		""", (invoice_email_default), as_dict=1 , debug=0)
 	

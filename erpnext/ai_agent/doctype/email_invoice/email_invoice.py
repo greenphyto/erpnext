@@ -18,12 +18,11 @@ class EmailInvoice(Document):
 		self.set_status()
 
 	def set_status(self):
-		if self.po_no:
-			if self.invoice_no:
-				self.unknown_reason = ""
-				self.status = "Matched"
-			else:
-				self.status = "Pending"
+		if self.invoice_no:
+			self.unknown_reason = ""
+			self.status = "Matched"
+		elif self.po_no:
+			self.status = "Pending"
 		else:
 			self.status = "Unknown"
 
@@ -170,6 +169,7 @@ class EmailInvoice(Document):
 		for d in data.get("items"):
 			rows = doc.get("items", {"item_code":d['item_code']})
 			if rows:
+				# rate from PDF
 				row = rows[0]
 				row.rate = flt(d['rate'])
 				row.qty = flt(d['qty'])
@@ -194,10 +194,11 @@ class EmailInvoice(Document):
 	
 	def create_purchase_invoice_non_stock(self, data):
 		supplier=data.get("supplier")
+		currency=data.get("currency") or "SGD"
 		items=data.get("items")
 		file_name=data.get("file")
 		doc = frappe.new_doc("Purchase Invoice")
-		doc.supplier = get_supplier_copy(supplier, "SGD") #temporary
+		doc.supplier = get_supplier_copy(supplier, currency) #temporary
 		doc.non_stock_item = 1
 		doc.created_with_ai = 1
 		for d in items:
@@ -207,6 +208,7 @@ class EmailInvoice(Document):
 			row.item_name_view = d.get("item_name")
 			row.qty = flt(d.get("qty"))
 			row.rate = flt(d.get("rate"))
+			row.uom = get_uom(d.get("uom") or "Nos")
 			row.amount = flt(d.get("amount"))
 		
 		doc.flags.ignore_mandatory = 1
