@@ -235,17 +235,21 @@ class EmailInvoice(Document):
 		doc.created_with_ai = 1
 		currency = []
 		for d in items:
-			row = doc.append("items")
-			row.item_code = "Non-stock"
-			row.item_name = d.get("item_name")
-			row.item_name_view = d.get("item_name")
-			row.qty = flt(d.get("qty"))
-			row.rate = flt(d.get("rate"))
-			row.uom = get_uom(d.get("uom") or "Nos")
-			row.amount = flt(d.get("amount"))
-			curr = d.get("currency")
-			if curr and curr not in currency:
-				currency.append(curr)
+			if d.get("qty"):
+				row = doc.append("items")
+				row.item_code = "Non-stock"
+				row.item_name = d.get("item_name")
+				row.item_name_view = d.get("item_name")
+				row.qty = flt(d.get("qty"))
+				row.rate = flt(d.get("rate"))
+				row.uom = get_uom(d.get("uom") or "Nos")
+				row.amount = flt(d.get("amount"))
+				curr = d.get("currency")
+				if curr and curr not in currency:
+					currency.append(curr)
+		
+		if not doc.get("items"):
+			return False, "Item is empty"
 		
 		if len(currency) > 1:
 			return False, "Multiple currency used on invoice"
