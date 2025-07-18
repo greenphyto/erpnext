@@ -222,9 +222,13 @@ class EmailInvoice(Document):
 		if not data:
 			return False, "Missing data"
 		
-		supplier=data.get("supplier")
 		items=data.get("items")
+		supplier=data.get("supplier")
 		file_name=data.get("file")
+
+		if not items:
+			return False, "Cannot recognise item"
+		
 		doc = frappe.new_doc("Purchase Invoice")
 		doc.supplier = frappe.db.exists("Supplier", supplier)
 		doc.non_stock_item = 1
