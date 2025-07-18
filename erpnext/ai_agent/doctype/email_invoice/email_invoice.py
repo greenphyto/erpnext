@@ -126,7 +126,13 @@ class EmailInvoice(Document):
 		self.data_result = json.dumps(result)
 		self.create_invoice_result(result, doc)
 
-	def create_invoice_result(self, result, com_doc):
+	def create_invoice_result(self, result=[], com_doc=""):
+		if not com_doc and self.inbox:
+			com_doc = frappe.get_doc("Communication", self.inbox)
+
+		if not result and self.data_result:
+			result = json.loads(self.data_result)
+
 		pi = []
 		for res in result:
 			name = None
@@ -158,7 +164,6 @@ class EmailInvoice(Document):
 	def add_attachment_copy(self, source_file):
 		new_file = frappe.new_doc("File")
 		new_file.update({
-
 			"doctype": "File",
 			"file_name": source_file.file_name,
 			"file_url": source_file.file_url,
@@ -190,6 +195,7 @@ class EmailInvoice(Document):
 
 		# add GST 
 		doc.taxes_and_charges = get_gst_template(data.get("gst_percent"))
+		doc.set_other_charges()
 
 		doc.flags.ignore_mandatory = 1
 		doc.flags.ignore_permissions = 1
@@ -246,6 +252,7 @@ class EmailInvoice(Document):
 
 		# add GST
 		doc.taxes_and_charges = get_gst_template(data.get("gst_percent"))
+		doc.set_other_charges()
 		
 		doc.flags.ignore_mandatory = 1
 		doc.flags.ignore_permissions = 1
@@ -268,19 +275,20 @@ class EmailInvoice(Document):
 def get_gst_template(rate):
 	rate = flt(rate)
 	res = frappe.db.sql("""
-	SELECT DISTINCT
-		stct.name
-	FROM
-		`tabPurchase Taxes and Charges Template` stct
-			JOIN
-		`tabPurchase Taxes and Charges` stc ON stct.name = stc.parent
-	WHERE
-		stc.rate = %i
-			AND stc.parenttype = 'Purchase Taxes and Charges Template';
+		SELECT DISTINCT
+			stct.name
+		FROM
+			`tabPurchase Taxes and Charges Template` stct
+				JOIN
+			`tabPurchase Taxes and Charges` stc ON stct.name = stc.parent
+		WHERE
+			stc.rate = {}
+				AND stc.parenttype = 'Purchase Taxes and Charges Template';
 
-			   """, (rate), as_dict=1)
-	if res and res.get("name"):
-		return res.name
+			   """.format(rate), as_dict=1)
+	if res:
+		res = res[0]
+		return res.get("name")
 	else:
 		return  ""
 
