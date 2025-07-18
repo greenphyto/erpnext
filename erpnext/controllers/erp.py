@@ -34,7 +34,9 @@ def read_email_inbox():
 		c.name,
 		c.subject,
 		c.sender,
-		c.creation
+		c.creation,
+		c.reference_name,
+		c.reference_doctype
 	FROM
 		`tabCommunication` c
 			LEFT JOIN
@@ -47,10 +49,10 @@ def read_email_inbox():
 			AND c.sent_or_received = 'Received'
 			AND com.name IS NULL
 			AND c.email_account = %s
-			AND (c.reference_name IS NULL
-			AND c.reference_doctype IS NULL)
-	ORDER BY c.creation ASC;
-		""", (invoice_email_default), as_dict=1 )
+			AND (c.reference_name IN (NULL , '')
+			OR c.reference_doctype IN (NULL , ''))
+	ORDER BY c.creation ASC limit 5
+		""", (invoice_email_default), as_dict=1 , debug=0)
 	
 	# filters
 	ignore_list = ["google.com"]
@@ -95,7 +97,6 @@ def _read_email_inbox(doc_name):
 		em.insert()
 		em.sync_email(doc = doc)
 		em.save()
-		print("Create", doc.name, em.name)
 
 def get_checked_ai_status(cdt, com_name):
 	# get checked status on email receive

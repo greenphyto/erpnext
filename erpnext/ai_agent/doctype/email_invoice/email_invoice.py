@@ -8,6 +8,7 @@ from erpnext.controllers.va2 import extract_invoice_data, get_po_number, get_ite
 from frappe.utils import flt, getdate, get_time
 from erpnext.controllers.erp import get_supplier_context
 import os
+from frappe.utils import get_traceback
 
 MAX_DISPLAY_LENGTH = 1000
 SHORT_HEAD = 300
@@ -19,6 +20,7 @@ class EmailInvoice(Document):
 	def set_status(self):
 		if self.po_no:
 			if self.invoice_no:
+				self.unknown_reason = ""
 				self.status = "Matched"
 			else:
 				self.status = "Pending"
@@ -119,19 +121,29 @@ class EmailInvoice(Document):
 						"supplier":supplier.get("supplier_name")
 					})
 
+		self.data_result = json.dumps(result)
+		self.create_invoice_result(result, doc)
+
+	def create_invoice_result(self, result, com_doc):
 		pi = []
 		for res in result:
-			if res.get("po_no"):
-				name = self.create_invoice(res)
-			else:
-				name = self.create_purchase_invoice_non_stock(res)
+			name = None
+			try:
+				if res.get("po_no"):
+					name = self.create_invoice(res)
+				else:
+					name = self.create_purchase_invoice_non_stock(res)
+			except Exception as e:
+				self.unknown_reason = f"error system: {e}"
+				self.error_trace = get_traceback()
 
-			doc.db_set("reference_doctype", "Purchase Invoice")
-			doc.db_set("reference_name", name)
-			if not self.invoice_no:
-				self.invoice_no = name
+			if name:
+				com_doc.db_set("reference_doctype", "Purchase Invoice")
+				com_doc.db_set("reference_name", name)
+				if not self.invoice_no:
+					self.invoice_no = name
 
-			pi.append(name)
+				pi.append(name)
 
 		self.set_status()
 		return pi
@@ -185,7 +197,7 @@ class EmailInvoice(Document):
 		items=data.get("items")
 		file_name=data.get("file")
 		doc = frappe.new_doc("Purchase Invoice")
-		doc.supplier = supplier
+		doc.supplier = get_supplier_copy(supplier, "SGD") #temporary
 		doc.non_stock_item = 1
 		doc.created_with_ai = 1
 		for d in items:
