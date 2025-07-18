@@ -197,7 +197,7 @@ class EmailInvoice(Document):
 		items=data.get("items")
 		file_name=data.get("file")
 		doc = frappe.new_doc("Purchase Invoice")
-		doc.supplier = supplier
+		doc.supplier = get_supplier_copy(supplier, "SGD") #temporary
 		doc.non_stock_item = 1
 		doc.created_with_ai = 1
 		for d in items:
