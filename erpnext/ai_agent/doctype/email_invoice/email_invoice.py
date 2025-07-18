@@ -275,15 +275,15 @@ class EmailInvoice(Document):
 def get_gst_template(rate):
 	rate = flt(rate)
 	res = frappe.db.sql("""
-	SELECT DISTINCT
-		stct.name
-	FROM
-		`tabPurchase Taxes and Charges Template` stct
-			JOIN
-		`tabPurchase Taxes and Charges` stc ON stct.name = stc.parent
-	WHERE
-		stc.rate = {}
-			AND stc.parenttype = 'Purchase Taxes and Charges Template';
+		SELECT DISTINCT
+			stct.name
+		FROM
+			`tabPurchase Taxes and Charges Template` stct
+				JOIN
+			`tabPurchase Taxes and Charges` stc ON stct.name = stc.parent
+		WHERE
+			stc.rate = {}
+				AND stc.parenttype = 'Purchase Taxes and Charges Template';
 
 			   """.format(rate), as_dict=1)
 	if res:
