@@ -192,7 +192,8 @@ Return result in this JSON structure (no explanation, no markdown):
     }
   ],
   "email": "email company in header or any email with @ mark", 
-  "currency": "in capitalize what is the currency is using"
+  "gst_amount":"how many GST amount applied to the total invoice, this value is near 'subtotal', 'grand total', 'total amount'",
+  "gst_percent":"how many GST percent (%%) they use on the last total invoice, this value is like GST 9%% is qual as 9, or GST 7 %% is equal as 7,
   "company": "company name in header, use reference supplier as company name existing in system or use orignal name if not found"
 }
 

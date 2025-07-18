@@ -59,6 +59,7 @@
    "fieldname": "subject",
    "fieldtype": "Small Text",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Subject",
    "read_only": 1
   },
@@ -109,6 +110,7 @@
   {
    "fieldname": "inbox",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Inbox",
    "options": "Communication",
    "read_only": 1
@@ -167,7 +169,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-18 14:17:02.341583",
+ "modified": "2025-07-18 17:25:01.134381",
  "modified_by": "Administrator",
  "module": "AI Agent",
  "name": "Email Invoice",
