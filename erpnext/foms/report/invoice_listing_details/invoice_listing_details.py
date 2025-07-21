@@ -113,7 +113,7 @@ class Report():
 				s.docstatus = 1
 				{}
 			ORDER BY s.posting_date desc
-		""".format(self.cond), self.filters, as_dict=1, debug=1)
+		""".format(self.cond), self.filters, as_dict=1, debug=0)
 
 		self.raw_data_single = frappe.db.sql("""
 			SELECT 
@@ -123,6 +123,11 @@ class Report():
 				dni.uom,
 				dni.rate,
 				dni.amount,
+				dn.total,
+				t.name AS tx_row,
+				t.charge_type,
+				t.rate AS gst,
+				t.tax_amount AS gst_amount,
 				p.total_weight as weight,
 				a.outlet_name,
 				dn.name AS delivery_note,
@@ -134,6 +139,8 @@ class Report():
 					LEFT JOIN
 				`tabDelivery Note Item` dni ON dni.parent = dn.name
 					LEFT JOIN
+				`tabSales Taxes and Charges` t ON t.parent = dni.against_sales_order
+					LEFT JOIN					
 				`tabPackaging` p ON p.name = dni.uom
 					LEFT JOIN
 				`tabSales Invoice Item` sii ON (sii.so_detail = dni.so_detail or sii.delivery_note = dni.parent)
@@ -197,7 +204,6 @@ class Report():
 		total_row = {
 			"sales_invoice":"TOTAL",
 			"amount":0,
-			"gst_amount":0,
 			"total_weight":0,
 			"gst_amount":0,
 			"total_amount":0
@@ -229,7 +235,13 @@ class Report():
 			self.data.append({})
 			for d in self.raw_data_single:
 				self.data.append(d)
+				if d.total:
+					d.gst_amount = flt(d.amount)/flt(d.total)*flt(d.gst_amount)
+					d.total_amount = d.gst_amount + flt(d.amount)
+
+				total_row_single["gst_amount"] += d.gst_amount
 				total_row_single["total_weight"] += d.total_weight
+				total_row_single["total_amount"] += d.total_amount
 				total_row_single["amount"] += d.amount
 
 			if self.raw_data_single:
