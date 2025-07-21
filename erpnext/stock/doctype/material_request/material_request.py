@@ -303,12 +303,12 @@ class MaterialRequest(BuyingController):
 				general_item_totals += flt(d.base_net_amount)
 
 		forbidden = []
-		if flt(raw_material_totals) < 50001:
+		if flt(raw_material_totals) < 5001:
 			forbidden.append(False)
 		else:
 			forbidden.append(True)
 
-		if flt(general_item_totals) < 5001:
+		if flt(general_item_totals) < 1001:
 			forbidden.append(False)
 		else:
 			forbidden.append(True)
