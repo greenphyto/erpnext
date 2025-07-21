@@ -252,7 +252,7 @@ class EmailInvoice(Document):
 			return False, "Item is empty"
 		
 		if len(currency) > 1:
-			return False, "Multiple currency used on invoice"
+			return False, "Multiple currencies detected in this invoice"
 		if currency:
 			doc.currency = currency[0]
 		else:
