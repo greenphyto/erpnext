@@ -95,7 +95,7 @@ class Report():
 					LEFT JOIN
 				`tabPackaging` p ON p.name = si.uom
 					LEFT JOIN
-				`tabDelivery Note Item` dni ON dni.name = si.dn_detail
+				`tabDelivery Note Item` dni ON (si.so_detail = dni.so_detail or si.delivery_note = dni.parent)
 					LEFT JOIN
 				`tabDelivery Note` dn ON dn.name = dni.parent
 					LEFT JOIN
@@ -113,7 +113,7 @@ class Report():
 				s.docstatus = 1
 				{}
 			ORDER BY s.posting_date desc
-		""".format(self.cond), self.filters, as_dict=1)
+		""".format(self.cond), self.filters, as_dict=1, debug=1)
 
 		self.raw_data_single = frappe.db.sql("""
 			SELECT 
@@ -136,6 +136,8 @@ class Report():
 					LEFT JOIN
 				`tabPackaging` p ON p.name = dni.uom
 					LEFT JOIN
+				`tabSales Invoice Item` sii ON (sii.so_detail = dni.so_detail or sii.delivery_note = dni.parent)
+					LEFT JOIN						
 				`tabAddress` a on a.name = dn.shipping_address_name
 					LEFT JOIN
 				(SELECT 
@@ -153,6 +155,7 @@ class Report():
 					AND dn.is_replacement = 0
 					AND dn.is_donation = 0
 					AND dni.si_detail is null
+					AND sii.name is null
 					{}  
 			ORDER BY dn.posting_date desc
 		""".format(self.cond_dn), self.filters, as_dict=1, debug=0)
