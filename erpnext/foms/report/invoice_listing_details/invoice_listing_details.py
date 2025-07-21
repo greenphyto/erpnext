@@ -43,6 +43,7 @@ class Report():
 			{"fieldname": "status", 		"label": "Status", 		"fieldtype": "Data", 	"width":80, "options":""},
 			{"fieldname": "customer", 		"label": "Customer", 	"fieldtype": "Link", 	"width":220, "options":"Customer"},
 			{"fieldname": "outlet_name", 	"label": "Store Name", 	"fieldtype": "Data", 	"width":220, "options":""},
+			{"fieldname": "po_no", 	"label": "Customer's PO", 	"fieldtype": "Data", 	"width":120, "options":""},
 			{"fieldname": "delivery_note", 	"label": "Delivery Note","fieldtype": "Link", 	"width":140, "options":"Delivery Note"},
 			{"fieldname": "delivery_date", 	"label": "Delivery Date","fieldtype": "Date", 	"width":120, "options":""},
 			{"fieldname": "item_code", 		"label": "Item", 		"fieldtype": "Link", 	"width":100, "options":"Item"},
@@ -65,6 +66,7 @@ class Report():
 				s.name AS sales_invoice,
 				s.customer,
 				s.total,
+				COALESCE(s.po_no, so.po_no) as po_no,
 				"Submitted" as status,
 				a.outlet_name,
 				si.item_code,
@@ -99,6 +101,9 @@ class Report():
 					LEFT JOIN
 				`tabDelivery Note` dn ON dn.name = dni.parent
 					LEFT JOIN
+				`tabSales Order` so ON (so.name = dni.against_sales_order
+					OR so.name = si.sales_order)
+					LEFT JOIN
 				(SELECT 
 					voucher_detail_no, item_code, batch_no, valuation_rate
 				FROM
@@ -124,6 +129,7 @@ class Report():
 				dni.rate,
 				dni.amount,
 				dn.total,
+				COALESCE(si.po_no, so.po_no) as po_no,
 				t.name AS tx_row,
 				t.charge_type,
 				t.rate AS gst,
@@ -144,7 +150,12 @@ class Report():
 				`tabPackaging` p ON p.name = dni.uom
 					LEFT JOIN
 				`tabSales Invoice Item` sii ON (sii.so_detail = dni.so_detail or sii.delivery_note = dni.parent)
-					LEFT JOIN						
+					LEFT JOIN		
+				`tabSales Invoice` si ON sii.parent = si.name
+					LEFT JOIN	
+				`tabSales Order` so ON (so.name = dni.against_sales_order
+					OR so.name = sii.sales_order)
+					LEFT JOIN			
 				`tabAddress` a on a.name = dn.shipping_address_name
 					LEFT JOIN
 				(SELECT 
