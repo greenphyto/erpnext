@@ -74,9 +74,6 @@ def read_email_inbox():
 		if check_ignore(comm.sender):
 			continue
 
-		if not is_invoice(comm.subject):
-			continue
-
 		_read_email_inbox(comm.name)
 
 def _read_email_inbox(doc_name):
