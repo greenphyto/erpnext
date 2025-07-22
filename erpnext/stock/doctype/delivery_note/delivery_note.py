@@ -23,27 +23,31 @@ form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 class DeliveryNote(SellingController):
 	def __init__(self, *args, **kwargs):
 		super(DeliveryNote, self).__init__(*args, **kwargs)
-		self.status_updater = [
-			{
-				"source_dt": "Delivery Note Item",
-				"target_dt": "Sales Order Item",
-				"join_field": "so_detail",
-				"target_field": "delivered_qty",
-				"target_parent_dt": "Sales Order",
-				"target_parent_field": "per_delivered",
-				"target_ref_field": "qty",
-				"source_field": "qty",
-				"percent_join_field": "against_sales_order",
-				"status_field": "delivery_status",
-				"keyword": "Delivered",
-				"second_source_dt": "Sales Invoice Item",
-				"second_source_field": "qty",
-				"second_join_field": "so_detail",
-				"overflow_type": "delivery",
-				"second_source_extra_cond": """ and exists(select name from `tabSales Invoice`
-				where name=`tabSales Invoice Item`.parent and update_stock = 1)""",
-			},
-			{
+		self.status_updater = []
+		if not cint(self.is_return):
+			field_args = {
+					"source_dt": "Delivery Note Item",
+					"target_dt": "Sales Order Item",
+					"join_field": "so_detail",
+					"target_field": "delivered_qty",
+					"target_parent_dt": "Sales Order",
+					"target_parent_field": "per_delivered",
+					"target_ref_field": "qty",
+					"source_field": "qty",
+					"percent_join_field": "against_sales_order",
+					"status_field": "delivery_status",
+					"keyword": "Delivered",
+					"second_source_dt": "Sales Invoice Item",
+					"second_source_field": "qty",
+					"second_join_field": "so_detail",
+					"overflow_type": "delivery",
+					"second_source_extra_cond": """ and exists(select name from `tabSales Invoice`
+					where name=`tabSales Invoice Item`.parent and update_stock = 1)""",
+					"extra_cond":" and qty > 0"
+				}
+			self.status_updater.append(field_args)
+
+		self.status_updater.append({
 				"source_dt": "Delivery Note Item",
 				"target_dt": "Sales Invoice Item",
 				"join_field": "si_detail",
@@ -54,8 +58,8 @@ class DeliveryNote(SellingController):
 				"percent_join_field": "against_sales_invoice",
 				"overflow_type": "delivery",
 				"no_allowance": 1,
-			},
-		]
+			})
+		
 		if cint(self.is_return):
 			self.status_updater.extend(
 				[
