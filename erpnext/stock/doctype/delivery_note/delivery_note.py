@@ -334,11 +334,16 @@ class DeliveryNote(SellingController):
 		self.update_stock_ledger()
 		self.make_gl_entries()
 		self.repost_future_sle_and_gle()
+		self.clear_foms_id()
 		try:
 			self.set_other_reff()
 		except:
 			pass
-
+	
+	def clear_foms_id(self):
+		if self.foms_id:
+			self.foms_id = None
+			
 	def set_other_reff(self):
 		invoice = False
 		for d in self.get("items"):
