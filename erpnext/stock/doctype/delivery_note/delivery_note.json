@@ -12,6 +12,8 @@
   "naming_series",
   "customer",
   "organization_name",
+  "po_no",
+  "po_date",
   "organization_address",
   "tax_id",
   "customer_name",
@@ -143,10 +145,6 @@
   "transporter_name",
   "driver_name",
   "lr_date",
-  "customer_po_details",
-  "po_no",
-  "column_break_17",
-  "po_date",
   "sales_team_section_break",
   "sales_partner",
   "amount_eligible_for_commission",
@@ -326,7 +324,7 @@
   {
    "allow_on_submit": 1,
    "fieldname": "po_no",
-   "fieldtype": "Small Text",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Customer's Purchase Order No",
@@ -1553,17 +1551,6 @@
    "label": "Organization Name"
   },
   {
-   "allow_on_submit": 1,
-   "collapsible": 1,
-   "fieldname": "customer_po_details",
-   "fieldtype": "Section Break",
-   "label": "Customer PO Details"
-  },
-  {
-   "fieldname": "column_break_17",
-   "fieldtype": "Column Break"
-  },
-  {
    "default": "0",
    "fieldname": "is_replacement",
    "fieldtype": "Check",
@@ -1585,7 +1572,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-07-17 18:31:51.143823",
+ "modified": "2025-07-22 18:02:39.805066",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
