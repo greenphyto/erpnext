@@ -131,7 +131,12 @@ class FOMSIntegrationSettings(Document):
 			item.save()
 
 def is_enable_integration():
-	return cint(frappe.db.get_single_value('FOMS Integration Settings', "enable"))
+	enable = cint(frappe.db.get_single_value('FOMS Integration Settings', "enable"))
+	api_site = frappe.db.get_single_value('FOMS Integration Settings', "foms_url")
+	forbidden_site = frappe.local.conf.dont_sync_foms_site
+
+	return enable and not forbidden_site in api_site
+
 
 def get_farm_id():
 	farm_id = cint(frappe.db.get_single_value('FOMS Integration Settings', "farm_id"))
