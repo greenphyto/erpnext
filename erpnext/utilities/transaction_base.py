@@ -111,13 +111,7 @@ class TransactionBase(StatusUpdater):
 									)
 								)
 						else:
-							frappe.msgprint(
-								_("Row #{0}: Rate must be same as {1}: {2} ({3} / {4})").format(
-									d.idx, ref_dt, d.get(ref_dn_field), d.rate, ref_rate
-								),
-								title=_("Warning"),
-								indicator="orange",
-							)
+							d.rate = ref_rate
 
 	def validate_item_non_stock(self):
 		if not self.get("non_stock_item"):
