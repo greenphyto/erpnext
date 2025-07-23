@@ -71,7 +71,7 @@ class PartNumberSettings(Document):
 			key = d.code.strip()
 			cur_name = item_map.get(key)
 			if d.title != cur_name:
-				frappe.db.set_value("Item", key, "item_name", cur_name)
+				frappe.db.set_value("Item", key, "item_name", d.title)
 
 	def validate_account_change(self):
 		return
