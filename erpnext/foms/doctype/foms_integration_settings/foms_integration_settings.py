@@ -132,8 +132,8 @@ class FOMSIntegrationSettings(Document):
 
 def is_enable_integration():
 	enable = cint(frappe.db.get_single_value('FOMS Integration Settings', "enable"))
-	api_site = frappe.db.get_single_value('FOMS Integration Settings', "foms_url")
-	forbidden_site = frappe.local.conf.dont_sync_foms_site
+	api_site = frappe.db.get_single_value('FOMS Integration Settings', "foms_url") or ""
+	forbidden_site = frappe.local.conf.dont_sync_foms_site or ""
 
 	return enable and not forbidden_site in api_site
 
