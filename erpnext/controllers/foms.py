@@ -1494,8 +1494,8 @@ def create_raw_material(log):
 		if exists_id:
 			frappe.throw(_(f"ID {log.id} already use by another item ({exists_id})!"))
 		doc = frappe.get_doc("Item", name)
-		doc.item_name = log.productName
-		doc.description = log.productDesc or log.productDetail or log.productName
+		# doc.item_name = log.rawMaterialName
+		doc.description = log.rawMaterialDescription
 		if doc.item_code not in ['RM-NS-WW']:
 			doc.item_group = types
 			doc.lead_time_days = cint(log.RequestLeadTime)
@@ -1531,7 +1531,7 @@ def create_products(log):
 		name = doc.name
 	else:
 		doc = frappe.get_doc("Item", name)
-		doc.item_name = log.productName
+		# doc.item_name = log.productName
 		doc.description = log.productDesc or log.productDetail or log.productName
 		doc.is_stock_item = 1
 		if not doc.foms_product_id:
