@@ -1786,10 +1786,10 @@ def get_reserved_qty_for_production(item_code: str, warehouse: str) -> float:
 
 
 @frappe.whitelist()
-def make_stock_return_entry(work_order):
+def make_stock_return_entry(work_order, percentage=100):
 	from erpnext.stock.doctype.stock_entry.stock_entry import get_available_materials
 
-	non_consumed_items = get_available_materials(work_order)
+	non_consumed_items = get_available_materials(work_order, percentage)
 	if not non_consumed_items:
 		return
 
@@ -1807,7 +1807,7 @@ def make_stock_return_entry(work_order):
 	return stock_entry
 
 @frappe.whitelist()
-def make_scrap_materials(work_order):
+def make_scrap_materials(work_order, percentage=100):
 	from erpnext.controllers.foms import get_wip_warehouse
 	from erpnext.stock.doctype.stock_entry.stock_entry import get_available_materials
 	
@@ -1817,7 +1817,7 @@ def make_scrap_materials(work_order):
 	else:
 		wip_warehouse=""
 
-	non_consumed_items = get_available_materials(work_order)
+	non_consumed_items = get_available_materials(work_order, percentage)
 	if not non_consumed_items:
 		return
 
@@ -1825,11 +1825,12 @@ def make_scrap_materials(work_order):
 
 	stock_entry = frappe.new_doc("Stock Entry")
 	stock_entry.from_bom = 1
+	stock_entry.for_completed_qty = wo_doc.qty * flt(percentage)/100
 	stock_entry.is_return = 1
 	stock_entry.work_order = work_order
 	stock_entry.purpose = "Material Transfer for Manufacture"
 	stock_entry.bom_no = wo_doc.bom_no
-	stock_entry.add_transfered_raw_materials_in_items()
+	stock_entry.add_transfered_raw_materials_in_items(percentage=percentage)
 
 	stock_entry.stock_entry_type_view = "Waste Materials"
 	stock_entry.purpose = "Material Issue"

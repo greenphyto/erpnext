@@ -1403,13 +1403,15 @@ class StockEntry(StockEntryAsset, StockController):
 		# special case for Work Order Greenphyto
 		# reference doc: costs variance for work order v1.xlxs
 		if self.purpose in ['Material Transfer for Manufacture'] and self.is_return == 0:
-			prev_wip = self.get_previous_ledger_entry(self.operation or self.purpose)
+			prev_operation = get_previous_operation(self.operation)
+			wip_account = get_item_account(warehouse_account, "WIP", None, get_default=1, operation=prev_operation)
+			prev_wip = self.get_previous_ledger_entry(wip_account)
 			if prev_wip:
 				prev_wip = prev_wip[0]
 				if prev_wip.name:
 					cost_center = get_cost_center(self.operation, self.company)
 					expense_account = prev_wip.account
-					debit_amount = prev_wip.debit
+					debit_amount = prev_wip.amount
 					if self.purpose == 'Material Transfer for Manufacture':
 						variance_account = get_item_account(warehouse_account, "WIP", None, get_default=1, operation=self.operation)
 					elif self.purpose == "Manufacture":
@@ -1484,21 +1486,26 @@ class StockEntry(StockEntryAsset, StockController):
 
 		return result
 	
-	def get_previous_ledger_entry(self, operation):
-		prev_operation = get_previous_operation(operation)
+	def get_previous_ledger_entry(self, wip_account):		
 		prev_wip = frappe.db.sql("""
 			SELECT 
-				gl.name, s.name AS se_name, sum(gl.debit) as debit, sum(gl.credit) as credit, gl.account
+				gl.name,
+				s.name AS se_name,
+				SUM(gl.debit) - SUM(gl.credit) AS amount,
+				gl.account
 			FROM
 				`tabGL Entry` gl
 					LEFT JOIN
 				`tabStock Entry` s ON gl.voucher_no = s.name
 			WHERE
-				s.operation = %s
-					AND s.work_order = %s
+					s.work_order = %s
 					AND s.docstatus = 1
-					AND gl.debit > 0
-		""", (prev_operation, self.work_order), as_dict=1, debug=0)
+					AND gl.account = %s
+					-- AND gl.debit > 0
+					-- AND s.is_return = 0
+		""", (self.work_order, wip_account), as_dict=1, debug=0)
+
+		# this should be minus with Return (with existing scrap material)
 		
 		return prev_wip
 
@@ -1643,9 +1650,9 @@ class StockEntry(StockEntryAsset, StockController):
 			if pro_doc.status == "Stopped":
 				msg = f"Transaction not allowed against stopped Work Order {self.work_order}"
 
-			if self.is_return and pro_doc.status not in ["Completed", "Closed"]:
-				title = _("Stock Return")
-				msg = f"Work Order {self.work_order} must be completed or closed"
+			# if self.is_return and pro_doc.status not in ["Completed", "Closed"]:
+			# 	title = _("Stock Return")
+			# 	msg = f"Work Order {self.work_order} must be completed or closed"
 
 			if msg:
 				frappe.throw(_(msg), title=title)
@@ -2217,8 +2224,8 @@ class StockEntry(StockEntryAsset, StockController):
 					}
 				)
 
-	def add_transfered_raw_materials_in_items(self) -> None:
-		available_materials = get_available_materials(self.work_order)
+	def add_transfered_raw_materials_in_items(self, percentage=100) -> None:
+		available_materials = get_available_materials(self.work_order, percentage=percentage)
 
 		wo_data = frappe.db.get_value(
 			"Work Order",
@@ -3108,12 +3115,13 @@ def get_items_from_subcontract_order(source_name, target_doc=None):
 	return target_doc
 
 
-def get_available_materials(work_order) -> dict:
+def get_available_materials(work_order, percentage=100) -> dict:
 	data = get_stock_entry_data(work_order)
 
 	available_materials = {}
 	for row in data:
 		key = (row.item_code, row.warehouse, row.uom)
+		row.qty = row.qty * flt(percentage)/100
 		if row.purpose != "Material Transfer for Manufacture":
 			key = (row.item_code, row.s_warehouse, row.uom)
 
