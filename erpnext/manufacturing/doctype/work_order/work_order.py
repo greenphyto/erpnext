@@ -377,7 +377,7 @@ class WorkOrder(Document):
 		elif self.docstatus == 1:
 			if status != "Stopped":
 				stock_entries = frappe.db.sql(
-						"""select purpose, sum(fg_completed_qty), is_return
+						"""select purpose, sum(fg_completed_qty) as qty, is_return
 					from `tabStock Entry` where work_order=%s and docstatus=1
 					group by purpose""",
 						self.name, as_dict=1
@@ -390,12 +390,13 @@ class WorkOrder(Document):
 						status = "Closed"
 					else:
 						status = "In Process"
-						produced_qty = stock_entries.get("Manufacture")
+						for d in stock_entries:
+							if d.purpose == "Manufacture":
+								produced_qty = d.qty
+								if flt(produced_qty) >= flt(self.qty) or (flt(produced_qty) and single_complete):
+									status = "Completed"
 
-						if flt(produced_qty) >= flt(self.qty) or (flt(produced_qty) and single_complete):
-							status = "Completed"
-
-						self.db_set("produced_qty", flt(produced_qty))
+								self.db_set("produced_qty", flt(produced_qty))
 		else:
 			status = "Cancelled"
 
