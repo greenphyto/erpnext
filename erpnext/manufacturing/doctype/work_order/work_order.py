@@ -45,7 +45,7 @@ from erpnext.stock.stock_balance import get_planned_qty, update_bin_qty
 from erpnext.stock.utils import get_bin, get_latest_stock_qty, validate_warehouse_company
 from erpnext.utilities.transaction_base import validate_uom_is_integer
 from frappe.model.naming import set_name_by_naming_series, set_name_from_naming_options, parse_naming_series, getseries
-
+from erpnext.accounts.utils import get_company_default
 
 class OverProductionError(frappe.ValidationError):
 	pass
@@ -376,24 +376,26 @@ class WorkOrder(Document):
 			status = "Draft"
 		elif self.docstatus == 1:
 			if status != "Stopped":
-				stock_entries = frappe._dict(
-					frappe.db.sql(
-						"""select purpose, sum(fg_completed_qty)
+				stock_entries = frappe.db.sql(
+						"""select purpose, sum(fg_completed_qty), is_return
 					from `tabStock Entry` where work_order=%s and docstatus=1
 					group by purpose""",
-						self.name,
+						self.name, as_dict=1
 					)
-				)
 
 				status = "Not Started"
 				if stock_entries:
-					status = "In Process"
-					produced_qty = stock_entries.get("Manufacture")
+					is_return = [x.fg_completed_qty for x in stock_entries if x.is_return]
+					if is_return:
+						status = "Closed"
+					else:
+						status = "In Process"
+						produced_qty = stock_entries.get("Manufacture")
 
-					if flt(produced_qty) >= flt(self.qty) or (flt(produced_qty) and single_complete):
-						status = "Completed"
+						if flt(produced_qty) >= flt(self.qty) or (flt(produced_qty) and single_complete):
+							status = "Completed"
 
-					self.db_set("produced_qty", flt(produced_qty))
+						self.db_set("produced_qty", flt(produced_qty))
 		else:
 			status = "Cancelled"
 
@@ -1803,3 +1805,59 @@ def make_stock_return_entry(work_order):
 	stock_entry.set_stock_entry_type()
 
 	return stock_entry
+
+@frappe.whitelist()
+def make_scrap_materials(work_order):
+	from erpnext.controllers.foms import get_wip_warehouse
+	from erpnext.stock.doctype.stock_entry.stock_entry import get_available_materials
+	
+	wip_warehouse = get_wip_warehouse()
+	if wip_warehouse:
+		wip_warehouse = wip_warehouse[0]
+	else:
+		wip_warehouse=""
+
+	non_consumed_items = get_available_materials(work_order)
+	if not non_consumed_items:
+		return
+
+	wo_doc = frappe.get_cached_doc("Work Order", work_order)
+
+	stock_entry = frappe.new_doc("Stock Entry")
+	stock_entry.from_bom = 1
+	stock_entry.is_return = 1
+	stock_entry.work_order = work_order
+	stock_entry.purpose = "Material Transfer for Manufacture"
+	stock_entry.bom_no = wo_doc.bom_no
+	stock_entry.add_transfered_raw_materials_in_items()
+
+	stock_entry.stock_entry_type_view = "Waste Materials"
+	stock_entry.purpose = "Material Issue"
+	stock_entry.operation = get_current_operation(work_order)
+	stock_entry.set_stock_entry_type()
+	stock_entry.request_no = "Scrap Item from Stoped Work Order"
+	expense_account = get_company_default(stock_entry.company, "production_attrition_expense_account")
+
+	for row in stock_entry.items:
+		row.is_scrap_item = 1
+		row.conversion_factor = 1
+		row.expense_account = expense_account
+
+	stock_entry.remarks = f"Waste materials from Work Order {work_order}"
+	stock_entry.set_missing_values()
+
+	return stock_entry
+
+def get_current_operation(work_order):
+	temp = frappe.db.sql("""
+		SELECT 
+			operation
+		FROM
+			`tabStock Entry`
+		WHERE
+			purpose = 'Material Transfer for Manufacture'
+				AND docstatus = 1
+				AND work_order = %s
+		ORDER BY creation desc
+	""", work_order)
+	return temp[0][0]

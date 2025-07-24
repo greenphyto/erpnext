@@ -374,7 +374,8 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 		}
 	else:
 		return _update_work_order_operation_status(log_res.name, ERPWorkOrderID, operationNo, percentage, rawMaterials)
-	
+
+from erpnext.manufacturing.doctype.work_order.work_order import close_work_order, make_scrap_materials
 def	_update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, percentage, rawMaterials):
 	operationName = OPERATION_MAP_NAME.get( cint(operationNo) )
 	operationNo = cint(operationNo)
@@ -402,6 +403,26 @@ def	_update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 		return
 	
 	make_in_progress(log.name, commit=1)
+
+	# if percentage = 0 its mean cancelled
+	if percentage == 0:
+		# cancel
+		close_work_order(
+			work_order=work_order_name,
+			status="Closed"
+		)
+		se = make_scrap_materials(work_order_name)
+		se.save()
+		se.submit()
+
+		data_name = f"Cancel Operation {operationNo} Work Order {ERPWorkOrderID}"
+		update_log("Work Order", data_name, "Stock Entry", se.name, now=1)
+
+		return {
+			"result": True,
+			"percentage": percentage,
+			"close":1
+		}
 
 	# create
 	wo_doc = frappe.get_doc("Work Order", work_order_name)
@@ -433,10 +454,12 @@ def	_update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 		job_card.started_time = now_datetime()
 		job_card.job_started = 1
 
+		
 	if percentage > 0 and percentage < 100:
-		job_card.percentage = percentage
-		job_card.save()
-	elif percentage == 100:
+		# partially
+		pass
+	else:
+		# complete
 		args = frappe._dict({
 			"job_card_id": job_card.name,
 			"complete_time": now_datetime(),
@@ -446,8 +469,6 @@ def	_update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 		job_card.add_time_log(args)
 		job_card.save()
 		job_card.submit()
-	else:
-		job_card.save()
 
 	update_log("Work Order", data_name, "Job Card", job_card.name, now=1)
 

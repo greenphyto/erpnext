@@ -102,6 +102,7 @@
   "manufacturing_settings_section",
   "default_cost_expense_account",
   "production_loss_account",
+  "production_attrition_expense_account",
   "cost_center_for_production",
   "cost_center_for_packing",
   "column_break_84",
@@ -839,6 +840,13 @@
    "fieldtype": "Link",
    "label": "Sales Replacement Account",
    "options": "Account"
+  },
+  {
+   "description": "Account for attraction cost on WIP",
+   "fieldname": "production_attrition_expense_account",
+   "fieldtype": "Link",
+   "label": "Production Attrition Expense Account",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-building",
@@ -847,9 +855,7 @@
  "is_tree": 1,
  "links": [],
  "modified": "2025-06-02 19:56:32.783010",
- "modified_by": "Administrator",
  "module": "Setup",
- "name": "Company",
  "naming_rule": "By fieldname",
  "nsm_parent_field": "parent_company",
  "owner": "Administrator",

@@ -621,7 +621,7 @@ class StockEntry(StockEntryAsset, StockController):
 					frappe.throw(_("For Quantity (Manufactured Qty) is mandatory"))
 				self.check_if_operations_completed()
 				self.check_duplicate_entry_for_work_order()
-		elif self.purpose != "Material Transfer":
+		elif self.purpose not in ("Material Transfer", "Material Issue"):
 			self.work_order = None
 
 	def check_if_operations_completed(self):
@@ -1384,7 +1384,7 @@ class StockEntry(StockEntryAsset, StockController):
 
 		# special case for Work Order Greenphyto
 		# reference doc: costs variance for work order v1.xlxs
-		if self.purpose in ['Material Transfer for Manufacture']:
+		if self.purpose in ['Material Transfer for Manufacture'] and self.is_return == 0:
 			prev_wip = self.get_previous_ledger_entry(self.operation or self.purpose)
 			if prev_wip:
 				prev_wip = prev_wip[0]
