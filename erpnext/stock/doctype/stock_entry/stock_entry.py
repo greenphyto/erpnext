@@ -257,6 +257,23 @@ class StockEntry(StockEntryAsset, StockController):
 			self.set_material_request_transfer_status("Not Started")
 		if self.purpose == "Material Transfer" and self.outgoing_stock_entry:
 			self.set_material_request_transfer_status("In Transit")
+		self.set_close_materials()
+
+	def set_close_materials(self):
+		if self.is_return and not self.work_order:
+			return
+
+		wo_qty = frappe.get_value("Work Order", self.work_order, "qty")
+		if self.fg_completed_qty != wo_qty:
+			return
+				
+		cancel = self.docstatus == 2
+
+		if not cancel:
+			frappe.db.set_value("Work Order", self.return_work_order, "material_returned", 1)
+		else:
+			frappe.db.set_value("Work Order", self.return_work_order, "material_returned", 0)
+
 
 	def set_job_card_data(self):
 		if self.job_card and not self.work_order:
