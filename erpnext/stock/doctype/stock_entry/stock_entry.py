@@ -261,9 +261,13 @@ class StockEntry(StockEntryAsset, StockController):
 		self.set_close_materials()
 
 	def set_close_materials(self):
-		if not self.return_work_order:
+		if self.is_return and not self.work_order:
 			return
-		
+
+		wo_qty = frappe.get_value("Work Order", self.work_order, "qty")
+		if self.fg_completed_qty != wo_qty:
+			return
+				
 		cancel = self.docstatus == 2
 
 		if not cancel:
