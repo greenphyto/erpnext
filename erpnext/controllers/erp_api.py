@@ -15,7 +15,8 @@ from erpnext.controllers.foms import (
 	get_operation_map_name,
 	create_finish_goods_stock as _create_finish_goods_stock,
 	create_packaging, update_so_working, create_do_based_on_work_order,
-	get_cost_center, get_default_expense_production_account
+	get_cost_center, get_default_expense_production_account, 
+	get_previous_operation
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
@@ -263,7 +264,7 @@ def make_stock_entry_with_materials(wo_doc, job_card_name, materials, wip_wareho
 			pack_row.batch_no = batch_info[0].get("batch_id")
 			pack_row.t_warehouse = wip_warehouse
 			pack_row.cost_center = packaging_cost_center
-			pack_row.qty = d.required_qty
+			pack_row.qty = d.required_qty * percentage/100
 			pack_row.uom = d.uom
 			pack_row.basic_rate = d.rate
 			pack_row.set_basic_rate_manually = 1
@@ -418,6 +419,8 @@ def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 
 	# Get the work order document
 	wo_doc = frappe.get_doc("Work Order", work_order_name)
+	prev_qty = get_previous_qty(work_order_name, operationName)
+	global_percent = prev_qty/wo_doc.qty * 100 * percentage/100
 
 	# Create a job card
 	for d in wo_doc.operations:
@@ -445,14 +448,14 @@ def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 		rawMaterials,
 		wip_warehouse,
 		operationName,
-		percentage=percentage
+		percentage=global_percent
 	)
 	se_doc.save()
 	se_doc.submit()
 
 	# Start and complete job cards if necessary.
 	job_card = frappe.get_doc("Job Card", job_card_name)
-	job_card.for_quantity = wo_doc.qty * flt(percentage)/100
+	job_card.for_quantity = wo_doc.qty * flt(global_percent)/100
 
 	if not job_card.job_started:
 		start_args = frappe._dict({
@@ -480,6 +483,33 @@ def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 		"result": True,
 		"percentage": percentage
 	}
+
+def get_previous_qty(work_order, cur_operation):
+	# get valid qty after do partially etc
+	# if not any previous, so use WO qty itself
+	prev_opr = get_previous_operation(cur_operation)
+	temp = frappe.db.sql("""
+		SELECT 
+			se.purpose,
+			SUM(se.fg_completed_qty) AS qty,
+			wo.qty AS wo_qty,
+			se.is_return,
+			se.operation
+		FROM
+			`tabWork Order` wo
+				LEFT JOIN
+			`tabStock Entry` se ON se.work_order = wo.name
+				AND se.docstatus = 1
+				AND se.is_return = 0
+				AND IFNULL(se.operation, '') = %s
+				AND se.purpose = 'Material Transfer for Manufacture'
+		WHERE
+			wo.name = %s
+	""",(prev_opr, work_order), as_dict=1)
+	if temp:
+		return temp[0].qty or temp[0].wo_qty
+	else:
+		return 0
 
 def run_pending_harvesting_transfer():
 	now_time = get_datetime()
