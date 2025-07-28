@@ -365,6 +365,7 @@ class WorkOrder(Document):
 		return status
 
 	def get_status(self, status=None):
+		from erpnext.controllers.foms import OPERATION_MAP_NAME
 		single_complete = frappe.db.get_single_value(
 			"Manufacturing Settings", "allow_single_completed_work_order"
 		)
@@ -378,25 +379,42 @@ class WorkOrder(Document):
 			if status != "Stopped":
 				stock_entries = frappe.db.sql(
 						"""select purpose, sum(fg_completed_qty) as qty, is_return
-					from `tabStock Entry` where work_order=%s and docstatus=1
+					from `tabStock Entry` where work_order=%s and docstatus=1 and is_return = 0
 					group by purpose""",
 						self.name, as_dict=1
 					)
+				
+				return_qty = frappe.db.sql("""
+					SELECT 
+						purpose, SUM(fg_completed_qty) AS qty, is_return, operation
+					FROM
+						`tabStock Entry`
+					WHERE
+						work_order = %s
+							AND docstatus = 1
+							AND is_return = 1
+					GROUP BY operation
+				""", self.name, as_dict=1)
+				is_closed = 0
+				for d in return_qty:
+					if d.qty >= self.qty:
+						status = 'Closed'
+						is_closed = 1
 
-				status = "Not Started"
-				if stock_entries:
-					is_return = [x.fg_completed_qty for x in stock_entries if x.is_return]
-					if is_return:
-						status = "Closed"
+				
+				if not is_closed:
+					if not stock_entries:
+						status = "Not Started"
 					else:
 						status = "In Process"
-						for d in stock_entries:
-							if d.purpose == "Manufacture":
-								produced_qty = d.qty
-								if flt(produced_qty) >= flt(self.qty) or (flt(produced_qty) and single_complete):
-									status = "Completed"
 
-								self.db_set("produced_qty", flt(produced_qty))
+					for d in stock_entries:
+						if d.purpose == "Manufacture":
+							produced_qty = d.qty
+							if flt(produced_qty) >= flt(self.qty) or (flt(produced_qty) and single_complete):
+								status = "Completed"
+
+							self.db_set("produced_qty", flt(produced_qty))
 		else:
 			status = "Cancelled"
 
@@ -1826,7 +1844,7 @@ def make_scrap_materials(work_order, percentage=100):
 
 	stock_entry = frappe.new_doc("Stock Entry")
 	stock_entry.from_bom = 1
-	stock_entry.for_completed_qty = wo_doc.qty * flt(percentage)/100
+	stock_entry.fg_completed_qty = wo_doc.qty * flt(percentage)/100
 	stock_entry.is_return = 1
 	stock_entry.work_order = work_order
 	stock_entry.purpose = "Material Transfer for Manufacture"
