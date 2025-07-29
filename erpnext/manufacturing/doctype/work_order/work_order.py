@@ -1886,7 +1886,7 @@ def make_scrap_materials(work_order, percentage=100):
 		row.expense_account = expense_account
 		must_be_whole_number = frappe.get_value("UOM", row.stock_uom, "must_be_whole_number")
 		if must_be_whole_number:
-			row.qty = cint(row.qty)
+			row.qty = round(row.qty)
 
 	stock_entry.remarks = f"Waste materials from Work Order {work_order}"
 	stock_entry.set_missing_values()
