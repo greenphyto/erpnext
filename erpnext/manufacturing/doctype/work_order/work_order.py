@@ -899,17 +899,27 @@ class WorkOrder(Document):
 		)
 		max_allowed_qty_for_wo = flt(self.qty) + (allowance_percentage / 100 * flt(self.qty))
 
+		single_complete = frappe.db.get_single_value(
+			"Manufacturing Settings", "allow_single_completed_work_order"
+		)
+
 		for d in self.get("operations"):
-			if not d.completed_qty:
-				d.status = "Pending"
-			elif flt(d.completed_qty) < flt(self.qty):
-				d.status = "Work in Progress"
-			elif flt(d.completed_qty) == flt(self.qty):
-				d.status = "Completed"
-			elif flt(d.completed_qty) <= max_allowed_qty_for_wo:
-				d.status = "Completed"
+			if single_complete:
+				if not d.completed_qty:
+					d.status = "Pending"
+				else:
+					d.status = "Completed"
 			else:
-				frappe.throw(_("Completed Qty cannot be greater than 'Qty to Manufacture'"))
+				if not d.completed_qty:
+					d.status = "Pending"
+				elif flt(d.completed_qty) < flt(self.qty):
+					d.status = "Work in Progress"
+				elif flt(d.completed_qty) == flt(self.qty):
+					d.status = "Completed"
+				elif flt(d.completed_qty) <= max_allowed_qty_for_wo:
+					d.status = "Completed"
+				else:
+					frappe.throw(_("Completed Qty cannot be greater than 'Qty to Manufacture'"))
 
 	def set_actual_dates(self):
 		if self.get("operations"):
@@ -1058,11 +1068,14 @@ class WorkOrder(Document):
 		if self.get("operations") and len(self.operations) == 1:
 			operation = self.operations[0].operation
 
+
+
 		if self.bom_no and self.qty:
 			use_qty = self.gross_weight
 			item_dict = get_bom_items_as_dict(
 				self.bom_no, self.company, qty=use_qty , fetch_exploded=self.use_multi_level_bom
 			)
+			bom = frappe.get_doc("BOM", self.bom_no)
 
 			if reset_only_qty:
 				for d in self.get("required_items"):
@@ -1074,7 +1087,11 @@ class WorkOrder(Document):
 			else:
 				for item in sorted(item_dict.values(), key=lambda d: d["idx"] or float("inf")):
 					source_warehouse = self.source_warehouse or item.source_warehouse or item.default_warehouse
-					rate = get_valuation_rate(item.item_code, source_warehouse, "", "")
+					if self.use_rate_from_bom:
+						rate = item.rate
+					else:
+						rate = get_valuation_rate(item.item_code, source_warehouse, "", "")
+
 					self.append(
 						"required_items",
 						{
@@ -1416,7 +1433,7 @@ def get_item_details(item, project=None, skip_bom_info=False):
 
 
 @frappe.whitelist()
-def make_work_order(bom_no, item, qty=0, gross_weight=0, project=None, variant_items=None):
+def make_work_order(bom_no, item, qty=0, gross_weight=0, project=None, variant_items=None, args={}):
 	if not frappe.has_permission("Work Order", "write"):
 		frappe.throw(_("Not permitted"), frappe.PermissionError)
 
@@ -1425,6 +1442,7 @@ def make_work_order(bom_no, item, qty=0, gross_weight=0, project=None, variant_i
 	wo_doc = frappe.new_doc("Work Order")
 	wo_doc.gross_weight = flt(gross_weight or qty)
 	wo_doc.production_item = item
+	wo_doc.update(args)
 	wo_doc.update(item_details)
 	wo_doc.bom_no = bom_no
 

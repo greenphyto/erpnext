@@ -43,6 +43,7 @@
   "settings_section",
   "allow_alternative_item",
   "use_multi_level_bom",
+  "use_rate_from_bom",
   "column_break_18",
   "skip_transfer",
   "from_wip_warehouse",
@@ -672,6 +673,12 @@
    "no_amend_copy": 1,
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "use_rate_from_bom",
+   "fieldtype": "Check",
+   "label": "Use rate from BOM"
   }
  ],
  "icon": "fa fa-cogs",
@@ -679,7 +686,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-07-14 12:24:17.396538",
+ "modified": "2025-07-29 12:28:44.580429",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",

@@ -1759,8 +1759,8 @@ def get_work_order(show_progress=False, work_order=""):
 		manual_save_log=1
 	).run()
 
-def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=False, return_doc=False):
-	doc = make_work_order(bom_no, item_code, qty, gross_weight)
+def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=False, return_doc=False, args={}):
+	doc = make_work_order(bom_no, item_code, qty, gross_weight, args=args)
 	validate_operation(doc)
 	doc.foms_work_order = log.workOrderNo
 	doc.foms_lot_id = log.id
