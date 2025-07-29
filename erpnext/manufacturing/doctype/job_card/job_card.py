@@ -653,6 +653,10 @@ class JobCard(Document):
 	def set_status(self, update_status=False):
 		if self.status == "On Hold" and self.docstatus == 0:
 			return
+		
+		single_complete = frappe.db.get_single_value(
+			"Manufacturing Settings", "allow_single_completed_work_order"
+		)
 
 		self.status = {0: "Open", 1: "Submitted", 2: "Cancelled"}[self.docstatus or 0]
 
@@ -663,8 +667,12 @@ class JobCard(Document):
 			if self.time_logs:
 				self.status = "Work In Progress"
 
-			if self.docstatus == 1 and (self.for_quantity <= self.total_completed_qty or not self.items):
-				self.status = "Completed"
+			if self.docstatus == 1:
+				if single_complete:
+					self.status = "Completed"
+
+				elif (self.for_quantity <= self.total_completed_qty or not self.items):
+					self.status = "Completed"
 
 		if update_status:
 			self.db_set("status", self.status)
