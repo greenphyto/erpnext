@@ -96,9 +96,9 @@ class WorkOrder(Document):
 
 		validate_uom_is_integer(self, "stock_uom", ["qty", "produced_qty"])
 
+		self.set_packet_size()
 		self.set_required_items()
 		self.validate_non_stock_items()
-		self.set_packet_size()
 		self.set_is_salad_item()
 
 	def on_update_after_submit(self):
@@ -1113,7 +1113,6 @@ class WorkOrder(Document):
 						self.project = item.get("project")
 
 			# add packaging from sales order
-
 			self.get_packaging_from_order()
 			self.set_available_qty()
 
@@ -1162,12 +1161,18 @@ class WorkOrder(Document):
 						{"parent":doc_name, "item_code":self.production_item}, as_dict=1)
 			if temp:
 				total_pcs = temp[0].get("qty")
+
+		# get from default
+		if not self.packet_size:
+			self.set_packet_size()
+
+		total_pcs = self.qty / flt(self.conversion_factor or 1)
 		
 		if not total_pcs:
 			return
 		
 		pack_item = frappe.db.get_single_value("Manufacturing Settings", "default_packaging")
-		if not pack_item:
+		if not pack_item or not self.packet_size:
 			return
 		
 		source_warehouse = self.source_warehouse 
