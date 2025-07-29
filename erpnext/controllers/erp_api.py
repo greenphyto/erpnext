@@ -451,7 +451,7 @@ def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 		rawMaterials,
 		wip_warehouse,
 		operationName,
-		percentage=global_percent
+		percentage=100
 	)
 	se_doc.save()
 	se_doc.submit()

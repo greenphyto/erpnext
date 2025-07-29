@@ -19,6 +19,7 @@ from erpnext.setup.utils import get_exchange_rate
 from erpnext.stock.doctype.item.item import get_item_details
 from erpnext.stock.get_item_details import get_conversion_factor, get_price_list_rate
 from frappe.model.naming import set_name_by_naming_series, set_name_from_naming_options, parse_naming_series, getseries
+import math
 
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
