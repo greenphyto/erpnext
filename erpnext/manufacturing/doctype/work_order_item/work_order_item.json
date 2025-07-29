@@ -74,7 +74,7 @@
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Required Qty",
-   "precision": "5"
+   "precision": "4"
   },
   {
    "columns": 1,
@@ -84,7 +84,7 @@
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Transf. Qty",
-   "precision": "5",
+   "precision": "4",
    "read_only": 1
   },
   {
@@ -110,7 +110,7 @@
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Consumed Qty",
-   "precision": "5",
+   "precision": "4",
    "read_only": 1
   },
   {
@@ -149,7 +149,7 @@
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Returned Qty ",
-   "precision": "5",
+   "precision": "4",
    "read_only": 1
   },
   {
@@ -167,7 +167,7 @@
  ],
  "istable": 1,
  "links": [],
- "modified": "2025-07-29 12:42:17.713249",
+ "modified": "2025-07-29 14:36:41.421619",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order Item",
