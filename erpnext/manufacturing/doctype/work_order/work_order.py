@@ -408,13 +408,19 @@ class WorkOrder(Document):
 					else:
 						status = "In Process"
 
+					got_manufacture = False
 					for d in stock_entries:
 						if d.purpose == "Manufacture":
+							got_manufacture = True
 							produced_qty = d.qty
 							if flt(produced_qty) >= flt(self.qty) or (flt(produced_qty) and single_complete):
 								status = "Completed"
 
 							self.db_set("produced_qty", flt(produced_qty))
+							
+					if not got_manufacture:
+						self.db_set("produced_qty", 0)
+
 		else:
 			status = "Cancelled"
 
