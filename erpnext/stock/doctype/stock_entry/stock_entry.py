@@ -1469,7 +1469,7 @@ class StockEntry(StockEntryAsset, StockController):
 
 		# for d in gl_entries:
 		# 	print(1446, d.account, d.debit, d.credit, d.remarks )
-		
+
 		result = process_gl_map(gl_entries, merge_entries=1)
 
 		# print("\nSE RESULT:")
@@ -3133,20 +3133,14 @@ def get_available_materials(work_order, percentage=100) -> dict:
 
 	data = get_stock_entry_data(work_order)
 	available_materials = {}
+	rate_map = {}
 
 	for row in data:
 		key = get_key(row)
 
 		if key not in available_materials:
 			available_materials[key] = frappe._dict({
-				"item_details": frappe._dict({
-					"item_code": row.item_code,
-					"uom": row.uom,
-					"batch_no": row.batch_no,
-					"stock_uom": row.stock_uom,
-					"item_name": row.item_name,
-					"description": row.description
-				}),
+				"item_details": row,
 				"batch_details": defaultdict(float),
 				"qty": 0.0,
 				"serial_nos": []
@@ -3155,20 +3149,28 @@ def get_available_materials(work_order, percentage=100) -> dict:
 		item_data = available_materials[key]
 
 		qty_delta = 0.0
+		amount_delta = 0.0
 
 		# Tambah ke WIP
 		if row.purpose == "Material Transfer for Manufacture" and not row.is_return:
 			qty_delta = row.qty
+			amount_delta = row.basic_amount
 
 		# Kurangi dari WIP
 		elif row.purpose == "Material Issue" or row.is_return:
 			qty_delta = -row.qty
+			amount_delta = -row.basic_amount
 
 		elif row.purpose in ("Manufacture", "Material Consumption for Manufacture"):
 			qty_delta = -row.qty
+			amount_delta = -row.basic_amount
 
 		# Tambahkan qty total
 		item_data.qty += qty_delta
+		if key not in rate_map:
+			rate_map[key] = {"total_amount": 0, "qty": 0}
+		rate_map[key]['total_amount'] += amount_delta
+		rate_map[key]['qty'] += qty_delta
 
 		# Tambahkan qty per batch
 		if row.batch_no:
@@ -3187,11 +3189,19 @@ def get_available_materials(work_order, percentage=100) -> dict:
 						pass  # Sudah tidak ada di list
 
 	# Terapkan persentase jika diminta
-	if percentage != 100:
-		for data in available_materials.values():
-			data.qty *= percentage / 100
-			for batch in data.batch_details:
-				data.batch_details[batch] *= percentage / 100
+	for key, data in available_materials.items():
+		available_materials[key].qty *= percentage / 100
+		for batch in available_materials[key].batch_details:
+			available_materials[key].batch_details[batch] *= percentage / 100
+
+		rate_info = rate_map.get(key)
+		if rate_info and rate_info["qty"] > 0:
+			avg_rate = rate_info["total_amount"] / rate_info["qty"]
+		else:
+			avg_rate = 0
+
+		available_materials[key].basic_rate = avg_rate
+		available_materials[key].amount = rate_info["total_amount"]
 
 	return available_materials
 
@@ -3218,6 +3228,7 @@ def get_stock_entry_data(work_order):
 			stock_entry_detail.serial_no,
 			stock_entry_detail.uom,
 			stock_entry_detail.basic_rate,
+			stock_entry_detail.basic_amount,
 			stock_entry_detail.conversion_factor,
 			stock_entry.purpose,
 			stock_entry.operation,
