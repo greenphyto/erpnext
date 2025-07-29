@@ -1474,6 +1474,7 @@ class StockEntry(StockEntryAsset, StockController):
 
 		# for d in gl_entries:
 		# 	print(1446, d.account, d.debit, d.credit, d.remarks )
+		
 		result = process_gl_map(gl_entries, merge_entries=1)
 
 		# print("\nSE RESULT:")
@@ -2292,6 +2293,11 @@ class StockEntry(StockEntryAsset, StockController):
 			"original_item": item.original_item,
 		}
 
+		# detect if scrap material from Work Order
+		if self.is_return and self.work_order:
+			ste_item_details['set_basic_rate_manually'] = 1
+			ste_item_details['basic_rate'] = item.basic_rate
+
 		if self.is_return:
 			ste_item_details["to_warehouse"] = item.s_warehouse
 
@@ -2456,6 +2462,8 @@ class StockEntry(StockEntryAsset, StockController):
 			se_child.is_process_loss = item_row.get("is_process_loss", 0)
 			se_child.po_detail = item_row.get("po_detail")
 			se_child.sco_rm_detail = item_row.get("sco_rm_detail")
+			se_child.basic_rate = item_row.get("basic_rate")
+			se_child.set_basic_rate_manually = item_row.get("set_basic_rate_manually")
 
 			for field in [
 				self.subcontract_data.rm_detail_field,
@@ -3118,66 +3126,75 @@ def get_items_from_subcontract_order(source_name, target_doc=None):
 
 	return target_doc
 
-
 def get_available_materials(work_order, percentage=100) -> dict:
+	from collections import defaultdict
 
 	def get_key(d):
-		return (d.item_code, d.batch_no, d.uom, d.operation)
-	
-	def convert_to_stock_map(data):
-		stock_map = {}
-		for d in data:
-			stock_map.setdefault( get_key(d), d)
-		return stock_map
+		return (d.item_code, d.batch_no, d.uom)
 
-	# all items send Stock Entry
 	data = get_stock_entry_data(work_order)
-
-	# all returned qty
-	temp = get_stock_return_data(work_order)
-	data_return = convert_to_stock_map(temp)
-
-	# net qty
 	available_materials = {}
+
 	for row in data:
 		key = get_key(row)
 
-		return_row = data_return.get(key) or {}
-		nett_qty = row.qty - flt(return_row.get("qty"))
-		row.qty = nett_qty * percentage/100
-
 		if key not in available_materials:
-			available_materials.setdefault(
-				key,
-				frappe._dict(
-					{"item_details": row, "batch_details": defaultdict(float), "qty": 0, "serial_nos": []}
-				),
-			)
+			available_materials[key] = frappe._dict({
+				"item_details": frappe._dict({
+					"item_code": row.item_code,
+					"uom": row.uom,
+					"batch_no": row.batch_no,
+					"stock_uom": row.stock_uom,
+					"item_name": row.item_name,
+					"description": row.description
+				}),
+				"batch_details": defaultdict(float),
+				"qty": 0.0,
+				"serial_nos": []
+			})
 
 		item_data = available_materials[key]
 
-		if row.purpose == "Material Transfer for Manufacture":
-			item_data.qty += row.qty
-			if row.batch_no:
-				item_data.batch_details[row.batch_no] += row.qty
+		qty_delta = 0.0
 
-			if row.serial_no:
-				item_data.serial_nos.extend(get_serial_nos(row.serial_no))
-				item_data.serial_nos.sort()
+		# Tambah ke WIP
+		if row.purpose == "Material Transfer for Manufacture" and not row.is_return:
+			qty_delta = row.qty
 
-		# else:
-		# 	# Consume raw material qty in case of 'Manufacture' or 'Material Consumption for Manufacture'
+		# Kurangi dari WIP
+		elif row.purpose == "Material Issue" or row.is_return:
+			qty_delta = -row.qty
 
-		# 	item_data.qty -= row.qty
-		# 	if row.batch_no:
-		# 		item_data.batch_details[row.batch_no] -= row.qty
+		elif row.purpose in ("Manufacture", "Material Consumption for Manufacture"):
+			qty_delta = -row.qty
 
-		# 	if row.serial_no:
-		# 		for serial_no in get_serial_nos(row.serial_no):
-		# 			item_data.serial_nos.remove(serial_no)
+		# Tambahkan qty total
+		item_data.qty += qty_delta
+
+		# Tambahkan qty per batch
+		if row.batch_no:
+			item_data.batch_details[row.batch_no] += qty_delta
+
+		# Update serial number list
+		if row.serial_no:
+			serials = get_serial_nos(row.serial_no)
+			if qty_delta > 0:
+				item_data.serial_nos.extend(serials)
+			else:
+				for s in serials:
+					try:
+						item_data.serial_nos.remove(s)
+					except ValueError:
+						pass  # Sudah tidak ada di list
+
+	# Terapkan persentase jika diminta
+	if percentage != 100:
+		for data in available_materials.values():
+			data.qty *= percentage / 100
+			for batch in data.batch_details:
+				data.batch_details[batch] *= percentage / 100
 
 	return available_materials
-
 
 def get_stock_entry_data(work_order):
 	stock_entry = frappe.qb.DocType("Stock Entry")
@@ -3201,59 +3218,21 @@ def get_stock_entry_data(work_order):
 			stock_entry_detail.batch_no,
 			stock_entry_detail.serial_no,
 			stock_entry_detail.uom,
+			stock_entry_detail.basic_rate,
 			stock_entry_detail.conversion_factor,
 			stock_entry.purpose,
-			stock_entry.operation
+			stock_entry.operation,
+			stock_entry.is_return,
 		)
 		.where(
 			(stock_entry.name == stock_entry_detail.parent)
 			& (stock_entry.work_order == work_order)
 			& (stock_entry.docstatus == 1)
+			# & (stock_entry.is_return == 0)
 			& (stock_entry_detail.s_warehouse.isnotnull())
 			& (
 				stock_entry.purpose.isin(
-					["Manufacture", "Material Consumption for Manufacture", "Material Transfer for Manufacture"]
-				)
-			)
-		)
-		.orderby(stock_entry.creation, stock_entry_detail.item_code, stock_entry_detail.idx)
-	).run(as_dict=1)
-
-def get_stock_return_data(work_order):
-	stock_entry = frappe.qb.DocType("Stock Entry")
-	stock_entry_detail = frappe.qb.DocType("Stock Entry Detail")
-
-	return (
-		frappe.qb.from_(stock_entry)
-		.from_(stock_entry_detail)
-		.select(
-			stock_entry_detail.item_name,
-			stock_entry_detail.original_item,
-			stock_entry_detail.item_code,
-			stock_entry_detail.qty,
-			(stock_entry_detail.t_warehouse).as_("warehouse"),
-			(stock_entry_detail.s_warehouse).as_("s_warehouse"),
-			stock_entry_detail.description,
-			stock_entry_detail.stock_uom,
-			stock_entry_detail.transfer_qty,
-			stock_entry_detail.expense_account,
-			stock_entry_detail.cost_center,
-			stock_entry_detail.batch_no,
-			stock_entry_detail.serial_no,
-			stock_entry_detail.uom,
-			stock_entry_detail.conversion_factor,
-			stock_entry.purpose,
-			stock_entry.operation
-		)
-		.where(
-			(stock_entry.name == stock_entry_detail.parent)
-			& (stock_entry.work_order == work_order)
-			& (stock_entry.docstatus == 1)
-			& (stock_entry.is_return == 1)
-			& (stock_entry_detail.s_warehouse.isnotnull())
-			& (
-				stock_entry.purpose.isin(
-					["Material Issue"]
+					["Manufacture", "Material Consumption for Manufacture", "Material Transfer for Manufacture", "Material Issue"]
 				)
 			)
 		)
