@@ -1514,135 +1514,37 @@ class StockEntry(StockEntryAsset, StockController):
 		
 		return prev_wip
 
-	def get_previous_rate_old(self):
-		# if take from SE Items valuation rate it will included with additional cost, if use basic amount it will exluded
-		data_item_amount = frappe.db.sql("""
-			SELECT 
-				s.operation,
-				se.item_code,
-				se.parent,
-				sum(se.transfer_qty) as stock_qty,
-				sum(se.basic_amount) as basic_amount
-			FROM
-				`tabStock Entry Detail` se
-					LEFT JOIN
-				`tabStock Entry` s ON s.name = se.parent
-			WHERE
-				s.docstatus = 1
-					AND s.work_order = %s
-				AND s.purpose = 'Material Transfer for Manufacture'
-			group by se.item_code
-			""", (self.work_order), as_dict=1)
-
-		total_item_amount = 0
-		for d in data_item_amount:
-			total_item_amount += flt(d.basic_amount)
-		
-		total_item_amount = flt(total_item_amount,2)
-
-		data_item_costs = frappe.db.sql("""
-			SELECT 
-				s.name,
-				s.operation,
-				sum(s.total_additional_costs) as total_costs
-			FROM
-				`tabStock Entry` s
-			WHERE
-				s.docstatus = 1
-					AND s.work_order = %s
-				and s.purpose = 'Material Transfer for Manufacture'
-			""", (self.work_order), as_dict=1)
-		total_costs = 0
-		if data_item_costs:
-			total_costs = data_item_costs[0].get("total_costs")
-		
-		
-		rate_map = frappe._dict()
-		total = 0
-		for d in data_item_amount:
-			if not total_item_amount:
-				add_cost = 0
-			else:
-				add_cost = flt((d.basic_amount / total_item_amount) * total_costs, 2)
-			new_rate  = (d.basic_amount + flt(add_cost)) / flt(d.stock_qty,5)
-			rate_map[d.item_code] = new_rate
-			total += new_rate
-			
-		return rate_map
 
 	def get_previous_rate(self):
-		# if take from SE Items valuation rate it will included with additional cost, if use basic amount it will exluded
-		temp = frappe.db.sql("""
-			SELECT 
-				s.operation,
-				se.item_code,
-				se.parent,
-				se.basic_rate,
-				se.batch_no,
-				se.transfer_qty as stock_qty,
-				se.basic_amount as basic_amount
-			FROM
-				`tabStock Entry Detail` se
-					LEFT JOIN
-				`tabStock Entry` s ON s.name = se.parent
-			WHERE
-				s.docstatus = 1
-					AND s.work_order = %s
-				AND s.purpose = 'Material Transfer for Manufacture'
-			""", (self.work_order), as_dict=1)
+		from erpnext.controllers.foms import OPERATION_MAP_NAME
+		items = get_available_materials(self.work_order, 100)
+		total = sum([ flt(row.basic_rate * row.qty) for row in items.values() ])
 
-		data_item_amount = frappe._dict({})
-		data_rate_map = frappe._dict({})
-		total_item_amount = 0
-		for d in temp:
-			pred_amount = d.stock_qty * d.basic_rate
-			if not d.batch_no in data_item_amount:
-				d.pred_amount = pred_amount
-				data_item_amount[d.batch_no] = d
-				data_rate_map[d.batch_no] = d.basic_rate
-			else:
-				data_item_amount[d.batch_no]['stock_qty'] += d.stock_qty
-				data_item_amount[d.batch_no]['basic_amount'] += d.basic_amount
-				data_item_amount[d.batch_no]['pred_amount'] += pred_amount
-				
-			total_item_amount += flt(d.pred_amount)
-
-		total_item_amount = flt(total_item_amount,2)
-
-		data_item_costs = frappe.db.sql("""
-			SELECT 
-				s.name,
-				s.operation,
-				sum(s.total_additional_costs) as total_costs
-			FROM
-				`tabStock Entry` s
-			WHERE
-				s.docstatus = 1
-					AND s.work_order = %s
-				and s.purpose = 'Material Transfer for Manufacture'
-			""", (self.work_order), as_dict=1)
-		total_costs = 0
-		if data_item_costs:
-			total_costs = data_item_costs[0].get("total_costs")
+		# find previous amount, harvesting
+		total_debit = 0
+		for opr_no in [3,2,1]:
+			operation = OPERATION_MAP_NAME[opr_no]
+			total_debit = frappe.db.sql("""
+					SELECT SUM(gl.debit)
+					FROM `tabGL Entry` gl
+					INNER JOIN `tabStock Entry` se ON gl.voucher_no = se.name
+					WHERE gl.voucher_type = 'Stock Entry'
+					AND gl.docstatus = 1
+					AND se.docstatus = 1
+					AND se.purpose = 'Material Transfer for Manufacture'
+					AND se.work_order = %s
+					AND se.operation = %s
+				""", (self.work_order, operation))[0][0] or 0.0
+			if total_debit:
+				break
 		
-		
-		rate_map = frappe._dict()
-		total = 0
-		for i,d in data_item_amount.items():
+		adj_value = total_debit / total
+		rate_map = {}
+		for key, row in items.items():
+			# new_amount = row.basic_rate * row.qty * adj_value
+			new_rate =  row.basic_rate * adj_value
+			rate_map[key[1]] = new_rate
 
-			# find distributed additional cost at per qty
-			rate_cost = 0
-			if total_item_amount:
-				rate_cost = flt(((d.pred_amount / total_item_amount) * total_costs) / flt(d.stock_qty,5), 2)
-
-			# find new basic rate
-			basic_rate = flt(d.pred_amount) / flt(d.stock_qty)
-
-			# find new rate with add cost
-			new_rate  = basic_rate + rate_cost
-			rate_map[d.batch_no] = round(new_rate, 5)
-			total += new_rate
-			
 		return rate_map
 		
 
