@@ -194,7 +194,7 @@ class EmailInvoice(Document):
 				row.qty = flt(d['qty'])
 
 		# add GST 
-		doc.taxes_and_charges = get_gst_template(data.get("gst_percent"))
+		doc.taxes_and_charges = get_gst_template(data.get("gst_percent") or 9)
 		doc.set_other_charges()
 
 		doc.flags.ignore_mandatory = 1
@@ -259,7 +259,7 @@ class EmailInvoice(Document):
 			doc.currency = "SGD"			
 
 		# add GST
-		doc.taxes_and_charges = get_gst_template(data.get("gst_percent"))
+		doc.taxes_and_charges = get_gst_template(data.get("gst_percent") or 9)
 		doc.set_other_charges()
 		
 		doc.flags.ignore_mandatory = 1
