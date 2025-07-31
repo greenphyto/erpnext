@@ -31,6 +31,7 @@
   "stock_qty",
   "stock_qty_col_break",
   "returned_qty",
+  "replacement_qty",
   "section_break_17",
   "price_list_rate",
   "base_price_list_rate",
@@ -631,7 +632,6 @@
   {
    "fieldname": "against_sales_order",
    "fieldtype": "Link",
-   "ignore_link": 1,
    "label": "Against Sales Order",
    "no_copy": 1,
    "options": "Sales Order",
@@ -641,7 +641,6 @@
   {
    "fieldname": "against_sales_invoice",
    "fieldtype": "Link",
-   "ignore_link": 1,
    "label": "Against Sales Invoice",
    "no_copy": 1,
    "options": "Sales Invoice",
@@ -862,14 +861,21 @@
    "fieldname": "foms_work_order",
    "fieldtype": "Data",
    "label": "FOMS Work Order",
-   "read_only_depends_on": "eval:cur_frm.doc.foms_id"
+   "read_only_depends_on": "eval:parent.foms_id",
+   "read_only": 1
+  },
+  {
+   "fieldname": "replacement_qty",
+   "fieldtype": "Float",
+   "label": "Replacement Qty",
+   "read_only": 1
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-05-14 13:04:48.272933",
+ "modified": "2025-07-31 14:20:01.727467",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note Item",
