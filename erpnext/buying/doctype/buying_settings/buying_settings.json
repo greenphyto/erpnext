@@ -33,10 +33,7 @@
   "series_required_pr",
   "permissions_section",
   "enable_specific_purchase_approval",
-  "purchase_approval",
-  "supplier_invoice_auto_section",
-  "enable_supplier_invoice",
-  "default_email_inbox"
+  "purchase_approval"
  ],
  "fields": [
   {
@@ -203,31 +200,14 @@
    "fieldname": "enable_specific_purchase_approval",
    "fieldtype": "Check",
    "label": "Enable specific purchase approval"
-  },
-  {
-    "fieldname": "supplier_invoice_auto_section",
-    "fieldtype": "Section Break",
-    "label": "Supplier Invoice Auto"
-   },
-   {
-    "default": "0",
-    "fieldname": "enable_supplier_invoice",
-    "fieldtype": "Check",
-    "label": "Enable Supplier Invoice"
-   },
-   {
-    "fieldname": "default_email_inbox",
-    "fieldtype": "Link",
-    "label": "Default Email Inbox",
-    "options": "Email Account"
-   }
+  }
  ],
  "icon": "fa fa-cog",
  "idx": 1,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-03-13 12:34:43.974439",
+ "modified": "2025-07-31 12:44:35.549709",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Buying Settings",
