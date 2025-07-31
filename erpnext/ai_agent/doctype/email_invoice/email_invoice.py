@@ -390,6 +390,9 @@ def pull_erp_po():
 			continue
 
 		po = get_erp_data(f"api/resource/Purchase Order/{po_name}")
+
+		if not po:
+			continue
 		
 		po = frappe._dict(po)
 		doc = frappe.new_doc("Purchase Order")
