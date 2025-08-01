@@ -176,6 +176,12 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 			'Delivery Trip': this.make_delivery_trip,
 		};
 	}
+	mapping_selected_order(data){
+		setTimeout(()=>{
+			frappe.dom.unfreeze();
+			frappe.show_alert("Done mapping");
+		}, 2000)
+	}
 	refresh(doc, dt, dn) {
 		var me = this;
 		super.refresh();
@@ -234,13 +240,7 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 				
 				if (doc.docstatus == 0) {
 					this.frm.add_custom_button(__('Create Replacement Qty'), function () {
-						// if (!me.frm.doc.customer) {
-						// 	frappe.throw({
-						// 		title: __("Mandatory"),
-						// 		message: __("Please Select a Customer")
-						// 	});
-						// }
-						
+		
 						// mapping_method: "erpnext.stock.doctype.delivery_note.delivery_note.make_replacement_qty",
 						erpnext.utils.load_data_from_report({
 							title: "Select Sales Order",
@@ -253,7 +253,9 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 												disabled:0
 											}
 										}
-									}},
+									},
+									description: "Select customer for current Delivery Note"
+								},
 								{fieldname: "column_break1",fieldtype: "Column Break",oldfieldtype: "Column Break"},
 								{fieldname:"item_code", label:"Item Code", fieldtype:"Link", options:"Item", 
 									get_query:()=>{
@@ -274,7 +276,25 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 								{fieldname:"repl_qty", label:"Repl. Qty (Sent)", fieldtype:"Float", options:"", width:"10"},
 								{fieldname:"repl_approx_qty", label:"Repl. Qty (Approx)", fieldtype:"Float", options:"", width:"10"},
 							],
-							size:"extra-large"
+							size:"extra-large",
+							action: (filters, data) => {
+								return new Promise((resolve, reject) => {
+									console.log(filters, data)
+									if (!filters.customer) {
+										alert("Customer must be set");
+										return resolve(false);
+									}
+
+									if (data.length==0) {
+										frappe.show_alert("Not item selected")
+									} else {
+										frappe.show_alert("Load data..");
+										frappe.dom.freeze();
+										me.frm.cscript.mapping_selected_order(data)
+									}
+									return resolve(true);
+								});
+							}
 						})
 					});
 				}
@@ -535,20 +555,19 @@ erpnext.utils.load_data_from_report = function(opts) {
 		load_table();
 	})
 	.on('click', 'button[data-action=get_items]', () => {
-		var rows = get_checked_items()
-		dialog.hide();
-		if (opts.mapping_method) {
-			frappe.call({ method: opts.mapping_method, args: { rows, target: opts.target.docname } });
-		}
+		var rows = get_checked_items();
+		var filters = dialog.get_values();
+		opts.action(filters, rows).then(r=>{
+			if (r) dialog.hide();
+		});
 	});
 
 	// Init
 	dialog.show();
 	setTimeout(()=>{
 		load_table();
-	}, 50)
+	}, 200)
 };
-
 
 
 
