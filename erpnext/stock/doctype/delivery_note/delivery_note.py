@@ -16,6 +16,8 @@ from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.controllers.selling_controller import SellingController
 from erpnext.stock.doctype.batch.batch import set_batch_nos
 from erpnext.stock.doctype.serial_no.serial_no import get_delivery_note_serial_no
+from six import string_types
+import json
 
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
@@ -87,6 +89,37 @@ class DeliveryNote(SellingController):
 						"target_parent_field": "per_returned",
 						"target_ref_field": "stock_qty",
 						"source_field": "-1 * stock_qty",
+						"percent_join_field_parent": "return_against",
+					},
+				]
+			)
+		if cint(self.is_replacement):
+			self.status_updater.extend(
+				[
+					{
+						"source_dt": "Delivery Note Item",
+						"target_dt": "Sales Order Item",
+						"join_field": "so_detail",
+						"target_field": "replacement_qty",
+						"target_parent_dt": "Sales Order",
+						"source_field": "-1 * qty",
+						"second_source_dt": "Sales Invoice Item",
+						"second_source_field": "-1 * qty",
+						"second_join_field": "so_detail",
+						"extra_cond": """ and exists (select name from `tabDelivery Note`
+					where name=`tabDelivery Note Item`.parent and is_return=1)""",
+						"second_source_extra_cond": """ and exists (select name from `tabSales Invoice`
+					where name=`tabSales Invoice Item`.parent and is_return=1 and update_stock=1)""",
+					},
+					{
+						"source_dt": "Delivery Note Item",
+						"target_dt": "Delivery Note Item",
+						"join_field": "dn_detail",
+						"target_field": "replacement_qty",
+						"target_parent_dt": "Delivery Note",
+						"target_parent_field": "per_returned",
+						"target_ref_field": "stock_qty",
+						"source_field": "1 * stock_qty",
 						"percent_join_field_parent": "return_against",
 					},
 				]
@@ -1017,6 +1050,52 @@ def make_packing_slip(source_name, target_doc=None):
 	)
 
 	return doclist
+
+@frappe.whitelist()
+def load_returned_data(filters):
+	if isinstance(filters, string_types):
+		filters = json.loads(filters)
+	cond = ""
+	if filters.get("customer"):
+		cond += " AND so.customer = %(customer)s "
+	if filters.get("item_code"):
+		cond += " AND soi.item_code = %(item_code)s "
+
+	return frappe.db.sql("""
+	SELECT 
+		soi.name,
+		so.name as so_number,
+		so.customer,
+		soi.item_code,
+		soi.qty,
+		soi.returned_qty,
+		soi.replacement_qty as repl_qty,
+		soi.returned_qty - soi.replacement_qty as repl_approx_qty
+	FROM
+		`tabSales Order Item` soi
+			LEFT JOIN
+		`tabSales Order` so ON so.name = soi.parent
+	WHERE
+		so.docstatus = 1
+			AND soi.returned_qty > 0
+			{}
+					  """.format(cond), filters, as_dict=1)
+
+@frappe.whitelist()
+def make_replacement(source_name, target_doc=None):
+	# set series RPL
+	# add item with not delete the previous
+    def postprocess(source, target_doc):
+        pass
+
+    return get_mapped_doc("Sales Order", source_name, {
+        "Sales Order": {
+            "doctype": "Delivery Note"
+        },
+        "Sales Order Item": {
+            "doctype": "Delivery Note Item",
+        }
+    }, target_doc, postprocess)
 
 
 @frappe.whitelist()
