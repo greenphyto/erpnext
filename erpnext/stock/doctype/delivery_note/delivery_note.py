@@ -14,7 +14,7 @@ from erpnext.stock import get_warehouse_account_map, get_item_account
 from erpnext.accounts.general_ledger import make_gl_entries
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.controllers.selling_controller import SellingController
-from erpnext.stock.doctype.batch.batch import set_batch_nos
+from erpnext.stock.doctype.batch.batch import set_batch_nos, get_available_batch_portion
 from erpnext.stock.doctype.serial_no.serial_no import get_delivery_note_serial_no
 from six import string_types
 import json
@@ -93,7 +93,7 @@ class DeliveryNote(SellingController):
 					},
 				]
 			)
-		if cint(self.is_replacement):
+		if cint(self.get("is_replacement")):
 			self.status_updater.extend(
 				[
 					{
@@ -1082,21 +1082,71 @@ def load_returned_data(filters):
 					  """.format(cond), filters, as_dict=1)
 
 @frappe.whitelist()
-def make_replacement(source_name, target_doc=None):
-	# set series RPL
-	# add item with not delete the previous
-    def postprocess(source, target_doc):
-        pass
+def make_replacement(source_list, target_doc=None):
+	if isinstance(source_list, string_types):
+		source_list = json.loads(source_list)
+	if isinstance(target_doc, string_types):
+		target_doc = frappe.parse_json(target_doc)
 
-    return get_mapped_doc("Sales Order", source_name, {
-        "Sales Order": {
-            "doctype": "Delivery Note"
-        },
-        "Sales Order Item": {
-            "doctype": "Delivery Note Item",
-        }
-    }, target_doc, postprocess)
+	if not source_list:
+		frappe.throw("No items selected")
 
+	# Ambil semua Sales Order Item
+	so_items = frappe.get_all("Sales Order Item", filters={"name": ["in", source_list]}, fields=[
+		"*"
+	])
+
+	# Validasi customer
+	customers = list(set([frappe.db.get_value("Sales Order", item["parent"], "customer") for item in so_items]))
+	if len(customers) > 1:
+		frappe.throw("Selected items have different customers. Please select from the same customer.")
+
+	customer = customers[0]
+	nearest_delivery_date = min([item["delivery_date"] for item in so_items if item.get("delivery_date")])
+
+	# Load atau buat target_doc Delivery Note
+	if target_doc:
+		doc = frappe.get_doc(target_doc)
+	else:
+		doc = frappe.new_doc("Delivery Note")
+		doc.customer = customer
+
+	doc.set("items", [])
+	for item in so_items:
+		qty = flt(item["returned_qty"]) - flt(item["replacement_qty"])
+		batches = get_available_batch_portion(item['item_code'], qty, skip_wip_warehouse=1, strategy="Expired First")
+		for d in batches:
+			row = doc.append("items")
+			row.update({
+				"so_detail": item["name"],
+				"item_code": item["item_code"],
+				"qty": d.qty,
+				"warehouse": d.warehouse,
+				"uom": item['uom'],
+				"against_sales_order": item["parent"],
+				"delivery_date": item["delivery_date"],
+				"batch_no": d.batch_id
+			})
+		if not batches:
+			row = doc.append("items")
+			row.update({
+				"so_detail": item["name"],
+				"item_code": item["item_code"],
+				"qty": qty,
+				"uom": item.uom,
+				"against_sales_order": item["parent"],
+				"delivery_date": item["delivery_date"],
+				"batch_no": ""
+			})
+	doc.is_replacement = 1
+	if doc.is_new():
+		doc.naming_series = 'DO-RPL-.YYYY.-.#####'
+
+	doc.customer = customer
+	doc.delivery_date = nearest_delivery_date
+	doc.set_missing_values()
+
+	return doc
 
 @frappe.whitelist()
 def make_shipment(source_name, target_doc=None):
