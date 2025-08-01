@@ -123,7 +123,7 @@ class AccountsController(TransactionBase):
 		supplier = None
 		supplier_name = None
 
-		if not self.supplier:
+		if not self.get("supplier"):
 			return
 
 		if is_buying_invoice or is_supplier_payment:
