@@ -807,6 +807,46 @@ def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 
 	return target_doc
 
+@frappe.whitelist()
+def make_replacement_qty(source_name, target_doc=None):
+	def postprocess(source, target):
+		target.ignore_pricing_rule = 1
+		target.is_replacement = 1
+		target.po_no = source.po_no
+		target.naming_series = 'DO-RPL-.YYYY.-.#####'
+		target.run_method("set_missing_values")
+		target.run_method("calculate_taxes_and_totals")
+
+	def select_item_condition(item):
+		return flt(item.returned_qty) - flt(item.replacement_qty)
+
+	def set_item_fields(source, target, source_parent):
+		target.qty = flt(source.returned_qty) - flt(source.replacement_qty)
+		target.against_sales_order = source.parent
+		target.so_detail = source.name
+		target.sales_order = source.parent
+
+	fields = {
+		"Sales Order": {
+			"doctype": "Delivery Note",
+			"validation": {
+				"docstatus": ["=", 1]
+			}
+		},
+		"Sales Order Item": {
+			"doctype": "Delivery Note Item",
+			"condition": select_item_condition,
+			"postprocess": set_item_fields
+		}
+	}
+
+	return get_mapped_doc(
+		"Sales Order",
+		source_name,
+		fields,
+		target_doc,
+		postprocess
+	)
 
 @frappe.whitelist()
 def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
