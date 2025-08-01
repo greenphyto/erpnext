@@ -63,9 +63,9 @@ class EmailInvoice(Document):
 			"attached_to_name":doc.name
 		})
 		
-		# temporary detect invoice/not by attachment
+		# temporary detect invoice or not by attachment
 		if not file_doc_name:
-			self.unknown_reason = "Something issue with attachemnt"
+			self.unknown_reason = "No attachment in this email"
 			return
 		
 		supp_context = get_supplier_context()
