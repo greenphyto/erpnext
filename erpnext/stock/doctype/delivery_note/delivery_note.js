@@ -177,10 +177,25 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 		};
 	}
 	mapping_selected_order(data){
-		setTimeout(()=>{
-			frappe.dom.unfreeze();
-			frappe.show_alert("Done mapping");
-		}, 2000)
+		var me = this.frm;
+		frappe.call({
+			method: "erpnext.stock.doctype.delivery_note.delivery_note.make_replacement",
+			args: {
+				source_list: data,
+				target_doc: this.frm.doc
+			},
+			callback(r) {
+				if (r.message) {
+					// map ke frontend lagi kalau perlu
+					frappe.model.sync(r.message);
+					me.refresh()
+					frappe.set_route("Form", "Delivery Note", r.message.name);
+					frappe.show_alert("Done mapping");
+				}
+				frappe.dom.unfreeze();
+			}
+		});
+		frappe.dom.unfreeze();
 	}
 	refresh(doc, dt, dn) {
 		var me = this;
@@ -264,7 +279,8 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 											}
 										}
 									},
-									description: "Select customer for current Delivery Note"
+									description: "Select customer for current Delivery Note",
+									default: me.frm.doc.customer,
 								},
 								{fieldname: "column_break1",fieldtype: "Column Break",oldfieldtype: "Column Break"},
 								{fieldname:"item_code", label:"Item Code", fieldtype:"Link", options:"Item", 
@@ -289,7 +305,6 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 							size:"extra-large",
 							action: (filters, data) => {
 								return new Promise((resolve, reject) => {
-									console.log(filters, data)
 									if (!filters.customer) {
 										alert("Customer must be set");
 										return resolve(false);
@@ -312,7 +327,6 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 				if (!doc.__islocal && doc.docstatus==1) {
 					this.frm.page.set_inner_btn_group_as_primary(__('Create'));
 				}
-
 		}
 
 		if (doc.docstatus > 0) {

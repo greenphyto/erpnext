@@ -376,6 +376,74 @@ def get_available_batch(item_code, qty, skip_wip_warehouse=False, company="", da
 
 	return result
 
+def get_available_batch_portion(item_code, qty, skip_wip_warehouse=False, company="", date="", strategy="FIFO"):
+	from erpnext.stock.report.batch_wise_balance_history.batch_wise_balance_history import get_item_warehouse_batch_map
+	from frappe.utils import getdate, nowdate
+
+	if not skip_wip_warehouse:
+		wip_warehouse = get_wip_warehouse()
+	else:
+		wip_warehouse = []
+
+	start_date = getdate("2000-01-01")
+	end_date = getdate(date or nowdate())
+	today = getdate(nowdate())
+	company = company or erpnext.get_default_company()
+
+	filters = frappe._dict({
+		'company': company,
+		'from_date': start_date,
+		'to_date': end_date,
+		'item_code': item_code
+	})
+
+	iwb_map = get_item_warehouse_batch_map(filters, float_precision=4)
+	batch_list = []
+
+	for item, val in iwb_map.items():
+		for wh in val:
+			if wh in wip_warehouse:
+				continue
+			for batch_id in val[wh]:
+				qty_dict = val[wh][batch_id]
+				if qty_dict.bal_qty <= 0:
+					continue
+
+				batch_doc = frappe.get_doc("Batch", batch_id)
+				expiry = batch_doc.expiry_date or getdate("2099-12-31")
+				if expiry < today:
+					continue
+
+				batch_list.append(frappe._dict({
+					'batch_id': batch_id,
+					'qty': qty_dict.bal_qty,
+					'warehouse': wh,
+					'expiry_date': expiry,
+					'creation': batch_doc.creation
+				}))
+
+	# Sorting strategy
+	if strategy == "Expired First":
+		batch_list.sort(key=lambda b: (b.expiry_date, b.batch_id))
+	elif strategy == "Small First":
+		batch_list.sort(key=lambda b: (b.qty, b.batch_id))
+	else:  # FIFO default
+		batch_list.sort(key=lambda b: (b.creation, b.batch_id))
+
+	result = []
+	remaining = qty
+	for b in batch_list:
+		if remaining <= 0:
+			break
+		used = min(b.qty, remaining)
+		result.append(frappe._dict({
+			'batch_id': b.batch_id,
+			'qty': used,
+			'warehouse': b.warehouse
+		}))
+		remaining -= used
+	return result if result else []
+
 def get_wip_warehouse():
 	data = [d.name for d in frappe.get_list("Warehouse", {"is_wip_warehouse":1})]
 	wip_settings = frappe.get_value("Manufacturing Settings", "Manufacturing Settings", "default_wip_warehouse")
