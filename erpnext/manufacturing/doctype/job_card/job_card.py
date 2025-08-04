@@ -403,7 +403,7 @@ class JobCard(Document):
 
 	def on_submit(self):
 		self.validate_transfer_qty()
-		self.validate_job_card()
+		# self.validate_job_card()
 		self.update_work_order()
 		self.set_transferred_qty()
 
