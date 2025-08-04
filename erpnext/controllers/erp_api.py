@@ -413,7 +413,8 @@ def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 		se = make_scrap_materials(work_order_name, 100)
 		se.save()
 		se.submit()
-		update_log("Work Order", f"Cancel Operation {operationNo} Work Order {ERPWorkOrderID}", "Stock Entry", se.name, now=1)
+		update_log("Work Order", data_name, "Stock Entry", se.name)
+		update_log("Work Order", f"Cancel Operation {operationNo} Work Order {ERPWorkOrderID}", "Stock Entry", se.name)
 		return {
 			"result": True,
 			"percentage": percentage,
@@ -480,7 +481,7 @@ def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 	job_card.save()
 	job_card.submit()
 
-	update_log("Work Order", data_name, "Job Card", job_card.name, now=1, name_id=log_name)
+	update_log("Work Order", data_name, "Job Card", job_card.name, name_id=log_name)
 
 	return {
 		"result": True,
