@@ -334,7 +334,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 		return {
 			"result": False,
 			"percentage": 0,
-			"message":"Temporary disabled"
+			"error":"Temporary disabled"
 		}
 	
 	data_name = f"Operation {operationNo} Work Order {ERPWorkOrderID}"
@@ -354,7 +354,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	if temp.get("docstatus") == 1:
 		update_log("Work Order", data_name, "Job Card", temp.get("name"))
 		return {
-			"result": False,
+			"result": True,
 			"percentage": percentage,
 			"message": "Already updated"
 		}
@@ -365,14 +365,15 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	if job_card_name and frappe.db.get_value("Stock Entry", {"job_card": job_card_name, "docstatus":1}, cache=False, debug=0):
 		update_log("Work Order", data_name, "Job Card", temp.get("name"))
 		return {
-			"result": False,
+			"result": True,
 			"percentage": percentage,
 			"message": "Already updated (se)"
 		}
 
 	if cint(operationNo) == 3 and not now:
 		return {
-			"result":"Scheduled"
+			"result":True,
+			"message":"Scheduled"
 		}
 	else:
 		return _update_work_order_operation_status(log_res.name, ERPWorkOrderID, operationNo, percentage, rawMaterials)
@@ -395,7 +396,7 @@ def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 	if existing_jc:
 		update_log("Work Order", data_name, "Job Card", existing_jc.name)
 		return {
-			"result": False,
+			"result": True,
 			"percentage": percentage,
 			"message": "Already updated (se)"
 		}
@@ -567,7 +568,8 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 		)
 	else:
 		return {
-			"result":"Scheduled"
+			"result": True,
+			"message":"Scheduled"
 		}
 
 def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate="", draft=False):
@@ -591,13 +593,15 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 	})
 	if not operation_3_status:
 		return {
-			"result":"Operation 3 should be complete first."
+			"result":False,
+			"error":"Operation 3 should be complete first."
 		}
 
 	if status == "Completed":
 		update_log("Work Order", data_name, "Work Order", work_order_name)
 		return {
-			"result":"Already complete"
+			"result":True,
+			"message":"Already complete"
 		}
 	
 	if not work_order_name:
