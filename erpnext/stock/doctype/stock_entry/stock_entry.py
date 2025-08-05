@@ -151,7 +151,6 @@ class StockEntry(StockEntryAsset, StockController):
 		if self.work_order:
 			self.pro_doc = frappe.get_doc("Work Order", self.work_order)
 
-		self.set_production_loss_account()
 		self.validate_posting_time()
 		self.validate_purpose()
 		self.valdiate_from_supplier()
@@ -2685,14 +2684,6 @@ class StockEntry(StockEntryAsset, StockController):
 		self.set_transfer_qty()
 		self.set_actual_qty()
 		self.calculate_rate_and_amount()
-
-
-
-
-	@frappe.whitelist()
-	def set_production_loss_account(self, force=False):
-		if not self.expense_loss_account or force:
-			self.expense_loss_account = frappe.get_value("Company", self.company, "production_loss_account")
 
 
 @frappe.whitelist()

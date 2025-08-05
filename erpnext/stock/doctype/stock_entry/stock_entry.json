@@ -68,7 +68,6 @@
   "supplier_address",
   "address_display",
   "accounting_dimensions_section",
-  "expense_loss_account",
   "project",
   "dimension_col_break",
   "printing_settings",
@@ -742,12 +741,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "expense_loss_account",
-   "fieldtype": "Link",
-   "label": "Production Variance Account",
-   "options": "Account"
-  },
-  {
    "fieldname": "total_incoming_receipt",
    "fieldtype": "Currency",
    "label": "Total Incoming Value (Receipt)",
@@ -767,7 +760,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-07-14 12:20:50.522382",
+ "modified": "2025-07-14 12:20:50.522383",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",

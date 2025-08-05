@@ -101,7 +101,6 @@
   "asset_received_but_not_billed",
   "manufacturing_settings_section",
   "default_cost_expense_account",
-  "production_loss_account",
   "production_attrition_expense_account",
   "cost_center_for_production",
   "cost_center_for_packing",
@@ -830,12 +829,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "production_loss_account",
-   "fieldtype": "Link",
-   "label": "Production Variance Account",
-   "options": "Account"
-  },
-  {
    "fieldname": "sales_replacement_account",
    "fieldtype": "Link",
    "label": "Sales Replacement Account",
@@ -854,7 +847,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-06-02 19:56:32.783010",
+ "modified": "2025-06-02 19:56:32.783011",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",
