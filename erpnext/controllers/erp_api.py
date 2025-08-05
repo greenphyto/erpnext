@@ -266,7 +266,7 @@ def make_stock_entry_with_materials(wo_doc, job_card_name, materials, wip_wareho
 			pack_row.batch_no = batch_info[0].get("batch_id")
 			pack_row.t_warehouse = wip_warehouse
 			pack_row.cost_center = packaging_cost_center
-			pack_row.qty = d.required_qty * global_percent/100
+			pack_row.qty = cint(d.required_qty * global_percent/100)
 			pack_row.uom = d.uom
 			pack_row.basic_rate = d.rate
 			pack_row.set_basic_rate_manually = 1
