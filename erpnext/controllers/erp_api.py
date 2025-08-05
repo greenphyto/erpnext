@@ -192,7 +192,7 @@ def make_stock_entry_with_materials(wo_doc, job_card_name, materials, wip_wareho
 	se = make_stock_entry_jc(job_card_name)
 	se.stock_entry_type_view = get_stock_entry_type(operation_name)
 	se.items = []
-	se.fg_completed_qty = wo_doc.qty * flt(cur_percent)/100
+	se.fg_completed_qty = wo_doc.qty * flt(global_percent)/100
 
 	# Load BOM for item costing
 	bom = frappe.get_doc("BOM", se.bom_no)
