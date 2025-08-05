@@ -484,7 +484,7 @@ def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 	job_card.save()
 	job_card.submit()
 
-	update_log("Work Order", data_name, "Job Card", job_card.name, name_id=log_name)
+	update_log("Work Order", data_name, "Job Card", job_card.name, log_name)
 
 	return {
 		"result": True,
