@@ -183,7 +183,7 @@ def get_uom_overide(reverse=False):
 	return overide_map
 
 
-def make_stock_entry_with_materials(wo_doc, job_card_name, materials, wip_warehouse, operation_name, percentage=100, company=""):
+def make_stock_entry_with_materials(wo_doc, job_card_name, materials, wip_warehouse, operation_name, percentage=100, cur_percent=100, global_percent=100, company=""):
 	missing_warehouses = []
 	override_items = get_item_overide()
 	company = company or erpnext.get_default_company()
@@ -193,7 +193,7 @@ def make_stock_entry_with_materials(wo_doc, job_card_name, materials, wip_wareho
 	se = make_stock_entry_jc(job_card_name)
 	se.stock_entry_type_view = get_stock_entry_type(operation_name)
 	se.items = []
-	se.fg_completed_qty = wo_doc.qty * flt(percentage)/100
+	se.fg_completed_qty = wo_doc.qty * flt(cur_percent)/100
 
 	# Load BOM for item costing
 	bom = frappe.get_doc("BOM", se.bom_no)
@@ -267,7 +267,7 @@ def make_stock_entry_with_materials(wo_doc, job_card_name, materials, wip_wareho
 			pack_row.batch_no = batch_info[0].get("batch_id")
 			pack_row.t_warehouse = wip_warehouse
 			pack_row.cost_center = packaging_cost_center
-			pack_row.qty = d.required_qty * percentage/100
+			pack_row.qty = d.required_qty * global_percent/100
 			pack_row.uom = d.uom
 			pack_row.basic_rate = d.rate
 			pack_row.set_basic_rate_manually = 1
@@ -452,7 +452,9 @@ def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 		rawMaterials,
 		wip_warehouse,
 		operationName,
-		percentage=100
+		percentage=100,
+		cur_percent=percentage,
+		global_percent=global_percent
 	)
 	se_doc.save()
 	se_doc.submit()
