@@ -1,7 +1,7 @@
 # Copyright (c) 2025, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-import frappe
+import frappe, os
 from minio import Minio
 from minio.error import S3Error
 from frappe.model.document import Document
@@ -17,10 +17,12 @@ class MinIOBackupSettings(Document):
 	pass
 
 class MinIO():
-	def __init__(self, host, key, pwd):
+	def __init__(self, host, key, pwd, bucket="erp-database-backup", folder=""):
 		self.host = host
 		self.access_key = key
 		self.secret_key = pwd
+		self.folder = folder
+		self.bucket = bucket
 
 	def run(self):
 		# Create a client with the MinIO server playground, its access key
@@ -36,8 +38,8 @@ class MinIO():
 			return
 		
 		# The destination bucket and filename on the MinIO server
-		bucket_name = "erp-database-backup"
-		destination_file = source_file.split("/")[-1]
+		bucket_name = self.bucket
+		destination_file = os.path.join(self.folder, source_file.split("/")[-1])
 
 		# Make the bucket if it doesn't exist.
 		found = client.bucket_exists(bucket_name)
@@ -63,7 +65,13 @@ def upload_backup():
 	if not doc.enable:
 		return
 	
-	app = MinIO(doc.minio_host, doc.access_key, doc.get_password("secret_key"))
+	app = MinIO(
+		doc.minio_host, 
+		doc.access_key, 
+		doc.get_password("secret_key"), 
+		bucket=doc.bucket,
+		folder=doc.folder,
+	)
 	app.run()
 
 from frappe.utils.backups import new_backup

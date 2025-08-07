@@ -10,6 +10,8 @@
   "minio_host",
   "access_key",
   "secret_key",
+  "bucket",
+  "folder",
   "column_break_5",
   "database_list",
   "take_backup_now"
@@ -51,12 +53,22 @@
    "fieldname": "take_backup_now",
    "fieldtype": "Button",
    "label": "Take Backup Now"
+  },
+  {
+   "fieldname": "folder",
+   "fieldtype": "Data",
+   "label": "Folder"
+  },
+  {
+   "fieldname": "bucket",
+   "fieldtype": "Data",
+   "label": "Bucket"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-02-03 12:12:45.284932",
+ "modified": "2025-08-07 10:58:07.673542",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "MinIO Backup Settings",
@@ -69,6 +81,16 @@
    "print": 1,
    "read": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Analytics",
    "share": 1,
    "write": 1
   }
