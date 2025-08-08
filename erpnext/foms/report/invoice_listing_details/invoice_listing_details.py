@@ -85,7 +85,8 @@ class Report():
 				t.charge_type,
 				t.rate as gst,
 				t.tax_amount as gst_amount,
-				sle_out.valuation_rate AS cos
+				sle_out.valuation_rate AS cos,
+				ifnull(si.so_detail, si.name) as sod
 			FROM
 				`tabSales Invoice` s
 					LEFT JOIN
@@ -117,6 +118,7 @@ class Report():
 			WHERE 
 				s.docstatus = 1
 				{}
+			group by s.name, sod
 			ORDER BY s.posting_date desc
 		""".format(self.cond), self.filters, as_dict=1, debug=0)
 
