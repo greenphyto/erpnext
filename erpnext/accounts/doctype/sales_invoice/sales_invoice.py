@@ -91,6 +91,7 @@ class SalesInvoice(SellingController):
 			self.so_dn_required()
 
 		self.set_tax_withholding()
+		self.validate_item_price_list()
 
 		self.validate_proj_cust()
 		self.validate_pos_return()
@@ -200,6 +201,26 @@ class SalesInvoice(SellingController):
 		
 		if not self.delivery_note:
 			self.delivery_note = dn_name
+
+	def validate_item_price_list(self):
+		from erpnext.stock.get_item_details import get_item_price
+		account = frappe.get_cached_value("Company", self.company, "default_discount_account")
+		for d in self.get("items"):
+			item_price_args = {
+				"item_code": d.item_code,
+				"price_list": "Standard Selling",
+				"customer": self.get("customer"),
+				"uom": d.get("uom"),
+				"transaction_date": self.get("posting_date"),
+				"batch_no": d.get("batch_no"),
+			}
+			d.discount_account = account
+			temp = get_item_price(item_price_args, d.item_code)
+			if temp:
+				temp = temp[0]
+			
+			if temp:
+				d.price_list_rate = temp[1]
 
 	def validate_fixed_asset(self):
 		for d in self.get("items"):
