@@ -180,6 +180,8 @@ class calculate_taxes_and_totals(object):
 
 				item.net_rate = item.rate
 
+				item.total_discount_amount = item.discount_amount * item.qty
+
 				if not item.qty and self.doc.get("is_return"):
 					item.amount = flt(-1 * item.rate, item.precision("amount"))
 				elif not item.qty and (self.doc.get("is_debit_note") or self.doc.get("debit_note_transaction")):
