@@ -402,11 +402,11 @@ def pull_erp_po():
 		fields_map = [
 			# parent
 			"supplier", "transaction_date", "schedule_date", "taxes_and_charges",
-			"address_display", "contact_display", "currency", "non_stock_item"
+			"address_display", "contact_display", "currency", "non_stock_item",
 
 			# child items
 			"items.item_code", "items.item_name", "items.item_group", "items.schedule_date", "items.qty", "items.description", 
-			"items.uom", "items.rate", "items.price_list_rate",
+			"items.item_name_view","items.uom", "items.rate", "items.price_list_rate",
 
 			# child taxes
 			"taxes.category", "taxes.add_deduct_tax", "taxes.charge_type", 
@@ -418,10 +418,11 @@ def pull_erp_po():
 			if "." in f:
 				table, field = f.split(".")
 				tables.setdefault(table, {})
-				for d in po.get(table):
-					d = frappe._dict(d)
-					tables[table].setdefault(d.name, {})
-					tables[table][d.name][field] = d.get(field)
+				if po.get(table):
+					for d in po.get(table):
+						d = frappe._dict(d)
+						tables[table].setdefault(d.name, {})
+						tables[table][d.name][field] = d.get(field)
 
 			else:
 				doc.set(f, po.get(f))
