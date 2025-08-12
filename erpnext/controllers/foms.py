@@ -121,9 +121,9 @@ def get_previous_operation(operation):
 	if operation == "Manufacture":
 		return OPERATION_MAP_NAME.get(3)
 	else:
-		cur_no = OPERATION_MAP_BY_NAME.get(operation)
+		cur_no = OPERATION_MAP_BY_NAME.get(operation) or 1
 		if cur_no == 1:
-			return 
+			return ""
 		
 		prev_no = cur_no - 1
 		return OPERATION_MAP_NAME.get(prev_no)
@@ -1759,8 +1759,8 @@ def get_work_order(show_progress=False, work_order=""):
 		manual_save_log=1
 	).run()
 
-def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=False, return_doc=False):
-	doc = make_work_order(bom_no, item_code, qty, gross_weight)
+def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=False, return_doc=False, args={}):
+	doc = make_work_order(bom_no, item_code, qty, gross_weight, args=args)
 	validate_operation(doc)
 	doc.foms_work_order = log.workOrderNo
 	doc.foms_lot_id = log.id

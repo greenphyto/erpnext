@@ -44,7 +44,7 @@ from erpnext.stock.stock_balance import get_planned_qty, update_bin_qty
 from erpnext.stock.utils import get_bin, get_latest_stock_qty, validate_warehouse_company
 from erpnext.utilities.transaction_base import validate_uom_is_integer
 from frappe.model.naming import set_name_by_naming_series, set_name_from_naming_options, parse_naming_series, getseries
-
+from erpnext.accounts.utils import get_company_default
 
 class OverProductionError(frappe.ValidationError):
 	pass
@@ -95,9 +95,9 @@ class WorkOrder(Document):
 
 		validate_uom_is_integer(self, "stock_uom", ["qty", "produced_qty"])
 
+		self.set_packet_size()
 		self.set_required_items()
 		self.validate_non_stock_items()
-		self.set_packet_size()
 		self.set_is_salad_item()
 
 	def on_update_after_submit(self):
@@ -364,6 +364,7 @@ class WorkOrder(Document):
 		return status
 
 	def get_status(self, status=None):
+		from erpnext.controllers.foms import OPERATION_MAP_NAME
 		single_complete = frappe.db.get_single_value(
 			"Manufacturing Settings", "allow_single_completed_work_order"
 		)
@@ -375,24 +376,50 @@ class WorkOrder(Document):
 			status = "Draft"
 		elif self.docstatus == 1:
 			if status != "Stopped":
-				stock_entries = frappe._dict(
-					frappe.db.sql(
-						"""select purpose, sum(fg_completed_qty)
-					from `tabStock Entry` where work_order=%s and docstatus=1
+				stock_entries = frappe.db.sql(
+						"""select purpose, sum(fg_completed_qty) as qty, is_return
+					from `tabStock Entry` where work_order=%s and docstatus=1 and is_return = 0
 					group by purpose""",
-						self.name,
+						self.name, as_dict=1
 					)
-				)
+				
+				return_qty = frappe.db.sql("""
+					SELECT 
+						purpose, SUM(fg_completed_qty) AS qty, is_return, operation
+					FROM
+						`tabStock Entry`
+					WHERE
+						work_order = %s
+							AND docstatus = 1
+							AND is_return = 1
+					GROUP BY operation
+				""", self.name, as_dict=1)
+				is_closed = 0
+				for d in return_qty:
+					if d.qty >= self.qty:
+						status = 'Closed'
+						is_closed = 1
 
-				status = "Not Started"
-				if stock_entries:
-					status = "In Process"
-					produced_qty = stock_entries.get("Manufacture")
+				
+				if not is_closed:
+					if not stock_entries:
+						status = "Not Started"
+					else:
+						status = "In Process"
 
-					if flt(produced_qty) >= flt(self.qty) or (flt(produced_qty) and single_complete):
-						status = "Completed"
+					got_manufacture = False
+					for d in stock_entries:
+						if d.purpose == "Manufacture":
+							got_manufacture = True
+							produced_qty = d.qty
+							if flt(produced_qty) >= flt(self.qty) or (flt(produced_qty) and single_complete):
+								status = "Completed"
 
-					self.db_set("produced_qty", flt(produced_qty))
+							self.db_set("produced_qty", flt(produced_qty))
+							
+					if not got_manufacture:
+						self.db_set("produced_qty", 0)
+
 		else:
 			status = "Cancelled"
 
@@ -878,17 +905,27 @@ class WorkOrder(Document):
 		)
 		max_allowed_qty_for_wo = flt(self.qty) + (allowance_percentage / 100 * flt(self.qty))
 
+		single_complete = frappe.db.get_single_value(
+			"Manufacturing Settings", "allow_single_completed_work_order"
+		)
+
 		for d in self.get("operations"):
-			if not d.completed_qty:
-				d.status = "Pending"
-			elif flt(d.completed_qty) < flt(self.qty):
-				d.status = "Work in Progress"
-			elif flt(d.completed_qty) == flt(self.qty):
-				d.status = "Completed"
-			elif flt(d.completed_qty) <= max_allowed_qty_for_wo:
-				d.status = "Completed"
+			if single_complete:
+				if not d.completed_qty:
+					d.status = "Pending"
+				else:
+					d.status = "Completed"
 			else:
-				frappe.throw(_("Completed Qty cannot be greater than 'Qty to Manufacture'"))
+				if not d.completed_qty:
+					d.status = "Pending"
+				elif flt(d.completed_qty) < flt(self.qty):
+					d.status = "Work in Progress"
+				elif flt(d.completed_qty) == flt(self.qty):
+					d.status = "Completed"
+				elif flt(d.completed_qty) <= max_allowed_qty_for_wo:
+					d.status = "Completed"
+				else:
+					frappe.throw(_("Completed Qty cannot be greater than 'Qty to Manufacture'"))
 
 	def set_actual_dates(self):
 		if self.get("operations"):
@@ -1037,11 +1074,14 @@ class WorkOrder(Document):
 		if self.get("operations") and len(self.operations) == 1:
 			operation = self.operations[0].operation
 
+
+
 		if self.bom_no and self.qty:
 			use_qty = self.gross_weight
 			item_dict = get_bom_items_as_dict(
 				self.bom_no, self.company, qty=use_qty , fetch_exploded=self.use_multi_level_bom
 			)
+			bom = frappe.get_doc("BOM", self.bom_no)
 
 			if reset_only_qty:
 				for d in self.get("required_items"):
@@ -1053,7 +1093,11 @@ class WorkOrder(Document):
 			else:
 				for item in sorted(item_dict.values(), key=lambda d: d["idx"] or float("inf")):
 					source_warehouse = self.source_warehouse or item.source_warehouse or item.default_warehouse
-					rate = get_valuation_rate(item.item_code, source_warehouse, "", "")
+					if self.use_rate_from_bom:
+						rate = item.rate
+					else:
+						rate = get_valuation_rate(item.item_code, source_warehouse, "", "")
+
 					self.append(
 						"required_items",
 						{
@@ -1074,7 +1118,6 @@ class WorkOrder(Document):
 						self.project = item.get("project")
 
 			# add packaging from sales order
-
 			self.get_packaging_from_order()
 			self.set_available_qty()
 
@@ -1123,12 +1166,18 @@ class WorkOrder(Document):
 						{"parent":doc_name, "item_code":self.production_item}, as_dict=1)
 			if temp:
 				total_pcs = temp[0].get("qty")
+
+		# get from default
+		if not self.packet_size:
+			self.set_packet_size()
+
+		total_pcs = self.qty / flt(self.conversion_factor or 1)
 		
 		if not total_pcs:
 			return
 		
 		pack_item = frappe.db.get_single_value("Manufacturing Settings", "default_packaging")
-		if not pack_item:
+		if not pack_item or not self.packet_size:
 			return
 		
 		source_warehouse = self.source_warehouse 
@@ -1395,7 +1444,7 @@ def get_item_details(item, project=None, skip_bom_info=False):
 
 
 @frappe.whitelist()
-def make_work_order(bom_no, item, qty=0, gross_weight=0, project=None, variant_items=None):
+def make_work_order(bom_no, item, qty=0, gross_weight=0, project=None, variant_items=None, args={}):
 	if not frappe.has_permission("Work Order", "write"):
 		frappe.throw(_("Not permitted"), frappe.PermissionError)
 
@@ -1404,6 +1453,7 @@ def make_work_order(bom_no, item, qty=0, gross_weight=0, project=None, variant_i
 	wo_doc = frappe.new_doc("Work Order")
 	wo_doc.gross_weight = flt(gross_weight or qty)
 	wo_doc.production_item = item
+	wo_doc.update(args)
 	wo_doc.update(item_details)
 	wo_doc.bom_no = bom_no
 
@@ -1783,10 +1833,10 @@ def get_reserved_qty_for_production(item_code: str, warehouse: str) -> float:
 
 
 @frappe.whitelist()
-def make_stock_return_entry(work_order):
+def make_stock_return_entry(work_order, percentage=100):
 	from erpnext.stock.doctype.stock_entry.stock_entry import get_available_materials
 
-	non_consumed_items = get_available_materials(work_order)
+	non_consumed_items = get_available_materials(work_order, percentage)
 	if not non_consumed_items:
 		return
 
@@ -1804,7 +1854,7 @@ def make_stock_return_entry(work_order):
 	return stock_entry
 
 @frappe.whitelist()
-def make_scrap_materials(work_order):
+def make_scrap_materials(work_order, percentage=100):
 	from erpnext.controllers.foms import get_wip_warehouse
 	from erpnext.stock.doctype.stock_entry.stock_entry import get_available_materials
 	
@@ -1814,7 +1864,7 @@ def make_scrap_materials(work_order):
 	else:
 		wip_warehouse=""
 
-	non_consumed_items = get_available_materials(work_order)
+	non_consumed_items = get_available_materials(work_order, percentage)
 	if not non_consumed_items:
 		return
 
@@ -1822,23 +1872,27 @@ def make_scrap_materials(work_order):
 
 	stock_entry = frappe.new_doc("Stock Entry")
 	stock_entry.from_bom = 1
+	stock_entry.fg_completed_qty = wo_doc.qty * flt(percentage)/100
 	stock_entry.is_return = 1
-	stock_entry.return_work_order = work_order
+	stock_entry.work_order = work_order
 	stock_entry.purpose = "Material Transfer for Manufacture"
 	stock_entry.bom_no = wo_doc.bom_no
-	stock_entry.add_transfered_raw_materials_in_items()
+	stock_entry.add_transfered_raw_materials_in_items(percentage=percentage)
 
 	stock_entry.stock_entry_type_view = "Waste Materials"
 	stock_entry.purpose = "Material Issue"
 	stock_entry.operation = get_current_operation(work_order)
 	stock_entry.set_stock_entry_type()
 	stock_entry.request_no = "Scrap Item from Stoped Work Order"
-	expense_account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
+	expense_account = get_company_default(stock_entry.company, "production_attrition_expense_account")
 
 	for row in stock_entry.items:
 		row.is_scrap_item = 1
 		row.conversion_factor = 1
 		row.expense_account = expense_account
+		must_be_whole_number = frappe.get_value("UOM", row.stock_uom, "must_be_whole_number")
+		if must_be_whole_number:
+			row.qty = round(row.qty)
 
 	stock_entry.remarks = f"Waste materials from Work Order {work_order}"
 	stock_entry.set_missing_values()

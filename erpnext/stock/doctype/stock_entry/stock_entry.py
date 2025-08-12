@@ -160,7 +160,7 @@ class StockEntry(StockEntryAsset, StockController):
 		self.validate_qty()
 		self.set_transfer_qty()
 		self.validate_batch_splitting()
-		self.validate_partially_issue()
+		# self.validate_partially_issue()
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_uom_is_integer("stock_uom", "transfer_qty")
 		self.validate_warehouse()
@@ -261,9 +261,13 @@ class StockEntry(StockEntryAsset, StockController):
 		self.set_close_materials()
 
 	def set_close_materials(self):
-		if not self.return_work_order:
+		if self.is_return and not self.work_order:
 			return
-		
+
+		wo_qty = frappe.get_value("Work Order", self.work_order, "qty")
+		if self.fg_completed_qty != wo_qty:
+			return
+				
 		cancel = self.docstatus == 2
 
 		if not cancel:
@@ -639,7 +643,7 @@ class StockEntry(StockEntryAsset, StockController):
 					frappe.throw(_("For Quantity (Manufactured Qty) is mandatory"))
 				self.check_if_operations_completed()
 				self.check_duplicate_entry_for_work_order()
-		elif self.purpose != "Material Transfer":
+		elif self.purpose not in ("Material Transfer", "Material Issue"):
 			self.work_order = None
 
 	def check_if_operations_completed(self):
@@ -1402,14 +1406,16 @@ class StockEntry(StockEntryAsset, StockController):
 
 		# special case for Work Order Greenphyto
 		# reference doc: costs variance for work order v1.xlxs
-		if self.purpose in ['Material Transfer for Manufacture']:
-			prev_wip = self.get_previous_ledger_entry(self.operation or self.purpose)
+		if self.purpose in ['Material Transfer for Manufacture'] and self.is_return == 0:
+			prev_operation = get_previous_operation(self.operation)
+			wip_account = get_item_account(warehouse_account, "WIP", None, get_default=1, operation=prev_operation)
+			prev_wip = self.get_previous_ledger_entry(wip_account)
 			if prev_wip:
 				prev_wip = prev_wip[0]
 				if prev_wip.name:
 					cost_center = get_cost_center(self.operation, self.company)
 					expense_account = prev_wip.account
-					debit_amount = prev_wip.debit
+					debit_amount = prev_wip.amount
 					if self.purpose == 'Material Transfer for Manufacture':
 						variance_account = get_item_account(warehouse_account, "WIP", None, get_default=1, operation=self.operation)
 					elif self.purpose == "Manufacture":
@@ -1468,6 +1474,7 @@ class StockEntry(StockEntryAsset, StockController):
 
 		# for d in gl_entries:
 		# 	print(1446, d.account, d.debit, d.credit, d.remarks )
+
 		result = process_gl_map(gl_entries, merge_entries=1)
 
 		# print("\nSE RESULT:")
@@ -1480,157 +1487,64 @@ class StockEntry(StockEntryAsset, StockController):
 		# print("VALUE DIFFERENT      :", self.value_difference)
 
 		# for d in result:
-		# 	print( "{}, {}, {}, {}".format("RESULT", d.account, d.debit, d.credit))
+		# 	print( "{}, {}, {}, {} | {}".format("RESULT", d.account, d.debit, d.credit, d.remarks))
 
 		return result
 	
-	def get_previous_ledger_entry(self, operation):
-		prev_operation = get_previous_operation(operation)
+	def get_previous_ledger_entry(self, wip_account):		
 		prev_wip = frappe.db.sql("""
 			SELECT 
-				gl.name, s.name AS se_name, sum(gl.debit) as debit, sum(gl.credit) as credit, gl.account
+				gl.name,
+				s.name AS se_name,
+				SUM(gl.debit) - SUM(gl.credit) AS amount,
+				gl.account
 			FROM
 				`tabGL Entry` gl
 					LEFT JOIN
 				`tabStock Entry` s ON gl.voucher_no = s.name
 			WHERE
-				s.operation = %s
-					AND s.work_order = %s
+					s.work_order = %s
 					AND s.docstatus = 1
-					AND gl.debit > 0
-		""", (prev_operation, self.work_order), as_dict=1, debug=0)
+					AND gl.account = %s
+					-- AND gl.debit > 0
+					-- AND s.is_return = 0
+		""", (self.work_order, wip_account), as_dict=1, debug=0)
+
+		# this should be minus with Return (with existing scrap material)
 		
 		return prev_wip
 
-	def get_previous_rate_old(self):
-		# if take from SE Items valuation rate it will included with additional cost, if use basic amount it will exluded
-		data_item_amount = frappe.db.sql("""
-			SELECT 
-				s.operation,
-				se.item_code,
-				se.parent,
-				sum(se.transfer_qty) as stock_qty,
-				sum(se.basic_amount) as basic_amount
-			FROM
-				`tabStock Entry Detail` se
-					LEFT JOIN
-				`tabStock Entry` s ON s.name = se.parent
-			WHERE
-				s.docstatus = 1
-					AND s.work_order = %s
-				AND s.purpose = 'Material Transfer for Manufacture'
-			group by se.item_code
-			""", (self.work_order), as_dict=1)
-
-		total_item_amount = 0
-		for d in data_item_amount:
-			total_item_amount += flt(d.basic_amount)
-		
-		total_item_amount = flt(total_item_amount,2)
-
-		data_item_costs = frappe.db.sql("""
-			SELECT 
-				s.name,
-				s.operation,
-				sum(s.total_additional_costs) as total_costs
-			FROM
-				`tabStock Entry` s
-			WHERE
-				s.docstatus = 1
-					AND s.work_order = %s
-				and s.purpose = 'Material Transfer for Manufacture'
-			""", (self.work_order), as_dict=1)
-		total_costs = 0
-		if data_item_costs:
-			total_costs = data_item_costs[0].get("total_costs")
-		
-		
-		rate_map = frappe._dict()
-		total = 0
-		for d in data_item_amount:
-			if not total_item_amount:
-				add_cost = 0
-			else:
-				add_cost = flt((d.basic_amount / total_item_amount) * total_costs, 2)
-			new_rate  = (d.basic_amount + flt(add_cost)) / flt(d.stock_qty,5)
-			rate_map[d.item_code] = new_rate
-			total += new_rate
-			
-		return rate_map
 
 	def get_previous_rate(self):
-		# if take from SE Items valuation rate it will included with additional cost, if use basic amount it will exluded
-		temp = frappe.db.sql("""
-			SELECT 
-				s.operation,
-				se.item_code,
-				se.parent,
-				se.basic_rate,
-				se.batch_no,
-				se.transfer_qty as stock_qty,
-				se.basic_amount as basic_amount
-			FROM
-				`tabStock Entry Detail` se
-					LEFT JOIN
-				`tabStock Entry` s ON s.name = se.parent
-			WHERE
-				s.docstatus = 1
-					AND s.work_order = %s
-				AND s.purpose = 'Material Transfer for Manufacture'
-			""", (self.work_order), as_dict=1)
+		from erpnext.controllers.foms import OPERATION_MAP_NAME
+		items = get_available_materials(self.work_order, 100)
+		total = sum([ flt(row.basic_rate * row.qty) for row in items.values() ])
 
-		data_item_amount = frappe._dict({})
-		data_rate_map = frappe._dict({})
-		total_item_amount = 0
-		for d in temp:
-			pred_amount = d.stock_qty * d.basic_rate
-			if not d.batch_no in data_item_amount:
-				d.pred_amount = pred_amount
-				data_item_amount[d.batch_no] = d
-				data_rate_map[d.batch_no] = d.basic_rate
-			else:
-				data_item_amount[d.batch_no]['stock_qty'] += d.stock_qty
-				data_item_amount[d.batch_no]['basic_amount'] += d.basic_amount
-				data_item_amount[d.batch_no]['pred_amount'] += pred_amount
-				
-			total_item_amount += flt(d.pred_amount)
-
-		total_item_amount = flt(total_item_amount,2)
-
-		data_item_costs = frappe.db.sql("""
-			SELECT 
-				s.name,
-				s.operation,
-				sum(s.total_additional_costs) as total_costs
-			FROM
-				`tabStock Entry` s
-			WHERE
-				s.docstatus = 1
-					AND s.work_order = %s
-				and s.purpose = 'Material Transfer for Manufacture'
-			""", (self.work_order), as_dict=1)
-		total_costs = 0
-		if data_item_costs:
-			total_costs = data_item_costs[0].get("total_costs")
+		# find previous amount, harvesting
+		total_debit = 0
+		for opr_no in [3,2,1]:
+			operation = OPERATION_MAP_NAME[opr_no]
+			total_debit = frappe.db.sql("""
+					SELECT SUM(gl.debit)
+					FROM `tabGL Entry` gl
+					INNER JOIN `tabStock Entry` se ON gl.voucher_no = se.name
+					WHERE gl.voucher_type = 'Stock Entry'
+					AND gl.docstatus = 1
+					AND se.docstatus = 1
+					AND se.purpose = 'Material Transfer for Manufacture'
+					AND se.work_order = %s
+					AND se.operation = %s
+				""", (self.work_order, operation))[0][0] or 0.0
+			if total_debit:
+				break
 		
-		
-		rate_map = frappe._dict()
-		total = 0
-		for i,d in data_item_amount.items():
+		adj_value = total_debit / total
+		rate_map = {}
+		for key, row in items.items():
+			# new_amount = row.basic_rate * row.qty * adj_value
+			new_rate =  row.basic_rate * adj_value
+			rate_map[key[1]] = new_rate
 
-			# find distributed additional cost at per qty
-			rate_cost = 0
-			if total_item_amount:
-				rate_cost = flt(((d.pred_amount / total_item_amount) * total_costs) / flt(d.stock_qty,5), 2)
-
-			# find new basic rate
-			basic_rate = flt(d.pred_amount) / flt(d.stock_qty)
-
-			# find new rate with add cost
-			new_rate  = basic_rate + rate_cost
-			rate_map[d.batch_no] = round(new_rate, 5)
-			total += new_rate
-			
 		return rate_map
 		
 
@@ -1643,9 +1557,9 @@ class StockEntry(StockEntryAsset, StockController):
 			if pro_doc.status == "Stopped":
 				msg = f"Transaction not allowed against stopped Work Order {self.work_order}"
 
-			if self.is_return and pro_doc.status not in ["Completed", "Closed"]:
-				title = _("Stock Return")
-				msg = f"Work Order {self.work_order} must be completed or closed"
+			# if self.is_return and pro_doc.status not in ["Completed", "Closed"]:
+			# 	title = _("Stock Return")
+			# 	msg = f"Work Order {self.work_order} must be completed or closed"
 
 			if msg:
 				frappe.throw(_(msg), title=title)
@@ -2217,8 +2131,8 @@ class StockEntry(StockEntryAsset, StockController):
 					}
 				)
 
-	def add_transfered_raw_materials_in_items(self) -> None:
-		available_materials = get_available_materials(self.work_order)
+	def add_transfered_raw_materials_in_items(self, percentage=100) -> None:
+		available_materials = get_available_materials(self.work_order, percentage=percentage)
 
 		wo_data = frappe.db.get_value(
 			"Work Order",
@@ -2280,6 +2194,11 @@ class StockEntry(StockEntryAsset, StockController):
 			"cost_center": item.buying_cost_center,
 			"original_item": item.original_item,
 		}
+
+		# detect if scrap material from Work Order
+		if self.is_return and self.work_order:
+			ste_item_details['set_basic_rate_manually'] = 1
+			ste_item_details['basic_rate'] = item.basic_rate
 
 		if self.is_return:
 			ste_item_details["to_warehouse"] = item.s_warehouse
@@ -2445,6 +2364,8 @@ class StockEntry(StockEntryAsset, StockController):
 			se_child.is_process_loss = item_row.get("is_process_loss", 0)
 			se_child.po_detail = item_row.get("po_detail")
 			se_child.sco_rm_detail = item_row.get("sco_rm_detail")
+			se_child.basic_rate = item_row.get("basic_rate")
+			se_child.set_basic_rate_manually = item_row.get("set_basic_rate_manually")
 
 			for field in [
 				self.subcontract_data.rm_detail_field,
@@ -3107,47 +3028,85 @@ def get_items_from_subcontract_order(source_name, target_doc=None):
 
 	return target_doc
 
+def get_available_materials(work_order, percentage=100) -> dict:
+	from collections import defaultdict
 
-def get_available_materials(work_order) -> dict:
+	def get_key(d):
+		return (d.item_code, d.batch_no, d.uom)
+
 	data = get_stock_entry_data(work_order)
-
 	available_materials = {}
+	rate_map = {}
+
 	for row in data:
-		key = (row.item_code, row.warehouse, row.uom)
-		if row.purpose != "Material Transfer for Manufacture":
-			key = (row.item_code, row.s_warehouse, row.uom)
+		key = get_key(row)
 
 		if key not in available_materials:
-			available_materials.setdefault(
-				key,
-				frappe._dict(
-					{"item_details": row, "batch_details": defaultdict(float), "qty": 0, "serial_nos": []}
-				),
-			)
+			available_materials[key] = frappe._dict({
+				"item_details": row,
+				"batch_details": defaultdict(float),
+				"qty": 0.0,
+				"serial_nos": []
+			})
 
 		item_data = available_materials[key]
 
-		if row.purpose == "Material Transfer for Manufacture":
-			item_data.qty += row.qty
-			if row.batch_no:
-				item_data.batch_details[row.batch_no] += row.qty
+		qty_delta = 0.0
+		amount_delta = 0.0
 
-			if row.serial_no:
-				item_data.serial_nos.extend(get_serial_nos(row.serial_no))
-				item_data.serial_nos.sort()
+		# Tambah ke WIP
+		if row.purpose == "Material Transfer for Manufacture" and not row.is_return:
+			qty_delta = row.qty
+			amount_delta = row.basic_amount
+
+		# Kurangi dari WIP
+		elif row.purpose == "Material Issue" or row.is_return:
+			qty_delta = -row.qty
+			amount_delta = -row.basic_amount
+
+		elif row.purpose in ("Manufacture", "Material Consumption for Manufacture"):
+			qty_delta = -row.qty
+			amount_delta = -row.basic_amount
+
+		# Tambahkan qty total
+		item_data.qty += qty_delta
+		if key not in rate_map:
+			rate_map[key] = {"total_amount": 0, "qty": 0}
+		rate_map[key]['total_amount'] += amount_delta
+		rate_map[key]['qty'] += qty_delta
+
+		# Tambahkan qty per batch
+		if row.batch_no:
+			item_data.batch_details[row.batch_no] += qty_delta
+
+		# Update serial number list
+		if row.serial_no:
+			serials = get_serial_nos(row.serial_no)
+			if qty_delta > 0:
+				item_data.serial_nos.extend(serials)
+			else:
+				for s in serials:
+					try:
+						item_data.serial_nos.remove(s)
+					except ValueError:
+						pass  # Sudah tidak ada di list
+
+	# Terapkan persentase jika diminta
+	for key, data in available_materials.items():
+		available_materials[key].qty *= percentage / 100
+		for batch in available_materials[key].batch_details:
+			available_materials[key].batch_details[batch] *= percentage / 100
+
+		rate_info = rate_map.get(key)
+		if rate_info and rate_info["qty"] > 0:
+			avg_rate = rate_info["total_amount"] / rate_info["qty"]
 		else:
-			# Consume raw material qty in case of 'Manufacture' or 'Material Consumption for Manufacture'
+			avg_rate = 0
 
-			item_data.qty -= row.qty
-			if row.batch_no:
-				item_data.batch_details[row.batch_no] -= row.qty
-
-			if row.serial_no:
-				for serial_no in get_serial_nos(row.serial_no):
-					item_data.serial_nos.remove(serial_no)
+		available_materials[key].basic_rate = avg_rate
+		available_materials[key].amount = rate_info["total_amount"]
 
 	return available_materials
-
 
 def get_stock_entry_data(work_order):
 	stock_entry = frappe.qb.DocType("Stock Entry")
@@ -3171,17 +3130,22 @@ def get_stock_entry_data(work_order):
 			stock_entry_detail.batch_no,
 			stock_entry_detail.serial_no,
 			stock_entry_detail.uom,
+			stock_entry_detail.basic_rate,
+			stock_entry_detail.basic_amount,
 			stock_entry_detail.conversion_factor,
 			stock_entry.purpose,
+			stock_entry.operation,
+			stock_entry.is_return,
 		)
 		.where(
 			(stock_entry.name == stock_entry_detail.parent)
 			& (stock_entry.work_order == work_order)
 			& (stock_entry.docstatus == 1)
+			# & (stock_entry.is_return == 0)
 			& (stock_entry_detail.s_warehouse.isnotnull())
 			& (
 				stock_entry.purpose.isin(
-					["Manufacture", "Material Consumption for Manufacture", "Material Transfer for Manufacture"]
+					["Manufacture", "Material Consumption for Manufacture", "Material Transfer for Manufacture", "Material Issue"]
 				)
 			)
 		)

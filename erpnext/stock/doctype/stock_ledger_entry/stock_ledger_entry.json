@@ -167,6 +167,7 @@
    "oldfieldname": "incoming_rate",
    "oldfieldtype": "Currency",
    "options": "Company:company:default_currency",
+   "precision": "5",
    "read_only": 1
   },
   {
@@ -174,6 +175,7 @@
    "fieldtype": "Currency",
    "label": "Outgoing Rate",
    "options": "Company:company:default_currency",
+   "precision": "5",
    "read_only": 1
   },
   {
@@ -206,6 +208,7 @@
    "oldfieldname": "valuation_rate",
    "oldfieldtype": "Currency",
    "options": "Company:company:default_currency",
+   "precision": "5",
    "print_width": "150px",
    "read_only": 1,
    "width": "150px"
@@ -217,6 +220,7 @@
    "oldfieldname": "stock_value",
    "oldfieldtype": "Currency",
    "options": "Company:company:default_currency",
+   "precision": "5",
    "read_only": 1
   },
   {
@@ -224,6 +228,7 @@
    "fieldtype": "Currency",
    "label": "Change in Stock Value",
    "options": "Company:company:default_currency",
+   "precision": "5",
    "read_only": 1
   },
   {
@@ -326,7 +331,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-05-09 19:17:32.357240",
+ "modified": "2025-07-30 16:52:05.445063",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Ledger Entry",

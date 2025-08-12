@@ -19,6 +19,7 @@ from erpnext.setup.utils import get_exchange_rate
 from erpnext.stock.doctype.item.item import get_item_details
 from erpnext.stock.get_item_details import get_conversion_factor, get_price_list_rate
 from frappe.model.naming import set_name_by_naming_series, set_name_from_naming_options, parse_naming_series, getseries
+import math
 
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
@@ -1153,6 +1154,17 @@ def get_bom_items_as_dict(
 			company_in_record = frappe.db.get_value(d[0], item_details.get(d[1]), "company")
 			if not item_details.get(d[1]) or (company_in_record and company != company_in_record):
 				item_dict[item][d[1]] = frappe.get_cached_value("Company", company, d[2]) if d[2] else None
+
+		# For non-float UOM
+		int_uom = frappe.get_value("UOM", item_details.stock_uom, "must_be_whole_number")
+		if int_uom:
+			item_dict[item].qty = math.ceil(item_details.qty)
+		else:
+			item_dict[item].qty = round(item_details.qty, 4)
+
+		# precision
+		item_dict[item].rate = round(item_details.rate, 4)
+		item_dict[item].amount = round(item_details.amount, 4)
 
 	return item_dict
 

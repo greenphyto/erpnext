@@ -101,6 +101,7 @@
   "asset_received_but_not_billed",
   "manufacturing_settings_section",
   "default_cost_expense_account",
+  "production_attrition_expense_account",
   "cost_center_for_production",
   "cost_center_for_packing",
   "column_break_84",
@@ -832,6 +833,13 @@
    "fieldtype": "Link",
    "label": "Sales Replacement Account",
    "options": "Account"
+  },
+  {
+   "description": "Account for attraction cost on WIP",
+   "fieldname": "production_attrition_expense_account",
+   "fieldtype": "Link",
+   "label": "Production Attrition Expense Account",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-building",
@@ -839,7 +847,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-03-12 15:20:06.573304",
+ "modified": "2025-07-24 15:35:33.017837",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

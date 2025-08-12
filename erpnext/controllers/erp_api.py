@@ -15,7 +15,8 @@ from erpnext.controllers.foms import (
 	get_operation_map_name,
 	create_finish_goods_stock as _create_finish_goods_stock,
 	create_packaging, update_so_working, create_do_based_on_work_order,
-	get_cost_center, get_default_expense_production_account
+	get_cost_center, get_default_expense_production_account, 
+	get_previous_operation
 )
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
@@ -120,7 +121,9 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 		"sales_order_no":salesOrderNo
 	})
 
-	doc = _create_work_order(log, item_code, bom_no, qty, gross_weight, submit, return_doc=1)
+	doc = _create_work_order(log, item_code, bom_no, qty, gross_weight, submit, return_doc=1, args={
+		"use_rate_from_bom":1
+	})
 	# seeding_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(1)})
 	# transplanting_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(2)})
 	# harvesting_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(3)})
@@ -180,129 +183,128 @@ def get_uom_overide(reverse=False):
 	return overide_map
 
 
-def make_stock_entry_with_materials(source_name, materials, wip_warehouse, operation_name, work_order_name, company=""):
-	se = make_stock_entry_jc(source_name)
-	se.stock_entry_type_view = get_stock_entry_type(operation_name)
-	se.items = []
-	missing_warehouse = []
-
-	overide_item = get_item_overide()
-
+def make_stock_entry_with_materials(wo_doc, job_card_name, materials, wip_warehouse, operation_name, percentage=100, cur_percent=100, global_percent=100, company=""):
+	missing_warehouses = []
+	override_items = get_item_overide()
 	company = company or erpnext.get_default_company()
 	cost_center = get_cost_center(operation_name, company)
+
+	# Create stock entry
+	se = make_stock_entry_jc(job_card_name)
+	se.stock_entry_type_view = get_stock_entry_type(operation_name)
+	se.items = []
+	se.fg_completed_qty = wo_doc.qty * flt(global_percent)/100
+
+	# Load BOM for item costing
 	bom = frappe.get_doc("BOM", se.bom_no)
 
 	for d in materials:
 		d = frappe._dict(d)
-		row = se.append("items")
-		warehouse = frappe.get_value("Warehouse", {"foms_id": cint(d.sourceWarehouseId)}, debug=0)
-		if not warehouse:
-			missing_warehouse.append(d.sourceWarehouseRefNo)
+		source_warehouse = frappe.get_value("Warehouse", {"foms_id": cint(d.sourceWarehouseId)}, debug=0)
+		if not source_warehouse:
+			missing_warehouses.append(d.sourceWarehouseRefNo)
+			continue
+
 		item_code = frappe.get_value("Item", {"foms_raw_id": cstr(d.rawMaterialId)}) or d.rawMaterialRefNo
-		row.s_warehouse = warehouse
-		row.t_warehouse = wip_warehouse
 		uom = get_uom(d.uom)
 		qty = flt(d.qty)
-		batch_no = d.rawMaterialBatchRefNo
 
-		# Overide Item
-		qty_conversion = 1
-		is_overide_item = False
+		# Handle override item
+		is_override = False
 		original_item = None
-		if item_code in overide_item:
-			is_overide_item = True
-			uom = overide_item[item_code]['uom']
-			original_item = cstr(item_code)
-			item_code = overide_item[item_code]['item']
+		if item_code in override_items:
+			is_override = True
+			override = override_items[item_code]
+			uom = override['uom']
+			original_item = item_code
+			item_code = override['item']
+			qty = qty  # can apply conversion rate here if needed
 
-		qty = qty * qty_conversion
-		if uom in ['Unit']:
+		# Round qty if needed
+		if uom == 'Unit':
 			qty = round(qty)
+		qty = flt(qty, PRECISION_FACTOR, floor=True)
 
-		qty = flt(qty, PRECISION_FACTOR, floor = True)
-		
-		if is_overide_item:
-			# get batch automaticly
-			row.original_item = original_item
-			batch_no = get_batch_no(item_code, warehouse, qty)
+		# Auto get batch for override items
+		batch_no = d.rawMaterialBatchRefNo
+		if is_override:
+			batch_no = get_batch_no(item_code, source_warehouse, qty)
 
-		row.cost_center = cost_center
+		# Add item row to stock entry
+		row = se.append("items")
 		row.item_code = item_code
+		row.original_item = original_item if is_override else None
+		row.s_warehouse = source_warehouse
+		row.t_warehouse = wip_warehouse
 		row.qty = qty
 		row.uom = uom
 		row.batch_no = batch_no
-		basic_rate = 0
+		row.cost_center = cost_center
+		row.set_basic_rate_manually = 1
+
+		# Fetch rate from BOM
+		row.basic_rate = 0
 		for m in bom.get("items"):
 			if (m.item_code == item_code or m.item_code == original_item) and m.operation == operation_name:
-				# get conversion rate from original item to current item 
-				basic_rate = m.rate
-		row.basic_rate = basic_rate
-		row.set_basic_rate_manually = 1
-	
-	# add packaging from work order
+				row.basic_rate = m.rate
+				break
+
+	# Add packaging items if operation is Harvesting
 	if se.operation == "Harvesting":
 		packaging_cost_center = frappe.get_value("Company", se.company, "cost_center_for_packing")
-		wo_doc = frappe.get_doc("Work Order", se.work_order)
 		for d in wo_doc.required_items:
-			if d.is_packaging:
-				row = se.append("items")
-				row.item_code = d.item_code
+			if not d.is_packaging:
+				continue
 
-				# find available warehouse and batch
-				batch_qty = get_available_batch(d.item_code, d.required_qty)
-				if batch_qty:
-					batch_qty = batch_qty[0]
-					row.s_warehouse = batch_qty.get("warehouse")
-					row.batch_no = batch_qty.get("batch_id")
+			# Find batch with required qty
+			batch_info = get_available_batch(d.item_code, d.required_qty)
+			if not batch_info:
+				continue  # skip if not available
 
-				else:
-					# skip if not has qty
-					break					
+			pack_row = se.append("items")
+			pack_row.item_code = d.item_code
+			pack_row.s_warehouse = batch_info[0].get("warehouse")
+			pack_row.batch_no = batch_info[0].get("batch_id")
+			pack_row.t_warehouse = wip_warehouse
+			pack_row.cost_center = packaging_cost_center
+			pack_row.qty = cint(d.required_qty * global_percent/100)
+			pack_row.uom = d.uom
+			pack_row.basic_rate = d.rate
+			pack_row.set_basic_rate_manually = 1
 
-				row.t_warehouse = wip_warehouse
+	# Raise error if any warehouse not found
+	if missing_warehouses:
+		frappe.throw(f"Warehouse not found: {', '.join(set(missing_warehouses))}")
 
-				# packaging cost center
-				row.cost_center = packaging_cost_center
-				
-				row.qty = d.required_qty
-				row.uom = d.uom
-				row.basic_rate = d.rate
-				row.set_basic_rate_manually = 1
-	
-	if missing_warehouse:
-		warn = ", ".join(list(set(missing_warehouse)))
-		frappe.throw(f"Warehouse not found: {warn}")
-	
-	# additional cost
-	expense_account = get_default_expense_production_account(company)
-	
-	wo_doc = frappe.get_doc("Work Order", work_order_name)
+	# Add additional cost (electricity, wages, etc.)
 	se.additional_costs = []
-	cost_ref = wo_doc.get("operations", {"operation":operation_name})
+	expense_account = get_default_expense_production_account(company)
 	cost_fields = ['electrical_cost', 'consumable_cost', 'machinery_cost', 'wages_cost', 'rent_cost']
 	descriptions = {
-		'electrical_cost':"Electrical Cost", 
-		'consumable_cost':"Consumable Cost", 
-		'machinery_cost': "Machinery Cost", 
-		'wages_cost': 'Wages Cost', 
+		'electrical_cost': "Electrical Cost",
+		'consumable_cost': "Consumable Cost",
+		'machinery_cost': "Machinery Cost",
+		'wages_cost': "Wages Cost",
 		'rent_cost': "Rent Cost"
 	}
-	if cost_ref:
-		# currently cost calculation is takne from gross weight from Work Order
+
+	operation_costs = wo_doc.get("operations", {"operation": operation_name})
+	if operation_costs:
+		op_cost = operation_costs[0]
 		gross_weight = flt(wo_doc.gross_weight)
-		cost_ref = cost_ref[0]
+
 		for field in cost_fields:
-			amount = cost_ref.get(field)
+			amount = op_cost.get(field)
 			if amount:
-				row = se.append("additional_costs")
-				row.expense_account = expense_account
-				row.amount = amount * gross_weight
-				row.cost_center = frappe.get_value("Company", company, "cost_center_for_packing")
-				row.description = descriptions[field]
+				cost_row = se.append("additional_costs")
+				cost_row.expense_account = expense_account
+				cost_row.amount = amount * gross_weight
+				cost_row.cost_center = frappe.get_value("Company", company, "cost_center_for_packing")
+				cost_row.description = descriptions[field]
 
 	se.set_expense_account()
-
 	return se
+
 
 def get_stock_entry_type(operation):
 	if operation == "Seeding":
@@ -333,7 +335,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 		return {
 			"result": False,
 			"percentage": 0,
-			"message":"Temporary disabled"
+			"error":"Temporary disabled"
 		}
 	
 	data_name = f"Operation {operationNo} Work Order {ERPWorkOrderID}"
@@ -353,7 +355,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	if temp.get("docstatus") == 1:
 		update_log("Work Order", data_name, "Job Card", temp.get("name"))
 		return {
-			"result": False,
+			"result": True,
 			"percentage": percentage,
 			"message": "Already updated"
 		}
@@ -364,98 +366,157 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	if job_card_name and frappe.db.get_value("Stock Entry", {"job_card": job_card_name, "docstatus":1}, cache=False, debug=0):
 		update_log("Work Order", data_name, "Job Card", temp.get("name"))
 		return {
-			"result": False,
+			"result": True,
 			"percentage": percentage,
 			"message": "Already updated (se)"
 		}
 
 	if cint(operationNo) == 3 and not now:
 		return {
-			"result":"Scheduled"
+			"result":True,
+			"message":"Scheduled"
 		}
 	else:
 		return _update_work_order_operation_status(log_res.name, ERPWorkOrderID, operationNo, percentage, rawMaterials)
-	
-def	_update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, percentage, rawMaterials):
-	operationName = OPERATION_MAP_NAME.get( cint(operationNo) )
+
+from erpnext.manufacturing.doctype.work_order.work_order import close_work_order, make_scrap_materials
+def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, percentage, rawMaterials):
 	operationNo = cint(operationNo)
+	operationName = OPERATION_MAP_NAME.get(operationNo)
 	work_order_name = frappe.db.get_value("Work Order", ERPWorkOrderID)
 	data_name = f"Operation {operationNo} Work Order {ERPWorkOrderID}"
-
 	log = frappe.get_doc("FOMS Data Mapping", log_name)
 
-	temp = frappe.db.get_value("Job Card", {
-		"work_order":work_order_name,
+	# Check if a job card has been created
+	existing_jc = frappe.db.get_value("Job Card", {
+		"work_order": work_order_name,
 		"operation": operationName,
-		"docstatus":1
-	}, ['name', 'docstatus'], cache=False , as_dict=1) or {}
+		"docstatus": 1
+	}, ["name"], as_dict=1)
 
-	job_card_name = temp.get("name")
-	if job_card_name:
-		update_log("Work Order", data_name, "Job Card", temp.get("name"))
+	if existing_jc:
+		update_log("Work Order", data_name, "Job Card", existing_jc.name)
 		return {
-			"result": False,
+			"result": True,
 			"percentage": percentage,
 			"message": "Already updated (se)"
 		}
 
+	# Skip if the mapping status is not Unknown
 	if log.status != "Unknown":
 		return
-	
+
 	make_in_progress(log.name, commit=1)
 
-	# create
+	# Handle full cancellation (100% scrap)
+	if percentage == 0:
+		close_work_order(work_order=work_order_name, status="Closed")
+		se = make_scrap_materials(work_order_name, 100)
+		se.save()
+		se.submit()
+		update_log("Work Order", data_name, "Stock Entry", se.name)
+		update_log("Work Order", f"Cancel Operation {operationNo} Work Order {ERPWorkOrderID}", "Stock Entry", se.name)
+		return {
+			"result": True,
+			"percentage": percentage,
+			"close": 1
+		}
+
+	# Get the work order document
 	wo_doc = frappe.get_doc("Work Order", work_order_name)
+	prev_qty = get_previous_qty(work_order_name, operationName)
+	global_percent = prev_qty/wo_doc.qty * 100 * percentage/100
+
+	# Create a job card
 	for d in wo_doc.operations:
 		if d.operation == operationName:
-			row = d.as_dict()
-			row.job_card_qty = wo_doc.qty
-			jc_doc = create_job_card(wo_doc, row, False, True)
-			operation_name = jc_doc.name
-	
-	job_card_name = frappe.db.get_value("Job Card", operation_name)
+			operation_row = d.as_dict()
+			operation_row.job_card_qty = wo_doc.qty
+			job_card_doc = create_job_card(wo_doc, operation_row, False, True)
+			break
+	else:
+		frappe.throw(f"Operation {operationName} not found in Work Order.")
 
-	wip_warehouse = frappe.get_value("Job Card", job_card_name, "wip_warehouse")
+	# Scrap material for the remainder (if <100%)
+	if percentage < 100:
+		scrap_doc = make_scrap_materials(work_order_name, percentage=(100 - percentage))
+		scrap_doc.save()
+		scrap_doc.submit()
 
-	# create stock entry
-	se_doc = make_stock_entry_with_materials(job_card_name, rawMaterials, wip_warehouse, operationName, work_order_name)
+	job_card_name = job_card_doc.name
+	wip_warehouse = job_card_doc.wip_warehouse
+
+	# Make stock entry according to percentage
+	se_doc = make_stock_entry_with_materials(
+		wo_doc, 
+		job_card_name,
+		rawMaterials,
+		wip_warehouse,
+		operationName,
+		percentage=100,
+		cur_percent=percentage,
+		global_percent=global_percent
+	)
+	se_doc.save()
 	se_doc.submit()
 
+	# Start and complete job cards if necessary.
 	job_card = frappe.get_doc("Job Card", job_card_name)
+	job_card.for_quantity = wo_doc.qty * flt(global_percent)/100
 
-	# start job card
 	if not job_card.job_started:
-		args = frappe._dict({
+		start_args = frappe._dict({
 			"job_card_id": job_card.name,
 			"start_time": now_datetime()
 		})
 		job_card.validate_sequence_id()
-		job_card.add_time_log(args)
+		job_card.add_time_log(start_args)
 		job_card.started_time = now_datetime()
 		job_card.job_started = 1
 
-	if percentage > 0 and percentage < 100:
-		job_card.percentage = percentage
-		job_card.save()
-	elif percentage == 100:
-		args = frappe._dict({
-			"job_card_id": job_card.name,
-			"complete_time": now_datetime(),
-			"completed_qty": job_card.for_quantity # temporary like job card settings
-		})
-		job_card.validate_sequence_id()
-		job_card.add_time_log(args)
-		job_card.save()
-		job_card.submit()
-	else:
-		job_card.save()
+	complete_args = frappe._dict({
+		"job_card_id": job_card.name,
+		"complete_time": now_datetime(),
+		"completed_qty": job_card.for_quantity
+	})
+	job_card.validate_sequence_id()
+	job_card.add_time_log(complete_args)
+	job_card.save()
+	job_card.submit()
 
-	update_log("Work Order", data_name, "Job Card", job_card.name, now=1, name_id=log_name)
+	update_log("Work Order", data_name, "Job Card", job_card.name, log_name)
 
 	return {
 		"result": True,
 		"percentage": percentage
 	}
+
+def get_previous_qty(work_order, cur_operation):
+	# get valid qty after do partially etc
+	# if not any previous, so use WO qty itself
+	prev_opr = get_previous_operation(cur_operation)
+	temp = frappe.db.sql("""
+		SELECT 
+			se.purpose,
+			SUM(se.fg_completed_qty) AS qty,
+			wo.qty AS wo_qty,
+			se.is_return,
+			se.operation
+		FROM
+			`tabWork Order` wo
+				LEFT JOIN
+			`tabStock Entry` se ON se.work_order = wo.name
+				AND se.docstatus = 1
+				AND se.is_return = 0
+				AND IFNULL(se.operation, '') = %s
+				AND se.purpose = 'Material Transfer for Manufacture'
+		WHERE
+			wo.name = %s
+	""",(prev_opr, work_order), as_dict=1)
+	if temp:
+		return temp[0].qty or temp[0].wo_qty
+	else:
+		return 0
 
 def run_pending_harvesting_transfer():
 	now_time = get_datetime()
@@ -509,7 +570,8 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 		)
 	else:
 		return {
-			"result":"Scheduled"
+			"result": True,
+			"message":"Scheduled"
 		}
 
 def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate="", draft=False, log_name=None):
@@ -533,13 +595,15 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 	})
 	if not operation_3_status:
 		return {
-			"result":"Operation 3 should be complete first."
+			"result":False,
+			"error":"Operation 3 should be complete first."
 		}
 
 	if status == "Completed":
 		update_log("Work Order", data_name, "Work Order", work_order_name)
 		return {
-			"result":"Already complete"
+			"result":True,
+			"message":"Already complete"
 		}
 	
 	if not work_order_name:
@@ -553,7 +617,7 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 	rate_map = se_doc.get_previous_rate()
 	for row in se_doc.get("items"):
 		if row.s_warehouse:
-			row.basic_rate = flt(rate_map.get(row.batch_no), 5)
+			row.basic_rate = flt(rate_map.get(row.batch_no), 8)
 			row.valuation_rate = row.basic_rate
 			row.set_basic_rate_manually = 1
 
