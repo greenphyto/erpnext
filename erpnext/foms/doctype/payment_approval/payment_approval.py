@@ -212,7 +212,8 @@ class PaymentApproval(Document):
 		self.total_amount = total
  
 	def process_xml_file(self, filepath=""):
-		if self.workflow_state != "Approved" and self.docstatus != 1:
+		workflow_state = self.get("workflow_state") or self.get("status")
+		if workflow_state != "Approved" and self.docstatus != 1:
 			return
 		
 		self.validate_payment()
