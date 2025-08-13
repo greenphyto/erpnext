@@ -62,7 +62,6 @@ hint:
 	"""
 
 	# Step 4: Use document_qa to extract the data
-	print(json_prompt)
 	result_json = document_qa(json_prompt, image) or {}
 
 	res = {}
