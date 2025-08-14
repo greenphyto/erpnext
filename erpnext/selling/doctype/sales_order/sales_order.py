@@ -810,10 +810,12 @@ def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 
 @frappe.whitelist()
 def make_replacement_qty(source_name, target_doc=None):
+	warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_fg_warehouse")
 	def postprocess(source, target):
 		target.ignore_pricing_rule = 1
 		target.is_replacement = 1
 		target.po_no = source.po_no
+		target.set_warehouse = warehouse
 		target.naming_series = 'DO-RPL-.YYYY.-.#####'
 		target.run_method("set_missing_values")
 		target.run_method("calculate_taxes_and_totals")
@@ -822,7 +824,8 @@ def make_replacement_qty(source_name, target_doc=None):
 		return flt(item.returned_qty) - flt(item.replacement_qty)
 
 	def set_item_fields(source, target, source_parent):
-		target.qty = flt(source.returned_qty) - flt(source.replacement_qty)
+		target.qty = source.qty
+		target.warehouse = warehouse
 		target.against_sales_order = source.parent
 		target.so_detail = source.name
 		target.sales_order = source.parent
@@ -836,7 +839,7 @@ def make_replacement_qty(source_name, target_doc=None):
 		},
 		"Sales Order Item": {
 			"doctype": "Delivery Note Item",
-			"condition": select_item_condition,
+			# "condition": select_item_condition,
 			"postprocess": set_item_fields
 		}
 	}
