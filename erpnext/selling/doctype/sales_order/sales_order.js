@@ -307,8 +307,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 
 					// replacement qty
 					if (
-						doc.docstatus === 1 &&
-						doc.items.some(item => flt(item.returned_qty) > 0 && flt(item.replacement_qty) < flt(item.returned_qty))
+						doc.docstatus === 1
 					) {
 						this.frm.add_custom_button(__('Replacement Qty'), () => me.make_replacement_qty(), __('Create'));
 					}
