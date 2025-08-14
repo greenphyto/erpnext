@@ -122,6 +122,9 @@ class AccountsController(TransactionBase):
 		supplier = None
 		supplier_name = None
 
+		if not self.get("supplier"):
+			return
+
 		if is_buying_invoice or is_supplier_payment:
 			supplier_name = self.supplier if is_buying_invoice else self.party
 			supplier = frappe.get_doc("Supplier", supplier_name)

@@ -176,6 +176,27 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 			'Delivery Trip': this.make_delivery_trip,
 		};
 	}
+	mapping_selected_order(data){
+		var me = this.frm;
+		frappe.call({
+			method: "erpnext.stock.doctype.delivery_note.delivery_note.make_replacement",
+			args: {
+				source_list: data,
+				target_doc: this.frm.doc
+			},
+			callback(r) {
+				if (r.message) {
+					// map ke frontend lagi kalau perlu
+					frappe.model.sync(r.message);
+					me.refresh()
+					frappe.set_route("Form", "Delivery Note", r.message.name);
+					frappe.show_alert("Done mapping");
+				}
+				frappe.dom.unfreeze();
+			}
+		});
+		frappe.dom.unfreeze();
+	}
 	refresh(doc, dt, dn) {
 		var me = this;
 		super.refresh();
@@ -223,22 +244,79 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 					me.make_sales_return() }, __('Create'));
 			}
 
-			// if (doc.docstatus==1) {
-			// 	this.frm.add_custom_button(__('Delivery Trip'), function() {
-			// 		me.make_delivery_trip() }, __('Create'));
-			// }
-
 			if(doc.docstatus==0 && !doc.__islocal) {
 				this.frm.add_custom_button(__('Packing Slip'), function() {
 					frappe.model.open_mapped_doc({
 						method: "erpnext.stock.doctype.delivery_note.delivery_note.make_packing_slip",
 						frm: me.frm
 					}) }, __('Create'));
-			}
 
-			if (!doc.__islocal && doc.docstatus==1) {
-				this.frm.page.set_inner_btn_group_as_primary(__('Create'));
-			}
+				}
+				
+				if (doc.docstatus == 0) {
+					this.frm.add_custom_button(__('Create Replacement Qty'), function () {
+		
+						// mapping_method: "erpnext.stock.doctype.delivery_note.delivery_note.make_replacement_qty",
+						erpnext.utils.load_data_from_report({
+							title: "Select Sales Order",
+							method: "erpnext.stock.doctype.delivery_note.delivery_note.load_returned_data",
+							filters:[
+								{fieldname:"customer", label:"Customer", fieldtype:"Link", options:"Customer", 
+									get_query:()=>{
+										return {
+											filters:{
+												disabled:0
+											}
+										}
+									},
+									description: "Select customer for current Delivery Note",
+									default: me.frm.doc.customer,
+								},
+								{fieldname: "column_break1",fieldtype: "Column Break",oldfieldtype: "Column Break"},
+								{fieldname:"item_code", label:"Item Code", fieldtype:"Link", options:"Item", 
+									get_query:()=>{
+										return {
+											filters:{
+												is_stock_item:1,
+												item_group:"Products"
+											}
+										}
+									}},
+							],
+							columns: [
+								{fieldname:"so_number", label:"Sales Order", fieldtype:"Link", options:"Sales Order", width:"20"},
+								{fieldname:"customer", label:"Customer", fieldtype:"Link", options:"Customer", default: me.frm.doc.customer, width:"30"},
+								{fieldname:"item_code", label:"Item Code", fieldtype:"Link", options:"Item", width:"20"},
+								{fieldname:"qty", label:"Qty", fieldtype:"Float", options:"", width:"10"},
+								{fieldname:"returned_qty", label:"Return Qty", fieldtype:"Float", options:"", width:"10"},
+								{fieldname:"repl_qty", label:"Repl. Qty (Sent)", fieldtype:"Float", options:"", width:"10"},
+								{fieldname:"repl_approx_qty", label:"Repl. Qty (Approx)", fieldtype:"Float", options:"", width:"10"},
+							],
+							size:"extra-large",
+							action: (filters, data) => {
+								return new Promise((resolve, reject) => {
+									if (!filters.customer) {
+										alert("Customer must be set");
+										return resolve(false);
+									}
+
+									if (data.length==0) {
+										frappe.show_alert("Not item selected")
+									} else {
+										frappe.show_alert("Load data..");
+										frappe.dom.freeze();
+										me.frm.cscript.mapping_selected_order(data)
+									}
+									return resolve(true);
+								});
+							}
+						})
+					});
+				}
+
+				if (!doc.__islocal && doc.docstatus==1) {
+					this.frm.page.set_inner_btn_group_as_primary(__('Create'));
+				}
 		}
 
 		if (doc.docstatus > 0) {
@@ -377,6 +455,136 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 		})
 	}
 };
+
+erpnext.utils.load_data_from_report = function(opts) {
+	// this tools is used to select data on report format
+	// opts parameters mandatory:
+	// method (to download data), filters, columns, action (function to receive the items list)
+	// optional:
+	// title, size
+
+	let full_data = [];
+	let selected_indexes = [];
+
+	// Build filter fields
+	const filter_fields = opts.filters.map(df => {
+		df.onchange = (e)=>{
+			load_table();
+		}
+		return df
+	});
+
+	// Create dialog
+	const dialog = new frappe.ui.Dialog({
+		title: __(opts.title || "Select the Data"),
+		fields: [
+			// Filter Section
+			{ fieldtype: 'Section Break', label: "Filter"},
+			{ fieldtype: 'Column Break' },
+			...filter_fields,
+			{ fieldtype: 'Section Break' },
+			{ fieldtype: 'Button', label: __('Apply Filters'), fieldname: '__apply_filters' },
+			// Report Section
+			{ fieldtype: 'Section Break', label: "Select data"},
+			{ fieldtype: 'HTML', fieldname: 'table_area' },
+			{ fieldtype: 'Section Break'},
+			{
+				fieldtype: 'HTML',
+				fieldname: 'button_footer',
+				options: `
+					<div class="flex justify-between items-center" style="margin-top: 10px;">
+					<button class="btn btn-default btn-xs" data-action="refresh">${__('Refresh')}</button>
+					<button class="btn btn-primary btn-xs" data-action="get_items">${__('Get Items')}</button>
+					</div>
+				`
+			}
+
+		],
+		size: opts.size || 'large'
+	});
+
+	// Load or reload table
+	async function load_table() {
+		const filters = {};
+		opts.filters.forEach(f => {
+			if (f.fieldtype=="Column Break" || f.fieldtype=="Section Break") return;
+			filters[f.fieldname] = dialog.get_value(f.fieldname);
+		});
+		const res = await frappe.call({ method: opts.method, args: {filters:filters} });
+		full_data = res.message || [];
+
+		// Define columns
+		const columns = [
+			...opts.columns.map(c => ({
+				id: c.fieldname,
+				field: c.fieldname,
+				name: c.fieldname,
+				content: c.label,
+				label: __(c.label),
+				docfield: c,
+				editable: false,
+				width:c.width
+			}))
+		];
+
+
+		// Map data
+		const data = full_data
+
+		// Render datatable fresh
+		const wrapper = dialog.get_field('table_area').$wrapper.empty()[0];
+		dialog.datatable = new frappe.DataTable(wrapper, {
+			columns: columns,
+			data: data,
+			language: frappe.boot.lang,
+			translations: frappe.utils.datatable.get_translations(),
+			checkboxColumn: true,
+			inlineFilters: true,
+			// cellHeight: 35,
+			direction: frappe.utils.is_rtl() ? "rtl" : "ltr",
+			layout: 'fluid',
+			events: {
+				onCheckRow: () => {
+					// const checked_items = get_checked_items();
+					// console.log(checked_items)
+				},
+			}
+		})
+		
+	}
+
+	function get_checked_items(){
+		const indexes = dialog.datatable.rowmanager.getCheckedRows();
+		const items = indexes.map((i) => full_data[i]).filter((i) => i != undefined);
+		return items.map((d) => d.name);
+	}
+
+	// Button bindings
+	dialog.get_field('__apply_filters').$input.on('click', () => {
+		selected_indexes = [];
+		load_table();
+	});
+	dialog.get_field('button_footer').$wrapper
+	.on('click', 'button[data-action=refresh]', () => {
+		load_table();
+	})
+	.on('click', 'button[data-action=get_items]', () => {
+		var rows = get_checked_items();
+		var filters = dialog.get_values();
+		opts.action(filters, rows).then(r=>{
+			if (r) dialog.hide();
+		});
+	});
+
+	// Init
+	dialog.show();
+	setTimeout(()=>{
+		load_table();
+	}, 200)
+};
+
+
+
 
 extend_cscript(cur_frm.cscript, new erpnext.stock.DeliveryNoteController({frm: cur_frm}));
 

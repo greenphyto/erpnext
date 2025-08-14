@@ -14,8 +14,10 @@ from erpnext.stock import get_warehouse_account_map, get_item_account
 from erpnext.accounts.general_ledger import make_gl_entries
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.controllers.selling_controller import SellingController
-from erpnext.stock.doctype.batch.batch import set_batch_nos
+from erpnext.stock.doctype.batch.batch import set_batch_nos, get_available_batch_portion
 from erpnext.stock.doctype.serial_no.serial_no import get_delivery_note_serial_no
+from six import string_types
+import json
 
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
@@ -87,6 +89,37 @@ class DeliveryNote(SellingController):
 						"target_parent_field": "per_returned",
 						"target_ref_field": "stock_qty",
 						"source_field": "-1 * stock_qty",
+						"percent_join_field_parent": "return_against",
+					},
+				]
+			)
+		if cint(self.get("is_replacement")):
+			self.status_updater.extend(
+				[
+					{
+						"source_dt": "Delivery Note Item",
+						"target_dt": "Sales Order Item",
+						"join_field": "so_detail",
+						"target_field": "replacement_qty",
+						"target_parent_dt": "Sales Order",
+						"source_field": "-1 * qty",
+						"second_source_dt": "Sales Invoice Item",
+						"second_source_field": "-1 * qty",
+						"second_join_field": "so_detail",
+						"extra_cond": """ and exists (select name from `tabDelivery Note`
+					where name=`tabDelivery Note Item`.parent and is_return=1)""",
+						"second_source_extra_cond": """ and exists (select name from `tabSales Invoice`
+					where name=`tabSales Invoice Item`.parent and is_return=1 and update_stock=1)""",
+					},
+					{
+						"source_dt": "Delivery Note Item",
+						"target_dt": "Delivery Note Item",
+						"join_field": "dn_detail",
+						"target_field": "replacement_qty",
+						"target_parent_dt": "Delivery Note",
+						"target_parent_field": "per_returned",
+						"target_ref_field": "stock_qty",
+						"source_field": "1 * stock_qty",
 						"percent_join_field_parent": "return_against",
 					},
 				]
@@ -173,6 +206,7 @@ class DeliveryNote(SellingController):
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_with_previous_doc()
 		self.validate_donation()
+		self.validate_replacement()
 		self.add_item_batch_foms_id()
 
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
@@ -207,6 +241,13 @@ class DeliveryNote(SellingController):
 		if account:
 			for d in self.items:
 				d.expense_account = account
+
+	def validate_replacement(self):
+		if not cint(self.is_replacement):
+			return
+		
+		if not self.replacement_reason:
+			frappe.throw(_("Please provide a reason for the replacement quantity."))
 
 	def add_item_batch_foms_id(self):
 		def get_foms_lot_name(batch):
@@ -1018,6 +1059,102 @@ def make_packing_slip(source_name, target_doc=None):
 
 	return doclist
 
+@frappe.whitelist()
+def load_returned_data(filters):
+	if isinstance(filters, string_types):
+		filters = json.loads(filters)
+	cond = ""
+	if filters.get("customer"):
+		cond += " AND so.customer = %(customer)s "
+	if filters.get("item_code"):
+		cond += " AND soi.item_code = %(item_code)s "
+
+	return frappe.db.sql("""
+	SELECT 
+		soi.name,
+		so.name as so_number,
+		so.customer,
+		soi.item_code,
+		soi.qty,
+		soi.returned_qty,
+		soi.replacement_qty as repl_qty,
+		soi.returned_qty - soi.replacement_qty as repl_approx_qty
+	FROM
+		`tabSales Order Item` soi
+			LEFT JOIN
+		`tabSales Order` so ON so.name = soi.parent
+	WHERE
+		so.docstatus = 1
+			AND soi.returned_qty > 0
+			{}
+					  """.format(cond), filters, as_dict=1)
+
+@frappe.whitelist()
+def make_replacement(source_list, target_doc=None):
+	if isinstance(source_list, string_types):
+		source_list = json.loads(source_list)
+	if isinstance(target_doc, string_types):
+		target_doc = frappe.parse_json(target_doc)
+
+	if not source_list:
+		frappe.throw("No items selected")
+
+	# Ambil semua Sales Order Item
+	so_items = frappe.get_all("Sales Order Item", filters={"name": ["in", source_list]}, fields=[
+		"*"
+	])
+
+	# Validasi customer
+	customers = list(set([frappe.db.get_value("Sales Order", item["parent"], "customer") for item in so_items]))
+	if len(customers) > 1:
+		frappe.throw("Selected items have different customers. Please select from the same customer.")
+
+	customer = customers[0]
+	nearest_delivery_date = min([item["delivery_date"] for item in so_items if item.get("delivery_date")])
+
+	# Load atau buat target_doc Delivery Note
+	if target_doc:
+		doc = frappe.get_doc(target_doc)
+	else:
+		doc = frappe.new_doc("Delivery Note")
+		doc.customer = customer
+
+	doc.set("items", [])
+	for item in so_items:
+		qty = flt(item["returned_qty"]) - flt(item["replacement_qty"])
+		batches = get_available_batch_portion(item['item_code'], qty, skip_wip_warehouse=1, strategy="Expired First")
+		for d in batches:
+			row = doc.append("items")
+			row.update({
+				"so_detail": item["name"],
+				"item_code": item["item_code"],
+				"qty": d.qty,
+				"warehouse": d.warehouse,
+				"uom": item['uom'],
+				"against_sales_order": item["parent"],
+				"delivery_date": item["delivery_date"],
+				"batch_no": d.batch_id
+			})
+		if not batches:
+			row = doc.append("items")
+			row.update({
+				"so_detail": item["name"],
+				"item_code": item["item_code"],
+				"qty": qty,
+				"uom": item.uom,
+				"against_sales_order": item["parent"],
+				"delivery_date": item["delivery_date"],
+				"batch_no": ""
+			})
+	doc.is_replacement = 1
+	if doc.is_new():
+		doc.naming_series = 'DO-RPL-.YYYY.-.#####'
+
+	doc.customer = customer
+	doc.delivery_date = nearest_delivery_date
+	doc.set_missing_values()
+
+	return doc
 
 @frappe.whitelist()
 def make_shipment(source_name, target_doc=None):

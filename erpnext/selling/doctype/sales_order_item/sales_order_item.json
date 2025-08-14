@@ -90,6 +90,7 @@
   "delivered_qty",
   "produced_qty",
   "returned_qty",
+  "replacement_qty",
   "picked_qty",
   "shopping_cart_section",
   "additional_notes",
@@ -934,6 +935,12 @@
    "label": "Marketing Name"
   },
   {
+   "fieldname": "replacement_qty",
+   "fieldtype": "Float",
+   "label": "Replacement Qty",
+   "read_only": 1
+  },
+  {
     "depends_on": "eval:doc.is_salad_product",
     "fieldname": "salad_product_section",
     "fieldtype": "Section Break",
@@ -982,7 +989,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-03-21 11:49:23.693419",
+ "modified": "2025-07-31 14:18:15.714908",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

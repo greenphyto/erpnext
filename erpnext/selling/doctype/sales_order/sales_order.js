@@ -305,6 +305,13 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 						this.frm.add_custom_button(__('Sales Invoice'), () => me.make_sales_invoice(), __('Create'));
 					}
 
+					// replacement qty
+					if (
+						doc.docstatus === 1
+					) {
+						this.frm.add_custom_button(__('Replacement Qty'), () => me.make_replacement_qty(), __('Create'));
+					}
+
 					// material request
 					if(!doc.order_type || (order_is_a_sale || order_is_a_custom_sale) && flt(doc.per_delivered, 6) < 100) {
 						this.frm.add_custom_button(__('Material Request'), () => this.make_material_request(), __('Create'));
@@ -683,6 +690,30 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			method: "erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice",
 			frm: this.frm
 		})
+	}
+
+	make_replacement_qty(){
+		var me = this;
+		frappe.prompt([
+			{
+				fieldname: 'reason',
+				fieldtype: 'Small Text',
+				label: 'Reason for Replacement Qty',
+				reqd: 1
+			}
+		],
+		function(values){
+			frappe.model.open_mapped_doc({
+				method: "erpnext.selling.doctype.sales_order.sales_order.make_replacement_qty",
+				args:{
+					"reason":values.reason,
+				},
+				frm: me.frm
+			})
+		},
+			'Replacement Quantity Reason',
+			'Submit'
+		);
 	}
 
 	make_maintenance_schedule() {

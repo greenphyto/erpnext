@@ -816,6 +816,52 @@ def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 
 	return target_doc
 
+@frappe.whitelist()
+def make_replacement_qty(source_name, target_doc=None):
+	args = frappe.flags.args
+	warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_fg_warehouse")
+	def postprocess(source, target):
+		target.ignore_pricing_rule = 1
+		target.is_replacement = 1
+		target.po_no = source.po_no
+		target.set_warehouse = warehouse
+		target.naming_series = 'DO-RPL-.YYYY.-.#####'
+		target.run_method("set_missing_values")
+		target.run_method("calculate_taxes_and_totals")
+		target.replacement_reason = args.get("reason")
+		target.rpl_creator = frappe.get_value("User", frappe.session.user, "full_name")
+
+	def select_item_condition(item):
+		return flt(item.returned_qty) - flt(item.replacement_qty)
+
+	def set_item_fields(source, target, source_parent):
+		target.qty = source.qty
+		target.warehouse = warehouse
+		target.against_sales_order = source.parent
+		target.so_detail = source.name
+		target.sales_order = source.parent
+
+	fields = {
+		"Sales Order": {
+			"doctype": "Delivery Note",
+			"validation": {
+				"docstatus": ["=", 1]
+			}
+		},
+		"Sales Order Item": {
+			"doctype": "Delivery Note Item",
+			# "condition": select_item_condition,
+			"postprocess": set_item_fields
+		}
+	}
+
+	return get_mapped_doc(
+		"Sales Order",
+		source_name,
+		fields,
+		target_doc,
+		postprocess
+	)
 
 @frappe.whitelist()
 def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
