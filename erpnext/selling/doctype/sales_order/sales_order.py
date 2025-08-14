@@ -810,6 +810,7 @@ def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 
 @frappe.whitelist()
 def make_replacement_qty(source_name, target_doc=None):
+	args = frappe.flags.args
 	warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_fg_warehouse")
 	def postprocess(source, target):
 		target.ignore_pricing_rule = 1
@@ -819,6 +820,8 @@ def make_replacement_qty(source_name, target_doc=None):
 		target.naming_series = 'DO-RPL-.YYYY.-.#####'
 		target.run_method("set_missing_values")
 		target.run_method("calculate_taxes_and_totals")
+		target.replacement_reason = args.get("reason")
+		target.rpl_creator = frappe.get_value("User", frappe.session.user, "full_name")
 
 	def select_item_condition(item):
 		return flt(item.returned_qty) - flt(item.replacement_qty)

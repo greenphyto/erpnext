@@ -693,10 +693,27 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 	}
 
 	make_replacement_qty(){
-		frappe.model.open_mapped_doc({
-			method: "erpnext.selling.doctype.sales_order.sales_order.make_replacement_qty",
-			frm: this.frm
-		})
+		var me = this;
+		frappe.prompt([
+			{
+				fieldname: 'reason',
+				fieldtype: 'Small Text',
+				label: 'Reason for Replacement Qty',
+				reqd: 1
+			}
+		],
+		function(values){
+			frappe.model.open_mapped_doc({
+				method: "erpnext.selling.doctype.sales_order.sales_order.make_replacement_qty",
+				args:{
+					"reason":values.reason,
+				},
+				frm: me.frm
+			})
+		},
+			'Replacement Quantity Reason',
+			'Submit'
+		);
 	}
 
 	make_maintenance_schedule() {

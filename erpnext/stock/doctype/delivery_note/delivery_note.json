@@ -33,6 +33,10 @@
   "replacement_against",
   "is_donation",
   "is_giveaway",
+  "replacement_reason_section",
+  "replacement_reason",
+  "column_break_29",
+  "rpl_creator",
   "accounting_dimensions_section",
   "cost_center",
   "column_break_18",
@@ -1588,13 +1592,35 @@
    "fieldname": "organization_address",
    "fieldtype": "Small Text",
    "label": "Organization Address"
+  },
+  {
+   "depends_on": "eval:doc.is_replacement",
+   "fieldname": "replacement_reason_section",
+   "fieldtype": "Section Break",
+   "label": "Replacement Reason"
+  },
+  {
+   "fieldname": "replacement_reason",
+   "fieldtype": "Small Text",
+   "label": "Replacement Reason",
+   "mandatory_depends_on": "eval:doc.is_replacement"
+  },
+  {
+   "fieldname": "column_break_29",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rpl_creator",
+   "fieldtype": "Data",
+   "label": "Creator",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-07-31 15:32:46.244698",
+ "modified": "2025-08-14 12:11:31.022820",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

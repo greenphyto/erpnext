@@ -205,6 +205,7 @@ class DeliveryNote(SellingController):
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_with_previous_doc()
 		self.validate_donation()
+		self.validate_replacement()
 		self.add_item_batch_foms_id()
 
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
@@ -239,6 +240,13 @@ class DeliveryNote(SellingController):
 		if account:
 			for d in self.items:
 				d.expense_account = account
+
+	def validate_replacement(self):
+		if not cint(self.is_replacement):
+			return
+		
+		if not self.replacement_reason:
+			frappe.throw(_("Please provide a reason for the replacement quantity."))
 
 	def add_item_batch_foms_id(self):
 		def get_foms_lot_name(batch):
