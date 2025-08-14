@@ -1551,11 +1551,12 @@ def update_item_pic(doc, method=None):
 			if doc_old:
 				row_old = doc_old.get("data_mapping", {"name":d.name})
 			
-			if not row_old and d.pic:
-				update_data_mapping(d.code, d.pic)
-			else:
+			if row_old:
 				row_old = row_old[0]
 				if row_old.pic != d.pic:
+					update_data_mapping(d.code, d.pic)
+			else:
+				if d.pic:
 					update_data_mapping(d.code, d.pic)
 
 @frappe.whitelist()
