@@ -1496,7 +1496,7 @@ class StockEntry(StockEntryAsset, StockController):
 			SELECT 
 				gl.name,
 				s.name AS se_name,
-				SUM(gl.debit) - SUM(gl.credit) AS amount,
+				SUM(gl.debit) AS amount,
 				gl.account
 			FROM
 				`tabGL Entry` gl
@@ -1506,8 +1506,6 @@ class StockEntry(StockEntryAsset, StockController):
 					s.work_order = %s
 					AND s.docstatus = 1
 					AND gl.account = %s
-					-- AND gl.debit > 0
-					-- AND s.is_return = 0
 		""", (self.work_order, wip_account), as_dict=1, debug=0)
 
 		# this should be minus with Return (with existing scrap material)
