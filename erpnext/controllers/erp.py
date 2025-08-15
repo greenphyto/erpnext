@@ -165,6 +165,8 @@ def is_invoice(text):
 		# Indonesia"
 		"faktur", "faktur pajak", "tagihan ke", "nomor faktur",
 		"tanggal faktur", "jumlah pajak", "total faktur", "jumlah yang harus dibayar",
+
+		"payment", "Purchase", "Billing", "Bill", "Charge"
     ]
 
     return any(keyword in text for keyword in invoice_keywords)
