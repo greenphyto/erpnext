@@ -174,7 +174,6 @@
    "label": "Description"
   },
   {
-   "allow_on_submit": 1,
    "fieldname": "description",
    "fieldtype": "Text Editor",
    "label": "Description",
@@ -284,7 +283,8 @@
    "fieldname": "discount_amount",
    "fieldtype": "Currency",
    "label": "Discount Amount",
-   "options": "currency"
+   "options": "currency",
+   "precision": "4"
   },
   {
    "fieldname": "col_break3",
@@ -828,6 +828,7 @@
    "fieldtype": "Currency",
    "label": "Rate With Margin (Company Currency)",
    "options": "Company:company:default_currency",
+   "precision": "4",
    "print_hide": 1,
    "read_only": 1
   },
@@ -913,7 +914,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-02-28 14:27:43.652702",
+ "modified": "2025-08-19 10:03:05.864843",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order Item",
