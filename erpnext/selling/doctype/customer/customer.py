@@ -180,7 +180,11 @@ class Customer(TransactionBase):
 	def get_item_sku(self, item_code, field="sku"):
 		for d in self.get("customer_sku"):
 			if d.item_code == item_code:
-				return d.get(field)
+				res = d.get(field)
+				if field == "sku_name" and d.sku and not res:
+					res = d.get("origin_name")
+				
+				return res
 
 	def check_customer_group_change(self):
 		frappe.flags.customer_group_changed = False
