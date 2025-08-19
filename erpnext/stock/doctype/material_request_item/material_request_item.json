@@ -206,6 +206,7 @@
    "oldfieldname": "schedule_date",
    "oldfieldtype": "Date",
    "print_width": "100px",
+   "read_only_depends_on": "eval:doc.docstatus == 1 && !frappe.perm.has_perm(\"Material Request\", 1, 'write');",
    "reqd": 1,
    "width": "100px"
   },
@@ -216,6 +217,7 @@
    "in_list_view": 1,
    "label": "Rate",
    "options": "currency",
+   "precision": "4",
    "print_hide": 1
   },
   {
@@ -225,6 +227,7 @@
    "in_list_view": 1,
    "label": "Amount",
    "options": "currency",
+   "precision": "4",
    "print_hide": 1,
    "read_only": 1
   },
@@ -520,49 +523,57 @@
    "fieldname": "base_rate",
    "fieldtype": "Currency",
    "label": "Rate (Company Currency)",
-   "options": "Company:company:default_currency"
+   "options": "Company:company:default_currency",
+   "precision": "4"
   },
   {
    "fieldname": "base_amount",
    "fieldtype": "Currency",
    "label": "Amount(Company Currency)",
-   "options": "Company:company:default_currency"
+   "options": "Company:company:default_currency",
+   "precision": "4"
   },
   {
    "fieldname": "net_rate",
    "fieldtype": "Currency",
    "label": "Net Rate",
-   "options": "currency"
+   "options": "currency",
+   "precision": "4"
   },
   {
    "fieldname": "net_amount",
    "fieldtype": "Currency",
    "label": "Net Amount",
-   "options": "currency"
+   "options": "currency",
+   "precision": "4"
   },
   {
    "fieldname": "base_net_rate",
    "fieldtype": "Currency",
    "label": "Net Rate (Company Currency)",
-   "options": "Company:company:default_currency"
+   "options": "Company:company:default_currency",
+   "precision": "4"
   },
   {
    "fieldname": "base_net_amount",
    "fieldtype": "Currency",
    "label": "Net Amount (Company Currency)",
-   "options": "Company:company:default_currency"
+   "options": "Company:company:default_currency",
+   "precision": "4"
   },
   {
    "fieldname": "base_price_list_rate",
    "fieldtype": "Currency",
    "label": "Price List Rate (Company Currency)",
-   "options": "Company:company:default_currency"
+   "options": "Company:company:default_currency",
+   "precision": "4"
   },
   {
    "fieldname": "price_list_rate",
    "fieldtype": "Currency",
    "label": "Price List Rate",
-   "options": "currency"
+   "options": "currency",
+   "precision": "4"
   },
   {
    "depends_on": "price_list_rate",
@@ -575,7 +586,8 @@
    "fieldname": "discount_amount",
    "fieldtype": "Currency",
    "label": "Discount Amount",
-   "options": "currency"
+   "options": "currency",
+   "precision": "4"
   },
   {
    "fieldname": "item_name_view",
@@ -607,7 +619,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-06-19 15:59:05.494983",
+ "modified": "2025-08-19 10:01:49.143556",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request Item",
