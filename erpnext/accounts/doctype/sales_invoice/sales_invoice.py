@@ -108,6 +108,7 @@ class SalesInvoice(SellingController):
 		self.validate_item_cost_centers()
 		self.validate_income_account()
 		self.check_conversion_rate()
+		self.set_item_sku()
 
 		validate_inter_company_party(
 			self.doctype, self.customer, self.company, self.inter_company_invoice_reference
@@ -200,6 +201,12 @@ class SalesInvoice(SellingController):
 		
 		if not self.delivery_note:
 			self.delivery_note = dn_name
+
+	def set_item_sku(self):
+		doc = frappe.get_doc("Customer", self.customer)
+		for d in self.get("items"):
+			d.customer_sku = doc.get_item_sku(d.item_code)
+			d.customer_sku_name = doc.get_item_sku(d.item_code, "sku_name")
 
 	def validate_item_price_list(self):
 		from erpnext.stock.get_item_details import get_item_price

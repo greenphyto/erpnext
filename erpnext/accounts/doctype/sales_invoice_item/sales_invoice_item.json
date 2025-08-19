@@ -10,6 +10,8 @@
   "barcode",
   "has_item_scanned",
   "item_code",
+  "customer_sku",
+  "customer_sku_name",
   "col_break1",
   "item_name",
   "item_name_view",
@@ -923,12 +925,24 @@
    "fieldtype": "Currency",
    "label": "Total Discount Amount",
    "read_only": 1
+  },
+  {
+   "fieldname": "customer_sku",
+   "fieldtype": "Data",
+   "label": "Customer SKU",
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer_sku_name",
+   "fieldtype": "Data",
+   "label": "Customer SKU Name",
+   "read_only": 1
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-08-08 11:46:01.786957",
+ "modified": "2025-08-19 17:37:53.300087",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice Item",
