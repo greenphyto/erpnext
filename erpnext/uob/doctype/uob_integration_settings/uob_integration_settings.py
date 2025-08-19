@@ -19,3 +19,27 @@ class UOBIntegrationSettings(Document):
 
 def remove_leading_slash(text: str) -> str:
 	return text.lstrip("/")
+
+import requests, base64
+from frappe.utils import cint
+@frappe.whitelist()
+def download_bank_file(fname, decrypt):
+	decrypt = cint(decrypt)
+	settings = frappe.get_single("UOB Integration Settings")
+	url = f"http://{settings.host}/bank/download?dest={settings.folder_out}&fname={fname}&decrypt={decrypt}&raw=0"
+	r = requests.get(url)
+
+	if r.status_code != 200:
+		frappe.throw("Failed to get file.")
+
+	if decrypt:
+		fname = fname.replace(".pgp", "")
+
+	res = r.json()
+
+	if res and res.get("file"):
+		file_bytes = base64.b64decode(res.get("file"))
+
+		frappe.local.response.filename = res.get("filename")
+		frappe.local.response.filecontent = file_bytes
+		frappe.local.response.type = "download"
