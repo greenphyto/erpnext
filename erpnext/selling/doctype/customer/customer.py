@@ -108,6 +108,7 @@ class Customer(TransactionBase):
 		self.validate_internal_customer()
 		self.set_code()
 		self.set_default_customer_address()
+		self.validate_sku()
 
 		# set loyalty program tier
 		if frappe.db.exists("Customer", self.name):
@@ -145,6 +146,41 @@ class Customer(TransactionBase):
 			self.update({field: doc.get(field)})
 
 		self.save()
+
+	def validate_sku(self):
+		self.total_item = 0
+		done = []
+		error_list = []
+		done_sku = []
+		dupp_list = []
+		for d in self.get("customer_sku"):
+			d.sku = cstr(d.sku).strip()
+			if not d.cust_item_name:
+				d.cust_item_name = d.origin_name
+
+			self.total_item += 1
+			if not d.item_code in done:
+				done.append(d.item_code)
+			else:
+				error_list.append(f"<li>Row {d.idx}, Item {d.item_code}</li>")
+
+			if not d.sku in done_sku:
+				done_sku.append(d.sku)
+			else:
+				dupp_list.append(f"<li>Row {d.idx}, with SKU <b>{d.sku}</b></li>")
+		
+		if error_list:
+			error = "".join(error_list)
+			frappe.throw(_(f"<p>Found multiple item in SKU table:</p><ol>{error}</ol>"))
+
+		if dupp_list:
+			error = "".join(dupp_list)
+			frappe.throw(_(f"<p>Found dupplciate SKU numbers:</p><ol>{error}</ol>"))
+
+	def get_item_sku(self, item_code, field="sku"):
+		for d in self.get("customer_sku"):
+			if d.item_code == item_code:
+				return d.get(field)
 
 	def check_customer_group_change(self):
 		frappe.flags.customer_group_changed = False

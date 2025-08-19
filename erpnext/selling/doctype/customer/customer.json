@@ -86,7 +86,10 @@
   "dn_required",
   "column_break_53",
   "is_frozen",
-  "disabled"
+  "disabled",
+  "sku_tab",
+  "customer_sku",
+  "total_item"
  ],
  "fields": [
   {
@@ -585,9 +588,9 @@
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
-   "read_only": 1,
    "no_amend_copy": 1,
-   "no_copy": 1
+   "no_copy": 1,
+   "read_only": 1
   },
   {
    "default": "0",
@@ -599,6 +602,24 @@
    "fieldname": "foms_name",
    "fieldtype": "Data",
    "label": "FOMS Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sku_tab",
+   "fieldtype": "Tab Break",
+   "label": "SKU"
+  },
+  {
+   "allow_bulk_edit": 1,
+   "fieldname": "customer_sku",
+   "fieldtype": "Table",
+   "label": "Customer SKU",
+   "options": "Customer SKU"
+  },
+  {
+   "fieldname": "total_item",
+   "fieldtype": "Int",
+   "label": "Total Item",
    "read_only": 1
   }
  ],
@@ -613,7 +634,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-09-11 18:23:25.273691",
+ "modified": "2025-08-19 17:16:14.879810",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",
