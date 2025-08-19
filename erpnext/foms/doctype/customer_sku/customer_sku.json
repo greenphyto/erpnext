@@ -1,0 +1,64 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2025-08-19 15:31:01.388485",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "origin_name",
+  "sku",
+  "sku_name"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "columns": 2,
+   "fetch_from": "item_code.item_name",
+   "fieldname": "origin_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Origin Name",
+   "read_only": 1
+  },
+  {
+   "columns": 3,
+   "fieldname": "sku",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "SKU",
+   "reqd": 1
+  },
+  {
+   "columns": 3,
+   "fetch_from": "item_code.item_name",
+   "fetch_if_empty": 1,
+   "fieldname": "sku_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Customer Item Name"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-08-19 17:22:09.419943",
+ "modified_by": "Administrator",
+ "module": "FOMS",
+ "name": "Customer SKU",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
