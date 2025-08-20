@@ -51,6 +51,23 @@ frappe.ui.form.on("Item", {
                 query:"erpnext.assets.doctype.asset.asset.filter_account_for_asset_code",
 			}
         })
+
+		frm.set_query("to_uom", "uoms", function(doc, cdt, cdn) {
+			var row = locals[cdt][cdn];
+			if (!doc.stock_uom){
+				frappe.throw(__("Select Stock UOM First"))
+			}
+			var uom_listed = (doc.uoms || []).map(d => d.uom);
+			if (row.uom != doc.stock_uom){
+				uom_listed = uom_listed.filter(u => u !== row.uom);
+			}
+
+			return {
+				filters: {
+					"name": ['in', uom_listed]
+				}
+			}
+		});
 	},
 
 	refresh: function(frm) {

@@ -125,7 +125,6 @@ class Item(Document):
 		self.clear_retain_sample()
 		self.validate_retain_sample()
 		self.validate_package()
-		self.validate_uom_conversion_factor()
 		self.validate_customer_provided_part()
 		self.update_defaults_from_item_group()
 		self.validate_item_defaults()
@@ -137,6 +136,7 @@ class Item(Document):
 		self.validate_debit_note_item()
 		self.set_asset_category()
 		self.update_uom_global_description()
+		self.update_conversion_factors()
 
 		set_item_tax_from_hsn_code(self)
 
@@ -240,6 +240,31 @@ class Item(Document):
 					d.global_description = current_master_desc
 					d.origin_description = current_master_desc
 
+	def update_conversion_factors(self):
+		pairs = []
+
+		# collect all relations from child table
+		for d in self.uoms:
+			if not d.uom or not d.to_uom:
+				continue
+			pairs.append((d.uom, d.to_uom, float(d.cf_view)))
+
+		# tambahkan default self relation untuk stock_uom
+		if self.stock_uom:
+			pairs.append((self.stock_uom, self.stock_uom, 1.0))
+
+		graph = build_graph(pairs)
+
+		for d in self.uoms:
+			if not self.stock_uom:
+				frappe.throw("Stock UOM is required to compute conversion factors")
+
+			factor = find_factor(graph, d.uom, self.stock_uom)
+			if factor is None:
+				frappe.throw(
+					f"Cannot find valid conversion path from {d.uom} to Stock UOM {self.stock_uom}"
+				)
+			d.conversion_factor = factor
 
 	def set_opening_stock(self):
 		"""set opening stock"""
@@ -301,12 +326,15 @@ class Item(Document):
 				row = row[0]
 				row.conversion_factor = flt(d.weight)
 				row.cf_view = flt(d.weight)
+				row.to_uom = self.stock_uom
 			else:
 				row = self.append("uoms")
 				row.uom = d.packaging
 				row.conversion_factor = flt(d.weight)
 				row.is_packaging = 1
 				row.cf_view = flt(d.weight)
+				row.to_uom = self.stock_uom
+
 			if d.default:
 				if not default:
 					default = d.packaging
@@ -1600,3 +1628,43 @@ def get_default_pic(code):
 	return frappe.db.get_value("Part Number Details", {"code":code}, "pic")
 
 			
+from collections import deque, defaultdict
+
+def build_graph(pairs, tolerance=1e-6):
+    g = defaultdict(list)
+    for A, B, f in pairs:
+        if not f or f <= 0:
+            frappe.throw(f"Invalid conversion factor between {A} and {B}")
+
+        # cek apakah sudah ada edge searah
+        for (v, existing_f) in g.get(A, []):
+            if v == B and abs(existing_f - f) > tolerance:
+                frappe.throw(
+                    f"Inconsistent conversion detected: {A} -> {B} "
+                    f"existing={existing_f}, new={f}"
+                )
+        for (v, existing_f) in g.get(B, []):
+            if v == A and abs(existing_f - (1.0 / f)) > tolerance:
+                frappe.throw(
+                    f"Inconsistent conversion detected: {B} -> {A} "
+                    f"existing={existing_f}, new={1.0/f}"
+                )
+
+        g[A].append((B, f))
+        g[B].append((A, 1.0 / f))
+    return g
+
+
+def find_factor(graph, from_uom, to_uom):
+    """ BFS to find conversion factor from one UOM to another. """
+    q = deque([(from_uom, 1.0)])
+    seen = set([from_uom])
+    while q:
+        u, acc = q.popleft()
+        if u == to_uom:
+            return acc
+        for v, f in graph.get(u, []):
+            if v not in seen:
+                seen.add(v)
+                q.append((v, acc * f))
+    return None
