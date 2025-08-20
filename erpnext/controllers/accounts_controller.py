@@ -295,6 +295,22 @@ class AccountsController(TransactionBase):
 
 	def before_print(self, settings=None):
 		if self.doctype in [
+			"Sales Order",
+			"Sales Invoice",
+			"Delivery Note",
+			"Quotation",
+		]:
+			doc = frappe.get_doc("Customer", self.customer)
+			for d in self.get("items"):
+				d.sku = doc.get_item_sku(d.item_code) or "-"
+				d.uom_name = frappe.get_value("UOM", d.uom, "global_description") or d.uom
+				weight_qty = cint(frappe.get_value("Packaging", d.uom, "quantity"))
+				if weight_qty:
+					d.weight = f"{weight_qty}g"
+				else:
+					d.weight = d.conversion_factor
+
+		if self.doctype in [
 			"Purchase Order",
 			"Sales Order",
 			"Sales Invoice",

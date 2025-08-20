@@ -155,8 +155,8 @@ class Customer(TransactionBase):
 		dupp_list = []
 		for d in self.get("customer_sku"):
 			d.sku = cstr(d.sku).strip()
-			if not d.cust_item_name:
-				d.cust_item_name = d.origin_name
+			if not d.sku_name:
+				d.sku_name = d.origin_name
 
 			self.total_item += 1
 			if not d.item_code in done:
