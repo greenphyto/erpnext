@@ -13,7 +13,8 @@
   "reverse",
   "global_description",
   "reff_id",
-  "description"
+  "description",
+  "origin_description"
  ],
  "fields": [
   {
@@ -77,18 +78,25 @@
   },
   {
    "columns": 4,
-   "fetch_from": "uom.uom_name",
+   "fetch_from": "uom.global_description",
    "fetch_if_empty": 1,
    "fieldname": "global_description",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Global Description"
+  },
+  {
+   "fetch_from": "uom.global_description",
+   "fieldname": "origin_description",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Origin Description"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-08-20 11:34:26.834780",
+ "modified": "2025-08-20 15:22:06.231020",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "UOM Conversion Detail",

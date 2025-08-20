@@ -6,4 +6,6 @@ from frappe.model.document import Document
 
 
 class UOM(Document):
-	pass
+	def validate(self):
+		if not self.global_description:
+			self.global_description = self.uom_name

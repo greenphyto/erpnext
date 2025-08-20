@@ -136,6 +136,7 @@ class Item(Document):
 		self.set_material_number()
 		self.validate_debit_note_item()
 		self.set_asset_category()
+		self.update_uom_global_description()
 
 		set_item_tax_from_hsn_code(self)
 
@@ -204,6 +205,41 @@ class Item(Document):
 				}
 			)
 			item_price.insert()
+
+	def update_uom_global_description(self):
+		old_doc = self.get_doc_before_save()
+
+		for d in self.uoms:
+			# current master description from UOM doctype
+			current_master_desc = frappe.db.get_value("UOM", d.uom, "global_description")
+
+			if not old_doc:
+				# first save: just sync item row with master
+				d.origin_description = current_master_desc
+				d.global_description = current_master_desc
+				continue
+
+			# find the same row in old_doc for comparison
+			old_row = next((row for row in old_doc.uoms if row.uom == d.uom), None)
+
+			if not old_row:
+				# new row added: sync with master
+				d.origin_description = current_master_desc
+				d.global_description = current_master_desc
+				continue
+
+			# check if user really modified this field
+			if d.global_description != old_row.global_description:
+				# user made a manual change -> update master UOM
+				frappe.db.set_value("UOM", d.uom, "global_description", d.global_description)
+				d.origin_description = d.global_description
+			else:
+				# user did not modify this row, but it might be outdated compared to master
+				if d.global_description != current_master_desc:
+					# outdated -> sync with master value
+					d.global_description = current_master_desc
+					d.origin_description = current_master_desc
+
 
 	def set_opening_stock(self):
 		"""set opening stock"""

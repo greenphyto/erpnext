@@ -11,7 +11,9 @@
   "enabled",
   "uom_name",
   "must_be_whole_number",
-  "is_packaging"
+  "is_packaging",
+  "column_break_5",
+  "global_description"
  ],
  "fields": [
   {
@@ -42,12 +44,21 @@
    "fieldname": "is_packaging",
    "fieldtype": "Check",
    "label": "Is Packaging"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "global_description",
+   "fieldtype": "Data",
+   "label": "Global Description"
   }
  ],
  "icon": "fa fa-compass",
  "idx": 1,
  "links": [],
- "modified": "2024-08-05 10:56:13.120160",
+ "modified": "2025-08-20 14:33:33.271160",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "UOM",

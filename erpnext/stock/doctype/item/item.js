@@ -511,34 +511,19 @@ $.extend(erpnext.item, {
 	},
 
 	allow_uom_global_change: function(frm){
-		var uom_changes = {};  // reset first
 		
 		function revert_uom(){
-			if (frm._initial_doc.uoms && uom_changes){
-				$.each( Object.keys(uom_changes) , (i,uom)=>{
-					$.each(frm._initial_doc.uoms, (i,row)=>{
-						if (row.uom == uom){
-							frappe.model.set_value(row.doctype, row.name, "global_description", row.global_description)
-						}
-					})
-				})
-			}
+			$.each( frm.doc.uoms , (i,row)=>{
+				frappe.model.set_value(row.doctype, row.name, "global_description", row.origin_description)
+			})
 		}
-
-        if (frm._initial_doc && frm._initial_doc.uoms) {
-            let old_uoms = frm._initial_doc.uoms;
-
-            // compare row by row
-            frm.doc.uoms.forEach(row => {
-                // find the matching row from initial snapshot
-				if (!row.__islocal && row.uom) {
-					let old_row = old_uoms.find(r => r.uom === row.uom);
-					if (old_row && old_row.global_description !== row.global_description) {
-						uom_changes[row.uom] = row.global_description;
-					}
-				}
-            });
-        }
+		
+		var uom_changes = {};  // reset first
+		frm.doc.uoms.forEach(row => {
+			if (row.origin_description != row.global_description && row.global_description && row.origin_description){
+				uom_changes[row.uom] = row.global_description
+			}
+		});
 
 		if (uom_changes && Object.keys(uom_changes).length > 0 && !frappe.already_confirmed) {
 			let uom_list = "<ul>";
