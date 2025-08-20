@@ -326,3 +326,4 @@ erpnext.patches.v14_0.modify_stock_entry_type2
 erpnext.patches.v14_0.add_operation_default
 erpnext.patches.v14_0.set_default_warehouse_production
 erpnext.patches.v14_0.update_company_settings
+erpnext.patches.v14_0.update_uom_description
