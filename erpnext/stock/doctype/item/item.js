@@ -185,10 +185,14 @@ frappe.ui.form.on("Item", {
 		if (frm.doc.material_group){
 			frm.set_df_property("material_group", "read_only", 1);
 		}
+
+		frappe.already_confirmed = false;
+		frm._initial_doc = frappe.utils.deep_clone(frm.doc);
 	},
 
 	validate: function(frm){
 		erpnext.item.weight_to_validate(frm);
+		erpnext.item.allow_uom_global_change(frm);
 	},
 
 	image: function() {
@@ -504,6 +508,73 @@ $.extend(erpnext.item, {
 				title: __("Note")
 			});
 		}
+	},
+
+	allow_uom_global_change: function(frm){
+		var uom_changes = {};  // reset first
+		
+		function revert_uom(){
+			if (frm._initial_doc.uoms && uom_changes){
+				$.each( Object.keys(uom_changes) , (i,uom)=>{
+					$.each(frm._initial_doc.uoms, (i,row)=>{
+						if (row.uom == uom){
+							frappe.model.set_value(row.doctype, row.name, "global_description", row.global_description)
+						}
+					})
+				})
+			}
+		}
+
+        if (frm._initial_doc && frm._initial_doc.uoms) {
+            let old_uoms = frm._initial_doc.uoms;
+
+            // compare row by row
+            frm.doc.uoms.forEach(row => {
+                // find the matching row from initial snapshot
+				if (!row.__islocal && row.uom) {
+					let old_row = old_uoms.find(r => r.uom === row.uom);
+					if (old_row && old_row.global_description !== row.global_description) {
+						uom_changes[row.uom] = row.global_description;
+					}
+				}
+            });
+        }
+
+		if (uom_changes && Object.keys(uom_changes).length > 0 && !frappe.already_confirmed) {
+			let uom_list = "<ul>";
+			for (let [key, val] of Object.entries(uom_changes)) {
+				uom_list += `<li>${key} → <b>${val}</b></li>`;
+			}
+			uom_list += "</ul>";
+            frappe.throw({
+                title: __("Confirm UOM Change"),
+                message: __(
+					"The global description of UOMs have been modified:<br>{0}Do you confirm applying these changes globally?",
+					[uom_list]
+				),
+                primary_action: {
+                    label: __("Yes, and Save"),
+                    action() {
+                        frappe.validated = true;
+						frappe.already_confirmed = true;
+                        cur_dialog.hide();
+                        frm.save();
+                    }
+                },
+                secondary_action: {
+                    label: __("Cancel"),
+                    action() {
+						frappe.validated = false;
+						frappe.already_confirmed = true;
+                        cur_dialog.hide();
+						revert_uom()
+						frm.save();
+                    }
+                }
+            });
+
+            frappe.validated = false; // block save until user clicks confirm
+        }
 	},
 
 	show_modal_for_manufacturers: function(frm) {

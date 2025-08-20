@@ -11,8 +11,9 @@
   "conversion_factor",
   "is_packaging",
   "reverse",
-  "description",
-  "reff_id"
+  "global_description",
+  "reff_id",
+  "description"
  ],
  "fields": [
   {
@@ -28,11 +29,11 @@
   {
    "columns": 2,
    "fieldname": "conversion_factor",
-   "precision": "7",
    "fieldtype": "Float",
    "label": "CF Calculated",
    "oldfieldname": "conversion_factor",
    "oldfieldtype": "Float",
+   "precision": "7",
    "read_only": 1
   },
   {
@@ -48,7 +49,6 @@
    "default": "Stock UOM Value",
    "fieldname": "description",
    "fieldtype": "Data",
-   "in_list_view": 1,
    "label": "Description",
    "read_only": 1
   },
@@ -74,12 +74,21 @@
    "fieldtype": "Data",
    "label": "Reff ID",
    "read_only": 1
+  },
+  {
+   "columns": 4,
+   "fetch_from": "uom.uom_name",
+   "fetch_if_empty": 1,
+   "fieldname": "global_description",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Global Description"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-09-12 14:42:58.64532",
+ "modified": "2025-08-20 11:34:26.834780",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "UOM Conversion Detail",
