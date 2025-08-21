@@ -10,6 +10,14 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
         frappe.set_route('List', 'Payment Approval');
     });
 
+    // Reload action (top-right)
+    page.set_primary_action(__('Reload'), function () {
+        if (paging && paging.loading) return;
+        reset_and_load().then(() => {
+            frappe.show_alert('Done refresh');
+        });
+    }, 'refresh');
+
     // Main container
     const $container = $(`
         <div class="payment-bulk-approval">
@@ -29,9 +37,23 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                 .payment-bulk-approval .detail-body { padding: 8px 12px; }
                 .payment-bulk-approval .detail-table { width: 100%; table-layout: auto; }
                 .payment-bulk-approval .controls { display: flex; align-items: center; gap: 16px; }
+                .payment-bulk-approval .filter-bar { margin-top: 8px; }
+                .payment-bulk-approval .filters-grid { display: grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap: 8px 16px; }
+                .payment-bulk-approval .filters-actions { display:flex; gap: 8px; margin-top: 8px; }
+                .payment-bulk-approval .list-footer { display:flex; justify-content:center; align-items:center; padding: 8px; position: relative; }
+                .payment-bulk-approval .btn-load-more { min-width: 160px; }
+                .payment-bulk-approval .list-count { position: absolute; right: 8px; color: var(--text-muted); font-size: 12px; }
             </style>
             <div class="mb-4">
-                <div class="controls">
+                <div class="filter-bar">
+                    <div class="filters-grid"></div>
+                    <div class="filters-actions">
+                        <button class="btn btn-sm btn-primary apply-filters">Apply</button>
+                        <button class="btn btn-sm btn-default clear-filters">Clear</button>
+                    </div>
+                </div>
+				<br>
+				<div class="controls mt-4">
                     <label class="mb-0 text-muted">
                         <input type="checkbox" class="show-all-details" />
                         <span>Show all details</span>
@@ -57,6 +79,10 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                             </thead>
                             <tbody></tbody>
                         </table>
+                        <div class="list-footer">
+                            <button class="btn btn-default btn-sm btn-load-more" style="display:none;">Load more</button>
+                            <div class="list-count" style="display:none;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -66,8 +92,97 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
     $(page.body).empty().append($container);
 
     const $tbody = $container.find('tbody');
+    const $loadMore = $container.find('.btn-load-more');
+    const $count = $container.find('.list-count');
     const $showAll = $container.find('.show-all-details');
+    const $filtersGrid = $container.find('.filters-grid');
+    const $applyBtn = $container.find('.apply-filters');
+    const $clearBtn = $container.find('.clear-filters');
     let showAll = false;
+    const paging = { start: 0, page_length: 20, has_more: false, loading: false };
+    const filterControls = {};
+
+    // Build report-style filters
+    const filterDefs = [
+        { fieldname: 'posting_date_from', label: 'Posting Date From', fieldtype: 'Date' },
+        { fieldname: 'posting_date_to', label: 'Posting Date To', fieldtype: 'Date' },
+        { fieldname: 'requested_by', label: 'Requested By', fieldtype: 'Link', options: 'User' },
+        { fieldname: 'bank_account', label: 'Bank Account', fieldtype: 'Link', options: 'Bank Account' },
+        { fieldname: 'currency', label: 'Currency', fieldtype: 'Link', options: 'Currency' },
+        { fieldname: 'approval_id', label: 'Approval ID', fieldtype: 'Data' },
+        { fieldname: 'amount_min', label: 'Amount Min', fieldtype: 'Float' },
+        { fieldname: 'amount_max', label: 'Amount Max', fieldtype: 'Float' },
+    ];
+    filterDefs.forEach(def => {
+        const $wrap = $('<div></div>').appendTo($filtersGrid);
+        const ctrl = frappe.ui.form.make_control({
+            parent: $wrap,
+            df: Object.assign({
+                name: def.fieldname,
+                fieldname: def.fieldname,
+                label: __(def.label),
+                fieldtype: def.fieldtype,
+                options: def.options || undefined,
+                reqd: false,
+                onchange: () => {},
+            }, def)
+        });
+        ctrl.refresh();
+        filterControls[def.fieldname] = ctrl;
+    });
+
+    // Helpers to manage default posting dates
+    function set_default_dates() {
+        try {
+            const today = frappe.datetime.get_today();
+            const from = frappe.datetime.add_months(today, -3);
+            if (filterControls.posting_date_from && filterControls.posting_date_from.set_value) {
+                filterControls.posting_date_from.set_value(from);
+            }
+            if (filterControls.posting_date_to && filterControls.posting_date_to.set_value) {
+                filterControls.posting_date_to.set_value(today);
+            }
+        } catch (e) {
+            // ignore default errors
+        }
+    }
+
+    // Apply defaults on load
+    set_default_dates();
+
+    function get_filters_payload() {
+        const val = {};
+        val.posting_date_from = filterControls.posting_date_from && filterControls.posting_date_from.get_value && filterControls.posting_date_from.get_value();
+        val.posting_date_to = filterControls.posting_date_to && filterControls.posting_date_to.get_value && filterControls.posting_date_to.get_value();
+        val.requested_by = filterControls.requested_by && filterControls.requested_by.get_value && filterControls.requested_by.get_value();
+        val.bank_account = filterControls.bank_account && filterControls.bank_account.get_value && filterControls.bank_account.get_value();
+        val.currency = filterControls.currency && filterControls.currency.get_value && filterControls.currency.get_value();
+        val.approval_id = filterControls.approval_id && filterControls.approval_id.get_value && filterControls.approval_id.get_value();
+        val.amount_min = filterControls.amount_min && filterControls.amount_min.get_value && filterControls.amount_min.get_value();
+        val.amount_max = filterControls.amount_max && filterControls.amount_max.get_value && filterControls.amount_max.get_value();
+        return val;
+    }
+
+    function clear_filters() {
+        // Reset non-date filters to empty
+        ['requested_by','bank_account','currency','approval_id','amount_min','amount_max']
+            .forEach(fn => {
+                const c = filterControls[fn];
+                if (c && c.set_value) c.set_value('');
+            });
+        // Reset dates to defaults (3 months ago to today)
+        set_default_dates();
+    }
+
+    $applyBtn.on('click', function () {
+        paging.start = 0;
+        fetch_rows(false);
+    });
+    $clearBtn.on('click', function () {
+        clear_filters();
+        paging.start = 0;
+        fetch_rows(false);
+    });
 
     function format_amount(value, currency) {
         try {
@@ -77,17 +192,20 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
         }
     }
 
-    function render_rows(rows) {
-        $tbody.empty();
+    function render_rows(rows, append=false) {
+        if (!append) {
+            $tbody.empty();
+        }
+        const existing = $tbody.find('tr.data-row').length;
         if (!rows || !rows.length) {
-            $tbody.append(
-                `<tr><td colspan="9" class="text-muted text-center">No Payment Approval found</td></tr>`
-            );
+            if (!append && existing === 0) {
+                $tbody.append(`<tr><td colspan="9" class="text-muted text-center">No Payment Approval found</td></tr>`);
+            }
             return;
         }
 
         rows.forEach((row, idx) => {
-            const parentStripe = (idx % 2 === 0) ? 'odd' : 'even';
+            const parentStripe = ((existing + idx) % 2 === 0) ? 'odd' : 'even';
             const posting_date = row.posting_date ? frappe.format(row.posting_date, { fieldtype: 'Date' }) : '';
             const posting_time = row.posting_time || row.time || '';
             const total_amount = format_amount(row.total_amount, row.currency);
@@ -229,11 +347,13 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                         message: __("{0} applied for {1}", [action, name]),
                         indicator: 'green',
                     });
-                    load_rows();
+                    reset_and_load();
+                    $btnApprove.prop('disabled', false);
+                    $btnReject.prop('disabled', false);
+                    page.set_indicator(__('Loaded'), 'green');
                 }).catch((err) => {
                     const msg = (err && err.message) || __('Failed to apply action');
                     frappe.msgprint({ title: __('Error'), indicator: 'red', message: msg });
-                }).finally(() => {
                     $btnApprove.prop('disabled', false);
                     $btnReject.prop('disabled', false);
                     page.set_indicator(__('Loaded'), 'green');
@@ -245,36 +365,18 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
 
             $act.append($btnApprove, $btnReject);
 
-            // Determine available workflow actions for this document and cache doc for details
-            (function resolve_actions() {
-                // show a lightweight placeholder while loading
-                const $loading = $(`<span class="text-muted">Loading...</span>`);
-                $act.append($loading);
-
-                frappe.xcall('frappe.client.get', {
-                    doctype: 'Payment Approval',
-                    name: row.name,
-                }).then((doc) => {
-                    $tr.data('doc', doc);
-                    // render detail if needed (either global showAll or row already expanded)
-                    if (showAll || $detailTr.is(':visible')) {
-                        render_detail(doc);
-                        if (!$detailTr.is(':visible')) toggle_detail(true);
-                    }
-                    return frappe.xcall('frappe.model.workflow.get_transitions', { doc });
-                }).then((transitions) => {
-                    const actions = (transitions || []).map(t => t.action);
-                    if (actions.includes('Approve')) $btnApprove.show();
-                    if (actions.includes('Reject')) $btnReject.show();
-                    if (!actions.length) {
-                        $act.append(`<span class="text-muted">No actions</span>`);
-                    }
-                }).catch(() => {
-                    $act.append(`<span class="text-danger">Workflow unavailable</span>`);
-                }).finally(() => {
-                    $loading.remove();
-                });
-            })();
+            // Use transitions and doc provided by server
+            const actions = Array.isArray(row.transitions) ? row.transitions : [];
+            $tr.data('doc', row.doc || null);
+            if (actions.includes('Approve')) $btnApprove.show();
+            if (actions.includes('Reject')) $btnReject.show();
+            if (!actions.length) {
+                $act.append(`<span class="text-muted">No actions</span>`);
+            }
+            if (showAll) {
+                render_detail(row.doc || null);
+                toggle_detail(true);
+            }
 
             $tbody.append($tr, $detailTr);
         });
@@ -299,34 +401,53 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
         });
     });
 
-    function load_rows() {
+    function update_load_more(has_more) {
+        paging.has_more = !!has_more;
+        $loadMore.toggle(paging.has_more);
+        const displayed = $tbody.find('tr.data-row').length;
+        const total = paging.total || 0;
+        if (total > 0) {
+            $count.text(`${displayed} of ${total}`);
+            $count.show();
+        } else {
+            $count.hide();
+        }
+    }
+
+    function fetch_rows(append=false) {
+        if (paging.loading) return;
+        paging.loading = true;
         page.set_indicator(__('Loading'), 'orange');
-        frappe.call({
-            method: 'frappe.client.get_list',
-            args: {
-                doctype: 'Payment Approval',
-                fields: [
-                    'name',
-                    'posting_date',
-                    'time',
-                    'requested_by',
-                    'payment_type',
-                    'total_amount',
-                    'bank_account',
-                    'currency',
-                ],
-                limit_page_length: 50,
-                order_by: 'modified desc',
-            },
+        const filters = get_filters_payload();
+        return frappe.call({
+            method: 'erpnext.uob.page.payment_bulk_approval.payment_bulk_approval.get_data',
+            args: { start: paging.start, page_length: paging.page_length, filters },
         }).then((r) => {
-            render_rows(r && r.message ? r.message : []);
+            const payload = r && r.message ? r.message : {};
+            const rows = payload.results || [];
+            render_rows(rows, append);
+            paging.start = payload.next_start || (paging.start + rows.length);
+            paging.total = payload.total || paging.total;
+            update_load_more(payload.has_more);
             page.set_indicator(__('Loaded'), 'green');
+            paging.loading = false;
         }).catch(() => {
-            render_rows([]);
+            if (!append) render_rows([]);
+            update_load_more(false);
             page.set_indicator(__('Failed'), 'red');
+            paging.loading = false;
         });
     }
 
-    // initial load
-    load_rows();
+    function reset_and_load() {
+        paging.start = 0;
+        return fetch_rows(false);
+    }
+
+    $loadMore.on('click', function () {
+        fetch_rows(true);
+    });
+
+    // initial load - first 20
+    reset_and_load();
 };
