@@ -92,3 +92,9 @@ def get_data(start=0, page_length=20, filters=None):
         'next_start': next_start,
         'total': total,
     }
+
+from frappe.model.workflow import apply_workflow
+@frappe.whitelist()
+def get_apply_workflow(docname, action):
+    doc = frappe.get_doc("Payment Approval", docname)
+    return apply_workflow(doc, action)

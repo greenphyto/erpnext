@@ -31,6 +31,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                 /* Row striping */
                 .payment-bulk-approval tr.data-row.odd td { background: #fff1d8; }
                 .payment-bulk-approval tr.data-row.even td { background: #ffddb4; }
+                .payment-bulk-approval tr.data-row.processing td { opacity: 0.6; }
                 /* Collapsible detail styling tied to parent row */
                 .payment-bulk-approval tr.detail-row.belongs-odd td { background: #fff7e6; border-left: 4px solid #fff1d8; }
                 .payment-bulk-approval tr.detail-row.belongs-even td { background: #ffe9d1; border-left: 4px solid #ffddb4; }
@@ -338,8 +339,15 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                 page.set_indicator(__(`${action}...`), 'orange');
                 $btnApprove.prop('disabled', true);
                 $btnReject.prop('disabled', true);
-                frappe.xcall('frappe.model.workflow.apply_workflow', {
-                    doctype: 'Payment Approval',
+                const originalApproveText = $btnApprove.text();
+                const originalRejectText = $btnReject.text();
+                if (action === 'Approve') {
+                    $tr.addClass('processing');
+                    $btnApprove.text(__('Approving...'));
+                } else if (action === 'Reject') {
+                    $btnReject.text(__('Rejecting...'));
+                }
+                frappe.xcall('erpnext.uob.page.payment_bulk_approval.payment_bulk_approval.get_apply_workflow', {
                     docname: name,
                     action: action,
                 }).then(() => {
@@ -347,15 +355,31 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                         message: __("{0} applied for {1}", [action, name]),
                         indicator: 'green',
                     });
-                    reset_and_load();
-                    $btnApprove.prop('disabled', false);
-                    $btnReject.prop('disabled', false);
+                    if (action === 'Approve') {
+                        const $detail = $tr.data('detail-row');
+                        if ($detail) $detail.remove();
+                        $tr.remove();
+                        if (typeof paging.total === 'number') paging.total = Math.max(0, paging.total - 1);
+                        recalc_stripes();
+                        const displayed = $tbody.find('tr.data-row').length;
+                        const has_more = (paging.total || 0) > displayed;
+                        update_load_more(has_more);
+                        // Auto-fill the gap with next record if available
+                        if (has_more) {
+                            fetch_next_one();
+                        }
+                    } else {
+                        reset_and_load();
+                    }
+                    $btnApprove.prop('disabled', false).text(originalApproveText);
+                    $btnReject.prop('disabled', false).text(originalRejectText);
                     page.set_indicator(__('Loaded'), 'green');
                 }).catch((err) => {
                     const msg = (err && err.message) || __('Failed to apply action');
                     frappe.msgprint({ title: __('Error'), indicator: 'red', message: msg });
-                    $btnApprove.prop('disabled', false);
-                    $btnReject.prop('disabled', false);
+                    $tr.removeClass('processing');
+                    $btnApprove.prop('disabled', false).text(originalApproveText);
+                    $btnReject.prop('disabled', false).text(originalRejectText);
                     page.set_indicator(__('Loaded'), 'green');
                 });
             }
@@ -414,6 +438,18 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
         }
     }
 
+    function recalc_stripes() {
+        $tbody.find('tr.data-row').each(function (i) {
+            const $row = $(this);
+            const stripe = (i % 2 === 0) ? 'odd' : 'even';
+            $row.removeClass('odd even').addClass(stripe);
+            const $detail = $row.data && $row.data('detail-row');
+            if ($detail) {
+                $detail.removeClass('belongs-odd belongs-even').addClass('belongs-' + stripe);
+            }
+        });
+    }
+
     function fetch_rows(append=false) {
         if (paging.loading) return;
         paging.loading = true;
@@ -435,6 +471,29 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
             if (!append) render_rows([]);
             update_load_more(false);
             page.set_indicator(__('Failed'), 'red');
+            paging.loading = false;
+        });
+    }
+
+    // fetch exactly one more row to keep list filled after removal
+    function fetch_next_one() {
+        if (paging.loading) return Promise.resolve();
+        paging.loading = true;
+        const filters = get_filters_payload();
+        return frappe.call({
+            method: 'erpnext.uob.page.payment_bulk_approval.payment_bulk_approval.get_data',
+            args: { start: paging.start, page_length: 1, filters },
+        }).then((r) => {
+            const payload = r && r.message ? r.message : {};
+            const rows = payload.results || [];
+            if (rows.length) {
+                render_rows(rows, true);
+            }
+            paging.start = payload.next_start || (paging.start + rows.length);
+            paging.total = payload.total || paging.total;
+            update_load_more(payload.has_more);
+            paging.loading = false;
+        }).catch(() => {
             paging.loading = false;
         });
     }
