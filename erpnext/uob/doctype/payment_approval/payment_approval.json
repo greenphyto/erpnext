@@ -46,67 +46,11 @@
  ],
  "fields": [
   {
-   "default": "Draft",
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Status",
-   "options": "Draft\nPending\nApproved\nRejected\nCancelled\nReceived\nIn Progress\nPartially Complete\nComplete\nFailed",
-   "read_only": 1
-  },
-  {
-   "default": "Today",
-   "fieldname": "posting_date",
-   "fieldtype": "Date",
-   "label": "Posting Date",
-   "no_copy": 1
-  },
-  {
-   "default": "Now",
-   "fieldname": "time",
-   "fieldtype": "Time",
-   "label": "Time",
-   "no_copy": 1
-  },
-  {
-   "default": "Transfer",
-   "fieldname": "payment_type",
-   "fieldtype": "Data",
-   "label": "Payment Type",
-   "read_only": 1,
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
    "reqd": 1
-  },
-  {
-   "fieldname": "section_break_5",
-   "fieldtype": "Section Break",
-   "label": "Invoices"
-  },
-  {
-   "fieldname": "invoices",
-   "fieldtype": "Table",
-   "label": "Invoices",
-   "options": "Payment Invoice List"
-  },
-  {
-   "fieldname": "section_break_6",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "column_break_2",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "transfer_date",
-   "fieldtype": "Date",
-   "label": "Transfer Date",
-   "read_only": 1
-  },
-  {
-   "fieldname": "total_amount",
-   "fieldtype": "Currency",
-   "label": "Total Amount",
-   "read_only": 1
   },
   {
    "fieldname": "requested_by",
@@ -128,65 +72,58 @@
    "read_only": 1
   },
   {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Payment Approval",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
-   "fieldname": "bank_account_section",
-   "fieldtype": "Section Break",
-   "label": "Bank Account"
-  },
-  {
-   "fieldname": "bank_account",
-   "fieldtype": "Link",
-   "label": "Bank Account",
-   "options": "Bank Account",
-   "reqd": 1
-  },
-  {
-   "fetch_from": "bank_account.account",
-   "fieldname": "account",
-   "fieldtype": "Link",
-   "label": "Account",
-   "options": "Account",
-   "read_only": 1
-  },
-  {
-   "fieldname": "swift",
-   "fieldtype": "Data",
-   "label": "SWIFT",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_break_10",
+   "fieldname": "column_break_2",
    "fieldtype": "Column Break"
   },
   {
-   "fetch_from": "bank_account.bank",
-   "fieldname": "bank",
-   "fieldtype": "Link",
-   "label": "Bank",
-   "options": "Bank",
-   "read_only": 1
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "no_copy": 1
   },
   {
-   "fetch_from": "bank_account.bank_account_name",
-   "fieldname": "bank_account_name",
-   "fieldtype": "Data",
-   "label": "Bank Account Name",
-   "read_only": 1
+   "default": "Now",
+   "fieldname": "time",
+   "fieldtype": "Time",
+   "label": "Time",
+   "no_copy": 1
   },
   {
-   "fetch_from": "bank_account.bank_account_no",
-   "fieldname": "bank_account_no",
+   "fieldname": "transfer_method_section",
+   "fieldtype": "Section Break",
+   "label": "Transfer method"
+  },
+  {
+   "default": "Transfer",
+   "fieldname": "payment_type",
    "fieldtype": "Data",
-   "label": "Bank Account No",
-   "read_only": 1
+   "label": "Payment Type",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "payment_method",
+   "fieldtype": "Select",
+   "label": "Payment Method",
+   "options": "\nTT\nMEPS\nIAFT\nFAST\nIBG\nIBG Express"
+  },
+  {
+   "fieldname": "payment_property",
+   "fieldtype": "Select",
+   "label": "Payment Property"
+  },
+  {
+   "depends_on": "eval:doc.payment_type == \"Cheque\"",
+   "fieldname": "cheque_method",
+   "fieldtype": "Select",
+   "label": "Cheque Method",
+   "mandatory_depends_on": "eval:doc.payment_type == \"Cheque\"",
+   "options": "MLCD\nMLFA\nPUDB"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
   },
   {
    "default": "SUPP",
@@ -204,24 +141,112 @@
    "read_only": 1
   },
   {
-   "fieldname": "transfer_method_section",
+   "fieldname": "bank_account_section",
    "fieldtype": "Section Break",
-   "label": "Transfer method"
+   "label": "Bank Account"
   },
   {
-   "fieldname": "column_break_1",
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "fieldname": "bank_account",
+   "fieldtype": "Link",
+   "label": "Bank Account",
+   "options": "Bank Account",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "bank_account.bank",
+   "fieldname": "bank",
+   "fieldtype": "Link",
+   "label": "Bank",
+   "options": "Bank",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "bank_account.account",
+   "fieldname": "account",
+   "fieldtype": "Link",
+   "label": "Account",
+   "options": "Account",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_10",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "payment_method",
-   "fieldtype": "Select",
-   "label": "Payment Method",
-   "options": "\nTT\nMEPS\nIAFT\nFAST\nIBG\nIBG Express"
+   "fieldname": "swift",
+   "fieldtype": "Data",
+   "label": "SWIFT",
+   "read_only": 1
   },
   {
-   "fieldname": "payment_property",
+   "fetch_from": "bank_account.bank_account_no",
+   "fieldname": "bank_account_no",
+   "fieldtype": "Data",
+   "label": "Bank Account No",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "bank_account.bank_account_name",
+   "fieldname": "bank_account_name",
+   "fieldtype": "Data",
+   "label": "Bank Account Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break",
+   "label": "Invoices"
+  },
+  {
+   "fieldname": "invoices",
+   "fieldtype": "Table",
+   "label": "Invoices",
+   "options": "Payment Invoice List"
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "filename",
+   "fieldtype": "Data",
+   "label": "File ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
    "fieldtype": "Select",
-   "label": "Payment Property"
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nPending\nApproved\nRejected\nCancelled\nReceived\nIn Progress\nPartially Complete\nComplete\nFailed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "transfer_date",
+   "fieldtype": "Date",
+   "label": "Transfer Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_28",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "batch_number",
@@ -232,15 +257,13 @@
    "read_only": 1
   },
   {
-   "fieldname": "company",
+   "fieldname": "amended_from",
    "fieldtype": "Link",
-   "label": "Company",
-   "options": "Company",
-   "reqd": 1
-  },
-  {
-   "fieldname": "column_break_28",
-   "fieldtype": "Column Break"
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Payment Approval",
+   "print_hide": 1,
+   "read_only": 1
   },
   {
    "fieldname": "process_id",
@@ -248,13 +271,6 @@
    "label": "Process ID",
    "no_copy": 1,
    "read_only": 1
-  },
-  {
-   "fieldname": "currency",
-   "fieldtype": "Link",
-   "label": "Currency",
-   "options": "Currency",
-   "reqd": 1
   },
   {
    "description": "Time update by UOB's File",
@@ -269,30 +285,14 @@
    "fieldtype": "Small Text",
    "label": "Error Message",
    "read_only": 1
-  },
-  {
-   "depends_on": "eval:doc.payment_type == \"Cheque\"",
-   "fieldname": "cheque_method",
-   "fieldtype": "Select",
-   "label": "Cheque Method",
-   "mandatory_depends_on": "eval:doc.payment_type == \"Cheque\"",
-   "options": "MLCD\nMLFA\nPUDB"
-  },
-  {
-   "fieldname": "filename",
-   "fieldtype": "Data",
-   "label": "File ID",
-   "no_amend_copy": 1,
-   "no_copy": 1,
-   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-07-14 11:53:39.464012",
+ "modified": "2025-08-21 12:00:07.170137",
  "modified_by": "Administrator",
- "module": "FOMS",
+ "module": "UOB",
  "name": "Payment Approval",
  "naming_rule": "Expression (old style)",
  "owner": "Administrator",

@@ -40,6 +40,46 @@
    "reqd": 1
   },
   {
+   "fetch_from": "party.default_bank_account_no",
+   "fetch_if_empty": 1,
+   "fieldname": "supplier_bank_no",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Supplier Bank No",
+   "options": "Bank Number"
+  },
+  {
+   "fetch_from": "supplier_bank_no.bank_number",
+   "fieldname": "bank_account_no",
+   "fieldtype": "Data",
+   "label": "Bank Account No",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "supplier_bank_no.bank_account_name",
+   "fieldname": "bank_account_name",
+   "fieldtype": "Data",
+   "label": "Bank Account Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "supplier_bank_no.bank",
+   "fieldname": "supplier_bank",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Bank",
+   "options": "Bank",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fetch_from": "supplier_bank.swift_number",
+   "fieldname": "swift",
+   "fieldtype": "Data",
+   "label": "SWIFT",
+   "read_only": 1
+  },
+  {
    "columns": 1,
    "fetch_from": "invoice_no.outstanding_amount",
    "fieldname": "amount",
@@ -74,46 +114,6 @@
    "read_only": 1
   },
   {
-   "fetch_from": "party.default_bank_account_no",
-   "fetch_if_empty": 1,
-   "fieldname": "supplier_bank_no",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Supplier Bank No",
-   "options": "Bank Number"
-  },
-  {
-   "fetch_from": "supplier_bank_no.bank",
-   "fieldname": "supplier_bank",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Bank",
-   "options": "Bank",
-   "read_only": 1,
-   "reqd": 1
-  },
-  {
-   "fetch_from": "supplier_bank.swift_number",
-   "fieldname": "swift",
-   "fieldtype": "Data",
-   "label": "SWIFT",
-   "read_only": 1
-  },
-  {
-   "fetch_from": "supplier_bank_no.bank_account_name",
-   "fieldname": "bank_account_name",
-   "fieldtype": "Data",
-   "label": "Bank Account Name",
-   "read_only": 1
-  },
-  {
-   "fetch_from": "supplier_bank_no.bank_number",
-   "fieldname": "bank_account_no",
-   "fieldtype": "Data",
-   "label": "Bank Account No",
-   "read_only": 1
-  },
-  {
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
@@ -131,9 +131,9 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-07-01 15:00:47.511662",
+ "modified": "2025-08-21 12:38:52.070660",
  "modified_by": "Administrator",
- "module": "FOMS",
+ "module": "UOB",
  "name": "Payment Invoice List",
  "naming_rule": "Autoincrement",
  "owner": "Administrator",
