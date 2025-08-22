@@ -295,12 +295,13 @@
  "name": "Payment Approval",
  "naming_rule": "Expression (old style)",
  "owner": "Administrator",
- "permissions": [
+ "permissions": {
    "email": 1,
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "System Manager",
+   "role": 1,
+   "System Manager": 1,
    "share": 1,
    "submit": 1,
    "write": 1
