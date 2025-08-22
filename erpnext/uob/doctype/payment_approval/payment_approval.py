@@ -7,6 +7,7 @@ from frappe.utils import flt, cint, getdate, get_datetime
 from frappe.utils.file_manager import save_file
 from erpnext.controllers.uob import create_payment_xml
 from erpnext.controllers.uob import UOBAPI, get_country_code
+from frappe.model.mapper import get_mapped_doc
 
 from frappe import _
 """ TODO
@@ -334,3 +335,147 @@ class PaymentApproval(Document):
 
 def get_date_simple(value):
 	return getdate(value).strftime("%y%m%d")
+
+
+@frappe.whitelist()
+def map_purchase_invoices(source_name, target_doc=None, args=None):
+	"""Server-side mapper using get_mapped_doc to append PI rows.
+
+	For each selected Purchase Invoice, append a row to Payment Approval's
+	`invoices` child table. Uses get_mapped_doc to align with ERPNext mapping flow.
+	"""
+
+	def set_missing_values(source, target):
+		# Append if not already present
+		if not any(d.invoice_no == source.name for d in (target.get("invoices") or [])):
+			target.append("invoices", {"invoice_no": source.name})
+		return target
+
+	mapper = {
+		"Purchase Invoice": {
+			"doctype": "Payment Approval",
+			"validation": {"docstatus": ["=", 1]},
+		}
+	}
+
+	return get_mapped_doc(
+		"Purchase Invoice",
+		source_name,
+		mapper,
+		target_doc,
+		set_missing_values,
+	)
+
+@frappe.whitelist()
+def make_payment_approval(source_name, target_doc=None):
+	def postprocess(source_doc, target_doc):
+		row = target_doc.append("invoices")
+		row.invoice_no = source_doc.name
+		row.party = source_doc.supplier
+		row.amount = flt(source_doc.outstanding_amount)
+		row.basic_amount = flt(source_doc.outstanding_amount)
+		row.currency = source_doc.currency
+		row.exchange_rate = flt(source_doc.conversion_rate)
+		target_doc.days_ago = 90
+		source_doc.days_ago = 8
+
+		# Fetch bank information from supplier's default bank account
+		supplier = frappe.get_doc("Supplier", source_doc.supplier)
+		if supplier.default_bank_account_no:
+			row.supplier_bank_no = supplier.default_bank_account_no
+			bank_account = frappe.get_doc("Bank Number", supplier.default_bank_account_no)
+			if bank_account.bank:
+				row.supplier_bank = bank_account.bank
+				bank = frappe.get_doc("Bank", bank_account.bank)
+				row.swift = bank.swift_number
+
+	doc = get_mapped_doc(
+		"Purchase Invoice",
+		source_name,
+		{
+			"Purchase Invoice": {
+				"doctype": "Payment Approval",
+				"validation": {
+					"docstatus": ["=", 1],
+				},
+			}
+		},
+		target_doc,
+		postprocess
+	)
+
+	return doc
+
+@frappe.whitelist()
+def search_purchase_invoice(doctype, txt, searchfield, start=0, page_len=20, filters=None):
+    filters = frappe._dict(filters or {})
+
+    # Ensure ints for pagination
+    filters.start = int(start or 0)
+    filters.page_len = int(page_len or 20)
+
+    # Support searching by name / supplier
+    filters.txt = f"%{txt}%" if txt else "%"
+
+    # Normalize days filter: accept `days_old` (requested) or existing `days_ago` (from JS)
+    days_old = filters.get("days_old")
+    if days_old is None:
+        days_old = filters.get("days_ago")
+
+    # Build dynamic conditions
+    conditions = ["pi.docstatus = 1"]
+    params = {
+        "company": filters.get("company"),
+        "supplier": f"%{filters.get('supplier')}%" if filters.get("supplier") else None,
+        "posting_date": filters.get("posting_date"),
+        "txt": filters.txt,
+        "start": filters.start,
+        "page_len": filters.page_len,
+    }
+
+    # Debug trace (can be removed if noisy)
+    print("search_purchase_invoice filters:", dict(filters))
+
+    if filters.get("company"):
+        conditions.append("pi.company = %(company)s")
+    if filters.get("supplier"):
+        conditions.append("pi.supplier LIKE %(supplier)s")
+    if filters.get("outstanding_amount"):
+        conditions.append("pi.outstanding_amount = %(outstanding_amount)s")
+        params["outstanding_amount"] = filters.get("outstanding_amount")
+
+    # Prioritize posting_date over days_old. If posting_date exists, ignore days_old.
+    if filters.get("posting_date"):
+        conditions.append("pi.posting_date = %(posting_date)s")
+    elif days_old not in (None, ""):
+        try:
+            params["days_old"] = int(days_old)
+            # Find invoices older than X days from today
+            conditions.append("DATEDIFF(CURDATE(), pi.posting_date) >= %(days_old)s")
+        except Exception:
+            # If days_old is invalid, just ignore the filter
+            pass
+
+    where_clause = " AND ".join(conditions)
+
+    return frappe.db.sql(
+        f"""
+        SELECT
+            pi.name,
+            pi.supplier,
+            pi.company,
+            pi.posting_date,
+            DATEDIFF(CURDATE(), pi.posting_date) AS days_ago,
+            pi.outstanding_amount
+        FROM `tabPurchase Invoice` pi
+        WHERE {where_clause}
+          AND (pi.name LIKE %(txt)s OR pi.supplier LIKE %(txt)s)
+        ORDER BY pi.posting_date DESC
+        LIMIT %(start)s, %(page_len)s
+        """,
+        params,
+        as_dict=True,
+        debug=1,
+    )
+
+

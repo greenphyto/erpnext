@@ -3,6 +3,12 @@
 
 frappe.ui.form.on('Payment Approval', {
 	refresh: function(frm) {
+		// Add button similar to "Get Items From" in Sales Invoice
+		if (frm.doc.docstatus === 0) {
+			frm.add_custom_button(__('Get Invoice'), () => {
+				frm.cscript.get_unpaid_purchase_invoices();
+			});
+		}
 		frm.set_query("invoice_no", "invoices", ()=>{
 			return{
 				filters:{
@@ -45,6 +51,29 @@ frappe.ui.form.on('Payment Approval', {
 })
 
 $.extend(cur_frm.cscript, {
+	get_unpaid_purchase_invoices(){
+		var me = this;
+			const mapping_dialog = erpnext.utils.map_current_doc({
+				method: "erpnext.uob.doctype.payment_approval.payment_approval.make_payment_approval",
+				source_doctype: "Purchase Invoice",
+				target: me.frm,
+				date_field: "posting_date",
+				setters: [
+					{ fieldname: "company", label: __("Company"), fieldtype: "Link", options: "Company", default: me.frm.doc.company },
+					{ fieldname: "supplier", label: __("Supplier"), fieldtype: "Link", options: "Supplier" },
+					{ fieldname: "posting_date", label: __("Posting Date"), fieldtype: "Date", default: me.frm.doc.posting_date },
+					{ fieldname: "days_ago", label: __("Days Old"), fieldtype: "Int", read_only: 0 },
+					{ fieldname: "outstanding_amount", label: __("Outstanding Amount"), fieldtype: "Currency" }
+				],
+				get_query_method:"erpnext.uob.doctype.payment_approval.payment_approval.search_purchase_invoice",
+				get_query_filters: {
+					docstatus: 1,
+					company: me.frm.doc.company,
+					outstanding_amount: [">", 0]
+				},
+				size: 'extra-large'
+			});
+	},
 	setup_method(){
 		var me = this.frm;
 		var doc = this.frm.doc;
