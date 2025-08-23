@@ -295,7 +295,7 @@
  "name": "Payment Approval",
  "naming_rule": "Expression (old style)",
  "owner": "Administrator",
- "permissions": {
+ "permissions": [{
    "email": 1,
    "print": 1,
    "read": 1,
