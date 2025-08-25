@@ -696,10 +696,13 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 		var me = this;
 		frappe.prompt([
 			{
-				fieldname: 'reason',
-				fieldtype: 'Small Text',
-				label: 'Reason for Replacement Qty',
-				reqd: 1
+				"fieldname": "reason",
+				"fieldtype": "Select",
+				"label": "Replacement Reason",
+				"mandatory_depends_on": "eval:doc.is_replacement",
+				"options": "\nCommercial Reasons\nQuality Issues",
+				"default":"Quality Issues",
+				"reqd":1
 			}
 		],
 		function(values){

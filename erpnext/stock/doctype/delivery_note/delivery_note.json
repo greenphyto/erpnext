@@ -1579,9 +1579,10 @@
   },
   {
    "fieldname": "replacement_reason",
-   "fieldtype": "Small Text",
+   "fieldtype": "Select",
    "label": "Replacement Reason",
-   "mandatory_depends_on": "eval:doc.is_replacement"
+   "mandatory_depends_on": "eval:doc.is_replacement",
+   "options": "\nCommercial Reasons\nQuality Issues"
   },
   {
    "fieldname": "column_break_29",
@@ -1598,7 +1599,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-08-14 12:11:31.022820",
+ "modified": "2025-08-25 15:05:10.554872",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
