@@ -61,7 +61,7 @@ $.extend(cur_frm.cscript, {
 				setters: [
 					{ fieldname: "company", label: __("Company"), fieldtype: "Link", options: "Company", default: me.frm.doc.company },
 					{ fieldname: "supplier", label: __("Supplier"), fieldtype: "Link", options: "Supplier" },
-					{ fieldname: "posting_date", label: __("Posting Date"), fieldtype: "Date", default: me.frm.doc.posting_date },
+					{ fieldname: "posting_date", label: __("Posting Date"), fieldtype: "Date", default: "" },
 					{ fieldname: "days_ago", label: __("Days Old"), fieldtype: "Int", read_only: 0 },
 					{ fieldname: "outstanding_amount", label: __("Outstanding Amount"), fieldtype: "Currency" }
 				],
