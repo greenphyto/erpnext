@@ -17,6 +17,111 @@ class EmailInvoice(Document):
 	def validate(self):
 		self.set_status()
 
+	# --- Reason helpers ---
+	def _init_reasons(self):
+		if not hasattr(self, "_reasons"):
+			self._reasons = []
+		return self._reasons
+
+	def add_reason(self, category, message="", code="", context=None):
+		"""Collect categorized reasons during processing.
+
+		- category: high-level bucket (e.g., attachment, pdf, agent, po, system)
+		- code: short machine-friendly string (e.g., no_attachment, not_pdf)
+		- message: brief human-friendly description
+		- context: optional dict with extra info (file name, path tail, etc.)
+		"""
+		reasons = self._init_reasons()
+		entry = {"category": category}
+		if code:
+			entry["code"] = code
+		if message:
+			entry["message"] = message
+		if context:
+			entry["context"] = context
+		reasons.append(entry)
+
+	def _finalize_reasons(self):
+		"""Store aggregated reasons and set short selectable reason."""
+		reasons = getattr(self, "_reasons", [])
+		if not reasons:
+			return
+		# Store JSON to unknown_reason for detail
+		try:
+			import json as _json
+			payload = {"reasons": reasons}
+			text = _json.dumps(payload)
+			self.unknown_reason = text[:1000]
+		except Exception:
+			pass
+		# Also add compact summary for quick debugging
+		cats = [
+			f"{(r.get('category') or '').strip()}:{(r.get('code') or '').strip()}".strip(":")
+			for r in reasons
+			if isinstance(r, dict)
+		]
+		self.system_reason = "; ".join(c for c in cats if c)[:1000]
+		# Calculate and set short reason used for list filtering
+		self.reason = self._compute_short_reason(reasons)
+
+	def _compute_short_reason(self, reasons):
+		"""Map collected detailed reasons to short, selectable reason.
+
+		Priority:
+		- System Error
+		- PI… (Missing Data / Unknown Item / Empty Items / Multi Currency / Create Failed)
+		- PDF… (Encrypted / Failed)
+		- Attachment… (Not PDF / File Missing / No Attachment)
+		- Agent No Result
+		- Unknown
+		"""
+		# Normalize for scanning
+		def has(cat, code=None):
+			for r in reasons:
+				if not isinstance(r, dict):
+					continue
+				if r.get("category") == cat and (code is None or r.get("code") == code):
+					return r
+			return None
+
+		# 1) System errors
+		if has("system", "exception"):
+			return "System Error"
+
+		# 2) PI creation problems (inspect message for specifics)
+		pi = has("pi", "create_failed")
+		if pi:
+			msg = (pi.get("message") or "").lower()
+			if "missing data" in msg:
+				return "PI Missing Data"
+			if "cannot recognise item" in msg or "cannot recognize item" in msg or "unknown item" in msg:
+				return "PI Unknown Item"
+			if "item is empty" in msg or "items is empty" in msg or "item empty" in msg:
+				return "PI Empty Items"
+			if "multiple currency" in msg:
+				return "PI Multi Currency"
+			return "PI Create Failed"
+
+		# 3) PDF issues
+		if has("pdf", "encrypted_pdf"):
+			return "PDF Encrypted"
+		if has("pdf", "pdf_conversion_failed"):
+			return "PDF Failed"
+
+		# 4) Attachment issues
+		if has("attachment", "not_pdf"):
+			return "Not PDF"
+		if has("attachment", "missing_file"):
+			return "File Missing"
+		if has("attachment", "no_attachment"):
+			return "No Attachment"
+
+		# 5) Agent
+		if has("agent", "no_extraction_result"):
+			return "Agent No Result"
+
+		return "Unknown"
+
 	def set_status(self):
 		if self.invoice_no:
 			self.unknown_reason = ""
@@ -50,12 +155,13 @@ class EmailInvoice(Document):
 		self.inbox = doc.name
 		self.process_email(doc)
 
-	def process_email(self, doc=None):
+	def process_email(self, doc={}):
 		result = []
+		self._init_reasons()
 		if not doc and self.inbox:
 			doc = frappe.get_doc("Communication", self.inbox)
 
-		msg = doc.content
+		msg = doc.get("content")
 
 		# should check if this invoice or not
 		file_doc_name = frappe.db.get_list("File", {
@@ -65,37 +171,66 @@ class EmailInvoice(Document):
 		
 		# temporary detect invoice or not by attachment
 		if not file_doc_name:
-			self.unknown_reason = "Issue with Attachment"
+			self.add_reason(
+				category="attachment",
+				code="no_attachment",
+				message="No attachments found on the email"
+			)
+			self._finalize_reasons()
 			return
 		
 		supp_context = get_supplier_context()
 		for file_name in file_doc_name:
 			
-			fn = frappe.get_doc('File', file_name)
+			fn = frappe.get_doc('File', file_name.get("name"))
 
 			# check valid file
 			full_path = fn.get_full_path()
 			if not os.path.exists(full_path):
-				self.unknown_reason = "Missing file on server"
+				self.add_reason(
+					category="attachment",
+					code="missing_file",
+					message="Attached file not found on server",
+					context={"file": fn.file_name, "url": fn.file_url}
+				)
 				continue
 
 			# copy attachment to current email
 			self.add_attachment_copy(fn)
 
-			if ".pdf" in full_path:
-				res, full_path = convert_pdf_to_img(full_path)
+			if ".pdf" in full_path.lower():
+				res, img_or_msg = convert_pdf_to_img(full_path)
 				if not res:
-					self.unknown_reason = full_path[-500:]
+					msg = img_or_msg or "PDF conversion failed"
+					code = "encrypted_pdf" if "encrypted" in msg.lower() else "pdf_conversion_failed"
+					self.add_reason(
+						category="pdf",
+						code=code,
+						message=msg[:200],
+						context={"file": fn.file_name}
+					)
 					continue
 			else:
 				# not pdf
-				self.unknown_reason = "Not have PDF attachment"
+				self.add_reason(
+					category="attachment",
+					code="not_pdf",
+					message="Attachment is not a PDF",
+					context={"file": fn.file_name}
+				)
 				continue 
 
+			if frappe.flags.in_test:
+				temp = json.loads(self.get("data_result") or "[]")
+				if temp:
+					temp = {"result":temp[0]}
+			else:
+				temp = get_po_and_items(full_path, supp_context, self.sender)
 
-			temp = get_po_and_items(full_path, supp_context, self.sender)
 			if temp and temp.get("result"):
-				po_no = find_po_exist(temp["result"]["purchase_order"])
+				result = temp["result"]
+				temp_po = result.get("po_no") or result.get("purchase_order")
+				po_no = find_po_exist(temp_po)
 				if po_no:
 					# convert from existing PO
 					if not self.po_no:
@@ -111,7 +246,7 @@ class EmailInvoice(Document):
 					result.append({
 						"po_no":po_no,
 						"items":items,
-						"file":file_name
+						"file":fn.name
 					})
 				elif temp["result"].get("supplier"):
 					# make new non-stock Item
@@ -120,9 +255,21 @@ class EmailInvoice(Document):
 					result.append({
 						"po_no":"",
 						"items":items,
-						"file":file_name,
+						"file":fn.name,
 						"supplier":supplier.get("supplier_name")
 					})
+			else:
+				self.add_reason(
+					category="agent",
+					code="no_extraction_result",
+					message="AI agent returned no result",
+					context={"file": fn.file_name}
+				)
+
+		# If nothing usable, record reasons and exit early
+		if not result:
+			self._finalize_reasons()
+			return
 
 		self.data_result = json.dumps(result)
 		self.create_invoice_result(result, doc)
@@ -143,12 +290,20 @@ class EmailInvoice(Document):
 				else:
 					r, name = self.create_purchase_invoice_non_stock(res)
 					if not r:
-						self.unknown_reason = name
+						self.add_reason(
+							category="pi",
+							code="create_failed",
+							message=str(name)
+						)
 						frappe.throw(name)
 
 			except Exception as e:
 				name = ""
-				self.unknown_reason = f"error system: {e}"
+				self.add_reason(
+					category="system",
+					code="exception",
+					message=f"{e}"
+				)
 				self.error_trace = get_traceback()
 
 			if name:
@@ -159,6 +314,9 @@ class EmailInvoice(Document):
 
 				pi.append(name)
 
+		# If we produced no PI, make sure reasons are visible and short reason set
+		if not pi:
+			self._finalize_reasons()
 		self.set_status()
 		return pi
 	
@@ -502,7 +660,5 @@ def get_item_group(item_group):
 	doc.insert()
 
 	return doc.name
-
-
 
 

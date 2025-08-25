@@ -18,15 +18,14 @@
   "subject",
   "message",
   "match_status_section",
+  "reason",
   "status",
   "po_no",
   "invoice_no",
-  "column_break_14",
-  "unknown_reason",
   "more_information_section",
   "message_id",
   "inbox",
-  "ai_result_section",
+  "ai_agent_section",
   "data_result",
   "error_trace"
  ],
@@ -59,7 +58,6 @@
    "fieldname": "subject",
    "fieldtype": "Small Text",
    "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Subject",
    "read_only": 1
   },
@@ -96,7 +94,6 @@
    "options": "Purchase Invoice"
   },
   {
-   "collapsible": 1,
    "fieldname": "more_information_section",
    "fieldtype": "Section Break",
    "label": "More Information"
@@ -110,7 +107,6 @@
   {
    "fieldname": "inbox",
    "fieldtype": "Link",
-   "in_standard_filter": 1,
    "label": "Inbox",
    "options": "Communication",
    "read_only": 1
@@ -136,18 +132,12 @@
    "read_only": 1
   },
   {
-   "depends_on": "eval:doc.status == \"Unknown\"",
-   "fieldname": "unknown_reason",
-   "fieldtype": "Small Text",
-   "label": "Unknown Reason",
+   "fieldname": "reason",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Reason",
+   "options": "No Attachment\nFile Missing\nNot PDF\nPDF Encrypted\nPDF Failed\nAgent No Result\nPI Missing Data\nPI Unknown Item\nPI Empty Items\nPI Multi Currency\nPI Create Failed\nSystem Error\nUnknown",
    "read_only": 1
-  },
-  {
-   "collapsible": 1,
-   "fieldname": "ai_result_section",
-   "fieldtype": "Section Break",
-   "label": "AI Result",
-   "permlevel": 2
   },
   {
    "fieldname": "data_result",
@@ -156,20 +146,23 @@
    "read_only": 1
   },
   {
+   "default": "0",
    "fieldname": "error_trace",
    "fieldtype": "Code",
    "label": "Error Trace",
    "read_only": 1
   },
   {
-   "fieldname": "column_break_14",
-   "fieldtype": "Column Break"
+   "fieldname": "ai_agent_section",
+   "fieldtype": "Section Break",
+   "label": "AI Agent"
   }
  ],
+ "hide_toolbar": 1,
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-18 17:25:01.134381",
+ "modified": "2025-08-25 16:13:11.814373",
  "modified_by": "Administrator",
  "module": "AI Agent",
  "name": "Email Invoice",
@@ -229,18 +222,6 @@
    "report": 1,
    "role": "Purchase (View Only)",
    "share": 1
-  },
-  {
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "permlevel": 2,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
   }
  ],
  "search_fields": "sender, subject, po_no",
