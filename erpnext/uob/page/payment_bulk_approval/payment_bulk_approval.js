@@ -67,15 +67,14 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                         <table class="table table-bordered table-hover">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Posting Date</th>
-                                    <th>Time</th>
-                                    <th>Requested By</th>
-                                    <th>Payment Type</th>
-                                    <th class="text-right">Total Amount</th>
-                                    <th>Bank Account</th>
-                                    <th>Currency</th>
-                                    <th class="text-center">Action</th>
+                                    <th style="width: 12.9%;">Name</th>
+                                    <th style="width: 15.06%;">Posting Date</th>
+                                    <th style="width: 10.33%;">Requested By</th>
+                                    <th style="width: 6.88%;">Type</th>
+                                    <th style="width: 10.76%;" class="text-right">T. Amount</th>
+                                    <th style="width: 6.02%;">Cry</th>
+                                    <th style="width: 23.24%;">Bank Account</th>
+                                    <th class="text-center" style="width: 14.82%;">Action</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -193,6 +192,21 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
         }
     }
 
+    // (Reverted) Use default frappe currency formatter
+
+    // Safe URL builder for opening forms in new tab
+    function url_to_form(doctype, name) {
+        try {
+            const slug = String(doctype || '')
+                .trim()
+                .toLowerCase()
+                .replace(/\s+/g, '-');
+            return `/app/${slug}/${encodeURIComponent(String(name || ''))}`;
+        } catch (e) {
+            return `#Form/${doctype}/${name}`;
+        }
+    }
+
     function render_rows(rows, append=false) {
         if (!append) {
             $tbody.empty();
@@ -210,21 +224,21 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
             const posting_date = row.posting_date ? frappe.format(row.posting_date, { fieldtype: 'Date' }) : '';
             const posting_time = row.posting_time || row.time || '';
             const total_amount = format_amount(row.total_amount, row.currency);
+            const approval_url = url_to_form('Payment Approval', row.name);
 
             const $tr = $(`
                 <tr class="cursor-pointer data-row ${parentStripe}">
                     <td>
                         <button class="btn btn-default btn-xs toggle-detail" title="Toggle details">▸</button>
-                        <a class="doc-link">${frappe.utils.escape_html(row.name)}</a>
+                        <a class="doc-link" href="${approval_url}" target="_blank" rel="noopener">${frappe.utils.escape_html(row.name)}</a>
                     </td>
-                    <td>${frappe.utils.escape_html(posting_date)}</td>
-                    <td>${frappe.utils.escape_html(posting_time)}</td>
+                    <td>${frappe.utils.escape_html(posting_date)} ${frappe.utils.escape_html(posting_time)}</td>
                     <td>${frappe.utils.escape_html(row.requested_by || '')}</td>
                     <td>${frappe.utils.escape_html(row.payment_type || row.Payment_type || '')}</td>
                     <td class="text-right">${total_amount}</td>
-                    <td>${frappe.utils.escape_html(row.bank_account || row.back_account || '')}</td>
                     <td>${frappe.utils.escape_html(row.currency || '')}</td>
-                    <td class="text-nowrap action-cell"><div class="action-wrapper"></div></td>
+                    <td>${frappe.utils.escape_html(row.bank_account || row.back_account || '')}</td>
+                    <td class="text-nowrap action-cell" style="width: 14.82%;"><div class="action-wrapper"></div></td>
                 </tr>
             `);
 
@@ -241,9 +255,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
             $tr.data('doc', null);
             $tr.data('detail-rendered', false);
 
-            $tr.find('.doc-link').on('click', () => {
-                frappe.set_route('Form', 'Payment Approval', row.name);
-            });
+            // Link opens Payment Approval in new tab via anchor href
 
             function get_invoices_rows(doc) {
                 // Strictly use field `invoices` as requested
@@ -287,12 +299,29 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     return '';
                 }
 
-                const thead = columns_fixed.map(c => `<th>${c.label}</th>`).join('');
+                const thead = columns_fixed.map(c => `<th${c.label === 'Amount' ? ' class="text-left"' : ''}>${c.label}</th>`).join('');
                 const rows_html = transfers.map(t => {
                     const tds = columns_fixed.map(c => {
                         let val = pick(t, c.keys);
                         if (c.label === 'Amount') {
                             val = format_amount(val, t['currency'] || doc.currency);
+                        } else if (c.label === 'Supplier Bank No') {
+                            const accNo = t.bank_account_no || t.supplier_bank_no || t.beneficiary_account_no || t.account_no || t.bank_account || '';
+                            const accName = t.bank_account_name || '';
+                            if (accNo && accName) {
+                                val = `${accNo} - ${accName}`;
+                            } else if (accNo) {
+                                val = accNo;
+                            } else if (accName) {
+                                val = accName;
+                            }
+                        } else if (c.label === 'Invoice No') {
+                            const link_name = t.invoice || t.reference_name || t.invoice_no || '';
+                            if (link_name) {
+                                const href = url_to_form('Purchase Invoice', link_name);
+                                const label = frappe.utils.escape_html(val != null ? String(val) : '');
+                                return `<td><a href="${href}" target="_blank" rel="noopener">${label}</a></td>`;
+                            }
                         }
                         return `<td>${frappe.utils.escape_html(val != null ? String(val) : '')}</td>`;
                     }).join('');
@@ -331,8 +360,8 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
 
             // Action buttons
             const $act = $tr.find('.action-cell .action-wrapper');
-            const $btnApprove = $(`<button class="btn btn-sm btn-primary mr-2" style="display:none;">Approve</button>`);
-            const $btnReject = $(`<button class="btn btn-sm btn-danger" style="display:none;">Reject</button>`);
+            const $btnApprove = $(`<button class="btn btn-sm btn-primary mr-2" style="display:none; min-width: 72px;">Approve</button>`);
+            const $btnReject = $(`<button class="btn btn-sm btn-danger" style="display:none; min-width: 72px;">Reject</button>`);
 
             function apply(name, action) {
                 // prevent row navigation
