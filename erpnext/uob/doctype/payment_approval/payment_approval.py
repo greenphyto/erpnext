@@ -475,7 +475,7 @@ def search_purchase_invoice(doctype, txt, searchfield, start=0, page_len=20, fil
         """,
         params,
         as_dict=True,
-        debug=1,
+        debug=0,
     )
 
 

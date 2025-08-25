@@ -185,11 +185,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
     });
 
     function format_amount(value, currency) {
-        try {
-            return frappe.utils.format_currency(value || 0, currency || frappe.boot.sysdefaults.currency);
-        } catch (e) {
-            return value || 0;
-        }
+       return fmt_money(value, currency=currency)
     }
 
     // (Reverted) Use default frappe currency formatter

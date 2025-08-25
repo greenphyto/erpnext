@@ -9,11 +9,15 @@ frappe.ui.form.on('Payment Approval', {
 				frm.cscript.get_unpaid_purchase_invoices();
 			});
 		}
-		frm.set_query("invoice_no", "invoices", ()=>{
+		frm.set_query("invoice_no", "invoices", (doc)=>{
+			if (!doc.currency){
+				frappe.throw(_("Currency is not set."))
+			}
 			return{
 				filters:{
 					docstatus:1,
-					outstanding_amount:[">", 0]
+					outstanding_amount:[">", 0],
+					currency: doc.currency
 				}
 			}
 		})
