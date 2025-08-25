@@ -279,6 +279,7 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 											}
 										}
 									},
+									reqd:1,
 									description: "Select customer for current Delivery Note",
 									default: me.frm.doc.customer,
 								},
@@ -473,7 +474,7 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 	}
 };
 
-erpnext.utils.load_data_from_report = function(opts) {
+	erpnext.utils.load_data_from_report = function(opts) {
 	// this tools is used to select data on report format
 	// opts parameters mandatory:
 	// method (to download data), filters, columns, action (function to receive the items list)
@@ -520,11 +521,39 @@ erpnext.utils.load_data_from_report = function(opts) {
 		size: opts.size || 'large'
 	});
 
+	// helper: ensure required filters are complete; optionally handle UI
+	function ensure_required_filters(options = {}) {
+		const { onClick = false, wrapper = null } = options;
+		const required = (opts.filters || []).filter(df => df && df.reqd && !["Column Break", "Section Break"].includes(df.fieldtype));
+		const missing = required.filter(df => {
+			const val = dialog.get_value(df.fieldname);
+			return (val === undefined || val === null || val === "");
+		});
+		if (!missing.length) return true;
+		const first = missing[0];
+		const which = (first && (first.label || first.fieldname)) ? (first.label || first.fieldname) : "customer";
+		if (onClick) {
+			frappe.msgprint(__("Select filter ") + which);
+		}
+		if (wrapper) {
+			wrapper.innerHTML = `<div class="text-muted text-center" style="padding: 12px;">Select filter ${which}</div>`;
+		}
+		full_data = [];
+		return false;
+	}
+
 	// Load or reload table
 	async function load_table() {
+		const wrapper = dialog.get_field('table_area').$wrapper.empty()[0];
+
+		// gate: ensure all reqd filters are filled
+		if (!ensure_required_filters({ wrapper })) {
+			return; // do not load data from server until required filters are complete
+		}
+
 		const filters = {};
 		opts.filters.forEach(f => {
-			if (f.fieldtype=="Column Break" || f.fieldtype=="Section Break") return;
+			if (f.fieldtype==="Column Break" || f.fieldtype==="Section Break") return;
 			filters[f.fieldname] = dialog.get_value(f.fieldname);
 		});
 		const res = await frappe.call({ method: opts.method, args: {filters:filters} });
@@ -549,7 +578,6 @@ erpnext.utils.load_data_from_report = function(opts) {
 		const data = full_data
 
 		// Render datatable fresh
-		const wrapper = dialog.get_field('table_area').$wrapper.empty()[0];
 		dialog.datatable = new frappe.DataTable(wrapper, {
 			columns: columns,
 			data: data,
@@ -567,7 +595,6 @@ erpnext.utils.load_data_from_report = function(opts) {
 				},
 			}
 		})
-		
 	}
 
 	function get_checked_items(){
@@ -579,13 +606,23 @@ erpnext.utils.load_data_from_report = function(opts) {
 	// Button bindings
 	dialog.get_field('__apply_filters').$input.on('click', () => {
 		selected_indexes = [];
+		if (!ensure_required_filters({ onClick: true })) {
+			return;
+		}
 		load_table();
 	});
 	dialog.get_field('button_footer').$wrapper
 	.on('click', 'button[data-action=refresh]', () => {
+		if (!ensure_required_filters({ onClick: true })) {
+			return;
+		}
 		load_table();
 	})
 	.on('click', 'button[data-action=get_items]', () => {
+		// ensure required filters are present before proceeding
+		if (!ensure_required_filters({ onClick: true })) {
+			return;
+		}
 		var rows = get_checked_items();
 		var filters = dialog.get_values();
 		opts.action(filters, rows).then(r=>{
@@ -595,9 +632,8 @@ erpnext.utils.load_data_from_report = function(opts) {
 
 	// Init
 	dialog.show();
-	setTimeout(()=>{
-		load_table();
-	}, 200)
+	// initial render (will show message if required filters missing)
+	load_table();
 };
 
 
