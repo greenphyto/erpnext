@@ -51,7 +51,7 @@ class EmailInvoice(Document):
 			import json as _json
 			payload = {"reasons": reasons}
 			text = _json.dumps(payload)
-			self.unknown_reason = text[:1000]
+			self.error_trace = text
 		except Exception:
 			pass
 		# Also add compact summary for quick debugging
@@ -124,7 +124,8 @@ class EmailInvoice(Document):
 
 	def set_status(self):
 		if self.invoice_no:
-			self.unknown_reason = ""
+			self.reason = ""
+			self.error_trace = ""
 			self.status = "Matched"
 		elif self.po_no:
 			self.status = "Pending"
@@ -228,8 +229,8 @@ class EmailInvoice(Document):
 				temp = get_po_and_items(full_path, supp_context, self.sender)
 
 			if temp and temp.get("result"):
-				result = temp["result"]
-				temp_po = result.get("po_no") or result.get("purchase_order")
+				temp_result = temp["result"]
+				temp_po = temp_result.get("po_no") or temp_result.get("purchase_order")
 				po_no = find_po_exist(temp_po)
 				if po_no:
 					# convert from existing PO
@@ -252,11 +253,16 @@ class EmailInvoice(Document):
 					# make new non-stock Item
 					items = temp["result"]["items"]
 					supplier = temp["result"]["supplier"]
+					if "supplier_name" in supplier:
+						supplier_name = supplier.get("supplier_name")
+					else:
+						supplier_name = supplier
+
 					result.append({
 						"po_no":"",
 						"items":items,
 						"file":fn.name,
-						"supplier":supplier.get("supplier_name")
+						"supplier":supplier_name
 					})
 			else:
 				self.add_reason(
@@ -384,6 +390,9 @@ class EmailInvoice(Document):
 		items=data.get("items")
 		supplier=data.get("supplier")
 		file_name=data.get("file")
+		currency = data.get("currency")
+		if currency and type(currency) == list:
+			currency = currency[0]
 
 		if not items:
 			return False, "Cannot recognise item"
@@ -424,6 +433,7 @@ class EmailInvoice(Document):
 		doc.flags.ignore_mandatory = 1
 		doc.flags.ignore_permissions = 1
 		doc.flags.ignore_links = 1
+		doc.flags.ignore_validate = 1
 		doc.save()
 
 		file = frappe.get_doc('File', file_name)
