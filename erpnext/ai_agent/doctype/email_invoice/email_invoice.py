@@ -430,11 +430,17 @@ class EmailInvoice(Document):
 		doc.taxes_and_charges = get_gst_template(data.get("gst_percent") or 9)
 		doc.set_other_charges()
 		
-		doc.flags.ignore_mandatory = 1
-		doc.flags.ignore_permissions = 1
-		doc.flags.ignore_links = 1
-		doc.flags.ignore_validate = 1
-		doc.save()
+		try:
+			doc.save()
+		except:
+			pass
+
+		if doc.is_new():
+			doc.flags.ignore_mandatory = 1
+			doc.flags.ignore_permissions = 1
+			doc.flags.ignore_links = 1
+			doc.flags.ignore_validate = 1
+			doc.save()
 
 		file = frappe.get_doc('File', file_name)
 		attachment = frappe.get_doc({
