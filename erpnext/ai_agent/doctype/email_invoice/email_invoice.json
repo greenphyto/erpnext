@@ -158,11 +158,10 @@
    "label": "AI Agent"
   }
  ],
- "hide_toolbar": 1,
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-08-25 16:13:11.814373",
+ "modified": "2025-08-26 11:22:10.284704",
  "modified_by": "Administrator",
  "module": "AI Agent",
  "name": "Email Invoice",
