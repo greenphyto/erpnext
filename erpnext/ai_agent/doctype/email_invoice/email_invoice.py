@@ -338,7 +338,227 @@ class EmailInvoice(Document):
 		})
 		new_file.insert()
 
-	def create_invoice(self, data=""):
+	def create_purchase_invoice_non_stock2(self, data=None):
+		"""Create a Non-stock Purchase Invoice purely from the passed parameter.
+
+		Expected payload (simplified): either a dict with keys like
+		  - document.number, document.issue_date
+		  - supplier.name
+		  - currency.code
+		  - items: [ { name, description, quantity, unit_of_measure, unit_price.value, amount.value, unit_price.currency } ]
+		or the same wrapped under key `result`.
+
+		- Only uses provided parameter; does not read self.data_result or any files.
+		- Checks Link masters (Supplier, Currency, UOM, generic Item 'Non-stock'). Missing links are not auto-created;
+		  they are recorded to a Comment on the created Purchase Invoice.
+		"""
+
+		if not data:
+			return False, "Missing data"
+
+		# Normalize input: allow either top-level or wrapped under `result`
+		payload = data if isinstance(data, dict) else {}
+		root = payload.get("result") if isinstance(payload, dict) else None
+		if not root:
+			root = payload
+
+		# Extract primary blocks
+		doc_info = (root or {}).get("document") or {}
+		supplier_info = (root or {}).get("supplier") or {}
+		currency_info = (root or {}).get("currency") or {}
+		items_info = (root or {}).get("items") or []
+		summary_info = (root or {}).get("summary") or {}
+		payment_info = (root or {}).get("payment") or {}
+
+		# 2) Gather link existence and collect missing masters for commenting later
+		missing_links = {"Supplier": None, "Currency": None, "UOM": [], "Item": []}
+
+		# Supplier
+		supplier_name = supplier_info.get("name") or root.get("supplier") if isinstance(root.get("supplier"), str) else None
+		supplier_exists = None
+		if supplier_name:
+			supplier_exists = frappe.db.exists("Supplier", supplier_name)
+			if not supplier_exists:
+				missing_links["Supplier"] = {
+					"name": supplier_name,
+					"details": supplier_info,
+				}
+
+		# Currency
+		currency_code = currency_info.get("code") or (summary_info.get("total") or {}).get("currency")
+		currency_exists = None
+		if currency_code:
+			currency_exists = frappe.db.exists("Currency", currency_code)
+			if not currency_exists:
+				missing_links["Currency"] = {"code": currency_code}
+
+		# UOMs from items
+		uom_missing = set()
+		for it in items_info:
+			uom_nm = (it or {}).get("unit_of_measure") or (it or {}).get("uom")
+			if uom_nm:
+				if not frappe.db.exists("UOM", uom_nm):
+					uom_missing.add(uom_nm)
+		if uom_missing:
+			missing_links["UOM"] = sorted(uom_missing)
+		else:
+			missing_links.pop("UOM", None)
+
+		# Ensure generic non-stock Item exists; if not, record it
+		if not frappe.db.exists("Item", "Non-stock"):
+			missing_links["Item"].append("Non-stock")
+		else:
+			missing_links.pop("Item", None)
+
+		# 3) Construct Purchase Invoice
+		doc = frappe.new_doc("Purchase Invoice")
+		doc.created_with_ai = 1
+		doc.non_stock_item = 1
+
+		# Header mapping
+		# Supplier only if exists
+		if supplier_exists:
+			doc.supplier = supplier_exists
+
+		# Currency only if exists; otherwise leave blank to record in comment
+		if currency_exists:
+			doc.currency = currency_code
+
+		# Bill No / Date
+		if doc_info.get("number"):
+			doc.bill_no = doc_info.get("number")
+		if doc_info.get("issue_date"):
+			try:
+				doc.bill_date = getdate(doc_info.get("issue_date"))
+				doc.posting_date = getdate(doc_info.get("issue_date"))
+			except Exception:
+				pass
+
+		# Remarks: keep simple while still informative
+		remarks = []
+		refs = (doc_info.get("references") or {})
+		po_ref = refs.get("purchase_order_number") if refs else None
+		if po_ref:
+			remarks.append(f"Reference PO: {po_ref}")
+		attn = refs.get("attention") if refs else None
+		if attn:
+			remarks.append(f"Attention: {attn}")
+		terms_desc = (payment_info.get("terms") or {}).get("description") if payment_info else None
+		if terms_desc:
+			remarks.append(f"Payment Terms: {terms_desc}")
+		if remarks:
+			doc.remarks = "\n".join(remarks)
+
+		# Items (use generic Non-stock item)
+		currency_seen = set()
+		for it in items_info:
+			qty = it.get("quantity") or it.get("qty")
+			rate = None
+			if it.get("unit_price") and isinstance(it.get("unit_price"), dict):
+				rate = it["unit_price"].get("value")
+			elif it.get("rate") is not None:
+				rate = it.get("rate")
+			amount = None
+			if it.get("amount") and isinstance(it.get("amount"), dict):
+				amount = it["amount"].get("value")
+			elif it.get("amount") is not None:
+				amount = it.get("amount")
+
+			uom_nm = it.get("unit_of_measure") or it.get("uom") or None
+			it_curr = None
+			if it.get("unit_price") and isinstance(it.get("unit_price"), dict):
+				it_curr = it["unit_price"].get("currency")
+			elif it.get("currency"):
+				it_curr = it.get("currency")
+			if it_curr:
+				currency_seen.add(it_curr)
+
+			if qty:
+				row = doc.append("items")
+				row.item_code = "Non-stock"
+				row.item_name = it.get("name") or it.get("item_name") or "Non-stock"
+				row.item_name_view = row.item_name
+				row.description = (it.get("description") or "")[:140]
+				row.qty = flt(qty)
+				if rate is not None:
+					row.rate = flt(rate)
+				if amount is not None:
+					row.amount = flt(amount)
+				# Set UOM only if master exists, else leave default and record missing
+				if uom_nm and frappe.db.exists("UOM", uom_nm):
+					row.uom = uom_nm
+
+		# Currency consistency check similar to v1
+		if len(currency_seen) > 1:
+			return False, "Multiple currency used on invoice"
+		elif currency_seen and not currency_exists:
+			# prefer item currency if header currency missing
+			ic = list(currency_seen)[0]
+			if frappe.db.exists("Currency", ic):
+				doc.currency = ic
+
+		# Taxes (optional): try to set GST template from summary if present
+		gst_percent = None
+		tax_summary = summary_info.get("tax_summary") or []
+		for t in tax_summary:
+			pct = t.get("rate") or t.get("percent") or t.get("percentage")
+			if pct is not None:
+				gst_percent = flt(pct)
+				break
+		if gst_percent is not None:
+			doc.taxes_and_charges = get_gst_template(gst_percent)
+			doc.set_other_charges()
+
+		# 4) Persist document; allow saving even if some links are missing
+		try:
+			doc.save()
+		except Exception:
+			pass
+		if doc.is_new():
+			doc.flags.ignore_mandatory = 1
+			doc.flags.ignore_permissions = 1
+			doc.flags.ignore_links = 1
+			doc.flags.ignore_validate = 1
+			doc.save()
+
+		# 5) Attach file if `file` docname provided in payload/root
+		file_id = (payload.get("file") if isinstance(payload, dict) else None) or (root.get("file") if isinstance(root, dict) else None)
+		if file_id:
+			try:
+				file = frappe.get_doc('File', file_id)
+				attachment = frappe.get_doc({
+					'doctype': 'File',
+					'attached_to_doctype': doc.doctype,
+					'attached_to_name': doc.name,
+					'file_name': file.file_name,
+					'file_url': file.file_url,
+					'is_private': file.is_private,
+				})
+				attachment.insert()
+			except Exception:
+				pass
+
+		# 6) Post Comment with any missing links and enriched context
+		comment_payload = {}
+		for k, v in (missing_links or {}).items():
+			if v:
+				comment_payload.setdefault("missing_links", {})[k] = v
+		if comment_payload.get("missing_links"):
+			try:
+				frappe.get_doc({
+					"doctype": "Comment",
+					"reference_doctype": doc.doctype,
+					"reference_name": doc.name,
+					"comment_type": "Comment",
+					"content": json.dumps(comment_payload),
+				}).insert(ignore_permissions=True)
+			except Exception:
+				pass
+
+		return True, doc.name
+
+
+	def create_invoice2(self, data=""):
 		if not data:
 			data = json.loads(self.data_result)
 
@@ -676,5 +896,3 @@ def get_item_group(item_group):
 	doc.insert()
 
 	return doc.name
-
-
