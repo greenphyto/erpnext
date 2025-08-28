@@ -2,10 +2,8 @@ from typing import Optional
 
 import requests
 
-try:
-    import frappe
-except Exception:  # pragma: no cover - allows use outside Frappe context for linting
-    frappe = None  # type: ignore
+import frappe
+from frappe.utils import cstr
 
 class AIAgentClient:
     """
@@ -44,6 +42,7 @@ class AIAgentClient:
     def extract_text(
         self,
         invoice_path: str,
+        email: str,
         lang: Optional[str] = None,
     ):
         """
@@ -81,7 +80,7 @@ class AIAgentClient:
         if not isinstance(data, dict):
             return resp.text
 
-        text = data.get("text")
+        text = cstr(data.get("text")) + f"\nemail: {email}"
         if isinstance(text, str):
             return text
         return resp.text
@@ -121,7 +120,7 @@ class AIAgentClient:
             # If server didn't return JSON, wrap as best-effort structure
             return {"text": text or "", "reference": reference or "", "raw": resp.text}
 
-    def extract_invoice(self, invoice_path: str, reference: Optional[str] = None, lang: Optional[str] = None):
+    def extract_invoice(self, invoice_path: str, reference: str, email: str, lang: Optional[str] = None):
         """
         Convenience: OCR the invoice file, then fetch structured invoice data.
 
@@ -130,5 +129,5 @@ class AIAgentClient:
 
         Returns parsed invoice data dict.
         """
-        text = self.extract_text(invoice_path, lang=lang)
+        text = self.extract_text(invoice_path, email, lang=lang)
         return self.get_invoice_data(text=text, reference=reference)

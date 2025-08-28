@@ -6,7 +6,7 @@ from frappe.model.document import Document
 from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_invoice
 from erpnext.controllers.va2 import extract_invoice_data, get_po_number, get_item_detail, get_po_and_items
 from frappe.utils import flt, getdate, get_time
-from erpnext.controllers.erp import get_supplier_context
+from erpnext.controllers.erp import get_supplier_context, deep_get
 import os
 from frappe.utils import get_traceback
 from erpnext.ai_agent.doctype.ai_agent_settings.ai_invoice_converter import AIAgentClient
@@ -158,13 +158,13 @@ class EmailInvoice(Document):
 		self.inbox = doc.name
 		self.process_email(doc)
 
-	def process_email2(self, doc={}):
+	def process_email(self, doc={}):
 		"""Process email using AIAgentClient end-to-end extraction and PI creation.
 
 		- Mirrors logic in `process_email` for attachment checks and reason handling.
 		- Uses `AIAgentClient.extract_invoice(path, reference)` to obtain structured JSON.
 		- Persists extracted JSON (including fallback with raw text) to `data_result`.
-		- Creates Non-stock Purchase Invoice via `create_purchase_invoice_non_stock2`.
+		- Creates Non-stock Purchase Invoice via `create_purchase_invoice_non_stock`.
 		"""
 		self._init_reasons()
 		if not doc and self.inbox:
@@ -250,7 +250,7 @@ class EmailInvoice(Document):
 			# Extract structured data via agent; handle fallback JSON
 			extracted = None
 			try:
-				extracted = agent.extract_invoice(full_path, reference=supp_context)
+				extracted = agent.extract_invoice(full_path, reference=supp_context, email=self.sender)
 			except Exception as e:
 				# Record system exception; no structured fallback available here
 				self.add_reason(
@@ -279,7 +279,7 @@ class EmailInvoice(Document):
 			results_payload.append(payload)
 
 			# Attempt to create Non-stock PI from this extracted data
-			r, name = self.create_purchase_invoice_non_stock2(payload)
+			r, name = self.create_invoice_result(payload)
 			if not r:
 				self.add_reason(
 					category="pi",
@@ -316,175 +316,180 @@ class EmailInvoice(Document):
 		self.set_status()
 		return pi_created
 
-	def process_email(self, doc={}):
-		result = []
-		self._init_reasons()
-		if not doc and self.inbox:
-			doc = frappe.get_doc("Communication", self.inbox)
-
-		msg = doc.get("content")
-
-		# should check if this invoice or not
-		file_doc_name = frappe.db.get_list("File", {
-			"attached_to_doctype":"Communication",
-			"attached_to_name":doc.name
-		})
-		
-		# temporary detect invoice or not by attachment
-		if not file_doc_name:
-			self.add_reason(
-				category="attachment",
-				code="no_attachment",
-				message="No attachments found on the email"
-			)
-			self._finalize_reasons()
-			return
-		
-		supp_context = get_supplier_context()
-		for file_name in file_doc_name:
-			
-			fn = frappe.get_doc('File', file_name.get("name"))
-
-			# check valid file
-			full_path = fn.get_full_path()
-			if not os.path.exists(full_path):
-				self.add_reason(
-					category="attachment",
-					code="missing_file",
-					message="Attached file not found on server",
-					context={"file": fn.file_name, "url": fn.file_url}
-				)
-				continue
-
-			# copy attachment to current email
-			self.add_attachment_copy(fn)
-
-			if ".pdf" in full_path.lower():
-				res, img_or_msg = convert_pdf_to_img(full_path)
-				if not res:
-					msg = img_or_msg or "PDF conversion failed"
-					code = "encrypted_pdf" if "encrypted" in msg.lower() else "pdf_conversion_failed"
-					self.add_reason(
-						category="pdf",
-						code=code,
-						message=msg[:200],
-						context={"file": fn.file_name}
-					)
-					continue
-			else:
-				# not pdf
-				self.add_reason(
-					category="attachment",
-					code="not_pdf",
-					message="Attachment is not a PDF",
-					context={"file": fn.file_name}
-				)
-				continue 
-
-			if frappe.flags.in_test:
-				temp = json.loads(self.get("data_result") or "[]")
-				if temp:
-					temp = {"result":temp[0]}
-			else:
-				temp = get_po_and_items(full_path, supp_context, self.sender)
-
-			if temp and temp.get("result"):
-				temp_result = temp["result"]
-				temp_po = temp_result.get("po_no") or temp_result.get("purchase_order")
-				po_no = find_po_exist(temp_po)
-				if po_no:
-					# convert from existing PO
-					if not self.po_no:
-						self.po_no = po_no
-						
-					po = frappe.get_doc("Purchase Order", po_no)
-					items = []
-					for d in po.items:
-						items.append(
-							{"item_code": d.item_name, "qty":d.qty, "rate":d.rate, "uom":d.uom}
-						)
-
-					result.append({
-						"po_no":po_no,
-						"items":items,
-						"file":fn.name
-					})
-				elif temp["result"].get("supplier"):
-					# make new non-stock Item
-					items = temp["result"]["items"]
-					supplier = temp["result"]["supplier"]
-					if "supplier_name" in supplier:
-						supplier_name = supplier.get("supplier_name")
-					else:
-						supplier_name = supplier
-
-					result.append({
-						"po_no":"",
-						"items":items,
-						"file":fn.name,
-						"supplier":supplier_name
-					})
-			else:
-				self.add_reason(
-					category="agent",
-					code="no_extraction_result",
-					message="AI agent returned no result",
-					context={"file": fn.file_name}
-				)
-
-		# If nothing usable, record reasons and exit early
-		if not result:
-			self._finalize_reasons()
-			return
-
-		self.data_result = json.dumps(result)
-		self.create_invoice_result(result, doc)
-
 	def create_invoice_result(self, result=[], com_doc=""):
+		"""Create a Purchase Invoice based on extracted payload.
+
+		Behavior:
+		- If payload indicates a Purchase Order reference (purchase_order_number), create PI from PO and update rates using JSON values.
+		- Otherwise, create a Non-stock PI using `create_purchase_invoice_non_stock`.
+
+		Returns (bool, name_or_error): compatible with `process_email` expectations.
+		"""
 		if not com_doc and self.inbox:
 			com_doc = frappe.get_doc("Communication", self.inbox)
 
-		if not result and self.data_result:
-			result = json.loads(self.data_result)
+		# Normalize input: allow dict (single), list (multiple), or fallback to saved data_result
+		if isinstance(result, string_types):
+			result = json.loads(result)
+		
+		payloads = []
+		if isinstance(result, dict):
+			payloads.append(result)
+		else:
+			payloads = result
 
-		pi = []
-		for res in result:
+		last_ok = False
+		last_name = ""
+		for res in payloads:
 			name = None
 			try:
-				if res.get("po_no"):
-					name = self.create_invoice(res)
+				res = res.get("result") or res
+				if 'result' in res:
+					res = res.get("result")
+
+				# Try to detect PO reference from common locations
+				po_ref = deep_get(res, ["document","references","purchase_order_number"], "")
+				# check exists
+				po_ref = frappe.db.exists("Purchase Order", {"name":po_ref})
+				if po_ref:
+					ok, name_or_err = self.create_invoice(res, po_ref=po_ref)
+					if not ok:
+						self.add_reason(category="pi", code="create_failed", message=str(name_or_err))
+						return False, name_or_err
+					name = name_or_err
 				else:
-					r, name = self.create_purchase_invoice_non_stock(res)
-					if not r:
-						self.add_reason(
-							category="pi",
-							code="create_failed",
-							message=str(name)
-						)
-						frappe.throw(name)
+					ok, name_or_err = self.create_purchase_invoice_non_stock(res)
+					if not ok:
+						self.add_reason(category="pi", code="create_failed", message=str(name_or_err))
+						return False, name_or_err
+					name = name_or_err
 
 			except Exception as e:
 				name = ""
-				self.add_reason(
-					category="system",
-					code="exception",
-					message=f"{e}"
-				)
+				self.add_reason(category="system", code="exception", message=f"{e}")
 				self.error_trace = get_traceback()
+				return False, str(e)
 
-			if name:
-				com_doc.db_set("reference_doctype", "Purchase Invoice")
-				com_doc.db_set("reference_name", name)
-				if not self.invoice_no:
-					self.invoice_no = name
+			# Link communication only for the last created doc in the batch
+			if name and com_doc:
+				try:
+					com_doc.db_set("reference_doctype", "Purchase Invoice")
+					com_doc.db_set("reference_name", name)
+					if not self.invoice_no:
+						self.invoice_no = name
+				except Exception:
+					pass
+			last_ok = True
+			last_name = name
 
-				pi.append(name)
-
-		# If we produced no PI, make sure reasons are visible and short reason set
-		if not pi:
+		# Update status/reasons if nothing created
+		if not last_ok:
 			self._finalize_reasons()
 		self.set_status()
-		return pi
+		return last_ok, last_name
+
+	def create_invoice(self, data=None, po_ref=None):
+		"""Create Purchase Invoice from an existing Purchase Order and update item rates.
+
+		- Detects the Purchase Order number from `data` (supports nested result structure).
+		- Builds PI via `make_purchase_invoice(PO)`.
+		- Updates item rates from JSON result (latest price) without altering PO quantities.
+		- Mentions rate changes via a Comment on the created document.
+		"""
+		if not data:
+			return False, "Missing data"
+
+		# Build Purchase Invoice from PO
+		doc = make_purchase_invoice(po_ref)
+		doc.set_default_number_fields()
+		doc.created_with_ai = 1
+
+		# Prepare extracted items for rate update
+		extracted_items = data.get("items") or []
+
+		# Map and update rates: prefer match by index; if "item_code" present then map by code
+		changes = []
+		if extracted_items:
+			# Build index map for codes if any
+			code_to_row = {}
+			for idx, row in enumerate(doc.get("items") or []):
+				code_to_row.setdefault(row.item_code, []).append((idx, row))
+
+			for i, itm in enumerate(extracted_items):
+				# Extract rate if available
+				rate = deep_get(itm, ['unit_price', 'value'], 0)
+				
+				# No rate to update
+				if not rate:
+					continue
+
+				# !! not found the best method can do
+				row_to_update = None
+				# Prefer by item_code if present
+				itm_code = None
+				if itm.get("item_code"):
+					itm_code = itm.get("item_code")
+				elif (itm.get("attributes") or {}).get("sku"):
+					itm_code = (itm.get("attributes") or {}).get("sku")
+				if itm_code and itm_code in code_to_row:
+					row_to_update = code_to_row[itm_code][0][1]
+				elif i < len(doc.items):
+					row_to_update = doc.items[i]
+
+				if row_to_update:
+					old_rate = flt(row_to_update.rate)
+					new_rate = flt(rate)
+					if new_rate and new_rate != old_rate:
+						row_to_update.rate = new_rate
+						changes.append({
+							"idx": row_to_update.idx,
+							"item_code": row_to_update.item_code,
+							"old_rate": old_rate,
+							"new_rate": new_rate,
+						})
+
+		# Optional GST update if present in payload
+		gst_percent = deep_get(data, [], 9)
+		doc.taxes_and_charges = get_gst_template(gst_percent)
+		doc.set_other_charges()
+
+		# Persist
+		doc.flags.ignore_mandatory = 1
+		doc.flags.ignore_permissions = 1
+		doc.flags.ignore_links = 1
+		doc.save()
+
+		# Attach original file if present
+		file_id = (data.get("file") if isinstance(data, dict) else None) or (root.get("file") if isinstance(root, dict) else None)
+		if file_id:
+			try:
+				file = frappe.get_doc('File', file_id)
+				attachment = frappe.get_doc({
+					'doctype': 'File',
+					'attached_to_doctype': doc.doctype,
+					'attached_to_name': doc.name,
+					'file_name': file.file_name,
+					'file_url': file.file_url,
+					'is_private': file.is_private,
+				})
+				attachment.insert()
+			except Exception:
+				pass
+
+		# Mention rate changes only if any
+		if changes:
+			try:
+				frappe.get_doc({
+					"doctype": "Comment",
+					"reference_doctype": doc.doctype,
+					"reference_name": doc.name,
+					"comment_type": "Comment",
+					"content": json.dumps({"rate_updates": changes}),
+				}).insert(ignore_permissions=True)
+			except Exception:
+				pass
+
+		return True, doc.name
 	
 	def add_attachment_copy(self, source_file):
 		new_file = frappe.new_doc("File")
@@ -498,7 +503,7 @@ class EmailInvoice(Document):
 		})
 		new_file.insert()
 
-	def create_purchase_invoice_non_stock2(self, data=None):
+	def create_purchase_invoice_non_stock(self, data=None):
 		"""Create a Non-stock Purchase Invoice purely from the passed parameter.
 
 		Expected payload (simplified): either a dict with keys like

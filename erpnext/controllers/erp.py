@@ -257,7 +257,7 @@ def get_customer_context():
 	return json.dumps(context)
 
 def get_supplier_context():
-	context = {}
+	context = []
 	
 	# Ambil semua supplier aktif
 	suppliers = frappe.db.sql("""
@@ -309,10 +309,11 @@ def get_supplier_context():
 	# Bangun context dictionary
 	for s in suppliers:
 		emails = email_map.get(s.name) or []
-		context[s.name] = {
+		context.append({
+			"code":s.name,
 			"keyword": s.supplier_name,
 			"emails": emails
-		}
+		})
 
 	return json.dumps(context)
 
@@ -351,3 +352,17 @@ def make_sales_order(args):
 	# add attachment
 	doc.save()
 	return doc.name
+
+def deep_get(d, path, default=None):
+    cur = d
+    for p in path:
+        try:
+            if isinstance(cur, dict):
+                cur = cur.get(p, default)
+            elif isinstance(cur, list) and isinstance(p, int):
+                cur = cur[p]
+            else:
+                return default
+        except (KeyError, IndexError, TypeError):
+            return default
+    return cur
