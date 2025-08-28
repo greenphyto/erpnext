@@ -9,6 +9,8 @@ from frappe.utils import flt, getdate, get_time
 from erpnext.controllers.erp import get_supplier_context
 import os
 from frappe.utils import get_traceback
+from erpnext.ai_agent.doctype.ai_agent_settings.ai_invoice_converter import AIAgentClient
+from six import string_types
 
 MAX_DISPLAY_LENGTH = 1000
 SHORT_HEAD = 300
@@ -155,6 +157,164 @@ class EmailInvoice(Document):
 		self.message_id = doc.message_id
 		self.inbox = doc.name
 		self.process_email(doc)
+
+	def process_email2(self, doc={}):
+		"""Process email using AIAgentClient end-to-end extraction and PI creation.
+
+		- Mirrors logic in `process_email` for attachment checks and reason handling.
+		- Uses `AIAgentClient.extract_invoice(path, reference)` to obtain structured JSON.
+		- Persists extracted JSON (including fallback with raw text) to `data_result`.
+		- Creates Non-stock Purchase Invoice via `create_purchase_invoice_non_stock2`.
+		"""
+		self._init_reasons()
+		if not doc and self.inbox:
+			doc = frappe.get_doc("Communication", self.inbox)
+
+		# Collect attachments linked to this email
+		file_doc_name = frappe.db.get_list(
+			"File",
+			{"attached_to_doctype": "Communication", "attached_to_name": doc.name},
+		)
+
+		# No attachments at all
+		if not file_doc_name:
+			self.add_reason(
+				category="attachment",
+				code="no_attachment",
+				message="No attachments found on the email",
+			)
+			self._finalize_reasons()
+			return
+
+		# Prepare agent and context
+		supp_context = get_supplier_context()
+		results_payload = []
+		pi_created = []
+		agent_exc = None
+		try:
+			agent = AIAgentClient()
+		except Exception as e:
+			agent = None
+			agent_exc = e
+
+		for file_name in file_doc_name:
+			fn = frappe.get_doc("File", file_name.get("name"))
+			full_path = fn.get_full_path()
+
+			# Check file exists
+			if not os.path.exists(full_path):
+				self.add_reason(
+					category="attachment",
+					code="missing_file",
+					message="Attached file not found on server",
+					context={"file": fn.file_name, "url": fn.file_url},
+				)
+				continue
+
+			# Copy attachment to current EmailInvoice for traceability
+			self.add_attachment_copy(fn)
+
+			# Only handle PDFs (consistent with process_email)
+			if ".pdf" not in full_path.lower():
+				self.add_reason(
+					category="attachment",
+					code="not_pdf",
+					message="Attachment is not a PDF",
+					context={"file": fn.file_name},
+				)
+				continue
+
+			# Try basic open to detect encryption/invalid PDF (for reason classification)
+			ok, img_or_msg = convert_pdf_to_img(full_path)
+			if not ok:
+				msg = img_or_msg or "PDF conversion failed"
+				code = "encrypted_pdf" if "encrypted" in (msg or "").lower() else "pdf_conversion_failed"
+				self.add_reason(
+					category="pdf",
+					code=code,
+					message=str(msg)[:200],
+					context={"file": fn.file_name},
+				)
+				continue
+
+			# If agent couldn't be constructed, record and skip further processing
+			if not agent:
+				self.add_reason(
+					category="system",
+					code="exception",
+					message=f"AI Agent init failed: {agent_exc}",
+					context={"file": fn.file_name},
+				)
+				continue
+
+			# Extract structured data via agent; handle fallback JSON
+			extracted = None
+			try:
+				extracted = agent.extract_invoice(full_path, reference=supp_context)
+			except Exception as e:
+				# Record system exception; no structured fallback available here
+				self.add_reason(
+					category="system",
+					code="exception",
+					message=f"{e}",
+					context={"file": fn.file_name},
+				)
+				continue
+
+			# If nothing meaningful returned, keep reason and continue
+			if not extracted:
+				self.add_reason(
+					category="agent",
+					code="no_extraction_result",
+					message="AI agent returned no result",
+					context={"file": fn.file_name},
+				)
+				continue
+
+			# Keep copy of extracted JSON for audit and later review
+			# Also include `file` so downstream creation can attach it
+			payload = {"result": extracted, "file": fn.name}
+			# Duplicate on root to simplify consumers that expect flat structure
+			payload.update({"document": extracted.get("document") if isinstance(extracted, dict) else None})
+			results_payload.append(payload)
+
+			# Attempt to create Non-stock PI from this extracted data
+			r, name = self.create_purchase_invoice_non_stock2(payload)
+			if not r:
+				self.add_reason(
+					category="pi",
+					code="create_failed",
+					message=str(name),
+					context={"file": fn.file_name},
+				)
+				continue
+
+			# Link communication to created PI and remember
+			try:
+				if doc:
+					doc.db_set("reference_doctype", "Purchase Invoice")
+					doc.db_set("reference_name", name)
+				if not self.invoice_no:
+					self.invoice_no = name
+			except Exception:
+				pass
+			pi_created.append(name)
+
+		# Persist extracted data (including raw fallback if any) for all processed files
+		try:
+			self.data_result = json.dumps(results_payload)
+		except Exception:
+			# As last resort, store repr
+			try:
+				self.data_result = repr(results_payload)
+			except Exception:
+				pass
+
+		# Finalize reasons only if nothing created; set status accordingly
+		if not pi_created:
+			self._finalize_reasons()
+		self.set_status()
+		return pi_created
 
 	def process_email(self, doc={}):
 		result = []
@@ -357,8 +517,14 @@ class EmailInvoice(Document):
 			return False, "Missing data"
 
 		# Normalize input: allow either top-level or wrapped under `result`
-		payload = data if isinstance(data, dict) else {}
-		root = payload.get("result") if isinstance(payload, dict) else None
+		payload = {}
+		if isinstance(data, string_types):
+			payload = json.loads(data)
+		else:
+			payload = frappe._dict(data)
+		root = payload.get("result") or {}
+		if 'result' in root:
+			root = root.get("result")
 		if not root:
 			root = payload
 
@@ -374,7 +540,7 @@ class EmailInvoice(Document):
 		missing_links = {"Supplier": None, "Currency": None, "UOM": [], "Item": []}
 
 		# Supplier
-		supplier_name = supplier_info.get("name") or root.get("supplier") if isinstance(root.get("supplier"), str) else None
+		supplier_name = supplier_info.get("name")
 		supplier_exists = None
 		if supplier_name:
 			supplier_exists = frappe.db.exists("Supplier", supplier_name)
