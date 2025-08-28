@@ -1,4 +1,3 @@
-import base64
 from typing import Optional
 
 import requests
@@ -8,12 +7,12 @@ try:
 except Exception:  # pragma: no cover - allows use outside Frappe context for linting
     frappe = None  # type: ignore
 
-class AIInvoiceConverterController:
+class AIAgentClient:
     """
     Simple controller to interact with an AI Invoice converter REST API.
 
     - Reads `server_url` from `AI Agent Settings` doctype when not provided.
-    - Encodes a local invoice file as base64 and posts it to `/extract_text`.
+    - Uploads a local invoice file as multipart form to `/extract-text`.
     - Returns extracted text when available (falls back to raw response text).
     """
 
@@ -42,54 +41,47 @@ class AIInvoiceConverterController:
         path = path if path.startswith("/") else f"/{path}"
         return f"{base}{path}"
 
-    def extract_text(self, invoice_path: str, as_form: bool = False, return_meta: bool = False):
+    def extract_text(
+        self,
+        invoice_path: str,
+        lang: Optional[str] = None,
+    ):
         """
-        Read a local invoice file, encode as base64, and send to `/extract_text`.
+        Read a local invoice file and send to `/extract-text` as multipart form.
 
         Args:
             invoice_path: Path to the invoice file on disk.
-            as_form: Send payload as form fields instead of JSON.
-            return_meta: When True, return the full JSON {"text","chars"}.
+            lang: Optional language hint forwarded as a form field `lang`.
 
         Returns:
-            By default a string of extracted text. If `return_meta=True`, returns
-            a dict with keys {"text": str, "chars": int}.
+            A string of extracted text.
         """
         if not invoice_path:
             raise ValueError("invoice_path must be provided")
 
-        with open(invoice_path, "rb") as f:
-            encoded = base64.b64encode(f.read()).decode("utf-8")
+        url = self._join_url("/extract-text")
 
-        url = self._join_url("/extract_text")
-        payload = {"invoice_base64": encoded}
+        # Always send as multipart form: files=<UploadFile>, lang=<Optional[str]>
+        import os
 
-        if as_form:
-            resp = requests.post(url, data=payload, timeout=self.timeout)
-        else:
-            resp = requests.post(url, json=payload, timeout=self.timeout)
+        with open(invoice_path, "rb") as fh:
+            filename = os.path.basename(invoice_path) or "invoice"
+            files = {"files": (filename, fh, "application/octet-stream")}
+            data = {"lang": lang} if lang else None
+            resp = requests.post(url, files=files, data=data, timeout=self.timeout)
+            
         resp.raise_for_status()
 
         # Expect JSON: {"text": str, "chars": int}
         try:
             data = resp.json()
         except ValueError:
-            return resp.text if not return_meta else {"text": resp.text, "chars": len(resp.text)}
+            return resp.text
 
         if not isinstance(data, dict):
-            return resp.text if not return_meta else {"text": resp.text, "chars": len(resp.text)}
+            return resp.text
 
         text = data.get("text")
-        chars = data.get("chars")
-
-        if return_meta:
-            if text is None and isinstance(chars, int):
-                body = resp.text
-                return {"text": body, "chars": len(body)}
-            if text is not None and not isinstance(chars, int):
-                return {"text": text, "chars": len(text)}
-            return {"text": text or "", "chars": chars if isinstance(chars, int) else len(text or "")}
-
         if isinstance(text, str):
             return text
         return resp.text
@@ -114,7 +106,7 @@ class AIInvoiceConverterController:
             except Exception:
                 reference = ""
 
-        url = self._join_url("/get_invoice_data")
+        url = self._join_url("/get-invoice-data")
         payload = {"text": text or "", "reference": reference or ""}
 
         if as_form:
@@ -138,5 +130,5 @@ class AIInvoiceConverterController:
 
         Returns parsed invoice data dict.
         """
-        text = self.extract_text(invoice_path, as_form=as_form, return_meta=False)
+        text = self.extract_text(invoice_path)
         return self.get_invoice_data(text=text, reference=reference, as_form=as_form)
