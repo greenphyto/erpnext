@@ -16,7 +16,7 @@ class AIAgentClient:
     - Returns extracted text when available (falls back to raw response text).
     """
 
-    def __init__(self, server_url: Optional[str] = None, timeout: int = 60):
+    def __init__(self, server_url: Optional[str] = None, timeout: int = 180):
         self.timeout = timeout
         self.server_url = server_url or self._get_server_url_from_settings()
         if not self.server_url:
@@ -121,14 +121,14 @@ class AIAgentClient:
             # If server didn't return JSON, wrap as best-effort structure
             return {"text": text or "", "reference": reference or "", "raw": resp.text}
 
-    def extract_invoice(self, invoice_path: str, reference: Optional[str] = None, as_form: bool = False):
+    def extract_invoice(self, invoice_path: str, reference: Optional[str] = None, lang: Optional[str] = None):
         """
         Convenience: OCR the invoice file, then fetch structured invoice data.
 
-        - Step 1: `/extract_text` with base64 file -> text
-        - Step 2: `/get_invoice_data` with text + reference
+        - Step 1: `/extract-text` with multipart upload -> text
+        - Step 2: `/get-invoice-data` with text + reference
 
         Returns parsed invoice data dict.
         """
-        text = self.extract_text(invoice_path)
-        return self.get_invoice_data(text=text, reference=reference, as_form=as_form)
+        text = self.extract_text(invoice_path, lang=lang)
+        return self.get_invoice_data(text=text, reference=reference)
