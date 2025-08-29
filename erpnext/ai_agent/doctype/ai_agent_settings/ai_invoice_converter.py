@@ -13,8 +13,7 @@ class AIAgentClient:
     - Uploads a local invoice file as multipart form to `/extract-text`.
     - Returns extracted text when available (falls back to raw response text).
     """
-
-    def __init__(self, server_url: Optional[str] = None, timeout: int = 180):
+    def __init__(self, server_url: Optional[str] = None, timeout: int = 300):
         self.timeout = timeout
         self.server_url = server_url or self._get_server_url_from_settings()
         if not self.server_url:
@@ -82,43 +81,32 @@ class AIAgentClient:
 
         text = cstr(data.get("text")) + f"\nemail: {email}"
         if isinstance(text, str):
-            return text
-        return resp.text
+            self.text = text
+        else:
+            self.text = resp.text
 
-    def get_invoice_data(self, text: str, reference: Optional[str] = None, as_form: bool = False):
+        return self.text
+
+    def get_invoice_data(self, text: str):
         """
         Call `/get_invoice_data` with extracted OCR text and a supplier reference.
 
         Args:
             text: OCR text content.
-            reference: Supplier reference string. If None, tries to read via `get_supplier_context()`.
-            as_form: Send payload as form fields instead of JSON.
-
         Returns:
             Parsed JSON response (dict) resembling sample_data.json structure.
         """
-        if reference is None:
-            # Import lazily to avoid import errors when used outside ERPNext runtime
-            try:
-                from erpnext.controllers.erp import get_supplier_context  # type: ignore
-                reference = get_supplier_context()
-            except Exception:
-                reference = ""
 
         url = self._join_url("/get-invoice-data")
-        payload = {"text": text or "", "reference": reference or ""}
-
-        if as_form:
-            resp = requests.post(url, data=payload, timeout=self.timeout)
-        else:
-            resp = requests.post(url, json=payload, timeout=self.timeout)
+        payload = {"text": text or ""}
+        resp = requests.post(url, json=payload, timeout=self.timeout)
         resp.raise_for_status()
 
         try:
             return resp.json()
         except ValueError:
             # If server didn't return JSON, wrap as best-effort structure
-            return {"text": text or "", "reference": reference or "", "raw": resp.text}
+            return {"text": text or "", "raw": resp.text}
 
     def extract_invoice(self, invoice_path: str, reference: str, email: str, lang: Optional[str] = None):
         """
@@ -130,4 +118,27 @@ class AIAgentClient:
         Returns parsed invoice data dict.
         """
         text = self.extract_text(invoice_path, email, lang=lang)
-        return self.get_invoice_data(text=text, reference=reference)
+        return self.get_invoice_data(text=text)
+
+    def get_supplier(self, payload):
+        """
+        Get supplier match from Company name or Domains
+        Body = {
+            "supplier_names":["HTP Co., Ltd"],
+            "domains":["iplusmobot.com"],
+            "references":{"Iplusmobot":{"keyword":"Hangzhou Iplusmobot Technology Co., Ltd","emails":[]},"Bio-Flora SG":{"keyword":"Bio-Flora(Singapore) Pte Ltd","emails":[]}},
+            "domain_map:":{"iplusmobot.com":["Iplusmobot","Hangzhou Iplusmobot Technology Co., Ltd"],"bioflora.com.sg":["Bio-Flora SG","Bio-Flora(Singapore) Pte Ltd"]}
+        }
+        """
+        url = self._join_url("/get-supplier")
+        resp = requests.post(url, json=payload)
+
+        resp.raise_for_status()
+
+        try:
+            return resp.json()
+        except ValueError:
+            # If server didn't return JSON, wrap as best-effort structure
+            return {
+                "code":None
+            }

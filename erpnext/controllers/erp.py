@@ -460,3 +460,174 @@ def deep_get(d, path, default=None):
         except (KeyError, IndexError, TypeError):
             return default
     return cur
+
+def get_supplier_payload(suppliers, domains):
+    """
+    Build payload containing suppliers, domains, supplier references, and domain map.
+
+    - references: { supplier_code: {keyword: supplier_name, emails: [..]} }
+    - domain_map: { domain: [supplier_code, supplier_name] }
+
+    Domains are collected from Supplier.website and email domains of linked Contacts.
+    """
+
+    # Helpers
+    def _extract_domain_from_url(url):
+        if not url:
+            return ""
+        url = url.strip().lower()
+        # Remove scheme
+        if url.startswith("http://"):
+            url = url[len("http://"):]
+        elif url.startswith("https://"):
+            url = url[len("https://"):]
+        # Remove credentials if any
+        if "@" in url and "/" in url.split("@")[0]:
+            url = url.split("@", 1)[1]
+        # Strip path and query
+        url = url.split("/", 1)[0].split("?", 1)[0]
+        # Drop port
+        url = url.split(":", 1)[0]
+        # Drop common subdomain prefix
+        if url.startswith("www."):
+            url = url[4:]
+        return url
+
+    def _extract_domain_from_email(email):
+        if not email or "@" not in email:
+            return ""
+        return email.split("@", 1)[1].strip().lower()
+
+    def _entity_list(code, name):
+        out = []
+        for v in (code, name):
+            if v and v not in out:
+                out.append(v)
+        return out
+
+    def _looks_like_domain(s):
+        if not isinstance(s, string_types):
+            return False
+        s = s.strip().lower()
+        if not s:
+            return False
+        if "://" in s or s.startswith("www.") or "/" in s:
+            return True
+        # bare domains like example.com (avoid names with spaces)
+        return "." in s and " " not in s and "@" not in s
+
+    # Normalize inputs: accept JSON or comma-separated strings
+    if isinstance(suppliers, string_types):
+        try:
+            suppliers_in = json.loads(suppliers)
+        except Exception:
+            suppliers_in = [s.strip() for s in suppliers.split(",") if s and s.strip()]
+    else:
+        suppliers_in = suppliers or []
+
+    if isinstance(domains, string_types):
+        try:
+            domains_in = json.loads(domains)
+        except Exception:
+            domains_in = [d.strip() for d in domains.split(",") if d and d.strip()]
+    else:
+        domains_in = domains or []
+
+    # Clean suppliers/domains if they look like URLs/domains
+    suppliers_display = []
+    for s in suppliers_in:
+        if _looks_like_domain(s):
+            suppliers_display.append(_extract_domain_from_url(s) or s)
+        else:
+            suppliers_display.append(s)
+
+    # Use only non-domain-like strings for DB query (supplier codes)
+    suppliers_for_query = [s for s in suppliers_in if not _looks_like_domain(s)]
+
+    # Clean and de-duplicate domains
+    seen_domains = set()
+    domains_clean = []
+    for d in domains_in:
+        dom = _extract_domain_from_url(d) or d
+        if dom and dom not in seen_domains:
+            seen_domains.add(dom)
+            domains_clean.append(dom)
+
+    # Fetch supplier master data
+    refs = {}
+    domain_map = {}
+
+    # Always fetch all active suppliers (exclude disabled/frozen)
+    supplier_rows = frappe.db.sql(
+        """
+        SELECT name, supplier_name, website
+        FROM `tabSupplier`
+        WHERE disabled = 0 AND is_frozen = 0
+        """,
+        as_dict=1,
+    )
+
+    supplier_set = {r.name for r in supplier_rows}
+
+    # Pull linked contacts' emails for these suppliers
+    emails_by_supplier = {s: [] for s in supplier_set}
+    if supplier_set:
+        contact_rows = frappe.db.sql(
+            """
+            SELECT 
+                dl.link_name AS supplier_code,
+                c.email_id AS primary_email,
+                (
+                    SELECT GROUP_CONCAT(DISTINCT ce.email_id ORDER BY ce.idx SEPARATOR ',')
+                    FROM `tabContact Email` ce
+                    WHERE ce.parent = c.name AND COALESCE(ce.email_id, '') <> ''
+                ) AS other_emails
+            FROM `tabDynamic Link` dl
+            LEFT JOIN `tabContact` c ON c.name = dl.parent
+            WHERE dl.link_doctype = 'Supplier' AND dl.link_name IN (%s)
+            """ % (", ".join(["%s"] * len(supplier_set))),
+            tuple(supplier_set),
+            as_dict=1,
+        )
+        for r in contact_rows:
+            emails = []
+            if r.primary_email:
+                emails.append(r.primary_email)
+            if r.other_emails:
+                emails.extend([e for e in r.other_emails.split(",") if e])
+            if emails:
+                cur = emails_by_supplier.get(r.supplier_code) or []
+                cur.extend(emails)
+                emails_by_supplier[r.supplier_code] = cur
+
+    # Build references and domain map
+    for s in supplier_rows:
+        code = s.name
+        sname = s.supplier_name or code
+        # dedupe emails and keep order
+        seen = set()
+        emails = []
+        for e in emails_by_supplier.get(code, []):
+            if e and e not in seen:
+                seen.add(e)
+                emails.append(e)
+        refs[code] = {"keyword": sname, "emails": emails}
+
+        # website domain
+        wdom = _extract_domain_from_url(s.website)
+        if wdom:
+            domain_map[wdom] = _entity_list(code, sname)
+        # email domains
+        for e in emails:
+            dom = _extract_domain_from_email(e)
+            if dom and dom not in domain_map:
+                domain_map[dom] = _entity_list(code, sname)
+
+    payload = {
+        "supplier_names": suppliers_display,
+        "domains": domains_clean,
+        "references": refs,
+        "domain_map": domain_map,
+    }
+
+    return payload
