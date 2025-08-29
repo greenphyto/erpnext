@@ -6,7 +6,7 @@ from frappe.model.document import Document
 from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_invoice
 from erpnext.controllers.va2 import extract_invoice_data, get_po_number, get_item_detail, get_po_and_items
 from frappe.utils import flt, getdate, get_time
-from erpnext.controllers.erp import get_supplier_context, deep_get
+from erpnext.controllers.erp import get_supplier_context, deep_get, get_supplier_payload
 import os
 from frappe.utils import get_traceback
 from erpnext.ai_agent.doctype.ai_agent_settings.ai_invoice_converter import AIAgentClient
@@ -278,6 +278,9 @@ class EmailInvoice(Document):
 			payload.update({"document": extracted.get("document") if isinstance(extracted, dict) else None})
 			results_payload.append(payload)
 
+			# Enhance the result
+			payload = self.enhance_payload(payload)
+
 			# Attempt to create Non-stock PI from this extracted data
 			r, name = self.create_invoice_result(payload)
 			if not r:
@@ -315,6 +318,32 @@ class EmailInvoice(Document):
 			self._finalize_reasons()
 		self.set_status()
 		return pi_created
+
+	def enhance_payload(self, payload):
+		# update supplier
+		# update item, soon
+		
+		for i,d in enumerate(payload):
+			supplier = []
+			domains = []
+			result = d.get("result")
+			if 'result' in result:
+				result = result.get("result")
+			
+			supp = deep_get(result, ['supplier', 'name'], "")
+			if not frappe.db.exists('Supplier', supp):
+				supplier.append(supp)
+				website = deep_get(result, ['supplier', 'contacts', 'website'] )
+				email = deep_get(result, ['supplier', 'contacts', 'email'] )
+				domains += [website, email]
+
+				agent = AIAgentClient()
+				supp_payload = get_supplier_payload(supplier, domains)
+				temp = agent.get_supplier(supp_payload)
+				supplier_final = temp.get("code")
+				payload[i]['result']['result']['supplier']['name'] = supplier_final
+			
+		return payload
 
 	def create_invoice_result(self, result=[], com_doc=""):
 		"""Create a Purchase Invoice based on extracted payload.
