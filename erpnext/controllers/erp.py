@@ -2,6 +2,15 @@ import frappe, json
 from frappe.utils import cint, flt, getdate
 from six import string_types
 
+# util: sanitize description by removing editor wrapper tags
+def _sanitize_desc(desc):
+    if not isinstance(desc, string_types):
+        return desc
+    return (
+        desc.replace('<div class="ql-editor read-mode"><p>', "")
+        .replace("</p></div>", "")
+    )
+
 def check_email_status(log, method=""):
 	if log.status != "Sent":
 		return
@@ -175,27 +184,112 @@ def is_invoice(text):
 
 def get_item_context():
 	# build item list as base knowledge / context for AI
-	context = {}
+	context = []
 	# we limit to products and enable
 	items = frappe.db.sql("""
 		SELECT 
-			i.name AS item_code, i.item_name, i.marketing_name
+			i.name AS item_code, i.item_name, i.marketing_name, i.description
 		FROM
 			`tabItem` i
 		WHERE
 			i.disabled = 0
-				AND i.item_group = 'Products' and i.item_name not like "(R&D)%" limit 10
+				AND i.item_group = 'Raw Material' and i.item_name not like "(R&D)%" limit 10
 	""", as_dict=1)
 	for d in items:
-		if not d.item_code in context:
-			keys = d.item_name
-			if d.marketing_name:
-				keys += "/"+d.marketing_name
-			context[d.item_code] = {
-				"keyword": f'{keys}'
+		keys = [d.item_name]
+		if d.marketing_name:
+			keys += [d.marketing_name]
+		if d.description:
+			keys += [d.description]
+		context.append(
+			{
+				"code": d.item_code,
+				"name": d.item_name,
+				"desc": _sanitize_desc(d.description),
+				"keyword": keys,
 			}
+		)
+
 	
 	return json.dumps(context)
+
+def get_item_context_from_supplier(supplier=""):
+    """
+    Ambil konteks item berbasis riwayat pembelian dari supplier tertentu.
+
+    Prioritas sumber: Purchase Invoice (PI) lebih tinggi dari Purchase Order (PO).
+
+    Output akhir berupa list of objects: [{code, name, desc}].
+    (Selama proses, deduplikasi tetap memakai dict untuk memilih entri terbaik.)
+    """
+    if not supplier:
+        return json.dumps({})
+
+    # Gabungkan PI dan PO, beri prioritas (1=PI, 2=PO) lalu urutkan waktu terbaru.
+    rows = frappe.db.sql(
+        """
+        SELECT item_code, item_name, description, doc_ts, priority FROM (
+            SELECT 
+                pii.item_code,
+                pii.item_name,
+                pii.description,
+                COALESCE(pi.modified, pi.creation) AS doc_ts,
+                1 AS priority
+            FROM `tabPurchase Invoice Item` pii
+            INNER JOIN `tabPurchase Invoice` pi ON pi.name = pii.parent
+            WHERE pi.supplier = %s
+                AND pi.docstatus IN (1)
+                AND COALESCE(pii.item_code, '') <> ''
+
+            UNION ALL
+
+            SELECT 
+                poi.item_code,
+                poi.item_name,
+                poi.description,
+                COALESCE(po.modified, po.creation) AS doc_ts,
+                2 AS priority
+            FROM `tabPurchase Order Item` poi
+            INNER JOIN `tabPurchase Order` po ON po.name = poi.parent
+            WHERE po.supplier = %s
+                AND po.docstatus IN (1)
+                AND COALESCE(poi.item_code, '') <> ''
+        ) t
+        ORDER BY priority ASC, doc_ts DESC
+        """,
+        (supplier, supplier),
+        as_dict=1,
+    )
+
+    context = {}
+    for r in rows:
+        code = r.get("item_code")
+        if not code or code in context:
+            continue
+
+        name = r.get("item_name")
+        desc = r.get("description")
+
+        if not name or not desc:
+            item_master = frappe.db.get_value(
+                "Item", code, ["item_name", "description"], as_dict=True
+            )
+            if item_master:
+                name = name or item_master.get("item_name")
+                desc = desc or item_master.get("description")
+
+        context[code]={
+			"code": code,
+            "name": name or code,
+            "desc": _sanitize_desc(desc or ""),
+        }
+
+    context_list = [
+        {"code": code, "name": v.get("name") or code, "desc": v.get("desc") or ""}
+        for code, v in context.items()
+    ]
+
+    return json.dumps(context_list)
 
 def get_customer_context():
 	context = {}
