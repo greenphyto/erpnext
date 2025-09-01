@@ -292,11 +292,13 @@ class EmailInvoice(Document):
 				)
 				continue
 
-			# Link communication to created PI and remember
 			try:
 				if doc:
+					# Link communication to created PI and remember
 					doc.db_set("reference_doctype", "Purchase Invoice")
 					doc.db_set("reference_name", name)
+					# copy attachment
+					self.add_attachment_copy(fn, "Purchase Invoice", name )
 				if not self.invoice_no:
 					self.invoice_no = name
 			except Exception:
@@ -522,15 +524,17 @@ class EmailInvoice(Document):
 
 		return True, doc.name
 	
-	def add_attachment_copy(self, source_file):
+	def add_attachment_copy(self, source_file, doctype="", name=""):
 		new_file = frappe.new_doc("File")
+		doctype = doctype or self.doctype
+		name = name or self.doctype
 		new_file.update({
 			"doctype": "File",
 			"file_name": source_file.file_name,
 			"file_url": source_file.file_url,
 			"is_private": source_file.is_private,
-			"attached_to_doctype": self.doctype,
-			"attached_to_name": self.name
+			"attached_to_doctype": doctype,
+			"attached_to_name": name
 		})
 		new_file.insert()
 
