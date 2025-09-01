@@ -20,6 +20,8 @@ can update or delete
 supplierID = foms_id
 """
 
+DEFAULT_LEAD_TIME = 14
+
 # VARIABLE
 OPERATION_MAP = {
 	"Nursery":1,
@@ -1478,9 +1480,8 @@ def create_raw_material(log):
 			doc.has_batch_no = 1
 			doc.create_new_batch = 1
 			doc.batch_number_series = doc.item_code + "-" + "BN.#####"
-
-			doc.lead_time_days = cint(log.RequestLeadTime)
-			doc.min_order_qty = flt(log.MinimumOrderQuantity)
+			doc.lead_time_days = cint(log.requestLeadTime) or DEFAULT_LEAD_TIME
+			doc.min_order_qty = flt(log.minimumOrderQuantity)
 			doc.safety_stock = log.safetyLevel
 			doc.shelf_life_in_days = 365
 			doc.valuation_method = "FIFO"
@@ -1498,8 +1499,8 @@ def create_raw_material(log):
 		doc.description = log.rawMaterialDescription
 		if doc.item_code not in ['RM-NS-WW']:
 			doc.item_group = types
-			doc.lead_time_days = cint(log.RequestLeadTime)
-			doc.min_order_qty = flt(log.MinimumOrderQuantity)
+			doc.lead_time_days = cint(log.requestLeadTime) or DEFAULT_LEAD_TIME
+			doc.min_order_qty = flt(log.minimumOrderQuantity)
 			doc.safety_stock = log.safetyLevel
 			doc.shelf_life_in_days = 365
 			doc.is_stock_item = 1
