@@ -323,25 +323,24 @@ class EmailInvoice(Document):
 		# update supplier
 		# update item, soon
 		
-		for i,d in enumerate(payload):
-			supplier = []
-			domains = []
-			result = d.get("result")
-			if 'result' in result:
-				result = result.get("result")
-			
-			supp = deep_get(result, ['supplier', 'name'], "")
-			if not frappe.db.exists('Supplier', supp):
-				supplier.append(supp)
-				website = deep_get(result, ['supplier', 'contacts', 'website'] )
-				email = deep_get(result, ['supplier', 'contacts', 'email'] )
-				domains += [website, email]
+		supplier = []
+		domains = []
+		result = payload['result']
+		if 'result' in result:
+			result = result.get("result")
+		
+		supp = deep_get(result, ['supplier', 'name'], "")
+		if not frappe.db.exists('Supplier', supp):
+			supplier.append(supp)
+			website = deep_get(result, ['supplier', 'contacts', 'website'] )
+			email = deep_get(result, ['supplier', 'contacts', 'email'] )
+			domains += [website, email]
 
-				agent = AIAgentClient()
-				supp_payload = get_supplier_payload(supplier, domains)
-				temp = agent.get_supplier(supp_payload)
-				supplier_final = temp.get("code")
-				payload[i]['result']['result']['supplier']['name'] = supplier_final
+			agent = AIAgentClient()
+			supp_payload = get_supplier_payload(supplier, domains)
+			temp = agent.get_supplier(supp_payload)
+			supplier_final = temp.get("code")
+			payload['result']['result']['supplier']['name'] = supplier_final
 			
 		return payload
 
