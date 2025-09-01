@@ -487,6 +487,9 @@ class EmailInvoice(Document):
 		doc.flags.ignore_links = 1
 		doc.save()
 
+		# add bank account
+		self.add_bank_account(data, doc.name)
+
 		# Attach original file if present
 		file_id = (data.get("file") if isinstance(data, dict) else None) or (root.get("file") if isinstance(root, dict) else None)
 		if file_id:
@@ -530,6 +533,39 @@ class EmailInvoice(Document):
 			"attached_to_name": self.name
 		})
 		new_file.insert()
+
+	def add_bank_account(self, data, name):
+		bank_accounts = deep_get(data, ['payment', 'bank_accounts'])
+		for d in bank_accounts:
+			com = frappe.new_doc("Comment")
+			com.comment_type = "Info"
+			com.reference_doctype = "Purchase Invoice"
+			com.reference_name = name
+			com.subject = "Bank Account"
+			data_bank = d
+			labels = {
+				'Bank Name': 'bank_name',
+				'Account Name': 'account_name',
+				'Account Number': 'account_number',
+				'IBAN': 'iban',
+				'SWIFT/BIC': 'swift_bic',
+				'Bank Address': 'bank_address',
+				'Currency': 'currency'
+			}
+			
+			rows = "\n  ".join(
+				f"<b>{label}:</b> {data_bank.get(key) or '-'}<br>"
+				for label, key in labels.items()
+			)
+
+			com.content = f"""
+			<div class="frappe-card p-3">
+			<h5 class="my-2">Bank Account</h5>
+			{rows}
+			</div>
+			<div class="hidden data">{json.dumps(data_bank)}</div>
+			"""
+			com.insert(ignore_permissions=True)
 
 	def create_purchase_invoice_non_stock(self, data=None):
 		"""Create a Non-stock Purchase Invoice purely from the passed parameter.
@@ -719,6 +755,9 @@ class EmailInvoice(Document):
 			doc.flags.ignore_links = 1
 			doc.flags.ignore_validate = 1
 			doc.save()
+		
+		# add bank account
+		self.add_bank_account(data, doc.name)
 
 		# 5) Attach file if `file` docname provided in payload/root
 		file_id = (payload.get("file") if isinstance(payload, dict) else None) or (root.get("file") if isinstance(root, dict) else None)
