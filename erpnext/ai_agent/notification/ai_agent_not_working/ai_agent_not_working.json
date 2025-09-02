@@ -1,0 +1,34 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "",
+ "creation": "2025-09-02 14:54:34.399444",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "AI Agent Settings",
+ "enabled": 1,
+ "event": "Custom",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "Background Job:\n<b>{{ doc.get_method(doc.typ) }}</b>\n<br>\n{% if doc.issue %}\nError Time:\n{{ doc.get_details(doc.typ, \"creation\") }}\n<br>\nError Trace:\n<pre style=\"white-space:pre-wrap;background:#0f172a;color:#e5e7eb;padding:12px;border-radius:8px;overflow:auto;max-height:380px\">\n{{ doc.get_details(doc.typ, \"details\") }}\n</pre>\n{% else %}\n<b>Runing Now \u2705</b>\n<br>\nTime:\n{{ doc.time }}\n{% endif %}\n",
+ "modified": "2025-09-02 16:05:51.028050",
+ "modified_by": "Administrator",
+ "module": "AI Agent",
+ "name": "AI Agent Not Working",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "email": "rizky@greenphyto.com"
+  },
+  {
+   "email": "weiquan@greenphyto.com"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "sender": "ERP",
+ "sender_email": "erp@greenphyto.com",
+ "subject": "{{doc.state}}: {{ doc.get_method(doc.typ) }}",
+ "value_changed": "email_read_issue"
+}
