@@ -4,14 +4,74 @@
 import frappe
 from frappe.model.document import Document
 from frappe.utils import get_datetime
-class AIAgentSettings(Document):
-	@frappe.whitelist()
-	def mark_complete(self, typ):
-		mark_issue(typ, complete=1)
-
 
 ES_NAME="email_account.resync_email_inbox"
 ER_NAME="erp.read_email_inbox"
+NOTIF = "AI Agent Not Working"
+
+class AIAgentSettings(Document):
+	def validate(self):
+		# detect old change
+		self.detect_changed()
+
+	@frappe.whitelist()
+	def mark_complete(self, typ):
+		mark_issue(typ, complete=1)
+	
+	def get_method(self, typ):
+		if typ==1:
+			return ES_NAME
+		else:
+			return ER_NAME
+	
+	def get_details(self, typ, field="details"):
+		method = self.get_method(typ)
+		log = frappe.db.get_value(
+			"Scheduled Job Log",
+			{"status": "Failed", "scheduled_job_type":method},
+			["creation", "details"],
+			order_by="creation desc",
+			as_dict=1
+		)
+		if log:
+			return log.get(field)
+	
+	def detect_changed(self):
+		# detect changed
+		old_doc = self.get_doc_before_save()
+		if old_doc:
+			if self.get("email_sync_issue") and not old_doc.get("email_sync_issue"):
+				# checked
+				self.send_notification(1)
+			elif self.get("email_read_issue") and not old_doc.get("email_read_issue"):
+				# checked
+				self.send_notification(2)
+			elif not self.get("email_sync_issue") and old_doc.get("email_sync_issue"):
+				# unchecked
+				self.send_notification(1, True)
+			elif not self.get("email_read_issue") and old_doc.get("email_read_issue"):
+				# unchecked
+				self.send_notification(2, True)
+		else:
+			if self.get("email_sync_issue"):
+				# checked
+				self.send_notification(1)
+			elif self.get("email_read_issue"):
+				# checked
+				self.send_notification(2)
+			
+	def send_notification(self, typ, complete=False):
+		notif = frappe.get_doc("Notification", NOTIF)
+		self.typ=typ
+		if not complete:
+			self.state = "🔴 Not working"
+			self.issue = True
+			notif.send(self)
+		else:
+			self.state = "🟢 Working"
+			self.issue = False
+			self.time = get_datetime()
+			notif.send(self)
 
 # send notification
 def read_log(doc, method=""):
@@ -19,10 +79,10 @@ def read_log(doc, method=""):
 		return
 	
 	if doc.scheduled_job_type == ES_NAME:
-		mark_issue(2, log=doc)
+		mark_issue(1, log=doc)
 
 	elif doc.scheduled_job_type == ER_NAME:
-		mark_issue(1, log=doc)
+		mark_issue(2, log=doc)
 	
 	else:
 		return
