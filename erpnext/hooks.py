@@ -418,6 +418,9 @@ doc_events = {
 	},
     "Email Queue": {
         "validate":"erpnext.controllers.erp.check_email_status"
+	},
+    "Scheduled Job Log": {
+        "after_insert":"erpnext.ai_agent.doctype.ai_agent_settings.ai_agent_settings.read_log"
 	}
 }
 
