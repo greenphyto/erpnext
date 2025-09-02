@@ -6,19 +6,86 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "server_url"
+  "server_url",
+  "issues_section",
+  "email_read_issue",
+  "er_since",
+  "go_to_er",
+  "mark_complete_er",
+  "column_break_5",
+  "email_sync_issue",
+  "es_since",
+  "go_to_es",
+  "mark_complete_es"
  ],
  "fields": [
   {
    "fieldname": "server_url",
    "fieldtype": "Data",
    "label": "Server URL"
+  },
+  {
+   "fieldname": "issues_section",
+   "fieldtype": "Section Break",
+   "label": "Issues"
+  },
+  {
+   "default": "0",
+   "fieldname": "email_sync_issue",
+   "fieldtype": "Check",
+   "label": "Email Sync Issue",
+   "read_only": 1
+  },
+  {
+   "fieldname": "es_since",
+   "fieldtype": "Datetime",
+   "label": "ES Since",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "email_read_issue",
+   "fieldtype": "Check",
+   "label": "Email Read Issue",
+   "read_only": 1
+  },
+  {
+   "fieldname": "er_since",
+   "fieldtype": "Data",
+   "label": "ER Since",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "go_to_es",
+   "fieldtype": "Button",
+   "label": "Go to ES"
+  },
+  {
+   "fieldname": "go_to_er",
+   "fieldtype": "Button",
+   "label": "Go to ER"
+  },
+  {
+   "depends_on": "eval:doc.email_read_issue",
+   "fieldname": "mark_complete_er",
+   "fieldtype": "Button",
+   "label": "Mark Complete"
+  },
+  {
+   "depends_on": "eval:doc.email_sync_issue",
+   "fieldname": "mark_complete_es",
+   "fieldtype": "Button",
+   "label": "Mark Complete"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-08-27 19:27:54.970433",
+ "modified": "2025-09-02 12:21:54.344628",
  "modified_by": "Administrator",
  "module": "AI Agent",
  "name": "AI Agent Settings",
