@@ -15,6 +15,7 @@ from six import string_types
 MAX_DISPLAY_LENGTH = 1000
 SHORT_HEAD = 300
 SHORT_TAIL = 700
+GST_DEFAULT = 9
 class EmailInvoice(Document):
 	def validate(self):
 		self.set_status()
@@ -479,8 +480,7 @@ class EmailInvoice(Document):
 						})
 
 		# Optional GST update if present in payload
-		gst_percent = deep_get(data, [], 9)
-		doc.taxes_and_charges = get_gst_template(gst_percent)
+		doc.taxes_and_charges = get_gst_template(GST_DEFAULT)
 		doc.set_other_charges()
 
 		# Persist
@@ -736,17 +736,8 @@ class EmailInvoice(Document):
 			if frappe.db.exists("Currency", ic):
 				doc.currency = ic
 
-		# Taxes (optional): try to set GST template from summary if present
-		gst_percent = None
-		tax_summary = summary_info.get("tax_summary") or []
-		for t in tax_summary:
-			pct = t.get("rate") or t.get("percent") or t.get("percentage")
-			if pct is not None:
-				gst_percent = flt(pct)
-				break
-		if gst_percent is not None:
-			doc.taxes_and_charges = get_gst_template(gst_percent)
-			doc.set_other_charges()
+		doc.taxes_and_charges = get_gst_template(GST_DEFAULT)
+		doc.set_other_charges()
 
 		# 4) Persist document; allow saving even if some links are missing
 		try:
@@ -821,7 +812,7 @@ class EmailInvoice(Document):
 				row.qty = flt(d['qty'])
 
 		# add GST 
-		doc.taxes_and_charges = get_gst_template(data.get("gst_percent") or 9)
+		doc.taxes_and_charges = get_gst_template(GST_DEFAULT)
 		doc.set_other_charges()
 
 		doc.flags.ignore_mandatory = 1
