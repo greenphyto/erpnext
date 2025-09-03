@@ -631,3 +631,38 @@ def get_supplier_payload(suppliers, domains):
     }
 
     return payload
+
+from erpnext.ai_agent.doctype.ai_agent_settings.ai_invoice_converter import AIAgentClient
+def chunks(lst, size):
+    for i in range(0, len(lst), size):
+        yield lst[i:i + size]
+
+def update_supplier_domain():
+    # ambil supplier yang belum ada website
+    supplier_data = frappe.db.sql("""
+        SELECT name
+        FROM `tabSupplier`
+        WHERE website IS NULL
+          AND disabled = 0
+          AND supplier_type = 'Company' limit 5
+    """, as_dict=1)
+
+    payload = [x["name"] for x in supplier_data]
+    agent = AIAgentClient()
+
+    for batch in chunks(payload, 50):   # max 50 per panggilan
+        res = agent.get_supplier_domain(batch)
+
+        # update tiap hasil
+        if 'result' in res:
+            res = res.get("result")
+
+        for d in res:
+            if d.get("company") and d.get("domain"):
+                frappe.db.set_value(
+                    "Supplier",
+                    d["company"],
+                    "website",          # <- tambahkan fieldname yang mau diupdate
+                    d["domain"]
+                )
+                print("Set domain", d["company"], d["domain"])
