@@ -142,3 +142,18 @@ class AIAgentClient:
             return {
                 "code":None
             }
+    
+    def get_supplier_domain(self, supplier_list):
+        url = self._join_url("/get-supplier-domain")
+        payload = {"supplier_list":supplier_list}
+        resp = requests.post(url, json=payload)
+
+        resp.raise_for_status()
+
+        try:
+            return resp.json()
+        except ValueError:
+            # If server didn't return JSON, wrap as best-effort structure
+            return {
+                "result":[]
+            }
