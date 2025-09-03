@@ -4,12 +4,12 @@ from six import string_types
 
 # util: sanitize description by removing editor wrapper tags
 def _sanitize_desc(desc):
-    if not isinstance(desc, string_types):
-        return desc
-    return (
-        desc.replace('<div class="ql-editor read-mode"><p>', "")
-        .replace("</p></div>", "")
-    )
+	if not isinstance(desc, string_types):
+		return desc
+	return (
+		desc.replace('<div class="ql-editor read-mode"><p>', "")
+		.replace("</p></div>", "")
+	)
 
 def check_email_status(log, method=""):
 	if log.status != "Sent":
@@ -128,57 +128,57 @@ def set_checked_ai_status(cdt, com_name):
 	}).insert(ignore_permissions=True)
 
 def is_invoice(text):
-    text = text.lower()
-    
-    invoice_keywords = [
-        # English
-        "invoice", "tax invoice", "bill to", "invoice number",
-        "date of invoice", "tax amount", "invoice total", "amount due",
-        
-        # Chinese (Simplified)
-        "发票", "税务发票", "发票号码", "发票日期", "金额", "总金额",
-        
-        # Japanese
-        "請求書", "税請求書", "請求日", "請求番号", "合計金額", "金額",
-        
-        # Korean
-        "세금계산서", "계산서", "송장", "청구서", "총액", "청구 금액",
-        
-        # Spanish
-        "factura", "factura fiscal", "número de factura", "fecha de factura", "importe", "total a pagar",
-        
-        # French
-        "facture", "numéro de facture", "date de facture", "montant", "total à payer",
-        
-        # German
-        "rechnung", "rechnungsnummer", "rechnungsdatum", "gesamtbetrag", "betrag",
-        
-        # Portuguese
-        "fatura", "número da fatura", "data da fatura", "valor", "total a pagar",
-        
-        # Italian
-        "fattura", "numero fattura", "data fattura", "importo", "totale da pagare",
+	text = text.lower()
+	
+	invoice_keywords = [
+		# English
+		"invoice", "tax invoice", "bill to", "invoice number",
+		"date of invoice", "tax amount", "invoice total", "amount due",
+		
+		# Chinese (Simplified)
+		"发票", "税务发票", "发票号码", "发票日期", "金额", "总金额",
+		
+		# Japanese
+		"請求書", "税請求書", "請求日", "請求番号", "合計金額", "金額",
+		
+		# Korean
+		"세금계산서", "계산서", "송장", "청구서", "총액", "청구 금액",
+		
+		# Spanish
+		"factura", "factura fiscal", "número de factura", "fecha de factura", "importe", "total a pagar",
+		
+		# French
+		"facture", "numéro de facture", "date de facture", "montant", "total à payer",
+		
+		# German
+		"rechnung", "rechnungsnummer", "rechnungsdatum", "gesamtbetrag", "betrag",
+		
+		# Portuguese
+		"fatura", "número da fatura", "data da fatura", "valor", "total a pagar",
+		
+		# Italian
+		"fattura", "numero fattura", "data fattura", "importo", "totale da pagare",
 
-        # Dutch
-        "factuur", "factuurnummer", "factuurdatum", "totaalbedrag", "te betalen bedrag",
+		# Dutch
+		"factuur", "factuurnummer", "factuurdatum", "totaalbedrag", "te betalen bedrag",
 
-        # Russian
-        "счет-фактура", "счет", "номер счета", "дата счета", "сумма", "итого к оплате",
+		# Russian
+		"счет-фактура", "счет", "номер счета", "дата счета", "сумма", "итого к оплате",
 
-        # Arabic (with and without diacritics)
-        "فاتورة", "رقم الفاتورة", "تاريخ الفاتورة", "المبلغ", "إجمالي المبلغ", "المبلغ المستحق",
+		# Arabic (with and without diacritics)
+		"فاتورة", "رقم الفاتورة", "تاريخ الفاتورة", "المبلغ", "إجمالي المبلغ", "المبلغ المستحق",
 
-        # Hindi (Devanagari)
-        "चालान", "इनवॉइस", "इनवॉइस संख्या", "चालान संख्या", "तिथि", "राशि", "कुल राशि",
+		# Hindi (Devanagari)
+		"चालान", "इनवॉइस", "इनवॉइस संख्या", "चालान संख्या", "तिथि", "राशि", "कुल राशि",
 
 		# Indonesia"
 		"faktur", "faktur pajak", "tagihan ke", "nomor faktur",
 		"tanggal faktur", "jumlah pajak", "total faktur", "jumlah yang harus dibayar",
 
 		"payment", "Purchase", "Billing", "Bill", "Charge"
-    ]
+	]
 
-    return any(keyword in text for keyword in invoice_keywords)
+	return any(keyword in text for keyword in invoice_keywords)
 
 
 
@@ -214,82 +214,82 @@ def get_item_context():
 	return json.dumps(context)
 
 def get_item_context_from_supplier(supplier=""):
-    """
-    Ambil konteks item berbasis riwayat pembelian dari supplier tertentu.
+	"""
+	Ambil konteks item berbasis riwayat pembelian dari supplier tertentu.
 
-    Prioritas sumber: Purchase Invoice (PI) lebih tinggi dari Purchase Order (PO).
+	Prioritas sumber: Purchase Invoice (PI) lebih tinggi dari Purchase Order (PO).
 
-    Output akhir berupa list of objects: [{code, name, desc}].
-    (Selama proses, deduplikasi tetap memakai dict untuk memilih entri terbaik.)
-    """
-    if not supplier:
-        return json.dumps({})
+	Output akhir berupa list of objects: [{code, name, desc}].
+	(Selama proses, deduplikasi tetap memakai dict untuk memilih entri terbaik.)
+	"""
+	if not supplier:
+		return json.dumps({})
 
-    # Gabungkan PI dan PO, beri prioritas (1=PI, 2=PO) lalu urutkan waktu terbaru.
-    rows = frappe.db.sql(
-        """
-        SELECT item_code, item_name, description, doc_ts, priority FROM (
-            SELECT 
-                pii.item_code,
-                pii.item_name,
-                pii.description,
-                COALESCE(pi.modified, pi.creation) AS doc_ts,
-                1 AS priority
-            FROM `tabPurchase Invoice Item` pii
-            INNER JOIN `tabPurchase Invoice` pi ON pi.name = pii.parent
-            WHERE pi.supplier = %s
-                AND pi.docstatus IN (1)
-                AND COALESCE(pii.item_code, '') <> ''
+	# Gabungkan PI dan PO, beri prioritas (1=PI, 2=PO) lalu urutkan waktu terbaru.
+	rows = frappe.db.sql(
+		"""
+		SELECT item_code, item_name, description, doc_ts, priority FROM (
+			SELECT 
+				pii.item_code,
+				pii.item_name,
+				pii.description,
+				COALESCE(pi.modified, pi.creation) AS doc_ts,
+				1 AS priority
+			FROM `tabPurchase Invoice Item` pii
+			INNER JOIN `tabPurchase Invoice` pi ON pi.name = pii.parent
+			WHERE pi.supplier = %s
+				AND pi.docstatus IN (1)
+				AND COALESCE(pii.item_code, '') <> ''
 
-            UNION ALL
+			UNION ALL
 
-            SELECT 
-                poi.item_code,
-                poi.item_name,
-                poi.description,
-                COALESCE(po.modified, po.creation) AS doc_ts,
-                2 AS priority
-            FROM `tabPurchase Order Item` poi
-            INNER JOIN `tabPurchase Order` po ON po.name = poi.parent
-            WHERE po.supplier = %s
-                AND po.docstatus IN (1)
-                AND COALESCE(poi.item_code, '') <> ''
-        ) t
-        ORDER BY priority ASC, doc_ts DESC
-        """,
-        (supplier, supplier),
-        as_dict=1,
-    )
+			SELECT 
+				poi.item_code,
+				poi.item_name,
+				poi.description,
+				COALESCE(po.modified, po.creation) AS doc_ts,
+				2 AS priority
+			FROM `tabPurchase Order Item` poi
+			INNER JOIN `tabPurchase Order` po ON po.name = poi.parent
+			WHERE po.supplier = %s
+				AND po.docstatus IN (1)
+				AND COALESCE(poi.item_code, '') <> ''
+		) t
+		ORDER BY priority ASC, doc_ts DESC
+		""",
+		(supplier, supplier),
+		as_dict=1,
+	)
 
-    context = {}
-    for r in rows:
-        code = r.get("item_code")
-        if not code or code in context:
-            continue
+	context = {}
+	for r in rows:
+		code = r.get("item_code")
+		if not code or code in context:
+			continue
 
-        name = r.get("item_name")
-        desc = r.get("description")
+		name = r.get("item_name")
+		desc = r.get("description")
 
-        if not name or not desc:
-            item_master = frappe.db.get_value(
-                "Item", code, ["item_name", "description"], as_dict=True
-            )
-            if item_master:
-                name = name or item_master.get("item_name")
-                desc = desc or item_master.get("description")
+		if not name or not desc:
+			item_master = frappe.db.get_value(
+				"Item", code, ["item_name", "description"], as_dict=True
+			)
+			if item_master:
+				name = name or item_master.get("item_name")
+				desc = desc or item_master.get("description")
 
-        context[code]={
+		context[code]={
 			"code": code,
-            "name": name or code,
-            "desc": _sanitize_desc(desc or ""),
-        }
+			"name": name or code,
+			"desc": _sanitize_desc(desc or ""),
+		}
 
-    context_list = [
-        {"code": code, "name": v.get("name") or code, "desc": v.get("desc") or ""}
-        for code, v in context.items()
-    ]
+	context_list = [
+		{"code": code, "name": v.get("name") or code, "desc": v.get("desc") or ""}
+		for code, v in context.items()
+	]
 
-    return json.dumps(context_list)
+	return json.dumps(context_list)
 
 def get_customer_context():
 	context = {}
@@ -356,7 +356,7 @@ def get_supplier_context():
 	# Ambil semua supplier aktif
 	suppliers = frappe.db.sql("""
 		SELECT 
-			s.name, s.supplier_name
+			s.name, s.supplier_name, s.website
 		FROM
 			`tabSupplier` s
 		WHERE
@@ -403,6 +403,9 @@ def get_supplier_context():
 	# Bangun context dictionary
 	for s in suppliers:
 		emails = email_map.get(s.name) or []
+		if s.website:
+			emails.append(s.website)
+			
 		context.append({
 			"code":s.name,
 			"keyword": s.supplier_name,
@@ -448,221 +451,221 @@ def make_sales_order(args):
 	return doc.name
 
 def deep_get(d, path, default=None):
-    cur = d
-    for p in path:
-        try:
-            if isinstance(cur, dict):
-                cur = cur.get(p, default)
-            elif isinstance(cur, list) and isinstance(p, int):
-                cur = cur[p]
-            else:
-                return default
-        except (KeyError, IndexError, TypeError):
-            return default
-    return cur
+	cur = d
+	for p in path:
+		try:
+			if isinstance(cur, dict):
+				cur = cur.get(p, default)
+			elif isinstance(cur, list) and isinstance(p, int):
+				cur = cur[p]
+			else:
+				return default
+		except (KeyError, IndexError, TypeError):
+			return default
+	return cur
 
 def get_supplier_payload(suppliers, domains):
-    """
-    Build payload containing suppliers, domains, supplier references, and domain map.
+	"""
+	Build payload containing suppliers, domains, supplier references, and domain map.
 
-    - references: { supplier_code: {keyword: supplier_name, emails: [..]} }
-    - domain_map: { domain: [supplier_code, supplier_name] }
+	- references: { supplier_code: {keyword: supplier_name, emails: [..]} }
+	- domain_map: { domain: [supplier_code, supplier_name] }
 
-    Domains are collected from Supplier.website and email domains of linked Contacts.
-    """
+	Domains are collected from Supplier.website and email domains of linked Contacts.
+	"""
 
-    # Helpers
-    def _extract_domain_from_url(url):
-        if not url:
-            return ""
-        url = url.strip().lower()
-        # Remove scheme
-        if url.startswith("http://"):
-            url = url[len("http://"):]
-        elif url.startswith("https://"):
-            url = url[len("https://"):]
-        # Remove credentials if any
-        if "@" in url and "/" in url.split("@")[0]:
-            url = url.split("@", 1)[1]
-        # Strip path and query
-        url = url.split("/", 1)[0].split("?", 1)[0]
-        # Drop port
-        url = url.split(":", 1)[0]
-        # Drop common subdomain prefix
-        if url.startswith("www."):
-            url = url[4:]
-        return url
+	# Helpers
+	def _extract_domain_from_url(url):
+		if not url:
+			return ""
+		url = url.strip().lower()
+		# Remove scheme
+		if url.startswith("http://"):
+			url = url[len("http://"):]
+		elif url.startswith("https://"):
+			url = url[len("https://"):]
+		# Remove credentials if any
+		if "@" in url and "/" in url.split("@")[0]:
+			url = url.split("@", 1)[1]
+		# Strip path and query
+		url = url.split("/", 1)[0].split("?", 1)[0]
+		# Drop port
+		url = url.split(":", 1)[0]
+		# Drop common subdomain prefix
+		if url.startswith("www."):
+			url = url[4:]
+		return url
 
-    def _extract_domain_from_email(email):
-        if not email or "@" not in email:
-            return ""
-        return email.split("@", 1)[1].strip().lower()
+	def _extract_domain_from_email(email):
+		if not email or "@" not in email:
+			return ""
+		return email.split("@", 1)[1].strip().lower()
 
-    def _entity_list(code, name):
-        out = []
-        for v in (code, name):
-            if v and v not in out:
-                out.append(v)
-        return out
+	def _entity_list(code, name):
+		out = []
+		for v in (code, name):
+			if v and v not in out:
+				out.append(v)
+		return out
 
-    def _looks_like_domain(s):
-        if not isinstance(s, string_types):
-            return False
-        s = s.strip().lower()
-        if not s:
-            return False
-        if "://" in s or s.startswith("www.") or "/" in s:
-            return True
-        # bare domains like example.com (avoid names with spaces)
-        return "." in s and " " not in s and "@" not in s
+	def _looks_like_domain(s):
+		if not isinstance(s, string_types):
+			return False
+		s = s.strip().lower()
+		if not s:
+			return False
+		if "://" in s or s.startswith("www.") or "/" in s:
+			return True
+		# bare domains like example.com (avoid names with spaces)
+		return "." in s and " " not in s and "@" not in s
 
-    # Normalize inputs: accept JSON or comma-separated strings
-    if isinstance(suppliers, string_types):
-        try:
-            suppliers_in = json.loads(suppliers)
-        except Exception:
-            suppliers_in = [s.strip() for s in suppliers.split(",") if s and s.strip()]
-    else:
-        suppliers_in = suppliers or []
+	# Normalize inputs: accept JSON or comma-separated strings
+	if isinstance(suppliers, string_types):
+		try:
+			suppliers_in = json.loads(suppliers)
+		except Exception:
+			suppliers_in = [s.strip() for s in suppliers.split(",") if s and s.strip()]
+	else:
+		suppliers_in = suppliers or []
 
-    if isinstance(domains, string_types):
-        try:
-            domains_in = json.loads(domains)
-        except Exception:
-            domains_in = [d.strip() for d in domains.split(",") if d and d.strip()]
-    else:
-        domains_in = domains or []
+	if isinstance(domains, string_types):
+		try:
+			domains_in = json.loads(domains)
+		except Exception:
+			domains_in = [d.strip() for d in domains.split(",") if d and d.strip()]
+	else:
+		domains_in = domains or []
 
-    # Clean suppliers/domains if they look like URLs/domains
-    suppliers_display = []
-    for s in suppliers_in:
-        if _looks_like_domain(s):
-            suppliers_display.append(_extract_domain_from_url(s) or s)
-        else:
-            suppliers_display.append(s)
+	# Clean suppliers/domains if they look like URLs/domains
+	suppliers_display = []
+	for s in suppliers_in:
+		if _looks_like_domain(s):
+			suppliers_display.append(_extract_domain_from_url(s) or s)
+		else:
+			suppliers_display.append(s)
 
-    # Use only non-domain-like strings for DB query (supplier codes)
-    suppliers_for_query = [s for s in suppliers_in if not _looks_like_domain(s)]
+	# Use only non-domain-like strings for DB query (supplier codes)
+	suppliers_for_query = [s for s in suppliers_in if not _looks_like_domain(s)]
 
-    # Clean and de-duplicate domains
-    seen_domains = set()
-    domains_clean = []
-    for d in domains_in:
-        dom = _extract_domain_from_url(d) or d
-        if dom and dom not in seen_domains:
-            seen_domains.add(dom)
-            domains_clean.append(dom)
+	# Clean and de-duplicate domains
+	seen_domains = set()
+	domains_clean = []
+	for d in domains_in:
+		dom = _extract_domain_from_url(d) or d
+		if dom and dom not in seen_domains:
+			seen_domains.add(dom)
+			domains_clean.append(dom)
 
-    # Fetch supplier master data
-    refs = {}
-    domain_map = {}
+	# Fetch supplier master data
+	refs = {}
+	domain_map = {}
 
-    # Always fetch all active suppliers (exclude disabled/frozen)
-    supplier_rows = frappe.db.sql(
-        """
-        SELECT name, supplier_name, website
-        FROM `tabSupplier`
-        WHERE disabled = 0 AND is_frozen = 0
-        """,
-        as_dict=1,
-    )
+	# Always fetch all active suppliers (exclude disabled/frozen)
+	supplier_rows = frappe.db.sql(
+		"""
+		SELECT name, supplier_name, website
+		FROM `tabSupplier`
+		WHERE disabled = 0 AND is_frozen = 0
+		""",
+		as_dict=1,
+	)
 
-    supplier_set = {r.name for r in supplier_rows}
+	supplier_set = {r.name for r in supplier_rows}
 
-    # Pull linked contacts' emails for these suppliers
-    emails_by_supplier = {s: [] for s in supplier_set}
-    if supplier_set:
-        contact_rows = frappe.db.sql(
-            """
-            SELECT 
-                dl.link_name AS supplier_code,
-                c.email_id AS primary_email,
-                (
-                    SELECT GROUP_CONCAT(DISTINCT ce.email_id ORDER BY ce.idx SEPARATOR ',')
-                    FROM `tabContact Email` ce
-                    WHERE ce.parent = c.name AND COALESCE(ce.email_id, '') <> ''
-                ) AS other_emails
-            FROM `tabDynamic Link` dl
-            LEFT JOIN `tabContact` c ON c.name = dl.parent
-            WHERE dl.link_doctype = 'Supplier' AND dl.link_name IN (%s)
-            """ % (", ".join(["%s"] * len(supplier_set))),
-            tuple(supplier_set),
-            as_dict=1,
-        )
-        for r in contact_rows:
-            emails = []
-            if r.primary_email:
-                emails.append(r.primary_email)
-            if r.other_emails:
-                emails.extend([e for e in r.other_emails.split(",") if e])
-            if emails:
-                cur = emails_by_supplier.get(r.supplier_code) or []
-                cur.extend(emails)
-                emails_by_supplier[r.supplier_code] = cur
+	# Pull linked contacts' emails for these suppliers
+	emails_by_supplier = {s: [] for s in supplier_set}
+	if supplier_set:
+		contact_rows = frappe.db.sql(
+			"""
+			SELECT 
+				dl.link_name AS supplier_code,
+				c.email_id AS primary_email,
+				(
+					SELECT GROUP_CONCAT(DISTINCT ce.email_id ORDER BY ce.idx SEPARATOR ',')
+					FROM `tabContact Email` ce
+					WHERE ce.parent = c.name AND COALESCE(ce.email_id, '') <> ''
+				) AS other_emails
+			FROM `tabDynamic Link` dl
+			LEFT JOIN `tabContact` c ON c.name = dl.parent
+			WHERE dl.link_doctype = 'Supplier' AND dl.link_name IN (%s)
+			""" % (", ".join(["%s"] * len(supplier_set))),
+			tuple(supplier_set),
+			as_dict=1,
+		)
+		for r in contact_rows:
+			emails = []
+			if r.primary_email:
+				emails.append(r.primary_email)
+			if r.other_emails:
+				emails.extend([e for e in r.other_emails.split(",") if e])
+			if emails:
+				cur = emails_by_supplier.get(r.supplier_code) or []
+				cur.extend(emails)
+				emails_by_supplier[r.supplier_code] = cur
 
-    # Build references and domain map
-    for s in supplier_rows:
-        code = s.name
-        sname = s.supplier_name or code
-        # dedupe emails and keep order
-        seen = set()
-        emails = []
-        for e in emails_by_supplier.get(code, []):
-            if e and e not in seen:
-                seen.add(e)
-                emails.append(e)
-        refs[code] = {"keyword": sname, "emails": emails}
+	# Build references and domain map
+	for s in supplier_rows:
+		code = s.name
+		sname = s.supplier_name or code
+		# dedupe emails and keep order
+		seen = set()
+		emails = []
+		for e in emails_by_supplier.get(code, []):
+			if e and e not in seen:
+				seen.add(e)
+				emails.append(e)
+		refs[code] = {"keyword": sname, "emails": emails}
 
-        # website domain
-        wdom = _extract_domain_from_url(s.website)
-        if wdom:
-            domain_map[wdom] = _entity_list(code, sname)
-        # email domains
-        for e in emails:
-            dom = _extract_domain_from_email(e)
-            if dom and dom not in domain_map:
-                domain_map[dom] = _entity_list(code, sname)
+		# website domain
+		wdom = _extract_domain_from_url(s.website)
+		if wdom:
+			domain_map[wdom] = _entity_list(code, sname)
+		# email domains
+		for e in emails:
+			dom = _extract_domain_from_email(e)
+			if dom and dom not in domain_map:
+				domain_map[dom] = _entity_list(code, sname)
 
-    payload = {
-        "supplier_names": suppliers_display,
-        "domains": domains_clean,
-        "references": refs,
-        "domain_map": domain_map,
-    }
+	payload = {
+		"supplier_names": suppliers_display,
+		"domains": domains_clean,
+		"references": refs,
+		"domain_map": domain_map,
+	}
 
-    return payload
+	return payload
 
 from erpnext.ai_agent.doctype.ai_agent_settings.ai_invoice_converter import AIAgentClient
 def chunks(lst, size):
-    for i in range(0, len(lst), size):
-        yield lst[i:i + size]
+	for i in range(0, len(lst), size):
+		yield lst[i:i + size]
 
 def update_supplier_domain():
-    # ambil supplier yang belum ada website
-    supplier_data = frappe.db.sql("""
-        SELECT name
-        FROM `tabSupplier`
-        WHERE website IS NULL
-          AND disabled = 0
-          AND supplier_type = 'Company' limit 5
-    """, as_dict=1)
+	# ambil supplier yang belum ada website
+	supplier_data = frappe.db.sql("""
+		SELECT name
+		FROM `tabSupplier`
+		WHERE website IS NULL
+		  AND disabled = 0
+		  AND supplier_type = 'Company' limit 5
+	""", as_dict=1)
 
-    payload = [x["name"] for x in supplier_data]
-    agent = AIAgentClient()
+	payload = [x["name"] for x in supplier_data]
+	agent = AIAgentClient()
 
-    for batch in chunks(payload, 50):   # max 50 per panggilan
-        res = agent.get_supplier_domain(batch)
+	for batch in chunks(payload, 50):   # max 50 per panggilan
+		res = agent.get_supplier_domain(batch)
 
-        # update tiap hasil
-        if 'result' in res:
-            res = res.get("result")
+		# update tiap hasil
+		if 'result' in res:
+			res = res.get("result")
 
-        for d in res:
-            if d.get("company") and d.get("domain"):
-                frappe.db.set_value(
-                    "Supplier",
-                    d["company"],
-                    "website",          # <- tambahkan fieldname yang mau diupdate
-                    d["domain"]
-                )
-                print("Set domain", d["company"], d["domain"])
+		for d in res:
+			if d.get("company") and d.get("domain"):
+				frappe.db.set_value(
+					"Supplier",
+					d["company"],
+					"website",          # <- tambahkan fieldname yang mau diupdate
+					d["domain"]
+				)
+				print("Set domain", d["company"], d["domain"])
