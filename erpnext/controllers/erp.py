@@ -647,7 +647,7 @@ def update_supplier_domain():
 		FROM `tabSupplier`
 		WHERE website IS NULL
 		  AND disabled = 0
-		  AND supplier_type = 'Company' limit 5
+		  AND supplier_type = 'Company'
 	""", as_dict=1)
 
 	payload = [x["name"] for x in supplier_data]
