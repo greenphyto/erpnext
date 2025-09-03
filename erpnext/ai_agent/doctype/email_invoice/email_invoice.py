@@ -336,6 +336,9 @@ class EmailInvoice(Document):
 		if not frappe.db.exists('Supplier', supp):
 			supplier.append(supp)
 			website = deep_get(result, ['supplier', 'contacts', 'website'] )
+			if website:
+				self.update_website(supp, website)
+				
 			email = deep_get(result, ['supplier', 'contacts', 'email'] )
 			domains += [website, email]
 
@@ -346,6 +349,10 @@ class EmailInvoice(Document):
 			payload['result']['result']['supplier']['name'] = supplier_final
 			
 		return payload
+	
+	def update_website(self, supplier, website):
+		if not frappe.get_value("Supplier", supplier, 'website'):
+			frappe.db.set_value("Supplier", supplier, 'website', website)
 
 	def create_invoice_result(self, result=[], com_doc=""):
 		"""Create a Purchase Invoice based on extracted payload.
