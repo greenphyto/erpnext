@@ -653,7 +653,7 @@ def update_supplier_domain():
 	payload = [x["name"] for x in supplier_data]
 	agent = AIAgentClient()
 
-	for batch in chunks(payload, 50):   # max 50 per panggilan
+	for batch in chunks(payload, 20):   # max 50 per panggilan
 		res = agent.get_supplier_domain(batch)
 
 		# update tiap hasil
@@ -669,3 +669,5 @@ def update_supplier_domain():
 					d["domain"]
 				)
 				print("Set domain", d["company"], d["domain"])
+
+		frappe.db.commit()
