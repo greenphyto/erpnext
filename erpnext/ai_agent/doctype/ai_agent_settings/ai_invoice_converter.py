@@ -124,9 +124,10 @@ class AIAgentClient:
     
     def get_supplier_default(self, text, emails, supplier_references):
         # or by looking for domain
-        supplier = frappe.db.get_value("Supplier", {"website":['in', emails]})
-        if supplier:
-            return supplier
+        if emails:
+            supplier = frappe.db.get_value("Supplier", {"website":['in', emails]})
+            if supplier:
+                return supplier
         
         payload = {
             "text":text,
@@ -141,7 +142,7 @@ class AIAgentClient:
             data = resp.json() or {}
             data = data.get("exact_hits")
             if data:
-                keys = list(data["exact_hits"].keys())
+                keys = list(data.keys())
                 if keys:
                     return keys[0]
                 
