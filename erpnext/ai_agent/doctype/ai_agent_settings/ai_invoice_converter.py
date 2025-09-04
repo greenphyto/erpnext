@@ -118,9 +118,9 @@ class AIAgentClient:
         Returns parsed invoice data dict.
         """
         text = self.extract_text(invoice_path, email, lang=lang)
-        default_supplier = self.get_supplier_default(text, email, references)
+        supplier_default = self.get_supplier_default(text, email, references)
 
-        return self.get_invoice_data(text=text, default_supplier=default_supplier)
+        return self.get_invoice_data(text=text, supplier_default=supplier_default)
     
     def get_supplier_default(self, text, emails, supplier_references):
         # or by looking for domain
