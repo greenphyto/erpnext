@@ -1,5 +1,5 @@
 import frappe, json
-from frappe.utils import cint, flt, getdate
+from frappe.utils import cint, flt, getdate, cstr
 from six import string_types
 
 # util: sanitize description by removing editor wrapper tags
@@ -356,7 +356,7 @@ def get_supplier_context():
 	# Ambil semua supplier aktif
 	suppliers = frappe.db.sql("""
 		SELECT 
-			s.name, s.supplier_name, s.website
+			s.name, s.supplier_name, s.website, s.supplier_keywords
 		FROM
 			`tabSupplier` s
 		WHERE
@@ -405,10 +405,13 @@ def get_supplier_context():
 		emails = email_map.get(s.name) or []
 		if s.website:
 			emails.append(s.website)
+
+		result = [x.strip() for x in cstr(s.supplier_keywords).split(",")]
+		keywords = [s.supplier_name] + result
 			
 		context.append({
 			"code":s.name,
-			"keyword": s.supplier_name,
+			"keyword": "|".join(keywords),
 			"emails": emails
 		})
 
