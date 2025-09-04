@@ -556,7 +556,7 @@ class EmailInvoice(Document):
 	def add_attachment_copy(self, source_file, doctype="", name=""):
 		new_file = frappe.new_doc("File")
 		doctype = doctype or self.doctype
-		name = name or self.doctype
+		name = name or self.name
 		new_file.update({
 			"doctype": "File",
 			"file_name": source_file.file_name,
