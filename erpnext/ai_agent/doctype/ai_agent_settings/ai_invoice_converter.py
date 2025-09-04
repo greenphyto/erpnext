@@ -2,7 +2,7 @@ from typing import Optional
 
 import requests
 
-import frappe
+import frappe, json
 from frappe.utils import cstr
 
 class AIAgentClient:
@@ -79,7 +79,7 @@ class AIAgentClient:
         if not isinstance(data, dict):
             return resp.text
 
-        text = cstr(data.get("text")) + f"\nemail: {email}"
+        text = cstr(data.get("text")) + f"\nSender: {email}"
         if isinstance(text, str):
             self.text = text
         else:
@@ -87,7 +87,7 @@ class AIAgentClient:
 
         return self.text
 
-    def get_invoice_data(self, text: str):
+    def get_invoice_data(self, text: str, supplier_default:str):
         """
         Call `/get_invoice_data` with extracted OCR text and a supplier reference.
 
@@ -98,7 +98,7 @@ class AIAgentClient:
         """
 
         url = self._join_url("/get-invoice-data")
-        payload = {"text": text or ""}
+        payload = {"text": text or "", "supplier_default":supplier_default}
         resp = requests.post(url, json=payload, timeout=self.timeout)
         resp.raise_for_status()
 
@@ -108,7 +108,7 @@ class AIAgentClient:
             # If server didn't return JSON, wrap as best-effort structure
             return {"text": text or "", "raw": resp.text}
 
-    def extract_invoice(self, invoice_path: str, reference: str, email: str, lang: Optional[str] = None):
+    def extract_invoice(self, invoice_path: str, references: list, email: str, lang: Optional[str] = None):
         """
         Convenience: OCR the invoice file, then fetch structured invoice data.
 
@@ -118,7 +118,35 @@ class AIAgentClient:
         Returns parsed invoice data dict.
         """
         text = self.extract_text(invoice_path, email, lang=lang)
-        return self.get_invoice_data(text=text)
+        default_supplier = self.get_supplier_default(text, email, references)
+
+        return self.get_invoice_data(text=text, default_supplier=default_supplier)
+    
+    def get_supplier_default(self, text, emails, supplier_references):
+        # or by looking for domain
+        supplier = frappe.db.get_value("Supplier", {"website":['in', emails]})
+        if supplier:
+            return supplier
+        
+        payload = {
+            "text":text,
+            "supplier_data": json.loads(supplier_references)
+        }
+        url = self._join_url("/get-supplier-from-text")
+        resp = requests.post(url, json=payload)
+
+        resp.raise_for_status()
+
+        try:
+            data = resp.json() or {}
+            data = data.get("exact_hits")
+            if data:
+                keys = list(data["exact_hits"].keys())
+                if keys:
+                    return keys[0]
+                
+        except ValueError:
+            return ""
 
     def get_supplier(self, payload):
         """

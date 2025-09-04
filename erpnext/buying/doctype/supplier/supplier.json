@@ -78,7 +78,9 @@
   "on_hold",
   "hold_type",
   "column_break_59",
-  "release_date"
+  "release_date",
+  "ai_info_section",
+  "supplier_keywords"
  ],
  "fields": [
   {
@@ -523,6 +525,16 @@
    "fieldtype": "Link",
    "label": "Default Bank Account No",
    "options": "Bank Number"
+  },
+  {
+   "fieldname": "ai_info_section",
+   "fieldtype": "Section Break",
+   "label": "AI Info"
+  },
+  {
+   "fieldname": "supplier_keywords",
+   "fieldtype": "Small Text",
+   "label": "Supplier Keywords"
   }
  ],
  "icon": "fa fa-user",
@@ -535,7 +547,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2025-07-04 12:25:39.433950",
+ "modified": "2025-09-03 19:03:46.770017",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",

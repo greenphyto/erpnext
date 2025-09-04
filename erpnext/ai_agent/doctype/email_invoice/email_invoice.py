@@ -7,12 +7,12 @@ from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_i
 from erpnext.controllers.va2 import extract_invoice_data, get_po_number, get_item_detail, get_po_and_items
 from frappe.utils import flt, getdate, get_time
 from erpnext.controllers.erp import get_supplier_context, deep_get, get_supplier_payload
-import os
+import os, re
 from frappe.utils import get_traceback
 from erpnext.ai_agent.doctype.ai_agent_settings.ai_invoice_converter import AIAgentClient
 from six import string_types
 
-MAX_DISPLAY_LENGTH = 1000
+MAX_DISPLAY_LENGTH = 300
 SHORT_HEAD = 300
 SHORT_TAIL = 700
 GST_DEFAULT = 9
@@ -250,8 +250,9 @@ class EmailInvoice(Document):
 
 			# Extract structured data via agent; handle fallback JSON
 			extracted = None
+			sender = self.get_sender_domain()
 			try:
-				extracted = agent.extract_invoice(full_path, reference=supp_context, email=self.sender)
+				extracted = agent.extract_invoice(full_path, references=supp_context, email=sender)
 			except Exception as e:
 				# Record system exception; no structured fallback available here
 				self.add_reason(
@@ -321,6 +322,27 @@ class EmailInvoice(Document):
 			self._finalize_reasons()
 		self.set_status()
 		return pi_created
+
+	def get_sender_domain(self):
+		# exclude from home domain
+		conf = frappe.local.conf
+		exclude_list = [conf.invoice_email, conf.hostname] + conf.email_whitelist
+		exclude_list = extract_domains(exclude_list)
+
+		# extract from email content
+		doc = frappe.get_doc("Communication", self.inbox)
+		text = doc.content
+		pattern = r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+'
+		emails = re.findall(pattern, text)
+		unique_emails = sorted(set(email.lower() for email in emails))
+		domains = sorted(
+				set(
+					email.split('@')[1].lower()
+					for email in unique_emails
+					if "@" in email and email.split('@')[1].lower() not in exclude_list
+				)
+			)
+		return domains
 
 	def enhance_payload(self, payload):
 		# update supplier
@@ -839,6 +861,26 @@ class EmailInvoice(Document):
 		attachment.insert()
 
 		return doc.name
+	
+def extract_domains(items):
+    out = []
+    seen = set()
+    for s in items:
+        s = str(s).strip().lower()
+        s = re.sub(r'^mailto:', '', s)              # buang mailto:
+        s = re.sub(r'^[a-z]+://', '', s)           # buang skema url
+        s = s.split('/')[0]                         # buang path
+        if '@' in s:
+            s = s.rsplit('@', 1)[1]                 # ambil setelah @
+        s = re.sub(r'^[\*\.\-]+', '', s)            # buang wildcard/.- di depan
+        s = s.split(':')[0]                         # buang port
+
+        # validasi domain sederhana
+        if re.match(r'^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$', s):
+            if s not in seen:
+                seen.add(s)
+                out.append(s)
+    return out
 	
 def get_gst_template(rate):
 	rate = flt(rate)
