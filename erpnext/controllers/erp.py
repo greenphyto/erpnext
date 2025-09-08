@@ -674,3 +674,10 @@ def update_supplier_domain():
 				print("Set domain", d["company"], d["domain"])
 
 		frappe.db.commit()
+
+def is_doctype_exists(doctype):
+	try:
+		meta = frappe.get_meta(doctype)
+		return meta
+	except frappe.DoesNotExistError:
+		return None

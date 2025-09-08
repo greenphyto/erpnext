@@ -330,6 +330,9 @@ doc_events = {
 		"validate": [
 			"erpnext.regional.united_arab_emirates.utils.update_grand_total_for_rcm",
 			"erpnext.regional.united_arab_emirates.utils.validate_returns",
+		],
+        "on_submit":[
+            "erpnext.ai_agent.doctype.email_invoice.email_invoice.create_bank_number"
 		]
 	},
 	"Payment Entry": {
