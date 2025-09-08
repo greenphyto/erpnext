@@ -34,7 +34,6 @@
   "invoices",
   "total_amount",
   "section_break_6",
-  "file_id",
   "status",
   "error_message",
   "column_break_28",
@@ -42,7 +41,8 @@
   "amended_from",
   "process_id",
   "update_on",
-  "transfer_date"
+  "transfer_date",
+  "filename"
  ],
  "fields": [
   {
@@ -103,6 +103,7 @@
    "reqd": 1
   },
   {
+   "default": "FAST",
    "fieldname": "payment_method",
    "fieldtype": "Select",
    "label": "Payment Method",
@@ -126,6 +127,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "SUPP",
    "fieldname": "purpose",
    "fieldtype": "Link",
    "label": "Purpose",
@@ -289,19 +291,19 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-08-21 12:00:07.170137",
+ "modified": "2025-09-08 16:26:47.003022",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "Payment Approval",
  "naming_rule": "Expression (old style)",
  "owner": "Administrator",
- "permissions": [{
+ "permissions": [
+  {
    "email": 1,
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": 1,
-   "System Manager": 1,
+   "role": "1",
    "share": 1,
    "submit": 1,
    "write": 1

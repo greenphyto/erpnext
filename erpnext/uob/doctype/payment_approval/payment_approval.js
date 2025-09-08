@@ -9,11 +9,12 @@ frappe.ui.form.on('Payment Approval', {
 				frm.cscript.get_unpaid_purchase_invoices();
 			});
 		}
-		frm.set_query("invoice_no", "invoices", ()=>{
+		frm.set_query("invoice_no", "invoices", (doc, cdt, cdn)=>{
 			return{
 				filters:{
 					docstatus:1,
-					outstanding_amount:[">", 0]
+					outstanding_amount:[">", 0],
+					currency:doc.currency
 				}
 			}
 		})
@@ -23,7 +24,8 @@ frappe.ui.form.on('Payment Approval', {
 			return{
 				filters:{
 					party: d.party,
-					party_type:"Supplier"
+					party_type:"Supplier",
+					currency:doc.currency
 				}
 			}
 		})
@@ -35,8 +37,7 @@ frappe.ui.form.on('Payment Approval', {
 			}
 			return{
 				filters:{
-					"currency":currency,
-					"swift_number":["like", "UOVB%"]
+					"currency":currency
 				}
 			}
 		})
