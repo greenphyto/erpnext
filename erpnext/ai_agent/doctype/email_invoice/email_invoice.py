@@ -6,9 +6,9 @@ from frappe.model.document import Document
 from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_invoice
 from erpnext.controllers.va2 import extract_invoice_data, get_po_number, get_item_detail, get_po_and_items
 from frappe.utils import flt, getdate, get_time
-from erpnext.controllers.erp import get_supplier_context, deep_get, get_supplier_payload
+from erpnext.controllers.erp import get_supplier_context, is_doctype_exists, deep_get, get_supplier_payload
 import os, re
-from frappe.utils import get_traceback
+from frappe.utils import get_traceback, cstr
 from erpnext.ai_agent.doctype.ai_agent_settings.ai_invoice_converter import AIAgentClient
 from six import string_types
 
@@ -575,7 +575,7 @@ class EmailInvoice(Document):
 			com.reference_doctype = "Purchase Invoice"
 			com.reference_name = name
 			com.subject = "Bank Account"
-			data_bank = d
+			bank_data = d
 			labels = {
 				'Bank Name': 'bank_name',
 				'Account Name': 'account_name',
@@ -587,7 +587,7 @@ class EmailInvoice(Document):
 			}
 			
 			rows = "\n  ".join(
-				f"<b>{label}:</b> {data_bank.get(key) or '-'}<br>"
+				f"<b>{label}:</b> {bank_data.get(key) or '-'}<br>"
 				for label, key in labels.items()
 			)
 
@@ -596,10 +596,10 @@ class EmailInvoice(Document):
 			<h5 class="my-2">Bank Account</h5>
 			{rows}
 			</div>
-			<div class="hidden data">{json.dumps(data_bank)}</div>
+			<div class="hidden data">{json.dumps(bank_data)}</div>
 			"""
 			com.insert(ignore_permissions=True)
-
+		
 	def create_purchase_invoice_non_stock(self, data=None):
 		"""Create a Non-stock Purchase Invoice purely from the passed parameter.
 
@@ -861,6 +861,104 @@ class EmailInvoice(Document):
 		attachment.insert()
 
 		return doc.name
+
+# erpnext.ai_agent.doctype.email_invoice.email_invoice.extract_all_bank_data
+def extract_all_bank_data():
+	# from schduler
+	coms = frappe.db.sql("""
+		SELECT 
+			name, reference_name, reference_doctype, content
+		FROM
+			`tabComment`
+		WHERE
+			`subject` = 'Bank Account'
+				AND reference_doctype = 'Purchase Invoice'
+				AND comment_type = 'Info'
+	""", as_dict=1)
+	convert_bank_data(coms=coms)
+
+def create_bank_number(doc, method=""):
+	convert_bank_data(doc.name)
+
+def convert_bank_data(inv=None, coms=[]):
+	from bs4 import BeautifulSoup
+	import json
+
+	if not is_doctype_exists("Bank Number"):
+		return
+	
+	def extract_bank_data(text):
+		soup = BeautifulSoup(text, "html.parser")
+		div = soup.find("div", class_="hidden data")
+		json_text = div.get_text(strip=True)
+		data = json.loads(json_text)
+		return data
+	
+	def create_bank_data(supplier, bank_data):
+		bank_number = cstr(bank_data.get("account_number"))
+		bank_number = bank_number.replace("-", "")
+		if not bank_number:
+			return
+
+		exists = frappe.db.exists("Bank Number", {"bank_number":bank_number})
+		if exists:
+			return
+
+		doc = frappe.new_doc("Bank Number")
+		doc.bank_number = bank_number
+		doc.bank_account_name = bank_number
+		doc.bank = get_bank(bank_data.get("bank_name"), bank_data.get("swift_bic"))
+		doc.currency = bank_data.get("currency")
+		doc.swift = bank_data.get("swift_bic")
+		doc.party = supplier
+		doc.insert(ignore_permissions=1)
+
+	# convert Comment WIth data to Supplier Bank Account
+	if not coms:
+		coms = frappe.db.sql("""
+			SELECT 
+				name, reference_name, reference_doctype, content
+			FROM
+				`tabComment`
+			WHERE
+				`subject` = 'Bank Account'
+					AND reference_doctype = 'Purchase Invoice'
+					AND comment_type = 'Info'
+					AND reference_name = %s
+		""", (inv), as_dict=1)
+
+	for d in coms:
+		supplier = frappe.db.get_value("Purchase Invoice", d.reference_name, 'supplier')
+		# from invoice
+		if not supplier:
+			continue
+		
+		bank_data = extract_bank_data(d.content)
+		create_bank_data(supplier, bank_data)
+	
+
+def get_bank(bank, swift_number):
+	# based on swift code
+	exists = frappe.db.get_value("Bank", {"swift_number":swift_number})
+	if exists:
+		return exists
+	
+	# same name different swift code, this will add new bank record
+	base_name = cstr(bank)
+	for i in range(20):
+		i += 1
+		exists = frappe.db.get_value("Bank", {"bank_name":bank})
+		if exists:
+			bank = f"{base_name} {i}"
+		else:
+			break
+		
+	doc = frappe.new_doc("Bank")
+	doc.bank_name = bank
+	doc.swift_number = swift_number
+	doc.insert(ignore_permissions=1)
+	return doc.name
+
 	
 def extract_domains(items):
     out = []
