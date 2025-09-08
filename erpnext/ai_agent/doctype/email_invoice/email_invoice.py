@@ -354,6 +354,7 @@ class EmailInvoice(Document):
 		if 'result' in result:
 			result = result.get("result")
 		
+		# Supplier
 		supp = deep_get(result, ['supplier', 'name'], "")
 		if not frappe.db.exists('Supplier', supp):
 			supplier.append(supp)
@@ -369,6 +370,34 @@ class EmailInvoice(Document):
 			temp = agent.get_supplier(supp_payload)
 			supplier_final = temp.get("code")
 			payload['result']['result']['supplier']['name'] = supplier_final
+		
+		# PO Number
+		def normalize_po(text: str) -> str:
+			if not text:
+				return None
+			s = text.upper().strip()
+			replacements = {
+				"O": "0",
+				"Q": "0",
+				"I": "1",
+				"L": "1",
+				"S": "5",
+				"B": "8"
+			}
+			for k, v in replacements.items():
+				s = s.replace(k, v)
+
+			if not s.startswith("PO"):
+				s = "PO" + s.lstrip("P0OQ")  # buang prefix mirip lalu pakai PO
+
+			match = re.search(r"PO(\d{1,6})/(\d{4})", s)
+			if match:
+				number = match.group(1).zfill(6)  # padding ke 6 digit
+				year = match.group(2)
+				return f"PO{number}/{year}"
+			return None
+		po_number = deep_get(result, ['document', 'references', 'purchase_order_number'] )
+		payload['result']['result']['document']['references']['purchase_order_number'] = normalize_po(po_number) or po_number
 			
 		return payload
 	
@@ -1021,19 +1050,17 @@ def convert_pdf_to_img(path):
 		frappe.log_error(f"convert_pdf_to_img error: {e}")
 		return False, str(e)
 
-def find_po_exist(po_list):
-	if po_list:
-		po_no = po_list[0]
-		ranges = len(po_no)
-		for i in range(ranges):
-			if i >= 4:
-				break
+def find_po_exist(po_no):
+	ranges = len(po_no)
+	for i in range(ranges):
+		if i >= 4:
+			break
 
-			res = frappe.db.exists("Purchase Order", {"name":['like', "%"+po_no[i:]]})
-			if res:
-				return res
-			
-		return res
+		res = frappe.db.exists("Purchase Order", {"name":['like', "%"+po_no[i:]]})
+		if res:
+			return res
+		
+	return res
 
 import requests, json
 def get_erp_data(url_path, filters="", fields="", limit=100):
