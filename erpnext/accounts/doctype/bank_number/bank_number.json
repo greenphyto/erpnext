@@ -14,7 +14,8 @@
   "swift",
   "column_break_6",
   "party_type",
-  "party"
+  "party",
+  "currency"
  ],
  "fields": [
   {
@@ -77,11 +78,17 @@
    "in_standard_filter": 1,
    "label": "Party",
    "options": "party_type"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-04 11:43:42.484855",
+ "modified": "2025-09-08 15:43:30.862916",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Bank Number",

@@ -103,6 +103,7 @@
    "reqd": 1
   },
   {
+   "default": "FAST",
    "fieldname": "payment_method",
    "fieldtype": "Select",
    "label": "Payment Method",
@@ -290,7 +291,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-08-21 12:00:07.170137",
+ "modified": "2025-09-08 16:26:47.003022",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "Payment Approval",
