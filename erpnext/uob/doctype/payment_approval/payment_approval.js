@@ -61,6 +61,10 @@ frappe.ui.form.on('Payment Approval', {
 				}
 			});
 		})
+	},
+	currency: function(frm){
+		frm.set_value("bank_account", "");
+		frm.set_value("invoices", [])
 	}
 })
 
