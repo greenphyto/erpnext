@@ -167,3 +167,92 @@ $.extend(cur_frm.cscript, {
 		})
 	}
 })
+
+// Extend with summary renderer without touching existing cscript methods
+$.extend(cur_frm.cscript, {
+	render_summary(frm){
+		try {
+			const fld = frm.fields_dict && frm.fields_dict.summary_wrapper;
+			if (!fld || !fld.$wrapper) return;
+			const items = (frm.doc.invoices || []).filter(r => r && r.party);
+			if (!items.length) {
+				fld.$wrapper.html('<div class="text-muted">No invoices to summarize.</div>');
+				return;
+			}
+
+			const groups = {};
+			let grand = 0;
+			items.forEach(r => {
+				const key = r.party;
+				const amt = parseFloat(r.amount) || 0;
+				grand += amt;
+				if (!groups[key]) groups[key] = { supplier: key, count: 0, total: 0 };
+				groups[key].count += 1;
+				groups[key].total += amt;
+			});
+
+			const currency = frm.doc.currency || null;
+			const fmt = (v) => frappe.format(v, { fieldtype: 'Currency', options: currency });
+			const body = Object.values(groups)
+				.sort((a,b) => a.supplier.localeCompare(b.supplier))
+				.map(it => `
+					<tr>
+						<td>${frappe.utils.escape_html(it.supplier)}</td>
+						<td class="text-right">${it.count}</td>
+						<td class="text-right">${fmt(it.total)}</td>
+					</tr>
+				`).join('');
+
+			const html = `
+				<div class="mt-3">
+					<table class="table table-sm table-bordered" style="margin:auto; width: 90%;">
+						<thead class="thead-light">
+							<tr>
+								<th>Supplier</th>
+								<th class="text-right">Invoices</th>
+								<th class="text-right">Total Amount</th>
+							</tr>
+						</thead>
+						<tbody>${body}</tbody>
+						<tfoot>
+							<tr>
+								<th>Total</th>
+								<th class="text-right">${items.length}</th>
+								<th class="text-right">${fmt(grand)}</th>
+							</tr>
+						</tfoot>
+					</table>
+				</div>`;
+
+			fld.$wrapper.html(html);
+		} catch (e) {
+			if (console && console.warn) console.warn('Summary render failed', e);
+		}
+	}
+});
+
+// Ensure summary renders on refresh and currency changes
+frappe.ui.form.on('Payment Approval', {
+	refresh(frm) {
+		if (frm.cscript.render_summary) frm.cscript.render_summary(frm);
+	},
+	currency(frm) {
+		setTimeout(() => {
+			if (frm.cscript.render_summary) frm.cscript.render_summary(frm);
+		}, 0);
+	},
+	invoices_add(frm) {
+		if (frm.cscript.render_summary) frm.cscript.render_summary(frm);
+	},
+	invoices_remove(frm) {
+		if (frm.cscript.render_summary) frm.cscript.render_summary(frm);
+	}
+});
+
+// Child table field events to keep summary in sync real-time
+frappe.ui.form.on('Payment Invoice List', {
+	invoice_no(frm) { if (frm.cscript.render_summary) frm.cscript.render_summary(frm); },
+	party(frm) { if (frm.cscript.render_summary) frm.cscript.render_summary(frm); },
+	amount(frm) { if (frm.cscript.render_summary) frm.cscript.render_summary(frm); },
+	currency(frm) { if (frm.cscript.render_summary) frm.cscript.render_summary(frm); }
+});

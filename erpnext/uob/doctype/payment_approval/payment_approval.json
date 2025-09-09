@@ -33,6 +33,8 @@
   "section_break_5",
   "invoices",
   "total_amount",
+  "summary_section",
+  "summary_wrapper",
   "section_break_6",
   "filename",
   "status",
@@ -218,8 +220,10 @@
    "read_only": 1
   },
   {
+   "collapsible": 1,
    "fieldname": "section_break_6",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "More Information"
   },
   {
    "fieldname": "filename",
@@ -286,12 +290,22 @@
    "fieldtype": "Small Text",
    "label": "Error Message",
    "read_only": 1
+  },
+  {
+   "fieldname": "summary_section",
+   "fieldtype": "Section Break",
+   "label": "Summary"
+  },
+  {
+   "fieldname": "summary_wrapper",
+   "fieldtype": "HTML",
+   "label": "summary wrapper"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-09-08 16:26:47.003022",
+ "modified": "2025-09-09 16:53:07.293941",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "Payment Approval",
