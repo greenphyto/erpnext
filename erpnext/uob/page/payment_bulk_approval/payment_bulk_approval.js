@@ -59,6 +59,9 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                         <input type="checkbox" class="show-all-details" />
                         <span>Show all details</span>
                     </label>
+                    <label class="ml-auto mb-0 text-muted mr-3" style="font-size: 1.1em;">
+                        <div>Pending Amount: <b class="pending-amount">$0</b></div>
+                    </label>
                 </div>
             </div>
             <div class="frappe-card">
@@ -98,9 +101,12 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
     const $filtersGrid = $container.find('.filters-grid');
     const $applyBtn = $container.find('.apply-filters');
     const $clearBtn = $container.find('.clear-filters');
+    const $pendingAmount = $container.find('.pending-amount');
     let showAll = false;
     const paging = { start: 0, page_length: 20, has_more: false, loading: false };
     const filterControls = {};
+    let pendingTotal = 0;
+    let pendingCurrency = null;
 
     // Build report-style filters
     const filterDefs = [
@@ -396,6 +402,9 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                         // Auto-fill the gap with next record if available
                         if (has_more) {
                             fetch_next_one();
+                        } else {
+                            const amt = Number(row.total_amount || 0);
+                            set_pending_label(Math.max(0, (pendingTotal || 0) - amt), pendingCurrency);
                         }
                     } else {
                         reset_and_load();
@@ -467,6 +476,12 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
         }
     }
 
+    function set_pending_label(total, currency) {
+        pendingTotal = Number(total || 0);
+        pendingCurrency = currency || null;
+        $pendingAmount.text(format_amount(pendingTotal, pendingCurrency));
+    }
+
     function recalc_stripes() {
         $tbody.find('tr.data-row').each(function (i) {
             const $row = $(this);
@@ -494,6 +509,9 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
             paging.start = payload.next_start || (paging.start + rows.length);
             paging.total = payload.total || paging.total;
             update_load_more(payload.has_more);
+            if (typeof payload.pending_total === 'number') {
+                set_pending_label(payload.pending_total, payload.pending_currency);
+            }
             page.set_indicator(__('Loaded'), 'green');
             paging.loading = false;
         }).catch(() => {
@@ -521,6 +539,9 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
             paging.start = payload.next_start || (paging.start + rows.length);
             paging.total = payload.total || paging.total;
             update_load_more(payload.has_more);
+            if (typeof payload.pending_total === 'number') {
+                set_pending_label(payload.pending_total, payload.pending_currency);
+            }
             paging.loading = false;
         }).catch(() => {
             paging.loading = false;
