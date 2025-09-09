@@ -498,7 +498,7 @@ class EmailInvoice(Document):
 
 		# Map and update rates: prefer match by index; if "item_code" present then map by code
 		changes = []
-		if extracted_items:
+		if extracted_items and len(extracted_items) == len(doc.items):
 			# Build index map for codes if any
 			code_to_row = {}
 			for idx, row in enumerate(doc.get("items") or []):
@@ -551,21 +551,13 @@ class EmailInvoice(Document):
 		self.add_bank_account(data, doc.name)
 
 		# Attach original file if present
-		file_id = (data.get("file") if isinstance(data, dict) else None) or (root.get("file") if isinstance(root, dict) else None)
-		if file_id:
-			try:
-				file = frappe.get_doc('File', file_id)
-				attachment = frappe.get_doc({
-					'doctype': 'File',
-					'attached_to_doctype': doc.doctype,
-					'attached_to_name': doc.name,
-					'file_name': file.file_name,
-					'file_url': file.file_url,
-					'is_private': file.is_private,
-				})
-				attachment.insert()
-			except Exception:
-				pass
+		file_doc_name = frappe.db.get_list(
+			"File",
+			{"attached_to_doctype": "Communication", "attached_to_name": self.inbox},
+		)
+		for file_name in file_doc_name:
+			fn = frappe.get_doc("File", file_name.get("name"))
+			self.add_attachment_copy(fn, "Purchase Invoice", doc.name )
 
 		# Mention rate changes only if any
 		if changes:
