@@ -191,11 +191,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
     });
 
     function format_amount(value, currency) {
-        try {
-            return frappe.utils.format_currency(value || 0, currency || frappe.boot.sysdefaults.currency);
-        } catch (e) {
-            return value || 0;
-        }
+        return fmt_money(value)
     }
 
     // (Reverted) Use default frappe currency formatter
@@ -305,12 +301,13 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     return '';
                 }
 
-                const thead = columns_fixed.map(c => `<th${c.label === 'Amount' ? ' class="text-left"' : ''}>${c.label}</th>`).join('');
+                const thead = columns_fixed.map(c => `<th${c.label === 'Amount' ? ' class=\"text-right\"' : ''}>${c.label}</th>`).join('');
                 const rows_html = transfers.map(t => {
                     const tds = columns_fixed.map(c => {
                         let val = pick(t, c.keys);
                         if (c.label === 'Amount') {
                             val = format_amount(val, t['currency'] || doc.currency);
+                            return `<td class=\"text-right\">${frappe.utils.escape_html(val != null ? String(val) : '')}</td>`;
                         } else if (c.label === 'Supplier Bank No') {
                             const accNo = t.bank_account_no || t.supplier_bank_no || t.beneficiary_account_no || t.account_no || t.bank_account || '';
                             const accName = t.bank_account_name || '';
