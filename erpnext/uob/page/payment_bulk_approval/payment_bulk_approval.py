@@ -83,7 +83,18 @@ def get_data(start=0, page_length=20, filters=None):
         }
         results.append(data)
 
+    # Totals
     total = frappe.db.count('Payment Approval', filters=set_flt)
+    # Pending amount total (sum of total_amount) for the full filtered dataset
+    try:
+        sum_rows = frappe.db.get_all(
+            'Payment Approval',
+            filters=set_flt,
+            fields=['sum(total_amount) as total_amount_sum']
+        )
+        pending_total = flt(sum_rows[0].get('total_amount_sum')) if sum_rows else 0.0
+    except Exception:
+        pending_total = 0.0
     has_more = start + len(results) < total
     next_start = start + len(results)
     return {
@@ -91,6 +102,9 @@ def get_data(start=0, page_length=20, filters=None):
         'has_more': has_more,
         'next_start': next_start,
         'total': total,
+        'pending_total': pending_total,
+        # If currency filter is applied, pass it back for client formatting
+        'pending_currency': filters.get('currency') if isinstance(filters, dict) else None,
     }
 
 from frappe.model.workflow import apply_workflow
