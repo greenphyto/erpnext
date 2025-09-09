@@ -441,6 +441,7 @@ class EmailInvoice(Document):
 				# check exists
 				po_ref = frappe.db.exists("Purchase Order", {"name":po_ref})
 				if po_ref:
+					self.po_no = po_ref
 					ok, name_or_err = self.create_invoice(res, po_ref=po_ref)
 					if not ok:
 						self.add_reason(category="pi", code="create_failed", message=str(name_or_err))
@@ -487,11 +488,19 @@ class EmailInvoice(Document):
 		"""
 		if not data:
 			return False, "Missing data"
+		
+		bill_no = deep_get(data, ['document', 'number'])
+		bill_date = getdate( deep_get(data, ['document', 'issue_date']) )
+		exists = self.enable_single_invoice(bill_no, bill_date)
+		if exists:
+			return True, exists
 
 		# Build Purchase Invoice from PO
 		doc = make_purchase_invoice(po_ref)
 		doc.set_default_number_fields()
 		doc.created_with_ai = 1
+		doc.bill_no = bill_no
+		doc.bill_date = bill_date
 
 		# Prepare extracted items for rate update
 		extracted_items = data.get("items") or []
@@ -658,6 +667,10 @@ class EmailInvoice(Document):
 		items_info = (root or {}).get("items") or []
 		summary_info = (root or {}).get("summary") or {}
 		payment_info = (root or {}).get("payment") or {}
+
+		exists = self.enable_single_invoice(doc_info.get("number"), getdate(doc_info.get("issue_date")))
+		if exists:
+			return True, exists
 
 		# 2) Gather link existence and collect missing masters for commenting later
 		missing_links = {"Supplier": None, "Currency": None, "UOM": [], "Item": []}
@@ -840,6 +853,10 @@ class EmailInvoice(Document):
 
 		return True, doc.name
 
+	def enable_single_invoice(self, bill_no, bill_date):
+		exists = frappe.db.get_value("Purchase Invoice", {"bill_no":bill_no, "bill_date":bill_date})
+		if exists:
+			return exists
 
 	def create_invoice2(self, data=""):
 		if not data:
