@@ -134,7 +134,7 @@ class PurchaseInvoice(BuyingController):
 			frappe.throw(_("Please set Base Value for GST input"))
 
 		self.base_currency_of_base_value = flt(self.base_value_for_gst_input) * self.conversion_rate
-			
+		
 
 	def validate_release_date(self):
 		if self.release_date and getdate(nowdate()) >= getdate(self.release_date):
@@ -1921,3 +1921,42 @@ def make_payment_approval(source_name, target_doc=None):
 	)
 
 	return doc
+
+
+@frappe.whitelist()
+def update_bank_number_details(bank_number_name: str,
+							   bank_number: str = None, bank_account_name: str = None,
+							   bank: str = None, branch: str = None, swift: str = None):
+	"""
+	Safely update selected fields on the linked "Bank Number" document associated with a
+	Purchase Invoice, then return the updated values for client-side refresh.
+	"""
+
+	# Load the Bank Number doc and require write permission
+	bn = frappe.get_doc('Bank Number', bank_number_name)
+	if not bn.has_permission('write'):
+		frappe.throw(_('No write permission for Bank Number'))
+
+	# Update allowed fields only
+	if bank_number is not None:
+		bn.bank_number = bank_number
+	if bank_account_name is not None:
+		bn.bank_account_name = bank_account_name
+	if bank is not None:
+		bn.bank = bank
+	if branch is not None:
+		bn.branch = branch
+	if swift is not None:
+		bn.swift = swift
+
+	bn.save()
+
+	return {
+		'name': bn.name,
+		'bank_number': bn.get('bank_number'),
+		'bank_account_name': bn.get('bank_account_name'),
+		'bank': bn.get('bank'),
+		'branch': bn.get('branch'),
+		'swift': bn.get('swift'),
+		'currency': bn.get('currency'),
+	}
