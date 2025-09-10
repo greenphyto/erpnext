@@ -22,8 +22,8 @@
   "set_posting_time",
   "due_date",
   "delivery_note_no",
-  "column_break1",
   "is_paid",
+  "column_break1",
   "is_return",
   "return_against",
   "apply_tds",
@@ -113,6 +113,10 @@
   "raw_materials_supplied",
   "supplied_items",
   "payments_tab",
+  "supplier_bank_account_section",
+  "bank_number",
+  "bank_details",
+  "column_break_110",
   "payments_section",
   "mode_of_payment",
   "base_paid_amount",
@@ -1600,13 +1604,33 @@
    "fieldtype": "Currency",
    "label": "Base Currency of Base Value",
    "read_only": 1
+  },
+  {
+   "fieldname": "supplier_bank_account_section",
+   "fieldtype": "Section Break",
+   "label": "Supplier Bank Account"
+  },
+  {
+   "fieldname": "bank_number",
+   "fieldtype": "Link",
+   "label": "Bank Number",
+   "options": "Bank Number"
+  },
+  {
+   "fieldname": "bank_details",
+   "fieldtype": "HTML",
+   "label": "Bank Details"
+  },
+  {
+   "fieldname": "column_break_110",
+   "fieldtype": "Column Break"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-06 14:57:43.395210",
+ "modified": "2025-09-10 12:17:14.033670",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",
