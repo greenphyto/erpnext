@@ -916,7 +916,8 @@ def extract_all_bank_data():
 	convert_bank_data(coms=coms)
 
 def create_bank_number(doc, method=""):
-	convert_bank_data(doc.name)
+	if doc.supplier and not doc.bank_number:
+		doc.bank_number = convert_bank_data(doc.name)
 
 def convert_bank_data(inv=None, coms=[]):
 	from bs4 import BeautifulSoup
@@ -940,16 +941,17 @@ def convert_bank_data(inv=None, coms=[]):
 
 		exists = frappe.db.exists("Bank Number", {"bank_number":bank_number})
 		if exists:
-			return
+			return exists
 
 		doc = frappe.new_doc("Bank Number")
 		doc.bank_number = bank_number
-		doc.bank_account_name = bank_number
+		doc.bank_account_name = supplier
 		doc.bank = get_bank(bank_data.get("bank_name"), bank_data.get("swift_bic"))
 		doc.currency = bank_data.get("currency")
 		doc.swift = bank_data.get("swift_bic")
 		doc.party = supplier
 		doc.insert(ignore_permissions=1)
+		return doc.name
 
 	# convert Comment WIth data to Supplier Bank Account
 	if not coms:
@@ -965,6 +967,7 @@ def convert_bank_data(inv=None, coms=[]):
 					AND reference_name = %s
 		""", (inv), as_dict=1)
 
+	name = ""
 	for d in coms:
 		supplier = frappe.db.get_value("Purchase Invoice", d.reference_name, 'supplier')
 		# from invoice
@@ -972,7 +975,9 @@ def convert_bank_data(inv=None, coms=[]):
 			continue
 		
 		bank_data = extract_bank_data(d.content)
-		create_bank_data(supplier, bank_data)
+		name = create_bank_data(supplier, bank_data)
+
+	return name
 	
 
 def get_bank(bank, swift_number):
