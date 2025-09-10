@@ -162,7 +162,7 @@ class PaymentApproval(Document):
 		already_add = []
 		for d in list(self.get("invoices")):
 			if d.invoice_no in already_add:
-				frappe.msgprint(f"Removed row {d.idx}, invoice is duplicate.")
+				frappe.throw(f"row {d.idx}, invoice is duplicate.")
 				self.remove(d)
 				continue
 
@@ -174,12 +174,12 @@ class PaymentApproval(Document):
 				'conversion_rate',
 			], as_dict=1)
 			if flt(data.docstatus) != 1:
-				frappe.msgprint(f"Removed Row {d.idx}, only for submitted invoice!")
+				frappe.throw(f"Row {d.idx}, only for submitted invoice!")
 				self.remove(d)
 				continue
 
 			if flt(data.outstanding_amount) <= 0:
-				frappe.msgprint(f"Removed Row {d.idx}, invoice {d.invoice_no} not have outstanding amount")
+				frappe.throw(f"Row {d.idx}, invoice {d.invoice_no} not have outstanding amount")
 				self.remove(d)
 				continue
 			
@@ -218,7 +218,9 @@ class PaymentApproval(Document):
 		tax_id = frappe.get_value("Company", self.company, "tax_id")
 
 		invoices = []
-		for d in self.invoices:
+		group_invoices = self.get_invoice_group()
+
+		for d in group_invoices:
 			bic = frappe.get_value("Bank",d.supplier_bank,"swift_number", debug=0)
 			if dummy:
 				bic = change_to_dummy_bic(bic)
@@ -284,6 +286,32 @@ class PaymentApproval(Document):
 		else:
 			return filepath
 
+	def get_invoice_group(self):
+		# group the same bank address
+		map_invoice = {}
+		data_field = [
+			"supplier_bank",
+			"invoice_no",
+			"amount",
+			"bank_account_name",
+			"bank_account_no",
+			"currency"
+		]
+		def copy_data(source):
+			dt = frappe._dict({})
+			for f in data_field:
+				dt[f] = source.get(f)
+			return dt
+		
+		for d in self.invoices:
+			key = (d.bank_account_no, d.supplier_bank, d.swift, d.currency)
+
+			if key not in map_invoice:
+				map_invoice[key] = copy_data(d)
+			else:
+				map_invoice[key]["amount"] += flt(d.amount)
+			
+		return list(map_invoice.values())
 
 	def create_xml_file(self, invoices, debtor_info, filepath=""):
 		"""
