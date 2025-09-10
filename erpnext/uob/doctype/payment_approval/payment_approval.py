@@ -8,6 +8,7 @@ from frappe.utils.file_manager import save_file
 from erpnext.controllers.uob import create_payment_xml
 from erpnext.controllers.uob import UOBAPI, get_country_code
 from frappe.model.mapper import get_mapped_doc
+from erpnext.accounts.doctype.payment_entry.payment_entry import get_payment_entry
 
 from frappe import _
 """ TODO
@@ -51,15 +52,15 @@ class PaymentApproval(Document):
 			self.status = "Draft"
 
 	def update_payment_status(self, process_id, transactions=[], file_date="", error_message=""):
-		# sync with L1,2,3,4 abnd when any riject
+		# sync with L1,2,3,4 and when any riject
 		if cint(self.process_id) > cint(process_id):
 			return
 		
 		self.process_id = process_id
 
 		for tr in transactions:
-			invoice_no = tr['invoice_no']
 			account_no = tr['account_no']
+			amount = flt(tr['amount'])
 			
 			if tr["result"] == "ACCP":
 				status = "Success"
@@ -67,14 +68,65 @@ class PaymentApproval(Document):
 				status = "Failed"
 
 			for row in self.get("invoices"):
-				if row.invoice_no == invoice_no and row.bank_account_no == account_no:
+				if row.bank_account_no == account_no:
 					row.status = status
 					if row.status == "Failed":
 						row.error_code = tr["error_code"]
+					else:
+						use_amount = 0
+						if amount >= row.amount:
+							amount -= row.amount
+							use_amount = flt(row.amount)
+						# add tollerance $1
+						elif row.amount - amount < 1:
+							use_amount = row.amount
+							amount = 0
+						else:
+							use_amount = amount
+							amount = 0
+													
+						# add amount paid
+						if use_amount:
+							self.create_payment_entry(row, tr, use_amount)
 					
 					row.db_update()
 		self.update_on = get_datetime(file_date)
 		self.sync_status(db_update=True, error_message=error_message)
+	
+	def create_payment_entry(self, row, tr, amount):
+		pi_name = row.invoice_no
+		docstatus, status = frappe.db.get_value("Purchase Invoice", pi_name, ["docstatus", "status"]) or (0, "")
+		# if docstatus != 1 or status == "Paid":
+		# 	return
+		
+		cheque_no = tr['reff_no']
+		
+		# create PE
+		pe = get_payment_entry(dt="Purchase Invoice", dn=pi_name)
+		pe.bank_account = self.get_bank_account(tr['bank_account'])
+		pe.mode_of_payment = "Bank Draft"
+		pe.paid_amount = amount
+		pe.reference_no = cheque_no
+		pe.bank = frappe.get_value("Bank Account", pe.bank_account, "bank")
+		pe.reference_date = getdate(tr['reff_date'])
+		pe.additional_info = self.get_transfer_info(row, tr)
+		pe.auto_generated = 1
+		pe.insert(ignore_permissions=1)
+		pe.submit()
+
+	def get_bank_account(self, account_no):
+		bank_name = frappe.db.get_value("Bank Account", {"bank_account_no":account_no}, "name")
+		return bank_name
+
+	def get_transfer_info(self, row, tr):
+		txt = f"""
+		Statement Date: { getdate(tr['reff_date']).strftime("%d-%m-%Y") }
+		Initiated Date: { self.posting_date.strftime("%d-%m-%Y") }
+		Payment No: { tr['remarks'] }
+		Invoice: { row.invoice_no }
+		"""
+		txt = txt.replace("\t", "")
+		return txt
 
 	def sync_status(self, db_update=False, error_message=""):
 		tr_success = 0

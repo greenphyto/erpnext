@@ -18,10 +18,10 @@ class UOBFileLog(Document):
 			file = frappe.get_doc("File", self.file)
 			filename = self.filename
 			self._sync_payment_status(file, filename)
-			self.sync_payment_entry(file, filename)
+			# self.sync_payment_entry(file, filename)
 		else:
 			self._sync_payment_status(file, filename, raw=True)
-			self.sync_payment_entry(file, filename, raw=True)
+			# self.sync_payment_entry(file, filename, raw=True)
 
 	def get_file_data(self, file, typ="XML", raw=False):
 		# get XML
@@ -112,6 +112,9 @@ class UOBFileLog(Document):
 		if txs and isinstance(txs, dict):
 			txs = [txs]
 
+		reff_no = get_nested(data, ['Document','CstmrPmtStsRpt','GrpHdr','MsgId'])
+		reff_date = get_nested(data, ['Document','CstmrPmtStsRpt','GrpHdr','CreDtTm'])
+		remarks = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlPmtInfAndSts','OrgnlPmtInfId'])
 		for tx in txs:
 			temp = tx.get("OrgnlEndToEndId")
 			if temp:
@@ -120,8 +123,15 @@ class UOBFileLog(Document):
 				dt = {
 					"result":tx["TxSts"],
 					"invoice_no": invoice_no,
-					"account_no": tx["OrgnlTxRef"]["CdtrAcct"]["Id"]["Othr"]["Id"],
-					"error_code": error_code
+					"bank_account": get_nested(tx, ['OrgnlTxRef','DbtrAcct','Id','Othr','Id']),
+					"account_no": get_nested(tx, ["OrgnlTxRef","CdtrAcct","Id","Othr","Id"]),
+					"error_code": error_code,
+					"amount": flt(get_nested(tx, ['OrgnlTxRef','Amt','InstdAmt','#text'])),
+					"currency": get_nested(tx, ['OrgnlTxRef','Amt','InstdAmt','@Ccy']),
+					"bic": get_nested(tx, ['OrgnlTxRef','CdtrAgt','FinInstnId','BIC']),
+					"reff_no": reff_no,
+					"reff_date": reff_date,
+					"remarks": remarks,
 				}
 				transactions.append(dt)
 
@@ -145,7 +155,6 @@ class UOBFileLog(Document):
 
 		doc = frappe.get_doc("Payment Approval", payment_id)
 		doc.update_payment_status(ProcessID, transactions, file_date=file_date, error_message=error_message)
-
 
 	def sync_payment_entry(self, file, filename="", raw=False):
 		if "ES3_" not in filename:
@@ -215,6 +224,7 @@ class UOBFileLog(Document):
 		return txt
 
 def convert_inv_no(inv_txt):
+	# not yet upgrade
 	if "PAY" in inv_txt:
 		return inv_txt.replace("PAY", "PAY-")
 	else:
