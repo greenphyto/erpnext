@@ -51,6 +51,7 @@
   "transactions_annual_history",
   "default_settings",
   "default_bank_account",
+  "default_bank_charge_account",
   "default_cash_account",
   "default_receivable_account",
   "round_off_account",
@@ -832,6 +833,19 @@
    "fieldtype": "Link",
    "label": "Sales Replacement Account",
    "options": "Account"
+  },
+  {
+   "description": "Account for attraction cost on WIP",
+   "fieldname": "production_attrition_expense_account",
+   "fieldtype": "Link",
+   "label": "Production Attrition Expense Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "default_bank_charge_account",
+   "fieldtype": "Link",
+   "label": "Default Bank Charge Account",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-building",
@@ -839,7 +853,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-03-12 15:20:06.573304",
+ "modified": "2025-09-11 16:11:03.227205",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",
