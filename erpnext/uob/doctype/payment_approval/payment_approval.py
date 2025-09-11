@@ -371,7 +371,8 @@ class PaymentApproval(Document):
 			"amount",
 			"bank_account_name",
 			"bank_account_no",
-			"currency"
+			"currency",
+			"party"
 		]
 		def copy_data(source):
 			dt = frappe._dict({})
@@ -384,8 +385,10 @@ class PaymentApproval(Document):
 
 			if key not in map_invoice:
 				map_invoice[key] = copy_data(d)
+				map_invoice[key]["invoices"]=[d]
 			else:
 				map_invoice[key]["amount"] += flt(d.amount)
+				map_invoice[key]['invoices'].append(d)
 			
 		return list(map_invoice.values())
 

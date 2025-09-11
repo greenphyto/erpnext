@@ -6,11 +6,13 @@ from frappe.model.document import Document
 import xmltodict
 import base64
 import pandas as pd
-import io
+import io, re
 from typing import Tuple, Optional, Union
 from erpnext.accounts.doctype.payment_entry.payment_entry import get_payment_entry
 from frappe.utils import flt, cint, getdate, cstr
 import datetime
+from erpnext.accounts.utils import get_company_default
+import math
 
 class UOBFileLog(Document):
 	def sync_payment_status(self, file="", filename="", raw=False):
@@ -18,10 +20,10 @@ class UOBFileLog(Document):
 			file = frappe.get_doc("File", self.file)
 			filename = self.filename
 			self._sync_payment_status(file, filename)
-			# self.sync_payment_entry(file, filename)
+			self.sync_payment_entry(file, filename)
 		else:
 			self._sync_payment_status(file, filename, raw=True)
-			# self.sync_payment_entry(file, filename, raw=True)
+			self.sync_payment_entry(file, filename, raw=True)
 
 	def get_file_data(self, file, typ="XML", raw=False):
 		# get XML
@@ -112,28 +114,35 @@ class UOBFileLog(Document):
 		if txs and isinstance(txs, dict):
 			txs = [txs]
 
+		status_name = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlGrpInfAndSts','GrpSts'])
+		error_code_group = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlGrpInfAndSts','StsRsnInf','Rsn','Cd'])
 		reff_no = get_nested(data, ['Document','CstmrPmtStsRpt','GrpHdr','MsgId'])
 		reff_date = get_nested(data, ['Document','CstmrPmtStsRpt','GrpHdr','CreDtTm'])
 		remarks = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlPmtInfAndSts','OrgnlPmtInfId'])
 		for tx in txs:
-			temp = tx.get("OrgnlEndToEndId")
-			if temp:
+			temp = tx.get("OrgnlEndToEndId") or ""
+			error_code = get_nested(tx, ["StsRsnInf", "Rsn", "Cd"] ) or error_code_group
+			result = ""
+			if ProcessID in [1,3]:
+				result = status_name
+				invoice_no = "*"
+			else:
 				invoice_no = convert_inv_no(temp)
-				error_code = get_nested(tx, ["StsRsnInf", "Rsn", "Cd"] )
-				dt = {
-					"result":tx["TxSts"],
-					"invoice_no": invoice_no,
-					"bank_account": get_nested(tx, ['OrgnlTxRef','DbtrAcct','Id','Othr','Id']),
-					"account_no": get_nested(tx, ["OrgnlTxRef","CdtrAcct","Id","Othr","Id"]),
-					"error_code": error_code,
-					"amount": flt(get_nested(tx, ['OrgnlTxRef','Amt','InstdAmt','#text'])),
-					"currency": get_nested(tx, ['OrgnlTxRef','Amt','InstdAmt','@Ccy']),
-					"bic": get_nested(tx, ['OrgnlTxRef','CdtrAgt','FinInstnId','BIC']),
-					"reff_no": reff_no,
-					"reff_date": reff_date,
-					"remarks": remarks,
-				}
-				transactions.append(dt)
+				result = get_nested(tx, ["TxSts"])
+			dt = {
+				"result": result,
+				"invoice_no": invoice_no,
+				"bank_account": get_nested(tx, ['OrgnlTxRef','DbtrAcct','Id','Othr','Id']),
+				"account_no": get_nested(tx, ["OrgnlTxRef","CdtrAcct","Id","Othr","Id"]) or "*",
+				"error_code": error_code,
+				"amount": flt(get_nested(tx, ['OrgnlTxRef','Amt','InstdAmt','#text'])),
+				"currency": get_nested(tx, ['OrgnlTxRef','Amt','InstdAmt','@Ccy']),
+				"bic": get_nested(tx, ['OrgnlTxRef','CdtrAgt','FinInstnId','BIC']),
+				"reff_no": reff_no,
+				"reff_date": reff_date,
+				"remarks": remarks,
+			}
+			transactions.append(dt)
 
 		# Additional Information
 		file_date = get_nested(data, ["Document", "CstmrPmtStsRpt", "GrpHdr", "CreDtTm"]) or ""
@@ -147,8 +156,9 @@ class UOBFileLog(Document):
 		error_message = "\n".join(temp)
 			
 		# Get Payment Approval
-		temp = get_nested(data, ["Document", "CstmrPmtStsRpt", "OrgnlGrpInfAndSts", "OrgnlMsgId"]) or ""
-		payment_id = frappe.db.get_value("Payment Approval", {"file_id":temp})
+		temp = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlPmtInfAndSts','OrgnlPmtInfId']) or ""
+		ids = convert_inv_no(temp)
+		payment_id = frappe.db.get_value("Payment Approval", ids)
 		# get the payment number
 		if not payment_id:
 			return
@@ -174,33 +184,107 @@ class UOBFileLog(Document):
 				.apply(lambda x: datetime.datetime.strptime(x, "%d/%m/%Y").date())
 			)
 
-		
+		trans_map = {}
 		for idx, row in df_tx.iterrows():
 			# get PI
-			pi_name = get_inv_no(row["Your Reference"], flt(row["Transaction Amount"]))
-			if not pi_name:
+			pay_name = convert_inv_no(row["Your Reference"])
+			if not pay_name:
 				continue
 			
-			docstatus, status = frappe.db.get_value("Purchase Invoice", pi_name, ["docstatus", "status"]) or (0, "")
-			if docstatus != 1 or status == "Paid":
-				continue
+			if pay_name not in trans_map:
+				trans_map[pay_name] = {
+					"transfer":[],
+					"charges":[]
+				}
 			
-			cheque_no = None
-			if flt(row["Cheque Number"]):
-				cheque_no = row["Cheque Number"]
-			
-			# create PE
-			pe = get_payment_entry(dt="Purchase Invoice", dn=pi_name)
-			pe.bank_account = self.get_bank_account(row["Account Number"])
-			pe.mode_of_payment = "Bank Draft"
-			pe.paid_amount = flt(row["Transaction Amount"])
-			pe.reference_no = cheque_no or row["Our Reference"]
-			pe.bank = frappe.get_value("Bank Account", pe.bank_account, "bank")
-			pe.reference_date = row["Transaction Date"]
-			pe.additional_info = self.get_transfer_info(row)
-			pe.auto_generated = 1
+			# need key for bank account specific
+			if row["Transaction Description"] == "SVC Chg":
+				# charges
+				trans_map[pay_name]['charges'].append(row)
+			else:
+				# transfer
+				trans_map[pay_name]['transfer'].append(row)
+
+
+		pe_map = {}
+		for pay_name, d in trans_map.items():
+			pay_doc = frappe.get_doc("Payment Approval", pay_name)
+			default_charge_account = get_company_default(pay_doc.company, "default_bank_charge_account")
+			cost_center_charge = get_company_default(pay_doc.company, "cost_center")
+			fee_rate = 0
+			type_fee = 0
+			if len(d['charges']) == 1:
+				# bulk charge
+				total_fee = flt(d['charges'][0]['Transaction Amount'])
+				fee_rate = total_fee/len(d['transfer'])
+				type_fee = "SUM"
+			else:
+				type_fee = "IND"
+				# individual charge
+
+			for x in pay_doc.get_invoice_group():
+				for i, tr in enumerate(d['transfer']):
+					# based on value, its not not a good way, but temporary for current version
+					if math.isclose(tr['Transaction Amount'], x['amount'], abs_tol=0.1):
+						for row in x['invoices']:
+							pi_name = row.invoice_no
+							supplier = row.party
+							amount = row.amount
+							docstatus, status = frappe.db.get_value("Purchase Invoice", pi_name, ["docstatus", "status"]) or (0, "")
+							if docstatus != 1 or status == "Paid":
+								continue
+							
+							cheque_no = None
+							if flt(tr["Cheque Number"]):
+								cheque_no = tr["Cheque Number"]
+							
+							if type_fee == "IND":
+								# get rate by same order with transaction - its not best practice, but temporary
+								temp = d['charges'][i] if len(d['charges']) > i else None
+								if temp:
+									fee_rate = flt(temp['Transaction Amount'])
+								else:
+									fee_rate = 0
+								
+							# create PE based on same party/supplier
+							if supplier not in pe_map:
+								pe = get_payment_entry(dt="Purchase Invoice", dn=pi_name)
+								pe.bank_account = self.get_bank_account(tr["Account Number"])
+								pe.mode_of_payment = "Bank Draft"
+								pe.paid_amount = amount
+								pe.reference_no = cheque_no or tr["Our Reference"]
+								pe.bank = frappe.get_value("Bank Account", pe.bank_account, "bank")
+								pe.reference_date = tr["Transaction Date"]
+								pe.additional_info = self.get_transfer_info(tr)
+								pe.auto_generated = 1
+
+								# add charges
+								if fee_rate:
+									pe.append("deductions", {
+										"account": default_charge_account,  # ganti dengan COA sesuai
+										"cost_center": cost_center_charge,      # opsional kalau mandatory
+										"amount": fee_rate
+									})
+									pe.paid_amount += fee_rate
+
+								pe_map[supplier] = pe
+							else:
+								pe = pe_map[supplier]
+								# add invoice
+								pe.append("references", {
+									"reference_doctype": "Purchase Invoice",
+									"reference_name": pi_name,
+									"total_amount": amount,
+									"outstanding_amount": amount,
+									"allocated_amount": amount,
+								})
+								pe.paid_amount += amount
+						
+		
+		for pe in pe_map.values():
+			pe.flags.ignore_validate = 1
 			pe.insert(ignore_permissions=1)
-			pe.submit()
+			# pe.
 
 	def get_bank_account(self, account_no):
 		bank_name = frappe.db.get_value("Bank Account", {"bank_account_no":account_no}, "name")
@@ -235,6 +319,24 @@ def convert_inv_no(inv_txt):
 		year = "20" + yymm[:2]
 		formatted = f"{part}/{year}"
 		return formatted
+
+
+def transform_code(code: str):
+    # Pisahkan prefix, angka, dan suffix huruf
+    match = re.match(r"(PAY)(\d+)([A-Z]+)", code)
+    if not match:
+        return None
+    
+    prefix, number, suffix = match.groups()
+    
+    # Ambil 2 digit pertama sebagai "YY"
+    yy = number[:2]
+    # Sisanya sebagai nomor urut, lalu pad ke 4 digit
+    seq = int(number[2:]) if len(number) > 2 else 0
+    seq_fmt = f"{seq:04d}"
+    
+    new_code = f"{prefix}-{yy}{seq_fmt}"
+    return new_code, suffix
 
 def get_inv_no(reff_no, amount):
 	invoice_no = convert_inv_no(reff_no)
