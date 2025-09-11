@@ -64,11 +64,13 @@ class PaymentApproval(Document):
 			
 			if tr["result"] == "ACCP":
 				status = "Success"
+			elif tr["result"] in ["RCVD", "ACTC"]:
+				status = ""
 			else:
 				status = "Failed"
 
 			for row in self.get("invoices"):
-				if row.bank_account_no == account_no:
+				if row.bank_account_no == account_no or account_no == "*":
 					row.status = status
 					if row.status == "Failed":
 						row.error_code = tr["error_code"]
@@ -86,10 +88,14 @@ class PaymentApproval(Document):
 							amount = 0
 													
 						# add amount paid
-						if use_amount:
-							self.create_payment_entry(row, tr, use_amount)
+						# if use_amount:
+						# 	self.create_payment_entry(row, tr, use_amount)
 					
 					row.db_update()
+			
+			if account_no == "*":
+				break
+
 		self.update_on = get_datetime(file_date)
 		self.sync_status(db_update=True, error_message=error_message)
 	
@@ -248,6 +254,9 @@ class PaymentApproval(Document):
 				frappe.throw(f"Row {d.idx}, invoice {d.invoice_no} not have outstanding amount")
 				self.remove(d)
 				continue
+
+			if d.currency != self.currency:
+				frappe.throw(_(f"Row {d.idx}, cannot use invoice with currency except {self.currency}. Please change the invoice."))
 			
 			already_add.append(d.invoice_no)
 			d.supplier = data.supplier
