@@ -233,7 +233,7 @@ class UOBFileLog(Document):
 			for x in pay_doc.get_invoice_group():
 				for i, tr in enumerate(d['transfer']):
 					# based on value, its not not a good way, but temporary for current version
-					if math.isclose(tr['Transaction Amount'], x['amount'], abs_tol=0.1):
+					if math.isclose( flt(tr['Transaction Amount']), x['amount'], abs_tol=0.1):
 						for row in x['invoices']:
 							pi_name = row.invoice_no
 							supplier = row.party
