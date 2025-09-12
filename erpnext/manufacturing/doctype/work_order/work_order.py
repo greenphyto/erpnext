@@ -1138,10 +1138,11 @@ class WorkOrder(Document):
 			if temp:
 				data += temp
 
-		res = frappe.db.sql('select packaging, weight from `tabPackaging List Available` where parent = %s and parentfield = "packaging" and `default` = 1', (self.production_item), as_dict=1)
+		res = frappe.db.sql('select packaging, weight, package_item from `tabPackaging List Available` where parent = %s and parentfield = "packaging" and `default` = 1', (self.production_item), as_dict=1)
 		if res and len(res)==1:
 			self.packet_size = res[0].packaging
 			self.conversion_factor = res[0].weight
+			self.flags.package_item = res[0].package_item
 		else:
 			self.packet_size = frappe.db.get_value("Item", self.production_item, "stock_uom")
 			self.conversion_factor = 1
@@ -1176,7 +1177,8 @@ class WorkOrder(Document):
 		if not total_pcs:
 			return
 		
-		pack_item = frappe.db.get_single_value("Manufacturing Settings", "default_packaging")
+		default_packaging = frappe.db.get_single_value("Manufacturing Settings", "default_packaging")
+		pack_item = self.flags.package_item or default_packaging
 		if not pack_item or not self.packet_size:
 			return
 		
