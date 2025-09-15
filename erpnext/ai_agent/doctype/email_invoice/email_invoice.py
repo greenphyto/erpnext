@@ -159,6 +159,17 @@ class EmailInvoice(Document):
 		self.inbox = doc.name
 		self.process_email(doc)
 
+	@frappe.whitelist()
+	def sync_from_ui(self):
+		if self.data_result:
+			for d in self.results_payload:
+				payload = self.enhance_payload(payload)
+				self.create_invoice_result(payload)
+		else:
+			self.process_email()
+		
+		self.save()
+
 	def process_email(self, doc={}):
 		"""Process email using AIAgentClient end-to-end extraction and PI creation.
 
@@ -213,7 +224,12 @@ class EmailInvoice(Document):
 				continue
 
 			# Copy attachment to current EmailInvoice for traceability
-			self.add_attachment_copy(fn)
+			if not frappe.db.get_list(
+				"File",
+				{"attached_to_doctype": "Email Invoice", 
+	 			"attached_to_name": self.name, "file_name": fn.file_name},
+			):
+				self.add_attachment_copy(fn)
 
 			# Only handle PDFs (consistent with process_email)
 			if ".pdf" not in full_path.lower():
@@ -369,7 +385,8 @@ class EmailInvoice(Document):
 			supp_payload = get_supplier_payload(supplier, domains)
 			temp = agent.get_supplier(supp_payload)
 			supplier_final = temp.get("code")
-			payload['result']['result']['supplier']['name'] = supplier_final
+			if supplier_final:
+				payload['result']['result']['supplier']['name'] = supplier_final
 		
 		# PO Number
 		def normalize_po(text: str) -> str:

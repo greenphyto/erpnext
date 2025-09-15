@@ -98,7 +98,7 @@ class AIAgentClient:
         """
 
         url = self._join_url("/get-invoice-data")
-        payload = {"text": text or "", "supplier_default":supplier_default}
+        payload = {"text": text[:2000] or "", "supplier_default":supplier_default}
         resp = requests.post(url, json=payload, timeout=self.timeout)
         resp.raise_for_status()
 
