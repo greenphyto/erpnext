@@ -13,7 +13,7 @@ class UOBIntegrationSettings(Document):
 	@frappe.whitelist()
 	def get_file_list(self):
 		uob = UOBAPI()
-		res = uob.get_file_list()
+		res = uob.get_file_list(limit=200)
 
 		return res
 
