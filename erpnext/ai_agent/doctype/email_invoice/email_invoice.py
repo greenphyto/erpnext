@@ -162,7 +162,7 @@ class EmailInvoice(Document):
 	@frappe.whitelist()
 	def sync_from_ui(self):
 		if self.data_result:
-			for d in self.results_payload:
+			for d in json.loads(self.data_result) or []:
 				payload = self.enhance_payload(payload)
 				self.create_invoice_result(payload)
 		else:
