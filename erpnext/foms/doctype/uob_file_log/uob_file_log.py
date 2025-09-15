@@ -207,6 +207,7 @@ class UOBFileLog(Document):
 
 
 		pe_map = {}
+		approval_update = {}
 		for pay_name, d in trans_map.items():
 			pay_doc = frappe.get_doc("Payment Approval", pay_name)
 			default_charge_account = get_company_default(pay_doc.company, "default_bank_charge_account")
@@ -257,6 +258,18 @@ class UOBFileLog(Document):
 								fee_rate = flt(temp['Transaction Amount'])
 							else:
 								fee_rate = 0
+
+						if pay_doc.name not in approval_update:
+							approval_update[pay_doc.name] = {
+								"doc":pay_doc,
+								"trans":[]
+							}
+						approval_update[pay_doc.name]['trans'].append({
+							"account_no": row.bank_account_no,
+							"amount": row.amount,
+							"result": "ACCP",         
+							"error_code": None        
+						})
 							
 						# create PE based on same party/supplier
 						if supplier not in pe_map:
@@ -290,13 +303,16 @@ class UOBFileLog(Document):
 								"outstanding_amount": amount,
 								"allocated_amount": amount,
 							})
-							pe.paid_amount += amount
-						
+							pe.paid_amount += amount		
 		
 		for pe in pe_map.values():
 			pe.flags.ignore_validate = 1
 			pe.insert(ignore_permissions=1)
 			# pe.submit()
+
+		for d in approval_update.values():
+			d['doc'].update_payment_status(4, d['trans'])
+
 
 	def get_bank_account(self, account_no):
 		bank_name = frappe.db.get_value("Bank Account", {"bank_account_no":account_no}, "name")
