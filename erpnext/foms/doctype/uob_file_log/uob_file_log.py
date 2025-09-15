@@ -221,78 +221,90 @@ class UOBFileLog(Document):
 			cost_center_charge = get_company_default(pay_doc.company, "cost_center")
 			fee_rate = 0
 			type_fee = 0
+			invoice_group = pay_doc.get_invoice_group()
+			trans_count = len(invoice_group)
 			if len(d['charges']) == 1:
 				# bulk charge
 				total_fee = flt(d['charges'][0]['Transaction Amount'])
-				fee_rate = total_fee/len(d['transfer'])
+				fee_rate = round(total_fee/trans_count, 2)
 				type_fee = "SUM"
 			else:
-				type_fee = "IND"
 				# individual charge
+				type_fee = "IND"
 
-			for x in pay_doc.get_invoice_group():
+			for x in invoice_group:
 				for i, tr in enumerate(d['transfer']):
 					# based on value, its not not a good way, but temporary for current version
-					if math.isclose( flt(tr['Transaction Amount']), x['amount'], abs_tol=0.1):
-						for row in x['invoices']:
-							pi_name = row.invoice_no
-							supplier = row.party
+					paid_amount = flt(tr['Transaction Amount'])
+					for row in x['invoices']:
+						pi_name = row.invoice_no
+						supplier = row.party
+
+						# use update amount value
+						if paid_amount > row.amount:
+							paid_amount -= row.amount
 							amount = row.amount
-							docstatus, status = frappe.db.get_value("Purchase Invoice", pi_name, ["docstatus", "status"]) or (0, "")
-							if docstatus != 1 or status == "Paid":
-								continue
-							
-							cheque_no = None
-							if flt(tr["Cheque Number"]):
-								cheque_no = tr["Cheque Number"]
-							
-							if type_fee == "IND":
-								# get rate by same order with transaction - its not best practice, but temporary
-								temp = d['charges'][i] if len(d['charges']) > i else None
-								if temp:
-									fee_rate = flt(temp['Transaction Amount'])
-								else:
-									fee_rate = 0
-								
-							# create PE based on same party/supplier
-							if supplier not in pe_map:
-								pe = get_payment_entry(dt="Purchase Invoice", dn=pi_name)
-								pe.bank_account = self.get_bank_account(tr["Account Number"])
-								pe.mode_of_payment = "Bank Draft"
-								pe.paid_amount = amount
-								pe.reference_no = cheque_no or tr["Our Reference"]
-								pe.bank = frappe.get_value("Bank Account", pe.bank_account, "bank")
-								pe.reference_date = tr["Transaction Date"]
-								pe.additional_info = self.get_transfer_info(tr)
-								pe.auto_generated = 1
+						elif math.isclose(paid_amount, row.amount, abs_tol=0.1):
+							paid_amount = 0
+							amount = row.amount
+						elif paid_amount == 0:
+							continue
 
-								# add charges
-								if fee_rate:
-									pe.append("deductions", {
-										"account": default_charge_account,  # ganti dengan COA sesuai
-										"cost_center": cost_center_charge,      # opsional kalau mandatory
-										"amount": fee_rate
-									})
-									pe.paid_amount += fee_rate
-
-								pe_map[supplier] = pe
+						docstatus, status = frappe.db.get_value("Purchase Invoice", pi_name, ["docstatus", "status"]) or (0, "")
+						if docstatus != 1 or status == "Paid":
+							continue
+						
+						cheque_no = None
+						if flt(tr["Cheque Number"]):
+							cheque_no = tr["Cheque Number"]
+						
+						if type_fee == "IND":
+							# get rate by same order with transaction - its not best practice, but temporary
+							temp = d['charges'][i] if len(d['charges']) > i else None
+							if temp:
+								fee_rate = flt(temp['Transaction Amount'])
 							else:
-								pe = pe_map[supplier]
-								# add invoice
-								pe.append("references", {
-									"reference_doctype": "Purchase Invoice",
-									"reference_name": pi_name,
-									"total_amount": amount,
-									"outstanding_amount": amount,
-									"allocated_amount": amount,
+								fee_rate = 0
+							
+						# create PE based on same party/supplier
+						if supplier not in pe_map:
+							pe = get_payment_entry(dt="Purchase Invoice", dn=pi_name)
+							pe.bank_account = self.get_bank_account(tr["Account Number"])
+							pe.mode_of_payment = "Bank Draft"
+							pe.paid_amount = amount
+							pe.reference_no = cheque_no or tr["Our Reference"]
+							pe.bank = frappe.get_value("Bank Account", pe.bank_account, "bank")
+							pe.reference_date = tr["Transaction Date"]
+							pe.additional_info = self.get_transfer_info(tr)
+							pe.auto_generated = 1
+
+							# add charges
+							if fee_rate:
+								pe.append("deductions", {
+									"account": default_charge_account,  # ganti dengan COA sesuai
+									"cost_center": cost_center_charge,      # opsional kalau mandatory
+									"amount": fee_rate
 								})
-								pe.paid_amount += amount
+								pe.paid_amount += fee_rate
+
+							pe_map[supplier] = pe
+						else:
+							pe = pe_map[supplier]
+							# add invoice
+							pe.append("references", {
+								"reference_doctype": "Purchase Invoice",
+								"reference_name": pi_name,
+								"total_amount": amount,
+								"outstanding_amount": amount,
+								"allocated_amount": amount,
+							})
+							pe.paid_amount += amount
 						
 		
 		for pe in pe_map.values():
 			pe.flags.ignore_validate = 1
 			pe.insert(ignore_permissions=1)
-			# pe.
+			# pe.submit()
 
 	def get_bank_account(self, account_no):
 		bank_name = frappe.db.get_value("Bank Account", {"bank_account_no":account_no}, "name")
@@ -304,8 +316,8 @@ class UOBFileLog(Document):
 		return getdate(parsed_date)
 	
 	def get_transfer_info(self, row):
-		row["Statement Date"] = row["Statement Date"].strftime("%d-%m-%Y")
-		row["Value Date"] = row["Value Date"].strftime("%d-%m-%Y")
+		row["Statement Date"] = getdate(row["Statement Date"]).strftime("%d-%m-%Y")
+		row["Value Date"] = getdate(row["Value Date"]).strftime("%d-%m-%Y")
 
 		txt = f"""Statement Date: {row["Statement Date"]}
 		Value Date: {row["Value Date"]}
