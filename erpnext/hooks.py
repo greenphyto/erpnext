@@ -470,6 +470,9 @@ scheduler_events = {
 		],
         "*/30 * * * *": [
             "erpnext.controllers.uob.sync_uob_file"
+		],
+        "0 6 * * *": [
+			"erpnext.controllers.erp.reminder_submit_purchase_invoice"
 		]
 	},
 	"all": [

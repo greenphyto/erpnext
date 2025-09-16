@@ -1,5 +1,5 @@
 import frappe, json
-from frappe.utils import cint, flt, getdate, cstr
+from frappe.utils import cint, flt, getdate, cstr, today, get_last_day
 from six import string_types
 
 # util: sanitize description by removing editor wrapper tags
@@ -681,3 +681,38 @@ def is_doctype_exists(doctype):
 		return meta
 	except frappe.DoesNotExistError:
 		return None
+	
+def reminder_submit_purchase_invoice():
+	if getdate(today()) != get_last_day(today()):
+		return
+	
+	if not frappe.db.exists("Notification", "Submit Purchase Invoice Draft"):
+		return
+	
+	doc_notif = frappe.get_doc("Notification", "Submit Purchase Invoice Draft")
+	
+	# get list invoice
+	doc_list = frappe.db.sql("""
+		SELECT
+			name,
+			supplier,
+			posting_date,
+			grand_total,
+			currency,
+			owner
+		FROM
+			`tabPurchase Invoice`
+		WHERE
+			docstatus = 0
+			AND posting_date <= LAST_DAY(CURDATE())
+		ORDER BY
+			posting_date ASC
+	""", as_dict=1)
+
+	if not doc_list:
+		return
+
+	doc = frappe._dict({
+		"doc_list":doc_list
+	})
+	doc_notif.send(doc)
