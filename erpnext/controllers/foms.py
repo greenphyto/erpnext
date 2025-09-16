@@ -1026,6 +1026,9 @@ def sync_sle(doc, method=""):
 	if doc.actual_qty < 0 or not doc.batch_no:
 		return
 
+	if not cint(frappe.db.get_single_value("FOMS Integration Settings", "sync_sle")) and not force:
+		return
+	
 	qty = frappe.db.get_value("Stock Ledger Entry", {
 		"is_cancelled":0,
 		"batch_no":doc.batch_no,
@@ -1037,9 +1040,6 @@ def update_foms_batch(batch_no, item_code, warehouse, qty, disable=False, expiry
 	item_id = frappe.get_value("Item", item_code, "foms_raw_id")
 	if not item_id:
 		# not raw material
-		return
-
-	if not cint(frappe.db.get_single_value("FOMS Integration Settings", "sync_sle")) and not force:
 		return
 
 	# skip sync transfer to WIP
@@ -1436,6 +1436,14 @@ def _update_foms_stock_recon(log, api=None):
 	farm_id = get_farm_id()
 	api.log = log
 
+	if not cint(doc.sync_to_foms):
+		api.update_log(True, "Not required sync to FOMS")
+		return
+	
+	if doc.sync_percent == 100:
+		api.update_log(True, "Already success!")
+		return
+
 	success = 0
 	for d in doc.get("items"):
 		if d.item_group != "Raw Material":
@@ -1443,6 +1451,7 @@ def _update_foms_stock_recon(log, api=None):
 			continue
 		
 		if d.foms_sync:
+			success += 1
 			continue
 
 		item_id = frappe.db.get_value("Item", d.item_code, "foms_raw_id", debug=0)
@@ -1452,13 +1461,20 @@ def _update_foms_stock_recon(log, api=None):
 		if doc.docstatus == 2:
 			qty_adjust = -1 * qty_adjust
 			reason = f"[Cancel] Stock Recon {doc.name} from ERP"
-		res = api.update_batch_recon(item_id, batch_id, qty_adjust, reason)
+		
+		# if not batch ID, create first
+		if not batch_id:
+			res = update_foms_batch(d.batch_no, d.item_code, d.warehouse, d.qty)
+		else:
+			res = api.update_batch_recon(item_id, batch_id, qty_adjust, reason)
+
 		if res:
 			d.db_set("foms_sync", 1)
 			success += 1
 	
 	doc.sync_percent = success/len(doc.get("items"))*100
 	doc.db_update()
+	api.update_log(True, "Sync Success!")
 
 def create_raw_material(log):
 	name = frappe.get_value("Item", log.get("rawMaterialRefNo"))
