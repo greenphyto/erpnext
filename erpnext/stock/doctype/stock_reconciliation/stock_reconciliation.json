@@ -14,6 +14,7 @@
   "posting_date",
   "posting_time",
   "set_posting_time",
+  "sync_to_foms",
   "section_break_8",
   "set_warehouse",
   "section_break_22",
@@ -198,13 +199,20 @@
    "fieldtype": "Data",
    "label": "Reff ID",
    "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "sync_to_foms",
+   "fieldtype": "Check",
+   "label": "Sync to FOMS"
   }
  ],
  "icon": "fa fa-upload-alt",
  "idx": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-10-30 15:18:18.656355",
+ "modified": "2025-09-16 16:09:38.942685",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Reconciliation",
