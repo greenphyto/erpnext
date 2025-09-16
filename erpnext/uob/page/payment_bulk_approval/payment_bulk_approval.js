@@ -60,7 +60,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                         <span>Show all details</span>
                     </label>
                     <label class="ml-auto mb-0 text-muted mr-3" style="font-size: 1.1em;">
-                        <div>Pending Amount: <b class="pending-amount">$0</b></div>
+                        <div>Payment Amount: <b class="pending-amount">$0</b></div>
                     </label>
                 </div>
             </div>
