@@ -1,5 +1,5 @@
 import frappe
-from frappe.utils import today, get_last_day, getdate
+from frappe.utils import today, get_last_day, getdate, today, get_last_day
 
 def check_email_status(log, method=""):
 	if log.status != "Sent":
@@ -118,3 +118,38 @@ def fix_si_discount_ledger(si_name=""):
 		# change draft
 		# submit again
 		# add discount account
+
+def reminder_submit_purchase_invoice():
+	if getdate(today()) != get_last_day(today()):
+		return
+	
+	if not frappe.db.exists("Notification", "Submit Purchase Invoice Draft"):
+		return
+	
+	doc_notif = frappe.get_doc("Notification", "Submit Purchase Invoice Draft")
+	
+	# get list invoice
+	doc_list = frappe.db.sql("""
+		SELECT
+			name,
+			supplier,
+			posting_date,
+			grand_total,
+			currency,
+			owner
+		FROM
+			`tabPurchase Invoice`
+		WHERE
+			docstatus = 0
+			AND posting_date <= LAST_DAY(CURDATE())
+		ORDER BY
+			posting_date ASC
+	""", as_dict=1)
+
+	if not doc_list:
+		return
+
+	doc = frappe._dict({
+		"doc_list":doc_list
+	})
+	doc_notif.send(doc)

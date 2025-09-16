@@ -465,6 +465,9 @@ scheduler_events = {
 		],
         "0 6 * * *":[
             "erpnext.controllers.erp.reminder_submit_invoice",
+		],
+        "0 6 * * *": [
+			"erpnext.controllers.erp.reminder_submit_purchase_invoice"
 		]
 	},
 	"all": [
