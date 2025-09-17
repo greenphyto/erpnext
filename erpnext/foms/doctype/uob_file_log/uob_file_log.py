@@ -298,6 +298,7 @@ class UOBFileLog(Document):
 								frappe.db.sql("delete from `tabPayment Entry Reference` where parent = %s ", use_exists_pe)
 								pe = frappe.get_doc("Payment Entry", use_exists_pe)
 
+							pe.payment_approval = pay_doc.name
 							pe.bank_account = self.get_bank_account(tr["Account Number"])
 							pe.mode_of_payment = "Bank Draft"
 							pe.paid_amount = amount

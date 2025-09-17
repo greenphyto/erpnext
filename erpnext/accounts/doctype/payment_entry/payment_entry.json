@@ -97,7 +97,8 @@
   "subscription_section",
   "auto_repeat",
   "amended_from",
-  "title"
+  "title",
+  "payment_approval"
  ],
  "fields": [
   {
@@ -752,12 +753,19 @@
    "fieldname": "auto_generated",
    "fieldtype": "Check",
    "label": "Auto Generated"
+  },
+  {
+   "fieldname": "payment_approval",
+   "fieldtype": "Link",
+   "label": "Payment Approval",
+   "options": "Payment Approval",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-07-03 11:22:08.771651",
+ "modified": "2025-09-17 15:45:54.961730",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry",
