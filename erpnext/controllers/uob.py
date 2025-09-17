@@ -327,11 +327,14 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 		
 		# Remittance Information
 		rmt_inf = ET.SubElement(cdt_trf_tx_inf, 'RmtInf')
-		ET.SubElement(rmt_inf, 'Ustrd').text = "H1:INVOICE REF\t\tAMOUNT\tCURRENCY1"
+		if invoice['invoices']:
+			ET.SubElement(rmt_inf, 'Ustrd').text = f"1:{debtor_info['batch']}"
+			ET.SubElement(rmt_inf, 'Ustrd').text = "H1:INVOICE REF\t\tAMOUNT\tCURRENCY1"
+		for inv in invoice['invoices']:
+			inv_amount = inv['amount']
+			ET.SubElement(rmt_inf, 'Ustrd').text = f"3:{inv['invoice_number']}\t\t{inv_amount:.2f}\t{inv['currency']}"
 		
 		# Split amount for multiple invoice lines (as in example)
-		inv_amount = invoice['amount']
-		ET.SubElement(rmt_inf, 'Ustrd').text = f"3:{invoice['invoice_number']}\t\t{inv_amount:.2f}\t{invoice['currency']}"
 		
 		strd = ET.SubElement(rmt_inf, 'Strd')
 		invcee = ET.SubElement(strd, 'Invcee')
