@@ -272,8 +272,24 @@ class UOBFileLog(Document):
 						})
 							
 						# create PE based on same party/supplier
+						temp = frappe.db.get_value("Payment Entry", pay_doc.name, ['name','docstatus'], as_dict=1)
+						use_exists_pe = None
+						if temp and temp.name:
+							if temp.docstatus in [2,1]:
+								continue
+							else:
+								use_exists_pe = temp.name
+
 						if supplier not in pe_map:
-							pe = get_payment_entry(dt="Purchase Invoice", dn=pi_name)
+							if not use_exists_pe:
+								pe = get_payment_entry(dt="Purchase Invoice", dn=pi_name)
+								pe.__newname = pay_doc.name
+								pe.name = pay_doc.name
+								pe.flags.name_set = True
+							else:
+								frappe.db.sql("delete from `tabPayment Entry Reference` where parent = %s ", use_exists_pe)
+								pe = frappe.get_doc("Payment Entry", use_exists_pe)
+
 							pe.bank_account = self.get_bank_account(tr["Account Number"])
 							pe.mode_of_payment = "Bank Draft"
 							pe.paid_amount = amount
