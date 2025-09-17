@@ -18,7 +18,9 @@
   "exchange_rate",
   "basic_amount",
   "status",
-  "error_code"
+  "error_code",
+  "column_break_14",
+  "bill_no"
  ],
  "fields": [
   {
@@ -126,12 +128,23 @@
    "fieldtype": "Data",
    "label": "Error Code",
    "read_only": 1
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "invoice_no.bill_no",
+   "fieldname": "bill_no",
+   "fieldtype": "Data",
+   "label": "Bill No",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-09-10 12:11:09.553625",
+ "modified": "2025-09-17 12:00:26.424550",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "Payment Invoice List",

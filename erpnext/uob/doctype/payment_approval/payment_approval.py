@@ -316,8 +316,15 @@ class PaymentApproval(Document):
 				"email":email,
 				"country": get_country_code("Singapore"),
 				"address": address,
-				"remitence_address": address
+				"remitence_address": address,
+				"invoices":[]
 			}
+			for inv in d['invoices']:
+				row['invoices'].append({
+					"invoice_number": inv.bill_no or inv.invoice_no,
+					"amount": inv.amount,
+					"currency": inv.currency
+				})
 			invoices.append(row)
 
 		bic = frappe.get_value("Bank", self.bank, "swift_number")
