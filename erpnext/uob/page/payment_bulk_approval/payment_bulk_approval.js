@@ -286,6 +286,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                 }
 
                 const columns_fixed = [
+                    { label: 'Select', keys: ['__select__'] },
                     { label: 'Invoice No', keys: ['invoice_no','invoice','reference_name','bill_no','reference'] },
                     { label: 'Supplier', keys: ['supplier','party_name','party'] },
                     { label: 'Supplier Bank No', keys: ['supplier_bank_no','bank_account_no','beneficiary_account_no','account_no','bank_account'] },
@@ -301,10 +302,23 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     return '';
                 }
 
-                const thead = columns_fixed.map(c => `<th${c.label === 'Amount' ? ' class=\"text-right\"' : ''}>${c.label}</th>`).join('');
+                const thead = columns_fixed.map(c => {
+                    if (c.label === 'Select') {
+                        return `<th class=\"text-center\" style=\"width: 40px;\"><input type=\"checkbox\" class=\"invoice-select-all\" title=\"Select all\" checked></th>`;
+                    }
+                    return `<th${c.label === 'Amount' ? ' class=\"text-right\"' : ''}>${c.label}</th>`;
+                }).join('');
                 const rows_html = transfers.map(t => {
                     const tds = columns_fixed.map(c => {
                         let val = pick(t, c.keys);
+                        if (c.label === 'Select') {
+                            // Use best-effort invoice identifier found in row
+                            const link_name = t.invoice || t.reference_name || t.invoice_no || '';
+                            const disabled = link_name ? '' : ' disabled';
+                            // Default checked (user can uncheck unwanted rows)
+                            const checked = link_name ? ' checked' : '';
+                            return `<td class=\"text-center\"><input type=\"checkbox\" class=\"invoice-select\" data-invoice-name=\"${frappe.utils.escape_html(link_name)}\"${disabled}${checked}></td>`;
+                        }
                         if (c.label === 'Amount') {
                             val = format_amount(val, t['currency'] || doc.currency);
                             return `<td class=\"text-right\">${frappe.utils.escape_html(val != null ? String(val) : '')}</td>`;
@@ -340,6 +354,14 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                         </table>
                     </div>
                 `);
+                // Hook up select-all for this detail table
+                const $table = $body.find('table.detail-table');
+                $table.on('change', '.invoice-select-all', function() {
+                    const checked = $(this).is(':checked');
+                    $table.find('tbody .invoice-select').prop('checked', checked);
+                });
+                // Default: all selected on initial render
+                $table.find('.invoice-select-all').prop('checked', true).trigger('change');
                 $tr.data('detail-rendered', true);
             }
 
@@ -379,16 +401,26 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                 } else if (action === 'Reject') {
                     $btnReject.text(__('Rejecting...'));
                 }
+                // Collect selected invoices (if any) from this row's detail table
+                const $detail = $tr.data('detail-row');
+                let selected_invoices = [];
+                if ($detail && $detail.length) {
+                    selected_invoices = $detail.find('.invoice-select:checked')
+                        .map(function() { return $(this).data('invoice-name'); })
+                        .get()
+                        .filter(x => !!x);
+                }
+
                 frappe.xcall('erpnext.uob.page.payment_bulk_approval.payment_bulk_approval.get_apply_workflow', {
                     docname: name,
                     action: action,
+                    selected_invoices: selected_invoices,
                 }).then(() => {
                     frappe.show_alert({
                         message: __("{0} applied for {1}", [action, name]),
                         indicator: 'green',
                     });
                     if (action === 'Approve') {
-                        const $detail = $tr.data('detail-row');
                         if ($detail) $detail.remove();
                         $tr.remove();
                         if (typeof paging.total === 'number') paging.total = Math.max(0, paging.total - 1);

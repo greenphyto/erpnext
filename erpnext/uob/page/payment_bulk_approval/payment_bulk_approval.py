@@ -109,6 +109,30 @@ def get_data(start=0, page_length=20, filters=None):
 
 from frappe.model.workflow import apply_workflow
 @frappe.whitelist()
-def get_apply_workflow(docname, action):
+def get_apply_workflow(docname, action, selected_invoices=None):
+    """
+    Apply workflow action on Payment Approval and optionally receive
+    a list of selected invoice identifiers from the UI.
+
+    The list is attached to both frappe.flags and doc.flags for
+    downstream hooks/logic to consume if needed.
+    """
     doc = frappe.get_doc("Payment Approval", docname)
+    try:
+        invoices = frappe.parse_json(selected_invoices) if selected_invoices is not None else []
+    except Exception:
+        invoices = []
+    
+    for d in doc.invoices:
+        if d.invoice_no in invoices:
+            d.db_set("selected", 1)
+        else:
+            d.db_set("selected", 0)
+
+    # Expose to any custom server-side logic
+    frappe.flags.selected_invoices = invoices
+    if hasattr(doc, 'flags'):
+        doc.flags.selected_invoices = invoices
+
+    # print("Approve on:", doc.name, invoices)
     return apply_workflow(doc, action)
