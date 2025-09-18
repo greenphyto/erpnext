@@ -263,6 +263,10 @@ class PaymentApproval(Document):
 		workflow_state = self.get("workflow_state") or self.get("status")
 		if workflow_state != "Approved" and self.docstatus != 1:
 			return
+
+		selected = [x.name for x in self.invoices if x.selected]
+		if not selected:
+			return
 		
 		self.validate_payment()
 		settings = frappe.get_single("UOB Integration Settings")
@@ -373,6 +377,9 @@ class PaymentApproval(Document):
 			return dt
 		
 		for d in self.invoices:
+			if not cint(d.selected):
+				continue
+			
 			key = (d.bank_account_no, d.supplier_bank, d.swift, d.currency)
 
 			if key not in map_invoice:
