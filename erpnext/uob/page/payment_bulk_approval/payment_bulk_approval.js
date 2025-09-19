@@ -112,23 +112,30 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     /* Name cell: place toggle after doc-link and tidy spacing */
                     .payment-bulk-approval td.col-name { display: flex; align-items: center; }
                     .payment-bulk-approval td.col-name .doc-link { order: 1; }
-                    .payment-bulk-approval td.col-name .toggle-detail { order: 1; margin-left: 0px; margin-right: 8px; padding: 2px 6px; border: none; background: white; }
+                    /* Keep toggle-detail default styles (no overrides here) */
 
                     /* Use separate mobile actions row */
                     .payment-bulk-approval th.col-action, .payment-bulk-approval td.col-action { display: none; }
                     .payment-bulk-approval tr.mobile-actions-row { display: table-row; }
                     .payment-bulk-approval .mobile-actions { display: flex; }
+                    .payment-bulk-approval tr.mobile-actions-row { cursor: pointer; }
 
                     /* Detail rows as stacked cards on mobile */
                     .payment-bulk-approval .detail-desktop { display: none; }
                     .payment-bulk-approval .detail-mobile { display: block; }
                     .payment-bulk-approval .detail-mobile .detail-mobile-list { display: grid; gap: 8px; }
-                    .payment-bulk-approval .detail-mobile .detail-item { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 10px; }
-                    .payment-bulk-approval .detail-mobile .item-head { display: flex; align-items: center; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
-                    .payment-bulk-approval .detail-mobile .item-head .left { display: flex; align-items: center; gap: 8px; }
-                    .payment-bulk-approval .detail-mobile .item-amount { font-weight: 600; }
-                    .payment-bulk-approval .detail-mobile .item-line { font-size: 12px; color: var(--text-muted); }
-                    .payment-bulk-approval .detail-mobile .item-line .k { color: var(--text-color); font-weight: 500; margin-right: 4px; }
+                    .payment-bulk-approval .detail-mobile .detail-item { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 10px; max-width: 100%; cursor: pointer; }
+                    .payment-bulk-approval .detail-mobile .item-head { display: flex; align-items: flex-start; gap: 8px; justify-content: space-between; flex-wrap: wrap; margin-bottom: 4px }
+                    .payment-bulk-approval .detail-mobile .item-head .left { display: flex; align-items: center; gap: 8px; flex: 1 1 auto; min-width: 0; }
+                    .payment-bulk-approval .detail-mobile .item-amount { font-weight: 600; flex-shrink: 0; }
+                    .payment-bulk-approval .detail-mobile .item-line { font-size: 14px; color: var(--text-muted); display: block; white-space: normal; }
+                    .payment-bulk-approval .detail-mobile .item-line .k { color: var(--text-color); font-weight: 500; margin-right: 4px; display: inline; }
+                    .payment-bulk-approval .detail-mobile .item-line .v { display: block; overflow-wrap: anywhere; word-break: break-word; }
+                    .payment-bulk-approval .detail-mobile a { overflow-wrap: anywhere; word-break: break-word; }
+
+                    /* Disable navigation on mobile */
+                    .payment-bulk-approval a.doc-link { pointer-events: none; text-decoration: none; cursor: default; color: var(--text-color); }
+                    .payment-bulk-approval .detail-mobile a { pointer-events: none; text-decoration: none; cursor: default; color: var(--text-color); }
                 }
             </style>
             <div class="mb-2 mobile-toolbar">
@@ -408,6 +415,11 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     </td>
                 </tr>
             `);
+            // Toggle collapsible by clicking the empty area of mobile actions row
+            $mobileActionsTr.on('click', function(e) {
+                if ($(e.target).closest('button, .btn, a, input, label').length) return;
+                $tr.find('.toggle-detail').trigger('click');
+            });
 
             // Detail row
             const $detailTr = $(`
@@ -566,6 +578,10 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                 $table.on('change', '.invoice-select-all', function() {
                     const checked = $(this).is(':checked');
                     $table.find('tbody .invoice-select').prop('checked', checked);
+                    // mirror to mobile
+                    const $wrapM = $body.find('.detail-mobile');
+                    $wrapM.find('.invoice-select').prop('checked', checked);
+                    $wrapM.find('.invoice-select-all').prop('checked', checked);
                 });
                 // Default: all selected on initial render
                 $table.find('.invoice-select-all').prop('checked', true).trigger('change');
@@ -574,6 +590,45 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                 $wrap.on('change', '.invoice-select-all', function() {
                     const checked = $(this).is(':checked');
                     $wrap.find('.invoice-select').prop('checked', checked);
+                    // mirror to desktop
+                    $table.find('tbody .invoice-select').prop('checked', checked);
+                    $table.find('.invoice-select-all').prop('checked', checked);
+                });
+                // Keep individual invoice-select in sync between desktop table and mobile list
+                function set_checked_match($scope, invoiceName, checked) {
+                    $scope.find('.invoice-select').each(function(){
+                        if ($(this).data('invoice-name') === invoiceName) {
+                            $(this).prop('checked', checked);
+                        }
+                    });
+                }
+                function update_select_all_states() {
+                    const totalD = $table.find('tbody .invoice-select').length;
+                    const chkD = $table.find('tbody .invoice-select:checked').length;
+                    $table.find('.invoice-select-all').prop('checked', totalD > 0 && chkD === totalD);
+                    const totalM = $wrap.find('.invoice-select').length;
+                    const chkM = $wrap.find('.invoice-select:checked').length;
+                    $wrap.find('.invoice-select-all').prop('checked', totalM > 0 && chkM === totalM);
+                }
+                $table.on('change', 'tbody .invoice-select', function(){
+                    const name = $(this).data('invoice-name');
+                    const checked = $(this).is(':checked');
+                    set_checked_match($wrap, name, checked);
+                    update_select_all_states();
+                });
+                $wrap.on('change', '.invoice-select', function(){
+                    const name = $(this).data('invoice-name');
+                    const checked = $(this).is(':checked');
+                    set_checked_match($table, name, checked);
+                    update_select_all_states();
+                });
+                // Toggle item checkbox when tapping the whole card (ignore direct clicks on interactive elements)
+                $wrap.on('click', '.detail-item', function(e) {
+                    if ($(e.target).closest('a, input, button, label').length) return;
+                    const $chk = $(this).find('.invoice-select').first();
+                    if ($chk.length && !$chk.prop('disabled')) {
+                        $chk.prop('checked', !$chk.prop('checked')).trigger('change');
+                    }
                 });
                 $wrap.find('.invoice-select-all').prop('checked', true).trigger('change');
                 $tr.data('detail-rendered', true);
@@ -592,6 +647,23 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
             }
 
             $tr.on('click', '.toggle-detail', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggle_detail();
+            });
+
+            // Mobile only: clicking on the name cell toggles collapse
+            $tr.on('click', 'td.col-name', (e) => {
+                if (!isSmallScreen()) return;
+                // Ignore clicks on interactive elements to avoid double toggles
+                if ($(e.target).closest('.toggle-detail, button, .btn, input, label, a').length) return;
+                e.preventDefault();
+                e.stopPropagation();
+                toggle_detail();
+            });
+            // Also handle clicking the name link itself on mobile
+            $tr.on('click', 'td.col-name a.doc-link', (e) => {
+                if (!isSmallScreen()) return;
                 e.preventDefault();
                 e.stopPropagation();
                 toggle_detail();
