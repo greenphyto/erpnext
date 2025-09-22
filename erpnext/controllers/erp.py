@@ -119,8 +119,8 @@ def fix_si_discount_ledger(si_name=""):
 		# submit again
 		# add discount account
 
-def reminder_submit_purchase_invoice():
-	if getdate(today()) != get_last_day(today()):
+def reminder_submit_purchase_invoice(force=False):
+	if getdate(today()).day != 5 and not frappe.flags.in_test and not force:
 		return
 	
 	if not frappe.db.exists("Notification", "Submit Purchase Invoice Draft"):
