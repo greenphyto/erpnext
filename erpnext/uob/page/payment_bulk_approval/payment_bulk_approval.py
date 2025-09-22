@@ -134,5 +134,8 @@ def get_apply_workflow(docname, action, selected_invoices=None):
     if hasattr(doc, 'flags'):
         doc.flags.selected_invoices = invoices
 
-    # print("Approve on:", doc.name, invoices)
+    # change reject if not any invoice selected
+    if not invoices and action == 'Approve':
+        action = "Reject"
+
     return apply_workflow(doc, action)
