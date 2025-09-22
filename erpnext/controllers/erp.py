@@ -682,8 +682,8 @@ def is_doctype_exists(doctype):
 	except frappe.DoesNotExistError:
 		return None
 	
-def reminder_submit_purchase_invoice():
-	if getdate(today()) != get_last_day(today()):
+def reminder_submit_purchase_invoice(force=False):
+	if getdate(today()).day != 5 and not frappe.flags.in_test and not force:
 		return
 	
 	if not frappe.db.exists("Notification", "Submit Purchase Invoice Draft"):
@@ -706,7 +706,7 @@ def reminder_submit_purchase_invoice():
 			docstatus = 0
 			AND posting_date <= LAST_DAY(CURDATE())
 		ORDER BY
-			posting_date ASC
+			posting_date ASC limit 5
 	""", as_dict=1)
 
 	if not doc_list:
