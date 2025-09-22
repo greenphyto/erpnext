@@ -453,6 +453,29 @@ class PaymentApproval(Document):
 		file_name = f"PA113{dates}{number}.xml"
 		self.file_id = f"PA113{dates}{number}"
 		return file_name
+	
+	def remove_unselected_row(self):
+		rows_to_remove = []
+		removed_info = []
+
+		for idx, d in enumerate(self.invoices, start=1):
+			if not d.selected:
+				if frappe.db.get_value("Purchase Invoice", d.invoice_no, "docstatus") == 1:
+					rows_to_remove.append(d)
+					removed_info.append(f"<li>Row {idx}, Invoice {d.invoice_no} ${d.amount}</li>")
+
+		# hapus row setelah loop
+		for d in rows_to_remove:
+			self.remove(d)
+			frappe.db.delete(d.doctype, d.name)
+
+		# bikin 1 comment dengan list
+		if removed_info:
+			items_html = "".join(removed_info)
+			msg = f"Removed due to not selected:<br><ul>{items_html}</ul>"
+			self.add_comment("Comment", msg)
+		self.calculate_amount()
+		self.db_update()
 
 def get_date_simple(value):
 	return getdate(value).strftime("%y%m%d")
