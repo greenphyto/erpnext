@@ -292,7 +292,7 @@ class UOBFileLog(Document):
 
 							pe.payment_approval = pay_doc.name
 							pe.bank_account = self.get_bank_account(tr["Account Number"])
-							default_bank_account = default_bank_account(pay_doc.company, "default_bank_account")
+							default_bank_account = get_company_default(pay_doc.company, "default_bank_account", ignore_validation=True)
 							valid_bank_account = None
 							if pe.bank_account:
 								valid_bank_account = frappe.db.get_value("Bank Account", pe.bank_account, "account") or default_bank_account
