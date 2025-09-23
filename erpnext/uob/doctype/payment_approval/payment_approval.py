@@ -22,6 +22,7 @@ from frappe import _
 
 class PaymentApproval(Document):
 	def validate(self):
+		self.validate_select()
 		self.set_status()
 		self.set_requested_by()
 		self.validate_data()
@@ -33,6 +34,10 @@ class PaymentApproval(Document):
 		self.validate_payment()
 		self.validate_invoice()
 		self.calculate_amount()
+
+	def validate_select(self):
+		for d in self.invoices:
+			d.selected = cint(d.selected)
 
 	def validate_bank(self):
 		bic = frappe.get_value("Bank", self.bank, "swift_number")
