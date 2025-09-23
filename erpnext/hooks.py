@@ -438,7 +438,10 @@ scheduler_events = {
         "*/15 * * * *":[
             "erpnext.smart_fm.doctype.facilities_service_reservation.facilities_service_reservation.set_booking_to_rented",
             "erpnext.smart_fm.doctype.facilities_service_reservation.facilities_service_reservation.set_finish_rent"
-		]
+		],
+        "0 5 * * *": [
+			"erpnext.smart_fm.doctype.minio_backup_settings.minio_backup_settings.upload_backup",
+		],
 	},
 	"all": [
 		"erpnext.projects.doctype.project.project.project_status_update_reminder",

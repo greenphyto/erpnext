@@ -24,7 +24,8 @@ dependencies = [
 
     # Additional Library
     "imgkit",
-    "firebase-admin"
+    "firebase-admin",
+    "minio"
 ]
 
 [build-system]
