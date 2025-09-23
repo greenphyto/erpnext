@@ -161,7 +161,7 @@ class UOBAPI():
 		return res
 
 	def upload_bank_tx(self, file_path, filename):
-		if not self.settings.enable:
+		if not self.settings.enable or is_local_site():
 			return "Disabled"
 		
 		if not os.path.exists(file_path):
@@ -176,6 +176,21 @@ class UOBAPI():
 			}
 			res = self.req("POST", url, files=files)
 			return res
+		
+def is_local_site():
+    """
+    Check if current site is running locally.
+    Rules:
+    - hostname from frappe.local.conf.hostname
+    - fallback to frappe.local.site if hostname is None or empty
+    - treat as local if matches 127.0.0.1, localhost, or site1.local
+    """
+    hostname = (getattr(frappe.local.conf, "hostname", None) 
+                or getattr(frappe.local, "site", "")).lower()
+
+    local_hosts = ["127.0.0.1", "localhost", "site1.local"]
+
+    return any(h in hostname for h in local_hosts)
 
 import xml.etree.ElementTree as ET
 from datetime import datetime
