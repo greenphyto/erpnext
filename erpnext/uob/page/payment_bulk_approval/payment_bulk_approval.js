@@ -5,18 +5,35 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
         single_column: true,
     });
 
-    // Back to native List view (desktop)
-    page.set_secondary_action(__('Back to Payment Approval'), function () {
-        frappe.set_route('List', 'Payment Approval');
-    });
-
-    // Reload action (top-right) (desktop)
-    page.set_primary_action(__('Reload'), function () {
-        if (paging && paging.loading) return;
-        reset_and_load().then(() => {
-            frappe.show_alert('Done refresh');
-        });
-    }, 'refresh');
+    // Responsive actions: buttons on desktop, menu items on mobile
+    let lastIsSmall = undefined;
+    const actions = {
+        reload: () => {
+            if (paging && paging.loading) return;
+            if (typeof reset_and_load === 'function') {
+                reset_and_load().then(() => frappe.show_alert(__('Done refresh')));
+            }
+        },
+        back: () => frappe.set_route('List', 'Payment Approval'),
+    };
+    function clear_all_actions() {
+        try { page.clear_primary_action && page.clear_primary_action(); } catch (e) {}
+        try { page.clear_secondary_action && page.clear_secondary_action(); } catch (e) {}
+        try { page.clear_menu && page.clear_menu(); } catch (e) {}
+    }
+    function setup_actions() {
+        const small = isSmallScreen();
+        if (small === lastIsSmall) return;
+        clear_all_actions();
+        if (small) {
+            page.add_menu_item(__('Reload'), actions.reload);
+            page.add_menu_item(__('Back to Payment Approval'), actions.back);
+        } else {
+            page.set_primary_action && page.set_primary_action(__('Reload'), actions.reload, 'refresh');
+            page.set_secondary_action && page.set_secondary_action(__('Back to Payment Approval'), actions.back);
+        }
+        lastIsSmall = small;
+    }
 
     // Main container
     const $container = $(`
@@ -53,13 +70,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                 .payment-bulk-approval .btn-load-more { min-width: 160px; }
                 .payment-bulk-approval .list-count { position: absolute; right: 8px; color: var(--text-muted); font-size: 12px; }
 
-                /* Mobile toolbar and responsive tweaks */
-                .payment-bulk-approval .mobile-toolbar { display: none; justify-content: flex-end; align-items: center; margin-bottom: 8px; }
-                .payment-bulk-approval .kebab { border: none; background: transparent; font-size: 20px; line-height: 1; padding: 6px 8px; cursor: pointer; }
-                .payment-bulk-approval .kebab-menu { position: absolute; right: 0; top: 100%; background: var(--bg-color) ; border: 1px solid var(--border-color); border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); min-width: 180px; display: none; z-index: 10; }
-                .payment-bulk-approval .kebab-wrap { position: relative; }
-                .payment-bulk-approval .kebab-menu .item { display: block; width: 100%; padding: 8px 12px; background: transparent; border: none; text-align: left; cursor: pointer; }
-                .payment-bulk-approval .kebab-menu .item:hover { background: var(--bg-light); }
+                /* Responsive tweaks */
                 .payment-bulk-approval .mobile-only-currency { display: none; }
                 .payment-bulk-approval .list-table-wrapper { overflow: visible; }
 
@@ -68,9 +79,6 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     .payment-bulk-approval tr.detail-row.belongs-even td { padding-bottom: 2px; }
                     .payment-bulk-approval tr.mobile-actions-row.belongs-even td { padding-botton: 16px }
 
-                    /* Hide page header action buttons on mobile */
-                    .page-actions .btn { display: none !important; }
-                    .payment-bulk-approval .mobile-toolbar { display: flex; }
 
                     /* Stack filters and hide advanced by default */
                     .payment-bulk-approval .filters-grid { grid-template-columns: 1fr; }
@@ -138,15 +146,6 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     .payment-bulk-approval .detail-mobile a { pointer-events: none; text-decoration: none; cursor: default; color: var(--text-color); }
                 }
             </style>
-            <div class="mb-2 mobile-toolbar">
-                <div class="kebab-wrap">
-                    <button class="kebab" title="More">⋮</button>
-                    <div class="kebab-menu">
-                        <button class="item act-reload">Reload</button>
-                        <button class="item act-back">Back to Payment Approval</button>
-                    </div>
-                </div>
-            </div>
             <div class="mb-4">
                 <div class="filter-bar">
                     <button class="btn btn-sm btn-default filters-toggle"><span class="toggle-label">Show more filters</span></button>
@@ -208,15 +207,11 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
     const $filtersPrimary = $container.find('.filters-primary');
     const $filtersAdvanced = $container.find('.filters-advanced');
     const $filtersToggle = $container.find('.filters-toggle');
-    const $kebab = $container.find('.kebab');
-    const $kebabMenu = $container.find('.kebab-menu');
-    const $kebabReload = $container.find('.kebab-menu .act-reload');
-    const $kebabBack = $container.find('.kebab-menu .act-back');
     const $applyBtn = $container.find('.apply-filters');
     const $clearBtn = $container.find('.clear-filters');
     const $pendingAmount = $container.find('.pending-amount');
     let showAll = false;
-    const paging = { start: 0, page_length: 20, has_more: false, loading: false };
+    let paging = { start: 0, page_length: 20, has_more: false, loading: false };
     const filterControls = {};
     let pendingTotal = 0;
     let pendingCurrency = null;
@@ -253,7 +248,13 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
     });
 
     // Mobile: advanced filters collapsed by default
-    function isSmallScreen() { return false }
+    function isSmallScreen() {
+        try {
+            return window && window.innerWidth <= 768;
+        } catch (e) {
+            return false;
+        }
+    }
     function setFiltersCollapsed(collapsed) {
         if (collapsed) {
             $filtersAdvanced.addClass('collapse');
@@ -264,19 +265,15 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
         }
     }
     setFiltersCollapsed(isSmallScreen());
+    // Initialize actions per current viewport and update on resize
+    setup_actions();
+    $(window).on('resize', frappe.utils.debounce(setup_actions, 150));
     $filtersToggle.on('click', function() {
         const willCollapse = !$filtersAdvanced.hasClass('collapse');
         setFiltersCollapsed(willCollapse);
     });
 
-    // Mobile kebab menu actions
-    $kebab.on('click', function(e) {
-        e.stopPropagation();
-        $kebabMenu.toggle();
-    });
-    $(document).on('click', function() { $kebabMenu.hide(); });
-    $kebabReload.on('click', function() { $kebabMenu.hide(); if (paging && paging.loading) return; reset_and_load(); });
-    $kebabBack.on('click', function() { $kebabMenu.hide(); frappe.set_route('List', 'Payment Approval'); });
+    // Use native Frappe page menu on mobile; no custom toolbar required
 
     // Keep name-cell button/link order consistent across breakpoints
     function reorder_name_cell($tr) {
