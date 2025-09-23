@@ -36,8 +36,15 @@ class PaymentApproval(Document):
 		self.calculate_amount()
 
 	def validate_select(self):
+		select_row = []
 		for d in self.invoices:
 			d.selected = cint(d.selected)
+			if d.selected:
+				select_row.append(d.name)
+		
+		if not select_row:
+			frappe.throw(_("Please select at least 1 invoice to paid"))
+
 
 	def validate_bank(self):
 		bic = frappe.get_value("Bank", self.bank, "swift_number")
