@@ -26,8 +26,12 @@ class PaymentApproval(Document):
 		self.set_status()
 		self.set_requested_by()
 		self.validate_data()
-		self.process_xml_file()
 		self.set_batch_number()
+	
+	def on_submit(self):
+		self.remove_unselected_row()
+		self.calculate_amount()
+		self.process_xml_file()
 
 	def validate_data(self):
 		self.validate_bank()

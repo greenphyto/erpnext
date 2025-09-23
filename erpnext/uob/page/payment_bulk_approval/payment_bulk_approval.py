@@ -131,8 +131,6 @@ def get_apply_workflow(docname, action, selected_invoices=None):
             d.selected = 0
             d.db_set("selected", 0)
     
-    doc.remove_unselected_row()
-
     # Expose to any custom server-side logic
     frappe.flags.selected_invoices = invoices
     if hasattr(doc, 'flags'):
