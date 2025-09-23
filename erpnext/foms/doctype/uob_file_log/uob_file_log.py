@@ -194,22 +194,32 @@ class UOBFileLog(Document):
 			if pay_name not in trans_map:
 				trans_map[pay_name] = {
 					"transfer":[],
-					"charges":[]
+					"charges":[],
+					"balance":0
 				}
 			
 			# need key for bank account specific
-			if row["Transaction Description"] == "SVC Chg":
+			if row["Auxiliary Transaction Code"] == "NSVC":
 				# charges
 				trans_map[pay_name]['charges'].append(row)
 			else:
 				# transfer
 				trans_map[pay_name]['transfer'].append(row)
 
+			is_credit = -1 if row['Base Transaction Code'] == "C" else 1
+			amount = row['Transaction Amount'] * is_credit
+			trans_map[pay_name]['balance'] += amount
+
 
 		pe_map = {}
 		approval_update = {}
 		for pay_name, d in trans_map.items():
+			# ignore if not exists
 			if not frappe.db.exists("Payment Approval", pay_name):
+				continue
+
+			# ignore if balance not changes
+			if d['balance'] < 0.01:
 				continue
 			
 			pay_doc = frappe.get_doc("Payment Approval", pay_name)
@@ -336,7 +346,7 @@ class UOBFileLog(Document):
 		for pe in pe_map.values():
 			pe.flags.ignore_validate = 1
 			pe.insert(ignore_permissions=1)
-			# pe.submit()
+			pe.submit()
 
 		for d in approval_update.values():
 			d['doc'].update_payment_status(4, d['trans'])
