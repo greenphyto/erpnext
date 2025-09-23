@@ -167,9 +167,12 @@ class PaymentApproval(Document):
 					# Complete
 					self.status = "Complete"
 					self.transfer_date = self.update_on
+				elif tr_success==0 :
+					self.status = "Failed"
 				else:
 					# Partially Complete
 					self.status = "Partially Complete"
+				
 			else:
 				self.status = "Failed"
 
