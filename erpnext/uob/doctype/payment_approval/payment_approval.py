@@ -30,6 +30,7 @@ class PaymentApproval(Document):
 	
 	def on_submit(self):
 		self.remove_unselected_row()
+		self.remove_another_record()
 		self.calculate_amount()
 		self.process_xml_file()
 
@@ -62,6 +63,17 @@ class PaymentApproval(Document):
 		if not account_no or not account_name:
 			links = get_link_to_form("Bank Account", self.bank_account)
 			frappe.throw(_(f"Please update the <b>Bank Account No</b> and <b>Bank Account Name</b> for {links}"))
+
+	def remove_another_record(self):
+		workflow_state = self.get("workflow_state") or self.get("status")
+		if workflow_state == "Approved":
+			for d in self.invoices:
+				temp = frappe.db.sql("select name, docstatus, parent from `tabPayment Invoice List` where parent != %s and invoice_no = %s and docstatus != 2 ", (self.name, d.invoice_no), as_dict=1)
+				for x in temp:
+					frappe.db.delete("Payment Invoice List", x.name)
+					doc = frappe.get_doc("Payment Approval", x.parent)
+					doc.calculate_amount()
+					doc.db_update()
 
 	def set_status(self):
 		if self.docstatus == 0 and self.is_new():
