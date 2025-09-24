@@ -45,6 +45,16 @@ frappe.ui.form.on('Payment Approval', {
 			frm.set_value("requested_by", frappe.session.user)
 		}
 		frm.cscript.setup_method();
+
+		frm.fields_dict["invoices"].grid.wrapper.find(".grid-row").each(function() {
+			let docname = $(this).attr("data-name");
+			if (!docname) return;
+
+			let row = frm.fields_dict["invoices"].grid.grid_rows_by_docname[docname];
+			if (row && row.doc.selected) {
+				row.row_check.find("input").prop("checked", 1)
+			}
+		});
 	},
 	payment_method: function(frm){
 		frm.cscript.setup_method();
@@ -64,6 +74,49 @@ frappe.ui.form.on('Payment Approval', {
 	currency: function(frm){
 		frm.set_value("bank_account", "");
 		frm.set_value("invoices", [])
+	},
+	onload: function(frm) {
+		
+		// overide control tick
+        let grid = frm.fields_dict["invoices"].grid;
+		
+
+
+        let _super = grid.setup_check;
+
+        grid.setup_check = function() {
+            _super.call(this); 
+
+            this.wrapper.on("click", ".grid-row-check", (e) => {
+                let $check = $(e.currentTarget);
+                let docname = $check.parents(".grid-row:first").attr("data-name");
+                if (!docname) return;
+
+                let row = this.grid_rows_by_docname[docname].doc;
+                if ($check.prop("checked")) {
+					frappe.model.set_value(row.doctype, row.name, "selected", 1)
+                    frappe.show_alert(`Row ${row.invoice_no} ✅ checked`);
+                } else {
+					frappe.model.set_value(row.doctype, row.name, "selected", 0)
+                    frappe.show_alert(`Row ${row.invoice_no} ❌ unchecked`);
+                }
+
+				
+            });
+
+        };
+    }
+})
+
+console.log(111)
+frappe.ui.form.on('Payment Invoice List', {
+	selected: function(frm, cdt, cdn){
+		var d = locals[cdt][cdn];
+		var grid = frm.fields_dict["invoices"].grid;
+		var row = grid.grid_rows_by_docname[cdn];
+		if (row){
+			row.row_check.find("input").prop("checked", cint(d.selected))
+		}
 	}
 })
 

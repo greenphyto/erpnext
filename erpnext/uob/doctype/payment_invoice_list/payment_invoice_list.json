@@ -6,6 +6,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "selected",
   "invoice_no",
   "party",
   "supplier_bank_no",
@@ -20,8 +21,7 @@
   "status",
   "error_code",
   "column_break_14",
-  "bill_no",
-  "selected"
+  "bill_no"
  ],
  "fields": [
   {
@@ -157,7 +157,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-09-23 17:03:35.610267",
+ "modified": "2025-09-24 16:31:22.527022",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "Payment Invoice List",
