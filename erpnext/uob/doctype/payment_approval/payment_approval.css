@@ -1,3 +1,7 @@
 .grid-remove-rows{
     display: none !important;
 }
+
+.row-check{
+    display: none !important;
+}
