@@ -12,10 +12,9 @@ frappe.ui.form.on('Payment Approval', {
 		frm.set_query("invoice_no", "invoices", (doc, cdt, cdn)=>{
 			return{
 				filters:{
-					docstatus:1,
-					outstanding_amount:[">", 0],
 					currency:doc.currency
-				}
+				},
+				query:"erpnext.uob.doctype.payment_approval.payment_approval.get_available_purchase_invoices"
 			}
 		})
 

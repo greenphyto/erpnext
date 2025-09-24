@@ -647,4 +647,30 @@ def search_purchase_invoice(doctype, txt, searchfield, start=0, page_len=20, fil
         debug=1,
     )
 
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_available_purchase_invoices(doctype, txt, searchfield, start, page_len, filters):
+    return frappe.db.sql("""
+        SELECT pi.name, pi.supplier, pi.posting_date,pi.outstanding_amount
+        FROM `tabPurchase Invoice` pi
+        WHERE pi.docstatus = 1
+          AND pi.outstanding_amount > 0
+          AND pi.currency = %(currency)s
+          AND pi.name NOT IN (
+              SELECT pil.invoice_no
+              FROM `tabPayment Invoice List` pil
+              WHERE pil.docstatus != 2
+          )
+          AND (
+              pi.{searchfield} LIKE %(txt)s
+              OR pi.supplier_name LIKE %(txt)s
+          )
+        ORDER BY pi.posting_date DESC, pi.name DESC
+        LIMIT %(start)s, %(page_len)s
+    """.format(searchfield=searchfield), {
+        "txt": "%%%s%%" % txt,
+        "start": start,
+        "page_len": page_len,
+        "currency": filters.get("currency")
+    })
 
