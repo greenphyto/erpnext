@@ -263,10 +263,10 @@ class PaymentApproval(Document):
 		# validate invoice
 		# validate outstanding
 		already_add = []
+		limit_amt = frappe.db.get_single_value("UOB Integration Settings", "limit_amount")
 		for d in list(self.get("invoices")):
 			if d.invoice_no in already_add:
 				frappe.throw(f"row {d.idx}, invoice is duplicate.")
-				self.remove(d)
 				continue
 
 			data = frappe.db.get_value("Purchase Invoice", d.invoice_no, [
@@ -278,13 +278,17 @@ class PaymentApproval(Document):
 			], as_dict=1)
 			if flt(data.docstatus) != 1:
 				frappe.throw(f"Row {d.idx}, only for submitted invoice!")
-				self.remove(d)
 				continue
 
 			if flt(data.outstanding_amount) <= 0:
-				frappe.throw(f"Row {d.idx}, invoice {d.invoice_no} not have outstanding amount")
-				self.remove(d)
+				frappe.throw(f"Row {d.idx}, Invoice <b>{d.invoice_no}</b> not have outstanding amount")
 				continue
+
+			if limit_amt and flt(data.outstanding_amount) > limit_amt:
+				frappe.throw(
+					f"Row {d.idx}: Invoice <b>{d.invoice_no}</b> exceeds the maximum allowed amount of "
+					f"${frappe.utils.fmt_money(limit_amt)}."
+				)
 
 			if d.currency != self.currency:
 				frappe.throw(_(f"Row {d.idx}, cannot use invoice with currency except {self.currency}. Please change the invoice."))
