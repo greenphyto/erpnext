@@ -432,8 +432,12 @@ class PaymentApproval(Document):
 				dt[f] = source.get(f)
 			return dt
 		
+		limit_amt = frappe.db.get_single_value("UOB Integration Settings", "limit_amount")
 		for d in self.invoices:
 			if not cint(d.selected):
+				continue
+			
+			if limit_amt and d.amount > limit_amt:
 				continue
 			
 			key = (d.bank_account_no, d.supplier_bank, d.swift, d.currency)
