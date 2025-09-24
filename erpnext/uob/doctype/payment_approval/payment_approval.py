@@ -589,100 +589,118 @@ def make_payment_approval(source_name, target_doc=None):
 
 @frappe.whitelist()
 def search_purchase_invoice(doctype, txt, searchfield, start=0, page_len=20, filters=None):
-    filters = frappe._dict(filters or {})
+	filters = frappe._dict(filters or {})
 
-    # Ensure ints for pagination
-    filters.start = int(start or 0)
-    filters.page_len = int(page_len or 20)
+	# Ensure ints for pagination
+	filters.start = int(start or 0)
+	filters.page_len = int(page_len or 20)
 
-    # Support searching by name / supplier
-    filters.txt = f"%{txt}%" if txt else "%"
+	# Support searching by name / supplier
+	filters.txt = f"%{txt}%" if txt else "%"
 
-    # Normalize days filter: accept `days_old` (requested) or existing `days_ago` (from JS)
-    days_old = filters.get("days_old")
-    if days_old is None:
-        days_old = filters.get("days_ago")
+	# Normalize days filter: accept `days_old` (requested) or existing `days_ago` (from JS)
+	days_old = filters.get("days_old")
+	if days_old is None:
+		days_old = filters.get("days_ago")
 
-    # Build dynamic conditions
-    conditions = ["pi.docstatus = 1"]
-    params = {
-        "company": filters.get("company"),
-        "supplier": f"%{filters.get('supplier')}%" if filters.get("supplier") else None,
-        "posting_date": filters.get("posting_date"),
-        "txt": filters.txt,
-        "start": filters.start,
-        "page_len": filters.page_len,
-    }
+	# Build dynamic conditions
+	conditions = ["pi.docstatus = 1"]
+	params = {
+		"company": filters.get("company"),
+		"supplier": f"%{filters.get('supplier')}%" if filters.get("supplier") else None,
+		"posting_date": filters.get("posting_date"),
+		"txt": filters.txt,
+		"start": filters.start,
+		"page_len": filters.page_len,
+	}
 
-    # Debug trace (can be removed if noisy)
-    print("search_purchase_invoice filters:", dict(filters))
+	# Debug trace (can be removed if noisy)
+	print("search_purchase_invoice filters:", dict(filters))
 
-    if filters.get("company"):
-        conditions.append("pi.company = %(company)s")
-    if filters.get("supplier"):
-        conditions.append("pi.supplier LIKE %(supplier)s")
-    if filters.get("outstanding_amount"):
-        conditions.append("pi.outstanding_amount = %(outstanding_amount)s")
-        params["outstanding_amount"] = filters.get("outstanding_amount")
+	if filters.get("company"):
+		conditions.append("pi.company = %(company)s")
+	if filters.get("supplier"):
+		conditions.append("pi.supplier LIKE %(supplier)s")
+	if filters.get("outstanding_amount"):
+		conditions.append("pi.outstanding_amount = %(outstanding_amount)s")
+		params["outstanding_amount"] = filters.get("outstanding_amount")
 
-    # Prioritize posting_date over days_old. If posting_date exists, ignore days_old.
-    if filters.get("posting_date"):
-        conditions.append("pi.posting_date = %(posting_date)s")
-    elif days_old not in (None, ""):
-        try:
-            params["days_old"] = int(days_old)
-            # Find invoices older than X days from today
-            conditions.append("DATEDIFF(CURDATE(), pi.posting_date) >= %(days_old)s")
-        except Exception:
-            # If days_old is invalid, just ignore the filter
-            pass
+	# Prioritize posting_date over days_old. If posting_date exists, ignore days_old.
+	if filters.get("posting_date"):
+		conditions.append("pi.posting_date = %(posting_date)s")
+	elif days_old not in (None, ""):
+		try:
+			params["days_old"] = int(days_old)
+			# Find invoices older than X days from today
+			conditions.append("DATEDIFF(CURDATE(), pi.posting_date) >= %(days_old)s")
+		except Exception:
+			# If days_old is invalid, just ignore the filter
+			pass
 
-    where_clause = " AND ".join(conditions)
+	limit_amt = frappe.db.get_single_value("UOB Integration Settings", "limit_amount")
+	if limit_amt:
+		limit_amount = f"pi.outstanding_amount <= {flt(limit_amt)}"
+		conditions.append(limit_amount)
 
-    return frappe.db.sql(
-        f"""
-        SELECT
-            pi.name,
-            pi.supplier,
-            pi.company,
-            pi.posting_date,
-            DATEDIFF(CURDATE(), pi.posting_date) AS days_ago,
-            pi.outstanding_amount
-        FROM `tabPurchase Invoice` pi
-        WHERE {where_clause}
-          AND (pi.name LIKE %(txt)s OR pi.supplier LIKE %(txt)s)
-        ORDER BY pi.posting_date DESC
-        LIMIT %(start)s, %(page_len)s
-        """,
-        params,
-        as_dict=True,
-        debug=1,
-    )
+	where_clause = " AND ".join(conditions)
+
+	return frappe.db.sql(
+		f"""
+		SELECT
+			pi.name,
+			pi.supplier,
+			pi.company,
+			pi.posting_date,
+			DATEDIFF(CURDATE(), pi.posting_date) AS days_ago,
+			pi.outstanding_amount
+			
+		FROM `tabPurchase Invoice` pi
+		WHERE {where_clause}
+		  AND (pi.name LIKE %(txt)s OR pi.supplier LIKE %(txt)s)
+		  AND pi.outstanding_amount > 0
+		  AND pi.name NOT IN (
+			  SELECT pil.invoice_no
+			  FROM `tabPayment Invoice List` pil
+			  WHERE pil.docstatus != 2
+		  )
+		ORDER BY pi.posting_date DESC
+		LIMIT %(start)s, %(page_len)s
+		""",
+		params,
+		as_dict=True,
+		debug=1,
+	)
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def get_available_purchase_invoices(doctype, txt, searchfield, start, page_len, filters):
-    return frappe.db.sql("""
-        SELECT pi.name, pi.supplier, pi.posting_date,pi.outstanding_amount
-        FROM `tabPurchase Invoice` pi
-        WHERE pi.docstatus = 1
-          AND pi.outstanding_amount > 0
-          AND pi.currency = %(currency)s
-          AND pi.name NOT IN (
-              SELECT pil.invoice_no
-              FROM `tabPayment Invoice List` pil
-              WHERE pil.docstatus != 2
-          )
-          AND (
-              pi.{searchfield} LIKE %(txt)s
-              OR pi.supplier_name LIKE %(txt)s
-          )
-        ORDER BY pi.posting_date DESC, pi.name DESC
-        LIMIT %(start)s, %(page_len)s
-    """.format(searchfield=searchfield), {
-        "txt": "%%%s%%" % txt,
-        "start": start,
-        "page_len": page_len,
-        "currency": filters.get("currency")
-    })
+	limit_amount = ""
+	limit_amt = frappe.db.get_single_value("UOB Integration Settings", "limit_amount")
+	if limit_amt:
+		limit_amount = f" AND pi.outstanding_amount <= {flt(limit_amt)} "
+
+	return frappe.db.sql("""
+		SELECT pi.name, pi.supplier, pi.posting_date,pi.outstanding_amount
+		FROM `tabPurchase Invoice` pi
+		WHERE pi.docstatus = 1
+		  AND pi.outstanding_amount > 0
+		  AND pi.currency = %(currency)s
+		  AND pi.name NOT IN (
+			  SELECT pil.invoice_no
+			  FROM `tabPayment Invoice List` pil
+			  WHERE pil.docstatus != 2
+		  )
+		  AND (
+			  pi.{searchfield} LIKE %(txt)s
+			  OR pi.supplier_name LIKE %(txt)s
+		  )
+		  {limit_amount}
+		ORDER BY pi.posting_date DESC, pi.name DESC
+		LIMIT %(start)s, %(page_len)s
+	""".format(searchfield=searchfield, limit_amount=limit_amount), {
+		"txt": "%%%s%%" % txt,
+		"start": start,
+		"page_len": page_len,
+		"currency": filters.get("currency")
+	})
 
