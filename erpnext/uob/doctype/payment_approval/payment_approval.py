@@ -277,6 +277,12 @@ class PaymentApproval(Document):
 			if d.currency != self.currency:
 				frappe.throw(_(f"Row {d.idx}, cannot use invoice with currency except {self.currency}. Please change the invoice."))
 			
+			# find another exist approval with same invoice use
+			temp = frappe.db.sql("select name, docstatus, parent from `tabPayment Invoice List` where parent != %s and invoice_no = %s and docstatus != 2 ", (self.name, d.invoice_no), as_dict=1)
+			if temp:
+				temp = temp[0]
+				frappe.throw(_(f"Row {d.idx}, Invoice No <b>{d.invoice_no}</b> already in progress, please select another invoice."))
+
 			already_add.append(d.invoice_no)
 			d.supplier = data.supplier
 			d.amount = data.outstanding_amount
