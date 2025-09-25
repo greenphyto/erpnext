@@ -207,7 +207,7 @@ class UOBFileLog(Document):
 				trans_map[pay_name]['transfer'].append(row)
 
 			is_credit = -1 if row['Base Transaction Code'] == "C" else 1
-			amount = row['Transaction Amount'] * is_credit
+			amount = flt(row['Transaction Amount']) * is_credit
 			trans_map[pay_name]['balance'] += amount
 
 
