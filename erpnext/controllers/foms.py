@@ -1023,6 +1023,7 @@ def crate_batch_stock_recon(data={}, log_name="", dummy=False):
 
 # STOCK LEDGER ENTRY
 def sync_sle(doc, method=""):
+	force = frappe.flags.force
 	if doc.actual_qty < 0 or not doc.batch_no:
 		return
 
