@@ -159,6 +159,8 @@ class StockController(AccountsController):
 						if self.get("purpose") == "Manufacture":
 							if item_row.s_warehouse:
 								stock_value_difference = item_row.amount * -1
+							elif item_row.t_warehouse:
+								stock_value_difference = item_row.amount
 
 						sle_rounding_diff += flt(stock_value_difference)
 
