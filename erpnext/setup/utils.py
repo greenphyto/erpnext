@@ -3,7 +3,7 @@
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, flt, get_datetime_str, nowdate, getdate, get_first_day, cstr
+from frappe.utils import add_days, today, flt, get_datetime_str, nowdate, getdate,cint, get_first_day, cstr, get_datetime
 from frappe.utils.data import now_datetime
 from frappe.utils.nestedset import get_ancestors_of, get_root_of  # noqa
 import datetime
@@ -128,7 +128,16 @@ def get_exchange_rate_from_api(from_currency, to_currency, transaction_date, set
 def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, settingscheck=None, dummy={}):
 	from_currency = from_currency.lower()
 	to_currency = to_currency.lower()
+	data = {
+		"fetch_on": cstr(now_datetime()),
+		"bank_date":"",
+		"rate":0
+	}
 	
+	# overide date if furture date
+	if getdate(transaction_date) > getdate(today()):
+		transaction_date = getdate(today())
+
 	try:
 		# if any holiday and missing result, will be back -1 day
 		idx = 0
@@ -190,21 +199,26 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 					elif isinstance(value,list):
 						k = format_ces_api(str(res_key.key.lower()), req_params)
 						for ky, val in value[0].items():
-							if to_currency in ky:
-								curr = ky.split("_")
-								key_c = "currency_exchange_rate_{0}:{1}:{2}".format(transaction_date, curr[0], to_currency)
-								if "100" in ky:
-									val = flt(val)/100
-
-								cache.setex(name=key_c, time=21600, value=cstr(val))
+							if ky == "end_of_day":
+								data["bank_date"] = val
 
 						if k in value[0]:
-							value = value[0][k]
-						elif k+"_100" in value[0]:
-							value = flt(value[0][k+"_100"])/100
+							value = flt(value[0][k])
+						elif k + "_100" in value[0]:
+							value =  flt(value[0][k + "_100"]) / 100
 						else:
-							value = 0
+							# try different
+							parts = k.split("_")
+							if len(parts) == 2: 
+								base, quote = parts
+								rev_key = f"{quote}_{base}"
+								rev_key_100 = f"{quote}_{base}_100"
 
+								if rev_key in value[0]:
+									value =  1 / flt(value[0][rev_key])
+								elif rev_key_100 in value[0]:
+									value = 100 / flt(value[0][rev_key_100])
+						
 				cache.setex(name=key, time=21600, value=flt(value))
 
 				if value:
