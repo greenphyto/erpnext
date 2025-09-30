@@ -23,7 +23,9 @@ dependencies = [
     "tweepy~=3.10.0",
     "imgkit",
     "minio",
-    "python-barcode"
+    "python-barcode",
+    "pypdf",
+    "reportlab"
 ]
 
 [build-system]
