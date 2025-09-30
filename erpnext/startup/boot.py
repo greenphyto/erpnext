@@ -56,6 +56,9 @@ def boot_session(bootinfo):
 		bootinfo.sysdefaults.non_stock_item = frappe.db.get_single_value("Buying Settings", "non_stock_item")
 		bootinfo.sysdefaults.debit_note_item = frappe.db.get_value("Item", {"debit_note_item":1})
 
+		# multi company
+		bootinfo.sysdefaults.company_selected = frappe.db.get_value("User", frappe.session.user, "company_selected") or "ALL"
+
 def update_page_info(bootinfo):
 	bootinfo.page_info.update(
 		{
