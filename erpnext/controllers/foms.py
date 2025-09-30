@@ -1515,9 +1515,13 @@ def create_raw_material(log):
 		doc.description = log.rawMaterialDescription
 		if doc.item_code not in ['RM-NS-WW']:
 			doc.item_group = types
-			doc.lead_time_days = cint(log.requestLeadTime) or DEFAULT_LEAD_TIME
-			doc.min_order_qty = flt(log.minimumOrderQuantity)
-			doc.safety_stock = log.safetyLevel
+			if not doc.lead_time_days:
+				doc.lead_time_days = cint(log.requestLeadTime) or DEFAULT_LEAD_TIME
+			if not doc.min_order_qty:
+				doc.min_order_qty = flt(log.minimumOrderQuantity)
+			if not doc.safety_stock:
+				doc.safety_stock = log.safetyLevel
+
 			doc.shelf_life_in_days = 365
 			doc.is_stock_item = 1
 			if not doc.foms_raw_id:
