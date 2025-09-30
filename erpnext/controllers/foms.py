@@ -839,17 +839,32 @@ def _update_foms_customer(log, api=None):
 		res = api.delete_customer(doc_data.foms_id)
 
 # PACKAGING (GET)
-def get_packaging(show_progress=False):
+def get_packaging(show_progress=False, item_code=""):
 	api = FomsAPI()
-	data = frappe.db.get_all("Item", {"foms_product_id":['!=', 0]}, ['name', 'foms_product_id'])
+	filters = {"foms_product_id":['!=', 0]}
+	if item_code:
+		filters['item_code'] = item_code
+
+	data = frappe.db.get_all("Item", filters, ['name', 'foms_product_id'])
 	for d in data:
 		packs = api.get_packaging(d.foms_product_id)
+		# update existing packaging/create new
+		# the sync to items, if not have added if no ignore
 		doc = frappe.get_doc("Item", d.name)
-		doc.packaging = []
+		default_item_pack = None
 		for d in packs or []:
 			pack_name = create_packaging(d)
-			row = doc.append("packaging")
-			row.packaging = pack_name
+			exists = False
+			for row in doc.get("packaging"):
+				if row.package_item:
+					default_item_pack = row.package_item
+				if row.packaging == pack_name:
+					exists = True
+
+			if not exists:
+				row = doc.append("packaging")
+				row.packaging = pack_name
+				row.package_item = default_item_pack
 
 		doc.save()
 
