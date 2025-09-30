@@ -27,7 +27,9 @@ dependencies = [
     "openai",
     "pymupdf",
     "iso3166",
-    "xmltodict"
+    "xmltodict",
+    "pypdf",
+    "reportlab"
 ]
 
 [build-system]
