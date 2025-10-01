@@ -253,3 +253,15 @@ def _detect_work_order_different(se, method=""):
 		subject="🚨 Different Value on Work Order",
 		message=message
 	)
+
+@frappe.whitelist()
+def get_company_availabe():
+	data = frappe.db.get_list("Company", {}, ["name","name as value", "color"])
+	return data
+
+@frappe.whitelist()
+def switch_company(company):
+	# if administrator, always set to all
+	frappe.db.set_value("User", frappe.session.user, "company_selected", company)
+
+	return True
