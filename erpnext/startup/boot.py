@@ -58,6 +58,8 @@ def boot_session(bootinfo):
 
 		# multi company
 		bootinfo.sysdefaults.company_selected = frappe.db.get_value("User", frappe.session.user, "company_selected") or "ALL"
+		if bootinfo.sysdefaults.company_selected:
+			bootinfo.sysdefaults.company_color = frappe.db.get_value("Company", bootinfo.sysdefaults.company_selected, "color") or "#1F272E"
 
 def update_page_info(bootinfo):
 	bootinfo.page_info.update(
@@ -70,3 +72,14 @@ def update_page_info(bootinfo):
 			"Sales Person Tree": {"title": "Sales Person Tree", "route": "Tree/Sales Person"},
 		}
 	)
+
+import colorsys
+def lighten_color(hex_color, amount=0.2):
+    hex_color = hex_color.lstrip('#')
+    r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+    # convert ke HLS
+    h, l, s = colorsys.rgb_to_hls(r/255, g/255, b/255)
+    # tambah lightness
+    l = min(1, l + amount)
+    r, g, b = colorsys.hls_to_rgb(h, l, s)
+    return '#{:02x}{:02x}{:02x}'.format(int(r*255), int(g*255), int(b*255))

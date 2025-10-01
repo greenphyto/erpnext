@@ -12,6 +12,7 @@
   "details",
   "company_name",
   "abbr",
+  "color",
   "default_currency",
   "country",
   "is_group",
@@ -840,6 +841,11 @@
    "fieldtype": "Link",
    "label": "Production Attrition Expense Account",
    "options": "Account"
+  },
+  {
+   "fieldname": "color",
+   "fieldtype": "Color",
+   "label": "Color"
   }
  ],
  "icon": "fa fa-building",
@@ -847,7 +853,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-07-24 15:35:33.017837",
+ "modified": "2025-10-01 11:06:50.638851",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",
