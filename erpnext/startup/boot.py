@@ -16,10 +16,13 @@ def boot_session(bootinfo):
 		update_page_info(bootinfo)
 
 		# multi company
-		bootinfo.sysdefaults.company_selected = frappe.db.get_value("User", frappe.session.user, "company_selected") or "ALL"
-		if bootinfo.sysdefaults.company_selected != "ALL":
-			bootinfo.sysdefaults.company_color = frappe.db.get_value("Company", bootinfo.sysdefaults.company_selected, "color") or "#1F272E"
-
+		if frappe.db.get_single_value("Accounts Settings", "enable_switch_company_menu"):
+			bootinfo.sysdefaults.company_selected = get_company_selected()
+			if bootinfo.sysdefaults.company_selected != "ALL":
+				bootinfo.sysdefaults.company_color = frappe.db.get_value("Company", bootinfo.sysdefaults.company_selected, "color") or "#1F272E"
+		else:
+			bootinfo.sysdefaults.company_selected = "Disabled"
+	
 		bootinfo.sysdefaults.territory = frappe.db.get_single_value("Selling Settings", "territory")
 		bootinfo.sysdefaults.customer_group = frappe.db.get_single_value(
 			"Selling Settings", "customer_group"
@@ -74,3 +77,10 @@ def update_page_info(bootinfo):
 			"Sales Person Tree": {"title": "Sales Person Tree", "route": "Tree/Sales Person"},
 		}
 	)
+
+@frappe.whitelist()
+def get_company_selected():
+	if frappe.db.get_single_value("Accounts Settings", "enable_switch_company_menu"):
+		return frappe.db.get_value("User", frappe.session.user, "company_selected") or "ALL"
+	else:
+		return "Disabled"

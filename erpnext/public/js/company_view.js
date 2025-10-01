@@ -1,5 +1,6 @@
 function load_view(){
 // Hindari duplicate kalau reload
+  if (frappe.boot.sysdefaults.company_selected=="Disabled") return
   if (document.querySelector(".company-switcher")) return;
 
 
@@ -12,7 +13,7 @@ function load_view(){
   div.className = "company-switcher";
   div.innerHTML = `
     <span><div class="company-indicator" title="${current_company}"></div></span>
-    <span class="value">${current_company}</span>
+    <span class="value current-company" value="${current_company}">${current_company}</span>
   `;
 
   // Tambah ke body (atau tepat di bawah header)
@@ -186,12 +187,30 @@ custom.show_company_switcher = function (companies) {
 });
 };
 
-
-
 function hard_reload(){
   frappe.ui.toolbar.clear_cache();
 }
 
+custom.listen_tab_change = async function () {
+    try {
+        let value = await frappe.xcall("erpnext.startup.boot.get_company_selected");
+        if (!value || value === "Disabled" || value === "ALL") return;
+        let cur_company = document.querySelector(".current-company")?.getAttribute("value");
+
+        if (value !== cur_company) {
+            frappe.msgprint(`Switching to company: <b>${value}</b>`);
+            // Hard reload (bypass cache)
+            hard_reload()
+        }
+    } catch (e) {
+        console.error("Failed to check company:", e);
+    }
+};
+
+
+window.addEventListener("focus", () => {
+  custom.listen_tab_change()
+});
 
 frappe.show_switcher_company = function(){
   frappe.call({
