@@ -716,3 +716,115 @@ def reminder_submit_purchase_invoice(force=False):
 		"doc_list":doc_list
 	})
 	doc_notif.send(doc)
+
+# send notif if any different found
+def detect_work_order_different(doc, method=""):
+	try:
+		_detect_work_order_different(doc, method)
+	except Exception as e:
+		print(e)
+
+def _detect_work_order_different(se, method=""):
+	if not se.get("work_order"):
+		return
+	
+	doc = frappe.get_doc("Work Order", se.work_order)
+	if doc.status != "Completed":
+		return
+
+	data = frappe.db.sql("""
+		SELECT 
+			*
+		FROM
+			(SELECT 
+				se.work_order AS work_order,
+				wo.creation,
+				gl.account,
+				se.name AS SE,
+				se.posting_date AS se_date,
+				SUM(gl.debit) AS total_debit,
+				SUM(gl.credit) AS total_credit,
+				SUM(gl.debit) - SUM(gl.credit) AS diff
+			FROM
+				`tabGL Entry` gl
+			JOIN `tabStock Entry` se 
+				ON gl.voucher_type = 'Stock Entry'
+				AND gl.voucher_no = se.name
+			LEFT JOIN `tabWork Order` wo 
+				ON wo.name = se.work_order
+			WHERE
+				se.work_order IS NOT NULL
+				AND gl.is_cancelled = 0
+				AND wo.status = 'Completed'
+				AND wo.name = %s
+				AND gl.account IN (
+					'121303 - Stock - Harvesting WIP - GPL',
+					'121301 - Stock - Seeding WIP - GPL',
+					'121302 - Stock - Transplanting WIP - GPL',
+					'501060 - Stock Adjustment - GPL'
+				)
+			GROUP BY se.work_order, gl.account
+			ORDER BY wo.creation, se.work_order
+			) t
+		WHERE ABS(t.diff) > 0.1
+	""", (doc.name,), as_dict=1)
+
+	if not data:
+		return  # no issue, do nothing
+
+	# Build HTML table
+	rows = ""
+	for d in data:
+		rows += f"""
+			<tr>
+				<td>{d.work_order}</td>
+				<td>{d.creation}</td>
+				<td>{d.SE}</td>
+				<td>{d.se_date}</td>
+				<td>{d.account}</td>
+				<td style="text-align:right;">{d.total_debit:.2f}</td>
+				<td style="text-align:right;">{d.total_credit:.2f}</td>
+				<td style="text-align:right; color:red;">{d.diff:.2f}</td>
+			</tr>
+		"""
+
+	message = f"""
+		<p>Hello Team,</p>
+		<p>We detected a difference in GL values for Work Order 
+		<a href="{frappe.utils.get_url()}/app/work-order/{doc.name}">{doc.name}</a>. 
+		Please review the details below:</p>
+
+		<table border="1" cellspacing="0" cellpadding="4" style="border-collapse: collapse;">
+			<tr>
+				<th>Work Order</th>
+				<th>Creation</th>
+				<th>Stock Entry</th>
+				<th>Date</th>
+				<th>Account</th>
+				<th>Total Debit</th>
+				<th>Total Credit</th>
+				<th>Diff</th>
+			</tr>
+			{rows}
+		</table>
+
+		<p>Regards,<br>ERP Notification</p>
+	"""
+
+	frappe.sendmail(
+		recipients=["rizky@greenphyto.com", "weiquan@greenphyto.com"],   # bisa list lebih dari satu
+		subject="🚨 Different Value on Work Order",
+		message=message
+	)
+
+@frappe.whitelist()
+def get_company_availabe():
+	data = frappe.db.get_list("Company", {}, ["name","name as value", "color"])
+	return data
+
+@frappe.whitelist()
+def switch_company(company):
+	# if administrator, always set to all
+	frappe.db.set_value("User", frappe.session.user, "company_selected", company)
+
+	return True

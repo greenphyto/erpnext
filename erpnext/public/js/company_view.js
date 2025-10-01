@@ -1,13 +1,11 @@
-console.log("COMP 123");
-
 function load_view(){
 // Hindari duplicate kalau reload
   if (document.querySelector(".company-switcher")) return;
 
 
   // Ambil default company user dari frappe.defaults
-  let current_company = frappe.defaults.get_default("company_selected") || "No Selected"
-  let company_color = frappe.defaults.get_default("company_color") || "#1F272E"
+  let current_company = frappe.boot.sysdefaults.company_selected || "No Selected"
+  let company_color = frappe.boot.sysdefaults.company_color || "#1F272E"
 
   // Buat elemen wrapper
   let div = document.createElement("div");
@@ -106,6 +104,105 @@ function mapToBootstrapLight(hex) {
   return nearest;
 }
 
-
-
 load_view();
+
+
+frappe.provide("custom");
+
+custom.show_company_switcher = function (companies) {
+    let html_tiles = `<div class="row g-3 justify-content-center" style="padding: 5px;">`;
+
+    companies.forEach(c => {
+        var background = mapToBootstrapLight(c.color)
+        html_tiles += `
+        <div class="col-12 col-md-6">
+            <div class="card company-tile text-center" data-value="${c.value}" style="background-color: ${background}">
+                <div class="card-body d-flex align-items-center justify-content-center" style="padding: 10px;">
+                    <h5 class="card-title mb-0" style="color: ${c.color}">${c.name}</h5>
+                </div>
+            </div>
+        </div>`;
+    });
+
+    html_tiles += `</div>`;
+
+    let d = new frappe.ui.Dialog({
+        title: "Switch Company",
+        fields: [
+            {
+                fieldtype: "HTML",
+                fieldname: "company_tiles",
+                options: `
+                <div style="max-height:60vh; overflow-y:auto; overflow-x:hidden; padding-right:5px;">
+                    ${html_tiles}
+                </div>`
+            }
+        ],
+        primary_action_label: "Close",
+        primary_action: () => d.hide()
+    });
+
+    d.show();
+
+    // Styling tile
+    d.$wrapper.find(".company-tile").css({
+        cursor: "pointer",
+        borderRadius: "12px",
+        transition: "0.2s",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+        minHeight: "130px",
+        marginBottom: "20px"
+    }).hover(
+        function () {
+            $(this).css({
+                transform: "translateY(-2px)",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+            });
+        },
+        function () {
+            $(this).css({
+                transform: "",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
+            });
+        }
+    );
+
+    // Event click
+    d.$wrapper.find(".company-tile").on("click", function () {
+        let value = $(this).data("value");
+        frappe.msgprint("Switching to company: <b>" + value + "</b>");
+        frappe.call({
+          method: "erpnext.controllers.erp.switch_company",
+          args: { company: value },
+          callback: function(res) {
+              if (res.message) {
+                  frappe.show_alert({ message: "Switched to " + value, indicator: "green" });
+                  d.hide();
+                  // Optional: reload page supaya context ganti
+                  hard_reload()
+              }
+          }
+      });
+});
+};
+
+
+
+function hard_reload(){
+  frappe.ui.toolbar.clear_cache();
+}
+
+
+frappe.show_switcher_company = function(){
+  frappe.call({
+      method: "erpnext.controllers.erp.get_company_availabe",
+      callback: function (r) {
+          if (!r.message || r.message.length === 0) {
+              frappe.msgprint("No companies available.");
+              return;
+          }
+
+          custom.show_company_switcher(r.message)
+      }
+    })
+}
