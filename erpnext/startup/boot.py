@@ -13,16 +13,16 @@ def boot_session(bootinfo):
 
 	if frappe.session["user"] != "Guest":
 
-		update_page_info(bootinfo)
-
 		# multi company
 		if frappe.db.get_single_value("Accounts Settings", "enable_switch_company_menu"):
 			bootinfo.sysdefaults.company_selected = get_company_selected()
 			if bootinfo.sysdefaults.company_selected != "ALL":
 				bootinfo.sysdefaults.company_color = frappe.db.get_value("Company", bootinfo.sysdefaults.company_selected, "color") or "#1F272E"
+				bootinfo.sysdefaults.company = bootinfo.sysdefaults.company_selected
 		else:
 			bootinfo.sysdefaults.company_selected = "Disabled"
-	
+
+		update_page_info(bootinfo)
 		bootinfo.sysdefaults.territory = frappe.db.get_single_value("Selling Settings", "territory")
 		bootinfo.sysdefaults.customer_group = frappe.db.get_single_value(
 			"Selling Settings", "customer_group"
