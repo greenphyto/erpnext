@@ -1,5 +1,5 @@
 import frappe, json
-from frappe.utils import cint, flt, getdate, cstr, today, get_last_day
+from frappe.utils import cint, flt, getdate, cstr, today, get_last_day, cint
 from six import string_types
 
 # util: sanitize description by removing editor wrapper tags
@@ -851,3 +851,17 @@ def switch_company(company):
 	doc.flags.ignore_permissions = 1
 	doc.save()
 	return True
+
+def validate_company_selected(doc, method=""):
+	if doc.meta.has_field("company") or frappe.session.user == "Administrator":
+		return
+	
+	if not cint(frappe.db.get_single_value("Accounts Settings", "enable_switch_company_menu")):
+		return
+	
+	cur_company = frappe.db.get_value("User", frappe.session.user, "company_selected")
+	if not cur_company or cur_company == "ALL":
+		return
+	
+	if doc.get("company") and doc.get("company") != cur_company:
+		frappe.throw("Company mismatch, please reload your browser or contact Administrator.")
