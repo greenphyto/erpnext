@@ -213,15 +213,19 @@ window.addEventListener("focus", () => {
 });
 
 frappe.show_switcher_company = function(){
-  frappe.call({
-      method: "erpnext.controllers.erp.get_company_availabe",
-      callback: function (r) {
-          if (!r.message || r.message.length === 0) {
-              frappe.msgprint("No companies available.");
-              return;
-          }
-
-          custom.show_company_switcher(r.message)
-      }
-    })
+  if (frappe.boot.sysdefaults.company_selected=="Disabled"){
+    frappe.msgprint("Company switching disabled")
+  }else{
+    frappe.call({
+        method: "erpnext.controllers.erp.get_company_availabe",
+        callback: function (r) {
+            if (!r.message || r.message.length === 0) {
+                frappe.msgprint("No companies available.");
+                return;
+            }
+  
+            custom.show_company_switcher(r.message)
+        }
+      })
+  }
 }

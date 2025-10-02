@@ -819,12 +819,35 @@ def _detect_work_order_different(se, method=""):
 
 @frappe.whitelist()
 def get_company_availabe():
-	data = frappe.db.get_list("Company", {}, ["name","name as value", "color"])
+	data = frappe.db.get_list("Company", {}, ["name","name as value", "color"], ignore_permissions=1)
 	return data
 
 @frappe.whitelist()
 def switch_company(company):
 	# if administrator, always set to all
 	frappe.db.set_value("User", frappe.session.user, "company_selected", company)
+	# change role
+	filters = {
+		"user":frappe.session.user,
+		"allow":"Company",
+		"auto":1,
+		"hide_descendants":1
+	}
+	# set default
+	perm_name = frappe.db.exists("User Permission", filters)
+	if not perm_name:
+		perm_name = frappe.db.exists("User Permission", {
+			"user":frappe.session.user,
+			"allow":"Company",
+		})
 
+	if perm_name:
+		doc = frappe.get_doc("User Permission", perm_name)
+	else:
+		doc = frappe.new_doc("User Permission")
+	
+	doc.update(filters)
+	doc.for_value = company
+	doc.flags.ignore_permissions = 1
+	doc.save()
 	return True
