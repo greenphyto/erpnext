@@ -81,6 +81,8 @@ function colorDistance(c1, c2) {
 }
 
 function mapToBootstrapLight(hex) {
+  if (!hex) return "#f8f9fa";
+
   const lightColors = [
     "#cfe2ff", // primary-subtle
     "#d1e7dd", // success-subtle
