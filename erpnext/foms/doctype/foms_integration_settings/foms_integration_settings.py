@@ -285,6 +285,7 @@ class FomsAPI():
 		res = self.req("POST", "/Supplier/CreateOrUpdateSupplier", data= data )
 
 		return res
+	
 
 	def create_or_update_customer(self, data={}):
 		data['isFromERP'] = True
