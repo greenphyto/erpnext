@@ -19,7 +19,6 @@ def execute(filters=None):
 class Report():
 	def __init__(self, filters):
 		self.filters = filters
-		self.api = FomsAPI()
 		self.data = []
 
 
@@ -50,72 +49,6 @@ class Report():
 			{"fieldname": "product_name", 				"label": "Product Name", 		"fieldtype": "Data", 		"width": 160},
 			# {"fieldname": "product_name", 				"label": "Product Name", 		"fieldtype": "Data", 		"width": 160},
 		]
-
-	def fetch_data(self, status=""):
-		url = build_url(
-			"/userportal",
-			"/RawMaterialUP/SearchRawMaterialReservedOrIssued",
-			keyword=self.filters.item_code,
-			rowsPerTable=10,
-			page=0,
-			farmId=15,
-			skipCount=0,
-			maxResultCount=100,
-			status=status
-		)
-
-		# Caching: use File doctype with name FOMS_fetch_ddmmyy.json
-		date = datetime.now().strftime("%d%m%y")
-		item = self.filters.item_code
-		file_prefix = f"FOMS_fetch_{date}_{item}"
-		cached_doc = None
-		cached = None
-		try:
-			latest = frappe.get_all(
-				"File",
-				filters={"file_name": ("like", f"{file_prefix}%")},
-				fields=["name", "file_name", "creation"],
-				order_by="creation desc",
-				limit=1,
-			)
-			if latest:
-				cached_doc = frappe.get_doc("File", latest[0].name)
-				content = cached_doc.get_content()
-				cached = json.loads(content) if content else None
-		except Exception:
-			cached = None
-
-		# If cache exists and has this status, return from cache
-		if isinstance(cached, dict):
-			if status and cached.get(status):
-				cached_result = cached.get(status) or {}
-				if isinstance(cached_result, dict) and "items" in cached_result:
-					return cached_result.get("items") or []
-				elif isinstance(cached_result, list):
-					return cached_result
-
-		# Otherwise, fetch and then save/merge to cache
-		self.foms_data = self.api.req("GET", url) or {}
-		items = []
-		if isinstance(self.foms_data, dict) and "items" in self.foms_data:
-			items = self.foms_data.get("items") or []
-
-		# Merge into cache structure by status
-		cache_blob = cached if isinstance(cached, dict) else {}
-		if status:
-			cache_blob[status] = self.foms_data
-		else:
-			cache_blob["data"] = self.foms_data
-
-		# Save as a new File record; pick latest by creation next time
-		try:
-			file_name = f"{file_prefix}.json"
-			save_file(file_name, json.dumps(cache_blob), None, None, is_private=1)
-			frappe.db.commit()
-		except Exception:
-			pass
-
-		return items
 	
 	def get_erp_data(self):
 		data = frappe.db.sql("""
@@ -160,10 +93,11 @@ class Report():
 	def get_data(self):
 		self.raw_data = []
 		if self.filters.status in ['Reserved', 'Issued']:
-			self.raw_data = self.fetch_data(self.filters.status)
+			
+			self.raw_data = fetch_data_foms(self.filters.item_code, self.filters.status)
 		else:
-			self.raw_data  = self.fetch_data("Reserved")
-			self.raw_data += self.fetch_data("Issued")
+			self.raw_data  = fetch_data_foms(self.filters.item_code,self.fetch_data("Reserved"))
+			self.raw_data += fetch_data_foms(self.filters.item_code, "Issued")
 
 		self.raw_data_map = {}
 		for d in self.raw_data:
@@ -231,3 +165,71 @@ from urllib.parse import urlencode
 def build_url(base, path, **params):
     query = urlencode({k: v for k, v in params.items() if v is not None})
     return f"{base.rstrip('/')}/{path.lstrip('/')}?{query}" if query else f"{base.rstrip('/')}/{path.lstrip('/')}"
+
+@frappe.whitelist()
+def fetch_data_foms(item_code, status):
+	api = FomsAPI()
+	url = build_url(
+		"/userportal",
+		"/RawMaterialUP/SearchRawMaterialReservedOrIssued",
+		keyword=item_code,
+		rowsPerTable=10,
+		page=0,
+		farmId=15,
+		skipCount=0,
+		maxResultCount=200,
+		status=status
+	)
+
+	# Caching: use File doctype with name FOMS_fetch_ddmmyy.json
+	date = datetime.now().strftime("%d%m%y")
+	item = item_code
+	file_prefix = f"FOMS_fetch_{date}_{item}"
+	cached_doc = None
+	cached = None
+	try:
+		latest = frappe.get_all(
+			"File",
+			filters={"file_name": ("like", f"{file_prefix}%")},
+			fields=["name", "file_name", "creation"],
+			order_by="creation desc",
+			limit=1,
+		)
+		if latest:
+			cached_doc = frappe.get_doc("File", latest[0].name)
+			content = cached_doc.get_content()
+			cached = json.loads(content) if content else None
+	except Exception:
+		cached = None
+
+	# If cache exists and has this status, return from cache
+	if isinstance(cached, dict):
+		if status and cached.get(status):
+			cached_result = cached.get(status) or {}
+			if isinstance(cached_result, dict) and "items" in cached_result:
+				return cached_result.get("items") or []
+			elif isinstance(cached_result, list):
+				return cached_result
+
+	# Otherwise, fetch and then save/merge to cache
+	foms_data = api.req("GET", url) or {}
+	items = []
+	if isinstance(foms_data, dict) and "items" in foms_data:
+		items = foms_data.get("items") or []
+
+	# Merge into cache structure by status
+	cache_blob = cached if isinstance(cached, dict) else {}
+	if status:
+		cache_blob[status] = foms_data
+	else:
+		cache_blob["data"] = foms_data
+
+	# Save as a new File record; pick latest by creation next time
+	try:
+		file_name = f"{file_prefix}.json"
+		save_file(file_name, json.dumps(cache_blob), None, None, is_private=1)
+		frappe.db.commit()
+	except Exception:
+		pass
+
+	return items
