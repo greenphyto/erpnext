@@ -178,12 +178,14 @@ custom.show_company_switcher = function (companies) {
           method: "erpnext.controllers.erp.switch_company",
           args: { company: value },
           callback: function(res) {
-              if (res.message) {
-                  frappe.show_alert({ message: "Switched to " + value, indicator: "green" });
-                  d.hide();
-                  // Optional: reload page supaya context ganti
-                  hard_reload()
-              }
+            d.hide();
+            if (res.message) {
+              frappe.show_alert({ message: "Switched to " + value, indicator: "green" });
+              // Optional: reload page supaya context ganti
+              hard_reload()
+            }else{
+              frappe.msgprint("Cannot switch entity, please contact Administrator for more information")
+            }
           }
       });
 });

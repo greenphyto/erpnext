@@ -823,12 +823,17 @@ def get_company_availabe():
 	return data
 
 @frappe.whitelist()
-def switch_company(company):
+def switch_company(company, force=False, user=""):
+	user = user or frappe.session.user
+	company_user = frappe.db.get_value("User", user, "company")
+	if not force and company_user and company_user != company:
+		return False
+	
 	# if administrator, always set to all
-	frappe.db.set_value("User", frappe.session.user, "company_selected", company)
+	frappe.db.set_value("User", user, "company_selected", company)
 	# change role
 	filters = {
-		"user":frappe.session.user,
+		"user":user,
 		"allow":"Company",
 		"auto":1,
 		"hide_descendants":1
@@ -837,7 +842,7 @@ def switch_company(company):
 	perm_name = frappe.db.exists("User Permission", filters)
 	if not perm_name:
 		perm_name = frappe.db.exists("User Permission", {
-			"user":frappe.session.user,
+			"user":user,
 			"allow":"Company",
 		})
 
@@ -865,3 +870,8 @@ def validate_company_selected(doc, method=""):
 	
 	if doc.get("company") and doc.get("company") != cur_company:
 		frappe.throw("Company mismatch, please reload your browser or contact Administrator.")
+
+def set_permanent_company(doc, method=""):
+	if doc.get("company"):
+		switch_company(doc.company, force=1, user=doc.name)
+		doc.company_selected = doc.get("company")
