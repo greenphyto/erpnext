@@ -15,6 +15,7 @@
   "color",
   "default_currency",
   "country",
+  "time_zone",
   "is_group",
   "default_holiday_list",
   "cb0",
@@ -846,6 +847,11 @@
    "fieldname": "color",
    "fieldtype": "Color",
    "label": "Color"
+  },
+  {
+   "fieldname": "time_zone",
+   "fieldtype": "Select",
+   "label": "Time zone"
   }
  ],
  "icon": "fa fa-building",
@@ -853,7 +859,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-10-01 11:06:50.638851",
+ "modified": "2025-10-07 11:50:43.300620",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

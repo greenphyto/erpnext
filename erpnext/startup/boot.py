@@ -63,8 +63,44 @@ def boot_session(bootinfo):
 		# non stock item
 		bootinfo.sysdefaults.non_stock_item = frappe.db.get_single_value("Buying Settings", "non_stock_item")
 		bootinfo.sysdefaults.debit_note_item = frappe.db.get_value("Item", {"debit_note_item":1})
+		overide_user_defaults(bootinfo)
 
-		
+def overide_user_defaults(bootinfo):
+	company = bootinfo.sysdefaults.company_selected
+	if company in ['Disabled', 'ALL']:
+		return
+
+	# basic company info
+	doc = frappe.get_doc("Company", company)
+	bootinfo.user.defaults.company = company
+	bootinfo.user.defaults.currency = doc.default_currency
+	bootinfo.user.defaults.country = doc.country
+	bootinfo.user.defaults.time_zone = doc.time_zone or bootinfo.user.defaults.time_zone
+
+	# price lists
+	cur = doc.default_currency
+	buying = frappe.db.get_value("Price List", {"buying": 1, "enabled": 1, "currency": cur})
+	selling = frappe.db.get_value("Price List", {"selling": 1, "enabled": 1, "currency": cur})
+	if buying: bootinfo.user.defaults.buying_price_list = buying
+	if selling: bootinfo.user.defaults.selling_price_list = selling
+
+	# letter head
+	letter_head, content = frappe.db.get_value("Letter Head", {"company": company, "disabled": 0}, ["name", "content"]) or (None, None)
+	if letter_head:
+		bootinfo.user.defaults.letter_head = letter_head
+		bootinfo.user.defaults.default_letter_head_content = content
+
+	# warehouse and cost center
+	wh = frappe.db.get_value("Warehouse", {"company": company, "is_group": 0}, "name")
+	cc = frappe.db.get_value("Cost Center", {"company": company, "is_group": 0}, "name")
+
+	if wh:
+		bootinfo.user.defaults.default_warehouse = wh
+	if cc:
+		bootinfo.user.defaults.cost_center = cc
+
+
+
 
 def update_page_info(bootinfo):
 	bootinfo.page_info.update(
