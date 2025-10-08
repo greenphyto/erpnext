@@ -3,7 +3,7 @@
 
 import frappe, os
 from frappe.model.document import Document
-from frappe.utils import flt, cint, getdate, get_datetime, get_link_to_form
+from frappe.utils import flt, cint, getdate, get_datetime, get_link_to_form, get_time, today
 from frappe.utils.file_manager import save_file
 from erpnext.controllers.uob import create_payment_xml
 from erpnext.controllers.uob import UOBAPI, get_country_code
@@ -33,6 +33,7 @@ class PaymentApproval(Document):
 		self.remove_another_record()
 		self.calculate_amount()
 		self.process_xml_file()
+		self.update_apporval_date()
 
 	def validate_data(self):
 		self.validate_bank()
@@ -50,6 +51,11 @@ class PaymentApproval(Document):
 		if not select_row:
 			frappe.throw(_("Please select at least 1 invoice to paid"))
 
+	def update_apporval_date(self):
+		if self.status == "Approved":
+			now = get_datetime()
+			self.approved_date = getdate(now)
+			self.time = get_time(now)
 
 	def validate_bank(self):
 		bic = frappe.get_value("Bank", self.bank, "swift_number")

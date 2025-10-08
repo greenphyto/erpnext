@@ -11,7 +11,8 @@
   "requested_by",
   "approved_by",
   "column_break_2",
-  "posting_date",
+  "request_date",
+  "approved_date",
   "time",
   "transfer_method_section",
   "payment_type",
@@ -78,18 +79,11 @@
    "fieldtype": "Column Break"
   },
   {
-   "default": "Today",
-   "fieldname": "posting_date",
-   "fieldtype": "Date",
-   "label": "Posting Date",
-   "no_copy": 1
-  },
-  {
-   "default": "Now",
    "fieldname": "time",
    "fieldtype": "Time",
    "label": "Time",
-   "no_copy": 1
+   "no_copy": 1,
+   "read_only": 1
   },
   {
    "fieldname": "transfer_method_section",
@@ -300,12 +294,25 @@
    "fieldname": "summary_wrapper",
    "fieldtype": "HTML",
    "label": "summary wrapper"
+  },
+  {
+   "default": "Today",
+   "fieldname": "request_date",
+   "fieldtype": "Date",
+   "label": "Request Date",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "approved_date",
+   "fieldtype": "Date",
+   "label": "Approved Date",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-09-23 17:05:14.649723",
+ "modified": "2025-10-08 17:01:32.482293",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "Payment Approval",
