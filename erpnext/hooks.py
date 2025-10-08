@@ -455,6 +455,9 @@ scheduler_events = {
         "0 5 * * *": [
 			"erpnext.foms.doctype.minio_backup_settings.minio_backup_settings.upload_backup",
 		],
+        "40 20 * * *": [
+			"erpnext.foms.doctype.minio_backup_settings.minio_backup_settings.upload_backup",
+		],
 		# Hourly but offset by 30 minutes
 		"30 * * * *": [
 			"erpnext.accounts.doctype.gl_entry.gl_entry.rename_gle_sle_docs",
