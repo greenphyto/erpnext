@@ -96,7 +96,7 @@ class Report():
 			
 			self.raw_data = fetch_data_foms(self.filters.item_code, self.filters.status)
 		else:
-			self.raw_data  = fetch_data_foms(self.filters.item_code,self.fetch_data("Reserved"))
+			self.raw_data  = fetch_data_foms(self.filters.item_code, "Reserved")
 			self.raw_data += fetch_data_foms(self.filters.item_code, "Issued")
 
 		self.raw_data_map = {}
@@ -177,7 +177,7 @@ def fetch_data_foms(item_code, status):
 		page=0,
 		farmId=15,
 		skipCount=0,
-		maxResultCount=200,
+		maxResultCount=999,
 		status=status
 	)
 
