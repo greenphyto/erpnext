@@ -496,7 +496,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                             <div class="detail-item">
                                 <div class="item-head">
                                     <div class="left">
-                                        <input type="checkbox" class="invoice-select" data-invoice-name="${frappe.utils.escape_html(link_name)}"${disabled}${checked}>
+                                        <input type="checkbox" class="invoice-select" data-invoice-name="${frappe.utils.escape_html(link_name)}" data-amount="${Number(amount_raw || 0)}" data-currency="${frappe.utils.escape_html(currency)}"${disabled}${checked}>
                                         ${link_html}
                                     </div>
                                     <div class="item-amount">${frappe.utils.escape_html(amount)} ${frappe.utils.escape_html(currency)}</div>
@@ -522,18 +522,23 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     return `<th${c.label === 'Amount' ? ' class=\"text-right\"' : ''}>${c.label}</th>`;
                 }).join('');
                 const rows_html = transfers.map(t => {
+                    // compute basic values to reuse across columns
+                    const link_name_for_row = t.invoice || t.reference_name || t.invoice_no || '';
+                    const amount_value_for_row = Number(pick(t, ['amount','allocated_amount','base_amount','grand_total']) || 0);
+                    const currency_for_row = t['currency'] || doc.currency || '';
+
                     const tds = columns_fixed.map(c => {
                         let val = pick(t, c.keys);
                         if (c.label === 'Select') {
                             // Use best-effort invoice identifier found in row
-                            const link_name = t.invoice || t.reference_name || t.invoice_no || '';
+                            const link_name = link_name_for_row;
                             const disabled = link_name ? '' : ' disabled';
                             // Default checked (user can uncheck unwanted rows)
                             const checked = link_name ? ' checked' : '';
-                            return `<td class=\"text-center\"><input type=\"checkbox\" class=\"invoice-select\" data-invoice-name=\"${frappe.utils.escape_html(link_name)}\"${disabled}${checked}></td>`;
+                            return `<td class=\"text-center\"><input type=\"checkbox\" class=\"invoice-select\" data-invoice-name=\"${frappe.utils.escape_html(link_name)}\" data-amount=\"${amount_value_for_row}\" data-currency=\"${frappe.utils.escape_html(currency_for_row)}\"${disabled}${checked}></td>`;
                         }
                         if (c.label === 'Amount') {
-                            val = format_amount(val, t['currency'] || doc.currency);
+                            val = format_amount(val, currency_for_row);
                             return `<td class=\"text-right\">${frappe.utils.escape_html(val != null ? String(val) : '')}</td>`;
                         } else if (c.label === 'Supplier Bank No') {
                             const accNo = t.bank_account_no || t.supplier_bank_no || t.beneficiary_account_no || t.account_no || t.bank_account || '';
@@ -570,6 +575,30 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     </div>
                 `);
                 $body.append(mobile_html);
+                // Helper: update parent list row amount based on checked invoices
+                function update_parent_row_amount() {
+                    try {
+                        const $amountCell = $tr.find('td.col-amount');
+                        if (!$amountCell.length) return;
+                        const $checked = $body.find('.invoice-select:checked');
+                        if (!$checked.length) {
+                            const empty_html = `${frappe.utils.escape_html(format_amount(0, doc.currency))}<span class="mobile-only-currency"> ${frappe.utils.escape_html(doc.currency || '')}</span>`;
+                            $amountCell.html(empty_html);
+                            return;
+                        }
+                        let sum = 0;
+                        let cur = doc.currency || row.currency || '';
+                        $checked.each(function(){
+                            const amt = Number($(this).data('amount')) || 0;
+                            const c = $(this).data('currency');
+                            if (c) cur = c;
+                            sum += amt;
+                        });
+                        const html = `${frappe.utils.escape_html(format_amount(sum, cur))}<span class="mobile-only-currency"> ${frappe.utils.escape_html(cur || '')}</span>`;
+                        $amountCell.html(html);
+                    } catch (e) { /* silent */ }
+                }
+
                 // Hook up select-all for this detail table
                 const $table = $body.find('table.detail-table');
                 $table.on('change', '.invoice-select-all', function() {
@@ -579,6 +608,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     const $wrapM = $body.find('.detail-mobile');
                     $wrapM.find('.invoice-select').prop('checked', checked);
                     $wrapM.find('.invoice-select-all').prop('checked', checked);
+                    update_parent_row_amount();
                 });
                 // Default: all selected on initial render
                 $table.find('.invoice-select-all').prop('checked', true).trigger('change');
@@ -590,6 +620,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     // mirror to desktop
                     $table.find('tbody .invoice-select').prop('checked', checked);
                     $table.find('.invoice-select-all').prop('checked', checked);
+                    update_parent_row_amount();
                 });
                 // Keep individual invoice-select in sync between desktop table and mobile list
                 function set_checked_match($scope, invoiceName, checked) {
@@ -612,12 +643,14 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     const checked = $(this).is(':checked');
                     set_checked_match($wrap, name, checked);
                     update_select_all_states();
+                    update_parent_row_amount();
                 });
                 $wrap.on('change', '.invoice-select', function(){
                     const name = $(this).data('invoice-name');
                     const checked = $(this).is(':checked');
                     set_checked_match($table, name, checked);
                     update_select_all_states();
+                    update_parent_row_amount();
                 });
                 // Toggle item checkbox when tapping the whole card (ignore direct clicks on interactive elements)
                 $wrap.on('click', '.detail-item', function(e) {
@@ -628,6 +661,8 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     }
                 });
                 $wrap.find('.invoice-select-all').prop('checked', true).trigger('change');
+                // Initialize parent amount display to reflect current selection
+                update_parent_row_amount();
                 $tr.data('detail-rendered', true);
             }
 
