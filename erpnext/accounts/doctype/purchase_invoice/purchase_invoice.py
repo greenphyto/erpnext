@@ -128,6 +128,7 @@ class PurchaseInvoice(BuyingController):
 		self.reset_default_field_value("rejected_warehouse", "items", "rejected_warehouse")
 		self.reset_default_field_value("set_from_warehouse", "items", "from_warehouse")
 		self.validate_gst_input()
+		self.detect_po_amount_difference()
 	
 	def validate_gst_input(self):
 		if self.get("gst_input_tax") and not self.get("base_value_for_gst_input"):
@@ -1673,52 +1674,46 @@ class PurchaseInvoice(BuyingController):
 		log = frappe.db.get_value("Deleted Document", {"deleted_name":self.name, "deleted_doctype": self.doctype})
 		if log:
 			frappe.db.set_value("Deleted Document", log, "document_date", self.posting_date)
-
-	def create_auto_bank_transfer(self):
-		# formats: Tx ID | date | Bank Acc | amount | type | notes
-		# create format 
-		# send 
-		pass
 		
+	def detect_po_amount_difference(self):
+		"""Mark po_amount_different = 1 if any PI item differs from its linked PO (directly or via PR)."""
+		for d in self.items:
+			po_item_name = None
 
-# to get details of purchase invoice/receipt from which this doc was created for exchange rate difference handling
-def get_purchase_document_details(doc):
-	if doc.doctype == "Purchase Invoice":
-		doc_reference = "purchase_receipt"
-		items_reference = "pr_detail"
-		parent_doctype = "Purchase Receipt"
-		child_doctype = "Purchase Receipt Item"
-	else:
-		doc_reference = "purchase_invoice"
-		items_reference = "purchase_invoice_item"
-		parent_doctype = "Purchase Invoice"
-		child_doctype = "Purchase Invoice Item"
+			# Case 1: Direct link to Purchase Order Item
+			if d.po_detail:
+				po_item_name = d.po_detail
 
-	purchase_receipts_or_invoices = []
-	items = []
+			# Case 2: Linked through Purchase Receipt → Purchase Order Item
+			elif d.pr_detail:
+				po_item_name = frappe.db.get_value("Purchase Receipt Item", d.pr_detail, "purchase_order_item")
 
-	for item in doc.get("items"):
-		if item.get(doc_reference):
-			purchase_receipts_or_invoices.append(item.get(doc_reference))
-		if item.get(items_reference):
-			items.append(item.get(items_reference))
+			if not po_item_name:
+				continue
 
-	exchange_rate_map = frappe._dict(
-		frappe.get_all(
-			parent_doctype,
-			filters={"name": ("in", purchase_receipts_or_invoices)},
-			fields=["name", "conversion_rate"],
-			as_list=1,
-		)
-	)
+			# Fetch related Purchase Order Item data
+			po_item = frappe.db.get_value(
+				"Purchase Order Item",
+				po_item_name,
+				["rate", "qty", "amount"],
+				as_dict=True,
+			)
 
-	net_rate_map = frappe._dict(
-		frappe.get_all(
-			child_doctype, filters={"name": ("in", items)}, fields=["name", "net_rate"], as_list=1
-		)
-	)
+			if not po_item:
+				continue
 
-	return exchange_rate_map, net_rate_map
+			# Compare key fields: rate, qty, amount
+			if (
+				abs(flt(d.rate) - flt(po_item.rate)) > 0.0001
+				or abs(flt(d.qty) - flt(po_item.qty)) > 0.0001
+				or abs(flt(d.amount) - flt(po_item.amount)) > 0.01
+			):
+				# Once any difference found, mark and stop checking
+				self.po_amount_different = 1
+				return
+
+		# Reset flag if all items match their respective PO references
+		self.po_amount_different = 0
 
 
 def get_list_context(context=None):

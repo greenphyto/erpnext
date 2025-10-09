@@ -29,6 +29,7 @@
   "apply_tds",
   "tax_withholding_category",
   "amended_from",
+  "po_amount_different",
   "accounting_dimensions_section",
   "cost_center",
   "dimension_col_break",
@@ -1624,13 +1625,19 @@
   {
    "fieldname": "column_break_110",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "po_amount_different",
+   "fieldtype": "Check",
+   "label": "PO Amount Different!"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-09-10 10:59:43.256295",
+ "modified": "2025-10-09 12:44:32.308717",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",
