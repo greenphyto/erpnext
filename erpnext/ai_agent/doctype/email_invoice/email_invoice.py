@@ -209,6 +209,7 @@ class EmailInvoice(Document):
 			agent = None
 			agent_exc = e
 
+		self.results = []
 		for file_name in file_doc_name:
 			fn = frappe.get_doc("File", file_name.get("name"))
 			full_path = fn.get_full_path()
@@ -313,8 +314,12 @@ class EmailInvoice(Document):
 			try:
 				if doc:
 					# Link communication to created PI and remember
-					doc.db_set("reference_doctype", "Purchase Invoice")
-					doc.db_set("reference_name", name)
+					row = self.append("results")
+					row.filename = fn.file_name
+					row.po_no = self.flags.po_no
+					row.invoice_no = name
+					row.insert()
+					
 					# copy attachment
 					self.add_attachment_copy(fn, "Purchase Invoice", name )
 				if not self.invoice_no:
@@ -458,7 +463,7 @@ class EmailInvoice(Document):
 				# check exists
 				po_ref = frappe.db.exists("Purchase Order", {"name":po_ref})
 				if po_ref:
-					self.po_no = po_ref
+					self.flags.po_no = po_ref
 					ok, name_or_err = self.create_invoice(res, po_ref=po_ref)
 					if not ok:
 						self.add_reason(category="pi", code="create_failed", message=str(name_or_err))

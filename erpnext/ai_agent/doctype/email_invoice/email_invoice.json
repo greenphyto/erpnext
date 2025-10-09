@@ -22,6 +22,7 @@
   "status",
   "po_no",
   "invoice_no",
+  "results",
   "more_information_section",
   "message_id",
   "inbox",
@@ -84,12 +85,14 @@
   {
    "fieldname": "po_no",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "PO No",
    "options": "Purchase Order"
   },
   {
    "fieldname": "invoice_no",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Invoice Created",
    "options": "Purchase Invoice"
   },
@@ -156,12 +159,18 @@
    "fieldname": "ai_agent_section",
    "fieldtype": "Section Break",
    "label": "AI Agent"
+  },
+  {
+   "fieldname": "results",
+   "fieldtype": "Table",
+   "label": "Results",
+   "options": "Email Invoice Result"
   }
  ],
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-08-26 11:22:10.284704",
+ "modified": "2025-10-09 12:31:18.823474",
  "modified_by": "Administrator",
  "module": "AI Agent",
  "name": "Email Invoice",
