@@ -4,7 +4,6 @@
 import frappe
 from frappe.model.document import Document
 from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_invoice
-from erpnext.controllers.va2 import extract_invoice_data, get_po_number, get_item_detail, get_po_and_items
 from frappe.utils import flt, getdate, get_time
 from erpnext.controllers.erp import get_supplier_context, is_doctype_exists, deep_get, get_supplier_payload
 import os, re
