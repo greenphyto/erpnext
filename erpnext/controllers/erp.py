@@ -875,3 +875,51 @@ def set_permanent_company(doc, method=""):
 	if doc.get("company"):
 		switch_company(doc.company, force=1, user=doc.name)
 		doc.company_selected = doc.get("company")
+
+def change_naming_series(doc, method=""):
+	doctypes = [
+		# Buying
+		"Purchase Order",
+		"Purchase Receipt",
+		"Purchase Invoice",
+		"Supplier Quotation",
+
+		# Selling
+		"Sales Order",
+		"Delivery Note",
+		"Sales Invoice",
+		"Quotation",
+
+		# Stock / Manufacturing
+		"Stock Entry",
+		"Stock Reconciliation",
+		"Material Request",
+		"Work Order",
+		"Job Card",
+
+		# Payment & Accounting
+		"Payment Entry",
+		"Journal Entry",
+
+		# Optional / cross-module transactional docs
+		"Expense Claim",
+		"Landed Cost Voucher",
+		"Subcontracting Receipt",
+		"Subcontracting Order",
+	]
+
+	if doc.doctype not in doctypes:
+		return
+	
+	"""Attach the company abbreviation (e.g., 'MY') to the document name if not already present."""
+	abbr = frappe.db.get_value("Company", doc.get("company"), "series_abbr")
+
+	if not abbr:
+		return
+
+	abbr = abbr.strip().upper()
+	current_name = (doc.name or "").strip()
+
+	# Check if the current name already starts with the abbreviation
+	if not current_name.startswith(abbr):
+		doc.name = f"{abbr}{current_name}"

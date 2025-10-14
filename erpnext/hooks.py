@@ -285,9 +285,9 @@ doc_events = {
 	"*": {
 		"validate": [
 			"erpnext.support.doctype.service_level_agreement.service_level_agreement.apply",
-            "erpnext.controllers.erp.validate_company_selected"
-		]
-        # "after_insert": "erpnext.controllers.foms.sync_log"
+            "erpnext.controllers.erp.validate_company_selected",
+		],
+        "after_naming": "erpnext.controllers.erp.change_naming_series"
 	},
 	"Stock Entry": {
 		"on_submit": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",

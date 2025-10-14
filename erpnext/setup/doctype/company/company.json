@@ -12,6 +12,7 @@
   "details",
   "company_name",
   "abbr",
+  "series_abbr",
   "color",
   "default_currency",
   "country",
@@ -852,6 +853,12 @@
    "fieldname": "time_zone",
    "fieldtype": "Select",
    "label": "Time zone"
+  },
+  {
+   "fieldname": "series_abbr",
+   "fieldtype": "Data",
+   "label": "Series Abbr",
+   "set_only_once": 1
   }
  ],
  "icon": "fa fa-building",
@@ -859,7 +866,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-10-07 11:50:43.300620",
+ "modified": "2025-10-14 11:32:32.757021",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",
