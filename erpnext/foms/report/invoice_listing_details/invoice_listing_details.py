@@ -15,7 +15,7 @@ class Report():
 		self.filters = filters
 
 	def setup_condition(self):
-		self.cond = " AND si.income_account = %(income_account)s "
+		self.cond = ""
 		self.cond_delete = ""
 		self.cond_dn = ""
 
@@ -23,6 +23,8 @@ class Report():
 			self.cond += " and s.customer = %(customer)s "
 		if self.filters.get("sales_invoice"):
 			self.cond += " and s.name = %(sales_invoice)s "
+		if self.filters.get("income_account"):
+			self.cond = " AND si.income_account = %(income_account)s "
 
 		today = datetime.date.today()
 		first_day = today.replace(day=1)
