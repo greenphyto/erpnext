@@ -74,6 +74,9 @@ def upload_backup():
 	)
 	app.run()
 
+def upload_backup2():
+	upload_backup()
+
 from frappe.utils.backups import new_backup
 def take_backup():
 	doc = frappe.get_doc("MinIO Backup Settings")

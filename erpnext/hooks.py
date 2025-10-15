@@ -456,7 +456,7 @@ scheduler_events = {
 			"erpnext.foms.doctype.minio_backup_settings.minio_backup_settings.upload_backup",
 		],
         "40 20 * * *": [
-			"erpnext.foms.doctype.minio_backup_settings.minio_backup_settings.upload_backup",
+			"erpnext.foms.doctype.minio_backup_settings.minio_backup_settings.upload_backup2",
 		],
 		# Hourly but offset by 30 minutes
 		"30 * * * *": [
