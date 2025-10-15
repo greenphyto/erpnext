@@ -8,12 +8,15 @@ import json
 import frappe
 from frappe import _
 from frappe.contacts.report.addresses_and_contacts import test_addresses_and_contacts
-from frappe.utils import formatdate, get_link_to_form, flt,fmt_money, getdate, get_url_to_form
+from frappe.utils import formatdate, get_link_to_form, fmt_money, getdate, get_url_to_form
+from frappe.utils import flt as _flt
 
 def execute(filters=None):
 
 	return VATAuditReport(filters).run()
 
+def flt(value, rounding=2):
+	return round(_flt(value),2)
 
 class VATAuditReport(object):
 	def __init__(self, filters=None):
@@ -162,8 +165,8 @@ class VATAuditReport(object):
 			SELECT
 				gle.voucher_type,
 				gle.voucher_no,
-				SUM(gle.credit - gle.debit) AS tax_amount_output,
-				SUM(gle.debit - gle.credit) AS tax_amount_input
+				SUM(gle.credit_in_account_currency - gle.debit_in_account_currency) AS tax_amount_output,
+				SUM(gle.debit_in_account_currency - gle.credit_in_account_currency) AS tax_amount_input
 			FROM
 				`tabGL Entry` gle
 			INNER JOIN
@@ -363,8 +366,8 @@ class VATAuditReport(object):
 
 				total_tax += 0 if  row["tax_amount"] =="" else  flt(row["tax_amount"])
 				total_gross += 0 if  row["gross_amount"]=="" else flt(row["gross_amount"])
-				if row['voucher_type'] == "Sales Invoice":
-					print(300,row['posting_date'],row['voucher_no'], row["tax_amount"], total_tax)
+				# if row['voucher_type'] == "Sales Invoice":
+				# 	print(300,row['posting_date'],row['voucher_no'], row["tax_amount"], total_tax)
 
 			total_net = total_gross - total_tax
 			
