@@ -1449,6 +1449,9 @@ def _update_foms_stock_recon(log, api=None):
 		api = FomsAPI()
 
 	doc = frappe.get_doc("Stock Reconciliation", log.docname)
+	if cint(doc.get("foms_sync_no")):
+		return
+	
 	farm_id = get_farm_id()
 	api.log = log
 
