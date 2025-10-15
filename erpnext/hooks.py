@@ -289,7 +289,6 @@ doc_events = {
 	"Stock Entry": {
 		"on_submit": [
 			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
-			"erpnext.controllers.erp.detect_work_order_different"
 		],
 		"on_cancel": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
 	},

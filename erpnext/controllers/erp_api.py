@@ -574,6 +574,7 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 			"message":"Scheduled"
 		}
 
+from erpnext.controllers.erp import detect_work_order_different
 def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate="", draft=False, log_name=None):
 	ERPWorkOrderID = erpWorkOrderID
 	data_name = f"Finish Work Order {ERPWorkOrderID}"
@@ -627,6 +628,7 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 	if not draft:
 		se_doc.save()
 		se_doc.submit()
+		detect_work_order_different(se_doc)
 	else:
 		se_doc.flags.ignore_validate = 1
 		se_doc.flags.ignore_mandatory = 1
