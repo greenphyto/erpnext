@@ -197,8 +197,7 @@ def _detect_work_order_different(se, method=""):
 				AND gl.account IN (
 					'121303 - Stock - Harvesting WIP - GPL',
 					'121301 - Stock - Seeding WIP - GPL',
-					'121302 - Stock - Transplanting WIP - GPL',
-					'501060 - Stock Adjustment - GPL'
+					'121302 - Stock - Transplanting WIP - GPL'
 				)
 			GROUP BY se.work_order, gl.account
 			ORDER BY wo.creation, se.work_order
