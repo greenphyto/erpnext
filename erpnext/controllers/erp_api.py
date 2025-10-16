@@ -325,7 +325,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 		"operationNo":operationNo, 
 		"percentage":percentage, 
 		"rawMaterials":rawMaterials, 
-		"now":now
+		"now": cint(now)
 	}, now=1)
 
 	if log_res.status != "Unknown":
@@ -552,7 +552,8 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 		"qty": qty,
 		"packets": packets,
 		"expiryDate": expiryDate,
-		"draft":draft
+		"draft":cint(draft),
+		"now":cint(draft),
 	}
 
 	if now:
