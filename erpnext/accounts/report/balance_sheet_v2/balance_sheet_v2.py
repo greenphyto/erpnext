@@ -283,86 +283,53 @@ def get_chart_data(filters, columns, asset, liability, equity):
 from frappe.utils.xlsxutils import make_xlsx
 from openpyxl import load_workbook
 from io import BytesIO
+import json
+from openpyxl.styles import Font
 from frappe.utils import now_datetime
 def add_formulas(report_name, xlsx_file):
-	# Load workbook dari stream hasil make_xlsx
 	stream = BytesIO(xlsx_file.getvalue())
 	wb = load_workbook(stream)
 	ws = wb.active
-	# check parent vs child
-	# start sum
-	# end sum
 
-	def is_child(cell_value):
-		"""Kembalikan True jika teks diawali angka."""
-		if not isinstance(cell_value, str):
-			return False
-		stripped = cell_value.strip()
-		return stripped[:1].isdigit() 
+	group_col = "Z"
+	ws.column_dimensions[group_col].hidden = True
 
-	hierarchy = {} 
-	h_level = {}
+	col_use = list(ws.column_dimensions.keys())
 
-	start_modify = False
-	cur_level = 1
-	prev_type = ""
-	prev_account = ""
-	cur_group = []
-	for row in range(2, ws.max_row + 1):
-		account = cstr(ws[f"A{row}"].value).strip()
-		if account == 'Assets':
-			start_modify = True
-		
-		if not start_modify:
+	level = 0 
+	start_row = 0
+	for row in range(2, ws.max_row + 1): 
+		account_txt = cstr(ws[f"A{row}"].value) 
+		leading_spaces = len(account_txt) - len(account_txt.lstrip(" ")) 
+		print("ORI", f'|{account_txt}|', leading_spaces) 
+		account = cstr(ws[f"A{row}"].value).strip() 
+
+		if account == 'Assets': 
+			start_row = row
+			break
+
+	rows = build_rows(ws, start_row=2, start_after_label="Assets", spaces_per_level=4)
+
+	hier = compute_child_range_rows(rows)
+	flat_list = extract_nodes(hier)
+
+	for d in flat_list:
+		is_group = d.get("group_flag")
+		row = d['row']
+		lft=d['lft_row']
+		rgt=d['rgt_row']
+		ws[f'{group_col}{row}'] = 2 if is_group else 1
+
+		for cell in ws[row]:
+			cell.font = Font(bold=bool(is_group))
+	
+		if not lft:
 			continue
-		
-		h_level.setdefault(cur_level, {})
-		if is_child(account):
-			cur_type = "child"
-			# CHILD → contoh: buat formula
-			# ws[f"D{row}"] = f"=B{row}+C{row}+1000000000"
-			print(f"Row {row}: {account} → CHILD")
-			if prev_type == "parent":
-				last_parent = cur_group[-1]
-				h_level[cur_level][last_parent].append(account)
-			elif prev_type == "child":
-				last_parent = cur_group[-1]
-				h_level[cur_level][last_parent].append(account)
-
-		else:
-			# PARENT
-			cur_type = "parent"
-			print(f"Row {row}: {account.strip()} → PARENT")
-			if not prev_type:
-				cur_group.append(account)
-				h_level[cur_level].setdefault(account, [])
-			elif prev_type == "parent":
-				cur_group.append(account)
-				h_level[cur_level].setdefault(last_parent, [])
-				h_level[cur_level][last_parent].append(account)
-
-				cur_level += 1
-				h_level.setdefault(cur_level, {})
-				h_level[cur_level].setdefault(account, [])
-			elif prev_type == "child":
-				# find prev parent list 1 level above
-				cur_group.pop()
-				cur_level -= 1
-				last_parent = cur_group[-1]
-				cur_group.append(account)
-				h_level[cur_level][last_parent].append(account)
-
-				cur_level += 1
-				h_level.setdefault(cur_level, {})
-				h_level[cur_level].setdefault(account, [])
-				print(111)
-
-		
-		prev_type = cur_type
-		prev_account = account
-				
-			
-			
+		 
+		if is_group:
+			for col in col_use:
+				if col not in ['A', 'B', group_col]:
+					ws[f"{col}{row}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
 
 	output_stream = BytesIO()
 	wb.save(output_stream)
@@ -374,3 +341,136 @@ def add_formulas(report_name, xlsx_file):
 	frappe.response["filename"] = f"{report_name}-TEST-{date_str_title}.xlsx"
 	frappe.response["filecontent"] = output_stream.getvalue()
 	frappe.response["type"] = "binary"
+
+import re
+from collections import OrderedDict
+def count_leading_spaces(s):
+	if not isinstance(s, str):
+		return 0
+	return len(re.match(r"^[\s\xa0]*", s).group(0))
+
+def get_level(account_txt, spaces_per_level=4):
+	return count_leading_spaces(account_txt) // spaces_per_level
+
+def is_child(cell_value: str) -> bool:
+    if not isinstance(cell_value, str):
+        return False
+    s = cell_value.strip()
+    return bool(s) and s[0].isdigit()
+
+def build_rows(ws, start_row=2, start_after_label=None, spaces_per_level=4):
+    """Ambil linear rows: [(row_idx, account, level, group_flag)]"""
+    rows = []
+    started = (start_after_label is None)
+
+    for r in range(start_row, ws.max_row + 1):
+        raw = cstr(ws[f"A{r}"].value or "")
+        if not raw.strip():
+            continue
+
+        if not started:
+            if raw.strip() == start_after_label:
+                started = True
+            else:
+                continue
+
+        level = get_level(raw, spaces_per_level)
+        account = raw.strip()
+        group_flag = 0 if is_child(account) else 1  # 1=group, 0=child
+        rows.append((r, account, level, group_flag))
+
+    return rows
+
+def compute_child_range_rows(rows):
+    """
+    For each group, compute (lft_row, rgt_row) = the range of child rows.
+    Returns: OrderedDict with key (account, row, group_flag, lft_row, rgt_row), value = children (tree)
+    """
+    # Build the tree structure using a stack (based on indentation level)
+    stack = []  # elements: (level, key_tuple, children_dict_ref)
+    roots = OrderedDict()
+
+    # Keep an index mapping for convenience
+    nodes = []  # [(i, row_idx, level, group_flag, key_ref_dict, parent_children_dict)]
+    tmp_keys = []  # list of (account, row_idx, group_flag) – lft/rgt will be added later
+
+    for i, (row_idx, account, level, group_flag) in enumerate(rows):
+        key_tmp = (account, row_idx, group_flag)
+        tmp_keys.append(key_tmp)
+        node_children = OrderedDict()
+
+        # Pop until parent level < current level
+        while stack and stack[-1][0] >= level:
+            stack.pop()
+
+        # Attach to parent if exists, otherwise treat as root
+        if stack:
+            parent_children = stack[-1][2]
+            parent_children[key_tmp] = node_children
+        else:
+            roots[key_tmp] = node_children
+
+        # Push current node to stack
+        stack.append((level, key_tmp, node_children))
+        nodes.append((i, row_idx, level, group_flag, key_tmp, node_children))
+
+    # Determine (lft_row, rgt_row) range for each group node
+    # Final result replaces key_tmp → key_final (account, row, group_flag, lft_row, rgt_row)
+    def child_block_range(i_parent):
+        row_idx_p, level_p = rows[i_parent][0], rows[i_parent][2]
+        # Find the first index j where level <= parent level
+        j = i_parent + 1
+        while j < len(rows) and rows[j][2] > level_p:
+            j += 1
+        # Child range = i_parent+1 .. j-1
+        if j - (i_parent + 1) >= 1:
+            lft_row = rows[i_parent + 1][0]
+            rgt_row = rows[j - 1][0]
+            return lft_row, rgt_row
+        return None, None
+
+    # Recursive function to materialize the final structure with (lft_row, rgt_row)
+    def materialize(children_dict, start_index_lookup):
+        out = OrderedDict()
+        for key_tmp, ch in children_dict.items():
+            account, row_idx, group_flag = key_tmp
+            # Find the row index of this node
+            # (can use dict lookup for performance, but linear scan is fine for report-sized data)
+            i = next(i for i, (r, a, lvl, gf) in enumerate(rows)
+                     if r == row_idx and a == account and gf == group_flag)
+
+            if group_flag == 1:
+                lft_row, rgt_row = child_block_range(i)
+            else:
+                lft_row = rgt_row = None
+
+            key_final = (account, row_idx, group_flag, lft_row, rgt_row)
+            out[key_final] = materialize(ch, start_index_lookup)
+        return out
+
+    # Build the final ordered structure
+    result = OrderedDict()
+    result = materialize(roots, {r[0]: idx for idx, r in enumerate(rows)})
+    return result
+
+
+def extract_nodes(flat_tree, parent=None, result=None):
+    """
+    Ubah struktur tree hasil compute_child_range_rows menjadi list datar.
+    Setiap elemen hasil = (account, row, group_flag, lft_row, rgt_row, parent_row)
+    """
+    if result is None:
+        result = []
+
+    for (account, row, group_flag, lft_row, rgt_row), children in flat_tree.items():
+        result.append({
+            "account": account,
+            "row": row,
+            "group_flag": group_flag,
+            "lft_row": lft_row,
+            "rgt_row": rgt_row,
+            "parent_row": parent[1] if parent else None
+        })
+        extract_nodes(children, (account, row, group_flag, lft_row, rgt_row), result)
+
+    return result
