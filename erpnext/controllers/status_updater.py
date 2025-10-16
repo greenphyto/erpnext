@@ -476,7 +476,7 @@ class StatusUpdater(Document):
 					WHERE name = '%(name)s';
 					"""
 				% args
-			, debug=1)
+			, debug=0)
 
 			# update field
 			if args.get("status_field"):
