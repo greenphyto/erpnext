@@ -39,6 +39,7 @@
   "sample_quantity",
   "rates_section",
   "basic_rate",
+  "rate_map",
   "additional_cost",
   "valuation_rate",
   "allow_zero_valuation_rate",
@@ -627,13 +628,19 @@
    "fieldtype": "Small Text",
    "label": "Created Asset",
    "read_only": 1
+  },
+  {
+   "fieldname": "rate_map",
+   "fieldtype": "Currency",
+   "label": "Rate Map",
+   "read_only": 1
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-07-30 15:17:13.509907",
+ "modified": "2025-10-16 10:57:39.769108",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry Detail",

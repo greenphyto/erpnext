@@ -620,6 +620,7 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 	for row in se_doc.get("items"):
 		if row.s_warehouse:
 			row.basic_rate = flt(rate_map.get(row.batch_no), 8)
+			row.rate_map = row.basic_rate
 			row.valuation_rate = row.basic_rate
 			row.set_basic_rate_manually = 1
 
