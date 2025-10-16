@@ -313,8 +313,26 @@ def add_formulas(report_name, xlsx_file):
 	hier = compute_child_range_rows(rows)
 	flat_list = extract_nodes(hier)
 
+	summary_col = {
+		"Assets":"Total Asset (Debit)",
+		"Liabilities":"Total Liability (Credit)",
+	}
+
+	assets_total_row = 0
+	liability_total_row = 0
+	for d in flat_list:
+		account = d['account']
+		row = d['row']
+		if account == "Total Asset (Debit)":
+			assets_total_row = row
+		elif account == "Total Liability (Credit)":
+			liability_total_row = row
+		elif account == "Total Equity (Credit)":
+			equity_total_row = row
+
 	for d in flat_list:
 		is_group = d.get("group_flag")
+		account = d['account']
 		row = d['row']
 		lft=d['lft_row']
 		rgt=d['rgt_row']
@@ -322,14 +340,27 @@ def add_formulas(report_name, xlsx_file):
 
 		for cell in ws[row]:
 			cell.font = Font(bold=bool(is_group))
-	
-		if not lft:
-			continue
-		 
-		if is_group:
+		
+		if is_group and lft:
 			for col in col_use:
 				if col not in ['A', 'B', group_col]:
 					ws[f"{col}{row}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
+
+					# Hardcode formula
+					if account == "Assets":
+						ws[f"{col}{assets_total_row}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
+					elif account == "Liabilities":
+						ws[f"{col}{liability_total_row}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
+					elif account == "Equity":
+						ws[f"{col}{equity_total_row}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
+		else:
+			for col in col_use:
+				if col not in ['A', 'B', group_col]:
+					if account == "'Profit / (Loss) for the Year'":
+						ws[f"{col}{row}"] = f"={col}{assets_total_row} - ({col}{liability_total_row} + {col}{equity_total_row})"
+					elif account == "'Total (Credit)'":
+						ws[f"{col}{row}"] = f"={col}{liability_total_row} + {col}{equity_total_row}"
+			
 
 	output_stream = BytesIO()
 	wb.save(output_stream)
