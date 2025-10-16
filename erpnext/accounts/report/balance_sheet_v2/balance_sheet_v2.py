@@ -279,3 +279,98 @@ def get_chart_data(filters, columns, asset, liability, equity):
 		chart["type"] = "line"
 
 	return chart
+
+from frappe.utils.xlsxutils import make_xlsx
+from openpyxl import load_workbook
+from io import BytesIO
+from frappe.utils import now_datetime
+def add_formulas(report_name, xlsx_file):
+	# Load workbook dari stream hasil make_xlsx
+	stream = BytesIO(xlsx_file.getvalue())
+	wb = load_workbook(stream)
+	ws = wb.active
+	# check parent vs child
+	# start sum
+	# end sum
+
+	def is_child(cell_value):
+		"""Kembalikan True jika teks diawali angka."""
+		if not isinstance(cell_value, str):
+			return False
+		stripped = cell_value.strip()
+		return stripped[:1].isdigit() 
+
+	hierarchy = {} 
+	h_level = {}
+
+	start_modify = False
+	cur_level = 1
+	prev_type = ""
+	prev_account = ""
+	cur_group = []
+	for row in range(2, ws.max_row + 1):
+		account = cstr(ws[f"A{row}"].value).strip()
+		if account == 'Assets':
+			start_modify = True
+		
+		if not start_modify:
+			continue
+		
+		h_level.setdefault(cur_level, {})
+		if is_child(account):
+			cur_type = "child"
+			# CHILD → contoh: buat formula
+			# ws[f"D{row}"] = f"=B{row}+C{row}+1000000000"
+			print(f"Row {row}: {account} → CHILD")
+			if prev_type == "parent":
+				last_parent = cur_group[-1]
+				h_level[cur_level][last_parent].append(account)
+			elif prev_type == "child":
+				last_parent = cur_group[-1]
+				h_level[cur_level][last_parent].append(account)
+
+		else:
+			# PARENT
+			cur_type = "parent"
+			print(f"Row {row}: {account.strip()} → PARENT")
+			if not prev_type:
+				cur_group.append(account)
+				h_level[cur_level].setdefault(account, [])
+			elif prev_type == "parent":
+				cur_group.append(account)
+				h_level[cur_level].setdefault(last_parent, [])
+				h_level[cur_level][last_parent].append(account)
+
+				cur_level += 1
+				h_level.setdefault(cur_level, {})
+				h_level[cur_level].setdefault(account, [])
+			elif prev_type == "child":
+				# find prev parent list 1 level above
+				cur_group.pop()
+				cur_level -= 1
+				last_parent = cur_group[-1]
+				cur_group.append(account)
+				h_level[cur_level][last_parent].append(account)
+
+				cur_level += 1
+				h_level.setdefault(cur_level, {})
+				h_level[cur_level].setdefault(account, [])
+				print(111)
+
+		
+		prev_type = cur_type
+		prev_account = account
+				
+			
+			
+
+	output_stream = BytesIO()
+	wb.save(output_stream)
+	output_stream.seek(0)
+
+	now = now_datetime()
+	date_str_title = now.strftime(" %Y-%m-%d %H-%M-%S")
+
+	frappe.response["filename"] = f"{report_name}-TEST-{date_str_title}.xlsx"
+	frappe.response["filecontent"] = output_stream.getvalue()
+	frappe.response["type"] = "binary"
