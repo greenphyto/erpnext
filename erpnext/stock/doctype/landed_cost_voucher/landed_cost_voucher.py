@@ -7,6 +7,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.model.meta import get_field_precision
 from frappe.utils import flt
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.controllers.taxes_and_totals import init_landed_taxes_and_totals

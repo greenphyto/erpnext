@@ -332,6 +332,7 @@ doc_events = {
 		"validate": [
 			"erpnext.regional.united_arab_emirates.utils.update_grand_total_for_rcm",
 			"erpnext.regional.united_arab_emirates.utils.validate_returns",
+            "erpnext.ai_agent.doctype.email_invoice.email_invoice.create_bank_number"
 		]
 	},
 	"Payment Entry": {
@@ -431,6 +432,9 @@ doc_events = {
 	},
     "Email Queue": {
         "validate":"erpnext.controllers.erp.check_email_status"
+	},
+    "Scheduled Job Log": {
+        "after_insert":"erpnext.ai_agent.doctype.ai_agent_settings.ai_agent_settings.read_log"
 	}
 }
 
@@ -447,6 +451,7 @@ scheduler_events = {
 			"erpnext.manufacturing.doctype.bom_update_log.bom_update_log.resume_bom_cost_update_jobs",
             "erpnext.controllers.erp_api.run_pending_harvesting_transfer",
             "erpnext.controllers.erp_api.run_pending_harvesting",
+			"erpnext.controllers.erp.read_email_inbox"
 		],
 		"0/30 * * * *": [
 			"erpnext.utilities.doctype.video.video.update_youtube_data",
@@ -522,7 +527,7 @@ scheduler_events = {
         "erpnext.controllers.foms.get_recipe",
 		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_items",
 		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_product",
-        "erpnext.controllers.foms.get_packaging"
+        "erpnext.ai_agent.doctype.email_invoice.email_invoice.pull_erp_po"
 	],
 	"weekly": [
 		"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_weekly",

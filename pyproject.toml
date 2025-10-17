@@ -25,7 +25,8 @@ dependencies = [
     "minio",
     "python-barcode",
     "pypdf",
-    "reportlab"
+    "reportlab",
+    "pymupdf"
 ]
 
 [build-system]

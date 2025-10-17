@@ -6,6 +6,7 @@ import frappe
 from frappe import _
 from frappe.query_builder.functions import IfNull
 from frappe.utils import flt
+from frappe.utils import safe_abs as abs
 
 
 def execute(filters=None):

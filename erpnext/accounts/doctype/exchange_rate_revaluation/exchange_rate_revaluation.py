@@ -9,6 +9,7 @@ from frappe.model.meta import get_field_precision
 from frappe.query_builder import Criterion, Order
 from frappe.query_builder.functions import NullIf, Sum
 from frappe.utils import flt, get_link_to_form
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.accounts.doctype.journal_entry.journal_entry import get_balance_on

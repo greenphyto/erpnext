@@ -7,6 +7,7 @@ from frappe import _, msgprint
 from frappe.model.document import Document
 from frappe.query_builder.custom import ConstantColumn
 from frappe.utils import flt, fmt_money, getdate
+from frappe.utils import safe_abs as abs
 
 import erpnext
 

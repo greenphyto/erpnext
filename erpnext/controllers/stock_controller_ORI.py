@@ -8,6 +8,7 @@ from typing import List, Tuple
 import frappe
 from frappe import _
 from frappe.utils import cint, cstr, flt, get_link_to_form, getdate
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.accounts.general_ledger import (

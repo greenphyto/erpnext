@@ -6,6 +6,7 @@ import frappe
 from frappe import _, throw
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cint, cstr, flt, formatdate, get_link_to_form, getdate, nowdate
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.accounts.deferred_revenue import validate_service_stop_date
@@ -1673,6 +1674,12 @@ class PurchaseInvoice(BuyingController):
 		if log:
 			frappe.db.set_value("Deleted Document", log, "document_date", self.posting_date)
 
+	def create_auto_bank_transfer(self):
+		# formats: Tx ID | date | Bank Acc | amount | type | notes
+		# create format 
+		# send 
+		pass
+		
 
 # to get details of purchase invoice/receipt from which this doc was created for exchange rate difference handling
 def get_purchase_document_details(doc):

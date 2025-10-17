@@ -8,6 +8,7 @@ from functools import reduce
 import frappe
 from frappe import ValidationError, _, qb, scrub, throw
 from frappe.utils import cint, comma_or, flt, getdate, nowdate
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.accounts.doctype.bank_account.bank_account import (

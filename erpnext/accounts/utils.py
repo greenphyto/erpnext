@@ -36,6 +36,7 @@ from erpnext.accounts.doctype.account.account import get_account_currency  # noq
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import get_dimensions
 from erpnext.stock import get_warehouse_account_map
 from erpnext.stock.utils import get_stock_value_on
+from frappe.utils import safe_abs as abs
 
 if TYPE_CHECKING:
 	from erpnext.stock.doctype.repost_item_valuation.repost_item_valuation import RepostItemValuation
