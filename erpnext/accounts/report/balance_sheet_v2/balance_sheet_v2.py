@@ -127,8 +127,8 @@ def execute(filters=None):
 		period_list, asset, liability, equity, provisional_profit_loss, total_credit, currency, filters
 	)
 
-	if frappe.flags.in_export:
-		convert_wrap_report_data(columns, data, precision=2)
+	# if frappe.flags.in_export:
+	# 	convert_wrap_report_data(columns, data, precision=2)
 
 	return columns, data, message, chart, report_summary
 
