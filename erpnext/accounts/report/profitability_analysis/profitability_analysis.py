@@ -5,6 +5,7 @@
 import frappe
 from frappe import _
 from frappe.utils import cstr, flt
+from frappe.utils import safe_abs as abs
 
 from erpnext.accounts.report.financial_statements import (
 	filter_accounts,

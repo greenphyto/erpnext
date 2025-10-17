@@ -21,6 +21,7 @@ from frappe.utils import (
 	now_datetime,
 	today,
 )
+from frappe.utils import safe_abs as abs
 
 from erpnext.accounts.utils import get_balance_on, get_count_on, get_fiscal_year
 

@@ -27,6 +27,7 @@
   "company",
   "skip_delivery_note",
   "amended_from",
+  "ai_doc",
   "accounting_dimensions_section",
   "cost_center",
   "dimension_col_break",

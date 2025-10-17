@@ -9,6 +9,8 @@ from frappe.desk.notifications import clear_doctype_notifications
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.utils import get_fetch_values
 from frappe.utils import cint, flt,format_date, get_datetime, get_time, getdate
+from frappe.utils import safe_abs as abs
+
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from erpnext.stock import get_warehouse_account_map, get_item_account
 from erpnext.accounts.general_ledger import make_gl_entries

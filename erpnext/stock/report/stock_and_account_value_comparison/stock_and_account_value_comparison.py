@@ -4,6 +4,7 @@
 
 import frappe
 from frappe import _
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.accounts.utils import get_currency_precision, get_stock_accounts

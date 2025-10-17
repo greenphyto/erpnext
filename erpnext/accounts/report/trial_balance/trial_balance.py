@@ -5,6 +5,8 @@
 import frappe
 from frappe import _
 from frappe.utils import cstr, flt, formatdate, getdate
+from frappe.utils import safe_abs as abs
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (

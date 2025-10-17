@@ -17,6 +17,7 @@ from frappe.utils import (
 	now_datetime,
 	nowdate,
 )
+from frappe.utils import safe_abs as abs
 
 import erpnext
 from erpnext.accounts.doctype.journal_entry.journal_entry import get_payment_entry

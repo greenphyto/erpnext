@@ -5,6 +5,7 @@
 import frappe
 from frappe import _
 from frappe.utils import cint, flt, get_link_to_form, getdate, nowdate
+from frappe.utils import safe_abs as abs
 
 from erpnext.accounts.doctype.loyalty_program.loyalty_program import validate_loyalty_points
 from erpnext.accounts.doctype.payment_request.payment_request import make_payment_request

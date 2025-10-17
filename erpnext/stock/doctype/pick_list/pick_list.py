@@ -5,6 +5,7 @@ import json
 from collections import OrderedDict, defaultdict
 from itertools import groupby
 from typing import Dict, List, Set
+from frappe.utils import safe_abs as abs
 
 import frappe
 from frappe import _

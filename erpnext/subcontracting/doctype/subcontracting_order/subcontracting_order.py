@@ -5,6 +5,7 @@ import frappe
 from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt
+from frappe.utils import safe_abs as abs
 
 from erpnext.buying.doctype.purchase_order.purchase_order import is_subcontracting_order_created
 from erpnext.controllers.subcontracting_controller import SubcontractingController

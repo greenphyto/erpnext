@@ -9,6 +9,7 @@ import frappe
 from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cint, cstr, flt, get_link_to_form
+from frappe.utils import safe_abs as abs
 
 from erpnext.controllers.stock_controller import StockController
 from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos

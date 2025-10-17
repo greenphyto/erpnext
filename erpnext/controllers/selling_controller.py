@@ -6,6 +6,7 @@ import frappe
 from frappe import _, bold, throw
 from frappe.contacts.doctype.address.address import get_address_display
 from frappe.utils import cint, cstr, flt, get_link_to_form, nowtime
+from frappe.utils import safe_abs as abs
 
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.controllers.sales_and_purchase_return import get_rate_for_return

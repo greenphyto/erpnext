@@ -20,6 +20,7 @@ from frappe.utils import (
 	nowdate,
 	time_diff_in_hours,cstr
 )
+from frappe.utils import safe_abs as abs
 
 from erpnext.stock.stock_ledger import get_valuation_rate
 from pypika import functions as fn
