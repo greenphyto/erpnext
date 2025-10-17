@@ -304,31 +304,34 @@ def add_formulas(report_name, xlsx_file):
 		print("ORI", f'|{account_txt}|', leading_spaces) 
 		account = cstr(ws[f"A{row}"].value).strip() 
 
-		if account == 'Assets': 
+		if account in ['Assets', 'Income']: 
 			start_row = row
 			break
 
-	rows = build_rows(ws, start_row=2, start_after_label="Assets", spaces_per_level=4)
+	rows = build_rows(ws, start_row=start_row)
 
 	hier = compute_child_range_rows(rows)
 	flat_list = extract_nodes(hier)
 
-	summary_col = {
-		"Assets":"Total Asset (Debit)",
-		"Liabilities":"Total Liability (Credit)",
-	}
-
 	assets_total_row = 0
 	liability_total_row = 0
+	total_row = {}
 	for d in flat_list:
 		account = d['account']
 		row = d['row']
+		# Balance Sheet
 		if account == "Total Asset (Debit)":
-			assets_total_row = row
+			total_row.setdefault("Assets", row)
 		elif account == "Total Liability (Credit)":
-			liability_total_row = row
+			total_row.setdefault("Liabilities", row)
 		elif account == "Total Equity (Credit)":
-			equity_total_row = row
+			total_row.setdefault("Equity", row)
+
+		# Profit & Loss
+		elif account == "Total Income (Credit)":
+			total_row.setdefault("Income", row)
+		elif account == "Total Expense (Debit)":
+			total_row.setdefault("Expenses", row)
 
 	for d in flat_list:
 		is_group = d.get("group_flag")
@@ -347,20 +350,29 @@ def add_formulas(report_name, xlsx_file):
 					ws[f"{col}{row}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
 
 					# Hardcode formula
-					if account == "Assets":
-						ws[f"{col}{assets_total_row}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
-					elif account == "Liabilities":
-						ws[f"{col}{liability_total_row}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
-					elif account == "Equity":
-						ws[f"{col}{equity_total_row}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
+					if account in total_row:
+						ws[f"{col}{total_row.get(account)}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
 		else:
 			for col in col_use:
 				if col not in ['A', 'B', group_col]:
-					if account == "'Profit / (Loss) for the Year'":
-						ws[f"{col}{row}"] = f"={col}{assets_total_row} - ({col}{liability_total_row} + {col}{equity_total_row})"
-					elif account == "'Total (Credit)'":
-						ws[f"{col}{row}"] = f"={col}{liability_total_row} + {col}{equity_total_row}"
-			
+					# Balance Sheet
+					required_keys = ["Assets", "Liabilities", "Equity"]
+					if all(k in total_row for k in required_keys):
+						equity_total_row = total_row.get("Equity")
+						liability_total_row = total_row.get("Liabilities")
+						assets_total_row = total_row.get("Assets")
+						if account == "'Profit / (Loss) for the Year'":
+							ws[f"{col}{row}"] = f"={col}{assets_total_row} - ({col}{liability_total_row} + {col}{equity_total_row})"
+						elif account == "'Total (Credit)'":
+							ws[f"{col}{row}"] = f"={col}{liability_total_row} + {col}{equity_total_row}"
+					
+					# Profit & Loss
+					required_keys = ["Income", "Expenses"]
+					if all(k in total_row for k in required_keys):
+						if account == "'Profit for the year'":
+							income_total_row = total_row.get("Income")
+							expense_total_row = total_row.get("Expenses")
+							ws[f"{col}{row}"] = f"={col}{income_total_row} - {col}{expense_total_row}"
 
 	output_stream = BytesIO()
 	wb.save(output_stream)
