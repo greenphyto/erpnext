@@ -1612,9 +1612,9 @@
   },
   {
    "fieldname": "bank_number",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "Bank Number",
-   "options": "Bank Number"
+   "options": ""
   },
   {
    "fieldname": "bank_details",
