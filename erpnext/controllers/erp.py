@@ -1,5 +1,5 @@
 import frappe, json
-from frappe.utils import cint, flt, getdate, cstr, today, get_last_day, cint
+from frappe.utils import cint, flt, getdate, cstr, today, get_last_day, cint, safe_abs
 from six import string_types
 
 # util: sanitize description by removing editor wrapper tags
@@ -923,3 +923,41 @@ def change_naming_series(doc, method=""):
 	# Check if the current name already starts with the abbreviation
 	if not current_name.startswith(abbr):
 		doc.name = f"{abbr}{current_name}"
+
+from datetime import date, timedelta
+from dateutil.relativedelta import relativedelta
+def trial_balance_different_issue():
+	for d in frappe.get_all("Company"):
+		_trial_balance_different_issue(d.name)
+		
+def _trial_balance_different_issue(company):
+	from frappe.desk.query_report import run
+	today = date.today()
+	prev_month = today - relativedelta(months=1)
+	from_date = date(today.year, 1, 1)      # 1 Januari tahun ini
+	to_date = date(today.year, 12, 31)
+
+	allowed_value = 0.005
+	filters = {
+		"company": company,
+		"fiscal_year": str(today.year),
+		"from_date": from_date.strftime("%Y-%m-%d"),
+		"to_date": to_date.strftime("%Y-%m-%d"),
+		"with_period_closing_entry": 1,
+		"include_default_book_entries": 1
+	}
+	report_data = run('Trial Balance', filters=filters)
+	if report_data and report_data.get("result"):
+		summmary_data = report_data.get("result")[-1]
+		diff = safe_abs(summmary_data['closing_credit'])
+		if diff > allowed_value:
+			# Send Notif
+			if frappe.db.get_value("Notification", "Difference on Trial Balance", "enabled"):
+				doc_notif = frappe.get_doc("Notification", "Difference on Trial Balance") 
+				doc = frappe._dict({
+					"period_label": prev_month.strftime("%B %Y"), 
+					"company":company,
+					"difference": diff,
+					"fiscal_year":str(today.year)
+				})
+				doc_notif.send(doc)
