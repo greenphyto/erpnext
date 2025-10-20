@@ -545,6 +545,7 @@ scheduler_events = {
 	],
     "monthly": [
 		"erpnext.assets.doctype.asset.depreciation.post_depreciation_entries",
+        "erpnext.controllers.erp.trial_balance_different_issue"
 	]
 }
 
