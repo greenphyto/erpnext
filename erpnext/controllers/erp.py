@@ -310,7 +310,6 @@ def read_email_inbox():
 				return True
 		return False
 
-
 	# process
 	for comm in email_list:
 		set_checked_ai_status("Communication", comm.name)
