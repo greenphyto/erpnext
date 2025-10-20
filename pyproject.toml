@@ -26,7 +26,8 @@ dependencies = [
     "python-barcode",
     "pypdf",
     "reportlab",
-    "pymupdf"
+    "pymupdf",
+    "numpy"
 ]
 
 [build-system]
