@@ -54,17 +54,17 @@
  ],
  "login_required": 1,
  "max_attachment_size": 2,
- "modified": "2025-10-21 11:32:35.096378",
+ "modified": "2025-10-21 12:35:21.551452",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "maintenance-request-production-equipment",
  "owner": "Administrator",
  "payment_button_label": "Buy Now",
  "published": 1,
- "route": "maintenance-request-production-equipment",
+ "route": "requests/maintenance-request-production-equipment",
  "show_attachments": 1,
  "show_list": 1,
- "show_sidebar": 0,
+ "show_sidebar": 1,
  "title": "Maintenance Request Production Equipment",
  "web_form_fields": [
   {
@@ -108,7 +108,7 @@
   {
    "allow_read_on_all_link_options": 0,
    "default": "Now",
-   "fieldname": "issue_date_time",
+   "fieldname": "issue_datetime",
    "fieldtype": "Datetime",
    "hidden": 0,
    "label": "Issue Date/Time",
@@ -146,7 +146,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "fieldname": "area",
+   "fieldname": "location",
    "fieldtype": "Data",
    "hidden": 0,
    "label": "Line / Zone / Level / Softzone",
@@ -315,7 +315,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "fieldname": "description_steps_to_reproduce",
+   "fieldname": "issue_description",
    "fieldtype": "Small Text",
    "hidden": 0,
    "label": "Description (Steps to Reproduce)",
@@ -327,7 +327,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "fieldname": "photo_before",
+   "fieldname": "issue_photos",
    "fieldtype": "Attach",
    "hidden": 0,
    "label": "Photos / Video (Before)",
@@ -343,6 +343,30 @@
    "fieldtype": "Text Editor",
    "hidden": 0,
    "label": "Attachments / Logs (PLC Logs, screenshots, URLs)",
+   "max_length": 0,
+   "max_value": 0,
+   "read_only": 0,
+   "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "fieldname": "assignee",
+   "fieldtype": "Data",
+   "hidden": 0,
+   "label": "Assignee",
+   "max_length": 0,
+   "max_value": 0,
+   "read_only": 0,
+   "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "fieldname": "sla_target",
+   "fieldtype": "Data",
+   "hidden": 0,
+   "label": "Target Response / Resolution (SLA)",
    "max_length": 0,
    "max_value": 0,
    "read_only": 0,
@@ -394,7 +418,7 @@
   {
    "allow_read_on_all_link_options": 0,
    "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
-   "fieldname": "resolution_date_time",
+   "fieldname": "resolution_datetime",
    "fieldtype": "Datetime",
    "hidden": 0,
    "label": "Resolution Date/Time",
@@ -422,7 +446,7 @@
   {
    "allow_read_on_all_link_options": 0,
    "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
-   "fieldname": "actions_taken",
+   "fieldname": "resolution_description",
    "fieldtype": "Small Text",
    "hidden": 0,
    "label": "Actions Taken / Fixed Details",
@@ -464,7 +488,7 @@
   {
    "allow_read_on_all_link_options": 0,
    "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
-   "fieldname": "machine_back_in_service",
+   "fieldname": "downtime_end",
    "fieldtype": "Datetime",
    "hidden": 0,
    "label": "Machine Back-in-Service",
@@ -478,7 +502,7 @@
   {
    "allow_read_on_all_link_options": 0,
    "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
-   "fieldname": "photo_after",
+   "fieldname": "resolution_after",
    "fieldtype": "Attach",
    "hidden": 0,
    "label": "Photos (After)",
@@ -528,5 +552,6 @@
    "reqd": 0,
    "show_in_filter": 0
   }
- ]
+ ],
+ "website_sidebar": "Request From 3rd Party"
 }
