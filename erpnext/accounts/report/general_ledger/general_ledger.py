@@ -306,7 +306,8 @@ def get_conditions(filters):
 						else:
 							conditions.append("{0} in %({0})s".format(dimension.fieldname))
 
-	return "and {}".format(" and ".join(conditions)) if conditions else ""
+	res = "and {}".format(" and ".join(conditions)) if conditions else ""
+	return res.replace("`tabGL Entry`", "gl")
 
 
 def get_accounts_with_children(accounts):
