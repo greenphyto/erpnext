@@ -29,6 +29,7 @@
   "apply_tds",
   "tax_withholding_category",
   "amended_from",
+  "po_amount_different",
   "accounting_dimensions_section",
   "cost_center",
   "dimension_col_break",
@@ -391,6 +392,7 @@
    "allow_on_submit": 1,
    "fieldname": "bill_no",
    "fieldtype": "Data",
+   "in_standard_filter": 1,
    "label": "Supplier Invoice No",
    "oldfieldname": "bill_no",
    "oldfieldtype": "Data",
@@ -1624,13 +1626,19 @@
   {
    "fieldname": "column_break_110",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "po_amount_different",
+   "fieldtype": "Check",
+   "label": "PO Amount Different!"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-09-10 10:59:43.256295",
+ "modified": "2025-10-22 11:12:18.168909",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",
