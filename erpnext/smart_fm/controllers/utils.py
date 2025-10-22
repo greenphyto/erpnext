@@ -72,3 +72,35 @@ def get_approver_name(doc, state, user_field="name"):
 		return res
 	else:
 		return  
+
+def select_one(*args, default="", empty_as_none=True, **kwargs):
+    """
+    Return the first non-empty (truthy) value from args or kwargs.
+    
+    Parameters:
+        *args: any number of positional arguments to check.
+        default: value returned if all args/kwargs are empty (default = "").
+        empty_as_none: treat '', [], {}, () as empty if True.
+        **kwargs: additional keyword arguments (checked after args).
+    """
+
+    def is_empty(v):
+        """Check if a value should be considered empty."""
+        if v is None:
+            return True
+        if empty_as_none and v in ("", [], {}, ()):
+            return True
+        return False
+
+    # Check all positional arguments first
+    for val in args:
+        if not is_empty(val):
+            return val
+
+    # Then check keyword arguments
+    for _, val in kwargs.items():
+        if not is_empty(val):
+            return val
+
+    # Nothing valid found → return default
+    return default
