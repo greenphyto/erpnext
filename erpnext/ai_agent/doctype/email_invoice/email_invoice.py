@@ -11,9 +11,9 @@ from frappe.utils import get_traceback, cstr
 from erpnext.ai_agent.doctype.ai_agent_settings.ai_invoice_converter import AIAgentClient
 from six import string_types
 
-MAX_DISPLAY_LENGTH = 300
-SHORT_HEAD = 300
-SHORT_TAIL = 700
+MAX_DISPLAY_LENGTH = 251
+SHORT_HEAD = 200
+SHORT_TAIL = 50
 GST_DEFAULT = 9
 class EmailInvoice(Document):
 	def validate(self):
@@ -140,20 +140,17 @@ class EmailInvoice(Document):
 		self.sender = doc.sender
 		self.cc = doc.cc
 		self.bcc = doc.bcc
-		content = ""
-		if len(doc.content or "") > MAX_DISPLAY_LENGTH:
-			content = (
-				(doc.content or "")[:SHORT_HEAD]
-				+ "<br><br><--- Message hidden because too long ---><br><br>"
-				+ (doc.content or "")[-SHORT_TAIL:]
-			)
-		else:
-			content = doc.content or ""
-
-		self.message = content
 		self.received_date = getdate(doc.communication_date)
 		self.time = get_time(doc.communication_date)
 		self.subject = doc.subject
+		content = get_email_message(doc.content)
+		if len(content or "") > MAX_DISPLAY_LENGTH:
+			content = (
+				(content or "")[:SHORT_HEAD]
+				+ "<br><br><--- Message hidden because too long ---><br><br>"
+				+ (content or "")[-SHORT_TAIL:]
+			)
+		self.message = content
 		self.message_id = doc.message_id
 		self.inbox = doc.name
 		self.process_email(doc)
@@ -920,6 +917,21 @@ class EmailInvoice(Document):
 		attachment.insert()
 
 		return doc.name
+	
+from email_reply_parser import EmailReplyParser
+from bs4 import BeautifulSoup
+def get_email_message(content):
+	if not content:
+		return ""
+	
+	# Convert Text
+	text = BeautifulSoup(content, "html.parser").get_text(separator="\n")
+
+	# Parse reply
+	parsed_reply = EmailReplyParser.parse_reply(text)
+	res = parsed_reply.strip() if parsed_reply else text.strip()
+
+	return res
 
 # erpnext.ai_agent.doctype.email_invoice.email_invoice.extract_all_bank_data
 def extract_all_bank_data():
@@ -1025,24 +1037,24 @@ def get_bank(bank, swift_number):
 
 	
 def extract_domains(items):
-    out = []
-    seen = set()
-    for s in items:
-        s = str(s).strip().lower()
-        s = re.sub(r'^mailto:', '', s)              # buang mailto:
-        s = re.sub(r'^[a-z]+://', '', s)           # buang skema url
-        s = s.split('/')[0]                         # buang path
-        if '@' in s:
-            s = s.rsplit('@', 1)[1]                 # ambil setelah @
-        s = re.sub(r'^[\*\.\-]+', '', s)            # buang wildcard/.- di depan
-        s = s.split(':')[0]                         # buang port
+	out = []
+	seen = set()
+	for s in items:
+		s = str(s).strip().lower()
+		s = re.sub(r'^mailto:', '', s)              # remove 'mailto:' prefix
+		s = re.sub(r'^[a-z]+://', '', s)           # remove URL scheme (e.g. http://, https://)
+		s = s.split('/')[0]                         # remove path part
+		if '@' in s:
+			s = s.rsplit('@', 1)[1]                 # take the part after '@'
+		s = re.sub(r'^[\*\.\-]+', '', s)            # remove leading wildcards, dots, or hyphens
+		s = s.split(':')[0]                         # remove port number
 
-        # validasi domain sederhana
-        if re.match(r'^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$', s):
-            if s not in seen:
-                seen.add(s)
-                out.append(s)
-    return out
+		# simple domain validation
+		if re.match(r'^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$', s):
+			if s not in seen:
+				seen.add(s)
+				out.append(s)
+	return out
 	
 def get_gst_template(rate):
 	rate = flt(rate)
