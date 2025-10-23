@@ -850,12 +850,63 @@ def switch_company(company, force=False, user=""):
 		doc = frappe.get_doc("User Permission", perm_name)
 	else:
 		doc = frappe.new_doc("User Permission")
+
+	# change defaults
+	switch_default_values(user, company)
 	
 	doc.update(filters)
 	doc.for_value = company
 	doc.flags.ignore_permissions = 1
 	doc.save()
 	return True
+
+from frappe.defaults import set_default
+def switch_default_values(user, company):
+	"""
+	change values for:
+	 - company
+	 - country
+	 - currency
+	 - time_zone
+	 - letter_head
+	 - default_letter_head_content
+	 - buying_price_list
+	 - selling_price_list
+	 - default_warehouse
+	"""
+	doc = frappe.get_doc("Company", company)
+	# company
+	set_default("company", company, user)
+
+	# currency
+	set_default("currency", doc.default_currency, user)
+
+	# country
+	set_default("country", doc.country, user)
+
+	# timezone
+	set_default("time_zone", doc.time_zone, user)
+
+	# Letter head & content
+	lh_name = frappe.db.get_value("Letter Head", {"company":company}, ["name", "content"], as_dict=1) 
+	if lh_name:
+		set_default("letter_head", lh_name.name, user)
+		set_default("default_letter_head_content", lh_name.content, user)
+	
+	# buying_price_list
+	name = frappe.db.get_value("Price List", {"buying":1, "enabled":1, "currency":doc.default_currency})
+	if name:
+		set_default("buying_price_list", name, user)
+
+	# selling_price_list
+	name = frappe.db.get_value("Price List", {"selling":1, "enabled":1, "currency":doc.default_currency})
+	if name:
+		set_default("selling_price_list", name, user)
+
+	if doc.default_warehouse:
+		set_default("default_warehouse", doc.default_warehouse, user)
+
+	
 
 def validate_company_selected(doc, method=""):
 	if doc.meta.has_field("company") or frappe.session.user == "Administrator":
