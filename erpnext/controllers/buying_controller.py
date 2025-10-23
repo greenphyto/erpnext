@@ -71,6 +71,20 @@ class BuyingController(SubcontractingController):
 			),
 		)
 
+		if self.is_new() or "new" in self.name:
+			data = frappe.defaults.get_defaults()
+			if self.meta.get_field("buying_price_list"):
+				self.buying_price_list = data.buying_price_list
+				self.price_list_currency = data.currency
+
+			if self.meta.get_field("taxes_and_charges"):
+				# self.taxes_and_charges = frappe.get_value("Sales Taxes and Charges Template", {"company":self.company, "is_default":1})
+				self.taxes = []
+				self.taxes_and_charges = ""
+			
+			if self.meta.get_field("letter_head"):
+				self.letter_head = data.letter_head
+
 	def set_missing_values(self, for_validate=False):
 		super(BuyingController, self).set_missing_values(for_validate)
 
