@@ -19,6 +19,9 @@ def boot_session(bootinfo):
 			if bootinfo.sysdefaults.company_selected != "ALL":
 				bootinfo.sysdefaults.company_color = frappe.db.get_value("Company", bootinfo.sysdefaults.company_selected, "color") or "#1F272E"
 				bootinfo.sysdefaults.company = bootinfo.sysdefaults.company_selected
+
+			# letter head
+			bootinfo.letter_heads = get_letter_heads(bootinfo.sysdefaults.company)
 		else:
 			bootinfo.sysdefaults.company_selected = "Disabled"
 
@@ -120,3 +123,12 @@ def get_company_selected():
 		return frappe.db.get_value("User", frappe.session.user, "company_selected") or "ALL"
 	else:
 		return "Disabled"
+	
+def get_letter_heads(company):
+	letter_heads = {}
+	for letter_head in frappe.get_all("Letter Head", filters={"company":company}, fields=["name", "content", "footer"]):
+		letter_heads.setdefault(
+			letter_head.name, {"header": letter_head.content, "footer": letter_head.footer}
+		)
+
+	return letter_heads
