@@ -158,9 +158,8 @@ class EmailInvoice(Document):
 	@frappe.whitelist()
 	def sync_from_ui(self):
 		if self.data_result:
-			for d in json.loads(self.data_result) or []:
-				payload = self.enhance_payload(payload)
-				self.create_invoice_result(payload)
+			payload = json.loads(self.data_result)
+			self.create_invoice_result(payload)
 		else:
 			self.process_email()
 		
@@ -490,6 +489,12 @@ class EmailInvoice(Document):
 			last_ok = True
 			last_name = name
 
+			if not self.results:
+				row = self.append("results")
+				row.po_no = self.flags.po_no
+				row.invoice_no = name
+				row.insert()
+
 		# Update status/reasons if nothing created
 		if not last_ok:
 			self._finalize_reasons()
@@ -567,6 +572,10 @@ class EmailInvoice(Document):
 		# Optional GST update if present in payload
 		doc.taxes_and_charges = get_gst_template(GST_DEFAULT)
 		doc.set_other_charges()
+
+		# del doc.branch
+		# for d in doc.taxes:
+		# 	del d.branch
 
 		# Persist
 		doc.flags.ignore_mandatory = 1
