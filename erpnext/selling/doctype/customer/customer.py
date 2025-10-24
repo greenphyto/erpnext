@@ -658,7 +658,7 @@ def get_customer_outstanding(
 
 	cond = ""
 	if cost_center:
-		lft, rgt = frappe.get_cached_value("Cost Center", cost_center, ["lft", "rgt"])
+		lft, rgt = (frappe.get_cached_value("Cost Center", cost_center, ["lft", "rgt"]) or (None, None))
 
 		cond = """ and cost_center in (select name from `tabCost Center` where
 			lft >= {0} and rgt <= {1})""".format(
