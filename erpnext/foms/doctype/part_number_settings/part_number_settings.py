@@ -20,15 +20,21 @@ class PartNumberSettings(Document):
 		parent_company = frappe.get_value("Company", self.company, "parent_company")
 		items = frappe.db.sql("""
 			SELECT
-				material_group,
-				code,
-				title,
-				description,
-				part_number,
-				price
-			FROM `tabPart Number Details`
-			WHERE parent = %s;
+				pnd.material_group,
+				pnd.code,
+				pnd.title,
+				pnd.description,
+				pnd.part_number,
+				pnd.price,
+				pnd.account_code,
+				acc.account_number AS account_number
+			FROM `tabPart Number Details` pnd
+			LEFT JOIN `tabAccount` acc
+				ON acc.name = pnd.account_code
+			WHERE pnd.parent = %s;
 		""", (parent_company), as_dict=1)
+
+		account_map = get_account_map(self.company)
 		
 		cur_mapping = {}
 		for d in list(self.data_mapping):
@@ -42,7 +48,9 @@ class PartNumberSettings(Document):
 		self.data_mapping = []
 		for d in items:
 			row = self.append("data_mapping")
-			row.update(d)
+			for f in ["material_group", "code", "title", "description", "part_number", "price"]:
+				row.set(f, d.get(f))
+			row.account_code = account_map.get(d.account_number)
 			row.company = self.company
 
 
@@ -144,3 +152,22 @@ class PartNumberSettings(Document):
 				if balance:
 					frappe.throw(f"Row {d.idx}, Cannot change account <b>{old_data.account_code}</b> to {d.account_code} becuase has existing balance")
 					d.account_code = old_data.account_code
+
+def get_account_map(company: str):
+    accounts = frappe.db.get_all(
+        "Account",
+        filters={
+            "company": company,
+            "is_group": 0,
+            "disabled": 0,
+        },
+        fields=["name", "account_number", "account_name"],
+        order_by="account_number asc"
+    )
+
+    # build map by account_number
+    return {
+        acc.account_number: acc.name
+        for acc in accounts
+        if acc.account_number
+    }
