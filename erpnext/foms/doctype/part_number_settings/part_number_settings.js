@@ -32,6 +32,13 @@ frappe.ui.form.on('Part Number Settings', {
 			'Submit'
 			)
 		})
+
+		frm.set_query("account_code", "data_mapping", (doc)=>{
+			return {
+				filters:{
+					company: doc.company
+				}
+			}
+		})
 	}
 });
-console.log(123333)
