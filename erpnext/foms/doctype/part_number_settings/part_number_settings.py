@@ -101,7 +101,7 @@ class PartNumberSettings(Document):
 		self.update_company_item()
 
 	def update_item_name(self):
-		if self.is_parent:
+		if self.is_parent and self.data_mapping:
 			data = [ d.code.strip() for d in self.data_mapping ]
 			item_exists = frappe.db.sql(" select name, item_name from `tabItem` where name in %s ", (data,), as_dict=1)
 			item_map = {}
