@@ -722,9 +722,9 @@ def calculate_exchange_rate_using_last_gle(company, account, party_type, party):
 
 @frappe.whitelist()
 def get_account_details(account, company, posting_date, party_type=None, party=None):
-	account_currency, account_type = frappe.get_cached_value(
+	account_currency, account_type = (frappe.get_cached_value(
 		"Account", account, ["account_currency", "account_type"]
-	)
+	) or (None, None))
 
 	if account_type in ["Receivable", "Payable"] and not (party_type and party):
 		frappe.throw(_("Party Type and Party is mandatory for {0} account").format(account_type))
