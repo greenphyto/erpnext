@@ -72,9 +72,9 @@ frappe.ui.form.on("Sales Order", {
 		frm.set_df_property('packed_items', 'cannot_delete_rows', true);
 	},
 	refresh: function(frm) {
-		var item_query = function(row) {
+		var item_query = function(doc) {
 			var filters = {"is_fixed_asset": 0}
-			if (!frm.doc.non_package_item){
+			if (!doc.non_package_item){
 				filters['is_package_item']=1;
 				filters["is_stock_item"]=1;
 			}else{
@@ -116,7 +116,7 @@ frappe.ui.form.on("Sales Order", {
 		frm.set_query("item_code", "items", function(doc, cdt, cdn) {
 			var row = locals[cdt][cdn];
 			var filters = {"is_fixed_asset": 0}
-			if (!frm.doc.non_package_item){
+			if (!doc.non_package_item){
 				filters['is_package_item']=1;
 				filters['is_stock_item']=1;
 			}
