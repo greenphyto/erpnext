@@ -4,7 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from frappe.utils import cint, cstr
-from erpnext.accounts.utils import get_balance_on
+from erpnext.accounts.utils import get_balance_on, get_account_number_map
 
 class PartNumberSettings(Document):
 	@frappe.whitelist()
@@ -34,7 +34,7 @@ class PartNumberSettings(Document):
 			WHERE pnd.parent = %s;
 		""", (parent_company), as_dict=1)
 
-		account_map = get_account_map(self.company)
+		account_map = get_account_number_map(self.company)
 		
 		cur_mapping = {}
 		for d in list(self.data_mapping):
@@ -153,21 +153,3 @@ class PartNumberSettings(Document):
 					frappe.throw(f"Row {d.idx}, Cannot change account <b>{old_data.account_code}</b> to {d.account_code} becuase has existing balance")
 					d.account_code = old_data.account_code
 
-def get_account_map(company: str):
-    accounts = frappe.db.get_all(
-        "Account",
-        filters={
-            "company": company,
-            "is_group": 0,
-            "disabled": 0,
-        },
-        fields=["name", "account_number", "account_name"],
-        order_by="account_number asc"
-    )
-
-    # build map by account_number
-    return {
-        acc.account_number: acc.name
-        for acc in accounts
-        if acc.account_number
-    }
