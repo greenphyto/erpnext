@@ -125,12 +125,10 @@ class EmailInvoice(Document):
 		return "Unknown"
 
 	def set_status(self):
-		if self.invoice_no:
+		if self.results:
 			self.reason = ""
 			self.error_trace = ""
 			self.status = "Matched"
-		elif self.po_no:
-			self.status = "Pending"
 		else:
 			self.status = "Unknown"
 
@@ -161,8 +159,9 @@ class EmailInvoice(Document):
 	@frappe.whitelist()
 	def sync_from_ui(self):
 		if self.data_result:
-			for d in json.loads(self.data_result) or []:
-				payload = self.enhance_payload(payload)
+			payload_temp = json.loads(self.data_result)
+			for d in payload_temp or []:
+				payload = self.enhance_payload(d)
 				self.create_invoice_result(payload)
 		else:
 			self.process_email()
@@ -321,8 +320,7 @@ class EmailInvoice(Document):
 					
 					# copy attachment
 					self.add_attachment_copy(fn, "Purchase Invoice", name )
-				if not self.invoice_no:
-					self.invoice_no = name
+
 			except Exception:
 				pass
 			pi_created.append(name)
@@ -417,6 +415,11 @@ class EmailInvoice(Document):
 				year = match.group(2)
 				return f"PO{number}/{year}"
 			return None
+
+		# for d in deep_get(result, ['items'] ):
+		# 	# fix rate
+		# 	if not d['unit_price']['value']:
+		# 		if d['quantity'] and 
 		po_number = deep_get(result, ['document', 'references', 'purchase_order_number'] )
 		payload['result']['result']['document']['references']['purchase_order_number'] = normalize_po(po_number) or po_number
 			
@@ -486,8 +489,11 @@ class EmailInvoice(Document):
 				try:
 					com_doc.db_set("reference_doctype", "Purchase Invoice")
 					com_doc.db_set("reference_name", name)
-					if not self.invoice_no:
-						self.invoice_no = name
+					row = self.append("results")
+					row.po_no = self.flags.po_no
+					row.invoice_no = name
+					row.insert()
+
 				except Exception:
 					pass
 			last_ok = True
@@ -512,7 +518,7 @@ class EmailInvoice(Document):
 		
 		bill_no = deep_get(data, ['document', 'number'])
 		bill_date = getdate( deep_get(data, ['document', 'issue_date']) )
-		exists = self.enable_single_invoice(bill_no, bill_date)
+		exists = self.enable_single_invoice(bill_no, bill_date, po_ref)
 		if exists:
 			return True, exists
 
@@ -874,8 +880,19 @@ class EmailInvoice(Document):
 
 		return True, doc.name
 
-	def enable_single_invoice(self, bill_no, bill_date):
+	def enable_single_invoice(self, bill_no, bill_date, po_reff=""):
 		exists = frappe.db.get_value("Purchase Invoice", {"bill_no":bill_no, "bill_date":bill_date})
+		if not exists and po_reff:
+			result = frappe.db.sql("""
+				SELECT pi.name
+				FROM `tabPurchase Invoice` pi
+				JOIN `tabPurchase Invoice Item` pii ON pii.parent = pi.name
+				WHERE pii.purchase_order = %s
+			""", po_reff, as_dict=True)
+			for d in result:
+				if d.name:
+					return d.name
+		
 		if exists:
 			return exists
 
