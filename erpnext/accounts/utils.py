@@ -1840,5 +1840,23 @@ def get_barcode(text):
 	base64_encoded = base64.b64encode(temp_file.getvalue()).decode('utf-8')
 
 	res = """<img style="width: 100%;height: 100%;" src="data:image/svg+xml;base64,{}" alt="Barcode">""".format(base64_encoded)
-
 	return res
+
+def get_account_number_map(company: str):
+    accounts = frappe.db.get_all(
+        "Account",
+        filters={
+            "company": company,
+            "is_group": 0,
+            "disabled": 0,
+        },
+        fields=["name", "account_number", "account_name"],
+        order_by="account_number asc"
+    )
+
+    # build map by account_number
+    return {
+        acc.account_number: acc.name
+        for acc in accounts
+        if acc.account_number
+    }
