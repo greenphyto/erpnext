@@ -420,7 +420,8 @@ doc_events = {
     "Stock Entry": {
         "on_submit":[
 			"erpnext.controllers.foms.sync_log",
-            "erpnext.controllers.foms.detect_salad_items"
+            "erpnext.controllers.foms.detect_salad_items",
+            "erpnext.controllers.erp.create_sample_after_work_order"
 		],
         "before_cancel":[
             "erpnext.controllers.foms.detect_salad_items",
