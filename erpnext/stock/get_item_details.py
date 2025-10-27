@@ -760,6 +760,9 @@ def get_default_deferred_account(args, item, fieldname=None):
 
 def get_default_cost_center(args, item=None, item_group=None, brand=None, company=None, account=None):
 	cost_center = None
+	item = item or {}
+	item_group = item_group or {}
+	brand = brand or {}
 
 	if not company and args.get("company"):
 		company = args.get("company")
@@ -768,7 +771,24 @@ def get_default_cost_center(args, item=None, item_group=None, brand=None, compan
 	if res.get("lock"):
 		return res.get("value")
 	else:
-		return ""
+		def_cost_center = None
+		if args.get("customer"):
+			def_cost_center = (
+				item.get("selling_cost_center")
+				or item_group.get("selling_cost_center")
+				or brand.get("selling_cost_center")
+			)
+		else:
+			def_cost_center = (
+				item.get("buying_cost_center")
+				or item_group.get("buying_cost_center")
+				or brand.get("buying_cost_center")
+			)
+	
+		if def_cost_center:
+			return res.get("value") or def_cost_center
+		else:
+			return ""
 
 	if args.get("project"):
 		cost_center = frappe.db.get_value("Project", args.get("project"), "cost_center", cache=True)
