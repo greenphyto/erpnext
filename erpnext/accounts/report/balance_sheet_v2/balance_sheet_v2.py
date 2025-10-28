@@ -301,7 +301,6 @@ def add_formulas(report_name, xlsx_file):
 	for row in range(2, ws.max_row + 1): 
 		account_txt = cstr(ws[f"A{row}"].value) 
 		leading_spaces = len(account_txt) - len(account_txt.lstrip(" ")) 
-		print("ORI", f'|{account_txt}|', leading_spaces) 
 		account = cstr(ws[f"A{row}"].value).strip() 
 
 		if account in ['Assets', 'Income']: 
@@ -379,9 +378,9 @@ def add_formulas(report_name, xlsx_file):
 	output_stream.seek(0)
 
 	now = now_datetime()
-	date_str_title = now.strftime(" %Y-%m-%d %H-%M-%S")
+	date_str_title = now.strftime("%y%m%d_%H%M%S")
 
-	frappe.response["filename"] = f"{report_name}-TEST-{date_str_title}.xlsx"
+	frappe.response["filename"] = f"{report_name}_{date_str_title}.xlsx"
 	frappe.response["filecontent"] = output_stream.getvalue()
 	frappe.response["type"] = "binary"
 
