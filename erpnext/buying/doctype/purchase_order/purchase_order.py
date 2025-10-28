@@ -353,6 +353,11 @@ class PurchaseOrder(BuyingController):
 
 		update_linked_doc(self.doctype, self.name, self.inter_company_order_reference)
 		self.update_material_request()
+		self.update_for_non_stock()
+	
+	def update_for_non_stock(self):
+		if self.non_stock_item:
+			self.per_received = 100
 
 	def on_cancel(self):
 		self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry")
