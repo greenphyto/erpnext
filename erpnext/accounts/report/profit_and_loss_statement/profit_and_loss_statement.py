@@ -91,8 +91,8 @@ def execute(filters=None):
 		period_list, filters.periodicity, income, expense, net_profit_loss, currency, filters
 	)
 
-	if frappe.flags.in_export:
-		convert_wrap_report_data(columns, data, precision=2)
+	# if frappe.flags.in_export:
+	# 	convert_wrap_report_data(columns, data, precision=2)
 
 	return columns, data, None, chart, report_summary
 

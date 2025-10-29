@@ -127,8 +127,8 @@ def execute(filters=None):
 		period_list, asset, liability, equity, provisional_profit_loss, total_credit, currency, filters
 	)
 
-	if frappe.flags.in_export:
-		convert_wrap_report_data(columns, data, precision=2)
+	# if frappe.flags.in_export:
+	# 	convert_wrap_report_data(columns, data, precision=2)
 
 	return columns, data, message, chart, report_summary
 
@@ -279,3 +279,240 @@ def get_chart_data(filters, columns, asset, liability, equity):
 		chart["type"] = "line"
 
 	return chart
+
+from frappe.utils.xlsxutils import make_xlsx
+from openpyxl import load_workbook
+from io import BytesIO
+import json
+from openpyxl.styles import Font
+from frappe.utils import now_datetime
+def add_formulas(report_name, xlsx_file):
+	stream = BytesIO(xlsx_file.getvalue())
+	wb = load_workbook(stream)
+	ws = wb.active
+
+	group_col = "Z"
+	ws.column_dimensions[group_col].hidden = True
+
+	col_use = list(ws.column_dimensions.keys())
+
+	level = 0 
+	start_row = 0
+	for row in range(2, ws.max_row + 1): 
+		account_txt = cstr(ws[f"A{row}"].value) 
+		leading_spaces = len(account_txt) - len(account_txt.lstrip(" ")) 
+		account = cstr(ws[f"A{row}"].value).strip() 
+
+		if account in ['Assets', 'Income']: 
+			start_row = row
+			break
+
+	rows = build_rows(ws, start_row=start_row)
+
+	hier = compute_child_range_rows(rows)
+	flat_list = extract_nodes(hier)
+
+	assets_total_row = 0
+	liability_total_row = 0
+	total_row = {}
+	for d in flat_list:
+		account = d['account']
+		row = d['row']
+		# Balance Sheet
+		if account == "Total Asset (Debit)":
+			total_row.setdefault("Assets", row)
+		elif account == "Total Liability (Credit)":
+			total_row.setdefault("Liabilities", row)
+		elif account == "Total Equity (Credit)":
+			total_row.setdefault("Equity", row)
+
+		# Profit & Loss
+		elif account == "Total Income (Credit)":
+			total_row.setdefault("Income", row)
+		elif account == "Total Expense (Debit)":
+			total_row.setdefault("Expenses", row)
+
+	for d in flat_list:
+		is_group = d.get("group_flag")
+		account = d['account']
+		row = d['row']
+		lft=d['lft_row']
+		rgt=d['rgt_row']
+		ws[f'{group_col}{row}'] = 2 if is_group else 1
+
+		for cell in ws[row]:
+			cell.font = Font(bold=bool(is_group))
+		
+		if is_group and lft:
+			for col in col_use:
+				if col not in ['A', 'B', group_col]:
+					ws[f"{col}{row}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
+
+					# Hardcode formula
+					if account in total_row:
+						ws[f"{col}{total_row.get(account)}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
+		else:
+			for col in col_use:
+				if col not in ['A', 'B', group_col]:
+					# Balance Sheet
+					required_keys = ["Assets", "Liabilities", "Equity"]
+					if all(k in total_row for k in required_keys):
+						equity_total_row = total_row.get("Equity")
+						liability_total_row = total_row.get("Liabilities")
+						assets_total_row = total_row.get("Assets")
+						if account == "'Profit / (Loss) for the Year'":
+							ws[f"{col}{row}"] = f"={col}{assets_total_row} - ({col}{liability_total_row} + {col}{equity_total_row})"
+						elif account == "'Total (Credit)'":
+							ws[f"{col}{row}"] = f"={col}{liability_total_row} + {col}{equity_total_row}"
+					
+					# Profit & Loss
+					required_keys = ["Income", "Expenses"]
+					if all(k in total_row for k in required_keys):
+						if account == "'Profit for the year'":
+							income_total_row = total_row.get("Income")
+							expense_total_row = total_row.get("Expenses")
+							ws[f"{col}{row}"] = f"={col}{income_total_row} - {col}{expense_total_row}"
+
+	output_stream = BytesIO()
+	wb.save(output_stream)
+	output_stream.seek(0)
+
+	now = now_datetime()
+	date_str_title = now.strftime("%y%m%d_%H%M%S")
+
+	frappe.response["filename"] = f"{report_name}_{date_str_title}.xlsx"
+	frappe.response["filecontent"] = output_stream.getvalue()
+	frappe.response["type"] = "binary"
+
+import re
+from collections import OrderedDict
+def count_leading_spaces(s):
+	if not isinstance(s, str):
+		return 0
+	return len(re.match(r"^[\s\xa0]*", s).group(0))
+
+def get_level(account_txt, spaces_per_level=4):
+	return count_leading_spaces(account_txt) // spaces_per_level
+
+def is_child(cell_value: str) -> bool:
+    if not isinstance(cell_value, str):
+        return False
+    s = cell_value.strip()
+    return bool(s) and s[0].isdigit()
+
+def build_rows(ws, start_row=2, start_after_label=None, spaces_per_level=4):
+    """Ambil linear rows: [(row_idx, account, level, group_flag)]"""
+    rows = []
+    started = (start_after_label is None)
+
+    for r in range(start_row, ws.max_row + 1):
+        raw = cstr(ws[f"A{r}"].value or "")
+        if not raw.strip():
+            continue
+
+        if not started:
+            if raw.strip() == start_after_label:
+                started = True
+            else:
+                continue
+
+        level = get_level(raw, spaces_per_level)
+        account = raw.strip()
+        group_flag = 0 if is_child(account) else 1  # 1=group, 0=child
+        rows.append((r, account, level, group_flag))
+
+    return rows
+
+def compute_child_range_rows(rows):
+    """
+    For each group, compute (lft_row, rgt_row) = the range of child rows.
+    Returns: OrderedDict with key (account, row, group_flag, lft_row, rgt_row), value = children (tree)
+    """
+    # Build the tree structure using a stack (based on indentation level)
+    stack = []  # elements: (level, key_tuple, children_dict_ref)
+    roots = OrderedDict()
+
+    # Keep an index mapping for convenience
+    nodes = []  # [(i, row_idx, level, group_flag, key_ref_dict, parent_children_dict)]
+    tmp_keys = []  # list of (account, row_idx, group_flag) – lft/rgt will be added later
+
+    for i, (row_idx, account, level, group_flag) in enumerate(rows):
+        key_tmp = (account, row_idx, group_flag)
+        tmp_keys.append(key_tmp)
+        node_children = OrderedDict()
+
+        # Pop until parent level < current level
+        while stack and stack[-1][0] >= level:
+            stack.pop()
+
+        # Attach to parent if exists, otherwise treat as root
+        if stack:
+            parent_children = stack[-1][2]
+            parent_children[key_tmp] = node_children
+        else:
+            roots[key_tmp] = node_children
+
+        # Push current node to stack
+        stack.append((level, key_tmp, node_children))
+        nodes.append((i, row_idx, level, group_flag, key_tmp, node_children))
+
+    # Determine (lft_row, rgt_row) range for each group node
+    # Final result replaces key_tmp → key_final (account, row, group_flag, lft_row, rgt_row)
+    def child_block_range(i_parent):
+        row_idx_p, level_p = rows[i_parent][0], rows[i_parent][2]
+        # Find the first index j where level <= parent level
+        j = i_parent + 1
+        while j < len(rows) and rows[j][2] > level_p:
+            j += 1
+        # Child range = i_parent+1 .. j-1
+        if j - (i_parent + 1) >= 1:
+            lft_row = rows[i_parent + 1][0]
+            rgt_row = rows[j - 1][0]
+            return lft_row, rgt_row
+        return None, None
+
+    # Recursive function to materialize the final structure with (lft_row, rgt_row)
+    def materialize(children_dict, start_index_lookup):
+        out = OrderedDict()
+        for key_tmp, ch in children_dict.items():
+            account, row_idx, group_flag = key_tmp
+            # Find the row index of this node
+            # (can use dict lookup for performance, but linear scan is fine for report-sized data)
+            i = next(i for i, (r, a, lvl, gf) in enumerate(rows)
+                     if r == row_idx and a == account and gf == group_flag)
+
+            if group_flag == 1:
+                lft_row, rgt_row = child_block_range(i)
+            else:
+                lft_row = rgt_row = None
+
+            key_final = (account, row_idx, group_flag, lft_row, rgt_row)
+            out[key_final] = materialize(ch, start_index_lookup)
+        return out
+
+    # Build the final ordered structure
+    result = OrderedDict()
+    result = materialize(roots, {r[0]: idx for idx, r in enumerate(rows)})
+    return result
+
+
+def extract_nodes(flat_tree, parent=None, result=None):
+    """
+    Ubah struktur tree hasil compute_child_range_rows menjadi list datar.
+    Setiap elemen hasil = (account, row, group_flag, lft_row, rgt_row, parent_row)
+    """
+    if result is None:
+        result = []
+
+    for (account, row, group_flag, lft_row, rgt_row), children in flat_tree.items():
+        result.append({
+            "account": account,
+            "row": row,
+            "group_flag": group_flag,
+            "lft_row": lft_row,
+            "rgt_row": rgt_row,
+            "parent_row": parent[1] if parent else None
+        })
+        extract_nodes(children, (account, row, group_flag, lft_row, rgt_row), result)
+
+    return result

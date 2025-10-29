@@ -762,3 +762,8 @@ get_email_default = "erpnext.controllers.email.get_last_email_default"
 override_whitelisted_methods = {
     "frappe.utils.print_format.download_pdf": "erpnext.controllers.pdf_utils.download_pdf_with_pagenum"
 }
+
+custom_export_report = {
+    "Balance Sheet": "erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2.add_formulas",
+    "Profit and Loss Statement": "erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2.add_formulas",
+}

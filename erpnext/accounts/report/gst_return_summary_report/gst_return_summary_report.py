@@ -8,7 +8,8 @@ import json
 import frappe
 from frappe import _
 from frappe.contacts.report.addresses_and_contacts import test_addresses_and_contacts
-from frappe.utils import formatdate, get_link_to_form, flt,fmt_money, getdate, get_url_to_form
+from frappe.utils import formatdate, get_link_to_form, fmt_money, getdate, get_url_to_form
+from frappe.utils import flt
 
 def execute(filters=None):
 
@@ -182,8 +183,8 @@ class VATAuditReport(object):
 				gle.voucher_no,
 				je.voucher_type AS je_voucher_type,
 				je.tax_type as je_tax_type,
-				SUM(gle.credit - gle.debit) AS tax_amount_output,
-				SUM(gle.debit - gle.credit) AS tax_amount_input
+				SUM(gle.credit_in_account_currency - gle.debit_in_account_currency) AS tax_amount_output,
+				SUM(gle.debit_in_account_currency - gle.credit_in_account_currency) AS tax_amount_input
 			FROM
 				`tabGL Entry` gle
 				LEFT JOIN `tabJournal Entry` je
