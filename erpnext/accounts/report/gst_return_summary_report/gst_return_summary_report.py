@@ -30,6 +30,7 @@ class VATAuditReport(object):
 		totalsstr = "Output Tax Due"
 		totalpstr = "Less:Input Tax and Refunds claimed"
 		totalfstr = "Equals: Net GST to be paid by you or Net GST to be claimed by you"
+		self.get_tax_from_gl_entry()
 		for doctype in self.doctypes:
 			self.select_columns = """
 			name as voucher_no,
@@ -45,7 +46,6 @@ class VATAuditReport(object):
 			self.setup_data()
 			self.get_journal_entry_data(doctype)
 			self.get_invoice_data(doctype)
-			self.get_tax_from_gl_entry(doctype)
 
 			if self.invoices:
 				self.get_invoice_items(doctype)
@@ -149,45 +149,71 @@ class VATAuditReport(object):
 		for d in items:
 			self.invoice_items.setdefault(d.parent, {}).setdefault(d.item_code, {"net_amount": 0.0})
 			self.invoice_items[d.parent][d.item_code]["net_amount"] += d.get("base_net_amount", 0)
-	
-	def get_tax_from_gl_entry(self, doctype):
-		tax_table = (
-			"tabSales Taxes and Charges" if doctype == "Sales Invoice"
-			else "tabPurchase Taxes and Charges"
-		)
 
-		voucher_no = list(self.invoices.keys())
+	def get_tax_from_gl_entry(self):
+		# find tax account
+		temp = frappe.db.sql("""
+			SELECT DISTINCT account_head
+			FROM (
+				SELECT account_head
+				FROM `tabPurchase Taxes and Charges`
+				WHERE parenttype = 'Purchase Taxes and Charges Template'
+				AND account_head IS NOT NULL
+				AND account_head != ''
+				
+				UNION
+
+				SELECT account_head
+				FROM `tabSales Taxes and Charges`
+				WHERE parenttype = 'Sales Taxes and Charges Template'
+				AND account_head IS NOT NULL
+				AND account_head != ''
+			) AS combined
+			ORDER BY account_head
+					   """, as_list=1)
+		accounts = [a[0] for a in temp]
+
+		from_date = getdate(self.filters.from_date)
+		to_date = getdate(self.filters.to_date)
 
 		gl_tax = frappe.db.sql("""
 			SELECT
 				gle.voucher_type,
 				gle.voucher_no,
+				je.voucher_type AS je_voucher_type,
+				je.tax_type as je_tax_type,
 				SUM(gle.credit - gle.debit) AS tax_amount_output,
 				SUM(gle.debit - gle.credit) AS tax_amount_input
 			FROM
 				`tabGL Entry` gle
-			INNER JOIN
-				`{}` tax
-				ON gle.account = tax.account_head
-				AND gle.voucher_no = tax.parent
+				LEFT JOIN `tabJournal Entry` je
+					ON je.name = gle.voucher_no
+					AND gle.voucher_type = 'Journal Entry'
 			WHERE
 				gle.docstatus = 1
-				AND gle.voucher_type = %(voucher_type)s
-				AND gle.voucher_no IN %(voucher_no)s
+				AND gle.account IN %(accounts)s
+				AND gle.posting_date BETWEEN %(start)s AND %(end)s
 			GROUP BY
 				gle.voucher_type, gle.voucher_no
-		""".format(tax_table), {
-			"voucher_type":doctype, 
-			"voucher_no":voucher_no
+		""", {
+			"start": from_date,
+			"end": to_date,
+			"accounts":accounts
 		}, as_dict=1, debug=0)
-		
+
 		self.tax_amount_map = {}
 		for row in gl_tax:
-			if doctype == "Sales Invoice":
+			if row.voucher_type == "Sales Invoice":
 				self.tax_amount_map[(row.voucher_type, row.voucher_no)] = flt(row.tax_amount_output)
+			elif row.voucher_type == "Journal Entry":
+				if row.je_voucher_type == "GST Input Tax" or row.je_tax_type == "Selling":
+					self.tax_amount_map[(row.voucher_type, row.voucher_no)] = flt(row.tax_amount_output)
+				else:
+					self.tax_amount_map[(row.voucher_type, row.voucher_no)] = flt(row.tax_amount_input)
 			else:
 				self.tax_amount_map[(row.voucher_type, row.voucher_no)] = flt(row.tax_amount_input)
 
+		return self.tax_amount_map
 
 	
 	def get_tax_types(self, doctype):
@@ -363,8 +389,8 @@ class VATAuditReport(object):
 
 				total_tax += 0 if  row["tax_amount"] =="" else  flt(row["tax_amount"])
 				total_gross += 0 if  row["gross_amount"]=="" else flt(row["gross_amount"])
-				if row['voucher_type'] == "Sales Invoice":
-					print(300,row['posting_date'],row['voucher_no'], row["tax_amount"], total_tax)
+				if row['voucher_type'] == "Journal Entry with GST":
+					row['voucher_type'] = "Journal Entry"
 
 			total_net = total_gross - total_tax
 			
@@ -492,7 +518,6 @@ class VATAuditReport(object):
 			dt.Invoice_No = dt.invoice_no
 			dt.party = dt.party_name
 			tax_amount = flt(dt.total_taxable_amount_debit) or flt(dt.total_taxable_amount_credit) *-1
-
 			if dt.voucher_type == "GST Input Tax":
 				# overide data
 				dt.taxes_and_charges = dt.tax_template
@@ -524,6 +549,7 @@ class VATAuditReport(object):
 			# Old Journal Entry with GST style summary
 			elif dt.voucher_type == "Journal Entry with GST" and not tax_amount:
 				# overide data
+				# dt.voucher_type = "Journal Entry"
 				rows = frappe.db.get_list("Journal Entry Account", {"parent":dt.name}, "*", ignore_permissions=1, debug=0, order_by="idx")
 				base_row = None
 				total = 0
@@ -613,6 +639,9 @@ class VATAuditReport(object):
 		)
 		default_for_zero_tax = frappe.get_value(tax_doctype, {"default_for_zero":1}) or ""
 		for inv, inv_data in self.invoices.items():
+			if inv_data.get("voucher_type") == 'Journal Entry with GST':
+				inv_data['voucher_type'] = 'Journal Entry'
+
 			if True:
 				data = self.items_based_on_tax_rate.get(inv) or {0: ['']}
 				for rate, items in data.items():
