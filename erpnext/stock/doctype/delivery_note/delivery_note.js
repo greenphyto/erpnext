@@ -82,6 +82,7 @@ frappe.ui.form.on("Delivery Note", {
 	},
 
 	is_donation: function(frm){
+		if (cint(frm.doc.is_donation)==0) return;
 		frm.set_value("naming_series", 'DON-.YYYY.-.###');
 		frappe.db.get_value("Company", frm.doc.company, ["donation_customer", "donation_account"]).then(r=>{
 			frm.set_value("customer", r.message.donation_customer);
@@ -90,6 +91,7 @@ frappe.ui.form.on("Delivery Note", {
 	},
 	
 	is_giveaway: function(frm){
+		if (cint(frm.doc.is_giveaway)==0) return;
 		frm.set_value("naming_series", 'GPO-.YYYY.-.###');
 		frappe.db.get_value("Company", frm.doc.company, ["internal_staff_customer", "giveaway_account"]).then(r=>{
 			frm.set_value("customer", r.message.internal_staff_customer)
@@ -98,6 +100,7 @@ frappe.ui.form.on("Delivery Note", {
 	},
 
 	is_replacement: function(frm){
+		if (cint(frm.doc.is_replacement)==0) return;
 		frm.set_value("naming_series", 'DO-RPL-.YYYY.-.#####');
 		frappe.db.get_value("Company", frm.doc.company, ["sales_replacement_account"]).then(r=>{
 			set_donation_expense(frm, r.message.sales_replacement_account);
@@ -105,6 +108,7 @@ frappe.ui.form.on("Delivery Note", {
 	},
 
 	is_marketing: function(frm){
+		if (cint(frm.doc.is_marketing)==0) return;
 		frm.set_value("naming_series", 'GPM-.YYYY.-.###');
 		frappe.db.get_value("Company", frm.doc.company, ["internal_staff_customer", "marketing_delivery_account"]).then(r=>{
 			frm.set_value("customer", r.message.internal_staff_customer);
@@ -113,6 +117,7 @@ frappe.ui.form.on("Delivery Note", {
 	},
 
 	is_production: function(frm){
+		if (cint(frm.doc.is_production)==0) return;
 		frm.set_value("naming_series", 'GPP-.YYYY.-.###');
 		frappe.db.get_value("Company", frm.doc.company, ["internal_staff_customer", "production_delivery_account"]).then(r=>{
 			frm.set_value("customer", r.message.internal_staff_customer);
