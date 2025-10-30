@@ -295,6 +295,7 @@ def add_formulas(report_name, xlsx_file):
 	ws.column_dimensions[group_col].hidden = True
 
 	col_use = list(ws.column_dimensions.keys())
+	skip_cols = ['A', 'B', group_col]
 
 	level = 0 
 	start_row = 0
@@ -345,7 +346,7 @@ def add_formulas(report_name, xlsx_file):
 		
 		if is_group and lft:
 			for col in col_use:
-				if col not in ['A', 'B', group_col]:
+				if col not in skip_cols:
 					ws[f"{col}{row}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
 
 					# Hardcode formula
@@ -353,7 +354,7 @@ def add_formulas(report_name, xlsx_file):
 						ws[f"{col}{total_row.get(account)}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
 		else:
 			for col in col_use:
-				if col not in ['A', 'B', group_col]:
+				if col not in skip_cols:
 					# Balance Sheet
 					required_keys = ["Assets", "Liabilities", "Equity"]
 					if all(k in total_row for k in required_keys):
@@ -372,6 +373,14 @@ def add_formulas(report_name, xlsx_file):
 							income_total_row = total_row.get("Income")
 							expense_total_row = total_row.get("Expenses")
 							ws[f"{col}{row}"] = f"={col}{income_total_row} - {col}{expense_total_row}"
+
+	# format thousand
+	for col in col_use:
+		if col not in skip_cols:
+			for row in range(start_row, ws.max_row + 1):
+				cell = ws[f"{col}{row}"]
+				if isinstance(cell.value, (int, float)) or cell.data_type == "f":
+					cell.number_format = "#,##0.00"
 
 	output_stream = BytesIO()
 	wb.save(output_stream)
