@@ -380,7 +380,7 @@ def add_formulas(report_name, xlsx_file):
 			for row in range(start_row, ws.max_row + 1):
 				cell = ws[f"{col}{row}"]
 				if isinstance(cell.value, (int, float)) or cell.data_type == "f":
-					cell.number_format = "#,##0.00"
+					cell.number_format = '#,##0.00;(#,##0.00)'
 
 	output_stream = BytesIO()
 	wb.save(output_stream)
