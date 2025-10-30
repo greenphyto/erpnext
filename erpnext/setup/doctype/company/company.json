@@ -73,6 +73,8 @@
   "donation_and_distribution_section",
   "giveaway_account",
   "donation_account",
+  "production_delivery_account",
+  "marketing_delivery_account",
   "column_break_65",
   "internal_staff_customer",
   "donation_customer",
@@ -840,6 +842,18 @@
    "fieldtype": "Link",
    "label": "Production Attrition Expense Account",
    "options": "Account"
+  },
+  {
+   "fieldname": "production_delivery_account",
+   "fieldtype": "Link",
+   "label": "Production Delivery Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "marketing_delivery_account",
+   "fieldtype": "Link",
+   "label": "Marketing Delivery Account",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-building",
@@ -847,7 +861,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-07-24 15:35:33.017837",
+ "modified": "2025-10-30 15:13:00.854605",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

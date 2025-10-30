@@ -239,6 +239,12 @@ class DeliveryNote(SellingController):
 
 		elif self.is_replacement:
 			account = frappe.get_value("Company", self.company, "sales_replacement_account")
+		
+		elif self.for_marketing:
+			account = frappe.get_value("Company", self.company, "production_delivery_account")
+		
+		elif self.for_production:
+			account = frappe.get_value("Company", self.company, "marketing_delivery_account")
 
 		if account:
 			for d in self.items:

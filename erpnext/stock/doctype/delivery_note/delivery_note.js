@@ -106,18 +106,18 @@ frappe.ui.form.on("Delivery Note", {
 
 	for_marketing: function(frm){
 		frm.set_value("naming_series", 'GPM-.YYYY.-.###');
-		// frappe.db.get_value("Company", frm.doc.company, ["donation_customer", "donation_account"]).then(r=>{
-		// 	frm.set_value("customer", r.message.donation_customer);
-		// 	set_donation_expense(frm, r.message.donation_account);
-		// });
+		frappe.db.get_value("Company", frm.doc.company, ["internal_staff_customer", "marketing_delivery_account"]).then(r=>{
+			frm.set_value("customer", r.message.internal_staff_customer);
+			set_donation_expense(frm, r.message.marketing_delivery_account);
+		});
 	},
 
 	for_production: function(frm){
 		frm.set_value("naming_series", 'GPP-.YYYY.-.###');
-		// frappe.db.get_value("Company", frm.doc.company, ["donation_customer", "donation_account"]).then(r=>{
-		// 	frm.set_value("customer", r.message.donation_customer);
-		// 	set_donation_expense(frm, r.message.donation_account);
-		// });
+		frappe.db.get_value("Company", frm.doc.company, ["internal_staff_customer", "production_delivery_account"]).then(r=>{
+			frm.set_value("customer", r.message.internal_staff_customer);
+			set_donation_expense(frm, r.message.production_delivery_account);
+		});
 	},
 
 	print_without_amount: function(frm) {
