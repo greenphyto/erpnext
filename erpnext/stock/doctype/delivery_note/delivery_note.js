@@ -82,6 +82,7 @@ frappe.ui.form.on("Delivery Note", {
 	},
 
 	is_donation: function(frm){
+		if (cint(frm.doc.is_donation)==0) return;
 		frm.set_value("naming_series", 'DON-.YYYY.-.###');
 		frappe.db.get_value("Company", frm.doc.company, ["donation_customer", "donation_account"]).then(r=>{
 			frm.set_value("customer", r.message.donation_customer);
@@ -90,6 +91,7 @@ frappe.ui.form.on("Delivery Note", {
 	},
 	
 	is_giveaway: function(frm){
+		if (cint(frm.doc.is_giveaway)==0) return;
 		frm.set_value("naming_series", 'GPO-.YYYY.-.###');
 		frappe.db.get_value("Company", frm.doc.company, ["internal_staff_customer", "giveaway_account"]).then(r=>{
 			frm.set_value("customer", r.message.internal_staff_customer)
@@ -98,9 +100,28 @@ frappe.ui.form.on("Delivery Note", {
 	},
 
 	is_replacement: function(frm){
+		if (cint(frm.doc.is_replacement)==0) return;
 		frm.set_value("naming_series", 'DO-RPL-.YYYY.-.#####');
 		frappe.db.get_value("Company", frm.doc.company, ["sales_replacement_account"]).then(r=>{
 			set_donation_expense(frm, r.message.sales_replacement_account);
+		});
+	},
+
+	is_marketing: function(frm){
+		if (cint(frm.doc.is_marketing)==0) return;
+		frm.set_value("naming_series", 'GPM-.YYYY.-.###');
+		frappe.db.get_value("Company", frm.doc.company, ["internal_staff_customer", "marketing_delivery_account"]).then(r=>{
+			frm.set_value("customer", r.message.internal_staff_customer);
+			set_donation_expense(frm, r.message.marketing_delivery_account);
+		});
+	},
+
+	is_production: function(frm){
+		if (cint(frm.doc.is_production)==0) return;
+		frm.set_value("naming_series", 'GPP-.YYYY.-.###');
+		frappe.db.get_value("Company", frm.doc.company, ["internal_staff_customer", "production_delivery_account"]).then(r=>{
+			frm.set_value("customer", r.message.internal_staff_customer);
+			set_donation_expense(frm, r.message.production_delivery_account);
 		});
 	},
 
@@ -167,6 +188,34 @@ frappe.ui.form.on("Delivery Note Item", {
 		frm.update_in_all_rows('items', 'cost_center', d.cost_center);
 	}
 });
+
+frappe.ui.form.on("Delivery Note", {
+    is_donation: (frm) => set_exclusive_logic(frm, "is_donation"),
+    is_giveaway: (frm) => set_exclusive_logic(frm, "is_giveaway"),
+    is_return: (frm) => set_exclusive_logic(frm, "is_return"),
+    is_replacement: (frm) => set_exclusive_logic(frm, "is_replacement"),
+    is_marketing: (frm) => set_exclusive_logic(frm, "is_marketing"),
+    is_production: (frm) => set_exclusive_logic(frm, "is_production"),
+});
+
+function set_exclusive_logic(frm, changed_field) {
+    const fields = [
+        "is_donation",
+        "is_giveaway",
+        "is_return",
+        "is_replacement",
+        "is_marketing",
+        "is_production"
+    ];
+
+	if (cint(frm.doc[changed_field])==0) return;
+
+    fields.forEach(field => {
+        if (field != changed_field && cint(frm.doc[field])==1) {
+            frm.set_value(field, 0);
+        }
+    });
+}
 
 erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpnext.selling.SellingController {
 	setup(doc) {

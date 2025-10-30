@@ -36,6 +36,7 @@
   "update_bom_rate_as_pr_price",
   "column_break_23",
   "make_serial_no_batch_from_work_order",
+  "enable_create_sample_delivery",
   "packaging_section",
   "default_packaging"
  ],
@@ -230,13 +231,20 @@
    "fieldtype": "Link",
    "label": "Default Packaging",
    "options": "Item"
+  },
+  {
+   "default": "0",
+   "description": "It will create 1 sample Delivery Note (sample) on every work order finish",
+   "fieldname": "enable_create_sample_delivery",
+   "fieldtype": "Check",
+   "label": "Enable Create Sample Delivery"
   }
  ],
  "icon": "icon-wrench",
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-12-23 12:13:05.919537",
+ "modified": "2025-10-27 17:04:57.270349",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Manufacturing Settings",

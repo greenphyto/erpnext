@@ -3,6 +3,7 @@ import frappe, json
 from frappe.utils import today, get_last_day, getdate, today, get_last_day
 from frappe.utils import cint, flt, getdate, cstr, safe_abs
 from six import string_types
+from frappe.contacts.doctype.address.address import get_default_address
 
 # util: sanitize description by removing editor wrapper tags
 def _sanitize_desc(desc):
@@ -953,3 +954,67 @@ def _trial_balance_different_issue(company):
 					"fiscal_year":str(today.year)
 				})
 				doc_notif.send(doc)
+
+def create_sample_after_work_order(doc, method=""):
+	# Run only for Manufacture type
+	if doc.purpose != "Manufacture":
+		return
+	
+	if not frappe.db.get_single_value("Manufacturing Settings", "enable_create_sample_delivery"):
+		return
+
+	# Ensure Work Order linked
+	if not doc.work_order:
+		return
+
+	# Check duplication: avoid multiple DN
+	if frappe.db.exists("Delivery Note", {"work_order": doc.work_order, "is_production":1}):
+		return
+
+	# Fetch Work Order
+	wo = frappe.get_doc("Work Order", doc.work_order)
+
+	# Determine FG item & qty
+	production_item = wo.production_item
+	qty = 1
+	uom = wo.packet_size
+	batch_no = ""
+	for row in doc.items:
+		if row.batch_no and row.is_finished_item:
+			batch_no = row.batch_no
+
+	customer = frappe.get_value("Company", doc.company, "internal_staff_customer")
+
+	# Warehouse
+	warehouse = wo.fg_warehouse 
+	address = get_default_address("Customer", customer)
+
+	# Build the Delivery Note
+	dn = frappe.new_doc("Delivery Note")
+	dn.naming_series = "GPM-.YYYY.-.###"
+	dn.customer = customer
+	dn.company = doc.company
+	dn.work_order = wo.name
+	dn.set_warehouse = warehouse
+	dn.is_production = 1
+	dn.customer_address = address
+	dn.shipping_address_name = address
+
+	dn.append("items", {
+		"item_code": production_item,
+		"qty": qty,
+		"uom":uom,
+		"warehouse": warehouse,
+		"batch_no": batch_no,
+		"description": "Auto-generated delivery note after manufacturing completion."
+	})
+
+	# Save and submit
+	dn.insert(ignore_permissions=True)
+	try:
+		dn.submit()
+	except:
+		pass
+
+
+	return dn.name

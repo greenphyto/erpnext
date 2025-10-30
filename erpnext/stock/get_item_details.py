@@ -74,6 +74,8 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 		if doc.get("doctype") == "Purchase Invoice":
 			args["bill_date"] = doc.get("bill_date")
 
+	set_doc_transaction_type(args, doc)
+
 	out = get_basic_details(args, item, overwrite_warehouse)
 	get_item_tax_template(args, item, out)
 	out["item_tax_rate"] = get_item_tax_map(
@@ -139,6 +141,21 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 	
 	return out
 
+def set_doc_transaction_type(args, doc):
+	if args.doctype != 'Delivery Note':
+		return
+
+	fields = [
+		"is_donation", 
+		"is_giveaway",
+		"is_marketing",
+		"is_production",
+		"is_replacement"
+	]
+	for f in fields:
+		if doc.get(f) == 1:
+			args["trans_type"] = f
+			break
 
 def remove_standard_fields(details):
 	for key in child_table_fields + default_fields:
@@ -344,13 +361,9 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 	):
 		args["batch_no"] = ""
 
-	donation_account = get_donation_expense_account(args.doctype, args.company, args.customer)
+	custom_account = get_donation_expense_account(args)
 
-	replacement_account = ""
-	if args.get("is_replacement"):
-		replacement_account = frappe.get_value("Company", args.company, "sales_replacement_account")
-
-	account = replacement_account or donation_account or expense_account or get_default_expense_account(args, item_defaults, item_group_defaults, brand_defaults)
+	account = custom_account or expense_account or get_default_expense_account(args, item_defaults, item_group_defaults, brand_defaults)
 	cost_center = get_default_cost_center(
 			args, item_defaults, item_group_defaults, brand_defaults, account=account
 		)
@@ -475,16 +488,22 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 	return out
 
 
-def get_donation_expense_account(doctype ,company, customer):
-	# company
-	# yes, overide
-	data = frappe.get_value("Company", company, ['giveaway_account', 'donation_account', 'internal_staff_customer', 'donation_customer'], as_dict=1)
-	if doctype in ['Delivery Note']:
-		if customer == data.get("donation_customer"):
+def get_donation_expense_account(args):
+	company = args.company
+	if args.doctype in ['Delivery Note']:
+		data = frappe.get_value("Company", company, ['giveaway_account', 'donation_account', "production_delivery_account", "marketing_delivery_account", "sales_replacement_account"], as_dict=1)
+		if args.trans_type == "is_donation":
 			return data.get("donation_account")
-		elif customer == data.get("internal_staff_customer"):
+		elif args.trans_type == "is_giveaway":
 			return data.get("giveaway_account")
-
+		elif args.trans_type == "is_marketing":
+			return data.get("marketing_delivery_account")
+		elif args.trans_type == "is_production":
+			return data.get("production_delivery_account")
+		elif args.trans_type == "is_replacement":
+			return data.get("sales_replacement_account")
+		else:
+			return None
 
 def get_item_warehouse(item, args, overwrite_warehouse, defaults=None):
 	if not defaults:
