@@ -35,8 +35,8 @@
   "return_against",
   "is_donation",
   "is_giveaway",
-  "for_marketing",
-  "for_production",
+  "is_marketing",
+  "is_production",
   "replacement_reason_section",
   "replacement_reason",
   "column_break_29",
@@ -1597,13 +1597,13 @@
   },
   {
    "default": "0",
-   "fieldname": "for_marketing",
+   "fieldname": "is_marketing",
    "fieldtype": "Check",
    "label": "For Marketing"
   },
   {
    "default": "0",
-   "fieldname": "for_production",
+   "fieldname": "is_production",
    "fieldtype": "Check",
    "label": "For Production"
   },

@@ -104,7 +104,7 @@ frappe.ui.form.on("Delivery Note", {
 		});
 	},
 
-	for_marketing: function(frm){
+	is_marketing: function(frm){
 		frm.set_value("naming_series", 'GPM-.YYYY.-.###');
 		frappe.db.get_value("Company", frm.doc.company, ["internal_staff_customer", "marketing_delivery_account"]).then(r=>{
 			frm.set_value("customer", r.message.internal_staff_customer);
@@ -112,7 +112,7 @@ frappe.ui.form.on("Delivery Note", {
 		});
 	},
 
-	for_production: function(frm){
+	is_production: function(frm){
 		frm.set_value("naming_series", 'GPP-.YYYY.-.###');
 		frappe.db.get_value("Company", frm.doc.company, ["internal_staff_customer", "production_delivery_account"]).then(r=>{
 			frm.set_value("customer", r.message.internal_staff_customer);
@@ -189,8 +189,8 @@ frappe.ui.form.on("Delivery Note", {
     is_giveaway: (frm) => set_exclusive_logic(frm, "is_giveaway"),
     is_return: (frm) => set_exclusive_logic(frm, "is_return"),
     is_replacement: (frm) => set_exclusive_logic(frm, "is_replacement"),
-    for_marketing: (frm) => set_exclusive_logic(frm, "for_marketing"),
-    for_production: (frm) => set_exclusive_logic(frm, "for_production"),
+    is_marketing: (frm) => set_exclusive_logic(frm, "is_marketing"),
+    is_production: (frm) => set_exclusive_logic(frm, "is_production"),
 });
 
 function set_exclusive_logic(frm, changed_field) {
@@ -199,8 +199,8 @@ function set_exclusive_logic(frm, changed_field) {
         "is_giveaway",
         "is_return",
         "is_replacement",
-        "for_marketing",
-        "for_production"
+        "is_marketing",
+        "is_production"
     ];
 
 	if (cint(frm.doc[changed_field])==0) return;

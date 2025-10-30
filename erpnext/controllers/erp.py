@@ -968,7 +968,7 @@ def create_sample_after_work_order(doc, method=""):
 		return
 
 	# Check duplication: avoid multiple DN
-	if frappe.db.exists("Delivery Note", {"work_order": doc.work_order, "for_marketing":1}):
+	if frappe.db.exists("Delivery Note", {"work_order": doc.work_order, "is_marketing":1}):
 		return
 
 	# Fetch Work Order
@@ -996,7 +996,7 @@ def create_sample_after_work_order(doc, method=""):
 	dn.company = doc.company
 	dn.work_order = wo.name
 	dn.set_warehouse = warehouse
-	dn.for_marketing = 1
+	dn.is_marketing = 1
 	dn.customer_address = address
 	dn.shipping_address_name = address
 
