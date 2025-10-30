@@ -16,5 +16,10 @@ frappe.ui.form.on('Email Invoice', {
             });
 			frappe.show_alert("Syncing now")
         });
-	}
+	},
+    print_console:(frm)=>{
+        var json = JSON.parse(frm.doc.data_result);
+        console.log(`${frm.doc.name} Data Result:`)
+        console.log(json);
+    }
 });

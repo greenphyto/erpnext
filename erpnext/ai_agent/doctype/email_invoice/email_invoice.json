@@ -28,6 +28,7 @@
   "inbox",
   "ai_agent_section",
   "data_result",
+  "print_console",
   "error_trace"
  ],
  "fields": [
@@ -165,12 +166,17 @@
    "fieldtype": "Table",
    "label": "Results",
    "options": "Email Invoice Result"
+  },
+  {
+   "depends_on": "eval:doc.data_result",
+   "fieldname": "print_console",
+   "fieldtype": "Button",
+   "label": "Print to Console"
   }
  ],
- "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-09 12:31:18.823474",
+ "modified": "2025-10-30 12:25:26.822072",
  "modified_by": "Administrator",
  "module": "AI Agent",
  "name": "Email Invoice",
