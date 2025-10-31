@@ -78,6 +78,8 @@
   "column_break_65",
   "internal_staff_customer",
   "donation_customer",
+  "production_customer",
+  "marketing_customer",
   "column_break_68",
   "sales_replacement_account",
   "auto_accounting_for_stock_settings",
@@ -854,6 +856,18 @@
    "fieldtype": "Link",
    "label": "Marketing Delivery Account",
    "options": "Account"
+  },
+  {
+   "fieldname": "marketing_customer",
+   "fieldtype": "Link",
+   "label": "Marketing Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "production_customer",
+   "fieldtype": "Link",
+   "label": "Production Customer",
+   "options": "Customer"
   }
  ],
  "icon": "fa fa-building",
@@ -861,7 +875,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-10-30 15:13:00.854605",
+ "modified": "2025-10-31 17:42:41.603832",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

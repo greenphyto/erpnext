@@ -983,7 +983,7 @@ def create_sample_after_work_order(doc, method=""):
 		if row.batch_no and row.is_finished_item:
 			batch_no = row.batch_no
 
-	customer = frappe.get_value("Company", doc.company, "internal_staff_customer")
+	customer = frappe.get_value("Company", doc.company, "production_customer")
 
 	# Warehouse
 	warehouse = wo.fg_warehouse 

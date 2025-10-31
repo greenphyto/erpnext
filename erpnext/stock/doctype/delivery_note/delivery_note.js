@@ -110,8 +110,8 @@ frappe.ui.form.on("Delivery Note", {
 	is_marketing: function(frm){
 		if (cint(frm.doc.is_marketing)==0) return;
 		frm.set_value("naming_series", 'GPM-.YYYY.-.#####');
-		frappe.db.get_value("Company", frm.doc.company, ["internal_staff_customer", "marketing_delivery_account"]).then(r=>{
-			frm.set_value("customer", r.message.internal_staff_customer);
+		frappe.db.get_value("Company", frm.doc.company, ["marketing_customer", "marketing_delivery_account"]).then(r=>{
+			frm.set_value("customer", r.message.marketing_customer);
 			set_donation_expense(frm, r.message.marketing_delivery_account);
 		});
 	},
@@ -119,8 +119,8 @@ frappe.ui.form.on("Delivery Note", {
 	is_production: function(frm){
 		if (cint(frm.doc.is_production)==0) return;
 		frm.set_value("naming_series", 'GPP-.YYYY.-.#####');
-		frappe.db.get_value("Company", frm.doc.company, ["internal_staff_customer", "production_delivery_account"]).then(r=>{
-			frm.set_value("customer", r.message.internal_staff_customer);
+		frappe.db.get_value("Company", frm.doc.company, ["production_customer", "production_delivery_account"]).then(r=>{
+			frm.set_value("customer", r.message.production_customer);
 			set_donation_expense(frm, r.message.production_delivery_account);
 		});
 	},
