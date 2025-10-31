@@ -220,7 +220,7 @@
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "PI.#####./.YYYY\nPI-RET.#####./.YYYY",
+   "options": "PI.#####./.YYYY\nPI-RET.#####./.YYYY\nTEMP-PI-.#####./.YYYY",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1612,9 +1612,8 @@
   },
   {
    "fieldname": "bank_number",
-   "fieldtype": "Link",
-   "label": "Bank Number",
-   "options": "Bank Number"
+   "fieldtype": "Data",
+   "label": "Bank Number"
   },
   {
    "fieldname": "bank_details",
@@ -1630,7 +1629,7 @@
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-09-10 10:59:43.256295",
+ "modified": "2025-10-31 14:37:33.798266",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",

@@ -20,8 +20,6 @@
   "match_status_section",
   "reason",
   "status",
-  "po_no",
-  "invoice_no",
   "results",
   "more_information_section",
   "message_id",
@@ -82,20 +80,6 @@
    "in_standard_filter": 1,
    "label": "Status",
    "options": "Unknown\nPending\nMatched"
-  },
-  {
-   "fieldname": "po_no",
-   "fieldtype": "Link",
-   "hidden": 1,
-   "label": "PO No",
-   "options": "Purchase Order"
-  },
-  {
-   "fieldname": "invoice_no",
-   "fieldtype": "Link",
-   "hidden": 1,
-   "label": "Invoice Created",
-   "options": "Purchase Invoice"
   },
   {
    "fieldname": "more_information_section",
@@ -176,7 +160,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-30 12:25:26.822072",
+ "modified": "2025-10-31 14:42:40.741145",
  "modified_by": "Administrator",
  "module": "AI Agent",
  "name": "Email Invoice",
@@ -238,7 +222,7 @@
    "share": 1
   }
  ],
- "search_fields": "sender, subject, po_no",
+ "search_fields": "sender, subject",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
