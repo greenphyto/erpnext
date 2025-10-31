@@ -128,14 +128,14 @@ class EmailInvoice(Document):
 		return "Unknown"
 
 	def set_status(self):
-		if self.invoice_no:
-			self.reason = ""
-			self.error_trace = ""
-			self.status = "Matched"
-		elif self.po_no:
-			self.status = "Pending"
-		else:
-			self.status = "Unknown"
+		self.status = "Unknown"
+		for d in self.results:
+			if d.invoice_no:
+				self.status = "Matched"
+				self.error_trace = ""
+				break
+			elif d.po_no:
+				self.status = "Pending"
 
 	def sync_email(self, comm_name="", doc=None):
 		if not doc:
