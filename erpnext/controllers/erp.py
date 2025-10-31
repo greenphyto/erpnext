@@ -991,7 +991,7 @@ def create_sample_after_work_order(doc, method=""):
 
 	# Build the Delivery Note
 	dn = frappe.new_doc("Delivery Note")
-	dn.naming_series = "GPM-.YYYY.-.###"
+	dn.naming_series = "GPP-.YYYY.-.#####"
 	dn.customer = customer
 	dn.company = doc.company
 	dn.work_order = wo.name

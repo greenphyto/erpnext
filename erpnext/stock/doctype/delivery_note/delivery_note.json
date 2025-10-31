@@ -208,7 +208,7 @@
    "label": "Series",
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "DO-.YYYY.-.#####\nDO-RPL-.YYYY.-.#####\nGPO-.YYYY.-.###\nDON-.YYYY.-.###\nDO-RET-.YYYY.-.###",
+   "options": "DO-.YYYY.-.#####\nDO-RPL-.YYYY.-.#####\nGPO-.YYYY.-.###\nDON-.YYYY.-.###\nDO-RET-.YYYY.-.###\nGPM-.YYYY.-.#####\nGPP-.YYYY.-.#####",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1619,7 +1619,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-10-27 17:53:44.046919",
+ "modified": "2025-10-31 17:22:49.077671",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
