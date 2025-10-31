@@ -10,6 +10,7 @@ import os, re
 from frappe.utils import get_traceback, cstr
 from erpnext.ai_agent.doctype.ai_agent_settings.ai_invoice_converter import AIAgentClient
 from six import string_types
+from erpnext.accounts.party import get_due_date_from_template
 
 MAX_DISPLAY_LENGTH = 251
 SHORT_HEAD = 200
@@ -522,9 +523,15 @@ class EmailInvoice(Document):
 		doc = make_purchase_invoice(po_ref)
 		doc.set_default_number_fields()
 		doc.created_with_ai = 1
+		doc.naming_series = "TEMP-PI-.#####./.YYYY"
 		doc.bill_no = bill_no
 		doc.bill_date = bill_date
 
+		if doc.payment_terms_template:
+			doc.due_date = get_due_date_from_template(doc.payment_terms_template,doc.posting_date, bill_date)
+			for d in doc.get("payment_schedule"):
+				d.due_date = doc.due_date
+				
 		# Prepare extracted items for rate update
 		extracted_items = data.get("items") or []
 
@@ -743,6 +750,7 @@ class EmailInvoice(Document):
 		doc = frappe.new_doc("Purchase Invoice")
 		doc.created_with_ai = 1
 		doc.non_stock_item = 1
+		doc.naming_series = "TEMP-PI-.#####./.YYYY"
 
 		# Header mapping
 		# Supplier only if exists
@@ -896,6 +904,7 @@ class EmailInvoice(Document):
 		doc = make_purchase_invoice(data.get("po_no"))
 		doc.set_default_number_fields()
 		doc.created_with_ai = 1
+		doc.naming_series = "TEMP-PI-.#####./.YYYY"
 
 		for d in data.get("items"):
 			rows = doc.get("items", {"item_code":d['item_code']})
@@ -1284,3 +1293,6 @@ def get_item_group(item_group):
 	doc.insert()
 
 	return doc.name
+
+def change_temporary_invoice(doc, method=""):
+	pass
