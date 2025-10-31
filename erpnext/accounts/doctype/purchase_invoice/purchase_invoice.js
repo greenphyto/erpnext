@@ -187,6 +187,12 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 		}
 
 		this.frm.set_df_property("tax_withholding_category", "hidden", doc.apply_tds ? 0 : 1);
+	
+		if (this.frm.doc.__onload && this.frm.doc.__onload.got_new_name){
+			var new_name = this.frm.doc.__onload.got_new_name;
+			frappe.msgprint(`Document renamed to ${new_name}`);
+			frappe.set_route("Form", "Purchase Invoice", new_name);
+		}
 	}
 
 	unblock_invoice() {
@@ -440,7 +446,7 @@ function hide_fields(doc) {
 
 	cur_frm.refresh_fields();
 }
-
+console.log(900011)
 cur_frm.fields_dict.cash_bank_account.get_query = function(doc) {
 	return {
 		filters: [

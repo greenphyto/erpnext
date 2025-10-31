@@ -541,7 +541,7 @@ class EmailInvoice(Document):
 			doc.due_date = get_due_date_from_template(doc.payment_terms_template,doc.posting_date, bill_date)
 			for d in doc.get("payment_schedule"):
 				d.due_date = doc.due_date
-				
+
 		# Prepare extracted items for rate update
 		extracted_items = data.get("items") or []
 
@@ -1304,5 +1304,29 @@ def get_item_group(item_group):
 
 	return doc.name
 
+def setup_onload(doc, method=""):
+	print(1299999, doc.flags.got_new_name)
+	if doc.flags.got_new_name:
+		doc.set_onload("disable_auto_reload", 1)
+		doc.set_onload("got_new_name", doc.flags.got_new_name)
+
+# def test_reload2(doc, method=""):
+# 	print(7777777)
+# 	doc.flags.got_new_name = 123123123
+
 def change_temporary_invoice(doc, method=""):
-	pass
+	# only run for TEMP documents
+	if not doc.name.startswith("TEMP"):
+		return
+
+	print(8888888)
+	# get new name based on final series
+	new_name = frappe.model.naming.make_autoname("PI.#####./.YYYY")
+
+	# rename the document using frappe built-in rename_doc
+	old_name = doc.name
+	doc.flags.got_new_name = new_name
+
+	frappe.rename_doc(doc.doctype, old_name, new_name, force=True, merge=False)
+
+	return new_name
