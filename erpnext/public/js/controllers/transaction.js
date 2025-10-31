@@ -260,7 +260,29 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 				}
 			]);
 		}
+		localStorage.setItem("last_reload_time", Date.now());
+		console.log("Page load detector");
 	}
+
+	after_save(doc) {
+      var disable = this.frm.doc.__onload && this.frm.doc.__onload.disable_auto_reload
+      if (this.frm.doc.docstatus === 1 && !disable) {
+        const last_reload_time = localStorage.getItem("last_reload_time");
+        const now = Date.now();
+        const FIVE_MINUTES = 5 * 60 * 1e3;
+        if (!is_null(last_reload_time) && now - cint(last_reload_time) > FIVE_MINUTES) {
+          frappe.show_alert({
+            message: __("Reloading page..."),
+            indicator: "blue"
+          });
+          setTimeout(() => {
+            frappe.ui.toolbar.clear_cache();
+          }, 500);
+        } else {
+          console.log("Skip reload: Less than 5 minutes since the last reload.");
+        }
+      }
+    }
 
 	is_return() {
 		if(!this.frm.doc.is_return && this.frm.doc.return_against) {
