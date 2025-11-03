@@ -140,7 +140,7 @@
    "fieldtype": "Select",
    "in_standard_filter": 1,
    "label": "Reason",
-   "options": "No Attachment\nFile Missing\nNot PDF\nPDF Encrypted\nPDF Failed\nAgent No Result\nPI Missing Data\nPI Unknown Item\nPI Empty Items\nPI Multi Currency\nPI Create Failed\nSystem Error\nUnknown",
+   "options": "No Attachment\nNot Invoice\nFile Missing\nNot PDF\nPDF Encrypted\nPDF Failed\nAgent No Result\nPI Missing Data\nPI Unknown Item\nPI Empty Items\nPI Multi Currency\nPI Create Failed\nSystem Error\nUnknown",
    "read_only": 1
   },
   {

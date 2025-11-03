@@ -121,6 +121,8 @@ class EmailInvoice(Document):
 		# 5) Agent
 		if has("agent", "no_extraction_result"):
 			return "Agent No Result"
+		if has("agent", "not_invoice"):
+			return "Not Invoice"
 
 		return "Unknown"
 
@@ -281,6 +283,14 @@ class EmailInvoice(Document):
 					category="agent",
 					code="no_extraction_result",
 					message="AI agent returned no result",
+					context={"file": fn.file_name},
+				)
+				continue
+			elif extracted.get("error"):
+				self.add_reason(
+					category="agent",
+					code="not_invoice",
+					message="Attachment is not Invoice",
 					context={"file": fn.file_name},
 				)
 				continue
