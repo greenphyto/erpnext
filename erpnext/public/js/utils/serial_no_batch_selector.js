@@ -240,6 +240,8 @@ erpnext.SerialNoBatchSelector = class SerialNoBatchSelector {
 				if (!row) {
 					row = this.item;
 				}
+				row.actual_batch_qty = batch.actual_qty;
+
 				// this ensures that qty & batch no is set
 				this.map_row_values(row, batch, 'batch_no',
 					'selected_qty', this.values.warehouse);
@@ -344,9 +346,28 @@ erpnext.SerialNoBatchSelector = class SerialNoBatchSelector {
 
 	get_batch_fields() {
 		var me = this;
+		async function click_map_batches() {
+			const res = await frappe.xcall("erpnext.stock.doctype.batch.batch.pick_batches", {
+				item_code: me.item_code,
+				warehouse: me.warehouse_details.name,
+				required_qty: me.qty,
+				uom: me.item.uom
+			});
+			me.dialog.fields_dict.batches.df.data = [];
+			$.each(res, (i,r)=>{
+				me.dialog.fields_dict.batches.df.data.push({
+					'batch_no': r.batch_id,
+					'actual_qty': r.actual_qty_conv,
+					'selected_qty': r.qty,
+					'available_qty': r.qty
+				});
+			})
+			me.dialog.fields_dict.batches.refresh()
+		}
 
 		return [
 			{fieldtype:'Section Break', label: __('Batches')},
+			{fieldtype:'Button', label: __('Get Batches'), click:click_map_batches},
 			{fieldname: 'batches', fieldtype: 'Table', label: __('Batch Entries'),
 				fields: [
 					{
