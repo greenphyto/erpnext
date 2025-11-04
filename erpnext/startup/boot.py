@@ -55,6 +55,7 @@ def boot_session(bootinfo):
 		# non stock item
 		bootinfo.sysdefaults.non_stock_item = frappe.db.get_single_value("Buying Settings", "non_stock_item")
 		bootinfo.sysdefaults.debit_note_item = frappe.db.get_value("Item", {"debit_note_item":1})
+		bootinfo.sysdefaults.default_selling_warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_fg_warehouse")
 
 def update_page_info(bootinfo):
 	bootinfo.page_info.update(

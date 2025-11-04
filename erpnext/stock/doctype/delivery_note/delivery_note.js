@@ -80,6 +80,11 @@ frappe.ui.form.on("Delivery Note", {
 		frm.set_df_property('packed_items', 'cannot_add_rows', true);
 		frm.set_df_property('packed_items', 'cannot_delete_rows', true);
 	},
+	onload: (frm)=>{
+		if (frm.is_new() && !frm.doc.set_warehouse){
+			frm.set_value("set_warehouse", frappe.sys_defaults.default_selling_warehouse)
+		}
+	},
 
 	is_donation: function(frm){
 		if (cint(frm.doc.is_donation)==0) return;
