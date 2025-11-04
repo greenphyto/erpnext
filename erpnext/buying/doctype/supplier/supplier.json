@@ -519,9 +519,9 @@
   },
   {
    "fieldname": "default_bank_account_no",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "Default Bank Account No",
-   "options": "Bank Number"
+   "options": "Data"
   },
   {
    "fieldname": "ai_info_section",

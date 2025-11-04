@@ -394,6 +394,7 @@ class EmailInvoice(Document):
 
 			agent = AIAgentClient()
 			supp_payload = get_supplier_payload(supplier, domains)
+			# save_dict_to_json(supp_payload)
 			temp = agent.get_supplier(supp_payload)
 			supplier_final = temp.get("code")
 			if supplier_final:
@@ -442,6 +443,7 @@ class EmailInvoice(Document):
 
 		Returns (bool, name_or_error): compatible with `process_email` expectations.
 		"""
+		result = result or []
 		if not com_doc and self.inbox:
 			com_doc = frappe.get_doc("Communication", self.inbox)
 
@@ -1330,3 +1332,14 @@ def change_temporary_invoice(doc, method=""):
 	frappe.rename_doc(doc.doctype, old_name, new_name, force=True, merge=False)
 
 	return new_name
+
+def save_dict_to_json(data: dict, filename="data.json"):
+    # cari direktori file ini (tempat fungsi didefinisikan)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    filepath = os.path.join(current_dir, filename)
+
+    # tulis dict ke file JSON
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+    print(f"✅ JSON saved to: {filepath}")
