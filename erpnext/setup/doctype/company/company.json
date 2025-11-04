@@ -12,8 +12,6 @@
   "details",
   "company_name",
   "abbr",
-  "series_abbr",
-  "color",
   "default_currency",
   "country",
   "time_zone",
@@ -25,6 +23,10 @@
   "domain",
   "date_of_establishment",
   "parent_company",
+  "theme_section",
+  "series_abbr",
+  "color",
+  "theme_path",
   "company_info",
   "company_logo",
   "date_of_incorporation",
@@ -867,6 +869,17 @@
    "label": "Default Warehouse",
    "options": "Warehouse",
    "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "theme_section",
+   "fieldtype": "Section Break",
+   "label": "Theme"
+  },
+  {
+   "fieldname": "theme_path",
+   "fieldtype": "Data",
+   "label": "Theme Path"
   }
  ],
  "icon": "fa fa-building",
@@ -874,7 +887,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-10-23 14:52:45.220655",
+ "modified": "2025-11-04 14:58:48.903962",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

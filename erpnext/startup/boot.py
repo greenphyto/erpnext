@@ -132,3 +132,12 @@ def get_letter_heads(company):
 		)
 
 	return letter_heads
+
+def get_css_custom():
+	company = get_company_selected()
+	if (company != "All" or company != "Disabled") and company:
+		theme_file = frappe.db.get_value("Company", company, "theme_path")
+		if theme_file:
+			return [theme_file]
+
+	return []
