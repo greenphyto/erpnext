@@ -73,18 +73,24 @@ erpnext.SerialNoBatchSelector = class SerialNoBatchSelector {
 			{
 				fieldname: 'qty',
 				fieldtype:'Float',
-				read_only: me.has_batch && !me.has_serial_no,
+				read_only: 0,
 				label: __(me.has_batch && !me.has_serial_no ? 'Selected Qty' : 'Qty'),
 				default: flt(me.item.stock_qty) || flt(me.item.transfer_qty),
+				onchange: function(){
+					me.qty = this.value
+				}
 			},
 			...get_pending_qty_fields(me),
 			{
 				fieldname: 'uom',
-				read_only: 1,
+				read_only: 0,
 				fieldtype: 'Link',
 				options: 'UOM',
 				label: __('UOM'),
-				default: me.item.uom
+				default: me.item.uom,
+				onchange: function(){
+					me.item.uom = this.value;
+				}
 			},
 			{
 				fieldname: 'auto_fetch_button',
@@ -241,6 +247,7 @@ erpnext.SerialNoBatchSelector = class SerialNoBatchSelector {
 					row = this.item;
 				}
 				row.actual_batch_qty = batch.actual_qty;
+				// row.uom = me.item.uom;
 
 				// this ensures that qty & batch no is set
 				this.map_row_values(row, batch, 'batch_no',
