@@ -124,12 +124,13 @@
    "fieldtype": "Select",
    "in_standard_filter": 1,
    "label": "Reason",
-   "options": "No Attachment\nFile Missing\nNot PDF\nPDF Encrypted\nPDF Failed\nAgent No Result\nPI Missing Data\nPI Unknown Item\nPI Empty Items\nPI Multi Currency\nPI Create Failed\nSystem Error\nUnknown",
+   "options": "No Attachment\nNot Invoice\nFile Missing\nNot PDF\nPDF Encrypted\nPDF Failed\nAgent No Result\nPI Missing Data\nPI Unknown Item\nPI Empty Items\nPI Multi Currency\nPI Create Failed\nSystem Error\nUnknown",
    "read_only": 1
   },
   {
    "fieldname": "data_result",
    "fieldtype": "Code",
+   "in_standard_filter": 1,
    "label": "Data Result",
    "read_only": 1
   },
@@ -160,7 +161,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-31 14:42:40.741145",
+ "modified": "2025-11-03 15:26:35.127901",
  "modified_by": "Administrator",
  "module": "AI Agent",
  "name": "Email Invoice",

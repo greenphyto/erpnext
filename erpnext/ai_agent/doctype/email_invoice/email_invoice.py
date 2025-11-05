@@ -122,6 +122,8 @@ class EmailInvoice(Document):
 		# 5) Agent
 		if has("agent", "no_extraction_result"):
 			return "Agent No Result"
+		if has("agent", "not_invoice"):
+			return "Not Invoice"
 
 		return "Unknown"
 
@@ -285,6 +287,14 @@ class EmailInvoice(Document):
 					context={"file": fn.file_name},
 				)
 				continue
+			elif extracted.get("error"):
+				self.add_reason(
+					category="agent",
+					code="not_invoice",
+					message="Attachment is not Invoice",
+					context={"file": fn.file_name},
+				)
+				continue
 
 			# Keep copy of extracted JSON for audit and later review
 			# Also include `file` so downstream creation can attach it
@@ -384,6 +394,7 @@ class EmailInvoice(Document):
 
 			agent = AIAgentClient()
 			supp_payload = get_supplier_payload(supplier, domains)
+			# save_dict_to_json(supp_payload)
 			temp = agent.get_supplier(supp_payload)
 			supplier_final = temp.get("code")
 			if supplier_final:
@@ -432,6 +443,7 @@ class EmailInvoice(Document):
 
 		Returns (bool, name_or_error): compatible with `process_email` expectations.
 		"""
+		result = result or []
 		if not com_doc and self.inbox:
 			com_doc = frappe.get_doc("Communication", self.inbox)
 
@@ -523,7 +535,7 @@ class EmailInvoice(Document):
 		doc = make_purchase_invoice(po_ref)
 		doc.set_default_number_fields()
 		doc.created_with_ai = 1
-		doc.naming_series = "TEMP-PI-.#####./.YYYY"
+		doc.naming_series = "TEMP-PI.#####./.YYYY"
 		doc.bill_no = bill_no
 		doc.bill_date = bill_date
 
@@ -575,6 +587,9 @@ class EmailInvoice(Document):
 							"old_rate": old_rate,
 							"new_rate": new_rate,
 						})
+
+		# set historical data
+		self.get_historic_data(doc)
 
 		# Optional GST update if present in payload
 		doc.taxes_and_charges = get_gst_template(GST_DEFAULT)
@@ -663,6 +678,34 @@ class EmailInvoice(Document):
 			<div class="hidden data">{json.dumps(bank_data)}</div>
 			"""
 			com.insert(ignore_permissions=True)
+	
+	def get_historic_data(self, doc):
+		# cost center , expense
+		if not doc.supplier:
+			return doc
+		
+		row = frappe.db.sql("""
+			SELECT
+				pii.expense_account,
+				pii.cost_center,
+				pi.name AS purchase_invoice,
+				pi.posting_date
+			FROM `tabPurchase Invoice Item` pii
+			INNER JOIN `tabPurchase Invoice` pi ON pi.name = pii.parent
+			WHERE pi.supplier = %s
+			AND pi.docstatus = 1
+			ORDER BY pi.posting_date DESC, pi.creation DESC
+			LIMIT 1
+		""", doc.supplier, as_dict=True)
+
+		if row:
+			row = row[0]
+			for d in doc.items:
+				d.cost_center = row.cost_center
+				d.expense_account = row.expense_account
+		
+		return doc
+
 		
 	def create_purchase_invoice_non_stock(self, data=None):
 		"""Create a Non-stock Purchase Invoice purely from the passed parameter.
@@ -751,6 +794,7 @@ class EmailInvoice(Document):
 		doc.created_with_ai = 1
 		doc.non_stock_item = 1
 		doc.naming_series = "TEMP-PI-.#####./.YYYY"
+		doc.naming_series = "TEMP-PI.#####./.YYYY"
 
 		# Header mapping
 		# Supplier only if exists
@@ -834,6 +878,9 @@ class EmailInvoice(Document):
 			if frappe.db.exists("Currency", ic):
 				doc.currency = ic
 
+		# set historical data
+		self.get_historic_data(doc)
+
 		doc.taxes_and_charges = get_gst_template(GST_DEFAULT)
 		doc.set_other_charges()
 
@@ -889,7 +936,7 @@ class EmailInvoice(Document):
 		return True, doc.name
 
 	def enable_single_invoice(self, bill_no, bill_date):
-		exists = frappe.db.get_value("Purchase Invoice", {"bill_no":bill_no, "bill_date":bill_date})
+		exists = frappe.db.get_value("Purchase Invoice", {"bill_no":bill_no, "bill_date":bill_date, "docstatus":1})
 		if exists:
 			return exists
 
@@ -904,7 +951,7 @@ class EmailInvoice(Document):
 		doc = make_purchase_invoice(data.get("po_no"))
 		doc.set_default_number_fields()
 		doc.created_with_ai = 1
-		doc.naming_series = "TEMP-PI-.#####./.YYYY"
+		doc.naming_series = "TEMP-PI.#####./.YYYY"
 
 		for d in data.get("items"):
 			rows = doc.get("items", {"item_code":d['item_code']})
@@ -913,6 +960,9 @@ class EmailInvoice(Document):
 				row = rows[0]
 				row.rate = flt(d['rate'])
 				row.qty = flt(d['qty'])
+
+		# historical data
+		self.get_historic_data(doc)
 
 		# add GST 
 		doc.taxes_and_charges = get_gst_template(GST_DEFAULT)
@@ -1320,3 +1370,14 @@ def change_temporary_invoice(doc, method=""):
 	frappe.rename_doc(doc.doctype, old_name, new_name, force=True, merge=False)
 
 	return new_name
+
+def save_dict_to_json(data: dict, filename="data.json"):
+    # cari direktori file ini (tempat fungsi didefinisikan)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    filepath = os.path.join(current_dir, filename)
+
+    # tulis dict ke file JSON
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+    print(f"✅ JSON saved to: {filepath}")

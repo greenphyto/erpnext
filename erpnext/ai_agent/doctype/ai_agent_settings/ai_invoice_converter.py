@@ -2,7 +2,7 @@ from typing import Optional
 
 import requests
 
-import frappe, json
+import frappe, json, re
 from frappe.utils import cstr
 
 class AIAgentClient:
@@ -118,6 +118,13 @@ class AIAgentClient:
         Returns parsed invoice data dict.
         """
         text = self.extract_text(invoice_path, email, lang=lang)
+
+        # check continue or not
+        if not self.validate_text(text):
+            return {
+                "error":"Attachment is not invoice"
+            }
+        
         supplier_default = self.get_supplier_default(text, email, references)
 
         return self.get_invoice_data(text=text, supplier_default=supplier_default)
@@ -186,3 +193,16 @@ class AIAgentClient:
             return {
                 "result":[]
             }
+
+    def validate_text(self, text):
+        # check is valid invoice or not
+
+        # Stament of Account 
+        text = text.lower()
+
+        if "statement of account" in text or re.search(r"\bdebit\b.*\bcredit\b.*\bbalance\b", text):
+            return False
+
+        # Purchase Order
+
+        return True
