@@ -1359,7 +1359,6 @@ def change_temporary_invoice(doc, method=""):
 	if not doc.name.startswith("TEMP"):
 		return
 
-	print(8888888)
 	# get new name based on final series
 	new_name = frappe.model.naming.make_autoname("PI.#####./.YYYY")
 
