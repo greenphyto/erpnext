@@ -1307,6 +1307,7 @@ def get_batch_qty(batch_no, warehouse, item_code):
 
 @frappe.whitelist()
 def apply_price_list(args, as_doc=False):
+	# print(1310, args)
 	"""Apply pricelist on a document-like dict object and return as
 	{'parent': dict, 'children': list}
 

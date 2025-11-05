@@ -955,6 +955,7 @@ def _trial_balance_different_issue(company):
 				})
 				doc_notif.send(doc)
 
+from erpnext.stock.get_item_details import get_price_list_rate, get_conversion_factor
 def create_sample_after_work_order(doc, method=""):
 	# Run only for Manufacture type
 	if doc.purpose != "Manufacture":
@@ -1002,16 +1003,23 @@ def create_sample_after_work_order(doc, method=""):
 	dn.customer_address = address
 	dn.shipping_address_name = address
 	expense = frappe.db.get_value("Company", doc.company, "production_delivery_account", as_dict=1)
+	
+	# conv rate
+	temp = get_conversion_factor(production_item, uom)
+	conv_factor = temp.get("conversion_factor") if temp else 1
 
-	dn.append("items", {
+	row = frappe._dict({
 		"item_code": production_item,
 		"qty": qty,
 		"uom":uom,
 		"warehouse": warehouse,
 		"batch_no": batch_no,
+		"convertion_factor": conv_factor,
 		"expense_account": expense.production_delivery_account,
 		"description": "Auto-generated delivery note after manufacturing completion."
 	})
+	row.rate = get_item_rate(dn, row)
+	dn.append("items", row)
 
 	# Save and submit
 	dn.insert(ignore_permissions=True)
@@ -1020,5 +1028,26 @@ def create_sample_after_work_order(doc, method=""):
 	except:
 		pass
 
-
 	return dn.name
+
+def get_item_rate(doc, row):
+	price_list = frappe.db.get_value(
+        "Price List",
+        {"enabled": 1, "selling": 1},
+        "name"
+    )
+
+	args = frappe._dict({
+		"uom": row.uom,
+		"qty": row.qty,
+		"item_code": row.item_code,
+		"customer": doc.customer,
+		"conversion_rate": 1,
+		"price_list": price_list,
+		"company": doc.company,
+		"doctype": doc.doctype,
+		"ignore_party":1,
+	})
+	item_doc = frappe.db.get_value("Item", args.item_code, ["name", "variant_of"], as_dict=1)
+	rate = get_price_list_rate(args, item_doc)
+	return flt(rate.get("price_list_rate"))
