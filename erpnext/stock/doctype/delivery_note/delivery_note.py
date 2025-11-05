@@ -240,10 +240,10 @@ class DeliveryNote(SellingController):
 		elif self.is_replacement:
 			account = frappe.get_value("Company", self.company, "sales_replacement_account")
 		
-		elif self.is_marketing:
+		elif self.is_production:
 			account = frappe.get_value("Company", self.company, "production_delivery_account")
 		
-		elif self.is_production:
+		elif self.is_marketing:
 			account = frappe.get_value("Company", self.company, "marketing_delivery_account")
 
 		if account:

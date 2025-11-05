@@ -968,7 +968,7 @@ def create_sample_after_work_order(doc, method=""):
 		return
 
 	# Check duplication: avoid multiple DN
-	if frappe.db.exists("Delivery Note", {"work_order": doc.work_order, "is_production":1}):
+	if frappe.db.exists("Delivery Note", {"work_order": doc.work_order, "is_production":1, "docstatus":1}):
 		return
 
 	# Fetch Work Order
@@ -999,6 +999,7 @@ def create_sample_after_work_order(doc, method=""):
 	dn.is_production = 1
 	dn.customer_address = address
 	dn.shipping_address_name = address
+	expense = frappe.db.get_value("Company", doc.company, "production_delivery_account", as_dict=1)
 
 	dn.append("items", {
 		"item_code": production_item,
@@ -1006,6 +1007,7 @@ def create_sample_after_work_order(doc, method=""):
 		"uom":uom,
 		"warehouse": warehouse,
 		"batch_no": batch_no,
+		"expense_account": expense.production_delivery_account,
 		"description": "Auto-generated delivery note after manufacturing completion."
 	})
 
