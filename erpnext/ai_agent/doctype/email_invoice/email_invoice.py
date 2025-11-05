@@ -588,6 +588,9 @@ class EmailInvoice(Document):
 							"new_rate": new_rate,
 						})
 
+		# set historical data
+		self.get_historic_data(doc)
+
 		# Optional GST update if present in payload
 		doc.taxes_and_charges = get_gst_template(GST_DEFAULT)
 		doc.set_other_charges()
@@ -675,6 +678,34 @@ class EmailInvoice(Document):
 			<div class="hidden data">{json.dumps(bank_data)}</div>
 			"""
 			com.insert(ignore_permissions=True)
+	
+	def get_historic_data(self, doc):
+		# cost center , expense
+		if not doc.supplier:
+			return doc
+		
+		row = frappe.db.sql("""
+			SELECT
+				pii.expense_account,
+				pii.cost_center,
+				pi.name AS purchase_invoice,
+				pi.posting_date
+			FROM `tabPurchase Invoice Item` pii
+			INNER JOIN `tabPurchase Invoice` pi ON pi.name = pii.parent
+			WHERE pi.supplier = %s
+			AND pi.docstatus = 1
+			ORDER BY pi.posting_date DESC, pi.creation DESC
+			LIMIT 1
+		""", doc.supplier, as_dict=True)
+
+		if row:
+			row = row[0]
+			for d in doc.items:
+				d.cost_center = row.cost_center
+				d.expense_account = row.expense_account
+		
+		return doc
+
 		
 	def create_purchase_invoice_non_stock(self, data=None):
 		"""Create a Non-stock Purchase Invoice purely from the passed parameter.
@@ -846,6 +877,9 @@ class EmailInvoice(Document):
 			if frappe.db.exists("Currency", ic):
 				doc.currency = ic
 
+		# set historical data
+		self.get_historic_data(doc)
+
 		doc.taxes_and_charges = get_gst_template(GST_DEFAULT)
 		doc.set_other_charges()
 
@@ -901,7 +935,7 @@ class EmailInvoice(Document):
 		return True, doc.name
 
 	def enable_single_invoice(self, bill_no, bill_date):
-		exists = frappe.db.get_value("Purchase Invoice", {"bill_no":bill_no, "bill_date":bill_date})
+		exists = frappe.db.get_value("Purchase Invoice", {"bill_no":bill_no, "bill_date":bill_date, "docstatus":1})
 		if exists:
 			return exists
 
@@ -925,6 +959,9 @@ class EmailInvoice(Document):
 				row = rows[0]
 				row.rate = flt(d['rate'])
 				row.qty = flt(d['qty'])
+
+		# historical data
+		self.get_historic_data(doc)
 
 		# add GST 
 		doc.taxes_and_charges = get_gst_template(GST_DEFAULT)
