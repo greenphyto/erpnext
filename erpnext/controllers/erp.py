@@ -1030,6 +1030,29 @@ def create_sample_after_work_order(doc, method=""):
 
 	return dn.name
 
+def cancel_sample_on_work_order(doc, method=''):
+	if doc.purpose != "Manufacture":
+		return
+	
+	# Ensure Work Order linked
+	if not doc.work_order:
+		return
+	
+	# Check duplication: avoid multiple DN
+	exists = frappe.db.exists("Delivery Note", {"work_order": doc.work_order, "is_production":1})
+	if not exists:
+		return
+
+	dn = frappe.get_doc("Delivery Note", exists)
+	if dn.docstatus == 1:
+		dn.cancel()
+	elif dn.docstatus == 0:
+		frappe.delete_doc(dn.doctype, dn.name)
+	
+	for d in dn.get('items'):
+		d.db_set("batch_no", "")
+
+
 def get_item_rate(doc, row):
 	price_list = frappe.db.get_value(
         "Price List",
