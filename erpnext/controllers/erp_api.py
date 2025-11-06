@@ -319,6 +319,8 @@ def get_stock_entry_type(operation):
 @frappe.whitelist()
 def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[], ERPWorkOrderID="", erpWorkOrderID="", now=False):
 	ERPWorkOrderID = ERPWorkOrderID or erpWorkOrderID
+	percentage = flt(percentage)
+	rawMaterials = get_data(rawMaterials)
 	data_name = f"Operation {operationNo} Work Order {ERPWorkOrderID}"
 	log_res = save_log("Work Order", data_name, {
 		"ERPWorkOrderID":ERPWorkOrderID, 
@@ -361,6 +363,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 		}
 	
 	wip_warehouse = frappe.get_value("Job Card", job_card_name, "wip_warehouse")
+	frappe.db.commit()
 
 	# create stock entry
 	if job_card_name and frappe.db.get_value("Stock Entry", {"job_card": job_card_name, "docstatus":1}, cache=False, debug=0):
