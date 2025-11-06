@@ -42,6 +42,7 @@ frappe.ui.form.on('FOMS Data Mapping', {
 						frappe.msgprint(__("Failed to call API. See console for details."));
 						console.error(err);
 						print_traceback_only(err);
+						frm.reload_doc()
 					}
 				});
 			}
