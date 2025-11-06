@@ -20,6 +20,7 @@
   "last_sync",
   "created_on",
   "raw_data_section",
+  "endpoint",
   "raw_data",
   "section_break_15",
   "view_in_console"
@@ -118,11 +119,17 @@
   {
    "fieldname": "section_break_15",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "endpoint",
+   "fieldtype": "Data",
+   "label": "Endpoint",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-25 12:17:50.030581",
+ "modified": "2025-11-06 15:48:35.647787",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Data Mapping",

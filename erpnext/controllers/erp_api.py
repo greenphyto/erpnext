@@ -38,13 +38,14 @@ def get_data(data):
 
 	return data
 
-def save_log(doctype, data_name, raw_data, reopen=False, now=False):
+def save_log(doctype, data_name, raw_data, reopen=False, now=False, endpoint=""):
 	return frappe.enqueue("erpnext.foms.doctype.foms_data_mapping.foms_data_mapping.create_foms_data",
 		data_type=doctype, 
 		data_name=data_name,
 		raw=raw_data,
 		reopen=reopen,
 		now=now,
+		endpoint=endpoint
 	)
 
 def update_log(doctype, data_name, result_doctype, result, now=False, name_id=None):
@@ -70,7 +71,7 @@ def ping_data(data):
 	print(data)
 	data = get_data(data)
 	if data.create_log == 1:
-		save_log("TEST", "test", data)
+		save_log("TEST", "test", data, endpoint="ping_data")
 		update_log("TEST", "test", "DOC TEST", "oke")
 
 	return data
@@ -85,7 +86,7 @@ def create_bom(data):
 	item = frappe.get_value("Item", {"foms_product_id":product_id})
 	version = data.get("productVersionName")
 	data_name = f"BOM {item} {version}"
-	save_log("BOM", data_name, data)
+	save_log("BOM", data_name, data, endpoint="create_bom")
 	result = create_bom_products(data, product_id, submit=submit)
 	update_log("BOM", data_name, "BOM", result)
 	return {"ERPBomId":result}
@@ -103,7 +104,7 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 		"uom":uom, 
 		"gross_weight":gross_weight,
 		"submit":submit
-	})
+	}, endpoint="create_work_order")
 
 	submit = get_foms_settings("auto_submit_work_order") or submit
 	item_code = frappe.get_value("Item", {"foms_product_id":productID})
@@ -328,7 +329,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 		"percentage":percentage, 
 		"rawMaterials":rawMaterials, 
 		"now": cint(now)
-	}, now=1)
+	}, now=1, endpoint="update_work_order_operation_status")
 
 	if log_res.status != "Unknown":
 		return
@@ -363,7 +364,6 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 		}
 	
 	wip_warehouse = frappe.get_value("Job Card", job_card_name, "wip_warehouse")
-	frappe.db.commit()
 
 	# create stock entry
 	if job_card_name and frappe.db.get_value("Stock Entry", {"job_card": job_card_name, "docstatus":1}, cache=False, debug=0):
@@ -562,7 +562,7 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 	if now:
 		log_data['now'] = now
 
-	save_log("Work Order", data_name, log_data, reopen=1)
+	save_log("Work Order", data_name, log_data, reopen=1, now=now, endpoint="submit_work_order_finish_goods")
 
 	if cint(now):
 		return _submit_work_order_finish_goods(
@@ -766,8 +766,8 @@ def create_material_request(
 		"requiredBy":requiredBy, 
 		"requestedBy":requestedBy, 
 		"items":items, 
-		"cancel":cancel, 
-	})
+		"cancel":cancel
+	}, endpoint="create_material_request" )
 	# find draft
 	doc_name = frappe.get_value("Material Request", {"requested_by":requestedBy, "workflow_state":"Draft"})
 	if doc_name:
@@ -821,7 +821,7 @@ def create_material_return(data):
 	# logger
 	data = frappe._dict(data)
 	data_name = f"Material Return {data.return_against}"
-	save_log("Material Request", data_name, data)
+	save_log("Material Request", data_name, data, endpoint="create_material_return")
 	# create purchase receipt return
 	return_against = frappe.db.get_value("Purchase Receipt", data.return_against)
 	if not return_against:
@@ -864,7 +864,7 @@ def create_update_packaging(data):
 	# logger
 	data = frappe._dict(data)
 	data_name = f"Packaging {data.packageName}"
-	save_log("Packaging", data_name, data)
+	save_log("Packaging", data_name, data, endpoint="create_update_packaging")
 
 	item = frappe.get_value("Item", data.itemCode)
 	if not item:
@@ -894,7 +894,7 @@ def update_delivery_note_signature(data):
 	data = frappe._dict(data)
 
 	data_name = f"Update DO Signature {data.doNumber}"
-	save_log("Delivery Note", data_name, data)
+	save_log("Delivery Note", data_name, data, endpoint="update_delivery_note_signature")
 
 	do_number = frappe.get_value("Delivery Note", data.doNumber)
 	if not do_number:
@@ -954,7 +954,7 @@ def create_raw_material(data):
 	# logger
 	name = data.get("rawMaterialRefNo")
 	data_name = f"Create Raw Material {name}"
-	save_log("Raw Material", data_name, data)
+	save_log("Raw Material", data_name, data, endpoint="create_raw_material")
 
 	res = _create_raw_material(data)
 

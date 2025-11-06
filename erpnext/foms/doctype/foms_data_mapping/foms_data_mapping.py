@@ -19,7 +19,7 @@ class FOMSDataMapping(Document):
 			self.status = "Unknown"
 
 
-def create_foms_data(data_type, data_name, raw, reopen=False):
+def create_foms_data(data_type, data_name, raw, reopen=False, endpoint=""):
 	name = frappe.db.exists("FOMS Data Mapping", {
 		"data_type":data_type,
 		"data_name":data_name,
@@ -33,10 +33,12 @@ def create_foms_data(data_type, data_name, raw, reopen=False):
 
 		elif doc.doc_type and not frappe.db.exists(doc.doc_type, doc.doc_name):
 			doc.doc_name = ""
+		doc.endpoint = endpoint
 	else:
 		doc = frappe.new_doc("FOMS Data Mapping")
 		doc.data_type = data_type
 		doc.created_on = now()
+		doc.endpoint = endpoint
 	
 	if doc.status == "Mapped":
 		doc.status = "Unknown"

@@ -22,13 +22,7 @@ frappe.ui.form.on('FOMS Data Mapping', {
 		frappe.confirm(
 			'Are you sure you want to sync data?',
 			() => {
-				var text = frm.doc.data_name;
-				var endpoint = "";
-				if (/Operation\s*\d+/i.test(text)) {
-					endpoint = "erpnext.controllers.erp_api.update_work_order_operation_status";
-				} else if (/Finish\s*Work\s*Order/i.test(text)) {
-					endpoint = "erpnext.controllers.erp_api.submit_work_order_finish_goods";
-				}
+				var endpoint = `erpnext.controllers.erp_api.${frm.doc.endpoint}`;
 				frappe.call({
 					method: endpoint,
 					args: JSON.parse(frm.doc.raw_data),
