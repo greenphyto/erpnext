@@ -3,7 +3,7 @@ from typing import Optional
 import requests
 
 import frappe, json, re
-from frappe.utils import cstr
+from frappe.utils import cstr, cint
 
 class AIAgentClient:
     """
@@ -166,7 +166,9 @@ class AIAgentClient:
             "domain_map:":{"iplusmobot.com":["Iplusmobot","Hangzhou Iplusmobot Technology Co., Ltd"],"bioflora.com.sg":["Bio-Flora SG","Bio-Flora(Singapore) Pte Ltd"]}
         }
         """
+        threshold = cint(frappe.db.get_single_value("Buying Settings", "supplier_threshold"))
         url = self._join_url("/get-supplier")
+        payload['threshold'] = threshold
         resp = requests.post(url, json=payload)
 
         resp.raise_for_status()

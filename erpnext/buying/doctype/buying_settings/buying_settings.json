@@ -33,7 +33,8 @@
   "series_required_pr",
   "permissions_section",
   "enable_specific_purchase_approval",
-  "purchase_approval"
+  "purchase_approval",
+  "supplier_threshold"
  ],
  "fields": [
   {
@@ -200,6 +201,12 @@
    "fieldname": "enable_specific_purchase_approval",
    "fieldtype": "Check",
    "label": "Enable specific purchase approval"
+  },
+  {
+   "default": "85",
+   "fieldname": "supplier_threshold",
+   "fieldtype": "Percent",
+   "label": "Supplier Threshold"
   }
  ],
  "icon": "fa fa-cog",
@@ -207,7 +214,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-07-31 12:44:35.549709",
+ "modified": "2025-11-06 14:55:25.416198",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Buying Settings",
