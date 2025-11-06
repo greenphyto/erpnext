@@ -34,7 +34,9 @@ PRECISION_FACTOR = 4
 def get_data(data):
 	if isinstance(data, string_types):
 		data = json.loads(data)
-	data = frappe._dict(data)
+
+	if type(data) == dict:
+		data = frappe._dict(data)
 
 	return data
 

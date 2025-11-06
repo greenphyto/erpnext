@@ -22,8 +22,9 @@
   "raw_data_section",
   "endpoint",
   "raw_data",
-  "section_break_15",
-  "view_in_console"
+  "edit_data",
+  "view_in_console",
+  "section_break_15"
  ],
  "fields": [
   {
@@ -95,7 +96,7 @@
    "fieldname": "raw_data",
    "fieldtype": "Code",
    "label": "Raw Data",
-   "read_only": 1
+   "read_only_depends_on": "eval:doc.edit_data==0"
   },
   {
    "fieldname": "view_in_console",
@@ -125,11 +126,17 @@
    "fieldtype": "Data",
    "label": "Endpoint",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "edit_data",
+   "fieldtype": "Check",
+   "label": "Edit Data"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-06 15:48:35.647787",
+ "modified": "2025-11-06 18:30:29.304911",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Data Mapping",
