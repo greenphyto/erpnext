@@ -184,6 +184,17 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 			}
 			return erpnext.queries.item(filters);
 		})
+
+		this.frm.set_query("uom", "items", function(doc, cdt, cdn) {
+			var row = locals[cdt][cdn];
+			if (!row.item_code) frappe.throw(__("Please select Item"));
+			var args =  erpnext.queries.uom({
+				"parent": row.item_code,
+				"is_packaging": doc.non_package_item? 0 : 1
+			})
+
+			return args;
+		});
 	}
 
 	non_package_item(){

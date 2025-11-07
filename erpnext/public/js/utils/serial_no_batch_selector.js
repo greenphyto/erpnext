@@ -90,6 +90,14 @@ erpnext.SerialNoBatchSelector = class SerialNoBatchSelector {
 				default: me.item.uom,
 				onchange: function(){
 					me.item.uom = this.value;
+				},
+				get_query:doc=>{
+					var args =  erpnext.queries.uom({
+						"parent": me.item_code,
+						"is_packaging": me.frm.doc.non_package_item? 0 : 1
+					})
+
+					return args;
 				}
 			},
 			{
