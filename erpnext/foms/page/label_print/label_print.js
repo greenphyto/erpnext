@@ -8,7 +8,7 @@ class LabelPrintPage {
         size: "Custom",
         width: 110,
         height: 150,
-        margin: 0,
+        margin: 5,
         print_template: "Label Print",
         ref_doctype: "Delivery Note",
         ref_name: "DO-2024-001",
@@ -53,13 +53,13 @@ class LabelPrintPage {
 
   build_preview() {
     this.$preview = $(this.page.body).find('.label-print-preview');
+    // Ensure margin visible even if external CSS isn't loaded yet
+    this.$preview.css('margin', '15px');
 
     this.$paper = $('<div class="paper"></div>')
       .appendTo(this.$preview)
       .hide();
-    this.$frame = $(`<iframe style="width:100%; height:100%; border:0; background:white; overflow:hidden;" scrolling="no"></iframe>`).appendTo(
-      this.$paper
-    );
+    this.$paper_content = $('<div class="paper-content"></div>').appendTo(this.$paper);
     this.$hint = $('<div class="paper-hint"></div>')
       .text(
         "Provide Reference DocType and Document Name to render the selected Print Format."
@@ -227,14 +227,34 @@ class LabelPrintPage {
           const msg = r && r.message ? r.message : {};
           const html = msg.html || "";
           const style = msg.style || "";
-          const doc = this.$frame[0].contentDocument || this.$frame[0].contentWindow.document;
-          doc.open();
-          const injected = `
-            html, body { margin: 0; height: 100%; overflow: hidden !important; }
-            body::-webkit-scrollbar { display: none; }
-          `;
-          doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><style>${style}\n${injected}</style></head><body>${html}</body></html>`);
-          doc.close();
+          // Render into shadow DOM if available to avoid CSS leaking
+          const host = this.$paper_content[0];
+          if (host && host.attachShadow) {
+            const root = host.shadowRoot || host.attachShadow({ mode: 'open' });
+            root.innerHTML = '';
+            const styleEl = document.createElement('style');
+            styleEl.textContent = `${style}`;
+            const styleCenter = document.createElement('style');
+            styleCenter.textContent = `
+              .label-preview-root { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+              .label-preview-root > :first-child { margin: auto; }
+            `;
+            const wrap = document.createElement('div');
+            wrap.className = 'label-preview-root';
+            wrap.innerHTML = html;
+            root.appendChild(styleEl);
+            root.appendChild(styleCenter);
+            root.appendChild(wrap);
+          } else {
+            // Fallback: inject style + html directly
+            const centerCss = `
+              <style>
+                .paper-content { display: flex; align-items: center; justify-content: center; }
+                .paper-content > :first-child { margin: auto; }
+              </style>
+            `;
+            this.$paper_content.html(`${centerCss}<style>${style}</style>${html}`);
+          }
         } finally {
           $btn && $btn.removeClass("btn-loading").prop("disabled", false);
         }
@@ -271,13 +291,15 @@ class LabelPrintPage {
     // Style the paper visibility
     this.$preview.find(".placeholder").hide();
     this.$paper.show();
+    // Ensure we start at the top to avoid apparent cut-off
+    try { this.$preview.scrollTop(0).scrollLeft(0); } catch (e) {}
 
     // Apply dimensions in mm when provided
     const mm = (v) => (v != null ? `${v}mm` : "auto");
     this.$paper.css({
       width: mm(width),
       height: mm(height),
-      margin: mm(margin),
+      padding: mm(margin),
       background: "white",
       boxShadow: "0 0 0 1px var(--gray-300) inset",
       display: "block",
@@ -290,12 +312,8 @@ class LabelPrintPage {
       this.fetch_and_render(values);
     } else {
       // If no doc provided, keep hint
-      const doc = this.$frame[0].contentDocument || this.$frame[0].contentWindow.document;
-      if (doc) {
-        doc.open();
-        doc.write("<html><head></head><body></body></html>");
-        doc.close();
-      }
+      // clear any previous rendered content
+      this.$paper_content.empty();
       this.$hint.show();
     }
   }
