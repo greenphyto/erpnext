@@ -1,17 +1,21 @@
 .label-print-preview {
+  margin: 15px;
   border: 1px solid var(--gray-400);
   height: 70vh;
   overflow: auto;
-  display: flex;
-  align-items: center;
+  /* Keep content top-aligned to avoid initial top cut-off */
+  align-items: flex-start;
   justify-content: center;
-  background: repeating-linear-gradient(
-    45deg,
-    #f4f5f7 0px,
-    #f4f5f7 12px,
-    #eef0f2 12px,
-    #eef0f2 24px
-  );
+  /* Checkered background */
+  background-color: #f7f8fa;
+  background-image:
+    linear-gradient(45deg, #eaeef2 25%, transparent 25%, transparent 75%, #eaeef2 75%, #eaeef2),
+    linear-gradient(45deg, #eaeef2 25%, transparent 25%, transparent 75%, #eaeef2 75%, #eaeef2);
+  background-size: 16px 16px;
+  background-position: 0 0, 8px 8px;
+  position: relative;
+  display: block;
+  padding: 10px;
 }
 
 .label-print-preview .placeholder {
@@ -37,11 +41,23 @@
   position: relative;
   width: auto;
   height: auto;
+  box-sizing: border-box;
   background: white;
   box-shadow: 0 0 0 1px var(--gray-300) inset;
   display: block;
   overflow: hidden;
   align-self: center;
+	margin: auto;
+	border-radius: 5px;
+}
+
+.paper-content {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .paper-hint {
@@ -56,4 +72,3 @@
   text-align: center;
   background: rgba(255, 255, 255, 0.9);
 }
-
