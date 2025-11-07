@@ -22,6 +22,7 @@ class LabelPrintPage {
       single_column: true,
     });
 
+    this.build_skeleton();
     this.build_preview();
     this.build_actions();
     this.build_controls();
@@ -34,26 +35,32 @@ class LabelPrintPage {
     }
   }
 
-  build_preview() {
-    this.$preview = $(
-      `
-      <div class="label-print-preview" style="border: 1px solid var(--gray-400); height: 70vh; overflow: auto; display: flex; align-items: center; justify-content: center; background: repeating-linear-gradient(45deg, #f4f5f7 0px, #f4f5f7 12px, #eef0f2 12px, #eef0f2 24px);">
-        <div class="placeholder" style="color: var(--gray-600); text-align: center; padding: 16px;">
-          Select a Print Template, then click Render Preview
-        </div>
-      </div>
-      `
-    ).appendTo(this.page.body);
+  build_skeleton() {
+    // Render static HTML (label_print.html) into the page
+    try {
+      const html = frappe.render_template("label_print", {});
+      $(html).appendTo(this.page.body);
+    } catch (e) {
+      // Fallback minimal structure
+      $(
+        '<div class="label-print-preview"><div class="placeholder">Select a Print Template, then click Render Preview</div></div>' +
+          '<div class="label-print-actions"><button class="btn btn-primary btn-sm render-btn">Render Preview</button></div>' +
+          '<div class="label-print-settings-title">Settings</div>' +
+          '<div class="label-print-controls"></div>'
+      ).appendTo(this.page.body);
+    }
+  }
 
-    this.$paper = $('<div class="paper" style="position: relative; width: auto; height: auto;"></div>')
+  build_preview() {
+    this.$preview = $(this.page.body).find('.label-print-preview');
+
+    this.$paper = $('<div class="paper"></div>')
       .appendTo(this.$preview)
       .hide();
-    this.$frame = $(`<iframe style="width:100%; height:100%; border:0; background:white;"></iframe>`).appendTo(
+    this.$frame = $(`<iframe style="width:100%; height:100%; border:0; background:white; overflow:hidden;" scrolling="no"></iframe>`).appendTo(
       this.$paper
     );
-    this.$hint = $(
-      '<div class="paper-hint" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:16px; color: var(--gray-700); font-size:12px; text-align:center; background: rgba(255,255,255,0.9);"></div>'
-    )
+    this.$hint = $('<div class="paper-hint"></div>')
       .text(
         "Provide Reference DocType and Document Name to render the selected Print Format."
       )
@@ -62,24 +69,13 @@ class LabelPrintPage {
   }
 
   build_actions() {
-    this.$actions = $(
-      `
-        <div class="label-print-actions" style="padding: 8px 0; display: flex; gap: 8px; align-items: center;">
-          <button class="btn btn-primary btn-sm render-btn">Render Preview</button>
-        </div>
-      `
-    ).insertAfter(this.$preview);
+    this.$actions = $(this.page.body).find('.label-print-actions');
     this.$renderBtn = this.$actions.find(".render-btn");
     this.$renderBtn.on("click", () => this.render_preview());
   }
 
   build_controls() {
-    this.$controls = $(
-      '<div class="label-print-controls" style="margin-top: 8px; margin-bottom: 16px;"></div>'
-    ).insertAfter(this.$actions);
-    $('<div style="font-weight:600; color: var(--gray-700); margin: 8px 0;">Settings</div>').insertBefore(
-      this.$controls
-    );
+    this.$controls = $(this.page.body).find('.label-print-controls');
 
     this.fg = new frappe.ui.FieldGroup({
       fields: [
@@ -212,19 +208,46 @@ class LabelPrintPage {
     }
   }
 
-  build_printview_url(values) {
-    if (!values.ref_doctype || !values.ref_name || !values.print_template) return null;
-    const params = {
-      doctype: values.ref_doctype,
+  // Render print format HTML directly (no printview wrapper/gutter)
+  fetch_and_render(values) {
+    const args = {
+      doc: values.ref_doctype,
       name: values.ref_name,
-      format: values.print_template,
+      print_format: values.print_template,
       no_letterhead: 1,
       _lang: frappe.boot.lang,
     };
-    const q = Object.keys(params)
-      .map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`)
-      .join("&");
-    return `/printview?${q}`;
+    const $btn = this.$renderBtn;
+    $btn && $btn.prop("disabled", true).addClass("btn-loading");
+    frappe.call({
+      method: "frappe.www.printview.get_html_and_style",
+      args,
+      callback: (r) => {
+        try {
+          const msg = r && r.message ? r.message : {};
+          const html = msg.html || "";
+          const style = msg.style || "";
+          const doc = this.$frame[0].contentDocument || this.$frame[0].contentWindow.document;
+          doc.open();
+          const injected = `
+            html, body { margin: 0; height: 100%; overflow: hidden !important; }
+            body::-webkit-scrollbar { display: none; }
+          `;
+          doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><style>${style}\n${injected}</style></head><body>${html}</body></html>`);
+          doc.close();
+        } finally {
+          $btn && $btn.removeClass("btn-loading").prop("disabled", false);
+        }
+      },
+      error: () => {
+        $btn && $btn.removeClass("btn-loading").prop("disabled", false);
+        frappe.msgprint({
+          title: __("Render Failed"),
+          message: __("Unable to render Print Format HTML."),
+          indicator: "red",
+        });
+      },
+    });
   }
 
   render_preview() {
@@ -259,32 +282,20 @@ class LabelPrintPage {
       boxShadow: "0 0 0 1px var(--gray-300) inset",
       display: "block",
       overflow: "hidden",
-      alignSelf: "flex-start",
+      alignSelf: "center",
     });
 
-    const url = this.build_printview_url(values);
-    if (url) {
+    if (values.ref_doctype && values.ref_name) {
       this.$hint.hide();
-      this.$frame.off("load").on("load", function () {
-        try {
-          const d = this.contentDocument || this.contentWindow.document;
-          if (!d) return;
-          const style = d.createElement("style");
-          style.type = "text/css";
-          style.textContent = `
-            .action-banner { display: none !important; }
-            body { background: white !important; }
-          `;
-          d.head && d.head.appendChild(style);
-          const banner = d.querySelectorAll && d.querySelectorAll('.action-banner');
-          banner && banner.forEach && banner.forEach((el) => (el.style.display = 'none'));
-        } catch (e) {
-          // ignore cross-origin or timing errors
-        }
-      });
-      this.$frame.attr("src", url);
+      this.fetch_and_render(values);
     } else {
-      this.$frame.attr("src", "about:blank");
+      // If no doc provided, keep hint
+      const doc = this.$frame[0].contentDocument || this.$frame[0].contentWindow.document;
+      if (doc) {
+        doc.open();
+        doc.write("<html><head></head><body></body></html>");
+        doc.close();
+      }
       this.$hint.show();
     }
   }
