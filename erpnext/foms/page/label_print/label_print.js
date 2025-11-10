@@ -72,6 +72,14 @@ class LabelPrintPage {
     this.$actions = $(this.page.body).find('.label-print-actions');
     this.$renderBtn = this.$actions.find(".render-btn");
     this.$renderBtn.on("click", () => this.render_preview());
+
+    // Print button
+    this.$printBtn = this.$actions.find(".print-btn");
+    if (!this.$printBtn.length) {
+      this.$printBtn = $('<button class="btn btn-secondary btn-sm print-btn">Print</button>').appendTo(this.$actions);
+    }
+    this.$printBtn.on("click", () => this.handle_print());
+    this.update_print_btn_state(false);
   }
 
   build_controls() {
@@ -194,6 +202,11 @@ class LabelPrintPage {
     this.$renderBtn.prop("disabled", !enabled);
   }
 
+  update_print_btn_state(enabled) {
+    if (!this.$printBtn) return;
+    this.$printBtn.prop("disabled", !enabled);
+  }
+
   apply_size_controls(values) {
     values = values || {};
     const presets = {
@@ -227,6 +240,20 @@ class LabelPrintPage {
           const msg = r && r.message ? r.message : {};
           const html = msg.html || "";
           const style = msg.style || "";
+          // Compose and cache a full HTML document for printing/rasterization
+          try {
+            const valuesNow = this.fg ? (this.fg.get_values() || {}) : {};
+            const widthDoc = cint(valuesNow.width) || null;
+            const heightDoc = cint(valuesNow.height) || null;
+            const marginDoc = cint(valuesNow.margin) || 0;
+            const mm = (v) => (v != null ? `${v}mm` : "auto");
+            const centerCss = `
+              .label-preview-root { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+              .label-preview-root > :first-child { margin: auto; }
+              #print-root { box-sizing: border-box; width: ${mm(widthDoc)}; height: ${mm(heightDoc)}; padding: ${mm(marginDoc)}; background: white; overflow: hidden; }
+            `;
+            this._lastHtmlDoc = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${style}</style><style>${centerCss}</style></head><body><div id="print-root"><div class="label-preview-root">${html}</div></div></body></html>`;
+          } catch (e) {}
           // Render into shadow DOM if available to avoid CSS leaking
           const host = this.$paper_content[0];
           if (host && host.attachShadow) {
@@ -310,12 +337,219 @@ class LabelPrintPage {
     if (values.ref_doctype && values.ref_name) {
       this.$hint.hide();
       this.fetch_and_render(values);
+      this.update_print_btn_state(true);
     } else {
       // If no doc provided, keep hint
       // clear any previous rendered content
       this.$paper_content.empty();
       this.$hint.show();
+      this.update_print_btn_state(false);
     }
+  }
+
+  // --- QZ Tray Integration ---
+  ensureQZLoaded() {
+    if (window.qz) return Promise.resolve();
+    if (this._qzLoadPromise) return this._qzLoadPromise;
+    const src = 'https://cdn.jsdelivr.net/npm/qz-tray@2.2.3/qz-tray.js';
+    this._qzLoadPromise = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.async = true;
+      s.defer = true;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load QZ Tray library'));
+      document.head.appendChild(s);
+    });
+    return this._qzLoadPromise;
+  }
+
+  setupQZSecurity() {
+    // Allow unsigned printing if QZ Tray permits it (user setting)
+    try {
+      if (window.qz && qz.security) {
+        qz.security.setCertificatePromise((resolve, reject) => resolve(null));
+        qz.security.setSignaturePromise((toSign) => (resolve, reject) => resolve(null));
+      }
+    } catch (e) {
+      // no-op; use defaults
+    }
+  }
+
+  connectQZ() {
+    if (!window.qz) return Promise.reject(new Error('QZ Tray not loaded'));
+    if (qz.websocket.isActive()) return Promise.resolve();
+    // Try default, then secure/insecure fallbacks
+    const tryDefault = () => qz.websocket.connect();
+    const trySecure = () => qz.websocket.connect({ usingSecure: true });
+    const tryInsecure = () => qz.websocket.connect({ usingSecure: false });
+    return tryDefault()
+      .catch(() => (window.location.protocol === 'https:' ? trySecure() : tryInsecure()))
+      .catch(() => (window.location.protocol === 'https:' ? tryInsecure() : trySecure()));
+  }
+
+  async resolvePrinterName() {
+    try {
+      const def = await qz.printers.getDefault();
+      if (def) return def;
+    } catch (e) {}
+    try {
+      const list = await qz.printers.find();
+      if (Array.isArray(list) && list.length) {
+        console.warn('No default printer; using first available:', list[0]);
+        frappe.show_alert(__('No default printer; using: {0}', [list[0]]));
+        return list[0];
+      }
+    } catch (e) {}
+    throw new Error('No printers found');
+  }
+
+  getPrintableHtml() {
+    if (this._lastHtmlDoc) return this._lastHtmlDoc;
+    const host = this.$paper_content && this.$paper_content[0];
+    let html = '';
+    if (host && host.shadowRoot) {
+      const root = host.shadowRoot;
+      // Collect styles and the wrapped content we inserted during render
+      const styles = Array.from(root.querySelectorAll('style')).map(el => el.textContent || '').join('\n');
+      const wrap = root.querySelector('.label-preview-root');
+      const body = wrap ? wrap.innerHTML : '';
+      html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${styles}</style></head><body>${body}</body></html>`;
+    } else {
+      const body = this.$paper_content ? this.$paper_content.html() : '';
+      html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${body || ''}</body></html>`;
+    }
+    return html;
+  }
+
+  ensureHtml2CanvasLoaded() {
+    if (window.html2canvas) return Promise.resolve();
+    if (this._h2cPromise) return this._h2cPromise;
+    const src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+    this._h2cPromise = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.async = true;
+      s.defer = true;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load html2canvas'));
+      document.head.appendChild(s);
+    });
+    return this._h2cPromise;
+  }
+
+  rasterizeToImage(values) {
+    const docHtml = this.getPrintableHtml();
+    const width = cint(values.width) || null;
+    const height = cint(values.height) || null;
+    const mm2px = (v) => (v != null ? Math.round(v * 3.7795275591) : null);
+    const wpx = mm2px(width) || 800;
+    const hpx = mm2px(height) || 600;
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.left = '-10000px';
+    iframe.style.top = '-10000px';
+    iframe.style.width = `${wpx}px`;
+    iframe.style.height = `${hpx}px`;
+    document.body.appendChild(iframe);
+
+    return new Promise((resolve, reject) => {
+      const cleanup = () => { try { document.body.removeChild(iframe); } catch (e) {} };
+      const render = () => {
+        try {
+          const d = iframe.contentDocument || iframe.contentWindow.document;
+          d.open(); d.write(docHtml); d.close();
+          const wait = () => setTimeout(() => {
+            const root = d.getElementById('print-root') || d.body;
+            window.html2canvas(root, { scale: 2, backgroundColor: '#ffffff', useCORS: true })
+              .then((canvas) => {
+                const url = canvas.toDataURL('image/png');
+                cleanup();
+                resolve(url);
+              })
+              .catch((err) => { cleanup(); reject(err); });
+          }, 80);
+          if (d.readyState === 'complete') wait();
+          else d.addEventListener('readystatechange', () => { if (d.readyState === 'complete') wait(); });
+        } catch (e) { cleanup(); reject(e); }
+      };
+      if (iframe.contentWindow) render();
+      else iframe.addEventListener('load', render);
+    });
+  }
+
+  buildImageHtml(imgUrl, values) {
+    const width = cint(values.width) || null;
+    const height = cint(values.height) || null;
+    const margin = cint(values.margin) || 0;
+    const mm = (v) => (v != null ? `${v}mm` : 'auto');
+    const css = `
+      html, body { height: 100%; margin: 0; }
+      #page { box-sizing: border-box; width: ${mm(width)}; height: ${mm(height)}; padding: ${mm(margin)}; display: flex; align-items: center; justify-content: center; background: #fff; }
+      #page img { max-width: 100%; max-height: 100%; display: block; }
+    `;
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body><div id="page"><img src="${imgUrl}"></div></body></html>`;
+  }
+
+  handle_print() {
+    const values = this.fg.get_values() || {};
+    if (!(values.ref_doctype && values.ref_name && this.has_template())) {
+      frappe.msgprint(__('Please select Print Template and Reference document first.'));
+      return;
+    }
+
+    const $btn = this.$printBtn;
+    $btn && $btn.prop('disabled', true).addClass('btn-loading');
+
+    const width = cint(values.width) || null;
+    const height = cint(values.height) || null;
+    const margin = cint(values.margin) || 0;
+
+    const after = () => $btn && $btn.removeClass('btn-loading').prop('disabled', false);
+
+    this.ensureQZLoaded()
+      .then(() => {
+        this.setupQZSecurity();
+        return this.connectQZ();
+      })
+      .then(() => this.resolvePrinterName())
+      .then((printer) => {
+        const cfg = qz.configs.create(printer, {
+          units: 'mm',
+          size: width && height ? { width, height } : undefined,
+          margins: { top: margin, right: margin, bottom: margin, left: margin },
+          scaleContent: true,
+        });
+        return this.ensureHtml2CanvasLoaded()
+          .then(() => this.rasterizeToImage(values))
+          .then((imgUrl) => {
+            const htmlDoc = this.buildImageHtml(imgUrl, values);
+            const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(htmlDoc);
+            return qz.print(cfg, [{ type: 'html', format: 'file', data: dataUrl }]);
+          });
+      })
+      .then(() => {
+        frappe.show_alert({ message: __('Sent to printer.'), indicator: 'green' });
+      })
+      .catch((err) => {
+        console.error('QZ print failed', err);
+        const msg = [
+          __('Unable to print via QZ Tray.'),
+          err && err.message ? `<div style="margin-top:6px"><code>${frappe.utils.escape_html(err.message)}</code></div>` : '',
+          '<hr/>',
+          __('Checklist:'),
+          '<ul style="margin-top:6px;">',
+          `<li>${__('QZ Tray is installed and running')}</li>`,
+          `<li>${__('In QZ Settings → Security, enable "Allow unsigned requests" for development')}</li>`,
+          `<li>${__('Ensure this site origin is allowed/whitelisted in QZ Tray')}</li>`,
+          `<li>${__('If this page is HTTPS, secure connection may be required')}</li>`,
+          '</ul>',
+          `<div style="margin-top:6px">${__('Download:')} <a href="https://qz.io/download/" target="_blank" rel="noopener">qz.io/download</a></div>`
+        ].join('');
+        frappe.msgprint({ title: __('Print Failed'), message: msg, indicator: 'red' });
+      })
+      .finally(after);
   }
 }
 
