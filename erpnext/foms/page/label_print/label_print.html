@@ -7,5 +7,23 @@
   <button class="btn btn-primary btn-sm render-btn">Render Preview</button>
   <button class="btn btn-secondary btn-sm print-btn">Print</button>
 </div>
-<div class="label-print-settings-title">Settings</div>
-<div class="label-print-controls"></div>
+<div class="label-print-tabs">
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" href="javascript:;" data-target="#tab-settings" role="tab">Settings</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="javascript:;" data-target="#tab-qz" role="tab">QZ Tray</a>
+    </li>
+  </ul>
+  <div class="tab-content" style="padding-top: 8px;">
+    <div class="tab-pane active" id="tab-settings" role="tabpanel">
+      <div class="label-print-settings-title">Settings</div>
+      <div class="label-print-controls"></div>
+    </div>
+    <div class="tab-pane" id="tab-qz" role="tabpanel">
+      <div class="label-print-qz"></div>
+    </div>
+  </div>
+  
+</div>
