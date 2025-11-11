@@ -545,7 +545,8 @@ def get_date_simple(value):
 
 def check_branch_code_mandatory(bank_name):
 	pattern = re.compile(r'\b(OCBC|HSBC|SBI)\b', re.IGNORECASE)
-	return pattern.search(cstr(bank_name))
+	bic = frappe.get_value("Bank", bank_name, "swift_number")
+	return pattern.search(cstr(bank_name)) or pattern.search(cstr(bic))
 
 @frappe.whitelist()
 def map_purchase_invoices(source_name, target_doc=None, args=None):
