@@ -359,6 +359,10 @@ class PaymentApproval(Document):
 			if dummy:
 				bic = change_to_dummy_bic(bic)
 
+			# if include branch code
+			if check_branch_code_mandatory(d.supplier_bank):
+				bic = d.branch_code + bic
+
 			doc = frappe.get_doc("Purchase Invoice", d.invoice_no)
 			doc_name = doc.name[:-5]
 			if len(doc.bill_no or "") < 10:
