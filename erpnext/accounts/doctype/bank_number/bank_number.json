@@ -10,7 +10,7 @@
   "bank_number",
   "bank_account_name",
   "bank",
-  "branch",
+  "branch_code",
   "swift",
   "column_break_6",
   "party_type",
@@ -54,11 +54,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "branch",
-   "fieldtype": "Data",
-   "label": "Branch"
-  },
-  {
    "fieldname": "column_break_6",
    "fieldtype": "Column Break"
   },
@@ -84,11 +79,16 @@
    "fieldtype": "Link",
    "label": "Currency",
    "options": "Currency"
+  },
+  {
+   "fieldname": "branch_code",
+   "fieldtype": "Data",
+   "label": "Branch Code"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-09-08 15:43:30.862916",
+ "modified": "2025-11-11 16:21:47.361640",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Bank Number",
