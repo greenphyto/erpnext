@@ -459,10 +459,11 @@ class EmailInvoice(Document):
 
 		last_ok = False
 		last_name = ""
-		for res in payloads:
+		for temp in payloads:
 			name = None
 			try:
-				res = res.get("result") or res
+				file_name = temp.get("file")
+				res = temp.get("result") or temp
 				if 'result' in res:
 					res = res.get("result")
 
@@ -472,13 +473,13 @@ class EmailInvoice(Document):
 				po_ref = frappe.db.exists("Purchase Order", {"name":po_ref})
 				if po_ref:
 					self.flags.po_no = po_ref
-					ok, name_or_err = self.create_invoice(res, po_ref=po_ref)
+					ok, name_or_err = self.create_invoice(res, po_ref=po_ref, file_name=file_name)
 					if not ok:
 						self.add_reason(category="pi", code="create_failed", message=str(name_or_err))
 						return False, name_or_err
 					name = name_or_err
 				else:
-					ok, name_or_err = self.create_purchase_invoice_non_stock(res)
+					ok, name_or_err = self.create_purchase_invoice_non_stock(res, file_name=file_name)
 					if not ok:
 						self.add_reason(category="pi", code="create_failed", message=str(name_or_err))
 						return False, name_or_err
@@ -514,7 +515,7 @@ class EmailInvoice(Document):
 		self.set_status()
 		return last_ok, last_name
 
-	def create_invoice(self, data=None, po_ref=None):
+	def create_invoice(self, data=None, po_ref=None, file_name=""):
 		"""Create Purchase Invoice from an existing Purchase Order and update item rates.
 
 		- Detects the Purchase Order number from `data` (supports nested result structure).
@@ -609,13 +610,8 @@ class EmailInvoice(Document):
 		self.add_bank_account(data, doc.name)
 
 		# Attach original file if present
-		file_doc_name = frappe.db.get_list(
-			"File",
-			{"attached_to_doctype": "Communication", "attached_to_name": self.inbox},
-		)
-		for file_name in file_doc_name:
-			fn = frappe.get_doc("File", file_name.get("name"))
-			self.add_attachment_copy(fn, "Purchase Invoice", doc.name )
+		fn = frappe.get_doc("File", file_name)
+		self.add_attachment_copy(fn, "Purchase Invoice", doc.name )
 
 		# Mention rate changes only if any
 		if changes:
@@ -707,7 +703,7 @@ class EmailInvoice(Document):
 		return doc
 
 		
-	def create_purchase_invoice_non_stock(self, data=None):
+	def create_purchase_invoice_non_stock(self, data=None, file_name=""):
 		"""Create a Non-stock Purchase Invoice purely from the passed parameter.
 
 		Expected payload (simplified): either a dict with keys like
@@ -900,10 +896,9 @@ class EmailInvoice(Document):
 		self.add_bank_account(data, doc.name)
 
 		# 5) Attach file if `file` docname provided in payload/root
-		file_id = (payload.get("file") if isinstance(payload, dict) else None) or (root.get("file") if isinstance(root, dict) else None)
-		if file_id:
+		if file_name:
 			try:
-				file = frappe.get_doc('File', file_id)
+				file = frappe.get_doc('File', file_name)
 				attachment = frappe.get_doc({
 					'doctype': 'File',
 					'attached_to_doctype': doc.doctype,
