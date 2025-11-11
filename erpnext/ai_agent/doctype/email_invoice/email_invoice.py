@@ -476,20 +476,23 @@ class EmailInvoice(Document):
 					ok, name_or_err = self.create_invoice(res, po_ref=po_ref, file_name=file_name)
 					if not ok:
 						self.add_reason(category="pi", code="create_failed", message=str(name_or_err))
-						return False, name_or_err
+						continue
 					name = name_or_err
 				else:
 					ok, name_or_err = self.create_purchase_invoice_non_stock(res, file_name=file_name)
 					if not ok:
 						self.add_reason(category="pi", code="create_failed", message=str(name_or_err))
-						return False, name_or_err
+						continue
 					name = name_or_err
 
 			except Exception as e:
 				name = ""
 				self.add_reason(category="system", code="exception", message=f"{e}")
 				self.error_trace = get_traceback()
-				return False, str(e)
+				continue 
+
+			if name:
+				self.add_result(po_ref, name, file_name)
 
 			# Link communication only for the last created doc in the batch
 			if name and com_doc:
@@ -503,17 +506,27 @@ class EmailInvoice(Document):
 			last_ok = True
 			last_name = name
 
-			if not self.results:
-				row = self.append("results")
-				row.po_no = self.flags.po_no
-				row.invoice_no = name
-				row.insert()
-
 		# Update status/reasons if nothing created
 		if not last_ok:
 			self._finalize_reasons()
 		self.set_status()
 		return last_ok, last_name
+	
+	def add_result(self, po_no, invoice_no, fn=""):
+		exists = self.get("results", {"invoice_no": invoice_no})
+		if exists:
+			row = exists[0]
+		else:
+			row = self.append("results")
+			row.invoice_no = invoice_no
+
+		row.po_no = po_no
+		row.filename = frappe.get_value('File', fn, 'file_name')
+
+		if not exists:
+			row.insert()
+		else:
+			row.db_update()
 
 	def create_invoice(self, data=None, po_ref=None, file_name=""):
 		"""Create Purchase Invoice from an existing Purchase Order and update item rates.
@@ -931,7 +944,7 @@ class EmailInvoice(Document):
 		return True, doc.name
 
 	def enable_single_invoice(self, bill_no, bill_date):
-		exists = frappe.db.get_value("Purchase Invoice", {"bill_no":bill_no, "bill_date":bill_date, "docstatus":1})
+		exists = frappe.db.get_value("Purchase Invoice", {"bill_no":bill_no, "bill_date":bill_date, "docstatus":['!=',2]})
 		if exists:
 			return exists
 
