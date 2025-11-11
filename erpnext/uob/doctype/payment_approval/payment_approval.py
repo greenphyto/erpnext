@@ -90,7 +90,7 @@ class PaymentApproval(Document):
 		# validate mandatory on branch code
 		
 		for d in self.get("invoices"):
-			if check_branch_code_mandatory(d.supplier_bank) and not d.barcnh_code:
+			if check_branch_code_mandatory(d.supplier_bank) and not d.branch_code:
 				frappe.throw(f"Row {d.idx}, Branch code mandatoy when use HSBC/OCBC/SBI bank")
 	
 	def update_payment_status(self, process_id, transactions=[], file_date="", error_message=""):
@@ -342,10 +342,10 @@ class PaymentApproval(Document):
 		env = settings.env
 		dummy = env != "Production"
 
-		def change_to_dummy_bic(bic):
-			index = 7
-			if not bic or index < 0 or index >= len(bic):
-				return bic
+		def change_to_dummy_bic(bic, index=7):
+			bic = (bic or "").strip()  # pastikan bic selalu string, bukan None
+			if index < 0 or index >= len(bic):
+				return bic + "0"
 			return bic[:index] + "0" + bic[index + 1:]
 
 		# other information
@@ -355,13 +355,13 @@ class PaymentApproval(Document):
 		group_invoices = self.get_invoice_group()
 
 		for d in group_invoices:
-			bic = frappe.get_value("Bank",d.supplier_bank,"swift_number", debug=0)
+			bic = frappe.get_value("Bank",d.supplier_bank,"swift_number", debug=1)
 			if dummy:
 				bic = change_to_dummy_bic(bic)
-
+				
 			# if include branch code
 			if check_branch_code_mandatory(d.supplier_bank):
-				bic = d.branch_code + bic
+				bic = cstr(bic) + d.branch_code
 
 			doc = frappe.get_doc("Purchase Invoice", d.invoice_no)
 			doc_name = doc.name[:-5]
@@ -438,6 +438,7 @@ class PaymentApproval(Document):
 		data_field = [
 			"supplier_bank",
 			"invoice_no",
+			"branch_code",
 			"amount",
 			"bank_account_name",
 			"bank_account_no",

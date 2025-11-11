@@ -13,7 +13,7 @@
   "supplier_bank_no",
   "bank_account_no",
   "bank_account_name",
-  "banch_code",
+  "branch_code",
   "supplier_bank",
   "swift",
   "column_break_10",
@@ -168,15 +168,15 @@
   {
    "fetch_from": "supplier_bank_no.branch_code",
    "fetch_if_empty": 1,
-   "fieldname": "banch_code",
+   "fieldname": "branch_code",
    "fieldtype": "Data",
-   "label": "Banch Code"
+   "label": "Branch Code"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-11-11 16:46:48.463820",
+ "modified": "2025-11-11 18:04:13.408392",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "Payment Invoice List",
