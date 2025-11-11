@@ -1,9 +1,9 @@
 # Copyright (c) 2025, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-import frappe, os
+import frappe, os, re
 from frappe.model.document import Document
-from frappe.utils import flt, cint, getdate, get_datetime
+from frappe.utils import flt, cint, getdate, get_datetime, cstr
 from frappe.utils.file_manager import save_file
 from erpnext.controllers.uob import create_payment_xml
 from erpnext.controllers.uob import UOBAPI, get_country_code
@@ -30,6 +30,7 @@ class PaymentApproval(Document):
 
 	def validate_data(self):
 		self.validate_payment()
+		self.validate_bank_number()
 		self.validate_invoice()
 		self.calculate_amount()
 
@@ -37,6 +38,13 @@ class PaymentApproval(Document):
 		if self.docstatus == 0 and self.is_new():
 			self.status = "Draft"
 
+	def validate_bank_number(self):
+		# validate mandatory on branch code
+		
+		for d in self.get("invoices"):
+			if check_branch_code_mandatory(d.supplier_bank) and not d.barcnh_code:
+				frappe.throw(f"Row {d.idx}, Branch code mandatoy when use HSBC/OCBC/SBI bank")
+	
 	def update_payment_status(self, process_id, transactions=[], file_date="", error_message=""):
 		# sync with L1,2,3,4 and when any riject
 		if cint(self.process_id) > cint(process_id):
@@ -465,6 +473,9 @@ class PaymentApproval(Document):
 def get_date_simple(value):
 	return getdate(value).strftime("%y%m%d")
 
+def check_branch_code_mandatory(bank_name):
+	pattern = re.compile(r'\b(OCBC|HSBC|SBI)\b', re.IGNORECASE)
+	return pattern.search(cstr(bank_name))
 
 @frappe.whitelist()
 def map_purchase_invoices(source_name, target_doc=None, args=None):
