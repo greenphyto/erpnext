@@ -97,8 +97,9 @@ class PaymentApproval(Document):
 		# validate mandatory on branch code
 		
 		for d in self.get("invoices"):
-			if check_branch_code_mandatory(d.supplier_bank) and not d.branch_code:
-				frappe.throw(f"Row {d.idx}, Branch code mandatoy when use HSBC/OCBC/SBI bank")
+			if check_branch_code_mandatory(d.supplier_bank, d.bank_account_no):
+				if not d.branch_code:
+					frappe.throw(f"Row {d.idx}, Branch code mandatoy when use HSBC/OCBC/SBI bank")
 	
 	def update_payment_status(self, process_id, transactions=[], file_date="", error_message=""):
 		# sync with L1,2,3,4 and when any riject
@@ -362,13 +363,15 @@ class PaymentApproval(Document):
 		group_invoices = self.get_invoice_group()
 
 		for d in group_invoices:
-			bic = frappe.get_value("Bank",d.supplier_bank,"swift_number", debug=1)
+			bic = frappe.get_value("Bank",d.supplier_bank,"swift_number", debug=0)
 			if dummy:
 				bic = change_to_dummy_bic(bic)
 				
 			# if include branch code
-			if check_branch_code_mandatory(d.supplier_bank):
-				bic = cstr(bic) + d.branch_code
+			if check_branch_code_mandatory(d.supplier_bank, d.bank_account_no):
+				bank_account_no = cstr(d.branch_code) + cstr(d.bank_account_no)
+			else:
+				bank_account_no = cstr(d.bank_account_no)
 
 			doc = frappe.get_doc("Purchase Invoice", d.invoice_no)
 			doc_name = doc.name[:-5]
@@ -392,7 +395,7 @@ class PaymentApproval(Document):
 				'amount': d.amount,
 				'creditor_name': d.bank_account_name,
 				'creditor_bic': bic,
-				'creditor_account': d.bank_account_no,
+				'creditor_account': bank_account_no,
 				'remarks': 'Payment invoice',
 				'currency': d.currency,
 				"instruction_start":ins_start,
@@ -551,10 +554,28 @@ class PaymentApproval(Document):
 def get_date_simple(value):
 	return getdate(value).strftime("%y%m%d")
 
-def check_branch_code_mandatory(bank_name):
-	pattern = re.compile(r'\b(OCBC|HSBC|SBI)\b', re.IGNORECASE)
-	bic = frappe.get_value("Bank", bank_name, "swift_number")
-	return pattern.search(cstr(bank_name)) or pattern.search(cstr(bic))
+def check_branch_code_mandatory(bank_name, account_no):
+    """
+    Validate if the account number length is correct for OCBC, HSBC, and SBI.
+    Returns True if valid or not applicable, False if invalid.
+    """
+    bank_name = cstr(bank_name).upper()
+    account_no = re.sub(r'\D', '', cstr(account_no))  # keep digits only
+    bic = (frappe.get_value("Bank", bank_name, "swift_number") or "").upper()
+
+    # Determine bank type
+    if re.search(r'\bOCBC\b', bank_name) or re.search(r'\bOCBC\b', bic):
+        valid_lengths = 10, 12
+    elif re.search(r'\bHSBC\b', bank_name) or re.search(r'\bHSBC\b', bic):
+        valid_lengths = 12
+    elif re.search(r'\bSBI\b', bank_name) or re.search(r'\bSBI\b', bic):
+        valid_lengths = 11
+    else:
+        # Other banks not restricted
+        return False
+
+    # Validate account number length
+    return len(account_no) < valid_lengths
 
 @frappe.whitelist()
 def map_purchase_invoices(source_name, target_doc=None, args=None):
