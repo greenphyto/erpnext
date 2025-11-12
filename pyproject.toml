@@ -29,7 +29,8 @@ dependencies = [
     "iso3166",
     "xmltodict",
     "pypdf",
-    "reportlab"
+    "reportlab",
+    "pandas"
 ]
 
 [build-system]
