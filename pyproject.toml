@@ -25,7 +25,10 @@ dependencies = [
     "minio",
     "python-barcode",
     "iso3166",
-    "xmltodict"
+    "xmltodict",
+    "pypdf",
+    "reportlab",
+    "pandas"
 ]
 
 [build-system]
