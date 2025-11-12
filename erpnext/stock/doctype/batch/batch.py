@@ -435,3 +435,38 @@ def get_pos_reserved_batch_qty(filters):
 
 	flt_reserved_batch_qty = flt(reserved_batch_qty[0][0])
 	return flt_reserved_batch_qty
+
+@frappe.whitelist()
+def pick_batches(item_code, warehouse, required_qty, uom=None):
+	from erpnext.stock.get_item_details import get_conversion_factor
+	"""Pick batches to fulfill required_qty, auto-convert if UOM differs from stock_uom."""
+	required_qty = flt(required_qty)
+	stock_uom = frappe.get_cached_value("Item", item_code, "stock_uom")
+
+	# Get conversion factor (1 target_uom = X stock_uom)
+	conversion_factor = 1.0
+	if uom and uom != stock_uom:
+		conversion_factor = get_conversion_factor(item_code, uom).get("conversion_factor") or 1.0
+
+	# Convert required qty into stock UOM
+	stock_qty_needed = required_qty * conversion_factor
+
+	selected, remaining = [], stock_qty_needed
+	for b in get_batches(item_code, warehouse):
+		if remaining <= 0:
+			break
+
+		available = flt(b["qty"])
+		take = min(available, remaining)
+
+		selected.append({
+			"batch_id": b["batch_id"],
+			"qty": round(take / conversion_factor, 4),   # converted to requested uom
+			"actual_qty_conv": round(available / conversion_factor, 4),   # converted to requested uom
+			"stock_qty": round(take, 4),                 # quantity in stock uom
+			"actual_qty": round(available, 4)            # full available qty before taking
+		})
+
+		remaining -= take
+
+	return selected
