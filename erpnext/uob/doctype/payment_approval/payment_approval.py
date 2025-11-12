@@ -66,10 +66,17 @@ class PaymentApproval(Document):
 		if "UOVB" not in bic:
 			frappe.throw(_(f"This transaction requires a UOB bank account. Please select a valid UOB account to proceed."))
 
-		account_no, account_name = frappe.db.get_value("Bank Account", self.bank_account, ["bank_account_no", "bank_account_name"]) or ("", "")
+		account_no, account_name, currency = frappe.db.get_value("Bank Account", self.bank_account, ["bank_account_no", "bank_account_name", 'currency']) or ("", "", "")
 		if not account_no or not account_name:
 			links = get_link_to_form("Bank Account", self.bank_account)
 			frappe.throw(_(f"Please update the <b>Bank Account No</b> and <b>Bank Account Name</b> for {links}"))
+
+		if self.currency != currency:
+			frappe.throw(_(f"Bank account is not {self.currency}, please select another bank account"))
+
+		for d in self.invoices:
+			if d.currency != currency:
+				frappe.throw(_(f"Row {d.idx}, invoice currency ({d.currency}) different with payee bank account ({currency})"))
 
 	def remove_another_record(self):
 		workflow_state = self.get("workflow_state") or self.get("status")
@@ -308,7 +315,7 @@ class PaymentApproval(Document):
 				frappe.throw(_(f"Row {d.idx}, cannot use invoice with currency except {self.currency}. Please change the invoice."))
 			
 			# find another exist approval with same invoice use
-			temp = frappe.db.sql("select name, docstatus, parent from `tabPayment Invoice List` where parent != %s and invoice_no = %s and docstatus != 2 ", (self.name, d.invoice_no), as_dict=1)
+			temp = frappe.db.sql("select name, docstatus, parent from `tabPayment Invoice List` where parent != %s and invoice_no = %s and docstatus != 2 and status !='Failed' ", (self.name, d.invoice_no), as_dict=1)
 			if temp:
 				temp = temp[0]
 				frappe.throw(_(f"Row {d.idx}, Invoice No <b>{d.invoice_no}</b> already in progress, please select another invoice."))
