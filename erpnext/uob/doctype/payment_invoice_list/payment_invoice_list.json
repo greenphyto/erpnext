@@ -94,6 +94,7 @@
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Amount",
+   "options": "currency",
    "read_only": 1,
    "reqd": 1
   },
@@ -119,6 +120,7 @@
    "fieldname": "basic_amount",
    "fieldtype": "Currency",
    "label": "Basic Amount",
+   "options": "currency",
    "read_only": 1
   },
   {
@@ -165,7 +167,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-11-11 18:04:13.408392",
+ "modified": "2025-11-12 11:39:35.923673",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "Payment Invoice List",
