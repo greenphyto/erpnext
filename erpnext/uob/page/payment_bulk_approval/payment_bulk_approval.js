@@ -74,6 +74,11 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                 .payment-bulk-approval .mobile-only-currency { display: none; }
                 .payment-bulk-approval .list-table-wrapper { overflow: visible; }
 
+                .layout-main-section {
+                    background-color: unset;
+                    border: unset;
+                }
+
                 @media (max-width: 768px) {
                     .payment-bulk-approval .detail-body { padding: 6px 0px; }
                     .payment-bulk-approval tr.detail-row.belongs-even td { padding-bottom: 2px; }
@@ -349,7 +354,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
     });
 
     function format_amount(value, currency) {
-        return fmt_money(value)
+        return fmt_money(value, currency)
     }
 
     // (Reverted) Use default frappe currency formatter
@@ -922,3 +927,5 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
     // initial load - first 20
     reset_and_load();
 };
+
+console.log('bulk approval')

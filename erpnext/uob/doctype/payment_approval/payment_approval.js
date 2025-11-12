@@ -245,7 +245,7 @@ $.extend(cur_frm.cscript, {
 			});
 
 			const currency = frm.doc.currency || null;
-			const fmt = (v) => frappe.format(v, { fieldtype: 'Currency', options: currency });
+			const fmt = (v) => frappe.format(v, { fieldtype: 'Currency', options: 'currency' });
 			const body = Object.values(groups)
 				.sort((a,b) => a.supplier.localeCompare(b.supplier))
 				.map(it => `
