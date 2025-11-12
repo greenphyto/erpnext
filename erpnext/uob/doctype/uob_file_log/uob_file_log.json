@@ -7,6 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "filename",
+  "file_size",
   "column_break_3",
   "posting_date",
   "time",
@@ -24,6 +25,14 @@
    "label": "Filename",
    "read_only": 1,
    "width": "200px"
+  },
+  {
+   "fetch_from": "file.file_size",
+   "fieldname": "file_size",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "File Size",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_3",
@@ -73,9 +82,9 @@
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-01 16:03:43.650472",
+ "modified": "2025-11-12 13:13:00.826343",
  "modified_by": "Administrator",
- "module": "FOMS",
+ "module": "UOB",
  "name": "UOB File Log",
  "naming_rule": "Autoincrement",
  "owner": "Administrator",
