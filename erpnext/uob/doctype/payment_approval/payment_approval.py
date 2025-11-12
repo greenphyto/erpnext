@@ -92,7 +92,11 @@ class PaymentApproval(Document):
 			if check_branch_code_mandatory(d.supplier_bank, d.bank_account_no):
 				if not d.branch_code:
 					frappe.throw(f"Row {d.idx}, Branch code mandatoy when use HSBC/OCBC/SBI bank")
-	
+
+			d.swift = frappe.get_value("Bank Number", d.supplier_bank_no, 'swift')
+			if len(cstr(d.swift)) < 11:
+				frappe.throw(_(f"Row {d.idx}, Bank <b>{d.supplier_bank}</b> must have minimum 11 digits Swift code."))
+
 	def update_payment_status(self, process_id, transactions=[], file_date="", error_message=""):
 		# sync with L1,2,3,4 and when any riject
 		if cint(self.process_id) > cint(process_id):
