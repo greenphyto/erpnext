@@ -4,11 +4,16 @@
 import frappe
 from frappe.model.document import Document
 from frappe import _
+from frappe.utils import cstr
 
 class BankNumber(Document):
 	def validate(self):
+		self.validate_data()
 		self.validate_bank_number()
 		self.set_default_to_party()
+	
+	def validate_data(self):
+		self.bank_number = cstr(self.bank_number).strip().replace("-", "")
 
 	def validate_bank_number(self):
 		exists = frappe.db.get_value("Bank Number", {"name":["!=", self.name], "bank_number":self.bank_number})
