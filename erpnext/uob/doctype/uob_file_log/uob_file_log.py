@@ -369,10 +369,11 @@ class UOBFileLog(Document):
 		return txt
 
 def convert_inv_no(inv_txt):
+	inv_txt = inv_txt.strip()
 	# not yet upgrade
 	if "PAY" in inv_txt:
 		return inv_txt.replace("PAY", "PAY-")
-	else:
+	elif inv_txt:
 		if "-" in inv_txt:
 			part, yymm = inv_txt.split("-")
 		else:
