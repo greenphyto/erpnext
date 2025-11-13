@@ -968,3 +968,41 @@ def get_company_enable():
 	if frappe.session.user == "Administrator":
 		return []
 	return [d.name for d in frappe.db.get_list("Company")]
+
+def customer_db_query(user):
+	companies = get_company_enable() or []
+
+	if not companies:
+		return ""
+
+	companies_sql = ", ".join(["%s" % frappe.db.escape(c) for c in companies])
+
+	cond = f"""
+		(`tabCustomer`.name IN (
+			SELECT `tabCompany Permissions List`.parent
+			FROM `tabCompany Permissions List`
+			WHERE `tabCompany Permissions List`.company IN ({companies_sql}) 
+		))
+	"""
+
+	res = cond.strip()
+	return res
+
+def supplier_db_query(user):
+	companies = get_company_enable() or []
+
+	if not companies:
+		return ""
+
+	companies_sql = ", ".join(["%s" % frappe.db.escape(c) for c in companies])
+
+	cond = f"""
+		(`tabSupplier`.name IN (
+			SELECT `tabCompany Permissions List`.parent
+			FROM `tabCompany Permissions List`
+			WHERE `tabCompany Permissions List`.company IN ({companies_sql})
+		))
+	"""
+
+	res = cond.strip()
+	return res
