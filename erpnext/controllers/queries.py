@@ -82,7 +82,6 @@ def customer_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 	doctype = "Customer"
 	conditions = []
 	cust_master_name = frappe.defaults.get_user_default("cust_master_name")
-
 	fields = ["name"]
 	if cust_master_name != "Customer Name":
 		fields.append("customer_name")
@@ -91,25 +90,54 @@ def customer_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 	searchfields = frappe.get_meta(doctype).get_search_fields()
 	searchfields = " or ".join(field + " like %(txt)s" for field in searchfields)
 
-	return frappe.db.sql(
-		"""select {fields} from `tabCustomer`
+	companies = get_company_enable()
+
+	inner_query = """
+		select {fields}
+		from tabCustomer
 		where docstatus < 2
-			and ({scond}) and disabled=0
+			and ({scond})
+			and disabled = 0
 			{fcond} {mcond}
 		order by
 			(case when locate(%(_txt)s, name) > 0 then locate(%(_txt)s, name) else 99999 end),
 			(case when locate(%(_txt)s, customer_name) > 0 then locate(%(_txt)s, customer_name) else 99999 end),
 			idx desc,
 			name, customer_name
-		limit %(page_len)s offset %(start)s""".format(
-			**{
-				"fields": ", ".join(fields),
-				"scond": searchfields,
-				"mcond": get_match_cond(doctype),
-				"fcond": get_filters_cond(doctype, filters, conditions).replace("%", "%%"),
-			}
-		),
-		{"txt": "%%%s%%" % txt, "_txt": txt.replace("%", ""), "start": start, "page_len": page_len},
+		limit %(page_len)s offset %(start)s
+	""".format(
+		fields=", ".join(fields),
+		scond=searchfields,
+		mcond=get_match_cond(doctype),
+		fcond=get_filters_cond(doctype, filters, conditions).replace("%", "%%"),
+	)
+
+	if companies:
+		outer_query = f"""
+			select base_customer.*
+			from (
+				{inner_query}
+			) as base_customer
+			where exists (
+				select 1
+				from `tabCustomer Permissions List`
+				where 
+				`tabCustomer Permissions List`.parent = base_customer.name
+				and `tabCustomer Permissions List`.company in %(companies)s
+			)
+		"""
+	else:
+		outer_query = inner_query
+
+	return frappe.db.sql(
+		outer_query,
+		{
+			"txt": "%%%s%%" % txt,
+			"_txt": txt.replace("%", ""),
+			"start": start,
+			"page_len": page_len,
+			"companies": companies,
+		},
 		as_dict=as_dict,
 	)
 
@@ -905,3 +933,8 @@ def get_fields(doctype, fields=None):
 		fields.insert(1, meta.title_field.strip())
 
 	return unique(fields)
+
+def get_company_enable():
+	if frappe.session.user == "Administrator":
+		return []
+	return [d.name for d in frappe.db.get_list("Company")]
