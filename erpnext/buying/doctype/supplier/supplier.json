@@ -74,6 +74,8 @@
   "warn_pos",
   "prevent_rfqs",
   "prevent_pos",
+  "section_break_65",
+  "company_permissions",
   "block_supplier_section",
   "on_hold",
   "hold_type",
@@ -535,6 +537,16 @@
    "fieldname": "supplier_keywords",
    "fieldtype": "Small Text",
    "label": "Supplier Keywords"
+  },
+  {
+   "fieldname": "section_break_65",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "company_permissions",
+   "fieldtype": "Table",
+   "label": "Company Permissions",
+   "options": "Company Permissions List"
   }
  ],
  "icon": "fa fa-user",
@@ -547,7 +559,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2025-09-03 19:03:46.770017",
+ "modified": "2025-11-13 16:35:22.988991",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",

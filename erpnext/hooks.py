@@ -281,6 +281,8 @@ before_tests = "erpnext.setup.utils.before_tests"
 
 standard_queries = {
 	"Customer": "erpnext.selling.doctype.customer.customer.get_customer_list",
+	# "Supplier": "erpnext.selling.doctype.supplier.supplier.get_supplier_list",
+    "Supplier": "erpnext.controllers.queries.supplier_query"
 }
 
 doc_events = {
