@@ -40,7 +40,8 @@ frappe.ui.form.on('Payment Approval', {
 			}
 			return{
 				filters:{
-					"currency":currency
+					"currency":currency,
+					"bank":["like", "%UOB%"]
 				}
 			}
 		})
