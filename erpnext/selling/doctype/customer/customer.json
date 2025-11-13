@@ -632,7 +632,7 @@
    "fieldname": "company_permissions",
    "fieldtype": "Table",
    "label": "Company Permissions",
-   "options": "Customer Permissions List"
+   "options": "Company Permissions List"
   }
  ],
  "icon": "fa fa-user",
@@ -646,7 +646,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2025-11-12 17:49:07.391913",
+ "modified": "2025-11-13 16:35:22.358487",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

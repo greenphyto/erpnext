@@ -589,10 +589,10 @@ def get_customer_list(doctype, txt, searchfield, start, page_len, filters=None):
 			) as base_customer
 			where exists (
 				select 1
-				from `tabCustomer Permissions List`
+				from `tabCompany Permissions List`
 				where 
-					`tabCustomer Permissions List`.parent = base_customer.name
-					and `tabCustomer Permissions List`.company in %(companies)s
+					`tabCompany Permissions List`.parent = base_customer.name
+					and `tabCompany Permissions List`.company in %(companies)s
 			)
 		"""
 	else:

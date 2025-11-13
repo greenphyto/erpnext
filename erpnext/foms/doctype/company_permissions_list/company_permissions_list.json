@@ -24,7 +24,7 @@
  "modified": "2025-11-12 17:48:16.735448",
  "modified_by": "Administrator",
  "module": "FOMS",
- "name": "Customer Permissions List",
+ "name": "Company Permissions List",
  "naming_rule": "Autoincrement",
  "owner": "Administrator",
  "permissions": [],
