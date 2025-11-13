@@ -87,6 +87,8 @@
   "column_break_53",
   "is_frozen",
   "disabled",
+  "section_break_78",
+  "company_permissions",
   "sku_tab",
   "customer_sku",
   "total_item"
@@ -621,6 +623,16 @@
    "fieldtype": "Int",
    "label": "Total Item",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_break_78",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "company_permissions",
+   "fieldtype": "Table",
+   "label": "Company Permissions",
+   "options": "Customer Permissions List"
   }
  ],
  "icon": "fa fa-user",
@@ -634,7 +646,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2025-08-19 17:16:14.879810",
+ "modified": "2025-11-12 17:49:07.391913",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",
