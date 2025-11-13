@@ -547,6 +547,7 @@ def get_nested_links(link_doctype, link_name, ignore_permissions=False):
 @frappe.validate_and_sanitize_search_inputs
 def get_customer_list(doctype, txt, searchfield, start, page_len, filters=None):
 	from erpnext.controllers.queries import get_fields
+
 	fields = ["name", "customer_name", "customer_group", "territory"]
 
 	if frappe.db.get_default("cust_master_name") == "Customer Name":
@@ -561,51 +562,23 @@ def get_customer_list(doctype, txt, searchfield, start, page_len, filters=None):
 		filter_conditions = get_filters_cond(doctype, filters, [])
 		match_conditions += "{}".format(filter_conditions)
 
-	# --- GET COMPANIES FOR PERMISSION FILTER ---
-	companies = get_company_enable() 
-
-	inner_query = """
-		select {fields}
+	return frappe.db.sql(
+		"""
+		select %s
 		from `tabCustomer`
 		where docstatus < 2
-			and ({searchfield} like %(txt)s or customer_name like %(txt)s)
+			and (%s like %s or customer_name like %s)
 			{match_conditions}
 		order by
-			case when {searchfield} like %(txt)s then 0 else 1 end,
-			case when customer_name like %(txt)s then 0 else 1 end,
-			name, customer_name
-		limit %(start)s, %(page_len)s
-	""".format(
-		fields=", ".join(fields),
-		searchfield=searchfield,
-		match_conditions=match_conditions
+			case when name like %s then 0 else 1 end,
+			case when customer_name like %s then 0 else 1 end,
+			name, customer_name limit %s, %s
+		""".format(
+			match_conditions=match_conditions
+		)
+		% (", ".join(fields), searchfield, "%s", "%s", "%s", "%s", "%s", "%s"),
+		("%%%s%%" % txt, "%%%s%%" % txt, "%%%s%%" % txt, "%%%s%%" % txt, start, page_len),
 	)
-
-	if companies:
-		outer_query = f"""
-			select base_customer.*
-			from (
-				{inner_query}
-			) as base_customer
-			where exists (
-				select 1
-				from `tabCompany Permissions List`
-				where 
-					`tabCompany Permissions List`.parent = base_customer.name
-					and `tabCompany Permissions List`.company in %(companies)s
-			)
-		"""
-	else:
-		outer_query = inner_query
-
-	values = {
-		"txt": f"%{txt}%",
-		"start": start,
-		"page_len": page_len,
-		"companies": companies
-	}
-
-	return frappe.db.sql(outer_query, values)
 
 
 def check_credit_limit(customer, company, ignore_outstanding_sales_order=False, extra_amount=0):

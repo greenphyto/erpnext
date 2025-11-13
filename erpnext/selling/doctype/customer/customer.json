@@ -16,9 +16,10 @@
   "customer_name",
   "customer_type",
   "customer_group",
+  "company",
+  "customer_code",
   "is_cash_sales",
   "debit_note_enable",
-  "customer_code",
   "foms_id",
   "foms_name",
   "column_break0",
@@ -87,8 +88,6 @@
   "column_break_53",
   "is_frozen",
   "disabled",
-  "section_break_78",
-  "company_permissions",
   "sku_tab",
   "customer_sku",
   "total_item"
@@ -625,14 +624,11 @@
    "read_only": 1
   },
   {
-   "fieldname": "section_break_78",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "company_permissions",
-   "fieldtype": "Table",
-   "label": "Company Permissions",
-   "options": "Company Permissions List"
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
   }
  ],
  "icon": "fa fa-user",
@@ -646,7 +642,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2025-11-13 16:35:22.358487",
+ "modified": "2025-11-13 18:27:25.328217",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

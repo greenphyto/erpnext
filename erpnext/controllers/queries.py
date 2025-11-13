@@ -92,52 +92,25 @@ def customer_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 
 	companies = get_company_enable()
 
-	inner_query = """
-		select {fields}
-		from tabCustomer
+	return frappe.db.sql(
+		"""select {fields} from `tabCustomer`
 		where docstatus < 2
-			and ({scond})
-			and disabled = 0
+			and ({scond}) and disabled=0 and company in %(companies)s
 			{fcond} {mcond}
 		order by
 			(case when locate(%(_txt)s, name) > 0 then locate(%(_txt)s, name) else 99999 end),
 			(case when locate(%(_txt)s, customer_name) > 0 then locate(%(_txt)s, customer_name) else 99999 end),
 			idx desc,
 			name, customer_name
-		limit %(page_len)s offset %(start)s
-	""".format(
-		fields=", ".join(fields),
-		scond=searchfields,
-		mcond=get_match_cond(doctype),
-		fcond=get_filters_cond(doctype, filters, conditions).replace("%", "%%"),
-	)
-
-	if companies:
-		outer_query = f"""
-			select base_customer.*
-			from (
-				{inner_query}
-			) as base_customer
-			where exists (
-				select 1
-				from `tabCompany Permissions List`
-				where 
-				`tabCompany Permissions List`.parent = base_customer.name
-				and `tabCompany Permissions List`.company in %(companies)s
-			)
-		"""
-	else:
-		outer_query = inner_query
-
-	return frappe.db.sql(
-		outer_query,
-		{
-			"txt": "%%%s%%" % txt,
-			"_txt": txt.replace("%", ""),
-			"start": start,
-			"page_len": page_len,
-			"companies": companies,
-		},
+		limit %(page_len)s offset %(start)s""".format(
+			**{
+				"fields": ", ".join(fields),
+				"scond": searchfields,
+				"mcond": get_match_cond(doctype),
+				"fcond": get_filters_cond(doctype, filters, conditions).replace("%", "%%"),
+			}
+		),
+		{"txt": "%%%s%%" % txt, "_txt": txt.replace("%", ""), "start": start, "companies":companies, "page_len": page_len},
 		as_dict=as_dict,
 	)
 
@@ -156,53 +129,24 @@ def supplier_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 
 	companies = get_company_enable()
 
-	inner_query = """
-		select {fields}
-		from `tabSupplier`
+	return frappe.db.sql(
+		"""select {field} from `tabSupplier`
 		where docstatus < 2
-			and ({searchfield} like %(txt)s
-				or supplier_name like %(txt)s)
-			and disabled=0
+			and ({key} like %(txt)s
+			or supplier_name like %(txt)s) and disabled=0 and company in %(companies)s
 			and (on_hold = 0 or (on_hold = 1 and CURRENT_DATE > release_date))
-			{match_cond}
+			{mcond}
 		order by
 			(case when locate(%(_txt)s, name) > 0 then locate(%(_txt)s, name) else 99999 end),
 			(case when locate(%(_txt)s, supplier_name) > 0 then locate(%(_txt)s, supplier_name) else 99999 end),
 			idx desc,
-			name,
-			supplier_name
-		limit %(page_len)s offset %(start)s
-	""".format(
-		fields=", ".join(fields),
-		searchfield=searchfield,
-		match_cond=get_match_cond(doctype)
+			name, supplier_name
+		limit %(page_len)s offset %(start)s""".format(
+			**{"field": ", ".join(fields), "key": searchfield, "mcond": get_match_cond(doctype)}
+		),
+		{"txt": "%%%s%%" % txt, "_txt": txt.replace("%", ""), "start": start, "companies":companies, "page_len": page_len},
+		as_dict=as_dict,
 	)
-
-	if companies:
-		outer_query = f"""
-			select base_supplier.*
-			from (
-				{inner_query}
-			) as base_supplier
-			where exists (
-				select 1
-				from `tabCompany Permissions List`
-				where `tabCompany Permissions List`.parent = base_supplier.name
-				  and `tabCompany Permissions List`.company in %(companies)s
-			)
-		"""
-	else:
-		outer_query = inner_query
-
-	values = {
-		"txt": f"%{txt}%",
-		"_txt": txt.replace("%", ""),
-		"start": start,
-		"page_len": page_len,
-		"companies": companies,
-	}
-
-	return frappe.db.sql(outer_query, values, as_dict=as_dict)
 
 
 @frappe.whitelist()
@@ -977,13 +921,7 @@ def customer_db_query(user):
 
 	companies_sql = ", ".join(["%s" % frappe.db.escape(c) for c in companies])
 
-	cond = f"""
-		(`tabCustomer`.name IN (
-			SELECT `tabCompany Permissions List`.parent
-			FROM `tabCompany Permissions List`
-			WHERE `tabCompany Permissions List`.company IN ({companies_sql}) 
-		))
-	"""
+	cond = f" (`tabCustomer`.company  IN ({companies_sql}) ) "
 
 	res = cond.strip()
 	return res
@@ -996,13 +934,7 @@ def supplier_db_query(user):
 
 	companies_sql = ", ".join(["%s" % frappe.db.escape(c) for c in companies])
 
-	cond = f"""
-		(`tabSupplier`.name IN (
-			SELECT `tabCompany Permissions List`.parent
-			FROM `tabCompany Permissions List`
-			WHERE `tabCompany Permissions List`.company IN ({companies_sql})
-		))
-	"""
+	cond = f" (`tabSupplier`.company  IN ({companies_sql}) ) "
 
 	res = cond.strip()
 	return res
