@@ -58,7 +58,6 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 	        "set_warehouse": ""
 	}
 	"""
-
 	args = process_args(args)
 	for_validate = process_string_args(for_validate)
 	overwrite_warehouse = process_string_args(overwrite_warehouse)
@@ -67,7 +66,6 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 
 	if isinstance(doc, str):
 		doc = json.loads(doc)
-
 	if doc:
 		args["transaction_date"] = doc.get("transaction_date") or doc.get("posting_date")
 
@@ -137,7 +135,18 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 	out = remove_standard_fields(out)
 
 	if doc and doc.get("doctype") in ("Sales Order", "Sales Invoice", "Request", "Delivery Note"):
-		out.uom = ""
+		if out.uom == "KG":
+			out.uom = ""
+
+	if doc.get("doctype") == "Delivery Note":
+		for d in doc.get("items"):
+			print(75, d.get("name"), args.get("child_docname"), d.get("so_detail"))
+			if d.get("name") == args.get("child_docname"):
+				if d.get("so_detail"):
+					# copy back value from origin if from SO
+					for k,val in out.items():
+						if d.get(k):
+							out[k] = d.get(k)
 	
 	return out
 
