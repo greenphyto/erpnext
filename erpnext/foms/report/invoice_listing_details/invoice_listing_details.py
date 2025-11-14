@@ -254,10 +254,10 @@ class Report():
 					d.gst_amount = flt(d.amount)/flt(d.total)*flt(d.gst_amount)
 					d.total_amount = d.gst_amount + flt(d.amount)
 
-				total_row_single["gst_amount"] += d.gst_amount
-				total_row_single["total_weight"] += d.total_weight
-				total_row_single["total_amount"] += d.total_amount
-				total_row_single["amount"] += d.amount
+				total_row_single["gst_amount"] += flt(d.gst_amount)
+				total_row_single["total_weight"] += flt(d.total_weight)
+				total_row_single["total_amount"] += flt(d.total_amount)
+				total_row_single["amount"] += flt(d.amount)
 
 			if self.raw_data_single:
 				self.data.append(total_row_single)
