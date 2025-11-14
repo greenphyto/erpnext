@@ -48,7 +48,7 @@ def before_tests():
 
 
 @frappe.whitelist()
-def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=None, err_journal=False, from_scheduler=False):
+def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=None, err_journal=False, from_scheduler=False, force=False):
 	if not (from_currency and to_currency):
 		# manqala 19/09/2016: Should this be an empty return or should it throw and exception?
 		return
@@ -97,7 +97,7 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 	)
 	if entries:
 		data = entries[0]
-		if getdate(data.date) != getdate(transaction_date):
+		if getdate(data.date) != getdate(transaction_date) or force:
 			return get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck, from_scheduler=from_scheduler)
 
 		return flt(data.exchange_rate)
@@ -105,9 +105,9 @@ def get_exchange_rate(from_currency, to_currency, transaction_date=None, args=No
 	return get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck, from_scheduler=from_scheduler)
 
 def get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck=None, from_scheduler=0):
-	if settingscheck.use_rate_as_first_day_of_month_rate:
+	if settingscheck.service_provider == "mas.gov.sg":
 		temp = get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, settingscheck)
-	else:
+	elif settingscheck.service_provider == "frankfurter.app":
 		temp = get_exchange_rate_from_api2(from_currency, to_currency, transaction_date, settingscheck)
 	
 	value = temp.get("rate")
@@ -251,7 +251,7 @@ def get_exchange_rate_from_api2(from_currency, to_currency, transaction_date, se
 		if not value or 1:
 			import requests
 			date_format = getdate(transaction_date).strftime("%Y-%m-%d")
-			url = "https://api.frankfurter.app/{}?from={}&to={}".format(date_format, from_currency.upper(), to_currency.upper())
+			url = "https://api.frankfurter.dev/v1/{}?base={}&symbols={}".format(date_format, from_currency.upper(), to_currency.upper())
 			response = requests.get(url)
 			# expire in 6 hours
 			response.raise_for_status()
