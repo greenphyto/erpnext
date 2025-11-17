@@ -2084,6 +2084,9 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 
 	def set_missing_values(source, target):
 		target.selling_price_list = get_price_list_with(source)
+		if target.doctype == "Sales Order":
+			target.delivery_date = source.schedule_date
+			
 		target.run_method("set_missing_values")
 		set_purchase_references(target)
 
