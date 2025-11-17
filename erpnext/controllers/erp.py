@@ -153,7 +153,8 @@ def reminder_submit_purchase_invoice(force=False):
 		FROM
 			`tabPurchase Invoice`
 		WHERE
-			docstatus = 0
+			docstatus = 0 
+			AND created_with_ai = 0
 			AND posting_date <= LAST_DAY(CURDATE())
 		ORDER BY
 			posting_date ASC
