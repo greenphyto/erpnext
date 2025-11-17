@@ -106,9 +106,12 @@ class AccountsController(TransactionBase):
 			frappe.db.get_single_value("Accounts Settings", "make_payment_via_journal_entry"),
 		)
 
-		data = frappe.defaults.get_defaults()
-		self.company = data.company
-		self.currency = data.currency
+		if self.is_new():
+			data = frappe.defaults.get_defaults()
+			if not self.company:
+				self.company = data.company
+			if not self.currency:
+				self.currency = data.currency
 
 		if self.is_new():
 			relevant_docs = (

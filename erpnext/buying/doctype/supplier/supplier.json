@@ -75,8 +75,6 @@
   "warn_pos",
   "prevent_rfqs",
   "prevent_pos",
-  "section_break_65",
-  "company_permissions",
   "block_supplier_section",
   "on_hold",
   "hold_type",
@@ -544,12 +542,6 @@
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "company_permissions",
-   "fieldtype": "Table",
-   "label": "Company Permissions",
-   "options": "Company Permissions List"
-  },
-  {
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
@@ -567,7 +559,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2025-11-13 18:27:11.634167",
+ "modified": "2025-11-17 12:55:11.929506",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",
