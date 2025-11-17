@@ -90,12 +90,10 @@ def customer_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 	searchfields = frappe.get_meta(doctype).get_search_fields()
 	searchfields = " or ".join(field + " like %(txt)s" for field in searchfields)
 
-	companies = get_company_enable()
-
 	return frappe.db.sql(
 		"""select {fields} from `tabCustomer`
 		where docstatus < 2
-			and ({scond}) and disabled=0 and company in %(companies)s
+			and ({scond}) and disabled=0
 			{fcond} {mcond}
 		order by
 			(case when locate(%(_txt)s, name) > 0 then locate(%(_txt)s, name) else 99999 end),
@@ -110,7 +108,7 @@ def customer_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 				"fcond": get_filters_cond(doctype, filters, conditions).replace("%", "%%"),
 			}
 		),
-		{"txt": "%%%s%%" % txt, "_txt": txt.replace("%", ""), "start": start, "companies":companies, "page_len": page_len},
+		{"txt": "%%%s%%" % txt, "_txt": txt.replace("%", ""), "start": start, "page_len": page_len},
 		as_dict=as_dict,
 	)
 
@@ -127,13 +125,11 @@ def supplier_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 
 	fields = get_fields(doctype, fields)
 
-	companies = get_company_enable()
-
 	return frappe.db.sql(
 		"""select {field} from `tabSupplier`
 		where docstatus < 2
 			and ({key} like %(txt)s
-			or supplier_name like %(txt)s) and disabled=0 and company in %(companies)s
+			or supplier_name like %(txt)s) and disabled=0 
 			and (on_hold = 0 or (on_hold = 1 and CURRENT_DATE > release_date))
 			{mcond}
 		order by
@@ -144,7 +140,7 @@ def supplier_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 		limit %(page_len)s offset %(start)s""".format(
 			**{"field": ", ".join(fields), "key": searchfield, "mcond": get_match_cond(doctype)}
 		),
-		{"txt": "%%%s%%" % txt, "_txt": txt.replace("%", ""), "start": start, "companies":companies, "page_len": page_len},
+		{"txt": "%%%s%%" % txt, "_txt": txt.replace("%", ""), "start": start, "page_len": page_len},
 		as_dict=as_dict,
 	)
 
@@ -912,29 +908,3 @@ def get_company_enable():
 	if frappe.session.user == "Administrator":
 		return []
 	return [d.name for d in frappe.db.get_list("Company")]
-
-def customer_db_query(user):
-	companies = get_company_enable() or []
-
-	if not companies:
-		return ""
-
-	companies_sql = ", ".join(["%s" % frappe.db.escape(c) for c in companies])
-
-	cond = f" (`tabCustomer`.company  IN ({companies_sql}) ) "
-
-	res = cond.strip()
-	return res
-
-def supplier_db_query(user):
-	companies = get_company_enable() or []
-
-	if not companies:
-		return ""
-
-	companies_sql = ", ".join(["%s" % frappe.db.escape(c) for c in companies])
-
-	cond = f" (`tabSupplier`.company  IN ({companies_sql}) ) "
-
-	res = cond.strip()
-	return res

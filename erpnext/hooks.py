@@ -284,11 +284,6 @@ standard_queries = {
     "Supplier": "erpnext.controllers.queries.supplier_query"
 }
 
-permission_query_conditions = {
-    "Customer": "erpnext.controllers.queries.customer_db_query",
-    "Supplier": "erpnext.controllers.queries.supplier_db_query"
-}
-
 doc_events = {
 	"*": {
 		"validate": [
