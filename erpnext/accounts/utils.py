@@ -1861,3 +1861,30 @@ def get_account_number_map(company: str):
         for acc in accounts
         if acc.account_number
     }
+
+def get_price_list_with(doc):
+	buying_doctypes = [
+			"Purchase Order",
+			"Purchase Invoice",
+			"Purchase Receipt",
+			"Supplier Quotation",
+			"Material Request",
+			"Request for Quotation",
+		]
+	selling_doctypes = [
+		"Sales Order",
+		"Sales Invoice",
+		"Delivery Note",
+		"Quotation",
+		"POS Invoice",
+		"Sales Return",
+	]
+	if doc.doctype in buying_doctypes:
+		valid_price_list = frappe.db.get_value(
+			"Price List", {"enabled":1, "selling": 1, "currency":doc.currency}
+		)
+	elif doc.doctype in selling_doctypes:
+		valid_price_list = frappe.db.get_value(
+			"Price List", {"enabled":1, "buying": 1, "currency":doc.currency}
+		)
+	return valid_price_list

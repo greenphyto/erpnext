@@ -21,7 +21,7 @@ from erpnext.accounts.doctype.tax_withholding_category.tax_withholding_category 
 )
 from erpnext.accounts.general_ledger import get_round_off_account_and_cost_center
 from erpnext.accounts.party import get_due_date, get_party_account, get_party_details
-from erpnext.accounts.utils import get_account_currency
+from erpnext.accounts.utils import get_account_currency, get_price_list_with
 from erpnext.assets.doctype.asset.depreciation import (
 	depreciate_asset,
 	get_disposal_account_and_cost_center,
@@ -2038,6 +2038,10 @@ def validate_inter_company_transaction(doc, doctype):
 	valid_price_list = frappe.db.get_value(
 		"Price List", {"name": price_list, "buying": 1, "selling": 1}
 	)
+
+	if not valid_price_list:
+		valid_price_list = get_price_list_with(doc)
+		
 	if not valid_price_list and not doc.is_internal_transfer():
 		frappe.throw(_("Selected Price List should have buying and selling fields checked."))
 
@@ -2080,6 +2084,7 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 	details = get_inter_company_details(source_doc, doctype)
 
 	def set_missing_values(source, target):
+		target.selling_price_list = get_price_list_with(source)
 		target.run_method("set_missing_values")
 		set_purchase_references(target)
 

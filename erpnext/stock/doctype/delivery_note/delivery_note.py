@@ -15,6 +15,7 @@ from erpnext.accounts.general_ledger import make_gl_entries
 from frappe.utils import cint, flt
 from frappe.utils import safe_abs as abs
 
+from erpnext.accounts.utils import get_price_list_with
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.controllers.selling_controller import SellingController
 from erpnext.stock.doctype.batch.batch import set_batch_nos, get_available_batch_portion
@@ -1281,6 +1282,7 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 	details = get_inter_company_details(source_doc, doctype)
 
 	def set_missing_values(source, target):
+		target.selling_price_list = get_price_list_with(source)
 		target.run_method("set_missing_values")
 		set_purchase_references(target)
 
