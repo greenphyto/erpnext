@@ -411,3 +411,11 @@ def change_naming_series(doc, method=""):
 	# Check if the current name already starts with the abbreviation
 	if not current_name.startswith(abbr):
 		doc.name = f"{abbr}{current_name}"
+
+from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_inter_company_transaction
+def auto_create_selling_from_internal(doc, method=""):
+	doc_res = make_inter_company_transaction(doc.doctype, doc.name, {})
+	try:
+		doc_res.save()
+	except:
+		pass

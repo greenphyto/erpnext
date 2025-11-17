@@ -441,6 +441,9 @@ doc_events = {
 	},
     "Email Queue": {
         "validate":"erpnext.controllers.erp.check_email_status"
+	},
+    ("Purchase Order","Purchase Receipt","Purchase Invoice"):{
+        "on_submit":"erpnext.controllers.erp.auto_create_selling_from_internal"
 	}
 }
 
