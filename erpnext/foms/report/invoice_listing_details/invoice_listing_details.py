@@ -176,6 +176,8 @@ class Report():
 				dn.docstatus = 1
 					AND dn.is_replacement = 0
 					AND dn.is_donation = 0
+					AND dn.is_marketing = 0
+					AND dn.is_production = 0
 					AND dni.si_detail is null
 					AND sii.name is null
 					{}  
