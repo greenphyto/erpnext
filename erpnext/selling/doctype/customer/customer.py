@@ -55,7 +55,7 @@ class Customer(TransactionBase):
 
 	def set_code(self, force=False):
 		cash_sales = "C00008"
-		comp_abbr = frappe.get_value("Company", self.company, "series_abbr")
+		comp_abbr = cstr(frappe.get_value("Company", self.company, "series_abbr"))
 		series = comp_abbr + "C.#####"
 
 		if self.customer_code:
