@@ -205,6 +205,34 @@ class AIAgentClient:
         if "statement of account" in text or re.search(r"\bdebit\b.*\bcredit\b.*\bbalance\b", text):
             return False
 
+        # Delivery order
+        # Delivery Order (DO) exclusions
+        DELIVERY_PATTERNS = [
+            r"delivery order",
+            r"delivery note",
+            r"\bdo\b",
+            r"\bdo no\b",
+            r"goods delivery",
+            r"goods issue",
+            r"outbound",
+        ]
+
+        for p in DELIVERY_PATTERNS:
+            if re.search(p, text):
+                return False
+
         # Purchase Order
+        # Purchase Order (PO) exclusions
+        # PURCHASE_ORDER_PATTERNS = [
+        #     r"purchase order",
+        #     r"\bpo\b",
+        #     r"\bpo no\b",
+        #     r"\bp/o\b",
+        #     r"order confirmation",
+        # ]
+
+        # for p in PURCHASE_ORDER_PATTERNS:
+        #     if re.search(p, text):
+        #         return False
 
         return True
