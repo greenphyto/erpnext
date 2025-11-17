@@ -443,6 +443,9 @@ doc_events = {
 	},
     "Scheduled Job Log": {
         "after_insert":"erpnext.ai_agent.doctype.ai_agent_settings.ai_agent_settings.read_log"
+	},
+    ("Purchase Order","Purchase Receipt","Purchase Invoice"):{
+        "on_submit":"erpnext.controllers.erp.auto_create_selling_from_internal"
 	}
 }
 
