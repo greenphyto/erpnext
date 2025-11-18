@@ -664,6 +664,23 @@ def get_list_context(context=None):
 	)
 	return list_context
 
+@frappe.whitelist()
+def get_internal_supplier_currency(supplier):
+    """Return the correct currency for internal supplier transactions."""
+    if not supplier:
+        return None
+
+    # Try to get the linked company from Supplier
+    company = frappe.get_value("Supplier", supplier, "represents_company")
+
+    if not company:
+        return None
+
+    # Get currency from Company
+    currency = frappe.get_value("Company", company, "default_currency")
+
+    return currency
+
 
 @frappe.whitelist()
 def update_status(status, name):

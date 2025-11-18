@@ -59,6 +59,29 @@ frappe.ui.form.on("Purchase Order", {
 		}
 	},
 
+	supplier: function(frm) {
+        if (!frm.doc.supplier) return;
+
+        frappe.call({
+            method: "erpnext.buying.doctype.purchase_order.purchase_order.get_internal_supplier_currency",
+            args: {
+                supplier: frm.doc.supplier
+            },
+            callback(r) {
+                if (!r.message) return;
+
+                const currency = r.message;
+                if (!currency) return;
+
+                if (frm.doc.currency !== currency) {
+                    frm.set_value("currency", currency);
+                    frm.set_value("buying_price_list", "");
+                    frappe.show_alert(`Currency set to ${currency} (Internal Supplier)`);
+                }
+            }
+        });
+    },
+
 	get_materials_from_supplier: function(frm) {
 		let po_details = [];
 
