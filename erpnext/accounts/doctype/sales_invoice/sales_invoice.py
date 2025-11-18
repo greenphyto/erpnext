@@ -2128,6 +2128,13 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 			target_doc.customer = details.get("party")
 			target_doc.selling_price_list = source_doc.buying_price_list
 
+			if source_doc.doctype == "Purchase Order":
+				target_doc.po_no = source_doc.name
+				target_doc.po_date = source_doc.transaction_date
+			elif source_doc.doctype in ("Purchase Invoice", "Purchase Receipt"):
+				target_doc.po_no = source_doc.name
+				target_doc.po_date = source_doc.posting_date
+
 			update_address(
 				target_doc, "company_address", "company_address_display", source_doc.supplier_address
 			)
