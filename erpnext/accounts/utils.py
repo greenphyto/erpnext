@@ -1568,9 +1568,9 @@ def update_voucher_outstanding(voucher_type, voucher_no, account, party_type, pa
 		ref_doc = frappe.get_doc(voucher_type, voucher_no)
 
 		# Didn't use db_set for optimisation purpose
-		ref_doc.outstanding_amount = outstanding["outstanding_in_account_currency"]
+		ref_doc.outstanding_amount = flt(outstanding.get("outstanding_in_account_currency"))
 		frappe.db.set_value(
-			voucher_type, voucher_no, "outstanding_amount", outstanding["outstanding_in_account_currency"]
+			voucher_type, voucher_no, "outstanding_amount", flt(outstanding.get("outstanding_in_account_currency"))
 		)
 
 		ref_doc.set_status(update=True)
