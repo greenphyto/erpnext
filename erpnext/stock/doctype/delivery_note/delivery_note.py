@@ -1329,6 +1329,9 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 			target_doc.selling_price_list = source_doc.buying_price_list
 			target_doc.is_internal_customer = 1
 			target_doc.inter_company_reference = source_doc.name
+			if source_doc.doctype in ("Purchase Invoice", "Purchase Receipt"):
+				target_doc.po_no = source_doc.name
+				target_doc.po_date = source_doc.posting_date
 
 			# Invert the address on target doc creation
 			update_address(
