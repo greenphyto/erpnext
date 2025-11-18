@@ -14,7 +14,7 @@ def boot_session(bootinfo):
 	if frappe.session["user"] != "Guest":
 
 		# multi company
-		if frappe.db.get_single_value("Accounts Settings", "enable_switch_company_menu"):
+		if multi_entity_enable():
 			bootinfo.sysdefaults.company_selected = get_company_selected()
 			if bootinfo.sysdefaults.company_selected != "ALL":
 				bootinfo.sysdefaults.company_color = frappe.db.get_value("Company", bootinfo.sysdefaults.company_selected, "color") or "#1F272E"
@@ -116,9 +116,16 @@ def update_page_info(bootinfo):
 		}
 	)
 
+def multi_entity_enable():
+	meta = frappe.get_meta("Accounts Settings")
+	if meta.has_field("enable_switch_company_menu") and frappe.db.get_single_value("Accounts Settings", "enable_switch_company_menu"):
+		return True
+	else:
+		return False
+
 @frappe.whitelist()
 def get_company_selected():
-	if frappe.db.get_single_value("Accounts Settings", "enable_switch_company_menu"):
+	if multi_entity_enable():
 		return frappe.db.get_value("User", frappe.session.user, "company_selected") or "ALL"
 	else:
 		return "Disabled"
