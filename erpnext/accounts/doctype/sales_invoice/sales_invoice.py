@@ -1988,7 +1988,7 @@ def get_inter_company_details(doc, doctype):
 
 		party = get_internal_party(parties, "Supplier", doc)
 	else:
-		with_internal_supplier = frappe.get_value("Supplier", doc.customer, "is_internal_supplier")
+		with_internal_supplier = frappe.get_value("Supplier", doc.supplier, "is_internal_supplier")
 		if not with_internal_supplier:
 			return
 		
@@ -2038,6 +2038,9 @@ def get_internal_party(parties, link_doctype, doc):
 def validate_inter_company_transaction(doc, doctype):
 
 	details = get_inter_company_details(doc, doctype)
+	if not details:
+		return
+	
 	price_list = (
 		doc.selling_price_list
 		if doctype in ["Sales Invoice", "Sales Order", "Delivery Note"]

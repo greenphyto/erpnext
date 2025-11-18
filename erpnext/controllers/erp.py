@@ -1084,6 +1084,17 @@ def auto_create_selling_from_internal(doc, method=""):
 		except:
 			pass
 	
+	if doc.get("supplier"):
+		with_internal_supplier = frappe.get_value("Supplier", doc.supplier, "is_internal_supplier")
+		if not with_internal_supplier:
+			return
+	elif doc.get("customer"):
+		with_internal_supplier = frappe.get_value("Customer", doc.customer, "is_internal_customer")
+		if not with_internal_supplier:
+			return
+	else:
+		return
+	
 	if doc.doctype in ['Purchase Order', 'Purchase Invoice']:
 		from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_inter_company_transaction
 		doc_res = make_inter_company_transaction(doc.doctype, doc.name, {})
