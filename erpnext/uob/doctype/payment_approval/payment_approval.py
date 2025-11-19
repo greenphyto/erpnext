@@ -29,6 +29,7 @@ class PaymentApproval(Document):
 		self.set_batch_number()
 
 	def validate_data(self):
+		self.validate_reqd_data()
 		self.validate_payment()
 		self.validate_bank_number()
 		self.validate_invoice()
@@ -310,12 +311,20 @@ class PaymentApproval(Document):
 				temp = temp[0]
 				frappe.throw(_(f"Row {d.idx}, Invoice No <b>{d.invoice_no}</b> already in progress, please select another invoice."))
 
+			# Invoice
+			for d in self.invoices:
+				pass
+				# Supplier Company
+				# Invoice Company
+				# Supplier bank no
+				# Bank Account no
+				# invoice amount
+
 			already_add.append(d.invoice_no)
 			d.supplier = data.supplier
 			d.amount = data.outstanding_amount
 			d.currency = data.currency
 			d.exchange_rate = data.conversion_rate
-			# validate bank own from the supplier
 
 
 	def calculate_amount(self):
@@ -324,6 +333,18 @@ class PaymentApproval(Document):
 			total += flt(d.basic_amount)
 		
 		self.total_amount = total
+
+	def validate_reqd_data(self):
+		# TAX ID
+		tax_id = frappe.get_value("Company", self.company, "tax_id")
+		if not tax_id:
+			frappe.throw(_(f"Company tax ID is missing, please set to Company {self.company}"))
+		
+		# Bank Account
+		company = frappe.db.get_value("Bank Account", self.bank_account, "company")
+		if self.company != company:
+			frappe.throw(_(f"Company tax ID is missing, please set to Company {self.company}"))
+
  
 	def process_xml_file(self, filepath=""):
 		workflow_state = self.get("workflow_state") or self.get("status")
