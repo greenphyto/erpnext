@@ -87,16 +87,9 @@ class PaymentApproval(Document):
 			self.status = "Draft"
 
 	def validate_bank_number(self):
-		# validate mandatory on branch code
-		
 		for d in self.get("invoices"):
 			if check_branch_code_mandatory(d.supplier_bank, d.bank_account_no):
-				if not d.branch_code:
-					frappe.throw(f"Row {d.idx}, Branch code mandatoy when use HSBC/OCBC/SBI bank")
-
-			d.swift = frappe.get_value("Bank Number", d.supplier_bank_no, 'swift')
-			if len(cstr(d.swift)) < 11:
-				frappe.throw(_(f"Row {d.idx}, Bank <b>{d.supplier_bank}</b> must have minimum 11 digits Swift code."))
+				frappe.throw(f"Row {d.idx}, Bank account for HSBC/OCBC/SBI should be at least 10 digits")
 
 	def update_payment_status(self, process_id, transactions=[], file_date="", error_message=""):
 		# sync with L1,2,3,4 and when any riject
@@ -383,9 +376,8 @@ class PaymentApproval(Document):
 		# Bank Account
 		company = frappe.db.get_value("Bank Account", self.bank_account, "company")
 		if self.company != company:
-			frappe.throw(_(f"Company tax ID is missing, please set to Company {self.company}"))
+			frappe.throw(_(f"Bank Account <b>{self.bank_account}</b> not belong to {self.company}"))
 
- 
 	def process_xml_file(self, filepath=""):
 		workflow_state = self.get("workflow_state") or self.get("status")
 		if workflow_state != "Approved" and self.docstatus != 1:
@@ -418,10 +410,7 @@ class PaymentApproval(Document):
 				bic = change_to_dummy_bic(bic)
 				
 			# if include branch code
-			if check_branch_code_mandatory(d.supplier_bank, d.bank_account_no):
-				bank_account_no = cstr(d.branch_code) + cstr(d.bank_account_no)
-			else:
-				bank_account_no = cstr(d.bank_account_no)
+			bank_account_no = cstr(d.bank_account_no)
 
 			doc = frappe.get_doc("Purchase Invoice", d.invoice_no)
 			doc_name = doc.name[:-5]
