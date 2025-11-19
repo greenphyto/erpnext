@@ -223,12 +223,24 @@ class PaymentApproval(Document):
 
 		old_doc = self.get_doc_before_save()
 		if not old_doc or old_doc.get("status") != self.status:
-			add_comment(
-				self.doctype,
-				self.name,
-				self.status,
-				frappe.session.user
-			)
+			if not frappe.db.exists("Comment", {
+				"comment_type":"Workflow", 
+				"reference_doctype": self.doctype,
+				"reference_name": self.name,
+				"content": self.status
+			}):
+				comment = frappe.new_doc("Comment")
+				comment.update(
+					{
+						"comment_type": "Workflow",
+						"reference_doctype": self.doctype,
+						"reference_name": self.name,
+						"comment_email": frappe.session.user,
+						"content": self.status
+					}
+				)
+				comment.insert(ignore_permissions=True)
+
 		if db_update:
 			self.db_update()
 
