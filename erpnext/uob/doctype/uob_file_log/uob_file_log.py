@@ -122,56 +122,82 @@ class UOBFileLog(Document):
 		if txs and isinstance(txs, dict):
 			txs = [txs]
 
-		status_name = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlGrpInfAndSts','GrpSts'])
-		error_code_group = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlGrpInfAndSts','StsRsnInf','Rsn','Cd'])
-		reff_no = get_nested(data, ['Document','CstmrPmtStsRpt','GrpHdr','MsgId'])
-		reff_date = get_nested(data, ['Document','CstmrPmtStsRpt','GrpHdr','CreDtTm'])
-		remarks = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlPmtInfAndSts','OrgnlPmtInfId'])
-		for tx in txs:
-			temp = tx.get("OrgnlEndToEndId") or ""
-			error_code = get_nested(tx, ["StsRsnInf", "Rsn", "Cd"] ) or error_code_group
-			result = ""
-			if ProcessID in [1,3]:
-				result = status_name
-				invoice_no = "*"
-			else:
-				invoice_no = convert_inv_no(temp)
-				result = get_nested(tx, ["TxSts"])
-			dt = {
-				"result": result,
-				"invoice_no": invoice_no,
-				"bank_account": get_nested(tx, ['OrgnlTxRef','DbtrAcct','Id','Othr','Id']),
-				"account_no": get_nested(tx, ["OrgnlTxRef","CdtrAcct","Id","Othr","Id"]) or "*",
-				"error_code": error_code,
-				"amount": flt(get_nested(tx, ['OrgnlTxRef','Amt','InstdAmt','#text'])),
-				"currency": get_nested(tx, ['OrgnlTxRef','Amt','InstdAmt','@Ccy']),
-				"bic": get_nested(tx, ['OrgnlTxRef','CdtrAgt','FinInstnId','BIC']),
-				"reff_no": reff_no,
-				"reff_date": reff_date,
-				"remarks": remarks,
-			}
-			transactions.append(dt)
-
-		# Additional Information
 		file_date = get_nested(data, ["Document", "CstmrPmtStsRpt", "GrpHdr", "CreDtTm"]) or ""
-		temp = get_nested(data, [
-			'Document', 
-			'CstmrPmtStsRpt', 
-			'OrgnlGrpInfAndSts', 
-			'StsRsnInf', 
-			'AddtlInf'
-		], collect_multiple=True) or []
-		error_message = "\n".join(temp)
-			
-		# Get Payment Approval
-		temp = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlPmtInfAndSts','OrgnlPmtInfId']) or ""
-		ids = convert_inv_no(temp)
-		payment_id = frappe.db.get_value("Payment Approval", ids)
-		# get the payment number
-		if not payment_id:
-			return
 
-		doc = frappe.get_doc("Payment Approval", payment_id)
+		if txs:
+			status_name = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlGrpInfAndSts','GrpSts'])
+			error_code_group = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlGrpInfAndSts','StsRsnInf','Rsn','Cd'])
+			reff_no = get_nested(data, ['Document','CstmrPmtStsRpt','GrpHdr','MsgId'])
+			reff_date = get_nested(data, ['Document','CstmrPmtStsRpt','GrpHdr','CreDtTm'])
+			remarks = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlPmtInfAndSts','OrgnlPmtInfId'])
+			for tx in txs:
+				temp = tx.get("OrgnlEndToEndId") or ""
+				error_code = get_nested(tx, ["StsRsnInf", "Rsn", "Cd"] ) or error_code_group
+				result = ""
+				if ProcessID in [1,3]:
+					result = status_name
+					invoice_no = "*"
+				else:
+					invoice_no = convert_inv_no(temp)
+					result = get_nested(tx, ["TxSts"])
+				dt = {
+					"result": result,
+					"invoice_no": invoice_no,
+					"bank_account": get_nested(tx, ['OrgnlTxRef','DbtrAcct','Id','Othr','Id']),
+					"account_no": get_nested(tx, ["OrgnlTxRef","CdtrAcct","Id","Othr","Id"]) or "*",
+					"error_code": error_code,
+					"amount": flt(get_nested(tx, ['OrgnlTxRef','Amt','InstdAmt','#text'])),
+					"currency": get_nested(tx, ['OrgnlTxRef','Amt','InstdAmt','@Ccy']),
+					"bic": get_nested(tx, ['OrgnlTxRef','CdtrAgt','FinInstnId','BIC']),
+					"reff_no": reff_no,
+					"reff_date": reff_date,
+					"remarks": remarks,
+				}
+				transactions.append(dt)
+
+			# Additional Information
+			temp = get_nested(data, [
+				'Document', 
+				'CstmrPmtStsRpt', 
+				'OrgnlGrpInfAndSts', 
+				'StsRsnInf', 
+				'AddtlInf'
+			], collect_multiple=True) or []
+			error_message = "\n".join(temp)
+				
+			# Get Payment Approval
+			temp = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlPmtInfAndSts','OrgnlPmtInfId']) or ""
+			ids = convert_inv_no(temp)
+			payment_id = frappe.db.get_value("Payment Approval", ids)
+			# get the payment number
+			if not payment_id:
+				return
+
+			doc = frappe.get_doc("Payment Approval", payment_id)
+		else:
+			temp = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlGrpInfAndSts','OrgnlMsgId']) or ""
+			batch_no = cint(temp[-3:])
+			payment_id = frappe.db.get_value("Payment Approval", {"batch_number":batch_no})
+			# get the payment number
+			if not payment_id:
+				return
+			doc = frappe.get_doc("Payment Approval", payment_id)
+			result = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlGrpInfAndSts','GrpSts'])
+			error_code = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlGrpInfAndSts','StsRsnInf','Rsn','Cd'])
+			error_message = ", ".join(get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlGrpInfAndSts','StsRsnInf','AddtlInf']) or [])
+			for d in doc.get("invoices"):
+				dt = {
+						"result": result,
+						"invoice_no": d.invoice_no,
+						"account_no": d.bank_account_no,
+						"error_code": error_code,
+						"amount": d.amount,
+						"currency": d.currency,
+						"bic": d.swift,
+						"remarks": error_message,
+					}
+				transactions.append(dt)
+
 		doc.update_payment_status(ProcessID, transactions, file_date=file_date, error_message=error_message)
 
 	def sync_payment_entry(self, file, filename="", raw=False):

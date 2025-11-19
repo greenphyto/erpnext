@@ -293,6 +293,9 @@ class PaymentApproval(Document):
 				],
 				as_dict=1,
 			)
+			if not data:
+				frappe.throw(_(f"Purchase Invoice {d.invoice_no} Not Found"))
+				
 			if flt(data.docstatus) != 1:
 				frappe.throw(f"Row {d.idx}, only for submitted invoice!")
 				self.remove(d)
