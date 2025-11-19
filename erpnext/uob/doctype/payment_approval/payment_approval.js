@@ -10,9 +10,18 @@ frappe.ui.form.on('Payment Approval', {
 			});
 		}
 		frm.set_query("invoice_no", "invoices", (doc, cdt, cdn)=>{
+			if (!doc.currency){
+				frappe.throw(_("Currency is not set."))
+			}
+			if (!doc.company){
+				frappe.throw(_("Company is not set."))
+			}
 			return{
 				filters:{
-					currency:doc.currency
+					docstatus:1,
+					outstanding_amount:[">", 0],
+					currency: doc.currency,
+					company: doc.company
 				},
 				query:"erpnext.uob.doctype.payment_approval.payment_approval.get_available_purchase_invoices"
 			}
@@ -20,24 +29,31 @@ frappe.ui.form.on('Payment Approval', {
 
 		frm.set_query("supplier_bank_no", "invoices", (doc, cdt, cdn)=>{
 			var d = locals[cdt][cdn]
+			if (!doc.currency){
+				frappe.throw(_("Currency is not set."))
+			}
 			return{
 				filters:{
 					party: d.party,
 					party_type:"Supplier",
-					currency:doc.currency
+					currency:doc.currency,
 				}
 			}
 		})
-
+		
 		frm.set_query("bank_account", (doc, cdt, cdn)=>{
 			var currency = doc.currency;
 			if (!currency){
 				frappe.throw("Please set currency.")
 			}
+			if (!doc.company){
+				frappe.throw(_("Company is not set."))
+			}
 			return{
 				filters:{
 					"currency":currency,
-					"bank":["like", "%UOB%"]
+					"bank":["like", "%UOB%"],
+					company: doc.company
 				}
 			}
 		})
