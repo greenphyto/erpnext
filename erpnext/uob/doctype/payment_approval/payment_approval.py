@@ -5,6 +5,7 @@ import frappe, os, re
 from frappe.model.document import Document
 from frappe.utils import flt, cint, getdate, get_datetime, get_link_to_form, get_time, today, cstr
 from frappe.utils.file_manager import save_file
+from frappe.desk.form.utils import add_comment
 from erpnext.controllers.uob import create_payment_xml
 from erpnext.controllers.uob import UOBAPI, get_country_code
 from frappe.model.mapper import get_mapped_doc
@@ -237,6 +238,14 @@ class PaymentApproval(Document):
 		if self.status == "Failed":
 			self.error_message = error_message
 
+		old_doc = self.get_doc_before_save()
+		if not old_doc or old_doc.get("status") != self.status:
+			add_comment(
+				self.doctype,
+				self.name,
+				self.status,
+				frappe.session.user
+			)
 		if db_update:
 			self.db_update()
 
