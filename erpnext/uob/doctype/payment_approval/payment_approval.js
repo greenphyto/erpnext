@@ -9,7 +9,7 @@ frappe.ui.form.on('Payment Approval', {
 				frm.cscript.get_unpaid_purchase_invoices();
 			});
 		}
-		frm.set_query("invoice_no", "invoices", (doc)=>{
+		frm.set_query("invoice_no", "invoices", (doc, cdt, cdn)=>{
 			if (!doc.currency){
 				frappe.throw(_("Currency is not set."))
 			}
@@ -22,7 +22,8 @@ frappe.ui.form.on('Payment Approval', {
 					outstanding_amount:[">", 0],
 					currency: doc.currency,
 					company: doc.company
-				}
+				},
+				query:"erpnext.uob.doctype.payment_approval.payment_approval.get_available_purchase_invoices"
 			}
 		})
 
