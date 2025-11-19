@@ -285,13 +285,21 @@ class PaymentApproval(Document):
 				self.remove(d)
 				continue
 
-			data = frappe.db.get_value("Purchase Invoice", d.invoice_no, [
-				'supplier', 
-				'outstanding_amount', 
-				'docstatus', 
-				'currency', 
-				'conversion_rate',
-			], as_dict=1)
+			# pull essential fields from Purchase Invoice (source document)
+			data = frappe.db.get_value(
+				"Purchase Invoice",
+				d.invoice_no,
+				[
+					"supplier",
+					"company",
+					"outstanding_amount",
+					"docstatus",
+					"currency",
+					"conversion_rate",
+					"bank_number",
+				],
+				as_dict=1,
+			)
 			if flt(data.docstatus) != 1:
 				frappe.throw(f"Row {d.idx}, only for submitted invoice!")
 				self.remove(d)
@@ -302,6 +310,10 @@ class PaymentApproval(Document):
 				self.remove(d)
 				continue
 
+			# company must match current document
+			if cstr(data.company) != cstr(self.company):
+				frappe.throw(_(f"Row {d.idx}, invoice company {data.company} must match Payment Approval company {self.company}."))
+
 			if d.currency != self.currency:
 				frappe.throw(_(f"Row {d.idx}, cannot use invoice with currency except {self.currency}. Please change the invoice."))
 			
@@ -311,20 +323,48 @@ class PaymentApproval(Document):
 				temp = temp[0]
 				frappe.throw(_(f"Row {d.idx}, Invoice No <b>{d.invoice_no}</b> already in progress, please select another invoice."))
 
-			# Invoice
-			for d in self.invoices:
-				pass
-				# Supplier Company
-				# Invoice Company
-				# Supplier bank no
-				# Bank Account no
-				# invoice amount
-
-			already_add.append(d.invoice_no)
-			d.supplier = data.supplier
-			d.amount = data.outstanding_amount
+			# ensure row values reflect source + current document
+			# party/supplier
+			d.party = data.supplier
+			# currency and rate from PI
 			d.currency = data.currency
 			d.exchange_rate = data.conversion_rate
+			# amounts (keep amount and basic_amount consistent with outstanding)
+			d.amount = data.outstanding_amount
+			d.basic_amount = data.outstanding_amount
+
+			# fill supplier bank number: prefer row value, fallback to PI.bank_number
+			bank_number_name = d.supplier_bank_no
+			if not bank_number_name:
+				frappe.throw(_(f"Row {d.idx}, Supplier Bank No is required for supplier {data.supplier}."))
+
+			bn = frappe.db.get_value(
+				"Bank Number",
+				bank_number_name,
+				["party_type", "party", "currency", "bank", "bank_number", "bank_account_name", "branch_code", "swift"],
+				as_dict=1,
+			)
+			if not bn:
+				frappe.throw(_(f"Row {d.idx}, Bank Number {bank_number_name} not found."))
+
+			# bank number must belong to this supplier
+			if cstr(bn.party_type) != "Supplier" or cstr(bn.party) != cstr(data.supplier):
+				frappe.throw(_(f"Row {d.idx}, Bank Number {bank_number_name} does not belong to supplier {data.supplier}."))
+
+			# bank currency must match PA currency and row currency
+			if cstr(bn.currency) != cstr(self.currency):
+				frappe.throw(_(f"Row {d.idx}, Bank Number currency {bn.currency} must match Payment Approval currency {self.currency}."))
+
+			# set bank fields on row to reflect current bank number
+			d.supplier_bank_no = bank_number_name
+			d.supplier_bank = bn.bank
+			d.bank_account_no = bn.bank_number
+			d.bank_account_name = bn.bank_account_name
+			d.branch_code = bn.branch_code
+			d.swift = bn.swift
+
+			already_add.append(d.invoice_no)
+
 
 
 	def calculate_amount(self):
@@ -722,5 +762,4 @@ def search_purchase_invoice(doctype, txt, searchfield, start=0, page_len=20, fil
         as_dict=True,
         debug=0,
     )
-
 
