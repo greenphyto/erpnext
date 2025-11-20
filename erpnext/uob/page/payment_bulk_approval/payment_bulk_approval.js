@@ -570,15 +570,17 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                 const $table = $body.find('table.detail-table');
                 $table.on('change', '.invoice-select-all', function() {
                     const checked = $(this).is(':checked');
-                    $table.find('tbody .invoice-select').prop('checked', checked);
+                    $body.find('.invoice-select').prop('checked', checked);
                 });
+
+
                 // Default: all selected on initial render
                 $table.find('.invoice-select-all').prop('checked', true).trigger('change');
                 // Hook mobile select-all
                 const $wrap = $body.find('.detail-mobile');
                 $wrap.on('change', '.invoice-select-all', function() {
                     const checked = $(this).is(':checked');
-                    $wrap.find('.invoice-select').prop('checked', checked);
+                    $body.find('.invoice-select').prop('checked', checked);
                 });
                 $wrap.find('.invoice-select-all').prop('checked', true).trigger('change');
                 $tr.data('detail-rendered', true);

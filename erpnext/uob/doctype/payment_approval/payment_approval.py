@@ -40,7 +40,6 @@ class PaymentApproval(Document):
 	def on_submit(self):
 		self.update_apporval_date()
 		self.remove_unselected_row()
-		# frappe.throw(f'{ len(self.invoices) } here')
 
 	def validate_select(self):
 		select_row = []
