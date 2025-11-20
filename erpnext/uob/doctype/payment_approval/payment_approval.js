@@ -21,7 +21,8 @@ frappe.ui.form.on('Payment Approval', {
 					docstatus:1,
 					outstanding_amount:[">", 0],
 					currency: doc.currency,
-					company: doc.company
+					company: doc.company,
+					cur_name:doc.name
 				},
 				query:"erpnext.uob.doctype.payment_approval.payment_approval.get_available_purchase_invoices"
 			}
@@ -36,7 +37,7 @@ frappe.ui.form.on('Payment Approval', {
 				filters:{
 					party: d.party,
 					party_type:"Supplier",
-					currency:doc.currency,
+					currency:doc.currency
 				}
 			}
 		})
