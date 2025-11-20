@@ -11,7 +11,8 @@
   "requested_by",
   "approved_by",
   "column_break_2",
-  "posting_date",
+  "request_date",
+  "approved_date",
   "time",
   "transfer_method_section",
   "payment_type",
@@ -36,15 +37,15 @@
   "summary_section",
   "summary_wrapper",
   "section_break_6",
-  "filename",
   "status",
-  "transfer_date",
+  "error_message",
   "column_break_28",
   "batch_number",
   "amended_from",
   "process_id",
   "update_on",
-  "error_message"
+  "transfer_date",
+  "filename"
  ],
  "fields": [
   {
@@ -78,18 +79,11 @@
    "fieldtype": "Column Break"
   },
   {
-   "default": "Today",
-   "fieldname": "posting_date",
-   "fieldtype": "Date",
-   "label": "Posting Date",
-   "no_copy": 1
-  },
-  {
-   "default": "Now",
    "fieldname": "time",
    "fieldtype": "Time",
    "label": "Time",
-   "no_copy": 1
+   "no_copy": 1,
+   "read_only": 1
   },
   {
    "fieldname": "transfer_method_section",
@@ -203,6 +197,7 @@
    "read_only": 1
   },
   {
+   "depends_on": "eval:doc.bank_account",
    "fieldname": "section_break_5",
    "fieldtype": "Section Break",
    "label": "Invoices"
@@ -211,7 +206,8 @@
    "fieldname": "invoices",
    "fieldtype": "Table",
    "label": "Invoices",
-   "options": "Payment Invoice List"
+   "options": "Payment Invoice List",
+   "reqd": 1
   },
   {
    "fieldname": "total_amount",
@@ -222,6 +218,7 @@
   },
   {
    "collapsible": 1,
+   "depends_on": "eval:doc.total_amount",
    "fieldname": "section_break_6",
    "fieldtype": "Section Break",
    "label": "More Information"
@@ -293,6 +290,7 @@
    "read_only": 1
   },
   {
+   "depends_on": "eval:doc.total_amount",
    "fieldname": "summary_section",
    "fieldtype": "Section Break",
    "label": "Summary"
@@ -301,12 +299,25 @@
    "fieldname": "summary_wrapper",
    "fieldtype": "HTML",
    "label": "summary wrapper"
+  },
+  {
+   "default": "Today",
+   "fieldname": "request_date",
+   "fieldtype": "Date",
+   "label": "Request Date",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "approved_date",
+   "fieldtype": "Date",
+   "label": "Approved Date",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-11-12 12:46:19.828772",
+ "modified": "2025-11-20 12:37:53.732565",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "Payment Approval",
@@ -314,14 +325,11 @@
  "owner": "Administrator",
  "permissions": [
   {
-   "create": 1,
-   "delete": 1,
    "email": 1,
-   "export": 1,
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "System Manager",
+   "role": "1",
    "share": 1,
    "submit": 1,
    "write": 1

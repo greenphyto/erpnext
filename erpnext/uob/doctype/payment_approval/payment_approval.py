@@ -809,5 +809,5 @@ def get_available_purchase_invoices(doctype, txt, searchfield, start, page_len, 
 		"page_len": page_len,
 		"currency": filters.get("currency"),
 		"cur_name": filters.get("cur_name"),
-	}, debug=1)
+	}, debug=0)
 
