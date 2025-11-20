@@ -615,6 +615,8 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     $wrapM.find('.invoice-select-all').prop('checked', checked);
                     update_parent_row_amount();
                 });
+
+
                 // Default: all selected on initial render
                 $table.find('.invoice-select-all').prop('checked', true).trigger('change');
                 // Hook mobile select-all
