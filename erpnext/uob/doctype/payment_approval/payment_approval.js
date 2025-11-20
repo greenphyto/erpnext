@@ -236,11 +236,7 @@ $.extend(cur_frm.cscript, {
 				resolve(true);
 			}
 		})
-	}
-})
-
-// Extend with summary renderer without touching existing cscript methods
-$.extend(cur_frm.cscript, {
+	},
 	render_summary(frm){
 		try {
 			const fld = frm.fields_dict && frm.fields_dict.summary_wrapper;
@@ -250,7 +246,7 @@ $.extend(cur_frm.cscript, {
 				fld.$wrapper.html('<div class="text-muted">No invoices to summarize.</div>');
 				return;
 			}
-
+	
 			const groups = {};
 			let grand = 0;
 			items.forEach(r => {
@@ -261,7 +257,7 @@ $.extend(cur_frm.cscript, {
 				groups[key].count += 1;
 				groups[key].total += amt;
 			});
-
+	
 			const currency = frm.doc.currency || null;
 			const fmt = (v) => frappe.format(v, { fieldtype: 'Currency', options: 'currency' });
 			const body = Object.values(groups)
@@ -273,7 +269,7 @@ $.extend(cur_frm.cscript, {
 						<td class="text-right">${fmt(it.total)}</td>
 					</tr>
 				`).join('');
-
+	
 			const html = `
 				<div class="mt-3">
 					<table class="table table-sm table-bordered" style="margin:auto; width: 90%;">
@@ -294,13 +290,20 @@ $.extend(cur_frm.cscript, {
 						</tfoot>
 					</table>
 				</div>`;
-
+	
 			fld.$wrapper.html(html);
 		} catch (e) {
 			if (console && console.warn) console.warn('Summary render failed', e);
 		}
+	},
+	calculate_amount:function(frm){
+		var total = 0;
+		$.each(frm.doc.invoices, (i,r)=>{
+			total += flt(r.amount)
+		})
+		frm.set_value("total_amount", total)
 	}
-});
+})
 
 // Ensure summary renders on refresh and currency changes
 frappe.ui.form.on('Payment Approval', {
@@ -317,7 +320,7 @@ frappe.ui.form.on('Payment Approval', {
 	},
 	invoices_remove(frm) {
 		if (frm.cscript.render_summary) frm.cscript.render_summary(frm);
-	}
+	},
 });
 
 // Child table field events to keep summary in sync real-time
@@ -327,3 +330,11 @@ frappe.ui.form.on('Payment Invoice List', {
 	amount(frm) { if (frm.cscript.render_summary) frm.cscript.render_summary(frm); },
 	currency(frm) { if (frm.cscript.render_summary) frm.cscript.render_summary(frm); }
 });
+
+frappe.ui.form.on('Payment Invoice List', {
+	invoice_no(frm){
+		setTimeout(()=>{
+			frm.cscript.calculate_amount(frm)
+		}, 100)
+	}
+})

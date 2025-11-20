@@ -197,6 +197,7 @@
    "read_only": 1
   },
   {
+   "depends_on": "eval:doc.bank_account",
    "fieldname": "section_break_5",
    "fieldtype": "Section Break",
    "label": "Invoices"
@@ -205,7 +206,8 @@
    "fieldname": "invoices",
    "fieldtype": "Table",
    "label": "Invoices",
-   "options": "Payment Invoice List"
+   "options": "Payment Invoice List",
+   "reqd": 1
   },
   {
    "fieldname": "total_amount",
@@ -216,6 +218,7 @@
   },
   {
    "collapsible": 1,
+   "depends_on": "eval:doc.total_amount",
    "fieldname": "section_break_6",
    "fieldtype": "Section Break",
    "label": "More Information"
@@ -287,6 +290,7 @@
    "read_only": 1
   },
   {
+   "depends_on": "eval:doc.total_amount",
    "fieldname": "summary_section",
    "fieldtype": "Section Break",
    "label": "Summary"
@@ -313,7 +317,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-11-12 12:46:19.828772",
+ "modified": "2025-11-20 12:37:53.732565",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "Payment Approval",
