@@ -181,7 +181,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                             <thead>
                                 <tr>
                                     <th class="col-name" style="width: 12.9%;">Name</th>
-                                    <th class="col-posting-date" style="width: 15.06%;">Posting Date</th>
+                                    <th class="col-posting-date" style="width: 15.06%;">Request Date</th>
                                     <th class="col-requested-by" style="width: 10.33%;">Requested By</th>
                                     <th class="col-type" style="width: 6.88%;">Type</th>
                                     <th class="col-amount text-right" style="width: 10.76%;">T. Amount</th>
@@ -223,8 +223,8 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
 
     // Build report-style filters
     const filterDefs = [
-        { fieldname: 'posting_date_from', label: 'Posting Date From', fieldtype: 'Date' },
-        { fieldname: 'posting_date_to', label: 'Posting Date To', fieldtype: 'Date' },
+        { fieldname: 'request_date_from', label: 'Request Date From', fieldtype: 'Date' },
+        { fieldname: 'request_date_to', label: 'Request Date To', fieldtype: 'Date' },
         { fieldname: 'requested_by', label: 'Requested By', fieldtype: 'Link', options: 'User' },
         { fieldname: 'bank_account', label: 'Bank Account', fieldtype: 'Link', options: 'Bank Account' },
         { fieldname: 'currency', label: 'Currency', fieldtype: 'Link', options: 'Currency' },
@@ -232,7 +232,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
         { fieldname: 'amount_min', label: 'Amount Min', fieldtype: 'Float' },
         { fieldname: 'amount_max', label: 'Amount Max', fieldtype: 'Float' },
     ];
-    const primaryFilterKeys = ['posting_date_from', 'posting_date_to', 'requested_by'];
+    const primaryFilterKeys = ['request_date_from', 'request_date_to', 'requested_by'];
     filterDefs.forEach(def => {
         const isPrimary = primaryFilterKeys.includes(def.fieldname);
         const $wrap = $('<div></div>').appendTo(isPrimary ? $filtersPrimary : $filtersAdvanced);
@@ -300,16 +300,16 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
     }
     $(window).on('resize', function () { reorder_all_rows(); });
 
-    // Helpers to manage default posting dates
+    // Helpers to manage default Request Dates
     function set_default_dates() {
         try {
             const today = frappe.datetime.get_today();
             const from = frappe.datetime.add_months(today, -3);
-            if (filterControls.posting_date_from && filterControls.posting_date_from.set_value) {
-                filterControls.posting_date_from.set_value(from);
+            if (filterControls.request_date_from && filterControls.request_date_from.set_value) {
+                filterControls.request_date_from.set_value(from);
             }
-            if (filterControls.posting_date_to && filterControls.posting_date_to.set_value) {
-                filterControls.posting_date_to.set_value(today);
+            if (filterControls.request_date_to && filterControls.request_date_to.set_value) {
+                filterControls.request_date_to.set_value(today);
             }
         } catch (e) {
             // ignore default errors
@@ -321,8 +321,8 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
 
     function get_filters_payload() {
         const val = {};
-        val.posting_date_from = filterControls.posting_date_from && filterControls.posting_date_from.get_value && filterControls.posting_date_from.get_value();
-        val.posting_date_to = filterControls.posting_date_to && filterControls.posting_date_to.get_value && filterControls.posting_date_to.get_value();
+        val.request_date_from = filterControls.request_date_from && filterControls.request_date_from.get_value && filterControls.request_date_from.get_value();
+        val.request_date_to = filterControls.request_date_to && filterControls.request_date_to.get_value && filterControls.request_date_to.get_value();
         val.requested_by = filterControls.requested_by && filterControls.requested_by.get_value && filterControls.requested_by.get_value();
         val.bank_account = filterControls.bank_account && filterControls.bank_account.get_value && filterControls.bank_account.get_value();
         val.currency = filterControls.currency && filterControls.currency.get_value && filterControls.currency.get_value();
@@ -386,7 +386,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
 
         rows.forEach((row, idx) => {
             const parentStripe = ((existing + idx) % 2 === 0) ? 'odd' : 'even';
-            const posting_date = row.posting_date ? frappe.format(row.posting_date, { fieldtype: 'Date' }) : '';
+            const request_date = row.request_date ? frappe.format(row.request_date, { fieldtype: 'Date' }) : '';
             const posting_time = row.posting_time || row.time || '';
             const total_amount = format_amount(row.total_amount, row.currency);
             const approval_url = url_to_form('Payment Approval', row.name);
@@ -397,7 +397,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                         <button class="btn btn-default btn-xs toggle-detail" title="Toggle details">></button>
                         <a class="doc-link" href="${approval_url}" target="_blank" rel="noopener">${frappe.utils.escape_html(row.name)}</a>
                     </td>
-                    <td class="col-posting-date">${frappe.utils.escape_html(posting_date)} ${frappe.utils.escape_html(posting_time)}</td>
+                    <td class="col-posting-date">${frappe.utils.escape_html(request_date)} ${frappe.utils.escape_html(posting_time)}</td>
                     <td class="col-requested-by">${frappe.utils.escape_html(row.requested_by || '')}</td>
                     <td class="col-type">${frappe.utils.escape_html(row.payment_type || row.Payment_type || '')}</td>
                     <td class="col-amount text-right">${total_amount}<span class="mobile-only-currency"> ${frappe.utils.escape_html(row.currency || '')}</span></td>
