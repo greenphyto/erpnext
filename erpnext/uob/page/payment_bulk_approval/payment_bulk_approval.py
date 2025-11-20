@@ -27,14 +27,14 @@ def get_data(start=0, page_length=20, filters=None):
         filters = {}
 
     set_flt = {"status": "Pending"}
-    posting_date_from = getdate(filters.get("posting_date_from"))
-    posting_date_to = getdate(filters.get("posting_date_to"))
-    if posting_date_from and posting_date_to:
-        set_flt["posting_date"] = ["between", [posting_date_from, posting_date_to]]
-    elif posting_date_from:
-        set_flt["posting_date"] = [">=", posting_date_from]
-    elif posting_date_to:
-        set_flt["posting_date"] = ["<=", posting_date_to]
+    request_date_from = getdate(filters.get("request_date_from"))
+    request_date_to = getdate(filters.get("request_date_to"))
+    if request_date_from and request_date_to:
+        set_flt["request_date"] = ["between", [request_date_from, request_date_to]]
+    elif request_date_from:
+        set_flt["request_date"] = [">=", request_date_from]
+    elif request_date_to:
+        set_flt["request_date"] = ["<=", request_date_to]
     if filters.get("requested_by"):
         set_flt["requested_by"] = filters["requested_by"]
     if filters.get("bank_account"):
@@ -54,7 +54,7 @@ def get_data(start=0, page_length=20, filters=None):
         else:
             set_flt["total_amount"] = ["<=", flt(filters["amount_max"])]
 
-    print(50, set_flt)
+    # print(50, set_flt)
     names = get_payment_approval_list(filters)
 
     results = []
@@ -67,7 +67,7 @@ def get_data(start=0, page_length=20, filters=None):
 
         data = {
             'name': doc.name,
-            'posting_date': doc.get('posting_date'),
+            'request_date': doc.get('request_date'),
             'posting_time': doc.get('posting_time') or doc.get('time'),
             'requested_by': doc.get('requested_by'),
             'payment_type': doc.get('payment_type'),
@@ -151,20 +151,20 @@ def get_conditions(filters=None):
     conditions.append("status = %(status)s")
     values["status"] = "Pending"
 
-    # --- Posting Date filter ---
-    posting_date_from = filters.get("posting_date_from")
-    posting_date_to = filters.get("posting_date_to")
+    # --- Request Date filter ---
+    request_date_from = filters.get("request_date_from")
+    request_date_to = filters.get("request_date_to")
 
-    if posting_date_from and posting_date_to:
-        conditions.append("posting_date BETWEEN %(date_from)s AND %(date_to)s")
-        values["date_from"] = getdate(posting_date_from)
-        values["date_to"] = getdate(posting_date_to)
-    elif posting_date_from:
-        conditions.append("posting_date >= %(date_from)s")
-        values["date_from"] = getdate(posting_date_from)
-    elif posting_date_to:
-        conditions.append("posting_date <= %(date_to)s")
-        values["date_to"] = getdate(posting_date_to)
+    if request_date_from and request_date_to:
+        conditions.append("request_date BETWEEN %(date_from)s AND %(date_to)s")
+        values["date_from"] = getdate(request_date_from)
+        values["date_to"] = getdate(request_date_to)
+    elif request_date_from:
+        conditions.append("request_date >= %(date_from)s")
+        values["date_from"] = getdate(request_date_from)
+    elif request_date_to:
+        conditions.append("request_date <= %(date_to)s")
+        values["date_to"] = getdate(request_date_to)
 
     # --- Optional filters ---
     if filters.get("requested_by"):
@@ -215,8 +215,7 @@ def get_payment_approval_list(filters=None, start=0, page_length=20):
         ORDER BY modified DESC
         LIMIT {page_length} OFFSET {start}
     """
-
-    result = frappe.db.sql(query, values, as_dict=True)
+    result = frappe.db.sql(query, values, as_dict=True, debug=0)
     return result
 
 

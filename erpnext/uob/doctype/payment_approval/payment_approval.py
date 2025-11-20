@@ -31,10 +31,16 @@ class PaymentApproval(Document):
 
 	def validate_data(self):
 		self.validate_reqd_data()
+		self.validate_select()
 		self.validate_payment()
 		self.validate_bank_number()
 		self.validate_invoice()
 		self.calculate_amount()
+
+	def on_submit(self):
+		self.update_apporval_date()
+		self.remove_unselected_row()
+		# frappe.throw(f'{ len(self.invoices) } here')
 
 	def validate_select(self):
 		select_row = []
@@ -71,17 +77,6 @@ class PaymentApproval(Document):
 		for d in self.invoices:
 			if d.currency != currency:
 				frappe.throw(_(f"Row {d.idx}, invoice currency ({d.currency}) different with payee bank account ({currency})"))
-
-	def remove_another_record(self):
-		workflow_state = self.get("workflow_state") or self.get("status")
-		if workflow_state == "Approved":
-			for d in self.invoices:
-				temp = frappe.db.sql("select name, docstatus, parent from `tabPayment Invoice List` where parent != %s and invoice_no = %s and docstatus != 2 ", (self.name, d.invoice_no), as_dict=1)
-				for x in temp:
-					frappe.db.delete("Payment Invoice List", x.name)
-					doc = frappe.get_doc("Payment Approval", x.parent)
-					doc.calculate_amount()
-					doc.db_update()
 
 	def set_status(self):
 		if self.docstatus == 0 and self.is_new():
@@ -382,8 +377,6 @@ class PaymentApproval(Document):
 
 			already_add.append(d.invoice_no)
 
-
-
 	def calculate_amount(self):
 		total = 0
 		for d in self.get("invoices"):
@@ -596,12 +589,10 @@ class PaymentApproval(Document):
 					rows_to_remove.append(d)
 					removed_info.append(f"<li>Row {idx}, Invoice {d.invoice_no} ${d.amount}</li>")
 
-		# hapus row setelah loop
 		for d in rows_to_remove:
 			self.remove(d)
 			frappe.db.delete(d.doctype, d.name)
 
-		# bikin 1 comment dengan list
 		if removed_info:
 			items_html = "".join(removed_info)
 			msg = f"Removed due to not selected:<br><ul>{items_html}</ul>"
