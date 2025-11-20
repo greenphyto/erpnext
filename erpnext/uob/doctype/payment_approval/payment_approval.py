@@ -841,3 +841,38 @@ def get_available_purchase_invoices(doctype, txt, searchfield, start, page_len, 
 		"currency": filters.get("currency")
 	})
 
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_available_purchase_invoices(doctype, txt, searchfield, start, page_len, filters):
+	limit_amount = ""
+	limit_amt = frappe.db.get_single_value("UOB Integration Settings", "limit_amount")
+	if limit_amt:
+		limit_amount = f" AND pi.outstanding_amount <= {flt(limit_amt)} "
+
+	return frappe.db.sql("""
+		SELECT pi.name, pi.supplier, pi.posting_date,pi.outstanding_amount
+		FROM `tabPurchase Invoice` pi
+		WHERE pi.docstatus = 1
+		  AND pi.outstanding_amount > 0
+		  AND pi.currency = %(currency)s
+		  AND pi.name NOT IN (
+			  SELECT pil.invoice_no
+			  FROM `tabPayment Invoice List` pil
+			  WHERE pil.docstatus != 2 and pil.parent != %(cur_name)s
+		  )
+		  AND (
+			  pi.{searchfield} LIKE %(txt)s
+			  OR pi.supplier_name LIKE %(txt)s
+		  )
+		  {limit_amount}
+		ORDER BY pi.posting_date DESC, pi.name DESC
+		LIMIT %(start)s, %(page_len)s
+	""".format(searchfield=searchfield, limit_amount=limit_amount), {
+		"txt": "%%%s%%" % txt,
+		"start": start,
+		"page_len": page_len,
+		"currency": filters.get("currency"),
+		"cur_name": filters.get("cur_name"),
+	}, debug=1)
+
