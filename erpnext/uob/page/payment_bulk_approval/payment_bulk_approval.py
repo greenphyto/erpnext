@@ -1,6 +1,6 @@
 import frappe
 from frappe.model.workflow import get_transitions
-from frappe.utils import flt, getdate, get_time
+from frappe.utils import flt, getdate, get_time, add_months, today
 
 CUR_DEFAULT = 'SGD'
 
@@ -27,6 +27,10 @@ def get_data(start=0, page_length=20, filters=None):
         filters = {}
 
     set_flt = {"status": "Pending"}
+    default_from = add_months(getdate(today()), -3) 
+    if not filters.get("request_date_from"):
+        filters['request_date_from'] = default_from
+
     request_date_from = getdate(filters.get("request_date_from"))
     request_date_to = getdate(filters.get("request_date_to"))
     if request_date_from and request_date_to:
@@ -238,7 +242,7 @@ def get_payment_approval_totals(filters=None):
         FROM `tabPayment Approval`
         WHERE {where_clause}
     """
-    sum_row = frappe.db.sql(sum_query, values, as_dict=True)
+    sum_row = frappe.db.sql(sum_query, values, as_dict=True, debug=1)
     pending_total = flt(sum_row[0].get("total_amount_sum")) if sum_row else 0.0
 
     return total, pending_total
