@@ -95,8 +95,8 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     .payment-bulk-approval .controls .ml-auto { margin-left: 0 !important; }
 
                     /* Table: keep only key columns */
-                    .payment-bulk-approval th.col-posting-date,
-                    .payment-bulk-approval td.col-posting-date,
+                    .payment-bulk-approval th.col-request-date,
+                    .payment-bulk-approval td.col-request-date,
                     .payment-bulk-approval th.col-requested-by,
                     .payment-bulk-approval td.col-requested-by,
                     .payment-bulk-approval th.col-type,
@@ -181,7 +181,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                             <thead>
                                 <tr>
                                     <th class="col-name" style="width: 12.9%;">Name</th>
-                                    <th class="col-posting-date" style="width: 15.06%;">Request Date</th>
+                                    <th class="col-request-date" style="width: 15.06%;">Request Date</th>
                                     <th class="col-requested-by" style="width: 10.33%;">Requested By</th>
                                     <th class="col-type" style="width: 6.88%;">Type</th>
                                     <th class="col-amount text-right" style="width: 10.76%;">T. Amount</th>
@@ -397,7 +397,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                         <button class="btn btn-default btn-xs toggle-detail" title="Toggle details">></button>
                         <a class="doc-link" href="${approval_url}" target="_blank" rel="noopener">${frappe.utils.escape_html(row.name)}</a>
                     </td>
-                    <td class="col-posting-date">${frappe.utils.escape_html(request_date)} ${frappe.utils.escape_html(posting_time)}</td>
+                    <td class="col-request-date">${frappe.utils.escape_html(request_date)} ${frappe.utils.escape_html(posting_time)}</td>
                     <td class="col-requested-by">${frappe.utils.escape_html(row.requested_by || '')}</td>
                     <td class="col-type">${frappe.utils.escape_html(row.payment_type || row.Payment_type || '')}</td>
                     <td class="col-amount text-right">${total_amount}<span class="mobile-only-currency"> ${frappe.utils.escape_html(row.currency || '')}</span></td>

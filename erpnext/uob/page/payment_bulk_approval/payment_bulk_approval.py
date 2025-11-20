@@ -1,6 +1,6 @@
 import frappe
 from frappe.model.workflow import get_transitions
-from frappe.utils import flt, getdate
+from frappe.utils import flt, getdate, get_time
 
 CUR_DEFAULT = 'SGD'
 
@@ -68,7 +68,7 @@ def get_data(start=0, page_length=20, filters=None):
         data = {
             'name': doc.name,
             'request_date': doc.get('request_date'),
-            'posting_time': doc.get('posting_time') or doc.get('time'),
+            'posting_time': get_time(doc.get('time')).strftime("%H:%M:%S"),
             'requested_by': doc.get('requested_by'),
             'payment_type': doc.get('payment_type'),
             'total_amount': doc.get('total_amount'),
