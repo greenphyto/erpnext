@@ -49,6 +49,10 @@ class PaymentApproval(Document):
 		self.update_apporval_date()
 		self.remove_unselected_row()
 
+	def on_cancel(self):
+		if self.status in ['Approved', 'Received', 'In Progress', 'Complete']:
+			frappe.throw(_("Cannot cancel becuase payment already made"))
+
 	def validate_select(self):
 		select_row = []
 		for d in self.invoices:
