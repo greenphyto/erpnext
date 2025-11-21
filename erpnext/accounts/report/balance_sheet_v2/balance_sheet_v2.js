@@ -13,6 +13,15 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 		"default": 1
 	});
 
+	// Option to view monthly net (non-accumulated) values
+	frappe.query_reports["Balance Sheet V2"]["filters"].push({
+		"fieldname": "monthly_net",
+		"label": __("Monthly Net (Non-Accumulated)"),
+		"fieldtype": "Check",
+		"default": 0,
+		"depends_on": "eval:doc.periodicity == 'Monthly'"
+	});
+
 	frappe.query_reports["Balance Sheet V2"]["filters"].push({
 		"fieldname": "include_default_book_entries",
 		"label": __("Include Default Book Entries"),

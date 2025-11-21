@@ -8,6 +8,14 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 
 	erpnext.utils.add_dimensions('Profit and Loss Statement', 10);
 
+	// Add Accumulated Values toggle
+	frappe.query_reports["Profit and Loss Statement"]["filters"].push({
+		"fieldname": "accumulated_values",
+		"label": __("Accumulated Values"),
+		"fieldtype": "Check",
+		"default": 1
+	});
+
 	frappe.query_reports["Profit and Loss Statement"]["filters"].push(
 		{
 			"fieldname": "project",
