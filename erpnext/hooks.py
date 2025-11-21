@@ -286,12 +286,6 @@ doc_events = {
 		"validate": "erpnext.support.doctype.service_level_agreement.service_level_agreement.apply",
         # "after_insert": "erpnext.controllers.foms.sync_log"
 	},
-	"Stock Entry": {
-		"on_submit": [
-			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
-		],
-		"on_cancel": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
-	},
 	"User": {
 		"after_insert": "frappe.contacts.doctype.contact.contact.update_contact",
 		"validate": "erpnext.setup.doctype.employee.employee.validate_employee_role",
@@ -427,13 +421,18 @@ doc_events = {
         "on_submit":[
 			"erpnext.controllers.foms.sync_log",
             "erpnext.controllers.foms.detect_salad_items",
-            "erpnext.controllers.erp.create_sample_after_work_order"
+            "erpnext.controllers.erp.create_sample_after_work_order",
+            "erpnext.controllers.erp.detect_work_order_different",
+			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
 		],
         "before_cancel":[
             "erpnext.controllers.foms.detect_salad_items",
             "erpnext.controllers.foms.cancel_repack_se",
             "erpnext.controllers.erp.cancel_sample_on_work_order"
-		]
+		],
+		"on_cancel": {
+			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
+		}
 	},
     "Stock Ledger Entry": {
         "on_submit":"erpnext.controllers.foms.sync_sle",

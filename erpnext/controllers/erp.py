@@ -179,6 +179,9 @@ def _detect_work_order_different(se, method=""):
 	if not se.get("work_order"):
 		return
 	
+	if se.purpose != "Manufacture":
+		return
+	
 	doc = frappe.get_doc("Work Order", se.work_order)
 	if doc.status != "Completed":
 		return
@@ -266,6 +269,7 @@ def _detect_work_order_different(se, method=""):
 		subject="🚨 Different Value on Work Order",
 		message=message
 	)
+
 # change to scheduler 5 minutes each
 def read_email_inbox():
 	# settings
