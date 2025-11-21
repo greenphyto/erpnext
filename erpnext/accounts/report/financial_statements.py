@@ -216,13 +216,29 @@ def get_data(
 			ignore_closing_entries=ignore_closing_entries,
 		)
 
+	# Calculate values (accumulated or not) using GL entries
+	# Determine effective accumulation mode (normalize strings/booleans)
+	eff_accumulated = cint(accumulated_values)
+	if filters and cstr(filters.get("periodicity")) == "Monthly":
+		if cint(filters.get("accumulated_values")) == 0 or cstr(filters.get("monthly_net")) in ("1", 1, True):
+			eff_accumulated = 0
+
 	calculate_values(
 		accounts_by_name,
 		gl_entries_by_account,
 		period_list,
-		accumulated_values,
+		eff_accumulated,
 		ignore_accumulated_values_for_fy,
 	)
+
+	# If user requests Monthly Net (non-accumulated) values, recompute explicitly per month
+	# Some reports may not pass accumulated_values correctly; this normalizes behavior centrally.
+	# Recompute explicitly per month if we ended up in non-accumulated monthly mode
+	if filters and cstr(filters.get("periodicity")) == "Monthly" and eff_accumulated == 0:
+		# Mark mode for downstream consumers and recompute
+		for p in period_list:
+			p["is_monthly_net"] = True
+		recompute_monthly_net(accounts_by_name, gl_entries_by_account, period_list)
 	accumulate_values_into_parents(accounts, accounts_by_name, period_list)
 	out = prepare_data(accounts, balance_must_be, period_list, company_currency)
 	out = filter_out_zero_value_rows(out, parent_children_map)
@@ -236,6 +252,10 @@ def get_data(
 	return out
 
 def validate_report_result(data, period_list):
+	# Skip smoothing if explicitly in monthly net mode
+	if period_list and period_list[0].get("is_monthly_net"):
+		return data
+
 	parent_map = {}
 	for d in reversed(data):
 		parent = d.get("parent_account")
@@ -288,6 +308,9 @@ def calculate_values(
 	accumulated_values,
 	ignore_accumulated_values_for_fy,
 ):
+	# Normalize truthy values possibly coming as strings like '0'/'1'
+	accumulated_values = cint(accumulated_values)
+	ignore_accumulated_values_for_fy = cint(ignore_accumulated_values_for_fy)
 	for entries in gl_entries_by_account.values():
 		for entry in entries:
 			d = accounts_by_name.get(entry.account)
@@ -308,6 +331,28 @@ def calculate_values(
 
 			if entry.posting_date < period_list[0].year_start_date:
 				d["opening_balance"] = d.get("opening_balance", 0.0) + flt(entry.debit) - flt(entry.credit)
+
+
+def recompute_monthly_net(accounts_by_name, gl_entries_by_account, period_list):
+	"""Recompute each account's values as net movement within each month only.
+
+	This ignores any accumulation across months and uses the GL entries windowed
+	strictly by each period's from_date/to_date.
+	"""
+	# Reset period values
+	for acc in accounts_by_name.values():
+		for period in period_list:
+			acc[period.key] = 0.0
+
+	# Sum entries within each period window
+	for account, entries in gl_entries_by_account.items():
+		d = accounts_by_name.get(account)
+		if not d:
+			continue
+		for entry in entries:
+			for period in period_list:
+				if entry.posting_date >= period.from_date and entry.posting_date <= period.to_date:
+					d[period.key] = d.get(period.key, 0.0) + flt(entry.debit) - flt(entry.credit)
 
 
 def accumulate_values_into_parents(accounts, accounts_by_name, period_list):
@@ -600,6 +645,7 @@ def get_cost_centers_with_children(cost_centers):
 
 
 def get_columns(periodicity, period_list, accumulated_values=1, company=None):
+	accumulated_values = cint(accumulated_values)
 	columns = [
 		{
 			"fieldname": "account",

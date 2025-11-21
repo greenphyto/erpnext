@@ -18,6 +18,9 @@ from erpnext.accounts.report.utils import convert_wrap_report_data
 
 
 def execute(filters=None):
+	# Ensure filters behaves like a dict
+	filters = frappe._dict(filters or {})
+
 	period_list = get_period_list(
 		filters.from_fiscal_year,
 		filters.to_fiscal_year,
@@ -29,6 +32,13 @@ def execute(filters=None):
 		month=filters.month,
 		to_month=filters.to_month,
 	)
+
+	# If user asks for Monthly Net (non-accumulated), force non-accumulated values
+	if filters.get("periodicity") == "Monthly" and filters.get("monthly_net"):
+		filters.accumulated_values = 0
+	# Default to accumulated across all periodicities if not explicitly set
+	if filters.get("accumulated_values") is None:
+		filters.accumulated_values = 1
 
 	currency = filters.presentation_currency or frappe.get_cached_value(
 		"Company", filters.company, "default_currency"
@@ -273,7 +283,7 @@ def get_chart_data(filters, columns, asset, liability, equity):
 
 	chart = {"data": {"labels": labels, "datasets": datasets}}
 
-	if not filters.accumulated_values:
+	if not cint(filters.accumulated_values):
 		chart["type"] = "bar"
 	else:
 		chart["type"] = "line"

@@ -23,7 +23,8 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 		{
 			"fieldname": "accumulated_values",
 			"label": __("Accumulated Values"),
-			"fieldtype": "Check"
+			"fieldtype": "Check",
+			"default": 1
 		}
 	);
 });

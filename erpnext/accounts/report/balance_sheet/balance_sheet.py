@@ -295,7 +295,7 @@ def get_chart_data(filters, columns, asset, liability, equity):
 
 	chart = {"data": {"labels": labels, "datasets": datasets}}
 
-	if not filters.accumulated_values:
+	if not cint(filters.accumulated_values):
 		chart["type"] = "bar"
 	else:
 		chart["type"] = "line"

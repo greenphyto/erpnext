@@ -13,6 +13,14 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 
 	frappe.query_reports["Cash Flow"]["filters"].splice(8, 1);
 
+	// Add Accumulated Values toggle
+	frappe.query_reports["Cash Flow"]["filters"].push({
+		"fieldname": "accumulated_values",
+		"label": __("Accumulated Values"),
+		"fieldtype": "Check",
+		"default": 1
+	});
+
 	frappe.query_reports["Cash Flow"]["filters"].push(
 		{
 			"fieldname": "include_default_book_entries",
