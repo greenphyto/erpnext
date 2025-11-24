@@ -309,7 +309,7 @@ class UOBFileLog(Document):
 						temp = frappe.db.get_value("Payment Entry", pay_doc.name, ['name','docstatus'], as_dict=1)
 						use_exists_pe = None
 						if temp and temp.name:
-							if temp.docstatus in [2,1]:
+							if temp.docstatus in [0,1]:
 								continue
 							else:
 								use_exists_pe = temp.name
