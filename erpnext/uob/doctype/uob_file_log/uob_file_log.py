@@ -306,18 +306,18 @@ class UOBFileLog(Document):
 						})
 							
 						# create PE based on same party/supplier
-						temp = frappe.db.get_value("Payment Entry", pay_doc.name, ['name','docstatus'], as_dict=1)
-						use_exists_pe = None
-						if temp and temp.name:
-							if temp.docstatus in [0,1]:
-								continue
-							else:
-								use_exists_pe = temp.name
+						# find submit version
+						use_exists_pe = frappe.db.get_value("Payment Entry", {"payment_approval":pay_doc.name, "docstatus":1}, 'name')
+						if use_exists_pe:
+							continue
+
+						# find draft
+						use_exists_pe = frappe.db.get_value("Payment Entry", {"payment_approval":pay_doc.name, "docstatus":0}, 'name')
 
 						if supplier not in pe_map:
 							if not use_exists_pe:
 								pe = get_payment_entry(dt="Purchase Invoice", dn=pi_name)
-								pe.__newname = pay_doc.name
+								pe.__newname = get_next_pay_name(pay_doc.name)
 								pe.name = pay_doc.name
 								pe.flags.name_set = True
 							else:
@@ -408,23 +408,63 @@ def convert_inv_no(inv_txt):
 		formatted = f"{part}/{year}"
 		return formatted
 
+def get_next_pay_name(base_name):
+	"""
+	Generate a new unique name based on base_name.
+	Example:
+	  - base_name = 'PAY-250024'
+	  - If existing names are: 'PAY-250024', 'PAY-250024-1'
+		→ return 'PAY-250024-2'
+	"""
+
+	# Fetch all documents that start with base_name
+	existing_names = frappe.db.get_list(
+		"Payment Entry",  # CHANGE to the correct DocType if needed
+		filters={"name": ["like", f"{base_name}%"]},
+		pluck="name"
+	)
+
+	if not existing_names:
+		return base_name  # No existing record → use base_name
+
+	max_suffix = 0
+
+	# Check all existing names
+	for name in existing_names:
+		# Match suffix number after base_name, such as "-1", "-2"
+		match = re.match(rf"{re.escape(base_name)}-(\d+)$", name)
+		if match:
+			num = int(match.group(1))
+			if num > max_suffix:
+				max_suffix = num
+
+		# If exact name "PAY-250024" exists and no suffix found yet
+		if name == base_name and max_suffix == 0:
+			max_suffix = 1
+
+	# Return new name with incremented suffix
+	if max_suffix == 1:
+		return f"{base_name}-{max_suffix}"
+	else:
+		return f"{base_name}-{max_suffix + 1}"
+
 
 def transform_code(code: str):
-    # Pisahkan prefix, angka, dan suffix huruf
-    match = re.match(r"(PAY)(\d+)([A-Z]+)", code)
-    if not match:
-        return None
-    
-    prefix, number, suffix = match.groups()
-    
-    # Ambil 2 digit pertama sebagai "YY"
-    yy = number[:2]
-    # Sisanya sebagai nomor urut, lalu pad ke 4 digit
-    seq = int(number[2:]) if len(number) > 2 else 0
-    seq_fmt = f"{seq:04d}"
-    
-    new_code = f"{prefix}-{yy}{seq_fmt}"
-    return new_code, suffix
+	# Pisahkan prefix, angka, dan suffix huruf
+	match = re.match(r"(PAY)(\d+)([A-Z]+)", code)
+	if not match:
+		return None
+	
+	prefix, number, suffix = match.groups()
+	
+	# Ambil 2 digit pertama sebagai "YY"
+	yy = number[:2]
+	# Sisanya sebagai nomor urut, lalu pad ke 4 digit
+	seq = int(number[2:]) if len(number) > 2 else 0
+	seq_fmt = f"{seq:04d}"
+	
+	new_code = f"{prefix}-{yy}{seq_fmt}"
+	return new_code, suffix
 
 def get_inv_no(reff_no, amount):
 	invoice_no = convert_inv_no(reff_no)
@@ -438,18 +478,18 @@ def get_inv_no(reff_no, amount):
 		return pi_name
 
 def get_nested(data, keys, default=None, collect_multiple=False):
-    for i, key in enumerate(keys):
-        if isinstance(data, dict):
-            data = data.get(key, default)
-        elif isinstance(data, list):
-            # If asked collect_multiple and this is the final stage
-            if collect_multiple and i == len(keys) - 1:
-                return [item.get(key, default) for item in data if isinstance(item, dict)]
-            else:
-                # Take the first element as default traversal
-                data = data[0] if data else default
-                if isinstance(data, dict):
-                    data = data.get(key, default)
-        else:
-            return default
-    return data
+	for i, key in enumerate(keys):
+		if isinstance(data, dict):
+			data = data.get(key, default)
+		elif isinstance(data, list):
+			# If asked collect_multiple and this is the final stage
+			if collect_multiple and i == len(keys) - 1:
+				return [item.get(key, default) for item in data if isinstance(item, dict)]
+			else:
+				# Take the first element as default traversal
+				data = data[0] if data else default
+				if isinstance(data, dict):
+					data = data.get(key, default)
+		else:
+			return default
+	return data
