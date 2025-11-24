@@ -415,7 +415,6 @@ def build_rows(ws, start_row=2, start_after_label=None, spaces_per_level=4):
 	started = (start_after_label is None)
 
 	for r in range(start_row, ws.max_row + 1):
-		print(418, r)
 		raw = cstr(ws[f"A{r}"].value or "")
 		if not raw.strip():
 			continue
