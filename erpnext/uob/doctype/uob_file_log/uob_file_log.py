@@ -306,13 +306,13 @@ class UOBFileLog(Document):
 						})
 							
 						# create PE based on same party/supplier
-						# find submit version
-						use_exists_pe = frappe.db.get_value("Payment Entry", {"payment_approval":pay_doc.name, "docstatus":1}, 'name')
-						if use_exists_pe:
-							continue
-
-						# find draft
-						use_exists_pe = frappe.db.get_value("Payment Entry", {"payment_approval":pay_doc.name, "docstatus":0}, 'name')
+						temp = frappe.db.get_value("Payment Entry", pay_doc.name, ['name','docstatus'], as_dict=1)
+						use_exists_pe = None
+						if temp and temp.name:
+							if temp.docstatus in [0,1]:
+								continue
+							else:
+								use_exists_pe = temp.name
 
 						if supplier not in pe_map:
 							if not use_exists_pe:
