@@ -298,13 +298,13 @@ def add_formulas(report_name, xlsx_file):
 	skip_cols = ['A', 'B', group_col]
 
 	level = 0 
-	start_row = 0
+	start_row = 1
 	for row in range(2, ws.max_row + 1): 
 		account_txt = cstr(ws[f"A{row}"].value) 
 		leading_spaces = len(account_txt) - len(account_txt.lstrip(" ")) 
 		account = cstr(ws[f"A{row}"].value).strip() 
 
-		if account in ['Assets', 'Income']: 
+		if account in ['Assets', 'Income', 'Expenses', 'Liabilities']: 
 			start_row = row
 			break
 
@@ -404,124 +404,125 @@ def get_level(account_txt, spaces_per_level=4):
 	return count_leading_spaces(account_txt) // spaces_per_level
 
 def is_child(cell_value: str) -> bool:
-    if not isinstance(cell_value, str):
-        return False
-    s = cell_value.strip()
-    return bool(s) and s[0].isdigit()
+	if not isinstance(cell_value, str):
+		return False
+	s = cell_value.strip()
+	return bool(s) and s[0].isdigit()
 
 def build_rows(ws, start_row=2, start_after_label=None, spaces_per_level=4):
-    """Ambil linear rows: [(row_idx, account, level, group_flag)]"""
-    rows = []
-    started = (start_after_label is None)
+	"""Ambil linear rows: [(row_idx, account, level, group_flag)]"""
+	rows = []
+	started = (start_after_label is None)
 
-    for r in range(start_row, ws.max_row + 1):
-        raw = cstr(ws[f"A{r}"].value or "")
-        if not raw.strip():
-            continue
+	for r in range(start_row, ws.max_row + 1):
+		print(418, r)
+		raw = cstr(ws[f"A{r}"].value or "")
+		if not raw.strip():
+			continue
 
-        if not started:
-            if raw.strip() == start_after_label:
-                started = True
-            else:
-                continue
+		if not started:
+			if raw.strip() == start_after_label:
+				started = True
+			else:
+				continue
 
-        level = get_level(raw, spaces_per_level)
-        account = raw.strip()
-        group_flag = 0 if is_child(account) else 1  # 1=group, 0=child
-        rows.append((r, account, level, group_flag))
+		level = get_level(raw, spaces_per_level)
+		account = raw.strip()
+		group_flag = 0 if is_child(account) else 1  # 1=group, 0=child
+		rows.append((r, account, level, group_flag))
 
-    return rows
+	return rows
 
 def compute_child_range_rows(rows):
-    """
-    For each group, compute (lft_row, rgt_row) = the range of child rows.
-    Returns: OrderedDict with key (account, row, group_flag, lft_row, rgt_row), value = children (tree)
-    """
-    # Build the tree structure using a stack (based on indentation level)
-    stack = []  # elements: (level, key_tuple, children_dict_ref)
-    roots = OrderedDict()
+	"""
+	For each group, compute (lft_row, rgt_row) = the range of child rows.
+	Returns: OrderedDict with key (account, row, group_flag, lft_row, rgt_row), value = children (tree)
+	"""
+	# Build the tree structure using a stack (based on indentation level)
+	stack = []  # elements: (level, key_tuple, children_dict_ref)
+	roots = OrderedDict()
 
-    # Keep an index mapping for convenience
-    nodes = []  # [(i, row_idx, level, group_flag, key_ref_dict, parent_children_dict)]
-    tmp_keys = []  # list of (account, row_idx, group_flag) – lft/rgt will be added later
+	# Keep an index mapping for convenience
+	nodes = []  # [(i, row_idx, level, group_flag, key_ref_dict, parent_children_dict)]
+	tmp_keys = []  # list of (account, row_idx, group_flag) – lft/rgt will be added later
 
-    for i, (row_idx, account, level, group_flag) in enumerate(rows):
-        key_tmp = (account, row_idx, group_flag)
-        tmp_keys.append(key_tmp)
-        node_children = OrderedDict()
+	for i, (row_idx, account, level, group_flag) in enumerate(rows):
+		key_tmp = (account, row_idx, group_flag)
+		tmp_keys.append(key_tmp)
+		node_children = OrderedDict()
 
-        # Pop until parent level < current level
-        while stack and stack[-1][0] >= level:
-            stack.pop()
+		# Pop until parent level < current level
+		while stack and stack[-1][0] >= level:
+			stack.pop()
 
-        # Attach to parent if exists, otherwise treat as root
-        if stack:
-            parent_children = stack[-1][2]
-            parent_children[key_tmp] = node_children
-        else:
-            roots[key_tmp] = node_children
+		# Attach to parent if exists, otherwise treat as root
+		if stack:
+			parent_children = stack[-1][2]
+			parent_children[key_tmp] = node_children
+		else:
+			roots[key_tmp] = node_children
 
-        # Push current node to stack
-        stack.append((level, key_tmp, node_children))
-        nodes.append((i, row_idx, level, group_flag, key_tmp, node_children))
+		# Push current node to stack
+		stack.append((level, key_tmp, node_children))
+		nodes.append((i, row_idx, level, group_flag, key_tmp, node_children))
 
-    # Determine (lft_row, rgt_row) range for each group node
-    # Final result replaces key_tmp → key_final (account, row, group_flag, lft_row, rgt_row)
-    def child_block_range(i_parent):
-        row_idx_p, level_p = rows[i_parent][0], rows[i_parent][2]
-        # Find the first index j where level <= parent level
-        j = i_parent + 1
-        while j < len(rows) and rows[j][2] > level_p:
-            j += 1
-        # Child range = i_parent+1 .. j-1
-        if j - (i_parent + 1) >= 1:
-            lft_row = rows[i_parent + 1][0]
-            rgt_row = rows[j - 1][0]
-            return lft_row, rgt_row
-        return None, None
+	# Determine (lft_row, rgt_row) range for each group node
+	# Final result replaces key_tmp → key_final (account, row, group_flag, lft_row, rgt_row)
+	def child_block_range(i_parent):
+		row_idx_p, level_p = rows[i_parent][0], rows[i_parent][2]
+		# Find the first index j where level <= parent level
+		j = i_parent + 1
+		while j < len(rows) and rows[j][2] > level_p:
+			j += 1
+		# Child range = i_parent+1 .. j-1
+		if j - (i_parent + 1) >= 1:
+			lft_row = rows[i_parent + 1][0]
+			rgt_row = rows[j - 1][0]
+			return lft_row, rgt_row
+		return None, None
 
-    # Recursive function to materialize the final structure with (lft_row, rgt_row)
-    def materialize(children_dict, start_index_lookup):
-        out = OrderedDict()
-        for key_tmp, ch in children_dict.items():
-            account, row_idx, group_flag = key_tmp
-            # Find the row index of this node
-            # (can use dict lookup for performance, but linear scan is fine for report-sized data)
-            i = next(i for i, (r, a, lvl, gf) in enumerate(rows)
-                     if r == row_idx and a == account and gf == group_flag)
+	# Recursive function to materialize the final structure with (lft_row, rgt_row)
+	def materialize(children_dict, start_index_lookup):
+		out = OrderedDict()
+		for key_tmp, ch in children_dict.items():
+			account, row_idx, group_flag = key_tmp
+			# Find the row index of this node
+			# (can use dict lookup for performance, but linear scan is fine for report-sized data)
+			i = next(i for i, (r, a, lvl, gf) in enumerate(rows)
+					 if r == row_idx and a == account and gf == group_flag)
 
-            if group_flag == 1:
-                lft_row, rgt_row = child_block_range(i)
-            else:
-                lft_row = rgt_row = None
+			if group_flag == 1:
+				lft_row, rgt_row = child_block_range(i)
+			else:
+				lft_row = rgt_row = None
 
-            key_final = (account, row_idx, group_flag, lft_row, rgt_row)
-            out[key_final] = materialize(ch, start_index_lookup)
-        return out
+			key_final = (account, row_idx, group_flag, lft_row, rgt_row)
+			out[key_final] = materialize(ch, start_index_lookup)
+		return out
 
-    # Build the final ordered structure
-    result = OrderedDict()
-    result = materialize(roots, {r[0]: idx for idx, r in enumerate(rows)})
-    return result
+	# Build the final ordered structure
+	result = OrderedDict()
+	result = materialize(roots, {r[0]: idx for idx, r in enumerate(rows)})
+	return result
 
 
 def extract_nodes(flat_tree, parent=None, result=None):
-    """
-    Ubah struktur tree hasil compute_child_range_rows menjadi list datar.
-    Setiap elemen hasil = (account, row, group_flag, lft_row, rgt_row, parent_row)
-    """
-    if result is None:
-        result = []
+	"""
+	Ubah struktur tree hasil compute_child_range_rows menjadi list datar.
+	Setiap elemen hasil = (account, row, group_flag, lft_row, rgt_row, parent_row)
+	"""
+	if result is None:
+		result = []
 
-    for (account, row, group_flag, lft_row, rgt_row), children in flat_tree.items():
-        result.append({
-            "account": account,
-            "row": row,
-            "group_flag": group_flag,
-            "lft_row": lft_row,
-            "rgt_row": rgt_row,
-            "parent_row": parent[1] if parent else None
-        })
-        extract_nodes(children, (account, row, group_flag, lft_row, rgt_row), result)
+	for (account, row, group_flag, lft_row, rgt_row), children in flat_tree.items():
+		result.append({
+			"account": account,
+			"row": row,
+			"group_flag": group_flag,
+			"lft_row": lft_row,
+			"rgt_row": rgt_row,
+			"parent_row": parent[1] if parent else None
+		})
+		extract_nodes(children, (account, row, group_flag, lft_row, rgt_row), result)
 
-    return result
+	return result
