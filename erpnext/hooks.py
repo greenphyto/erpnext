@@ -432,7 +432,11 @@ doc_events = {
 		],
         "before_cancel":[
             "erpnext.controllers.foms.detect_salad_items",
-            "erpnext.controllers.foms.cancel_repack_se"
+            "erpnext.controllers.foms.cancel_repack_se",
+            "erpnext.controllers.erp.cancel_sample_on_work_order"
+		],
+		"on_cancel": [
+			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
 		]
 	},
     "Stock Ledger Entry": {
