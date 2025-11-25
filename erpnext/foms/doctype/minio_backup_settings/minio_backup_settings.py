@@ -27,7 +27,8 @@ class MinIO():
 	def run(self):
 		# Create a client with the MinIO server playground, its access key
 		# and secret key.
-		client = Minio(self.host,
+		client = Minio(
+			endpoint=self.host,
 			access_key=self.access_key,
 			secret_key=self.secret_key,
 		)
