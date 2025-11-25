@@ -309,6 +309,15 @@ def calculate_values(
 			if entry.posting_date < period_list[0].year_start_date:
 				d["opening_balance"] = d.get("opening_balance", 0.0) + flt(entry.debit) - flt(entry.credit)
 
+			# cost center
+			cc_key = get_cc_key(entry.cost_center)
+			cc_value = d.get(cc_key, 0.0) + flt(entry.debit) - flt(entry.credit)
+			if cc_key not in entry:
+				entry[cc_key] = cc_value
+				d[cc_key] = cc_value
+			else:
+				entry[cc_key] += cc_value
+				d[cc_key] += cc_value
 
 def accumulate_values_into_parents(accounts, accounts_by_name, period_list):
 	"""accumulate children's values in parent accounts"""
@@ -353,6 +362,9 @@ def prepare_data(accounts, balance_must_be, period_list, company_currency):
 				),
 			}
 		)
+		for key, val in d.items():
+			if key.startswith("cc_"):
+				row[key]=val
 		for period in period_list:
 			if d.get(period.key) and balance_must_be == "Credit":
 				# change sign based on Debit or Credit, since calculation is done using (debit - credit)
@@ -516,7 +528,7 @@ def set_gl_entries_by_account(
 
 		gl_entries = frappe.db.sql(
 			"""
-			select posting_date, account, debit, credit, is_opening, fiscal_year, voucher_type,
+			select posting_date, cost_center, account, debit, credit, is_opening, fiscal_year, voucher_type,
 				debit_in_account_currency, credit_in_account_currency, account_currency from `tabGL Entry`
 			where company=%(company)s
 			{additional_conditions}
@@ -599,7 +611,7 @@ def get_cost_centers_with_children(cost_centers):
 	return list(set(all_cost_centers))
 
 
-def get_columns(periodicity, period_list, accumulated_values=1, company=None):
+def get_columns(periodicity, period_list, accumulated_values=1, company=None, cost_center_all_show=False, filters={}):
 	columns = [
 		{
 			"fieldname": "account",
@@ -626,23 +638,61 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None):
 				"hidden": 1,
 			}
 		)
-	for period in period_list:
-		columns.append(
-			{
-				"fieldname": period.key,
-				"label": period.label,
-				"fieldtype": "Currency",
-				"options": "currency",
-				"width": 150,
-			}
-		)
-	if periodicity != "Yearly":
-		if not accumulated_values:
+	
+	if cost_center_all_show:
+		columns += get_cost_center_columns(company, filters.get("cost_center"))
+	else:
+		for period in period_list:
 			columns.append(
-				{"fieldname": "total", "label": _("Total"), "fieldtype": "Currency", "width": 150}
+				{
+					"fieldname": period.key,
+					"label": period.label,
+					"fieldtype": "Currency",
+					"options": "currency",
+					"width": 150,
+				}
 			)
+		if periodicity != "Yearly":
+			if not accumulated_values:
+				columns.append(
+					{"fieldname": "total", "label": _("Total"), "fieldtype": "Currency", "width": 150}
+				)
 
 	return columns
+
+def get_cost_center_columns(company, cost_center):
+	"""
+	Generate report columns for all non-group cost centers under a company.
+	Output: list of dicts for report columns.
+	"""
+	filters = {"company": company, "is_group": 0}
+	if cost_center:
+		filters['name'] = ['in', cost_center]
+	
+	cost_centers = frappe.get_all(
+		"Cost Center",
+		filters=filters,
+		fields=["name", "cost_center_name"]
+	)
+
+	columns = []
+
+	for cc in cost_centers:
+		# normalisasi fieldname: ganti spasi, dash, slash dll
+		field_key = get_cc_key(cc.name)
+
+		columns.append({
+			"fieldname": field_key,
+			"label": _(cc.cost_center_name),
+			"fieldtype": "Currency",
+			"options": "",
+			"width": 120
+		})
+
+	return columns
+
+def get_cc_key(name):
+	return "cc_" + frappe.scrub(name)
 
 
 def get_filtered_list_for_consolidated_report(filters, period_list):

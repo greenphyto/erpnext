@@ -28,6 +28,13 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 			"label": __("Show Number Group"),
 			"fieldtype": "Check",
 			"default": 0
+		},
+		{
+			"fieldname": "show_all_cost_centers",
+			"label": __("Show on Cost Centers"),
+			"fieldtype": "Check",
+			"default": 0,
+			"description": __("When enabled, columns are generated per Cost Center for the selected period(s).")
 		}
 	);
 });
