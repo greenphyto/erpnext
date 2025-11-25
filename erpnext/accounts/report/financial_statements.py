@@ -327,6 +327,12 @@ def accumulate_values_into_parents(accounts, accounts_by_name, period_list):
 				accounts_by_name[d.parent_account][period.key] = accounts_by_name[d.parent_account].get(
 					period.key, 0.0
 				) + d.get(period.key, 0.0)
+			
+			for key, val in d.items():
+				if key.startswith("cc_"):
+					accounts_by_name[d.parent_account][key] = accounts_by_name[d.parent_account].get(
+						key, 0.0
+					) + d.get(key, 0.0)
 
 			accounts_by_name[d.parent_account]["opening_balance"] = accounts_by_name[d.parent_account].get(
 				"opening_balance", 0.0
@@ -376,6 +382,13 @@ def prepare_data(accounts, balance_must_be, period_list, company_currency):
 				# ignore zero values
 				has_value = True
 				total += flt(row[period.key])
+		
+		for key, val in d.items():
+			if key.startswith("cc_"):
+				if d.get(key) and balance_must_be == "Credit":
+					# change sign based on Debit or Credit, since calculation is done using (debit - credit)
+					d[key] *= -1
+				row[key] = flt(d.get(key, 0.0), 3)
 
 		row["has_value"] = has_value
 		row["total"] = total
@@ -649,7 +662,7 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None, co
 			label = period.label
 			if cost_center_all_show:
 				label = 'Total'
-				
+
 			columns.append(
 				{
 					"fieldname": period.key,
