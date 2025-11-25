@@ -641,12 +641,19 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None, co
 	
 	if cost_center_all_show:
 		columns += get_cost_center_columns(company, filters.get("cost_center"))
-	else:
+	
+	if not cost_center_all_show or len(period_list)==1:
+
+
 		for period in period_list:
+			label = period.label
+			if cost_center_all_show:
+				label = 'Total'
+				
 			columns.append(
 				{
 					"fieldname": period.key,
-					"label": period.label,
+					"label": label,
 					"fieldtype": "Currency",
 					"options": "currency",
 					"width": 150,
