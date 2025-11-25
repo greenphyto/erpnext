@@ -79,7 +79,7 @@ def execute(filters=None):
 			new_data.append(d)
 
 	columns = get_columns(
-		filters.periodicity, period_list, filters.accumulated_values, filters.company
+		filters.periodicity, period_list, filters.accumulated_values, filters.company, cost_center_all_show=filters.show_all_cost_centers, filters=filters
 	)
 
 	chart = get_chart_data(filters, columns, income, expense, net_profit_loss)
