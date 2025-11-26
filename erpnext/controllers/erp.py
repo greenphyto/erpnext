@@ -270,6 +270,16 @@ def _detect_work_order_different(se, method=""):
 		message=message
 	)
 
+@frappe.whitelist()
+def read_email_inbox_enquee():
+    frappe.enqueue(
+        "erpnext.controllers.erp.read_email_inbox",
+        queue="long",
+        job_name=f"Read Inbox",
+        timeout=1800,
+        now=False
+    )
+
 # change to scheduler 5 minutes each
 def read_email_inbox():
 	# settings

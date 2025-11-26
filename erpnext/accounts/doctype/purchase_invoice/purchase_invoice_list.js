@@ -65,5 +65,17 @@ frappe.listview_settings["Purchase Invoice"] = {
 		listview.page.add_action_item(__("Payment"), ()=>{
 			erpnext.bulk_transaction_processing.create(listview, "Purchase Invoice", "Payment Entry");
 		});
+
+		listview.page.add_inner_button(__('Pull AI Invoice'), () => {
+            // Call backend
+            frappe.call({
+                method: "erpnext.controllers.erp.read_email_inbox_enquee",
+                freeze: true,
+                freeze_message: __("Processing...")
+            }).then(r => {
+                frappe.msgprint("Pull Email is running now");
+                listview.refresh();
+            });
+        });
 	}
 };
