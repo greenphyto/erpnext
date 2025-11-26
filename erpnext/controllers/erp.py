@@ -827,7 +827,7 @@ def get_company_availabe():
 def switch_company(company, force=False, user=""):
 	user = user or frappe.session.user
 	company_user = frappe.db.get_value("User", user, "company")
-	if not force and company_user and company_user != company:
+	if not force and company_user and company_user == company:
 		return False
 	
 	# if administrator, always set to all
