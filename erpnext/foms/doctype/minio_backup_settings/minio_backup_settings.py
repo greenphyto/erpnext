@@ -16,7 +16,7 @@ from frappe.integrations.offsite_backup_utils import (
 class MinIOBackupSettings(Document):
 	pass
 
-class MinIO():
+class ErpMinIO():
 	def __init__(self, host, key, pwd, bucket="erp-database-backup", folder=""):
 		self.host = host
 		self.access_key = key
@@ -43,16 +43,18 @@ class MinIO():
 		destination_file = os.path.join(self.folder, source_file.split("/")[-1])
 
 		# Make the bucket if it doesn't exist.
-		found = client.bucket_exists(bucket_name)
+		found = client.bucket_exists(bucket_name=bucket_name)
 		if not found:
-			client.make_bucket(bucket_name)
+			client.make_bucket(bucket_name=bucket_name)
 			print("Created bucket", bucket_name)
 		else:
 			print("Bucket", bucket_name, "already exists")
 
 		# # Upload the file, renaming it in the process
 		client.fput_object(
-			bucket_name, destination_file, source_file,
+			bucket_name=bucket_name,
+			object_name=destination_file,
+			file_path=source_file,
 		)
 		print(
 			source_file, "successfully uploaded as object",
@@ -66,7 +68,7 @@ def upload_backup():
 	if not doc.enable:
 		return
 	
-	app = MinIO(
+	app = ErpMinIO(
 		doc.minio_host, 
 		doc.access_key, 
 		doc.get_password("secret_key"), 
