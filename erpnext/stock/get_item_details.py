@@ -138,9 +138,8 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 		if out.uom == "KG":
 			out.uom = ""
 
-	if doc.get("doctype") == "Delivery Note":
+	if doc and doc.get("doctype") == "Delivery Note":
 		for d in doc.get("items"):
-			print(75, d.get("name"), args.get("child_docname"), d.get("so_detail"))
 			if d.get("name") == args.get("child_docname"):
 				if d.get("so_detail"):
 					# copy back value from origin if from SO
