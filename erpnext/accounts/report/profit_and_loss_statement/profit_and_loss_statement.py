@@ -3,8 +3,16 @@
 
 
 import frappe
+import re
+import json
+from urllib.parse import quote
+from io import BytesIO
+try:
+	import openpyxl
+except Exception:
+	openpyxl = None
 from frappe import _
-from frappe.utils import flt, cint
+from frappe.utils import flt, cint, now_datetime
 
 from erpnext.accounts.report.financial_statements import (
 	get_columns,
@@ -199,3 +207,146 @@ def get_chart_data(filters, columns, income, expense, net_profit_loss):
 	chart["fieldtype"] = "Currency"
 
 	return chart
+
+def get_export_cost_center(filters):
+	"""
+	Generate grouped Profit & Loss data per non-group Cost Center.
+
+	Returns a dict keyed by Cost Center name with:
+	- label: Cost Center display name
+	- columns: report columns for this run
+	- data: report rows for this Cost Center
+	- summary: report summary values
+	"""
+	base_filters = frappe._dict(filters or {})
+
+	# Collect all non-group cost centers (scoped to company if provided)
+	cc_filters = {"is_group": 0}
+	if base_filters.get("company"):
+		cc_filters["company"] = base_filters.company
+
+	cost_centers = frappe.get_all(
+		"Cost Center",
+		filters=cc_filters,
+		fields=["name", "cost_center_name"],
+		order_by="name asc",
+	)
+
+	group_data = {}
+
+	for cc in cost_centers:
+		# Prepare per-CC filters without mutating caller filters
+		per_cc_filters = frappe._dict(base_filters.copy())
+		per_cc_filters["cost_center"] = [cc.name]
+
+		columns, data, _, _, report_summary = execute(per_cc_filters)
+
+		group_data[cc.name] = {
+			"label": cc.cost_center_name or cc.name,
+			"columns": columns,
+			"data": data,
+			"summary": report_summary,
+		}
+
+	return group_data
+
+
+def _sanitize_sheet_name(name):
+	name = (name or "Sheet").strip()
+	# Excel invalid chars: : \ / ? * [ ]
+	name = re.sub(r"[:\\/\?\*\[\]]", " ", name)
+	if len(name) > 31:
+		name = name[:31]
+	return name or "Sheet"
+
+
+@frappe.whitelist()
+def export_with_cost_centers(filters=None):
+	"""
+	Build an XLSX where each Cost Center is a sheet containing its P&L data.
+
+	Returns: { file_url: <saved file url> }
+	"""
+	if isinstance(filters, str):
+		try:
+			filters = frappe.parse_json(filters)
+		except Exception:
+			filters = {}
+
+	filters['show_all_cost_centers'] = 1
+	group_data = get_export_cost_center(filters)
+
+	if not openpyxl:
+		frappe.throw("openpyxl is required to export XLSX")
+
+	from frappe.utils.xlsxutils import ILLEGAL_CHARACTERS_RE, handle_html
+
+	wb = openpyxl.Workbook(write_only=True)
+
+	used_names = set()
+
+	for cc_name, payload in (group_data or {}).items():
+		label = payload.get("label") or cc_name
+		sheet_name = _sanitize_sheet_name(label)
+
+		# Ensure unique sheet names
+		base = sheet_name
+		idx = 1
+		while sheet_name in used_names:
+			suffix = f" {idx}"
+			sheet_name = _sanitize_sheet_name((base[: (31 - len(suffix))]).rstrip() + suffix)
+			idx += 1
+		used_names.add(sheet_name)
+
+		ws = wb.create_sheet(title=sheet_name)
+
+		columns = payload.get("columns") or []
+		data_rows = payload.get("data") or []
+
+		headers = [c.get("label") for c in columns]
+		fields = [c.get("fieldname") for c in columns]
+		ws.append(headers)
+
+		for row in data_rows:
+			out = []
+			for f in fields:
+				val = (row or {}).get(f)
+				if isinstance(val, str):
+					try:
+						val = handle_html(val)
+						if isinstance(val, str):
+							val = re.sub(ILLEGAL_CHARACTERS_RE, "", val)
+					except Exception:
+						pass
+				out.append(val)
+			ws.append(out)
+
+	bio = BytesIO()
+	wb.save(bio)
+	bio.seek(0)
+
+	now = now_datetime()
+	date_str_title = now.strftime("%y%m%d_%H%M%S")
+	frappe.response["filename"] = f"Profit and Loss by Cost Center_{date_str_title}.xlsx"
+	frappe.response["filecontent"] = bio.getvalue()
+	frappe.response["type"] = "binary"
+
+
+@frappe.whitelist()
+def get_export_with_cost_centers_url(filters=None):
+	"""
+	Helper to generate a URL for binary export so that the client
+	can use frappe.call() first, then window.open() the returned URL.
+	"""
+	if isinstance(filters, str):
+		try:
+			filters = frappe.parse_json(filters)
+		except Exception:
+			filters = {}
+
+	payload = quote(json.dumps(filters or {}))
+	url = (
+		"/api/method/erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement.export_with_cost_centers"
+		f"?filters={payload}"
+	)
+	return {"url": url}
