@@ -209,6 +209,7 @@ def get_chart_data(filters, columns, income, expense, net_profit_loss):
 	return chart
 
 from frappe.desk.query_report import add_title_report, get_filters_data, build_xlsx_data
+from openpyxl.utils import get_column_letter
 def get_export_cost_center(filters):
 	"""
 	Generate grouped Profit & Loss data per non-group Cost Center.
@@ -260,6 +261,7 @@ def get_export_cost_center(filters):
 			"columns": columns,
 			"data": xlsx_data,
 			"summary": report_summary,
+			"column_widths":column_widths
 		}
 
 	return group_data
@@ -288,7 +290,7 @@ def export_with_cost_centers(filters=None):
 			filters = {}
 
 	filters['show_all_cost_centers'] = 0
-	group_data = get_export_cost_center(filters)
+	group_data  = get_export_cost_center(filters)
 
 	if not openpyxl:
 		frappe.throw("openpyxl is required to export XLSX")
@@ -298,6 +300,7 @@ def export_with_cost_centers(filters=None):
 	wb = openpyxl.Workbook(write_only=True)
 
 	used_names = set()
+	first_columns = None
 
 	for cc_name, payload in (group_data or {}).items():
 		label = payload.get("label") or cc_name
@@ -315,11 +318,19 @@ def export_with_cost_centers(filters=None):
 		ws = wb.create_sheet(title=sheet_name)
 
 		columns = payload.get("columns") or []
+		if first_columns is None:
+			first_columns = columns
 		data_rows = payload.get("data") or []
 
 		headers = [c.get("label") for c in columns]
 		fields = [c.get("fieldname") for c in columns]
 		ws.append(headers)
+
+		# Set column width if provided
+		column_widths = payload.get("column_widths")
+		for i, column_width in enumerate(column_widths):
+			if column_width:
+				ws.column_dimensions[get_column_letter(i + 1)].width = column_width
 
 		for row in data_rows:
 			out = []
@@ -346,7 +357,23 @@ def export_with_cost_centers(filters=None):
 	# Integrate with add_formulas to add formulas on all sheets
 	try:
 		from erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2 import add_formulas
-		return add_formulas("Profit and Loss Statement", bio)
+		# Build column_widths list from the first sheet's columns if available
+		column_widths = None
+		if first_columns:
+			column_widths = []
+			for col in first_columns:
+				w = col.get("width")
+				# Convert typical pixel widths to character widths approximation if needed
+				if isinstance(w, (int, float)):
+					# heuristic: 1 char ~ 8 px; clamp sensible range
+					width_chars = max(6, min(80, int(float(w) / 8)))
+				else:
+					# fall back to label length approx
+					label = col.get("label") or ""
+					width_chars = max(8, min(50, len(str(label)) + 5))
+				column_widths.append(width_chars)
+
+		return add_formulas("Profit and Loss Statement", bio, column_widths=column_widths)
 
 	except Exception:
 		# Fallback: plain export if add_formulas unavailable

@@ -297,7 +297,7 @@ from io import BytesIO
 import json
 from openpyxl.styles import Font
 from frappe.utils import now_datetime
-def add_formulas(report_name, xlsx_file, return_wb=False):
+def add_formulas(report_name, xlsx_file, return_wb=False, column_widths=None):
 	stream = BytesIO(xlsx_file.getvalue())
 	wb = load_workbook(stream)
 
@@ -310,6 +310,16 @@ def add_formulas(report_name, xlsx_file, return_wb=False):
 		if group_col not in col_use:
 			col_use.append(group_col)
 		skip_cols = ['A', 'B', group_col]
+
+		# Apply column widths if provided (list of numbers per visible column order)
+		if isinstance(column_widths, (list, tuple)) and column_widths:
+			for i, width in enumerate(column_widths, start=1):
+				try:
+					if width:
+						ws.column_dimensions[get_column_letter(i)].width = float(width)
+				except Exception:
+					# ignore invalid widths
+					pass
 
 		start_row = 1
 		for row in range(2, ws.max_row + 1):
