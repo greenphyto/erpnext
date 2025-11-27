@@ -292,97 +292,116 @@ def get_chart_data(filters, columns, asset, liability, equity):
 
 from frappe.utils.xlsxutils import make_xlsx
 from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
 from io import BytesIO
 import json
 from openpyxl.styles import Font
 from frappe.utils import now_datetime
-def add_formulas(report_name, xlsx_file):
+def add_formulas(report_name, xlsx_file, return_wb=False):
 	stream = BytesIO(xlsx_file.getvalue())
 	wb = load_workbook(stream)
-	ws = wb.active
 
-	group_col = "Z"
-	ws.column_dimensions[group_col].hidden = True
+	def apply_on_sheet(ws):
+		group_col = "Z"
+		ws.column_dimensions[group_col].hidden = True
 
-	col_use = list(ws.column_dimensions.keys())
+		# Build list of column letters reliably
+		col_use = [get_column_letter(c) for c in range(1, ws.max_column + 1)]
+		if group_col not in col_use:
+			col_use.append(group_col)
+		skip_cols = ['A', 'B', group_col]
 
-	level = 0 
-	start_row = 0
-	for row in range(2, ws.max_row + 1): 
-		account_txt = cstr(ws[f"A{row}"].value) 
-		leading_spaces = len(account_txt) - len(account_txt.lstrip(" ")) 
-		account = cstr(ws[f"A{row}"].value).strip() 
+		start_row = 1
+		for row in range(2, ws.max_row + 1):
+			account = cstr(ws[f"A{row}"].value).strip()
+			if account in ['Assets', 'Income', 'Expenses', 'Liabilities']:
+				start_row = row
+				break
 
-		if account in ['Assets', 'Income']: 
-			start_row = row
-			break
+		rows = build_rows(ws, start_row=start_row)
+		if not rows:
+			return
 
-	rows = build_rows(ws, start_row=start_row)
+		hier = compute_child_range_rows(rows)
+		flat_list = extract_nodes(hier)
 
-	hier = compute_child_range_rows(rows)
-	flat_list = extract_nodes(hier)
+		total_row = {}
+		for d in flat_list:
+			account = d['account']
+			row = d['row']
+			# Balance Sheet
+			if account == "Total Asset (Debit)":
+				total_row.setdefault("Assets", row)
+			elif account == "Total Liability (Credit)":
+				total_row.setdefault("Liabilities", row)
+			elif account == "Total Equity (Credit)":
+				total_row.setdefault("Equity", row)
 
-	assets_total_row = 0
-	liability_total_row = 0
-	total_row = {}
-	for d in flat_list:
-		account = d['account']
-		row = d['row']
-		# Balance Sheet
-		if account == "Total Asset (Debit)":
-			total_row.setdefault("Assets", row)
-		elif account == "Total Liability (Credit)":
-			total_row.setdefault("Liabilities", row)
-		elif account == "Total Equity (Credit)":
-			total_row.setdefault("Equity", row)
+			# Profit & Loss
+			elif account == "Total Income (Credit)":
+				total_row.setdefault("Income", row)
+			elif account == "Total Expense (Debit)":
+				total_row.setdefault("Expenses", row)
 
-		# Profit & Loss
-		elif account == "Total Income (Credit)":
-			total_row.setdefault("Income", row)
-		elif account == "Total Expense (Debit)":
-			total_row.setdefault("Expenses", row)
+		for d in flat_list:
+			is_group = d.get("group_flag")
+			account = d['account']
+			row = d['row']
+			lft = d['lft_row']
+			rgt = d['rgt_row']
+			ws[f'{group_col}{row}'] = 2 if is_group else 1
 
-	for d in flat_list:
-		is_group = d.get("group_flag")
-		account = d['account']
-		row = d['row']
-		lft=d['lft_row']
-		rgt=d['rgt_row']
-		ws[f'{group_col}{row}'] = 2 if is_group else 1
+			for cell in ws[row]:
+				cell.font = Font(bold=bool(is_group))
 
-		for cell in ws[row]:
-			cell.font = Font(bold=bool(is_group))
-		
-		if is_group and lft:
-			for col in col_use:
-				if col not in ['A', 'B', group_col]:
-					ws[f"{col}{row}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
+			if is_group and lft:
+				for col in col_use:
+					if col not in skip_cols:
+						ws[f"{col}{row}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
 
-					# Hardcode formula
-					if account in total_row:
-						ws[f"{col}{total_row.get(account)}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
-		else:
-			for col in col_use:
-				if col not in ['A', 'B', group_col]:
-					# Balance Sheet
-					required_keys = ["Assets", "Liabilities", "Equity"]
-					if all(k in total_row for k in required_keys):
-						equity_total_row = total_row.get("Equity")
-						liability_total_row = total_row.get("Liabilities")
-						assets_total_row = total_row.get("Assets")
-						if account == "'Profit / (Loss) for the Year'":
-							ws[f"{col}{row}"] = f"={col}{assets_total_row} - ({col}{liability_total_row} + {col}{equity_total_row})"
-						elif account == "'Total (Credit)'":
-							ws[f"{col}{row}"] = f"={col}{liability_total_row} + {col}{equity_total_row}"
-					
-					# Profit & Loss
-					required_keys = ["Income", "Expenses"]
-					if all(k in total_row for k in required_keys):
-						if account == "'Profit for the year'":
-							income_total_row = total_row.get("Income")
-							expense_total_row = total_row.get("Expenses")
-							ws[f"{col}{row}"] = f"={col}{income_total_row} - {col}{expense_total_row}"
+						# Mirror on total row if matches known total labels
+						if account in total_row:
+							ws[f"{col}{total_row.get(account)}"] = f"=SUMIF({group_col}{lft}:{group_col}{rgt},1,{col}{lft}:{col}{rgt})"
+			else:
+				for col in col_use:
+					if col not in skip_cols:
+						# Balance Sheet
+						required_keys = ["Assets", "Liabilities", "Equity"]
+						if all(k in total_row for k in required_keys):
+							equity_total_row = total_row.get("Equity")
+							liability_total_row = total_row.get("Liabilities")
+							assets_total_row = total_row.get("Assets")
+							if account == "'Profit / (Loss) for the Year'":
+								ws[f"{col}{row}"] = f"={col}{assets_total_row} - ({col}{liability_total_row} + {col}{equity_total_row})"
+							elif account == "'Total (Credit)'":
+								ws[f"{col}{row}"] = f"={col}{liability_total_row} + {col}{equity_total_row}"
 
+						# Profit & Loss
+						required_keys = ["Income", "Expenses"]
+						if all(k in total_row for k in required_keys):
+							if account == "'Profit for the year'":
+								income_total_row = total_row.get("Income")
+								expense_total_row = total_row.get("Expenses")
+								ws[f"{col}{row}"] = f"={col}{income_total_row} - {col}{expense_total_row}"
+
+		# format thousand
+		for col in col_use:
+			if col not in skip_cols:
+				for row in range(start_row, ws.max_row + 1):
+					cell = ws[f"{col}{row}"]
+					if isinstance(cell.value, (int, float)) or cell.data_type == "f":
+						cell.number_format = '#,##0.00;(#,##0.00)'
+
+	# Apply to all worksheets
+	for ws in wb.worksheets:
+		try:
+			apply_on_sheet(ws)
+		except Exception:
+			continue
+
+	if return_wb:
+		return wb
+	
 	output_stream = BytesIO()
 	wb.save(output_stream)
 	output_stream.seek(0)
@@ -525,4 +544,4 @@ def extract_nodes(flat_tree, parent=None, result=None):
         })
         extract_nodes(children, (account, row, group_flag, lft_row, rgt_row), result)
 
-    return result
+	return result

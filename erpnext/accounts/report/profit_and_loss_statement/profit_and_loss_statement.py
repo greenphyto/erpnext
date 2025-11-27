@@ -208,7 +208,7 @@ def get_chart_data(filters, columns, income, expense, net_profit_loss):
 
 	return chart
 
-from frappe.desk.query_report import add_title_report, get_filters_data
+from frappe.desk.query_report import add_title_report, get_filters_data, build_xlsx_data
 def get_export_cost_center(filters):
 	"""
 	Generate grouped Profit & Loss data per non-group Cost Center.
@@ -248,8 +248,12 @@ def get_export_cost_center(filters):
 		per_cc_filters["cost_center"] = [cc.name]
 
 		columns, data, _, _, report_summary = execute(per_cc_filters)
-
-		xlsx_data = title_report + filter_report + [["Export date", date_str]] + data
+		temp = frappe._dict({
+			"columns":columns,
+			"result":data
+		})
+		xlsx_data, column_widths = build_xlsx_data(temp, [] , 1, ignore_visible_idx=1)
+		xlsx_data = title_report + filter_report + [["Export date", date_str]] + xlsx_data
 
 		group_data[cc.name] = {
 			"label": cc.cost_center_name or cc.name,
@@ -339,11 +343,18 @@ def export_with_cost_centers(filters=None):
 	wb.save(bio)
 	bio.seek(0)
 
-	now = now_datetime()
-	date_str_title = now.strftime("%y%m%d_%H%M%S")
-	frappe.response["filename"] = f"Profit and Loss by Cost Center_{date_str_title}.xlsx"
-	frappe.response["filecontent"] = bio.getvalue()
-	frappe.response["type"] = "binary"
+	# Integrate with add_formulas to add formulas on all sheets
+	try:
+		from erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2 import add_formulas
+		return add_formulas("Profit and Loss Statement", bio)
+
+	except Exception:
+		# Fallback: plain export if add_formulas unavailable
+		now = now_datetime()
+		date_str_title = now.strftime("%y%m%d_%H%M%S")
+		frappe.response["filename"] = f"Profit and Loss by Cost Center_{date_str_title}.xlsx"
+		frappe.response["filecontent"] = bio.getvalue()
+		frappe.response["type"] = "binary"
 
 
 @frappe.whitelist()
