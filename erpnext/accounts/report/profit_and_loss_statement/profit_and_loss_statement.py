@@ -12,7 +12,7 @@ try:
 except Exception:
 	openpyxl = None
 from frappe import _
-from frappe.utils import flt, now_datetime
+from frappe.utils import flt, now_datetime, get_datetime, now
 
 from erpnext.accounts.report.financial_statements import (
 	get_columns,
@@ -208,6 +208,7 @@ def get_chart_data(filters, columns, income, expense, net_profit_loss):
 
 	return chart
 
+from frappe.desk.query_report import add_title_report, get_filters_data
 def get_export_cost_center(filters):
 	"""
 	Generate grouped Profit & Loss data per non-group Cost Center.
@@ -234,6 +235,13 @@ def get_export_cost_center(filters):
 
 	group_data = {}
 
+	# add detail
+	export_date = now()
+	date_str = " "+get_datetime(export_date).strftime("%-d %B %y %H:%M:%S")
+	report_name = "Profit and Loass Statement"
+	title_report = add_title_report(report_name) 
+	filter_report = get_filters_data(filters)
+
 	for cc in cost_centers:
 		# Prepare per-CC filters without mutating caller filters
 		per_cc_filters = frappe._dict(base_filters.copy())
@@ -241,10 +249,12 @@ def get_export_cost_center(filters):
 
 		columns, data, _, _, report_summary = execute(per_cc_filters)
 
+		xlsx_data = title_report + filter_report + [["Export date", date_str]] + data
+
 		group_data[cc.name] = {
 			"label": cc.cost_center_name or cc.name,
 			"columns": columns,
-			"data": data,
+			"data": xlsx_data,
 			"summary": report_summary,
 		}
 
@@ -273,7 +283,7 @@ def export_with_cost_centers(filters=None):
 		except Exception:
 			filters = {}
 
-	filters['show_all_cost_centers'] = 1
+	filters['show_all_cost_centers'] = 0
 	group_data = get_export_cost_center(filters)
 
 	if not openpyxl:
@@ -309,16 +319,20 @@ def export_with_cost_centers(filters=None):
 
 		for row in data_rows:
 			out = []
-			for f in fields:
-				val = (row or {}).get(f)
-				if isinstance(val, str):
-					try:
-						val = handle_html(val)
-						if isinstance(val, str):
-							val = re.sub(ILLEGAL_CHARACTERS_RE, "", val)
-					except Exception:
-						pass
-				out.append(val)
+			if type(row) != list:
+				for f in fields:
+					val = (row or {}).get(f)
+					if isinstance(val, str):
+						try:
+							val = handle_html(val)
+							if isinstance(val, str):
+								val = re.sub(ILLEGAL_CHARACTERS_RE, "", val)
+						except Exception:
+							pass
+					out.append(val)
+			else:
+				out += row
+
 			ws.append(out)
 
 	bio = BytesIO()
