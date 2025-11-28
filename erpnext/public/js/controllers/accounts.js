@@ -188,6 +188,13 @@ cur_frm.cscript.validate_taxes_and_charges = function(cdt, cdn) {
 			msg = __("Cannot refer row number greater than or equal to current row number for this Charge type");
 			d.row_id = "";
 		}
+	} else if (d.charge_type=="On Item Row"){
+		if (!cint(d.row_id)) {
+			msg = __("Please specify a valid Row ID for row {0} in table {1}", [d.idx, __(d.doctype)]);
+			d.row_id = "";
+		}else if(cint(d.row_id)-1 > (cur_frm.doc.items).length){
+			msg = __("Row ID exceed the existing item row.");
+		}
 	}
 	if (msg) {
 		frappe.validated = false;

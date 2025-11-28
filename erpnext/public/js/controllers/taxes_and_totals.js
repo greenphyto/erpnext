@@ -203,7 +203,7 @@ erpnext.taxes_and_totals = class TaxesAndTotals extends erpnext.payments {
 			var cumulated_tax_fraction = 0.0;
 			var total_inclusive_tax_amount_per_qty = 0;
 			$.each(me.frm.doc["taxes"] || [], function(i, tax) {
-				var current_tax_fraction = me.get_current_tax_fraction(tax, item_tax_map);
+				var current_tax_fraction = me.get_current_tax_fraction(tax, item_tax_map, item);
 				tax.tax_fraction_for_current_item = current_tax_fraction[0];
 				var inclusive_tax_amount_per_qty = current_tax_fraction[1];
 
@@ -229,7 +229,7 @@ erpnext.taxes_and_totals = class TaxesAndTotals extends erpnext.payments {
 		});
 	}
 
-	get_current_tax_fraction(tax, item_tax_map) {
+	get_current_tax_fraction(tax, item_tax_map, item) {
 		// Get tax fraction for calculating tax exclusive amount
 		// from tax inclusive amount
 		var current_tax_fraction = 0.0;
@@ -242,8 +242,11 @@ erpnext.taxes_and_totals = class TaxesAndTotals extends erpnext.payments {
 				current_tax_fraction = (tax_rate / 100.0);
 
 			} else if(tax.charge_type == "On Previous Row Amount") {
-				current_tax_fraction = (tax_rate / 100.0) *
+				current_tax_fraction = (tax_rate / 100.0) *   
 					this.frm.doc["taxes"][cint(tax.row_id) - 1].tax_fraction_for_current_item;
+			} else if(tax.charge_type == "On Item Row" && cint(item.idx) == cint(tax.row_id)) {
+				current_tax_fraction = (tax_rate / 100.0) *
+					this.frm.doc["items"][cint(tax.row_id) - 1].net_amount;
 
 			} else if(tax.charge_type == "On Previous Row Total") {
 				current_tax_fraction = (tax_rate / 100.0) *
@@ -415,7 +418,7 @@ erpnext.taxes_and_totals = class TaxesAndTotals extends erpnext.payments {
 		var current_tax_amount = 0.0;
 
 		// To set row_id by default as previous row.
-		if(["On Previous Row Amount", "On Previous Row Total"].includes(tax.charge_type)) {
+		if(["On Previous Row Amount","On Previous Row Total"].includes(tax.charge_type)) {
 			if (tax.idx === 1) {
 				frappe.throw(
 					__("Cannot select charge type as 'On Previous Row Amount' or 'On Previous Row Total' for first row"));
@@ -435,7 +438,9 @@ erpnext.taxes_and_totals = class TaxesAndTotals extends erpnext.payments {
 		} else if(tax.charge_type == "On Previous Row Amount") {
 			current_tax_amount = (tax_rate / 100.0) *
 				this.frm.doc["taxes"][cint(tax.row_id) - 1].tax_amount_for_current_item;
-
+		} else if(tax.charge_type == "On Item Row" && cint(item.idx) == cint(tax.row_id)) {
+			current_tax_amount = (tax_rate / 100.0) *
+				this.frm.doc["items"][cint(tax.row_id) - 1].net_amount;
 		} else if(tax.charge_type == "On Previous Row Total") {
 			current_tax_amount = (tax_rate / 100.0) *
 				this.frm.doc["taxes"][cint(tax.row_id) - 1].grand_total_for_current_item;

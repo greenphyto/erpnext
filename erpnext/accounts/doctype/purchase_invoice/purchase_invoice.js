@@ -446,7 +446,6 @@ function hide_fields(doc) {
 
 	cur_frm.refresh_fields();
 }
-console.log(900011)
 cur_frm.fields_dict.cash_bank_account.get_query = function(doc) {
 	return {
 		filters: [
