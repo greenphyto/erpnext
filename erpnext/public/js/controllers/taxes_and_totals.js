@@ -245,8 +245,7 @@ erpnext.taxes_and_totals = class TaxesAndTotals extends erpnext.payments {
 				current_tax_fraction = (tax_rate / 100.0) *   
 					this.frm.doc["taxes"][cint(tax.row_id) - 1].tax_fraction_for_current_item;
 			} else if(tax.charge_type == "On Item Row" && cint(item.idx) == cint(tax.row_id)) {
-				current_tax_fraction = (tax_rate / 100.0) *
-					this.frm.doc["items"][cint(tax.row_id) - 1].net_amount;
+				current_tax_fraction = (tax_rate / 100.0)
 
 			} else if(tax.charge_type == "On Previous Row Total") {
 				current_tax_fraction = (tax_rate / 100.0) *

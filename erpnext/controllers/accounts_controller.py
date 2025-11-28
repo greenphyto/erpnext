@@ -2037,6 +2037,13 @@ def validate_taxes_and_charges(tax):
 				_("Cannot refer row number greater than or equal to current row number for this Charge type")
 			)
 
+	# For custom charge type 'On Item Row', ensure a row is specified
+	elif tax.charge_type == "On Item Row":
+		if not tax.row_id:
+			frappe.throw(
+				_("Please specify a valid Row ID for row {0} in table {1}").format(tax.idx, _(tax.doctype))
+			)
+
 	if tax.charge_type == "Actual":
 		tax.rate = None
 

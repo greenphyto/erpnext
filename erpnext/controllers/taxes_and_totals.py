@@ -246,7 +246,7 @@ class calculate_taxes_and_totals(object):
 				(
 					tax.tax_fraction_for_current_item,
 					inclusive_tax_amount_per_qty,
-				) = self.get_current_tax_fraction(tax, item_tax_map)
+				) = self.get_current_tax_fraction(tax, item_tax_map, item)
 
 				if i == 0:
 					tax.grand_total_fraction_for_current_item = 1 + tax.tax_fraction_for_current_item
@@ -275,7 +275,7 @@ class calculate_taxes_and_totals(object):
 	def _load_item_tax_rate(self, item_tax_rate):
 		return json.loads(item_tax_rate) if item_tax_rate else {}
 
-	def get_current_tax_fraction(self, tax, item_tax_map):
+	def get_current_tax_fraction(self, tax, item_tax_map, item=None):
 		"""
 		Get tax fraction for calculating tax exclusive amount
 		from tax inclusive amount
@@ -293,6 +293,13 @@ class calculate_taxes_and_totals(object):
 				current_tax_fraction = (tax_rate / 100.0) * self.doc.get("taxes")[
 					cint(tax.row_id) - 1
 				].tax_fraction_for_current_item
+
+			elif tax.charge_type == "On Item Row" and item and cint(getattr(item, "idx", 0)) == cint(
+				tax.row_id
+			):
+				# Mirror JS behavior: use selected item row's net amount
+				# in computing inclusive tax fraction for that specific row
+				current_tax_fraction = tax_rate / 100.0
 
 			elif tax.charge_type == "On Previous Row Total":
 				current_tax_fraction = (tax_rate / 100.0) * self.doc.get("taxes")[
@@ -458,6 +465,10 @@ class calculate_taxes_and_totals(object):
 			current_tax_amount = (tax_rate / 100.0) * self.doc.get("taxes")[
 				cint(tax.row_id) - 1
 			].tax_amount_for_current_item
+		elif tax.charge_type == "On Item Row" and cint(getattr(item, "idx", 0)) == cint(tax.row_id):
+			current_tax_amount = (tax_rate / 100.0) * self.doc.get("items")[
+				cint(tax.row_id) - 1
+			].net_amount
 		elif tax.charge_type == "On Previous Row Total":
 			current_tax_amount = (tax_rate / 100.0) * self.doc.get("taxes")[
 				cint(tax.row_id) - 1
