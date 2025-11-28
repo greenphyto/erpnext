@@ -1175,7 +1175,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		if (in_list(["Quotation", "Sales Order", "Delivery Note", "Sales Invoice", "Purchase Invoice", "Purchase Order", "Purchase Receipt"]), this.frm.doc.doctype) {
 			var me = this;
 			$.each(this.frm.doc.items || [], function(i, d) {
-				if(d.margin_type == "Amount") {
+				if(d.margin_type == "Amount" && !d.keep_margin_rate) {
 					frappe.model.set_value(d.doctype, d.name, "margin_rate_or_amount",
 						flt(d.margin_rate_or_amount) / flt(exchange_rate));
 				}

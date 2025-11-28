@@ -428,7 +428,7 @@ def make_purchase_order(source_name, target_doc=None, args=None):
 			target_doc.amount / flt(obj.rate) if (flt(obj.rate) and flt(obj.billed_amt)) else flt(obj.qty)
 		)
 		item = get_item_defaults(target_doc.item_code, source_parent.company)
-		
+		target_doc.keep_margin_rate = 1
 		item_group = get_item_group_defaults(target_doc.item_code, source_parent.company)
 		target_doc.cost_center = (
 			obj.cost_center
