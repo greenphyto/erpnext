@@ -3,9 +3,11 @@
 
 frappe.ui.form.on('FOMS Data Mapping', {
 	refresh: function(frm) {
-		frm.add_custom_button(__('Sync Data'), function() {
-			frm.events.sync_data(frm);
-		});
+		if (frm.doc.endpoint){
+			frm.add_custom_button(__('Sync Data'), function() {
+				frm.events.sync_data(frm);
+			});
+		}
 	},
 
 	view_in_console: function(frm) {
