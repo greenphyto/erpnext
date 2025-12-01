@@ -1496,20 +1496,20 @@ class StockEntry(StockEntryAsset, StockController):
 			SELECT 
 				gl.name,
 				s.name AS se_name,
-				SUM(gl.debit) AS amount,
+				SUM(gl.debit) - SUM(gl.credit) AS amount,
 				gl.account
 			FROM
 				`tabGL Entry` gl
 					LEFT JOIN
 				`tabStock Entry` s ON gl.voucher_no = s.name
 			WHERE
-					s.work_order = %s
+				s.work_order = %s
 					AND s.docstatus = 1
 					AND gl.account = %s
-		""", (self.work_order, wip_account), as_dict=1, debug=0)
+					AND gl.voucher_no != %s
+					AND gl.posting_date <= %s
+		""", (self.work_order, wip_account, self.name, self.posting_date), as_dict=1, debug=0)
 
-		# this should be minus with Return (with existing scrap material)
-		
 		return prev_wip
 
 
