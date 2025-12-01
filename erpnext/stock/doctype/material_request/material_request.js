@@ -220,7 +220,8 @@ frappe.ui.form.on('Material Request', {
 					plc_conversion_rate: 1,
 					rate: item.rate,
 					uom: item.uom,
-					conversion_factor: item.conversion_factor
+					conversion_factor: item.conversion_factor,
+					is_free_item: item.is_free_item
 				},
 				overwrite_warehouse: overwrite_warehouse
 			},
@@ -387,6 +388,13 @@ frappe.ui.form.on("Material Request Item", {
 
 	warehouse: function(frm, doctype, name) {
 		const item = locals[doctype][name];
+		frm.events.get_item_data(frm, item, false);
+	},
+
+	is_free_item: function(frm, doctype, name) {
+		const item = locals[doctype][name];
+		frappe.model.set_value(doctype, name, "rate", 0)
+		item.rate = 0
 		frm.events.get_item_data(frm, item, false);
 	},
 

@@ -853,6 +853,10 @@ def get_price_list_rate(args, item_doc, out=None):
 
 	meta = frappe.get_meta(args.parenttype or args.doctype)
 
+	if args.get("is_free_item") and meta.name=="Material Request":
+		out.rate = 0
+		return out
+
 	if meta.get_field("currency") or args.get("currency"):
 		if not args.get("price_list_currency") or not args.get("plc_conversion_rate"):
 			# if currency and plc_conversion_rate exist then
