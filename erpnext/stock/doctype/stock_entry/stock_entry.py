@@ -235,6 +235,7 @@ class StockEntry(StockEntryAsset, StockController):
 		self.set_close_materials()
 
 	def on_cancel(self):
+		self.validate_scrap_entry_from_work_order()
 		self.update_subcontract_order_supplied_items()
 		self.update_subcontracting_order_status()
 
@@ -259,6 +260,26 @@ class StockEntry(StockEntryAsset, StockController):
 		if self.purpose == "Material Transfer" and self.outgoing_stock_entry:
 			self.set_material_request_transfer_status("In Transit")
 		self.set_close_materials()
+
+	def validate_scrap_entry_from_work_order(self):
+		if not self.work_order and self.purpose != 'Material Transfer for Manufacture':
+			return
+	
+		# check existing scrap
+		prev_opr = get_previous_operation(self.operation)
+		se_name = frappe.db.get_value(
+				"Stock Entry",
+				{
+					"docstatus": 1,
+					"work_order": self.work_order,
+					"stock_entry_type": "Material Issue",
+					"operation": prev_opr,
+				},
+				"name"
+			)
+		if se_name:
+			link_name = frappe.utils.get_link_to_form("Stock Entry", se_name)
+			frappe.throw(_(f"Please cancel Scrap Material ({link_name}) from previous operation first, before cancel this Stock Entry"))
 
 	def set_close_materials(self):
 		if self.is_return and not self.work_order:
