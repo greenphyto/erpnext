@@ -296,6 +296,7 @@ frappe.ui.form.on('Material Request', {
 				fieldname:'default_supplier',
 				fieldtype: 'Link',
 				options: 'Supplier',
+				default: frm.doc.supplier,
 				description: __('Select a Supplier from the Default Suppliers of the items below. On selection, a Purchase Order will be made against items belonging to the selected Supplier only.'),
 				get_query: () => {
 					return{
