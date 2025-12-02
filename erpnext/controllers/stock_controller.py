@@ -157,7 +157,7 @@ class StockController(AccountsController):
 						# from warehouse account
 
 						stock_value_difference = flt(sle.stock_value_difference)
-						if self.get("purpose") == "Manufacture" or (self.get("purpose") == "Material Issue" and self.get("work_order")):
+						if self.get("purpose") == "Manufacture":
 							if item_row.s_warehouse:
 								stock_value_difference = item_row.amount * -1
 							elif item_row.t_warehouse:
@@ -461,6 +461,12 @@ class StockController(AccountsController):
 				"is_cancelled": 1 if self.docstatus == 2 else 0,
 			}
 		)
+
+		sl_dict.valuation_rate = d.get("basic_rate")
+		# experimental
+		# this should be from Work Order too
+		if self.purpose == 'Material Issue' and self.work_order:
+			sl_dict.is_custom_rate = 1
 
 		sl_dict.update(args)
 		self.update_inventory_dimensions(d, sl_dict)

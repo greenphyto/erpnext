@@ -24,6 +24,7 @@
   "outgoing_rate",
   "column_break_17",
   "valuation_rate",
+  "is_custom_rate",
   "stock_value",
   "stock_value_difference",
   "stock_queue",
@@ -323,6 +324,12 @@
    "fieldtype": "Small Text",
    "label": "Fix Note",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_custom_rate",
+   "fieldtype": "Check",
+   "label": "Is Custom Rate"
   }
  ],
  "hide_toolbar": 1,
@@ -331,7 +338,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-30 16:52:05.445063",
+ "modified": "2025-12-02 17:39:50.037503",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Ledger Entry",
