@@ -416,6 +416,7 @@ from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_inter_comp
 def auto_create_selling_from_internal(doc, method=""):
 	def try_save(d):
 		try:
+			d.flags.ignore_permissions = 1
 			d.save()
 		except:
 			pass
