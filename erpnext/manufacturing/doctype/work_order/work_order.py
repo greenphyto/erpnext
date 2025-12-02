@@ -1890,6 +1890,15 @@ def make_scrap_materials(work_order, percentage=100):
 	expense_account = get_company_default(stock_entry.company, "production_attrition_expense_account")
 
 	for row in stock_entry.items:
+		# # get rate
+		# rate_map = stock_entry.get_previous_rate()
+		# for row in stock_entry.get("items"):
+		# 	if row.s_warehouse:
+		# 		row.basic_rate = flt(rate_map.get(row.batch_no), 8)
+		# 		row.rate_map = row.basic_rate
+		# 		row.valuation_rate = row.basic_rate
+		# 		row.set_basic_rate_manually = 1
+
 		row.is_scrap_item = 1
 		row.conversion_factor = 1
 		row.expense_account = expense_account
