@@ -777,3 +777,8 @@ custom_export_report = {
     "Balance Sheet": "erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2.add_formulas",
     "Profit and Loss Statement": "erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2.add_formulas",
 }
+
+has_permission = {
+	"Supplier": "erpnext.buying.doctype.supplier.supplier.has_permission",
+	"Customer": "erpnext.selling.doctype.customer.customer.has_permission",
+}
