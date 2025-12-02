@@ -1090,6 +1090,7 @@ def create_sample_after_work_order(doc, method=""):
 def auto_create_selling_from_internal(doc, method=""):
 	def try_save(d):
 		try:
+			d.flags.ignore_permissions = 1
 			d.save()
 		except:
 			pass
