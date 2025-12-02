@@ -760,3 +760,8 @@ sync_log_method = {
 }
 
 get_email_default = "erpnext.controllers.email.get_last_email_default"
+
+has_permission = {
+	"Supplier": "erpnext.buying.doctype.supplier.supplier.has_permission",
+	"Customer": "erpnext.selling.doctype.customer.customer.has_permission",
+}

@@ -829,3 +829,10 @@ def get_customer_primary_contact(doctype, txt, searchfield, start, page_len, fil
 		""",
 		{"customer": customer, "txt": "%%%s%%" % txt},
 	)
+
+def has_permission(doc, user):
+	if user == "Administrator":
+		return True
+
+	if doc.is_internal_customer:
+		return True
