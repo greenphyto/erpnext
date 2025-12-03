@@ -32,8 +32,8 @@ def check_email_status(log, method=""):
 	notif = frappe.get_doc("Notification", "Email Sent Status")
 	notif.send(doc)
 
-def reminder_submit_invoice():
-	if getdate(today()) != get_last_day(today()):
+def reminder_submit_invoice(force = False):
+	if getdate(today()) != get_last_day(today()) and not force:
 		return
 	
 	doc_notif = frappe.get_doc("Notification", "Submit Invoice Draft")
