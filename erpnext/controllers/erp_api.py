@@ -1,9 +1,9 @@
 import frappe, json, erpnext
 from six import string_types
-from frappe.utils import flt, now_datetime, cint, getdate, cstr, get_datetime, add_days
+from frappe.utils import flt, now_datetime, cint, getdate, cstr, get_datetime, add_days, nowtime, today
 from erpnext.controllers.foms import (
-    create_bom_products, 
-    get_bom_for_work_order, 
+	create_bom_products, 
+	get_bom_for_work_order, 
 	get_foms_settings,
 	create_work_order as _create_work_order,
 	OPERATION_MAP_NAME,
@@ -139,6 +139,42 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 	update_log("Work Order", data_name, "Work Order", doc.name)
 
 	return res
+
+@frappe.whitelist()
+def update_qty_after_finish(erpWorkOrderID, batch_id, new_qty, submit=1, posting_date="", posting_time="", remark=""):
+	# warehouse finish goods
+	company = frappe.get_value("Work Order", erpWorkOrderID, "company")
+	wh_name = frappe.db.get_single_value("Manufacturing Settings", "default_fg_warehouse")
+	item = frappe.get_value("Batch", batch_id, "item")
+	posting_date = posting_date or today()
+	posting_time = posting_time or nowtime()
+	if not item:
+		return {"result": False, "error": "Batch ID Not Found!"}
+	
+	# Siapkan dokumen utama
+	sr = frappe.get_doc({
+		"doctype": "Stock Reconciliation",
+		"company": company,
+		"posting_date": posting_date,
+		"posting_time": posting_time,
+		"purpose": "Stock Reconciliation",
+		"remarks": remark or "Auto Stock Reconciliation via custom script",
+	})
+
+	# Tambahkan baris items
+	child = sr.append("items", {})
+	child.item_code = item
+	child.warehouse = wh_name
+	child.qty = new_qty
+	child.batch_no = batch_id
+
+	# Simpan & submit
+	sr.insert(ignore_permissions=True)
+
+	if submit:
+		sr.submit()
+
+	return {"result":True}
 
 @frappe.whitelist()
 def start_work_order(erpWorkOrderID="", ERPWorkOrderID=""):

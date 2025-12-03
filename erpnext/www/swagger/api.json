@@ -389,6 +389,69 @@
         }
       }
     },
+    "/erpnext.controllers.erp_api.update_qty_after_finish": {
+      "post": {
+        "summary": "Update Finished Goods Qty",
+        "description": "Adjust finished goods batch quantity using Stock Reconciliation.",
+        "operationId": "update qty after finish",
+        "requestBody": {
+          "description": "Update finished goods quantity",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "erpWorkOrderID": "25-0814-001",
+                  "batch_id": "PR-LV-CO-BN00133",
+                  "new_qty": 32,
+                  "submit": 1,
+                  "posting_date": "2025-01-01",
+                  "posting_time": "10:00",
+                  "remark": "Adjust Stock"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "result": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "result": false,
+                      "error": "Batch ID Not Found!"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/erpnext.controllers.erp_api.create_raw_material": {
       "post": {
         "summary": "Create/update raw material",
