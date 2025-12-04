@@ -163,6 +163,7 @@ def update_qty_after_finish(erpWorkOrderID, batch_id, new_qty, submit=1, posting
 	child.warehouse = wh_name
 	child.qty = new_qty
 	child.batch_no = batch_id
+	sr.reff_id = erpWorkOrderID
 
 	# Simpan & submit
 	sr.insert(ignore_permissions=True)

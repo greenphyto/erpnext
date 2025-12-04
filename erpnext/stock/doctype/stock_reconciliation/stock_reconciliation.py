@@ -76,6 +76,7 @@ class StockReconciliation(StockController):
 		from erpnext.stock.doctype.serial_no.serial_no import update_serial_nos_after_submit
 
 		update_serial_nos_after_submit(self, "items")
+		self.update_work_order_revised_qty()
 
 	def on_cancel(self):
 		self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry", "Repost Item Valuation")
@@ -85,6 +86,32 @@ class StockReconciliation(StockController):
 		if self.purpose == "Opening Stock":
 			self.delete_auto_created_batches()
 		self.reset_foms_sync()
+
+	def update_work_order_revised_qty(self):
+		if self.purpose != "Stock Reconciliation":
+			return
+		
+		# this scenario not covered if has warehouse changed
+
+		for d in self.get("items"):
+			res = frappe.db.sql("""
+				SELECT 
+					ste.work_order,
+					ste.name AS stock_entry,
+					ste_item.item_code,
+					ste_item.batch_no,
+					ste.posting_date
+				FROM 
+					`tabStock Entry Detail` ste_item
+				JOIN
+					`tabStock Entry` ste ON ste.name = ste_item.parent
+				WHERE
+					ste_item.batch_no = %s
+					AND ste.docstatus = 1
+			""", (d.batch_no), as_dict=1)
+			if res:
+				wo = res[0].work_order
+				frappe.db.set_value("Work Order", wo, "revised_qty", d.qty)
 	
 	def reset_foms_sync(self):
 		old_doc = self.get_doc_before_save()
