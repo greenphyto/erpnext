@@ -157,11 +157,6 @@ class StockController(AccountsController):
 						# from warehouse account
 
 						stock_value_difference = flt(sle.stock_value_difference)
-						if self.get("purpose") == "Manufacture":
-							if item_row.s_warehouse:
-								stock_value_difference = item_row.amount * -1
-							elif item_row.t_warehouse:
-								stock_value_difference = item_row.amount
 
 						sle_rounding_diff += flt(stock_value_difference)
 
@@ -462,11 +457,12 @@ class StockController(AccountsController):
 			}
 		)
 
-		sl_dict.valuation_rate = d.get("basic_rate")
 		# experimental
-		# this should be from Work Order too
-		if self.doctype == "Stock Entry" and self.purpose == 'Material Issue' and self.work_order:
-			sl_dict.is_custom_rate = 1
+		if self.doctype == "Stock Entry" and self.work_order:
+			if self.purpose == 'Material Issue' or self.purpose == "Manufacture":
+				# Keep rate SLE with Item Rate in the manufacture 
+				sl_dict.valuation_rate = d.get("basic_rate")
+				sl_dict.is_custom_rate = 1
 
 		sl_dict.update(args)
 		self.update_inventory_dimensions(d, sl_dict)
