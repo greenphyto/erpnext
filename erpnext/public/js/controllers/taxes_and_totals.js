@@ -447,7 +447,7 @@ erpnext.taxes_and_totals = class TaxesAndTotals extends erpnext.payments {
 			current_tax_amount = tax_rate * item.qty;
 		}
 
-		if (!tax.dont_recompute_tax) {
+		if (!tax.dont_recompute_tax && current_tax_amount) {
 			this.set_item_wise_tax(item, tax, tax_rate, current_tax_amount);
 		}
 

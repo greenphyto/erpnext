@@ -12,9 +12,9 @@ from frappe.utils import formatdate, get_link_to_form, fmt_money, getdate, get_u
 from frappe.utils import flt
 
 def execute(filters=None):
-
 	return VATAuditReport(filters).run()
 
+GLOBAL_ITEM = "items"
 
 class VATAuditReport(object):
 	def __init__(self, filters=None):
@@ -253,6 +253,8 @@ class VATAuditReport(object):
 				t.name, t.tax_amount,
 				t.account_head as account,
 				t.item_wise_tax_detail,
+				t.charge_type,
+				t.row_id,
 				%(doctype)s as parenttype,
 				s.posting_date
 			FROM
@@ -270,49 +272,61 @@ class VATAuditReport(object):
 				"tax_doctype":self.tax_doctype,
 				"invoices": [x for x in self.invoices.keys()]
 			}
-			, debug=0, as_dict=1
+			, debug=1, as_dict=1
 		))
 
 		self.tax_details += self.tax_detail_on_deleted 
 
+		tax_detail_map = {}
+		# summarize first
 		for tax in self.tax_details:
+			parent = tax['parent']
+			temp = {}
+			if tax['item_wise_tax_detail']:
+				try:
+					temp = json.loads(tax['item_wise_tax_detail'])
+				except:
+					temp = {}
+			
+			if parent not in tax_detail_map:
+				tax_detail_map[parent] = temp.copy()
+			else:
+				tax_detail_map[parent].update(temp)
+		
+		for parent, v in tax_detail_map.items():
+			for item, detail in self.invoice_items.get(parent).items():
+				if item not in tax_detail_map[parent]:
+					tax_detail_map[parent][item] = [0, 0]
 
+		already_add = []
+		for tax in self.tax_details:
 			# primary data
 			parent = tax['parent']
-			account = tax['account']
-			item_wise_tax_detail = tax['item_wise_tax_detail']
+			item_wise_tax_detail = tax_detail_map.get(parent)
 			parenttype = tax['parenttype']
-			posting_date = tax['posting_date']
 
 			# optional data
 			tax_amount = flt(tax.get("tax_amount"))
 
+			if parent not in already_add:
+				already_add.append(parent)
+			else:
+				continue
 
 			if item_wise_tax_detail:
-				try:
-					# if account in self.sa_vat_accounts:
-					# 	item_wise_tax_detail = json.loads(item_wise_tax_detail)
-					# else:
-					# 	continue
-					item_wise_tax_detail = json.loads(item_wise_tax_detail)
-					for item_code, taxes in item_wise_tax_detail.items():
-						is_zero_rated = 0# self.invoice_items.get(parent).get(item_code).get("is_zero_rated")
-						# to skip items with non-zero tax rate in multiple rows gf
-						#if taxes[0] == 0 and not is_zero_rated:
-							#continue
-						if taxes[1] == 0 and tax_amount:
-							taxes[1] = tax_amount
+				for item_code, taxes in item_wise_tax_detail.items():
+					if tax.get("charge_type")!="On Item Row" and taxes[1] == 0 and tax_amount:
+						taxes[1] = tax_amount
 
-						tax_rate = self.get_item_amount_map(parent, parenttype, item_code, taxes)
+					tax_rate = self.get_item_amount_map(parent, parenttype, item_code, taxes)
 
-						if tax_rate is not None:
-							rate_based_dict = self.items_based_on_tax_rate.setdefault(parent, {}).setdefault(
-								tax_rate, []
-							)
-							if item_code not in rate_based_dict:
-								rate_based_dict.append(item_code)
-				except ValueError:
-					continue
+					if tax_rate is not None:
+						rate_based_dict = self.items_based_on_tax_rate.setdefault(parent, {}).setdefault(
+							tax_rate, []
+						)
+						if item_code not in rate_based_dict:
+							rate_based_dict.append(item_code)
+
 			else:
 				items = []
 				for item, detail in self.invoice_items.get(parent).items():
@@ -333,10 +347,11 @@ class VATAuditReport(object):
 
 		tax_rate = taxes[0]
 		tax_amount = taxes[1]
+		
 		gross_amount = net_amount + tax_amount
 
 		self.item_tax_rate.setdefault(parent, {}).setdefault(
-			item_code,
+			GLOBAL_ITEM,
 			{
 				"tax_rate": tax_rate,
 				"gross_amount": 0.0,
@@ -346,14 +361,14 @@ class VATAuditReport(object):
 			},
 		)
 
-		self.item_tax_rate[parent][item_code]["tax_amount"] += tax_amount
+		self.item_tax_rate[parent][GLOBAL_ITEM]["tax_amount"] += tax_amount
 		if not gst_item:
-			self.item_tax_rate[parent][item_code]["net_amount"] += net_amount
-			self.item_tax_rate[parent][item_code]["gross_amount"] += gross_amount
+			self.item_tax_rate[parent][GLOBAL_ITEM]["net_amount"] += net_amount
+			self.item_tax_rate[parent][GLOBAL_ITEM]["gross_amount"] += gross_amount
 		else:
-			gross_amount = net_amount + self.item_tax_rate[parent][item_code]["tax_amount"]
-			self.item_tax_rate[parent][item_code]["net_amount"] = net_amount
-			self.item_tax_rate[parent][item_code]["gross_amount"] = gross_amount
+			gross_amount = net_amount + self.item_tax_rate[parent][GLOBAL_ITEM]["tax_amount"]
+			self.item_tax_rate[parent][GLOBAL_ITEM]["net_amount"] = net_amount
+			self.item_tax_rate[parent][GLOBAL_ITEM]["gross_amount"] = gross_amount
 
 		return tax_rate
 
@@ -659,12 +674,12 @@ class VATAuditReport(object):
 
 					for item in items:
 						detail = self.item_tax_rate.get(inv) or {}
-						item_details = detail.get(item)
+						item_details = detail.get(GLOBAL_ITEM)
 
 						row['inv_date'] = inv_data.get("posting_date")
 						row["account"] = inv_data.get("account")
 						row["Invoice_No"]= inv_data.get("Invoice_No")
-						row["posting_date"] = inv#formatdate(inv_data.get("posting_date"), "dd-mm-yyyy")
+						row["posting_date"] = inv #formatdate(inv_data.get("posting_date"), "dd-mm-yyyy")
 
 						row["Date"] = formatdate(inv_data.get("posting_date"), "dd-mm-yyyy")
 						#row["voucher_type"] = ""

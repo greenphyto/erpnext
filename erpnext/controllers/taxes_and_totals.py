@@ -477,7 +477,8 @@ class calculate_taxes_and_totals(object):
 			current_tax_amount = tax_rate * item.qty
 
 		if not (self.doc.get("is_consolidated") or tax.get("dont_recompute_tax")):
-			self.set_item_wise_tax(item, tax, tax_rate, current_tax_amount)
+			if current_tax_amount:
+				self.set_item_wise_tax(item, tax, tax_rate, current_tax_amount)
 
 		return current_tax_amount
 
