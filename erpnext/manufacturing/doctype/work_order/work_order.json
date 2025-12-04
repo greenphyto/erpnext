@@ -25,6 +25,7 @@
   "material_transferred_for_manufacturing",
   "produced_qty",
   "process_loss_qty",
+  "revised_qty",
   "sales_order",
   "project",
   "foms_detail_section",
@@ -679,6 +680,13 @@
    "fieldname": "use_rate_from_bom",
    "fieldtype": "Check",
    "label": "Use rate from BOM"
+  },
+  {
+   "depends_on": "eval:doc.revised_qty",
+   "fieldname": "revised_qty",
+   "fieldtype": "Float",
+   "label": "Revised Qty",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-cogs",
@@ -686,7 +694,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-07-29 12:28:44.580429",
+ "modified": "2025-12-04 16:55:01.301972",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",
