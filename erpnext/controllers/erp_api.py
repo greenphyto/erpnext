@@ -18,6 +18,7 @@ from erpnext.controllers.foms import (
 	get_cost_center, get_default_expense_production_account, 
 	get_previous_operation
 )
+from erpnext.stock.stock_ledger import get_valuation_rate
 from frappe import _
 from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as make_stock_entry_jc, make_time_log
 from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry as make_stock_entry_wo, create_job_card
@@ -245,12 +246,14 @@ def make_stock_entry_with_materials(wo_doc, job_card_name, materials, wip_wareho
 		row.cost_center = cost_center
 		row.set_basic_rate_manually = 1
 
-		# Fetch rate from BOM
-		row.basic_rate = 0
-		for m in bom.get("items"):
-			if (m.item_code == item_code or m.item_code == original_item) and m.operation == operation_name:
-				row.basic_rate = m.rate
-				break
+		# note: 2025-12-5 rate get from batch and warehouse
+		row.basic_rate = get_valuation_rate(row.item_code, row.s_warehouse, "Stock Entry", se.name, batch_no=row.batch_no)
+
+		# update to work order
+		for item in wo_doc.get("required_items"):
+			if item.item_code == row.item_code and item.operation == se.operation:
+				item.db_set("rate", row.basic_rate)
+				item.db_set("amount", row.basic_rate*row.qty)
 
 	# Add packaging items if operation is Harvesting
 	if se.operation == "Harvesting":
