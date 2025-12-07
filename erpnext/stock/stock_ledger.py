@@ -626,6 +626,7 @@ class update_entries_after(object):
 					self.wh_data.valuation_rate = sle.valuation_rate
 					self.wh_data.stock_value_difference = flt(self.wh_data.valuation_rate) * flt(sle.actual_qty)
 					self.wh_data.stock_value = flt(self.wh_data.prev_stock_value) + flt(self.wh_data.stock_value_difference)
+					self.wh_data.qty_after_transaction += flt(sle.actual_qty)
 
 				elif self.valuation_method == "Moving Average":
 					self.get_moving_average_values(sle)
