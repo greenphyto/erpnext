@@ -8,7 +8,6 @@ from frappe.utils import getdate, add_days
 from erpnext.stock.doctype.batch.batch import get_batch_qty
 from erpnext.stock.get_item_details import get_conversion_factor
 from erpnext.controllers.foms import get_wip_warehouse
-
 class ScrapRequest(Document):
 	def validate(self):
 		if self.docstatus == 0:
@@ -26,14 +25,18 @@ class ScrapRequest(Document):
 				d.expense_account = pr_account		
 			
 	def on_submit(self):
-		name = create_material_issue(self)
+		name = create_material_issue(self, True)
 		if name:
 			self.db_set("stock_entry", name)
 
 	def on_cancel(self):
 		if self.stock_entry:
 			doc = frappe.get_doc("Stock Entry", self.stock_entry)
-			doc.cancel()
+			if doc.docstatus == 1:
+				doc.cancel()
+			elif doc.docstatus == 0:
+				frappe.delete_doc("Stock Entry", doc.stock_entry)
+				doc.db_set("stock_entry", "")
 
 def create_material_issue(doc, submit=False):
 	stock_entry = frappe.new_doc("Stock Entry")
@@ -52,18 +55,21 @@ def create_material_issue(doc, submit=False):
 		return doc.stock_entry
 	
 	qty_all = 0
+	wip_warehouse = get_wip_warehouse()
 	for d in doc.get("items"):
 		qty_map = get_batch_qty(d.batch)
 		for dt in qty_map:
-			row = stock_entry.append("items")
-			row.item_code = d.item_code
-			row.qty = dt.get("qty") or 1
-			qty_all += row.qty
-			row.uom = d.uom
-			row.batch_no = d.batch
-			row.is_scrap_item = 1
-			row.conversion_factor = get_conversion_factor(d.item_code, d.uom).get("conversion_factor", 1)
-			row.s_warehouse = dt.get("warehouse")
+			if dt.get("warehouse") not in wip_warehouse:
+				row = stock_entry.append("items")
+				row.item_code = d.item_code
+				row.qty = dt.get("qty") or 1
+				qty_all += row.qty
+				row.uom = d.uom
+				row.batch_no = d.batch
+				row.is_scrap_item = 1
+				row.conversion_factor = get_conversion_factor(d.item_code, d.uom).get("conversion_factor", 1)
+				row.s_warehouse = dt.get("warehouse")
+				row.expense_account = doc.scrap_account
 
 	if not qty_all:
 		return 
@@ -145,7 +151,7 @@ def collect_expired_items():
 	if sr_name:
 		doc = frappe.get_doc("Scrap Request", sr_name)
 		# add tollerance approval on progress not more than 14 days ago
-		if doc.workflow_state != "Pending" and getdate(doc.posting_date) > add_days(getdate(), -14):
+		if doc.status != "Pending" and getdate(doc.posting_date) > add_days(getdate(), -14):
 			return
 	else:
 		doc = frappe.new_doc("Scrap Request")
