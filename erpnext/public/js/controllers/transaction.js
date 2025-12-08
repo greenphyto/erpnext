@@ -1787,7 +1787,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		var flag = false;
 		for (var i in this.frm.doc.items) {
 			var item = this.frm.doc.items[i];
-			if(item.material_request)
+			if(item.material_request || item.against_sales_order)
 			{
 				flag = true;
 				return;
