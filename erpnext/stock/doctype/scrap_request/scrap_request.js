@@ -2,6 +2,12 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Scrap Request', {
+	onload: (frm)=>{
+		frm.cscript.set_scrap_account(frm);
+	},
+	company: (frm)=>{
+		frm.cscript.set_scrap_account(frm);
+	},
 	refresh: function(frm) {
 		frm.set_query("batch", "items", (doc, cdt,cdn)=>{
 			var d = locals[cdt][cdn];
@@ -25,6 +31,19 @@ frappe.ui.form.on('Scrap Request', {
 				}
 			}
 		})
+
+		frm.set_query("scrap_account", function (frm) {
+			if (!frm.doc.company){
+				frappe.throw("Please set company!")
+			}
+
+            return {
+                filters: {
+                    company: frm.doc.company,
+                    is_group: 0
+                }
+            };
+        });
 	}
 });
 
@@ -55,5 +74,20 @@ $.extend(cur_frm.cscript, {
 			frappe.model.set_value(cdt, cdn, "expense_account", "");
 		}
 		
+	},
+	set_scrap_account: function(frm){
+		if (!frm.doc.company) return;
+
+		if (frm.doc.docstatus != 0 || frm.doc.scrap_account) return;
+
+        frappe.db.get_value(
+            "Company",
+            frm.doc.company,
+            "default_stock_scrap_item"
+        ).then(r => {
+            if (r && r.message && r.message.default_stock_scrap_item) {
+                frm.set_value("scrap_account", r.message.default_stock_scrap_item);
+            }
+        });
 	}
 })

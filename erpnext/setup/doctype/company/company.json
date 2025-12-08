@@ -88,6 +88,7 @@
   "default_inventory_account",
   "stock_adjustment_account",
   "default_in_transit_warehouse",
+  "default_stock_scrap_item",
   "column_break_32",
   "stock_received_but_not_billed",
   "default_provisional_account",
@@ -868,6 +869,12 @@
    "fieldtype": "Link",
    "label": "Production Customer",
    "options": "Customer"
+  },
+  {
+   "fieldname": "default_stock_scrap_item",
+   "fieldtype": "Link",
+   "label": "Default Stock Scrap Item",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-building",
@@ -875,7 +882,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-10-31 17:42:41.603832",
+ "modified": "2025-12-08 14:43:33.321410",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",
