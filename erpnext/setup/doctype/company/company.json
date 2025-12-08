@@ -90,6 +90,7 @@
   "stock_adjustment_account",
   "default_warehouse",
   "default_in_transit_warehouse",
+  "default_stock_scrap_item",
   "column_break_32",
   "stock_received_but_not_billed",
   "default_provisional_account",
@@ -880,6 +881,18 @@
    "fieldname": "theme_path",
    "fieldtype": "Data",
    "label": "Theme Path"
+  },
+  {
+   "fieldname": "production_customer",
+   "fieldtype": "Link",
+   "label": "Production Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "default_stock_scrap_item",
+   "fieldtype": "Link",
+   "label": "Default Stock Scrap Item",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-building",
@@ -887,7 +900,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-11-04 14:58:48.903962",
+ "modified": "2025-12-08 14:43:33.321410",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",
