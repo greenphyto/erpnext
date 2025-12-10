@@ -923,7 +923,8 @@ def validate_company_selected(doc, method=""):
 	if doc.meta.has_field("company") or frappe.session.user == "Administrator":
 		return
 	
-	if not cint(frappe.db.get_single_value("Accounts Settings", "enable_switch_company_menu")):
+	meta = frappe.get_meta("Accounts Settings")
+	if not meta.has_field("enable_switch_company_menu") or not cint(frappe.db.get_single_value("Accounts Settings", "enable_switch_company_menu")):
 		return
 	
 	cur_company = frappe.db.get_value("User", frappe.session.user, "company_selected")

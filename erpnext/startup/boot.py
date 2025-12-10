@@ -142,6 +142,10 @@ def get_letter_heads(company):
 def get_css_custom():
 	company = get_company_selected()
 	if (company != "All" or company != "Disabled") and company:
+		meta = frappe.get_meta("Company")
+		if not meta.has_field("theme_path"):
+			return 
+		
 		theme_file = frappe.db.get_value("Company", company, "theme_path")
 		if theme_file:
 			return [theme_file]
