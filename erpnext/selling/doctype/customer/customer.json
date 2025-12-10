@@ -627,8 +627,8 @@
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
-   "options": "Company",
-   "reqd": 1
+   "mandatory_depends_on": "eval:!doc.is_internal_customer",
+   "options": "Company"
   }
  ],
  "icon": "fa fa-user",
@@ -642,7 +642,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2025-11-13 18:27:25.328217",
+ "modified": "2025-12-10 10:45:58.522015",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

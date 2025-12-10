@@ -510,6 +510,7 @@
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
+   "mandatory_depends_on": "eval:!doc.is_internal_supplier",
    "options": "Company",
    "reqd": 1
   }
@@ -524,7 +525,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2025-11-17 12:55:11.929506",
+ "modified": "2025-12-10 10:45:26.853034",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",
