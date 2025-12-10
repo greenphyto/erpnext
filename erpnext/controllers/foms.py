@@ -1667,6 +1667,7 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 						row.item_code = rm.rawMaterialRefNo
 						row.uom = get_uom(rm.uomrm)
 						row.qty = qty
+						row.stock_uom = frappe.get_value("Item", row.item_code, "stock_uom")
 						row.operation = operation_name
 			
 			if not bom.items:
