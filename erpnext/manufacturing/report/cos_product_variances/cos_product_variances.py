@@ -19,10 +19,10 @@ class Report():
 		self.filters.to_date = getdate(self.filters.get("to_date") or "2099-01-01") 
 
 		if self.filters.get("work_order"):
-			self.cond += " work_order = %(work_order)s"
+			self.cond += " and work_order = %(work_order)s"
 
 		if self.filters.get("product"):
-			self.cond += " production_item = %(product)s "
+			self.cond += " and production_item = %(product)s "
 
 
 	def setup_column(self):
