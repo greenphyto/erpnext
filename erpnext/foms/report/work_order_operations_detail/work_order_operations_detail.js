@@ -42,5 +42,19 @@ frappe.query_reports["Work Order Operations Detail"] = {
 			].join("\n"),
 			default: "Completed",
 		},
+		{
+			fieldname: "show_all_materials",
+			label: "Show All Materials",
+			fieldtype: "Check",
+			default: 0,
+		},
+		{
+			fieldname: "show_total_source_materials",
+			label: "Show Total Source Materials",
+			fieldtype: "Check",
+			default: 0,
+			depends_on: "eval:doc.show_all_materials==1",
+			description: "Insert subtotal before Harvesting Finished Goods target rows",
+		},
 	],
 };
