@@ -53,15 +53,22 @@ class Report():
 			{"fieldname": "product", 			"label": "Product", 			"fieldtype": "Link", 	"options": "Item", 		"width": 140},
 			{"fieldname": "operation", 		"label": "Operation", 			"fieldtype": "Data", 								"width": 160},
 			{"fieldname": "stock_entry_type", 	"label": "Stock Entry Type", 	"fieldtype": "Link", 	"options": "Stock Entry Type", "width": 180},
-			{"fieldname": "qty", 				"label": "Qty", 				"fieldtype": "Float", 							"width": 90},
-			{"fieldname": "value", 			"label": "Value", 			"fieldtype": "Currency", 					"width": 120},
-			# Optional material detail columns (shown when Show All Materials is enabled)
-			{"fieldname": "item_code", 		"label": "Item Code", 		"fieldtype": "Link", 	"options": "Item", 		"width": 140},
-			{"fieldname": "item_qty", 		"label": "Item Qty", 		"fieldtype": "Float", 					"width": 90},
-			{"fieldname": "item_uom", 		"label": "Item UOM", 		"fieldtype": "Data", 					"width": 80},
-			{"fieldname": "item_rate", 		"label": "Item Rate", 		"fieldtype": "Currency", 			"width": 110, "precision": 4},
-			{"fieldname": "item_amount", 	"label": "Item Amount", 	"fieldtype": "Currency", 		"width": 120, "precision": 4},
 		]
+
+		if self.filters.show_all_materials:
+			self.columns += [
+				{"fieldname": "value", 			"label": "Value", 			"fieldtype": "Currency", 					"width": 120},
+				{"fieldname": "item_code", 		"label": "Item Code", 		"fieldtype": "Link", 	"options": "Item", 		"width": 140},
+				{"fieldname": "item_qty", 		"label": "Item Qty", 		"fieldtype": "Float", 					"width": 90},
+				{"fieldname": "item_uom", 		"label": "Item UOM", 		"fieldtype": "Data", 					"width": 80},
+				{"fieldname": "item_rate", 		"label": "Item Rate", 		"fieldtype": "Currency", 			"width": 110, "precision": 4},
+				{"fieldname": "item_amount", 	"label": "Item Amount", 	"fieldtype": "Currency", 		"width": 120, "precision": 4},
+			]
+		else:
+			self.columns += [
+				{"fieldname": "qty", 				"label": "Qty", 				"fieldtype": "Float", 							"width": 90},
+				{"fieldname": "value", 			"label": "Value", 			"fieldtype": "Currency", 					"width": 120}
+			]
 	
 	def get_data(self):
 		show_all = cint(self.filters.get("show_all_materials") or 0)
@@ -242,7 +249,7 @@ class Report():
 					"product": "",
 					"operation": "Total Material Transfer",
 					"stock_entry_type": None,
-					"qty": transfer_sum_qty,
+					"qty": None,
 					"value": transfer_sum_value,
 				})
 
@@ -255,7 +262,7 @@ class Report():
 					"product": "",
 					"operation": "Total (In + Out)",
 					"stock_entry_type": None,
-					"qty": net_sum_qty,
+					"qty": None,
 					"value": net_sum_value,
 				})
 

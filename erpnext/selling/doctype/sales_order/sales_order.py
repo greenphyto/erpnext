@@ -29,6 +29,7 @@ from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.doctype.item.item import get_item_defaults
 from erpnext.stock.get_item_details import get_default_bom
 from erpnext.stock.stock_balance import get_reserved_qty, update_bin_qty
+from erpnext.stock.doctype.batch.batch import get_batch_no
 
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
@@ -774,7 +775,7 @@ def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 		target.base_amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.base_rate)
 		target.amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.rate)
 		target.qty = flt(source.qty) - flt(source.delivered_qty)
-
+		target.batch_no = get_batch_no(target.item_code, warehouse, target.qty) or ""
 		item = get_item_defaults(target.item_code, source_parent.company)
 		item_group = get_item_group_defaults(target.item_code, source_parent.company)
 
