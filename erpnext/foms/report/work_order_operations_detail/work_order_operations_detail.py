@@ -154,7 +154,7 @@ class Report():
 					sed.idx
 				""".format(cond=self.cond),
 				self.filters,
-				as_dict=1,debug=1
+				as_dict=1,debug=0
 			)
 
 			return

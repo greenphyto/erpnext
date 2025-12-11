@@ -272,7 +272,7 @@ class VATAuditReport(object):
 				"tax_doctype":self.tax_doctype,
 				"invoices": [x for x in self.invoices.keys()]
 			}
-			, debug=1, as_dict=1
+			, debug=0, as_dict=1
 		))
 
 		self.tax_details += self.tax_detail_on_deleted 
