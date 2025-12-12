@@ -497,11 +497,6 @@ class StockController(AccountsController):
 			}
 		)
 
-		sl_dict.valuation_rate = d.get("basic_rate")
-		# experimental
-		# this should be from Work Order too
-		if self.purpose == 'Material Issue' and self.work_order:
-			sl_dict.is_custom_rate = 1
 
 		sl_dict.update(args)
 		self.update_inventory_dimensions(d, sl_dict)
