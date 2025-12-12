@@ -203,6 +203,38 @@ class SalesInvoice(SellingController):
 		if not self.delivery_note:
 			self.delivery_note = dn_name
 
+	def link_internal_company(self):
+		# find SO
+		# find PO
+		# find PI from PO
+		# set PI
+		# field pemicu
+		self.set_other_reff()
+		so_number = next((d.sales_order for d in self.items if d.sales_order), None)
+		inter_po_name = frappe.get_value("Sales Order", so_number, "inter_company_order_reference")
+		if not inter_po_name:
+			return
+	
+		represents_company = frappe.get_value("Sales Order", so_number, "represents_company")
+		# find inter SI if possible
+		inter_pi_number = frappe.db.sql("""
+				SELECT DISTINCT pii.parent
+				FROM `tabPurchase Invoice Item` pii
+				JOIN `tabPurchase Invoice` pi ON pi.name = pii.parent
+				WHERE
+					pii.purchase_order = %s
+					AND pi.docstatus = 1
+				ORDER BY pi.creation DESC
+				LIMIT 1
+			""", inter_po_name, as_dict=False)
+		
+		if not inter_pi_number:
+			return
+		
+		inter_pi_number = inter_pi_number[0][0] if inter_pi_number else None
+		self.inter_company_invoice_reference = inter_pi_number
+		self.represents_company = represents_company
+
 	def set_item_sku(self):
 		doc = frappe.get_doc("Customer", self.customer)
 		for d in self.get("items"):
