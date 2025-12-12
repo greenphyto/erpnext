@@ -615,3 +615,49 @@ def _update_item_info(scan_result: Dict[str, Optional[str]]) -> Dict[str, Option
 		):
 			scan_result.update(item_info)
 	return scan_result
+
+import frappe
+
+def get_default_warehouse(item_code, company=None):
+    """
+    Return the default warehouse using this priority:
+      1. Item Default (per Company)
+      2. Item Group default_warehouse
+      3. Stock Settings default_warehouse
+    """
+
+    # Get company if not provided
+    if not company:
+        company = frappe.db.get_single_value("Global Defaults", "default_company")
+
+    # 1) Item Default
+    wh = frappe.db.get_value(
+        "Item Default",
+        {
+			"parent": item_code, 
+			"parenttype":"Item Group", 
+			"company": company
+		},
+        "default_warehouse"
+    )
+    if wh:
+        return wh
+
+    # Get item group
+    item_group = frappe.db.get_value("Item", item_code, "item_group")
+
+    # 2) Item Group default warehouse
+    wh = frappe.db.get_value(
+        "Item Default",
+        {
+			"parent": item_group, 
+			"parenttype":"Item Group", 
+			"company": company
+		},
+        "default_warehouse"
+    )
+    if wh:
+        return wh
+
+    # 3) Stock Settings default warehouse
+    return frappe.db.get_single_value("Stock Settings", "default_warehouse")
