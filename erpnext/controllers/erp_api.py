@@ -28,6 +28,7 @@ from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 from frappe.utils.file_manager import save_file, save_url
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result, make_in_progress
 from datetime import datetime, timedelta
+from erpnext.stock.utils import get_default_warehouse
 
 PRECISION_FACTOR = 4
 
@@ -38,7 +39,120 @@ def get_data(data):
 
 	return data
 
-def save_log(doctype, data_name, raw_data, reopen=False, now=False):
+@frappe.whitelist()
+def update_item_safety_stock(item_code: str, safety_stock, company):
+	"""Update Item.safety_stock given `item_code` and `safety_stock`.
+
+	Args:
+		item_code (str): The Item code (Item name).
+		safety_stock (Any): New safety stock value (number-like).
+
+	Returns:
+		Dict with updated values.
+	"""
+	if not item_code:
+		frappe.throw("item_code is required")
+
+	if not frappe.db.exists("Item", item_code):
+		frappe.throw(_(f"Item {item_code} not found"), frappe.DoesNotExistError)
+
+	# coerce to float and validate non-negative
+	try:
+		new_val = flt(safety_stock)
+	except Exception:
+		frappe.throw("safety_stock must be a number")
+
+	# Update the field
+	frappe.db.set_value("Item", item_code, "safety_stock", new_val)
+
+	# Also sync with reorder system:
+	# - If Item has any reorder rows, update their reorder level to match safety stock
+	# - If no reorder rows exist, set minimum order qty to 100
+	reorder_rows = frappe.get_all(
+		"Item Reorder",
+		filters={"parent": item_code, "material_request_type":"Purchase"},
+		pluck="name",
+	)
+
+	if reorder_rows:
+		for row_name in reorder_rows:
+			frappe.db.set_value("Item Reorder", row_name, "warehouse_reorder_level", new_val)
+			break
+
+		result = {
+			"item_code": item_code,
+			"safety_stock": new_val,
+			"reorder_row_created": False,
+			"updated": True,
+		}
+	else:
+		data = frappe.db.sql("""
+			SELECT
+				sle.posting_date,
+				sle.posting_time,
+				sle.item_code,
+				sle.warehouse,
+				sle.actual_qty AS qty_in,
+				sle.qty_after_transaction AS balance_after,
+				sle.voucher_no AS purchase_receipt,
+				pr.supplier,
+				pr.supplier_name
+			FROM
+				`tabStock Ledger Entry` sle
+			JOIN
+				`tabPurchase Receipt` pr
+					ON sle.voucher_type = 'Purchase Receipt'
+					AND sle.voucher_no = pr.name
+			WHERE
+				sle.item_code = %s
+				AND pr.company = %s
+				AND sle.actual_qty > 0
+				AND sle.voucher_type = 'Purchase Receipt'
+			ORDER BY
+				sle.posting_date DESC,
+				sle.posting_time DESC
+			LIMIT 1
+		""", (item_code, company), as_dict=1)
+		if data:
+			data = data[0]
+		else:
+			data = {}
+
+		item_doc = frappe.get_doc("Item", item_code)
+		warehouse = data.get("warehouse")
+		if not warehouse:
+			warehouse = get_default_warehouse(item_code, company)
+		
+		pic = frappe.db.get_value("Part Number Details", {"code":item_code}, "pic")
+		if not pic:
+			pic = frappe.db.get_value("Part Number Details", {
+				"material_group":item_doc.material_group, "pic": ['is', 'Set']
+			}, "pic")
+
+		if not pic or not warehouse:
+			frappe.throw("PIC or Warehouse is missing")  
+
+		else:
+			# Create a default reorder row with reorder level and qty
+			item_doc.append("reorder_levels", {
+				"warehouse": warehouse,
+				"warehouse_reorder_level": new_val,
+				"warehouse_reorder_qty": flt(data.get("qty_in")) or new_val*2, # default 2 times from stock level
+				"material_request_type": "Purchase",
+				"pic": pic
+			})
+			item_doc.save()
+			result = {
+				"item_code": item_code,
+				"safety_stock": new_val,
+				"reorder_row_created": True,
+				"reorder_qty": 100,
+				"updated": True,
+			}
+
+	return result
+
+def save_log(doctype, data_name, raw_data, reopen=False, now=False, endpoint=""):
 	return frappe.enqueue("erpnext.foms.doctype.foms_data_mapping.foms_data_mapping.create_foms_data",
 		data_type=doctype, 
 		data_name=data_name,

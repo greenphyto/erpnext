@@ -1354,6 +1354,57 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.update_item_safety_stock": {
+      "post": {
+        "summary": "Update item safety stock + reorder",
+        "description": "Updates Item.safety_stock, then syncs reorder settings. If any Item Reorder rows exist, their warehouse_reorder_level is updated; otherwise, a new Item Reorder row is created with warehouse_reorder_level = safety_stock and warehouse_reorder_qty = 100.",
+        "operationId": "update item safety stock",
+        "requestBody": {
+          "description": "Set safety stock and sync reorder",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "item_code": {"type": "string"},
+                  "safety_stock": {"type": "number"},
+                  "company": {"type": "string"}
+                },
+                "example": {
+                  "item_code": "RM-NS-NSA",
+                  "safety_stock": 50,
+                  "company": "Greenphyto Pte Ltd"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "item_code": "RM-NS-NSA",
+                      "safety_stock": 50,
+                      "reorder_rows_updated": 1,
+                      "reorder_row_created": false,
+                      "updated": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Item not found or invalid input"
+          }
+        }
+      }
     }
   },
   "components": {
