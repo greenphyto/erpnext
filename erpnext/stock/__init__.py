@@ -112,7 +112,7 @@ def get_item_account(account_map, warehouse, item="", key="account", get_default
 	if not data and item in account_map:
 		company = erpnext.get_default_company()
 		stock_account = frappe.get_cached_value("Company", company, "default_inventory_account")
-		if key=="account":
+		if not key or key=="account":
 			return stock_account
 		else:
 			return frappe.get_value("Account", stock_account, "account_currency")
