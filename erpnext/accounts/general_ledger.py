@@ -209,10 +209,36 @@ def merge_similar_entries(gl_map, precision=None):
 		)) and flt(x.debit - x.credit, 5) != 0,
 		merged_gl_map,
 	)
-	merged_gl_map = list(merged_gl_map)
+
+	merged_gl_map = clear_two_side_issue(list(merged_gl_map))
 
 	return merged_gl_map
 
+def clear_two_side_issue(merged_gl_map):
+	precision = 5
+	for entry in merged_gl_map: 
+		if flt(entry.debit, precision) and flt(entry.credit, precision):
+			debit = flt(entry.debit, precision)
+			credit = flt(entry.credit, precision)
+
+			if debit > credit:
+				entry.debit = flt(debit - credit, precision)
+				entry.credit = 0
+			elif credit > debit:
+				entry.credit = flt(credit - debit, precision)
+				entry.debit = 0
+
+		if flt(entry.debit_in_account_currency, precision) and flt(entry.credit_in_account_currency, precision):
+			debit_acc = flt(entry.debit_in_account_currency, precision)
+			credit_acc = flt(entry.credit_in_account_currency, precision)
+			if debit_acc > credit_acc:
+				entry.debit_in_account_currency = flt(debit_acc - credit_acc, precision)
+				entry.credit_in_account_currency = 0
+			elif credit_acc > debit_acc:
+				entry.credit_in_account_currency = flt(credit_acc - debit_acc, precision)
+				entry.debit_in_account_currency = 0
+
+	return merged_gl_map
 
 def check_if_in_list(gle, gl_map, dimensions=None):
 	account_head_fieldnames = [
