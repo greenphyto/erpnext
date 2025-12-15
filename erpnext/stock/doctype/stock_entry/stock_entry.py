@@ -1404,73 +1404,76 @@ class StockEntry(StockEntryAsset, StockController):
 
 		# special case for Work Order Greenphyto
 		# reference doc: costs variance for work order v1.xlxs
-		if self.purpose in ['Material Transfer for Manufacture'] and self.is_return == 0:
-			prev_operation = get_previous_operation(self.operation)
+		if self.purpose in ['Material Transfer for Manufacture', 'Manufacture'] and self.is_return == 0:
+			if self.purpose == 'Material Transfer for Manufacture':
+				prev_operation = get_previous_operation(self.operation)
+				cost_center = get_cost_center(self.operation, self.company)
+				remarks = "From Previous WIP"
+				do_not_merge = 1
+			else:
+				prev_operation = "Harvesting"
+				cost_center = ""
+				remarks = "Rate Variance"
+				do_not_merge = 0
+
 			wip_account = get_item_account(warehouse_account, "WIP", None, get_default=1, operation=prev_operation)
 			prev_wip = self.get_previous_ledger_entry(wip_account)
 			if prev_wip:
 				prev_wip = prev_wip[0]
 				if prev_wip.name:
-					cost_center = get_cost_center(self.operation, self.company)
 					expense_account = prev_wip.account
 					debit_amount = prev_wip.amount
 					if self.purpose == 'Material Transfer for Manufacture':
-						variance_account = get_item_account(warehouse_account, "WIP", None, get_default=1, operation=self.operation)
+						variance_account = get_item_account(warehouse_account, "WIP", "account", get_default=1, operation=self.operation)
+						# cheange remarks
+						for d in gl_entries:
+							if d.account == variance_account:
+								d.remarks = "Additional/Activity Costs"
+
 					elif self.purpose == "Manufacture":
-						data = frappe.db.sql("""
-							SELECT 
-								se.name AS stock_entry,
-								se.work_order,
-								SUM(i.amount) AS amount,
-								SUM(i.base_amount) AS base_amount
-							FROM
-								`tabLanded Cost Taxes and Charges` i
-									LEFT JOIN
-								`tabStock Entry` se ON se.name = i.parent
-							WHERE
-								se.docstatus = 1
-									AND se.purpose = 'Material Transfer for Manufacture'
-									AND se.work_order = %s
-						   			AND se.operation = "Harvesting"
-						""", (self.work_order), as_dict=1)
-						data = data[0]
-						debit_amount += flt(data.get("base_amount"))
-						finish_item = self.get("items", {"is_finished_item":1})
-						if finish_item:
-							finish_item = finish_item[0].item_code
-						variance_account = get_item_account(warehouse_account, "WIP", finish_item, None, get_default=1, operation="")
+						variance_account = frappe.get_value("Company", self.company, "default_cost_expense_account")
+						# find previous ledger amount
+						total_amount = 0
+						for gl in gl_entries:
+							if gl.account == prev_wip.account:
+								if gl.credit:
+									total_amount += gl.credit
+								else:
+									total_amount -= gl.debit
+
+						debit_amount = prev_wip.amount - flt(total_amount, 2)
 					
-					# cheange remarks
-					for d in gl_entries:
-						if d.account == variance_account:
-							d.remarks = "Additional/Activity Costs"
+					if debit_amount:
+						row = self.get_gl_dict(
+							{
+								"account": expense_account,
+								"against": variance_account,
+								"cost_center": cost_center,
+								"remarks": remarks,
+								"debit": -1*debit_amount,  # put it as negative credit instead of debit purposefully
+								"do_not_merge":do_not_merge
+							},
+							account_currency = frappe.get_value("Account", variance_account, "account_currency")
+						)
+						gl_entries.append(row)
 
-					row = self.get_gl_dict(
-						{
-							"account": expense_account,
-							"against": variance_account,
-							"cost_center": cost_center,
-							"remarks": "From Previous WIP",
-							"debit": -1*debit_amount,  # put it as negative credit instead of debit purposefully
-							"do_not_merge":1
-						},
-					)
-					gl_entries.append(row)
+						row = self.get_gl_dict(
+							{
+								"account": variance_account,
+								"against": expense_account,
+								"cost_center": cost_center,
+								"remarks": remarks,
+								"debit": 1* debit_amount,  # put it as negative credit instead of debit purposefully
+								"do_not_merge":0
+							},
+							account_currency = frappe.get_value("Account", variance_account, "account_currency")
+						)
 
-					row = self.get_gl_dict(
-						{
-							"account": variance_account,
-							"against": expense_account,
-							"cost_center": cost_center,
-							"remarks": "From Previous WIP",
-							"debit": 1* debit_amount,  # put it as negative credit instead of debit purposefully
-							"do_not_merge":0
-						},
-					)
+						gl_entries.append(row)
 
-					gl_entries.append(row)
 
 		# for d in gl_entries:
+		# 	print(d)
 		# 	print(1446, d.account, d.debit, d.credit, d.remarks )
 
 		result = process_gl_map(gl_entries, merge_entries=1)

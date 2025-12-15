@@ -159,7 +159,10 @@ class StockController(AccountsController):
 						stock_value_difference = flt(sle.stock_value_difference)
 						if self.get("purpose") == "Manufacture":
 							if item_row.s_warehouse:
-								stock_value_difference = item_row.amount * -1
+								stock_value_difference = flt(item_row.amount, 2) * -1
+							elif item_row.t_warehouse:
+								stock_value_difference = flt(item_row.amount, 2)
+							pass
 
 						sle_rounding_diff += flt(stock_value_difference)
 
@@ -174,9 +177,10 @@ class StockController(AccountsController):
 						item_account = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, operation=operation)
 						item_account_currency = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency", operation=operation)
 						if self.doctype == "Stock Entry" and self.purpose == "Manufacture":
-							expense_account = frappe.db.get_value("Company", self.company, "stock_adjustment_account")
+							expense_account = frappe.db.get_value("Company", self.company, "default_cost_expense_account")
 							item_account = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, operation="Harvesting")
 							item_account_currency = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency", operation="Harvesting")
+						
 						# here
 						row = self.get_gl_dict(
 							{
@@ -198,7 +202,7 @@ class StockController(AccountsController):
 								"account": expense_account,
 								"against": item_account,
 								"cost_center": item_row.cost_center,
-								"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
+								"remarks": "Rate Variance",
 								"debit": -1 * flt(stock_value_difference, precision),
 								"project": item_row.get("project") or self.get("project"),
 								"is_opening": item_row.get("is_opening") or self.get("is_opening") or "No",
