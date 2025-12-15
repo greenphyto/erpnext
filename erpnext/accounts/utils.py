@@ -1239,7 +1239,7 @@ def get_future_stock_vouchers(
 			condition=condition
 		),
 		tuple([posting_date, posting_time] + values),
-		as_dict=True,
+		as_dict=True
 	)
 
 	return [(d.voucher_type, d.voucher_no) for d in future_stock_vouchers]
@@ -1290,6 +1290,7 @@ def compare_existing_and_expected_gle(existing_gle, expected_gle, precision):
 			if (
 				entry.account == e.account
 				and (not entry.cost_center or not e.cost_center or entry.cost_center == e.cost_center)
+				and entry.remarks == e.remarks
 				and (
 					flt(entry.debit, precision) != flt(e.debit, precision)
 					or flt(entry.credit, precision) != flt(e.credit, precision)
