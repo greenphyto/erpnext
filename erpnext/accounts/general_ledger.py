@@ -175,7 +175,6 @@ def get_cost_center_allocation_data(company, posting_date):
 def merge_similar_entries(gl_map, precision=None):
 	merged_gl_map = []
 	accounting_dimensions = get_accounting_dimensions()
-
 	for entry in gl_map:
 		# if there is already an entry in this account then just add it
 		# to that entry
@@ -190,6 +189,7 @@ def merge_similar_entries(gl_map, precision=None):
 				entry.credit_in_account_currency
 			)
 		else:
+
 			merged_gl_map.append(entry)
 
 	company = gl_map[0].company if gl_map else erpnext.get_default_company()
@@ -200,13 +200,13 @@ def merge_similar_entries(gl_map, precision=None):
 
 	# filter zero debit and credit entries
 	merged_gl_map = filter(
-		lambda x: flt(x.debit, precision) != 0
+		lambda x: (flt(x.debit, precision) != 0
 		or flt(x.credit, precision) != 0
 		or (
 			x.voucher_type == "Journal Entry"
 			and frappe.get_cached_value("Journal Entry", x.voucher_no, "voucher_type")
 			== "Exchange Gain Or Loss"
-		),
+		)) and flt(x.debit - x.credit, 5) != 0,
 		merged_gl_map,
 	)
 	merged_gl_map = list(merged_gl_map)
