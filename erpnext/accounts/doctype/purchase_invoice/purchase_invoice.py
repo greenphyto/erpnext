@@ -127,6 +127,46 @@ class PurchaseInvoice(BuyingController):
 		self.reset_default_field_value("rejected_warehouse", "items", "rejected_warehouse")
 		self.reset_default_field_value("set_from_warehouse", "items", "from_warehouse")
 		self.validate_gst_input()
+		try:
+			self.link_internal_company()
+		except:
+			pass
+
+	def link_internal_company(self):
+		if not self.is_internal_supplier:
+			return
+		
+		po_number = next((d.purchase_order for d in self.items if d.purchase_order), None)
+		inter_so_name = frappe.get_value("Purchase Order", po_number, "inter_company_order_reference")
+		if not inter_so_name:
+			# get from sub company
+			inter_so_name = frappe.db.get_value("Sales Order", {"inter_company_order_reference":po_number, "docstatus":1})
+			if not inter_so_name:
+				return
+			frappe.db.set_value("Purchase Order", po_number, "inter_company_order_reference", inter_so_name)
+	
+		represents_company = frappe.get_value("Purchase Order", po_number, "represents_company")
+		# find inter SI if possible
+		inter_si_number = frappe.db.sql("""
+				SELECT DISTINCT sii.parent
+				FROM `tabSales Invoice Item` sii
+				JOIN `tabSales Invoice` si ON si.name = sii.parent
+				WHERE
+					sii.sales_order = %s
+					AND si.docstatus = 1
+				ORDER BY si.creation DESC
+				LIMIT 1
+			""", inter_so_name, as_dict=False)
+		
+		if not inter_si_number:
+			return
+		
+		inter_si_number = inter_si_number[0][0] if inter_si_number else None
+		if inter_si_number:
+			frappe.db.set_value("Sales Invoice", inter_si_number, "inter_company_invoice_reference", self.name)
+
+		self.inter_company_invoice_reference = inter_si_number
+		self.represents_company = represents_company
 	
 	def validate_gst_input(self):
 		if self.get("gst_input_tax") and not self.get("base_value_for_gst_input"):
