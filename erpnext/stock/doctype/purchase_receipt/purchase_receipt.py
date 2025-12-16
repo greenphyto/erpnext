@@ -131,6 +131,67 @@ class PurchaseReceipt(BuyingController):
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
 		self.reset_default_field_value("rejected_warehouse", "items", "rejected_warehouse")
 		self.reset_default_field_value("set_from_warehouse", "items", "from_warehouse")
+		try:
+			self.link_internal_company()
+		except:
+			pass
+
+	def link_internal_company(self):
+		# Only for internal supplier flow
+		if not self.is_internal_supplier:
+			return
+
+		po_number = next((d.purchase_order for d in self.items if d.purchase_order), None)
+		if not po_number:
+			return
+
+		# Get inter-company Sales Order (SO) reference from PO
+		inter_so_name = frappe.get_value("Purchase Order", po_number, "inter_company_order_reference")
+		if not inter_so_name:
+			# fallback: find SO from sub-company that references this PO
+			inter_so_name = frappe.db.get_value(
+				"Sales Order",
+				{"inter_company_order_reference": po_number, "docstatus": 1},
+				"name",
+			)
+			if not inter_so_name:
+				return
+
+			# persist back to PO for future use
+			frappe.db.set_value("Purchase Order", po_number, "inter_company_order_reference", inter_so_name)
+
+		# Represents Company from PO (PR should follow PO)
+		represents_company = frappe.get_value("Purchase Order", po_number, "represents_company")
+
+		# Find inter-company Delivery Note (DN) created from that SO
+		# (DN Item commonly uses `against_sales_order`; some customizations use `sales_order`)
+		inter_dn_number = frappe.db.sql(
+			"""
+			SELECT DISTINCT dni.parent
+			FROM `tabDelivery Note Item` dni
+			JOIN `tabDelivery Note` dn ON dn.name = dni.parent
+			WHERE
+				dn.docstatus = 1
+				AND dni.against_sales_order = %s
+			ORDER BY dn.creation DESC
+			LIMIT 1
+			""",
+			(inter_so_name),
+			as_dict=False,
+		)
+
+		if not inter_dn_number:
+			return
+
+		inter_dn_number = inter_dn_number[0][0]
+		if inter_dn_number:
+			frappe.db.set_value("Delivery Note", inter_dn_number, "inter_company_reference", self.name)
+
+
+		# Pastikan field ini ada di Purchase Receipt (custom field)
+		self.inter_company_reference = inter_dn_number
+		self.represents_company = represents_company
+
 
 	def validate_cwip_accounts(self):
 		for item in self.get("items"):
