@@ -174,6 +174,7 @@ class SalesInvoice(SellingController):
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
 		try:
 			self.set_other_reff()
+			self.link_internal_company()
 		except:
 			pass
 
@@ -204,12 +205,6 @@ class SalesInvoice(SellingController):
 			self.delivery_note = dn_name
 
 	def link_internal_company(self):
-		# find SO
-		# find PO
-		# find PI from PO
-		# set PI
-		# field pemicu
-		self.set_other_reff()
 		so_number = next((d.sales_order for d in self.items if d.sales_order), None)
 		inter_po_name = frappe.get_value("Sales Order", so_number, "inter_company_order_reference")
 		if not inter_po_name:
