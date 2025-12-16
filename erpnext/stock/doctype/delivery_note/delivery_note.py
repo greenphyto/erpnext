@@ -223,6 +223,66 @@ class DeliveryNote(SellingController):
 		if not self.installation_status:
 			self.installation_status = "Not Installed"
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
+		try:
+			self.link_internal_company()
+		except:
+			pass
+
+	def link_internal_company(self):
+		# Only for internal supplier flow
+		if not self.is_internal_customer:
+			return
+
+		so_number = next((d.against_sales_order for d in self.items if d.against_sales_order), None)
+		if not so_number:
+			return
+
+		# Get inter-company Sales Order (SO) reference from PO
+		inter_po_name = frappe.get_value("Sales Order", so_number, "inter_company_order_reference")
+		if not inter_po_name:
+			# fallback: find SO from sub-company that references this PO
+			inter_po_name = frappe.db.get_value(
+				"Sales Order",
+				{"inter_company_order_reference": so_number, "docstatus": 1},
+				"name",
+			)
+			if not inter_po_name:
+				return
+
+			# persist back to PO for future use
+			frappe.db.set_value("Sales Order", so_number, "inter_company_order_reference", inter_po_name)
+
+		# Represents Company from PO (PR should follow PO)
+		represents_company = frappe.get_value("Sales Order", so_number, "represents_company")
+
+		# Find inter-company Delivery Note (DN) created from that SO
+		# (DN Item commonly uses `against_sales_order`; some customizations use `sales_order`)
+		inter_pr_number = frappe.db.sql(
+			"""
+			SELECT DISTINCT dni.parent
+			FROM `tabDelivery Note Item` dni
+			JOIN `tabDelivery Note` dn ON dn.name = dni.parent
+			WHERE
+				dn.docstatus = 1
+				AND dni.against_sales_order = %s
+			ORDER BY dn.creation DESC
+			LIMIT 1
+			""",
+			(inter_po_name),
+			as_dict=False,
+		)
+
+		if not inter_pr_number:
+			return
+
+		inter_pr_number = inter_pr_number[0][0]
+		if inter_pr_number:
+			frappe.db.set_value("Purchase Receipt", inter_pr_number, "inter_company_reference", self.name)
+
+
+		# Pastikan field ini ada di Purchase Receipt (custom field)
+		self.inter_company_reference = inter_pr_number
+		self.represents_company = represents_company
 
 	def validate_donation(self):
 		if self.is_donation and not self.organization_name:
