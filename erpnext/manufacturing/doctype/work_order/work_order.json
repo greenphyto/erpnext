@@ -68,6 +68,7 @@
   "operations_section",
   "transfer_material_against",
   "operations",
+  "current_operation",
   "section_break_22",
   "planned_operating_cost",
   "actual_operating_cost",
@@ -687,6 +688,13 @@
    "fieldtype": "Float",
    "label": "Revised Qty",
    "read_only": 1
+  },
+  {
+   "default": "Not Started",
+   "fieldname": "current_operation",
+   "fieldtype": "Select",
+   "label": "Current Operation",
+   "options": "Not Started\nSeeding\nTransplanting\nHarvesting\nCompleted"
   }
  ],
  "icon": "fa fa-cogs",
@@ -694,7 +702,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-12-04 16:55:01.301972",
+ "modified": "2025-12-17 12:00:13.328318",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",

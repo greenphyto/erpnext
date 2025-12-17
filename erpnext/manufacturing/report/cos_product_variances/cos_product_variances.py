@@ -15,14 +15,24 @@ class Report():
 
 	def setup_condition(self):
 		self.cond = ""
-		self.filters.from_date = getdate(self.filters.get("from_date") or "2000-01-01") 
-		self.filters.to_date = getdate(self.filters.get("to_date") or "2099-01-01") 
+		self.filters.from_date = getdate(self.filters.get("from_date") or "2000-01-01")
+		self.filters.to_date = getdate(self.filters.get("to_date") or "2099-01-01")
 
+		# Build optional conditions, prefixed with AND to attach after base filters
 		if self.filters.get("work_order"):
-			self.cond += " work_order = %(work_order)s"
+			self.cond += " AND s.work_order = %(work_order)s"
 
 		if self.filters.get("product"):
-			self.cond += " production_item = %(product)s "
+			self.cond += " AND w.production_item = %(product)s"
+
+		# Normalize and apply Work Order status filter if provided
+		status = self.filters.get("status")
+		if status:
+			if status in ['Not Started', 'Completed', 'Closed']:
+				self.cond += " AND w.status = %(status)s"
+			else:
+				self.cond += " AND w.current_operation = %(status)s"
+				
 
 
 	def setup_column(self):
@@ -34,11 +44,11 @@ class Report():
 			{"fieldname": "operation", 			"label": "Operation", 		"fieldtype": "Data", 		"width":120, "options":""},
 			{"fieldname": "debit", 				"label": "Debit", 			"fieldtype": "Currency", 	"width":100, "options":""},
 			{"fieldname": "credit", 			"label": "Credit", 			"fieldtype": "Currency", 	"width":100, "options":""},
-			{"fieldname": "prev_value", 		"label": "Retrieved from Previous Step",	"fieldtype": "Currency", 	"width":100, "options":""}
-			
+			{"fieldname": "prev_value", 		"label": "Retrieved from Previous Step",	"fieldtype": "Currency", 	"width":210, "options":""},
+			{"fieldname": "raw_material", 		"label": "Raw Material",	"fieldtype": "Currency", 	"width":110, "options":""},
+			{"fieldname": "costs", 				"label": "Total Costs",	"fieldtype": "Currency", 	"width":110, "options":""}
 		]
 		for c in self.cost_type:
-
 			col = {
 				"fieldname": self.get_cost_column_field(c), 			
 				"label": c, 		
@@ -59,25 +69,25 @@ class Report():
 					s.operation,
 					si.expense_account,
 					si.description,
-					w.production_item as product,
+					w.production_item AS product,
 					si.amount,
 					si.cost_center,
 					s.total_additional_costs,
 					s.total_outgoing_value,
 					s.total_outgoing_value - s.total_additional_costs AS raw_mat
 				FROM
-					`tabLanded Cost Taxes and Charges` si
+					`tabWork Order` w
 						LEFT JOIN
-					`tabStock Entry` s ON s.name = si.parent
+					`tabStock Entry` s ON s.work_order = w.name
 						LEFT JOIN
-					`tabWork Order` w ON w.name = s.work_order
+					`tabLanded Cost Taxes and Charges` si ON si.parent = s.name
 				WHERE
 					s.docstatus = 1
 						AND s.purpose = 'Material Transfer for Manufacture'
-						AND s.operation is not null
-						AND s.posting_date between %(from_date)s and %(to_date)s
+						AND s.operation IS NOT NULL
+						AND w.planned_start_date between %(from_date)s and %(to_date)s
 						{}
-				ORDER BY s.work_order , s.creation
+				ORDER BY s.work_order desc, s.creation asc
 			""".format(self.cond), self.filters, as_dict=1)
 		else:
 			self.raw_data = get_test_data()
@@ -136,6 +146,8 @@ class Report():
 				if not d:
 					continue
 				
+				d['raw_material'] = data_mapping[d.work_order][d.operation]["rawmat"]
+				d['costs'] = data_mapping[d.work_order][d.operation]["costs"]
 				d['debit'] = 0
 				if d.operation == "Seeding":
 					d['credit'] = data_mapping[d.work_order]['Seeding']["costs"]
