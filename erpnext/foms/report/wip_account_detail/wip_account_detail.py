@@ -33,6 +33,7 @@ class Report:
             {"fieldname": "work_order", "label": "Work Order ID", "fieldtype": "Link", "options": "Work Order", "width": 160},
             {"fieldname": "produced_item", "label": "Produced Item", "fieldtype": "Link", "options": "Item", "width": 160},
             {"fieldname": "product_name", "label": "Product Name", "fieldtype": "Data", "width": 200},
+            {"fieldname": "qty", "label": "Qty (KG)", "fieldtype": "Float", "width": 100},
             {"fieldname": "amount", "label": "Amount", "fieldtype": "Currency", "options": "currency", "width": 120},
             {"fieldname": "map_price", "label": "MAP Price", "fieldtype": "Currency", "options": "map_currency", "width": 120},
             # hidden helpers to drive currency columns
@@ -224,6 +225,7 @@ class Report:
             SELECT
                 se.work_order AS work_order,
                 wo.production_item AS produced_item,
+                wo.qty,
                 it.item_name AS product_name,
                 gl.account AS account,
                 SUM(gl.debit - gl.credit) AS amount
@@ -278,6 +280,7 @@ class Report:
                     "product_name": r.product_name,
                     "account": r.account,
                     "amount": r.amount,
+                    "qty": r.qty,
                     "currency": self.company_currency,
                     "map_price": map_price,
                     "map_currency": self.company_currency,
