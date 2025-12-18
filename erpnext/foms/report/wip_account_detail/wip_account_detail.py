@@ -3,7 +3,7 @@
 
 import frappe
 import erpnext
-
+from frappe.utils import flt
 
 def execute(filters=None):
     return Report(filters).execute()
@@ -72,30 +72,7 @@ class Report:
                 wo.production_item AS produced_item,
                 it.item_name AS product_name,
                 gl.account AS account,
-                SUM(gl.debit - gl.credit) AS amount,
-                COALESCE(
-                    (
-                        SELECT ip.price_list_rate
-                        FROM `tabItem Price` ip
-                        WHERE ip.item_code = wo.production_item AND ip.price_list = 'MAP'
-                        ORDER BY ip.modified DESC
-                        LIMIT 1
-                    ),
-                    (
-                        SELECT sle.valuation_rate
-                        FROM `tabStock Ledger Entry` sle
-                        WHERE sle.item_code = wo.production_item AND sle.docstatus = 1
-                        ORDER BY sle.posting_date DESC, sle.posting_time DESC, sle.creation DESC
-                        LIMIT 1
-                    )
-                ) AS map_price,
-                (
-                    SELECT ip.currency
-                    FROM `tabItem Price` ip
-                    WHERE ip.item_code = wo.production_item AND ip.price_list = 'MAP'
-                    ORDER BY ip.modified DESC
-                    LIMIT 1
-                ) AS map_currency
+                SUM(gl.debit - gl.credit) AS amount
             FROM `tabGL Entry` gl
             JOIN `tabStock Entry` se
                 ON gl.voucher_type = 'Stock Entry' AND gl.voucher_no = se.name
@@ -127,8 +104,16 @@ class Report:
             return
 
         # Normalize currency outputs
+        je_data = self.get_journal_entry(wip_accounts)
         data = []
         for r in rows:
+            key = (r.account, r.work_order)
+            if key in je_data:
+                r.amount += je_data[key]
+            
+            if not r.amount:
+                continue
+
             data.append(
                 {
                     "work_order": r.work_order,
@@ -143,6 +128,29 @@ class Report:
             )
 
         self.raw_data = data
+
+    def get_journal_entry(self, wip_accounts):
+        wo_amount_map = {}
+        for account in wip_accounts:
+            data = frappe.db.sql("""
+                SELECT 
+                    jea.reference_name,
+                    (IFNULL(jea.debit, 0) - IFNULL(jea.credit, 0)) AS amount
+                FROM
+                    `tabJournal Entry Account` jea
+                WHERE
+                    jea.docstatus = 1 and
+                    jea.account = %s
+                        AND jea.reference_type = 'Work Order'
+                        AND IFNULL(jea.reference_name, '') != ''
+                        AND (IFNULL(jea.debit, 0) != 0
+                        OR IFNULL(jea.credit, 0) != 0)
+                ORDER BY jea.reference_name;
+            """, (account), as_dict=1)
+            for d in data:
+                key = (account, d.reference_name)
+                wo_amount_map.setdefault(key, d.amount)
+        return wo_amount_map
 
     def get_operation_account_map(self):
         rows = frappe.get_all(
