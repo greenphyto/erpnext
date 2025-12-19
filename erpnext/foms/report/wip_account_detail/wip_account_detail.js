@@ -29,13 +29,6 @@ frappe.query_reports["WIP Account Detail"] = {
             label: "Product (Item)",
             fieldtype: "Link",
             options: "Item"
-        },
-        {
-            fieldname: "price_source",
-            label: "Price Source",
-            fieldtype: "Select",
-            options: "Item Price\nSales Invoice\nValuation Rate", 
-            default:"Item Price"
         }
     ]
 };
