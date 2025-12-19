@@ -22,8 +22,6 @@ class Report:
         self.cond = ""
         if self.filters.get("work_order"):
             self.cond += " AND se.work_order = %(work_order)s"
-        if self.filters.get("operation"):
-            self.cond += " AND se.operation = %(operation)s"
         if self.filters.get("item_code"):
             self.cond += " AND wo.production_item = %(item_code)s"
 
@@ -42,20 +40,24 @@ class Report:
         ]
 
     def get_wip_accounts(self):
-        accounts = [
-            d.wip_account
-            for d in frappe.get_all(
-                "Operation WIP Account",
-                filters={
-                    "parent": self.company,
-                    "parenttype": "Company",
-                    "parentfield": "operation_wip_account",
-                    "operation":['!=', 'Harvesting']
-                },
-                fields=["wip_account"],
-            )
-            if d.wip_account
-        ]
+        accounts = []
+        for d in frappe.get_all(
+            "Operation WIP Account",
+            filters={
+                "parent": self.company,
+                "parenttype": "Company",
+                "parentfield": "operation_wip_account",
+                "operation":['!=', 'Harvesting']
+            },
+            fields=["wip_account", "operation"],
+        ):
+            if d.wip_account:
+                if self.filters.operation: 
+                    if self.filters.operation==d.operation:
+                        accounts.append(d.wip_account)
+                else:
+                    accounts.append(d.wip_account)
+
         return accounts
     
     def get_item_price_map(self, source="Item Price"):
