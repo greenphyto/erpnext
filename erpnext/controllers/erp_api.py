@@ -28,7 +28,7 @@ from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 from frappe.utils.file_manager import save_file, save_url
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result, make_in_progress
 from datetime import datetime, timedelta
-from erpnext.stock.utils import get_default_warehouse
+# from erpnext.stock.utils import get_default_warehouse
 from erpnext.stock.stock_ledger import get_valuation_rate
 
 PRECISION_FACTOR = 4
@@ -631,9 +631,13 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 			"ERPStockEntry": "Temporary disabled"
 		}
 	
-	work_order_name, lot_id, status,packet_size,conversion_factor  = frappe.db.get_value("Work Order", ERPWorkOrderID, ['name', 'foms_lot_id', 'status', 'packet_size', 'conversion_factor']) or ("", "", "", '', '')
+	wo_doc = frappe.get_doc("Work Order", ERPWorkOrderID)
+	work_order_name = wo_doc.name
+	status = wo_doc.status
+	conversion_factor = wo_doc.conversion_factor
+	producted_qty = wo_doc.qty
 	qty_from_packet = flt(conversion_factor) * flt(packets)
-	qty = qty or qty_from_packet
+	qty = cint(qty) or qty_from_packet
 	
 	# skip before operation 3 has done
 	operation_3_status = frappe.db.get_value("Stock Entry", {
@@ -661,6 +665,8 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 
 	se_doc.stock_entry_type_view = get_stock_entry_type("Harvesting Finish")
 	se_doc.expense_loss_account = frappe.get_value("Company", se_doc.company , "production_loss_account")
+	enable_excess_qty = frappe.db.get_single_value("Manufacturing Settings", "enable_attrition_qty")
+	finish_uom, finish_item_code = None, None
 
 	# get rate from incoming rate from prev process, and get prorate until near prev amount 109.5
 	rate_map = se_doc.get_previous_rate()
@@ -670,6 +676,22 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 			row.rate_map = row.basic_rate
 			row.valuation_rate = row.basic_rate
 			row.set_basic_rate_manually = 1
+		if enable_excess_qty:
+			# attrition_qty = self.
+			if row.t_warehouse:
+				row.qty = qty
+				row.amount = qty * flt(row.basic_rate)
+				finish_uom =  row.uom
+				finish_item_code = row.item_code
+
+	# add fake item
+	child = se_doc.append("items")
+	child.qty = producted_qty - qty
+	child.uom = finish_uom
+	child.item_code = finish_item_code
+	child.t_warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_scrap_warehouse")
+	child.is_process_loss = 1
+	child.expense_account = se_doc.expense_loss_account
 
 	se_doc.set_expense_account()
 	se_doc.flags.ignore_double_entries = 1

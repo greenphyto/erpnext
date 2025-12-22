@@ -823,7 +823,7 @@ class StockEntry(StockEntryAsset, StockController):
 				continue
 			if d.allow_zero_valuation_rate:
 				d.basic_rate = 0.0
-			elif d.is_finished_item:
+			elif d.is_finished_item or d.is_process_loss:
 				if self.purpose == "Manufacture":
 					d.basic_rate = self.get_basic_rate_for_manufactured_item(
 						finished_item_qty, outgoing_items_cost
@@ -1272,6 +1272,9 @@ class StockEntry(StockEntryAsset, StockController):
 		if self.docstatus == 2:
 			sl_entries.reverse()
 
+		# for d in sl_entries:
+		# 	print(1276, d.item_code, d.actual_qty)
+
 		self.make_sl_entries(sl_entries)
 
 	def get_finished_item_row(self):
@@ -1300,7 +1303,7 @@ class StockEntry(StockEntryAsset, StockController):
 
 	def get_sle_for_target_warehouse(self, sl_entries, finished_item_row):
 		for d in self.get("items"):
-			if cstr(d.t_warehouse):
+			if cstr(d.t_warehouse) and not cint(d.is_process_loss):
 				sle = self.get_sl_entries(
 					d,
 					{
