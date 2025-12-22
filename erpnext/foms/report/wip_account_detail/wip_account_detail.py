@@ -3,7 +3,7 @@
 
 import frappe
 import erpnext
-from frappe.utils import flt
+from frappe.utils import flt, getdate
 
 def execute(filters=None):
     return Report(filters).execute()
@@ -24,6 +24,9 @@ class Report:
             self.cond += " AND se.work_order = %(work_order)s"
         if self.filters.get("item_code"):
             self.cond += " AND wo.production_item = %(item_code)s"
+        if self.filters.get("posting_date"):
+            self.cond += " AND se.posting_date < %(posting_date)s"
+
 
     def setup_column(self):
         self.columns = [
@@ -101,9 +104,9 @@ class Report:
                     AND IFNULL(si.is_return, 0) = 0
                     AND i.stock_uom = 'Kg'
             ) t
-            WHERE t.rn = 1
+            WHERE t.rn = 1 and t.posting_date < %s
             ORDER BY t.item_code;
-            """, as_dict=1)
+            """, (getdate(self.filters.posting_date)), as_dict=1)
         
         for d in data:
             if d.item_code not in price_map and d.price_conv:

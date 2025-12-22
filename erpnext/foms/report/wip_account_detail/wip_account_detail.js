@@ -13,6 +13,12 @@ frappe.query_reports["WIP Account Detail"] = {
             reqd: 1
         },
         {
+            fieldname: "posting_date",
+            label: "Posting Date",
+            fieldtype: "Date",
+            options: ""
+        },
+        {
             fieldname: "work_order",
             label: "Work Order ID",
             fieldtype: "Link",
