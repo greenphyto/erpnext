@@ -1,6 +1,6 @@
 import frappe, json, erpnext
 from six import string_types
-from frappe.utils import flt, now_datetime, cint, getdate, cstr, get_datetime, add_days, nowtime, today
+from frappe.utils import flt, get_link_to_form, now_datetime, cint, getdate, cstr, get_datetime, add_days, nowtime, today
 from erpnext.controllers.foms import (
 	create_bom_products, 
 	get_bom_for_work_order, 
@@ -28,10 +28,10 @@ from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 from frappe.utils.file_manager import save_file, save_url
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result, make_in_progress
 from datetime import datetime, timedelta
-from erpnext.stock.utils import get_default_warehouse
 from erpnext.stock.stock_ledger import get_valuation_rate
 
 PRECISION_FACTOR = 4
+TAG_FOR_AUTO_LOSS = "Process Loss Issued"
 
 def get_data(data):
 	if isinstance(data, string_types):
@@ -631,7 +631,11 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 			"ERPStockEntry": "Temporary disabled"
 		}
 	
-	work_order_name, lot_id, status,packet_size,conversion_factor  = frappe.db.get_value("Work Order", ERPWorkOrderID, ['name', 'foms_lot_id', 'status', 'packet_size', 'conversion_factor']) or ("", "", "", '', '')
+	wo_doc = frappe.get_doc("Work Order", ERPWorkOrderID)
+	work_order_name = wo_doc.name
+	status = wo_doc.status
+	conversion_factor = wo_doc.conversion_factor
+	producted_qty = wo_doc.qty
 	qty_from_packet = flt(conversion_factor) * flt(packets)
 	qty = qty or qty_from_packet
 	
@@ -661,15 +665,34 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 
 	se_doc.stock_entry_type_view = get_stock_entry_type("Harvesting Finish")
 	se_doc.expense_loss_account = frappe.get_value("Company", se_doc.company , "production_loss_account")
-
+	enable_excess_qty = frappe.db.get_single_value("Manufacturing Settings", "enable_attrition_qty")
 	# get rate from incoming rate from prev process, and get prorate until near prev amount 109.5
 	rate_map = se_doc.get_previous_rate()
+	finish_uom, finish_item_code = None, None
 	for row in se_doc.get("items"):
 		if row.s_warehouse:
 			row.basic_rate = flt(rate_map.get(row.batch_no), 8)
 			row.rate_map = row.basic_rate
 			row.valuation_rate = row.basic_rate
 			row.set_basic_rate_manually = 1
+		if enable_excess_qty:
+			# attrition_qty = self.
+			if row.t_warehouse:
+				row.qty = qty
+				row.amount = qty * flt(row.basic_rate)
+				finish_uom =  row.uom
+				finish_item_code = row.item_code
+
+	# add fake item
+	child = se_doc.append("items")
+	child.qty = producted_qty - qty
+	child.uom = finish_uom
+	child.item_code = finish_item_code
+	child.t_warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_scrap_warehouse")
+	child.is_process_loss = 1
+
+	# for d in se_doc.get("items"):
+	# 	print(691, d.item_code, d.qty, d.basic_rate, d.amount)
 
 	se_doc.set_expense_account()
 	se_doc.flags.ignore_double_entries = 1
@@ -684,17 +707,75 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 		se_doc.flags.ignore_permissions = 1
 		se_doc.save()
 
+	# for d in se_doc.get("items"):
+	# 	print(707, d.item_code, d.qty, d.basic_rate, d.amount)
+
 	# Create Draft Delivery Note
-	for d in se_doc.get("items"):
-		if d.is_finished_item:
-			frappe.db.set_value("Batch", d.batch_no, "expiry_date", getdate(expiryDate))
-			create_do_based_on_work_order(se_doc.work_order, d.qty, d.t_warehouse, d.batch_no)
+	# for d in se_doc.get("items"):
+	# 	if d.is_finished_item:
+	# 		frappe.db.set_value("Batch", d.batch_no, "expiry_date", getdate(expiryDate))
+	# 		create_do_based_on_work_order(se_doc.work_order, d.qty, d.t_warehouse, d.batch_no)
 
 	update_log("Work Order", data_name, "Work Order", work_order_name, name_id=log_name)
 
 	return {
 		"ERPStockEntry":se_doc.name
 	}
+
+def create_auto_stock_issue(doc, method=""):
+	if doc.purpose != "Manufacture":
+		return
+	
+	if doc.docstatus == 1:
+		account = frappe.get_value("Company", doc.company , "production_loss_account")
+		for d in doc.items:
+			if not cint(d.is_process_loss):
+				continue
+
+			# create material issue
+			se = frappe.new_doc("Stock Entry")
+			se.purpose = "Material Issue"
+			se.stock_entry_type_view = "Scrap Materials"
+			se.company = doc.company
+			se.request_no = TAG_FOR_AUTO_LOSS
+			se.work_order = doc.work_order
+			se.remarks = "Scrap for work order process loss"
+			se.system_generated = 1
+			
+			row = se.append("items")
+			row.item_code = d.item_code
+			row.uom = d.uom
+			row.qty = d.qty
+			row.s_warehouse = d.t_warehouse
+			row.basic_rate = d.basic_rate
+			row.batch_no = d.batch_no
+			row.expense_account = account
+			se.save()
+			se.submit()
+			print(se.name)
+	else:
+		se_scrap = frappe.db.exists("Stock Entry", {
+			"purpose":"Material Issue",
+			"work_order": doc.work_order,
+			"request_no":TAG_FOR_AUTO_LOSS,
+			"system_generated":1
+		})
+		if se_scrap:
+			doc = frappe.get_doc("Stock Entry", se_scrap)
+			doc.cancel()
+			# print(se.docstatus)
+
+def local_stock_entry_auto_issue(doc, method=""):
+	if doc.request_no == TAG_FOR_AUTO_LOSS and doc.work_order:
+		is_submit = frappe.db.get_value("Stock Entry", {
+			"purpose":"Manufacture",
+			"work_order": doc.work_order,
+			"docstatus":1
+		})
+		if is_submit:
+			link = get_link_to_form("Stock Entry", is_submit)
+			frappe.throw("Cannot cancel because linked to Stock Entry {}".format(link))
+		
 
 def run_pending_harvesting():
 	now_time = get_datetime()

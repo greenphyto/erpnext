@@ -424,11 +424,14 @@ doc_events = {
             "erpnext.controllers.erp.create_sample_after_work_order",
             "erpnext.controllers.erp.detect_work_order_different",
 			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
+			"erpnext.controllers.erp_api.create_auto_stock_issue"
 		],
         "before_cancel":[
             "erpnext.controllers.foms.detect_salad_items",
             "erpnext.controllers.foms.cancel_repack_se",
-            "erpnext.controllers.erp.cancel_sample_on_work_order"
+            "erpnext.controllers.erp.cancel_sample_on_work_order",
+			"erpnext.controllers.erp_api.create_auto_stock_issue",
+			"erpnext.controllers.erp_api.local_stock_entry_auto_issue",
 		],
 		"on_cancel": [
 			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",

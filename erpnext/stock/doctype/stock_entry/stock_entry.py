@@ -823,7 +823,7 @@ class StockEntry(StockEntryAsset, StockController):
 				continue
 			if d.allow_zero_valuation_rate:
 				d.basic_rate = 0.0
-			elif d.is_finished_item:
+			elif d.is_finished_item or d.is_process_loss:
 				if self.purpose == "Manufacture":
 					d.basic_rate = self.get_basic_rate_for_manufactured_item(
 						finished_item_qty, outgoing_items_cost
@@ -846,8 +846,8 @@ class StockEntry(StockEntryAsset, StockController):
 
 			# do not round off basic rate to avoid precision loss
 			d.basic_rate = flt(d.basic_rate)
-			if d.is_process_loss:
-				d.basic_rate = flt(0.0)
+			# if d.is_process_loss:
+			# 	d.basic_rate = flt(0.0)
 			d.basic_amount = flt(flt(d.transfer_qty) * flt(d.basic_rate), d.precision("basic_amount"))
 
 	def set_rate_for_outgoing_items(self, reset_outgoing_rate=True, raise_error_if_no_rate=True):
