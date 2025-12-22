@@ -170,8 +170,10 @@ class StockController(AccountsController):
 						# expense account/ target_warehouse / source_warehouse
 						if item_row.get("target_warehouse"):
 							warehouse = item_row.get("target_warehouse")
+							remarks_expense = "Excess loss qty"
 							expense_account = get_item_account(warehouse_account, warehouse, item_row.item_code, operation=operation)
 						else:
+							remarks_expense = "Rate Variance"
 							expense_account = item_row.expense_account
 
 						item_account = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, operation=operation)
@@ -202,7 +204,7 @@ class StockController(AccountsController):
 								"account": expense_account,
 								"against": item_account,
 								"cost_center": item_row.cost_center,
-								"remarks": "Rate Variance",
+								"remarks": remarks_expense,
 								"debit": -1 * flt(stock_value_difference, precision),
 								"project": item_row.get("project") or self.get("project"),
 								"is_opening": item_row.get("is_opening") or self.get("is_opening") or "No",
@@ -261,6 +263,9 @@ class StockController(AccountsController):
 							"Warehouse {0} is not linked to any account, please mention the account in the warehouse record or set default inventory account in company {1}."
 						).format(wh, self.company)
 					)
+
+		# for d in gl_list:
+		# 	print(301, d.account, d.debit, d.credit, d.remarks)
 
 		data = process_gl_map(gl_list, precision=precision)
 
