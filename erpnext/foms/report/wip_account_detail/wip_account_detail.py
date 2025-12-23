@@ -36,10 +36,11 @@ class Report:
             {"fieldname": "product_name", "label": "Product Name", "fieldtype": "Data", "width": 200},
             {"fieldname": "qty", "label": "Qty (KG)", "fieldtype": "Float", "width": 100},
             {"fieldname": "amount", "label": "Amount", "fieldtype": "Currency", "options": "currency", "width": 120},
-            {"fieldname": "map_price", "label": "MAP Price", "fieldtype": "Currency", "options": "map_currency", "width": 120},
+            {"fieldname": "map_price", "label": "Sales Invoice Price", "fieldtype": "Currency", "options": "map_currency", "width": 150},
             # hidden helpers to drive currency columns
             {"fieldname": "currency", "label": "Currency", "fieldtype": "Data", "hidden": 1},
             {"fieldname": "map_currency", "label": "MAP Currency", "fieldtype": "Data", "hidden": 1},
+            {"fieldname": "invoice_no", "label": "Sales Invoice", "fieldtype": "Data", "hidden": 1},
         ]
 
     def get_wip_accounts(self):
@@ -101,16 +102,22 @@ class Report:
                     ON i.item_code = sii.item_code
                 WHERE
                     si.docstatus = 1
-                    AND IFNULL(si.is_return, 0) = 0
+                    AND si.is_return = 0
+                    AND si.debit_note_transaction = 0
                     AND i.stock_uom = 'Kg'
+                    AND si.posting_date < %s
+                order by si.posting_date desc
             ) t
-            WHERE t.rn = 1 and t.posting_date < %s
+            WHERE t.rn = 1 
             ORDER BY t.item_code;
             """, (getdate(self.filters.posting_date)), as_dict=1)
         
         for d in data:
             if d.item_code not in price_map and d.price_conv:
-                price_map[d.item_code] = d.price_conv
+                price_map[d.item_code] = {
+                    "rate":d.price_conv,
+                    "data":d
+                }
 
         return price_map
 
@@ -173,8 +180,10 @@ class Report:
             
             if not r.amount:
                 continue
-
-            map_price = flt(price_map.get(r.produced_item))
+            
+            temp = price_map.get(r.produced_item) or {}
+            map_price = flt(temp.get('rate'))
+            map_data = temp.get("data") or {}
 
             data.append(
                 {
@@ -187,6 +196,7 @@ class Report:
                     "currency": self.company_currency,
                     "map_price": map_price,
                     "map_currency": self.company_currency,
+                    "invoice_no": map_data.get('sales_invoice'),
                 }
             )
 

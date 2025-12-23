@@ -34,7 +34,14 @@ frappe.query_reports["WIP Account Detail"] = {
             fieldname: "item_code",
             label: "Product (Item)",
             fieldtype: "Link",
-            options: "Item"
+            options: "Item",
+            get_query:()=>{
+                return {
+                    filters:{
+                        "item_group":"Products"
+                    }
+                }
+            }
         }
     ]
 };
