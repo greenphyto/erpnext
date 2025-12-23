@@ -167,15 +167,8 @@ class StockController(AccountsController):
 						sle_rounding_diff += flt(stock_value_difference)
 
 						self.check_expense_account(item_row)
-						# expense account/ target_warehouse / source_warehouse
-						if item_row.get("target_warehouse"):
-							warehouse = item_row.get("target_warehouse")
-							remarks_expense = "Excess loss qty"
-							expense_account = get_item_account(warehouse_account, warehouse, item_row.item_code, operation=operation)
-						else:
-							remarks_expense = "Rate Variance"
-							expense_account = item_row.expense_account
-
+						expense_account = item_row.expense_account
+						remarks_expense = "Accounting Entry for Stock"
 						item_account = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, operation=operation)
 						item_account_currency = get_item_account(warehouse_account, sle.warehouse, item_row.item_code, "account_currency", operation=operation)
 						if self.doctype == "Stock Entry" and self.purpose == "Manufacture":
@@ -254,6 +247,39 @@ class StockController(AccountsController):
 						item=item_row,
 					)
 				)
+
+		# process loss
+		if self.purpose == "Manufacture":
+			for d in self.get("items", {"is_process_loss":1}):
+				stock_value = d.basic_amount
+				remarks_expense = "Attrition cost"
+				item_account = frappe.db.get_value("Company", self.company, "production_attrition_expense_account")
+				item_account_currency = frappe.get_value("Account", item_account, "account_currency")
+				expense_account = frappe.db.get_value("Company", self.company, "default_cost_expense_account")
+				row = self.get_gl_dict(
+					{
+						"account": item_account,
+						"against": expense_account,
+						"cost_center": d.cost_center,
+						"remarks": remarks_expense,
+						"debit": flt(stock_value, precision),
+					},
+					item_account_currency,
+					item=d,
+				)
+				gl_list.append(row)
+
+				row = self.get_gl_dict(
+					{
+						"account": expense_account,
+						"against": item_account,
+						"cost_center": d.cost_center,
+						"remarks": remarks_expense,
+						"debit": -1 * flt(stock_value, precision),
+					},
+					item=d,
+				)
+				gl_list.append(row)
 
 		if warehouse_with_no_account:
 			for wh in warehouse_with_no_account:
