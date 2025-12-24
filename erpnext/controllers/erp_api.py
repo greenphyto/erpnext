@@ -156,6 +156,9 @@ def update_item_safety_stock(item_code: str, safety_stock, company):
 	return result
 
 def save_log(doctype, data_name, raw_data, reopen=False, now=False, endpoint=""):
+	if frappe.conf.testing_site:
+		now = 1
+		
 	return frappe.enqueue("erpnext.foms.doctype.foms_data_mapping.foms_data_mapping.create_foms_data",
 		data_type=doctype, 
 		data_name=data_name,
@@ -203,7 +206,7 @@ def create_bom(data):
 	item = frappe.get_value("Item", {"foms_product_id":product_id})
 	version = data.get("productVersionName")
 	data_name = f"BOM {item} {version}"
-	save_log("BOM", data_name, data, endpoint="create_bom")
+	save_log("BOM", data_name, {"data":data}, endpoint="create_bom")
 	result = create_bom_products(data, product_id, submit=submit)
 	update_log("BOM", data_name, "BOM", result)
 	return {"ERPBomId":result}
