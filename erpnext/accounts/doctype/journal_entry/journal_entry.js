@@ -653,15 +653,13 @@ frappe.ui.form.on("GST for Journal Entry", "gst_entry_remove", function(frm) {
 
 $.extend(erpnext.journal_entry, {
 	toggle_fields_based_on_currency: function(frm, from_refresh=0) {
+		
 		var origin_fields = ["debit", "credit"];
 		var new_fields = ["debit_in_currency_base", "credit_in_currency_base"];
-
-		// var grid = frm.get_field("accounts").grid;
-		// if(grid) grid.set_column_disp(fields, frm.doc.multi_currency);
-
+		
 		const item_table = "accounts";
 		var table = frm.fields_dict[item_table];
-
+		
 		var show = frm.doc.multi_currency;
 
 		if (!show && from_refresh) return;
@@ -688,24 +686,13 @@ $.extend(erpnext.journal_entry, {
 				field.label = field_label_map[f] + " (" + frappe.defaults.get_default("currency") + ")";
 			}
 		});
-
-		$.each(["debit", "credit", "credit_in_account_currency", "debit_in_account_currency"], (i,f)=>{
-			var field = table.grid.fields_map[f];
-			if (show) {
-				field.read_only = 1;
-			}else{
-				field.read_only = 0;
-			}
-		})
 		
 		$.each(new_fields, (i,f)=>{
 			var field = table.grid.fields_map[f];
 			if (show) {
 				field.in_list_view = 1;
-				field.read_only = 0;
 				field.label = field_label_map[f] + " (" + frm.doc.currency_base + ")";
 			}else{
-				field.read_only = 1;
 				field.in_list_view = 0;
 			}
 		});
