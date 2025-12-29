@@ -1,0 +1,133 @@
+# Copyright (c) 2013, erfidner.id and contributors
+# For license information, please see license.txt
+
+"""
+Report for daily accumulation broker vs stock
+"""
+
+import frappe
+from frappe.utils import flt
+from frappe import _
+
+def execute(filters=None):
+	return Report(filters).execute()
+
+CARTON_FACTOR = 15
+
+class Report():
+	def __init__(self, filters):
+		self.data = []
+		self.filters = filters
+		self.outlets = []
+		# List to store technical names of outlets
+		self.outlet_names = []
+		self.row_map ={
+			"pic":{"outlets":"PIC"},
+			"total_packs":{"outlets":"Total Packs"},
+			"total_cartons":{"outlets":"Total Cartons"}
+		}
+
+	def set_condition(self):
+		self.cond = ""
+		if self.filters.company:
+			self.cond += " and dn.company = %(company)s "
+		if self.filters.date:
+			self.cond += " and dn.posting_date = %(date)s "
+	
+	def get_data(self):
+		# Fetch transaction data by joining Item table with the parent Delivery Note table
+		# We use dn.customer as the field that holds the outlet/customer name
+		self.raw_data = frappe.db.sql("""
+			SELECT 
+				dni.item_code,
+				dn.customer,
+				dn.contact_display,
+				IFNULL(a.outlet_name, dn.customer) AS outlet_name,
+				SUM(dni.qty) AS total_qty,
+				b.actual_qty / p.total_weight AS stock_qty
+			FROM
+				`tabDelivery Note Item` dni
+					INNER JOIN
+				`tabDelivery Note` dn ON dni.parent = dn.name
+					INNER JOIN
+				`tabAddress` a ON a.name = dn.shipping_address_name
+					INNER JOIN
+				`tabItem` i ON i.name = dni.item_code
+					INNER JOIN
+				`tabBin` b ON b.item_code = dni.item_code
+					AND b.warehouse = 'Finished Goods - GPL'
+					INNER JOIN
+				`tabPackaging` p ON p.name = i.default_packaging
+			WHERE
+				dn.docstatus = 1 AND dn.is_marketing = 0
+					AND dn.is_giveaway = 0
+					AND dn.is_donation = 0
+					AND dn.is_production = 0
+					AND dn.customer != 'Marketing'
+					{}
+			GROUP BY dni.item_code , dn.customer
+		""".format(self.cond), self.filters, as_dict=1, debug=0)
+
+		processed_data = {}
+
+	def setup_columns(self):
+		# Define static (fixed) columns first
+		self.columns = [
+			{"fieldname": "outlets",   "label": _("Outlets"),    "fieldtype": "Link", "width": 120, "options": "Item"},
+		]
+		
+		# Dynamically append columns based on the list of outlets
+		self.outlet_names = []
+		for d in self.raw_data:
+			key = self.get_outlet_name(d.outlet_name)
+			if key not in self.outlet_names:
+				self.columns.append({
+					"fieldname": key,           # Unique fieldname (technical outlet name)
+					"label": _(d.outlet_name),            # Column label (can be customized)
+					"fieldtype": "Data",                 # Data type
+					"width": 280,                        # Column width
+				})
+				self.row_map["total_packs"][key] = 0
+				self.row_map["total_cartons"][key] = 0
+				self.row_map['pic'][key] = d.contact_display
+				self.outlet_names.append(key)
+
+			# Item code
+			if d.item_code not in self.row_map:
+				self.row_map[d.item_code] = {key: d.total_qty, 'outlets':d.item_code}
+			elif key not in self.row_map[d.item_code]:
+				self.row_map[d.item_code][key] = flt(d.total_qty)
+			else:
+				self.row_map[d.item_code][key] += flt(d.total_qty)
+
+			# Total
+			if key not in self.row_map["total_packs"]:
+				self.row_map["total_packs"][key] = flt(d.total_qty)
+			else:
+				self.row_map["total_packs"][key] += flt(d.total_qty)
+
+			self.row_map["total_cartons"][key] = flt(flt(self.row_map["total_packs"].get(key)) / CARTON_FACTOR,0)
+
+	def get_outlet_name(self, text):
+		return frappe.scrub(text)
+	
+	def get_item_name(self, text):
+		return text
+	
+	def prepare_data(self):
+		self.data = []
+		self.data.append(self.row_map['pic'])
+		for key, val in self.row_map.items():
+			if key not in ['pic', 'total_packs', 'total_cartons']:
+				self.data.append(val)
+		self.data.append(self.row_map['total_packs'])
+		self.data.append(self.row_map['total_cartons'])
+
+	def execute(self):
+		self.set_condition()
+		self.get_data()         # Fetch and process the transaction data
+		self.setup_columns()    # Set up the dynamic columns for the report
+		self.prepare_data()
+
+		# Return the columns and data back to the Frappe framework
+		return self.columns, self.data
