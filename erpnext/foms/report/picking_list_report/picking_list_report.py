@@ -33,6 +33,12 @@ class Report():
 			self.cond += " and dn.company = %(company)s "
 		if self.filters.date:
 			self.cond += " and dn.posting_date = %(date)s "
+
+		self.group_by = "outlet_name"
+		if self.filters.view_type == "Delivery Note":
+			self.group_by = "dn.name"
+			self.row_map['pic'] = {"outlets":"Outlets"}
+			
 	
 	def get_data(self):
 		# Fetch transaction data by joining Item table with the parent Delivery Note table
@@ -42,6 +48,7 @@ class Report():
 				dni.item_code,
 				dn.customer,
 				dn.contact_display,
+				dn.name as delivery_note,
 				IFNULL(a.outlet_name, dn.customer) AS outlet_name,
 				SUM(dni.qty) AS total_qty,
 				b.actual_qty / p.total_weight AS stock_qty
@@ -65,31 +72,45 @@ class Report():
 					AND dn.is_production = 0
 					AND dn.customer != 'Marketing'
 					{}
-			GROUP BY dni.item_code , dn.customer
-		""".format(self.cond), self.filters, as_dict=1, debug=0)
+			GROUP BY dni.item_code , {}
+		""".format(self.cond, self.group_by), self.filters, as_dict=1, debug=0)
 
 		processed_data = {}
 
 	def setup_columns(self):
 		# Define static (fixed) columns first
+		label = "Outlets"
+		if self.filters.view_type == "Delivery Note":
+			label = "Delivery Note"
+
 		self.columns = [
-			{"fieldname": "outlets",   "label": _("Outlets"),    "fieldtype": "Link", "width": 120, "options": "Item"},
+			{"fieldname": "outlets",   "label": _(label),    "fieldtype": "Link", "width": 120, "options": "Item"},
 		]
 		
 		# Dynamically append columns based on the list of outlets
 		self.outlet_names = []
 		for d in self.raw_data:
-			key = self.get_outlet_name(d.outlet_name)
+			if self.filters.view_type == "All Outlets":
+				key, label = self.get_outlet_name(d.outlet_name)
+				width = 220
+			else:
+				key, label = self.get_outlet_name(d.delivery_note)
+				width = 180
+
+			
 			if key not in self.outlet_names:
 				self.columns.append({
 					"fieldname": key,           # Unique fieldname (technical outlet name)
-					"label": _(d.outlet_name),            # Column label (can be customized)
+					"label": _(label),            # Column label (can be customized)
 					"fieldtype": "Data",                 # Data type
-					"width": 280,                        # Column width
+					"width": width,                        # Column width
 				})
 				self.row_map["total_packs"][key] = 0
 				self.row_map["total_cartons"][key] = 0
-				self.row_map['pic'][key] = d.contact_display
+				if self.filters.view_type == "Delivery Note":
+					self.row_map['pic'][key] = d.outlet_name
+				else:
+					self.row_map['pic'][key] = d.contact_display
 				self.outlet_names.append(key)
 
 			# Item code
@@ -109,7 +130,7 @@ class Report():
 			self.row_map["total_cartons"][key] = flt(flt(self.row_map["total_packs"].get(key)) / CARTON_FACTOR,0)
 
 	def get_outlet_name(self, text):
-		return frappe.scrub(text)
+		return frappe.scrub(text), text
 	
 	def get_item_name(self, text):
 		return text
