@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - gpprod.v14.3.1.test
+      - gpprod.v14.3.1.testing
 
 name: Build to ERPNext Production Environment
 
@@ -57,5 +57,5 @@ jobs:
         # Optional whether this connection use TLS (default is true if server_port is 465)
         secure: true
         # Optional plain body:
-        body: ERPNext build images for production! Branch - gpprod.v14.3.1.test, Commit Description - ${{github.event.head_commit.message}}
+        body: ERPNext build images for production! Branch - gpprod.v14.3.1.testing, Commit Description - ${{github.event.head_commit.message}}
        
