@@ -11,7 +11,7 @@ frappe.query_reports["Picking List Report"] = {
         },
         {
             "fieldname": "date",
-            "label": __("Date"),
+            "label": __("Delivery Date"),
             "fieldtype": "Date",
             "reqd": 1,
             "default": frappe.datetime.get_today()

@@ -79,7 +79,8 @@ class Report():
 					INNER JOIN
 				`tabPackaging` p ON p.name = i.default_packaging
 			WHERE
-				dn.docstatus = 1 AND dn.is_marketing = 0
+				dn.docstatus != 2 
+					AND dn.is_marketing = 0
 					AND dn.is_giveaway = 0
 					AND dn.is_donation = 0
 					AND dn.is_production = 0
