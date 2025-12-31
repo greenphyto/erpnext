@@ -188,11 +188,38 @@ frappe.ui.form.on("Delivery Note", {
 		}
 		
 		erpnext.add_image_slide(frm)
+		erpnext.set_batch_no_readonly(frm);
 	},
 	is_return: function(frm){
 		frm.set_value("naming_series", "DO-RET-.YYYY.-.###")
 	}
 });
+
+erpnext.set_batch_no_readonly = function(frm) {
+	if (!frappe.user.has_role('Logistic') || frappe.session.user == 'Administrator') {
+		return;
+	}
+
+	if (frm.doc.docstatus!=0) return;
+
+	Object.keys(frm.fields_dict).forEach(fieldname => {
+		if (fieldname != 'items'){
+			frm.set_df_property(fieldname, 'read_only', 1);
+		} 
+	});
+    frm.refresh_field();
+
+	$.each(frm.fields_dict.items.grid.docfields, function(i, field) {
+		if (field.fieldname == 'batch_no') { 
+			field.read_only = 0;
+		}else{
+			field.read_only = 1;
+		}
+	})
+	frm.fields_dict.items.grid.cannot_add_rows = 1;
+	frm.fields_dict.items.grid.reset_grid();
+    frm.refresh_field('items');
+}
 
 frappe.ui.form.on("Delivery Note Item", {
 	expense_account: function(frm, dt, dn) {
