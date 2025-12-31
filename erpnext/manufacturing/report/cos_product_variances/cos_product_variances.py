@@ -146,7 +146,8 @@ class Report():
 				if not d:
 					continue
 				
-				d['raw_material'] = data_mapping[d.work_order][d.operation]["rawmat"]
+				# d['raw_material'] = data_mapping[d.work_order][d.operation]["rawmat"]
+				d['raw_material'] = 0
 				d['costs'] = data_mapping[d.work_order][d.operation]["costs"]
 				d['debit'] = 0
 				if d.operation == "Seeding":
