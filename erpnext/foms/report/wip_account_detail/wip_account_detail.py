@@ -31,15 +31,17 @@ class Report:
     def setup_column(self):
         self.columns = [
             {"fieldname": "account", "label": "WIP Account", "fieldtype": "Link", "options": "Account", "width": 240},
-            {"fieldname": "work_order", "label": "Work Order ID", "fieldtype": "Link", "options": "Work Order", "width": 160},
-            {"fieldname": "produced_item", "label": "Produced Item", "fieldtype": "Link", "options": "Item", "width": 160},
+            {"fieldname": "work_order", "label": "Work Order ID", "fieldtype": "Link", "options": "Work Order", "width": 125},
+            {"fieldname": "produced_item", "label": "Produced Item", "fieldtype": "Link", "options": "Item", "width": 125},
             {"fieldname": "product_name", "label": "Product Name", "fieldtype": "Data", "width": 200},
             {"fieldname": "qty", "label": "Qty (KG)", "fieldtype": "Float", "width": 100},
             {"fieldname": "amount", "label": "Amount", "fieldtype": "Currency", "options": "currency", "width": 120},
             {"fieldname": "map_price", "label": "Sales Invoice Price", "fieldtype": "Currency", "options": "map_currency", "width": 150},
+            {"fieldname": "total_amount", "label": "Sales Invoice Amount (total)", "fieldtype": "Currency", "options": "currency", "width": 200},
             # hidden helpers to drive currency columns
             {"fieldname": "currency", "label": "Currency", "fieldtype": "Data", "hidden": 1},
             {"fieldname": "map_currency", "label": "MAP Currency", "fieldtype": "Data", "hidden": 1},
+            {"fieldname": "invoice_no", "label": "Sales Invoice", "fieldtype": "Data", "hidden": 1},
             {"fieldname": "invoice_no", "label": "Sales Invoice", "fieldtype": "Data", "hidden": 1},
         ]
 
@@ -193,6 +195,7 @@ class Report:
                     "account": r.account,
                     "amount": r.amount,
                     "qty": r.qty,
+                    "total_amount": flt(r.qty) * flt(map_price),
                     "currency": self.company_currency,
                     "map_price": map_price,
                     "map_currency": self.company_currency,
