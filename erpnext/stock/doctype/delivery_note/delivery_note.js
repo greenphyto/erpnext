@@ -445,7 +445,7 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 		}
 		me.frm.cscript.change_package_display();
 
-		frm.set_query("item_code", "items", function(doc, cdt, cdn) {
+		me.frm.set_query("item_code", "items", function(doc, cdt, cdn) {
 			var row = locals[cdt][cdn];
 			var filters = {"is_fixed_asset": 0}
 			if (!doc.non_package_item){
