@@ -325,7 +325,14 @@ class AccountsController(TransactionBase):
 			"Delivery Note",
 			"Quotation",
 		]:
-			doc = frappe.get_doc("Customer", self.customer)
+			if self.doctype != "Quotation":
+				doc = frappe.get_doc("Customer", self.customer)
+			else:
+				if self.quotation_to == "Customer":
+					doc = frappe.get_doc("Customer", self.party_name)
+				else:
+					return
+
 			for d in self.get("items"):
 				d.sku = doc.get_item_sku(d.item_code) or "-"
 				d.uom_name = frappe.get_value("UOM", d.uom, "global_description") or d.uom
