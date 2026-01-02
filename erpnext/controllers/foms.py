@@ -1679,6 +1679,24 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 	return name
 
 def get_workstation_name(item_name, operation_name):
+	# get from rate card and table rate card
+	res = frappe.db.sql("""
+		SELECT 
+			rdi.workstation
+		FROM
+			`tabRate Card Detail` rdi
+				LEFT JOIN
+			`tabItem` i ON i.rate_card = rdi.parent
+		WHERE
+			rdi.operation = %s
+				AND i.name = %s
+	""",(operation_name, item_name), as_dict=1)
+	if res and res[0].workstation:
+		return res[0].workstation
+	else:
+		return get_workstation_name_default(item_name, operation_name)
+
+def get_workstation_name_default(item_name, operation_name):
 	name = frappe.get_value("Workstation", {"item_code":item_name, "operation": operation_name})
 	if name:
 		return name
