@@ -39,7 +39,8 @@
   "working_hours_section",
   "holiday_list",
   "working_hours",
-  "amended_from"
+  "amended_from",
+  "from_system"
  ],
  "fields": [
   {
@@ -252,13 +253,20 @@
    "fieldtype": "Data",
    "label": "Version",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "from_system",
+   "fieldtype": "Check",
+   "label": "From System",
+   "read_only": 1
   }
  ],
  "icon": "icon-wrench",
  "idx": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-17 12:58:21.534188",
+ "modified": "2026-01-02 16:50:59.185493",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Workstation",
