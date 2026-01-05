@@ -660,7 +660,6 @@
   {
    "fieldname": "taxes_section",
    "fieldtype": "Section Break",
-   "hidden": 1,
    "hide_border": 1,
    "label": "Taxes and Charges",
    "oldfieldtype": "Section Break",
@@ -692,13 +691,11 @@
   {
    "fieldname": "section_break_41",
    "fieldtype": "Section Break",
-   "hidden": 1,
    "hide_border": 1
   },
   {
    "fieldname": "taxes_and_charges",
    "fieldtype": "Link",
-   "hidden": 1,
    "label": "Sales Taxes and Charges Template",
    "oldfieldname": "charge",
    "oldfieldtype": "Link",
@@ -708,7 +705,6 @@
   {
    "fieldname": "taxes",
    "fieldtype": "Table",
-   "hidden": 1,
    "oldfieldname": "other_charges",
    "oldfieldtype": "Table",
    "options": "Sales Taxes and Charges"
@@ -1587,6 +1583,8 @@
   {
    "fieldname": "delivery_date",
    "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Delivery Date"
   },
   {
@@ -1642,7 +1640,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-10-27 17:53:44.046919",
+ "modified": "2026-01-05 12:17:52.007722",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
