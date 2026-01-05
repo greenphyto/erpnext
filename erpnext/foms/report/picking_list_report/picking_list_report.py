@@ -44,7 +44,7 @@ class Report():
 		if self.filters.company:
 			self.cond += " and dn.company = %(company)s "
 		if self.filters.date:
-			self.cond += " and dn.posting_date = %(date)s "
+			self.cond += " and dn.delivery_date = %(date)s "
 
 		self.group_by = "outlet_name"
 		if self.filters.view_type == "Delivery Note":
