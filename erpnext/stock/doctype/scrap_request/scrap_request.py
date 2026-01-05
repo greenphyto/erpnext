@@ -46,6 +46,9 @@ def create_material_issue(doc, submit=False):
 	stock_entry.system_generated = doc.system_generated
 	stock_entry.set_stock_entry_type()
 	stock_entry.request_no = doc.name
+	stock_entry.posting_date = doc.posting_date
+	stock_entry.set_posting_time = 1
+
 
 	# get warehouse and batch portion
 	if doc.stock_entry:
