@@ -549,6 +549,7 @@ class EmailInvoice(Document):
 		doc = make_purchase_invoice(po_ref)
 		doc.set_default_number_fields()
 		doc.created_with_ai = 1
+		doc.set_posting_time = 1
 		doc.naming_series = "TEMP-PI.#####./.YYYY"
 		doc.bill_no = bill_no
 		doc.bill_date = bill_date
@@ -801,6 +802,7 @@ class EmailInvoice(Document):
 		# 3) Construct Purchase Invoice
 		doc = frappe.new_doc("Purchase Invoice")
 		doc.created_with_ai = 1
+		doc.set_posting_time = 1
 		doc.non_stock_item = 1
 		doc.naming_series = "TEMP-PI-.#####./.YYYY"
 		doc.naming_series = "TEMP-PI.#####./.YYYY"
@@ -959,6 +961,7 @@ class EmailInvoice(Document):
 		doc = make_purchase_invoice(data.get("po_no"))
 		doc.set_default_number_fields()
 		doc.created_with_ai = 1
+		doc.set_posting_time = 1
 		doc.naming_series = "TEMP-PI.#####./.YYYY"
 
 		for d in data.get("items"):
