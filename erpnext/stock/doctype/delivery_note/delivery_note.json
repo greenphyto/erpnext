@@ -659,6 +659,7 @@
    "fieldname": "taxes_section",
    "fieldtype": "Section Break",
    "hide_border": 1,
+   "hidden": 1,
    "label": "Taxes and Charges",
    "oldfieldtype": "Section Break",
    "options": "fa fa-money"
@@ -689,7 +690,8 @@
   {
    "fieldname": "section_break_41",
    "fieldtype": "Section Break",
-   "hide_border": 1
+   "hide_border": 1,
+   "hidden": 1
   },
   {
    "fieldname": "taxes_and_charges",
@@ -698,11 +700,13 @@
    "oldfieldname": "charge",
    "oldfieldtype": "Link",
    "options": "Sales Taxes and Charges Template",
-   "print_hide": 1
+   "print_hide": 1,
+   "hidden": 1
   },
   {
    "fieldname": "taxes",
    "fieldtype": "Table",
+   "hidden": 1,
    "oldfieldname": "other_charges",
    "oldfieldtype": "Table",
    "options": "Sales Taxes and Charges"
