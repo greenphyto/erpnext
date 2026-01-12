@@ -78,7 +78,7 @@
    "fieldname": "expense_account",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Expense Account",
+   "label": "Scrap Account",
    "options": "Account",
    "read_only": 1
   },
@@ -103,7 +103,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-01-05 16:10:26.937618",
+ "modified": "2026-01-12 12:11:09.803111",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Scrap Items",

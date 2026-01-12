@@ -38,6 +38,15 @@ class ScrapRequest(Document):
 				frappe.delete_doc("Stock Entry", doc.stock_entry)
 				doc.db_set("stock_entry", "")
 
+@frappe.whitelist()
+def get_scrap_account(item_group):
+	account = ""
+	if item_group == "Raw Material":
+		account = frappe.db.get_single_value("Stock Settings", "account_for_raw_material_scrap")
+	elif item_group == "Products":
+		account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
+	return account
+
 def create_material_issue(doc, submit=False):
 	stock_entry = frappe.new_doc("Stock Entry")
 	stock_entry.stock_entry_type_view = "Scrap Materials"
@@ -72,7 +81,7 @@ def create_material_issue(doc, submit=False):
 				row.is_scrap_item = 1
 				row.conversion_factor = get_conversion_factor(d.item_code, d.uom).get("conversion_factor", 1)
 				row.s_warehouse = dt.get("warehouse")
-				row.expense_account = doc.scrap_account
+				row.expense_account = d.expense_account
 
 	if not qty_all:
 		return 
@@ -123,25 +132,27 @@ def collect_expired_items():
 			*
 		FROM
 			(SELECT 
-				sle.batch_no AS batch, b.item,
+				sle.batch_no AS batch,
+					b.item,
 					sle.warehouse,
 					SUM(sle.actual_qty) AS batch_qty,
 					b.expiry_date
 			FROM
 				`tabStock Ledger Entry` sle
 			LEFT JOIN `tabBatch` b ON b.name = sle.batch_no
+			left join `tabItem` i on i.name = sle.item_code
 			WHERE
 				sle.is_cancelled = 0
 					AND sle.batch_no IS NOT NULL
 					AND sle.batch_no != ''
 					AND sle.warehouse NOT IN %(wh)s
 					AND b.expiry_date <= %(exp)s
-					AND b.item_group = 'Raw Material'
+					AND i.item_group = 'Raw Material'
 			GROUP BY sle.batch_no , sle.warehouse
 			ORDER BY sle.modified ASC) a
 		WHERE
 			a.batch_qty > 0
-	""", {"wh":wip_warehouse, "exp":use_date}, as_dict=1)
+	""", {"wh":wip_warehouse, "exp":use_date}, as_dict=1, debug=0)
 
 	if not data:
 		return
@@ -170,8 +181,17 @@ def collect_expired_items():
 			row.batch = d.batch
 
 		row.qty = d.batch_qty
+	
+	rm_account = frappe.db.get_single_value("Stock Settings", "account_for_raw_material_scrap")
+	pr_account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
+	for d in doc.items:
+		if d.item_group == "Raw Material":
+			d.expense_account = rm_account
+		if d.item_group == "Products":
+			d.expense_account = pr_account		
 
 	doc.posting_date = getdate()
+	doc.scrap_account = rm_account
 	doc.reason = "Expired item (system)"
 	doc.system_generated = 1
 	doc.save(ignore_permissions=1)

@@ -103,15 +103,15 @@
   {
    "fieldname": "scrap_account",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Scrap Account",
-   "options": "Account",
-   "reqd": 1
+   "options": "Account"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-12-08 14:40:03.425570",
+ "modified": "2026-01-12 12:11:48.275175",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Scrap Request",
