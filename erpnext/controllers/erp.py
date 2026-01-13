@@ -262,9 +262,10 @@ def get_company_availabe():
 @frappe.whitelist()
 def switch_company(company, force=False, user=""):
 	user = user or frappe.session.user
-	company_user = frappe.db.get_value("User", user, "company")
-	if not force and company_user and company_user != company:
-		return False
+	
+	user_disabled = frappe.get_value("User", frappe.session.user, "cannot_change_company")
+	if user_disabled and not force:
+		return {"result":False, "error":"You are not allowed to change company."}
 	
 	# if administrator, always set to all
 	frappe.db.set_value("User", user, "company_selected", company)
@@ -295,7 +296,7 @@ def switch_company(company, force=False, user=""):
 	doc.for_value = company
 	doc.flags.ignore_permissions = 1
 	doc.save()
-	return True
+	return {"result":True}
 
 from frappe.defaults import set_default
 def switch_default_values(user, company):
