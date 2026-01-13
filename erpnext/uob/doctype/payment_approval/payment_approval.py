@@ -3,7 +3,7 @@
 
 import frappe, os, re
 from frappe.model.document import Document
-from frappe.utils import flt, cint, getdate, get_datetime, cstr, get_time, get_link_to_form
+from frappe.utils import flt, cint, getdate, get_datetime, cstr, get_time, get_link_to_form, add_days
 from frappe.utils.file_manager import save_file
 from frappe.desk.form.utils import add_comment
 from erpnext.controllers.uob import create_payment_xml
@@ -607,27 +607,27 @@ def get_date_simple(value):
 	return getdate(value).strftime("%y%m%d")
 
 def check_branch_code_mandatory(bank_name, account_no):
-    """
-    Validate if the account number length is correct for OCBC, HSBC, and SBI.
-    Returns True if valid or not applicable, False if invalid.
-    """
-    bank_name = cstr(bank_name).upper()
-    account_no = re.sub(r'\D', '', cstr(account_no))  # keep digits only
-    bic = (frappe.get_value("Bank", bank_name, "swift_number") or "").upper()
+	"""
+	Validate if the account number length is correct for OCBC, HSBC, and SBI.
+	Returns True if valid or not applicable, False if invalid.
+	"""
+	bank_name = cstr(bank_name).upper()
+	account_no = re.sub(r'\D', '', cstr(account_no))  # keep digits only
+	bic = (frappe.get_value("Bank", bank_name, "swift_number") or "").upper()
 
-    # Determine bank type
-    if re.search(r'\bOCBC\b', bank_name) or re.search(r'\bOCBC\b', bic):
-        valid_lengths = 10, 12
-    elif re.search(r'\bHSBC\b', bank_name) or re.search(r'\bHSBC\b', bic):
-        valid_lengths = 12
-    elif re.search(r'\bSBI\b', bank_name) or re.search(r'\bSBI\b', bic):
-        valid_lengths = 11
-    else:
-        # Other banks not restricted
-        return False
+	# Determine bank type
+	if re.search(r'\bOCBC\b', bank_name) or re.search(r'\bOCBC\b', bic):
+		valid_lengths = 10, 12
+	elif re.search(r'\bHSBC\b', bank_name) or re.search(r'\bHSBC\b', bic):
+		valid_lengths = 12
+	elif re.search(r'\bSBI\b', bank_name) or re.search(r'\bSBI\b', bic):
+		valid_lengths = 11
+	else:
+		# Other banks not restricted
+		return False
 
-    # Validate account number length
-    return len(account_no) < valid_lengths
+	# Validate account number length
+	return len(account_no) < valid_lengths
 
 @frappe.whitelist()
 def map_purchase_invoices(source_name, target_doc=None, args=None):
@@ -700,75 +700,42 @@ def make_payment_approval(source_name, target_doc=None):
 
 @frappe.whitelist()
 def search_purchase_invoice(doctype, txt, searchfield, start=0, page_len=20, filters=None):
-    filters = frappe._dict(filters or {})
+	filters = frappe._dict(filters or {})
 
-    # Ensure ints for pagination
-    filters.start = int(start or 0)
-    filters.page_len = int(page_len or 20)
+	days_old = filters.get("days_old")
+	if days_old is None:
+		days_old = filters.get("days_ago")
 
-    # Support searching by name / supplier
-    filters.txt = f"%{txt}%" if txt else "%"
+	print(789, searchfield, txt)
 
-    # Normalize days filter: accept `days_old` (requested) or existing `days_ago` (from JS)
-    days_old = filters.get("days_old")
-    if days_old is None:
-        days_old = filters.get("days_ago")
+	if filters.get("name"):
+		del filters["name"]
+	if filters.get("outstanding_amount"):
+		filters["outstanding_amount"] = [">=", flt(filters.get("outstanding_amount"))]
+	if filters.get("days_ago"):
+		filters['posting_date'] = ['<=', add_days(getdate(), -int(filters.get("days_ago")))]
+		del filters["days_ago"]
 
-    # Build dynamic conditions
-    conditions = ["pi.docstatus = 1"]
-    params = {
-        "company": filters.get("company"),
-        "supplier": f"%{filters.get('supplier')}%" if filters.get("supplier") else None,
-        "posting_date": filters.get("posting_date"),
-        "txt": filters.txt,
-        "start": filters.start,
-        "page_len": filters.page_len,
-    }
+	if txt and searchfield:
+		filters[searchfield]=['like', "%{}%".format(txt)]
 
-    # Debug trace (can be removed if noisy)
-    print("search_purchase_invoice filters:", dict(filters))
+	# Debug trace (can be removed if noisy)
+	# print("search_purchase_invoice filters:", dict(filters))
 
-    if filters.get("company"):
-        conditions.append("pi.company = %(company)s")
-    if filters.get("supplier"):
-        conditions.append("pi.supplier LIKE %(supplier)s")
-    if filters.get("outstanding_amount"):
-        conditions.append("pi.outstanding_amount = %(outstanding_amount)s")
-        params["outstanding_amount"] = filters.get("outstanding_amount")
-
-    # Prioritize posting_date over days_old. If posting_date exists, ignore days_old.
-    if filters.get("posting_date"):
-        conditions.append("pi.posting_date = %(posting_date)s")
-    elif days_old not in (None, ""):
-        try:
-            params["days_old"] = int(days_old)
-            # Find invoices older than X days from today
-            conditions.append("DATEDIFF(CURDATE(), pi.posting_date) >= %(days_old)s")
-        except Exception:
-            # If days_old is invalid, just ignore the filter
-            pass
-
-    where_clause = " AND ".join(conditions)
-
-    return frappe.db.sql(
-        f"""
-        SELECT
-            pi.name,
-            pi.supplier,
-            pi.company,
-            pi.posting_date,
-            DATEDIFF(CURDATE(), pi.posting_date) AS days_ago,
-            pi.outstanding_amount
-        FROM `tabPurchase Invoice` pi
-        WHERE {where_clause}
-          AND (pi.name LIKE %(txt)s OR pi.supplier LIKE %(txt)s)
-        ORDER BY pi.posting_date DESC
-        LIMIT %(start)s, %(page_len)s
-        """,
-        params,
-        as_dict=True,
-        debug=0,
-    )
+	return frappe.db.get_list(
+		"Purchase Invoice",
+		filters,
+		[
+			"name",
+			"supplier",
+			"company",
+			"posting_date",
+			"DATEDIFF(CURDATE(), posting_date) AS days_ago",
+			"outstanding_amount"
+		],
+		limit_start=start,
+		limit_page_length=page_len
+	)
 
 
 @frappe.whitelist()
