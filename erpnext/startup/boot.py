@@ -22,6 +22,12 @@ def boot_session(bootinfo):
 
 			# letter head
 			bootinfo.letter_heads = get_letter_heads(bootinfo.sysdefaults.company)
+			user_disabled = frappe.get_value("User", frappe.session.user, "cannot_change_company")
+			if user_disabled:
+				bootinfo.sysdefaults.cannot_switch_company = 1
+			else:
+				bootinfo.sysdefaults.cannot_switch_company = 0
+
 		else:
 			bootinfo.sysdefaults.company_selected = "Disabled"
 
@@ -117,7 +123,7 @@ def update_page_info(bootinfo):
 	)
 
 def multi_entity_enable():
-	meta = frappe.get_meta("Accounts Settings")
+	meta = frappe.get_meta("Accounts Settings")	
 	if meta.has_field("enable_switch_company_menu") and frappe.db.get_single_value("Accounts Settings", "enable_switch_company_menu"):
 		return True
 	else:

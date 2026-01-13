@@ -179,12 +179,15 @@ custom.show_company_switcher = function (companies) {
           args: { company: value },
           callback: function(res) {
             d.hide();
-            if (res.message) {
+            if (res.message.result) {
               frappe.show_alert({ message: "Switched to " + value, indicator: "green" });
-              // Optional: reload page supaya context ganti
               hard_reload()
             }else{
-              frappe.msgprint("Cannot switch entity, please contact Administrator for more information")
+              if (res.message.error){
+                frappe.msgprint(res.message.error)
+              }else{
+                frappe.msgprint("Cannot switch entity, please contact Administrator for more information")
+              }
             }
           }
       });
@@ -217,7 +220,7 @@ window.addEventListener("focus", () => {
 });
 
 frappe.show_switcher_company = function(){
-  if (frappe.boot.sysdefaults.company_selected=="Disabled"){
+  if (frappe.boot.sysdefaults.company_selected=="Disabled" || frappe.boot.sysdefaults.cannot_switch_company){
     frappe.msgprint("Company switching disabled")
   }else{
     frappe.call({
