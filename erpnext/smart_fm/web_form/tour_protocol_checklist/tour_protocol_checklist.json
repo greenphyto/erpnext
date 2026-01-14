@@ -50,7 +50,7 @@
  ],
  "login_required": 1,
  "max_attachment_size": 5,
- "modified": "2025-03-10 08:50:15.308808",
+ "modified": "2026-01-14 08:56:53.456217",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "tour-protocol-checklist",
@@ -224,7 +224,7 @@
    "label": "Tour Type",
    "max_length": 0,
    "max_value": 0,
-   "options": "Standard Tour\nStandard Tour With AMR",
+   "options": "Standard Tour (Level 2)\nStandard Tour (Level 3, 4 with demo either line)\nStandard Tour (Chamber)",
    "read_only": 0,
    "reqd": 0,
    "show_in_filter": 0
