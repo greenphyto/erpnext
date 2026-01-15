@@ -158,7 +158,8 @@ def set_doc_transaction_type(args, doc):
 		"is_giveaway",
 		"is_marketing",
 		"is_production",
-		"is_replacement"
+		"is_replacement",
+		"is_pledge",
 	]
 	for f in fields:
 		if doc.get(f) == 1:

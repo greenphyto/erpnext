@@ -141,6 +141,15 @@ frappe.ui.form.on("Delivery Note", {
 		});
 	},
 
+	is_pledge: function(frm){
+		if (cint(frm.doc.is_pledge)==0) return;
+		frm.set_value("naming_series", 'PON-.YYYY.-.#####');
+		frappe.db.get_value("Company", frm.doc.company, ["donor_customer", "donor_delivery_account"]).then(r=>{
+			frm.set_value("customer", r.message.donor_customer);
+			set_donation_expense(frm, r.message.donor_delivery_account);
+		});
+	},
+
 	print_without_amount: function(frm) {
 		erpnext.stock.delivery_note.set_print_hide(frm.doc);
 	},
@@ -238,7 +247,7 @@ frappe.ui.form.on("Delivery Note", {
     is_return: (frm) => set_exclusive_logic(frm, "is_return"),
     is_replacement: (frm) => set_exclusive_logic(frm, "is_replacement"),
     is_marketing: (frm) => set_exclusive_logic(frm, "is_marketing"),
-    is_production: (frm) => set_exclusive_logic(frm, "is_production"),
+    is_pledge: (frm) => set_exclusive_logic(frm, "is_pledge"),
 });
 
 function set_exclusive_logic(frm, changed_field) {
@@ -248,7 +257,9 @@ function set_exclusive_logic(frm, changed_field) {
         "is_return",
         "is_replacement",
         "is_marketing",
-        "is_production"
+        "is_production",        
+		"is_pledge",
+
     ];
 
 	if (cint(frm.doc[changed_field])==0) return;

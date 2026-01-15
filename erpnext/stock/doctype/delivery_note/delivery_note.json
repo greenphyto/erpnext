@@ -16,6 +16,7 @@
   "po_no",
   "po_date",
   "organization_address",
+  "donor_name",
   "tax_id",
   "customer_name",
   "delivery_date",
@@ -37,6 +38,7 @@
   "is_giveaway",
   "is_marketing",
   "is_production",
+  "is_pledge",
   "replacement_reason_section",
   "replacement_reason",
   "column_break_29",
@@ -208,7 +210,7 @@
    "label": "Series",
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "DO-.YYYY.-.#####\nDO-RPL-.YYYY.-.#####\nGPO-.YYYY.-.###\nDON-.YYYY.-.###\nDO-RET-.YYYY.-.###\nGPM-.YYYY.-.#####\nGPP-.YYYY.-.#####",
+   "options": "DO-.YYYY.-.#####\nDO-RPL-.YYYY.-.#####\nGPO-.YYYY.-.###\nDON-.YYYY.-.###\nDO-RET-.YYYY.-.###\nGPM-.YYYY.-.#####\nGPP-.YYYY.-.#####\nPON-.YYYY.-.#####",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -659,7 +661,6 @@
    "fieldname": "taxes_section",
    "fieldtype": "Section Break",
    "hide_border": 1,
-   "hidden": 1,
    "label": "Taxes and Charges",
    "oldfieldtype": "Section Break",
    "options": "fa fa-money"
@@ -690,8 +691,7 @@
   {
    "fieldname": "section_break_41",
    "fieldtype": "Section Break",
-   "hide_border": 1,
-   "hidden": 1
+   "hide_border": 1
   },
   {
    "fieldname": "taxes_and_charges",
@@ -700,13 +700,11 @@
    "oldfieldname": "charge",
    "oldfieldtype": "Link",
    "options": "Sales Taxes and Charges Template",
-   "print_hide": 1,
-   "hidden": 1
+   "print_hide": 1
   },
   {
    "fieldname": "taxes",
    "fieldtype": "Table",
-   "hidden": 1,
    "oldfieldname": "other_charges",
    "oldfieldtype": "Table",
    "options": "Sales Taxes and Charges"
@@ -1615,13 +1613,25 @@
    "label": "Work Order",
    "options": "Work Order",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_pledge",
+   "fieldtype": "Check",
+   "label": "For Pledge"
+  },
+  {
+   "depends_on": "eval:doc.is_pledge",
+   "fieldname": "donor_name",
+   "fieldtype": "Data",
+   "label": "Donor Name"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-01-05 12:17:52.007722",
+ "modified": "2026-01-15 16:25:34.022162",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
