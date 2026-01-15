@@ -287,6 +287,10 @@ class DeliveryNote(SellingController):
 		if self.is_donation and not self.organization_name:
 			frappe.throw("Organization name must be set for Donation.")
 
+		if self.is_pledge and not self.donor_name:
+			frappe.throw("Donor name must be set for pledge purpose.")
+
+
 		# set account
 		account = None
 		if self.is_donation:
@@ -297,6 +301,9 @@ class DeliveryNote(SellingController):
 
 		elif self.is_replacement:
 			account = frappe.get_value("Company", self.company, "sales_replacement_account")
+
+		elif self.is_pledge:
+			account = frappe.get_value("Company", self.company, "donor_delivery_account")
 
 		if account:
 			for d in self.items:

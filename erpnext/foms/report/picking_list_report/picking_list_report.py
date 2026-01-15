@@ -82,7 +82,9 @@ class Report():
 				dn.docstatus = 1 AND dn.is_marketing = 0
 					AND dn.is_giveaway = 0
 					AND dn.is_donation = 0
-					AND dn.is_production = 0
+					AND dn.is_production = 0					
+					AND dn.is_pledge = 0
+
 					AND dn.customer != 'Marketing'
 					{}
 			GROUP BY dni.item_code , {}

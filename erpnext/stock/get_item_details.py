@@ -139,6 +139,22 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 	
 	return out
 
+def set_doc_transaction_type(args, doc):
+	if args.doctype != 'Delivery Note':
+		return
+
+	fields = [
+		"is_donation", 
+		"is_giveaway",
+		"is_marketing",
+		"is_production",
+		"is_replacement",
+		"is_pledge",
+	]
+	for f in fields:
+		if doc.get(f) == 1:
+			args["trans_type"] = f
+			break
 
 def remove_standard_fields(details):
 	for key in child_table_fields + default_fields:

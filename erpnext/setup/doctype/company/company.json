@@ -78,9 +78,15 @@
   "donation_and_distribution_section",
   "giveaway_account",
   "donation_account",
+  "production_delivery_account",
+  "marketing_delivery_account",
+  "donor_delivery_account",
   "column_break_65",
   "internal_staff_customer",
   "donation_customer",
+  "production_customer",
+  "marketing_customer",
+  "donor_customer",
   "column_break_68",
   "sales_replacement_account",
   "auto_accounting_for_stock_settings",
@@ -893,6 +899,18 @@
    "fieldtype": "Link",
    "label": "Default Stock Scrap Item",
    "options": "Account"
+  },
+  {
+   "fieldname": "donor_delivery_account",
+   "fieldtype": "Link",
+   "label": "Donor Delivery Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "donor_customer",
+   "fieldtype": "Link",
+   "label": "Donor Customer",
+   "options": "Customer"
   }
  ],
  "icon": "fa fa-building",
@@ -900,7 +918,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-12-08 14:43:33.321410",
+ "modified": "2026-01-15 16:19:52.133140",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",
