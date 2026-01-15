@@ -240,7 +240,7 @@ def get_payment_approval_totals(filters=None):
         FROM `tabPayment Approval`
         WHERE {where_clause}
     """
-    sum_row = frappe.db.sql(sum_query, values, as_dict=True, debug=1)
+    sum_row = frappe.db.sql(sum_query, values, as_dict=True, debug=0)
     pending_total = flt(sum_row[0].get("total_amount_sum")) if sum_row else 0.0
 
     return total, pending_total

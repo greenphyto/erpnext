@@ -24,7 +24,7 @@ def execute(filters=None):
 def get_data_from_settings(filters):
 	raw_data = frappe.db.sql("""
 		select * from `tabPart Number Details` where company = %s order by idx
-	""", (filters.company), as_dict=1, debug=1)
+	""", (filters.company), as_dict=1, debug=0)
 	data = []
 	cur_group = ""
 	for d in raw_data:
