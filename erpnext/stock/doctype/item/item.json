@@ -1045,18 +1045,6 @@
    "label": "Salad Product"
   },
   {
-   "fieldname": "customer_price_section",
-   "fieldtype": "Section Break",
-   "label": "Customer Price"
-  },
-  {
-   "allow_bulk_edit": 1,
-   "fieldname": "customer_price",
-   "fieldtype": "Table",
-   "label": "Customer Price",
-   "options": "Item Customer Price"
-  },
-  {
    "fieldname": "rate_card",
    "fieldtype": "Link",
    "label": "Rate Card",
@@ -1069,7 +1057,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2026-01-02 17:14:44.895042",
+ "modified": "2026-01-02 17:14:44.896042",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",

@@ -499,7 +499,8 @@ class Item(Document):
 		Append all the customer codes and insert into "customer_code" field of item table.
 		Used to search Item by customer code.
 		"""
-		customer_codes = set(d.ref_code for d in self.get("customer_items", []))
+		temp = [d.ref_code for d in self.get("customer_items") or []]
+		customer_codes = set(temp or [])
 		self.customer_code = ",".join(customer_codes)
 
 	def check_item_tax(self):
