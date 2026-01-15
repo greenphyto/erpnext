@@ -53,6 +53,7 @@ class SalesOrder(SellingController):
 		self.validate_warehouse()
 		self.validate_drop_ship()
 		self.validate_serial_no_based_delivery()
+		self.validate_pledge()
 		validate_inter_company_party(
 			self.doctype, self.customer, self.company, self.inter_company_order_reference
 		)
@@ -76,6 +77,10 @@ class SalesOrder(SellingController):
 
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
 		self.load_bom_items()
+
+	def validate_pledge(self):
+		if self.is_pledge and not self.donor_name:
+			frappe.throw("Donor name must be set for pledge purpose.")
 
 	def on_update_after_submit(self):
 		self.update_po_no()
@@ -141,6 +146,11 @@ class SalesOrder(SellingController):
 			self.po_no = "Pending PO"
 			self.po_date = ""
 			return 
+
+		if self.is_pledge:
+			self.po_no = "For Pledge"
+			self.po_date = ""
+			return
 		
 		if self.po_date and not self.skip_delivery_note:
 			for d in self.get("items"):
