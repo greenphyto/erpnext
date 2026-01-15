@@ -14,6 +14,7 @@
   "title",
   "naming_series",
   "customer",
+  "donor_name",
   "customer_name",
   "tax_id",
   "order_type",
@@ -24,10 +25,12 @@
   "po_no",
   "po_date",
   "pending_po",
+  "is_pledge",
   "company",
   "skip_delivery_note",
   "amended_from",
-  "ai_doc",
+  "donor_information_section",
+  "donor_info",
   "accounting_dimensions_section",
   "cost_center",
   "dimension_col_break",
@@ -213,7 +216,7 @@
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "SO.###./.YYYY",
+   "options": "SO.###./.YYYY\nPLN.###./.YYYY",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -325,6 +328,7 @@
   },
   {
    "allow_on_submit": 1,
+   "depends_on": "eval:doc.is_pledge==0",
    "fieldname": "po_no",
    "fieldtype": "Data",
    "hide_days": 1,
@@ -337,7 +341,7 @@
   },
   {
    "allow_on_submit": 1,
-   "depends_on": "eval:doc.po_no",
+   "depends_on": "eval:doc.po_no&&!doc.is_pledge",
    "fieldname": "po_date",
    "fieldtype": "Date",
    "hide_days": 1,
@@ -1734,21 +1738,34 @@
    "read_only": 1
   },
   {
+   "depends_on": "eval:doc.is_pledge",
+   "fieldname": "donor_name",
+   "fieldtype": "Data",
+   "label": "Donor Name"
+  },
+  {
    "default": "0",
-   "depends_on": "eval:doc.ai_doc",
-   "fieldname": "ai_doc",
+   "fieldname": "is_pledge",
    "fieldtype": "Check",
-   "label": "Created with AI",
-   "no_amend_copy": 1,
-   "no_copy": 1,
-   "read_only": 1
+   "label": "For Pledge"
+  },
+  {
+   "depends_on": "eval:doc.is_pledge",
+   "fieldname": "donor_information_section",
+   "fieldtype": "Section Break",
+   "label": "Donor Information"
+  },
+  {
+   "fieldname": "donor_info",
+   "fieldtype": "HTML",
+   "label": "Donor Info"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-27 16:54:52.916768",
+ "modified": "2026-01-15 19:19:09.876848",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
