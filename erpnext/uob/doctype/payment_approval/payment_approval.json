@@ -99,11 +99,11 @@
    "reqd": 1
   },
   {
-   "default": "FAST",
+   "default": "PayNow",
    "fieldname": "payment_method",
    "fieldtype": "Select",
    "label": "Payment Method",
-   "options": "\nTT\nMEPS\nIAFT\nFAST\nIBG\nIBG Express"
+   "options": "PayNow\nTT\nMEPS\nIAFT\nFAST\nIBG\nIBG Express"
   },
   {
    "fieldname": "payment_property",
@@ -317,7 +317,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-11-20 12:37:53.732565",
+ "modified": "2026-01-19 12:51:45.259709",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "Payment Approval",

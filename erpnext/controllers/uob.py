@@ -225,7 +225,10 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 		ET.SubElement(svc_lvl, 'Cd').text = debtor_info['method']
 	if debtor_info['property']:
 		svc_lvl = ET.SubElement(pmt_tp_inf, 'LclInstrm')
-		ET.SubElement(svc_lvl, 'Cd').text = debtor_info['property']
+		if debtor_info['property'] == "PAYNOW":
+			ET.SubElement(svc_lvl, 'Prtry').text = debtor_info['property']
+		else:
+			ET.SubElement(svc_lvl, 'Cd').text = debtor_info['property']
 
 	ctgy_purp = ET.SubElement(pmt_tp_inf, 'CtgyPurp')
 	ET.SubElement(ctgy_purp, 'Cd').text = debtor_info['purpose']
@@ -237,7 +240,7 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	ET.SubElement(dbtr, 'Nm').text = debtor_info['name']
 	
 	dbtr_pstl_adr = ET.SubElement(dbtr, 'PstlAdr')
-	ET.SubElement(dbtr_pstl_adr, 'Ctry').text = 'SG' # -- not yet
+	ET.SubElement(dbtr_pstl_adr, 'Ctry').text = debtor_info['country']
 	
 	dbtr_id = ET.SubElement(dbtr, 'Id')
 	dbtr_org_id = ET.SubElement(dbtr_id, 'OrgId')
@@ -249,7 +252,7 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	dbtr_acct_id = ET.SubElement(dbtr_acct, 'Id')
 	dbtr_acct_othr = ET.SubElement(dbtr_acct_id, 'Othr')
 	ET.SubElement(dbtr_acct_othr, 'Id').text = debtor_info['account_number']
-	ET.SubElement(dbtr_acct, 'Ccy').text = 'SGD' # -- not yet
+	ET.SubElement(dbtr_acct, 'Ccy').text = debtor_info['currency']
 	ET.SubElement(dbtr_acct, 'Nm').text = f"{debtor_info['company_name']}"
 	
 	# Debtor agent
@@ -257,7 +260,7 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	dbtr_agt_fin_instn_id = ET.SubElement(dbtr_agt, 'FinInstnId')
 	ET.SubElement(dbtr_agt_fin_instn_id, 'BIC').text = debtor_info['bic']
 	dbtr_agt_pstl_adr = ET.SubElement(dbtr_agt_fin_instn_id, 'PstlAdr')
-	ET.SubElement(dbtr_agt_pstl_adr, 'Ctry').text = 'SG' # -- not yet
+	ET.SubElement(dbtr_agt_pstl_adr, 'Ctry').text = debtor_info['country']
 	
 	# Create Credit Transfer Transaction Information for each invoice
 	for i, invoice in enumerate(invoices, start=1):
@@ -282,9 +285,13 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 		# Creditor Agent
 		cdtr_agt = ET.SubElement(cdt_trf_tx_inf, 'CdtrAgt')
 		cdtr_agt_fin_instn_id = ET.SubElement(cdtr_agt, 'FinInstnId')
-		ET.SubElement(cdtr_agt_fin_instn_id, 'BIC').text = invoice['creditor_bic']
-		cdtr_pstl_adr_fin = ET.SubElement(cdtr_agt_fin_instn_id, 'PstlAdr')
-		ET.SubElement(cdtr_pstl_adr_fin, 'Ctry').text = invoice.get("country")
+		if debtor_info['property'] == "PAYNOW":
+			cdtr_proxy_type_fin = ET.SubElement(cdtr_agt_fin_instn_id, 'Othr')
+			ET.SubElement(cdtr_proxy_type_fin, 'Id').text = invoice.get("proxy_type")
+		else:
+			ET.SubElement(cdtr_agt_fin_instn_id, 'BIC').text = invoice['creditor_bic']
+			cdtr_pstl_adr_fin = ET.SubElement(cdtr_agt_fin_instn_id, 'PstlAdr')
+			ET.SubElement(cdtr_pstl_adr_fin, 'Ctry').text = invoice.get("country")
 		
 		# Creditor
 		cdtr = ET.SubElement(cdt_trf_tx_inf, 'Cdtr')
