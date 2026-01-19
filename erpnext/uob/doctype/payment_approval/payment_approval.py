@@ -38,12 +38,20 @@ class PaymentApproval(Document):
 
 	def validate_data(self):
 		self.validate_bank()
+		self.validate_paynow()
 		self.validate_reqd_data()
 		self.validate_select()
 		self.validate_payment()
 		self.validate_bank_number()
 		self.validate_invoice()
 		self.calculate_amount()
+
+	def validate_paynow(self):
+		for d in self.invoices:
+			if d.proxy_type != "General" and self.payment_method != "PayNow":
+				frappe.throw(_("Row {}, Bank number <u>{}</u> only for PayNow transfers".format(d.idx, d.supplier_bank_no)))
+			elif d.proxy_type == "General" and self.payment_method == "PayNow":
+				frappe.throw(_("Row {}, Bank number <u>{}</u> can't be used on PayNow transfers".format(d.idx, d.supplier_bank_no)))
 
 	def on_submit(self):
 		self.update_apporval_date()
@@ -274,6 +282,10 @@ class PaymentApproval(Document):
 			if self.payment_method in ("TT", "MEPS", "IAFT"):
 				self.method["method"] = "URGP"
 				self.payment_property = ""
+			elif self.payment_method == "PayNow":
+				self.method["method"] = "URNS"
+				self.method["property"] = "PAYNOW"
+				self.payment_property = "PAYNOW"
 			elif self.payment_method == "FAST":
 				self.method["method"] = "URNS"
 			elif self.payment_method == "IBG":
@@ -478,6 +490,7 @@ class PaymentApproval(Document):
 				"country": get_country_code("Singapore"),
 				"address": address,
 				"remitence_address": address,
+				"proxy_type":d.proxy_type,
 				"invoices":[]
 			}
 			for inv in d['invoices']:
@@ -503,8 +516,9 @@ class PaymentApproval(Document):
 			"company_id": tax_id,
 			"dummy_bic": bic,
 			"msg_id": file_name,
-			"currency": self.currency,
-			"cheque_method": self.cheque_method
+			"cheque_method": self.cheque_method,
+			"country": get_company_code(self.company),
+			"currency": self.currency
 		}
 		debtor_info.update(self.method)
 
@@ -527,7 +541,8 @@ class PaymentApproval(Document):
 			"bank_account_name",
 			"bank_account_no",
 			"currency",
-			"party"
+			"party",
+			"proxy_type"
 		]
 		def copy_data(source):
 			dt = frappe._dict({})
@@ -622,6 +637,11 @@ class PaymentApproval(Document):
 			self.add_comment("Comment", msg)
 		self.calculate_amount()
 		self.db_update()
+
+def get_company_code(company):
+	country = frappe.db.get_value("Company", company, "country")
+	code = frappe.db.get_value("Country", country, "code")
+	return (code or "SG").upper()
 
 def get_date_simple(value):
 	return getdate(value).strftime("%y%m%d")
