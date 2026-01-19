@@ -756,7 +756,7 @@ def search_purchase_invoice(doctype, txt, searchfield, start=0, page_len=20, fil
 	if filters.get("name"):
 		del filters["name"]
 	if filters.get("outstanding_amount"):
-		filters["outstanding_amount"] = [">=", flt(filters.get("outstanding_amount"))]
+		filters["outstanding_amount"] = [">=", 0]
 	if filters.get("days_ago"):
 		filters['posting_date'] = ['<=', add_days(getdate(), -int(filters.get("days_ago")))]
 		del filters["days_ago"]

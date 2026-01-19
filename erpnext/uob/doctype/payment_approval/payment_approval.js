@@ -141,6 +141,13 @@ frappe.ui.form.on('Payment Invoice List', {
 $.extend(cur_frm.cscript, {
 	get_unpaid_purchase_invoices(){
 		var me = this;
+			function update_payment_amount(dialog){
+				let total=0;
+				$.each(dialog.get_checked_items(), (e,item)=>{
+					total += item.outstanding_amount
+				});
+				frappe.mapping_dialog.dialog.fields_dict.outstanding_amount.set_value(total)
+			}
 			const mapping_dialog = erpnext.utils.map_current_doc({
 				method: "erpnext.uob.doctype.payment_approval.payment_approval.make_payment_approval",
 				source_doctype: "Purchase Invoice",
@@ -151,7 +158,7 @@ $.extend(cur_frm.cscript, {
 					{ fieldname: "supplier", label: __("Supplier"), fieldtype: "Link", options: "Supplier" },
 					{ fieldname: "posting_date", label: __("Posting Date"), fieldtype: "Date", default: "" },
 					{ fieldname: "days_ago", label: __("Days Old"), fieldtype: "Int", read_only: 0, description: __(">=, Greater than or equal")},
-					{ fieldname: "outstanding_amount", label: __("Outstanding Amount"), fieldtype: "Currency", description: __(">=, Greater than or equal") }
+					{ fieldname: "outstanding_amount", label: __("Total Payment Amount"), fieldtype: "Currency", description: __("Total selected amount"), read_only:1}
 				],
 				get_query_method:"erpnext.uob.doctype.payment_approval.payment_approval.search_purchase_invoice",
 				get_query_filters: {
@@ -159,8 +166,12 @@ $.extend(cur_frm.cscript, {
 					company: me.frm.doc.company,
 					outstanding_amount: [">", 0]
 				},
-				size: 'extra-large'
+				size: 'extra-large',
+				select_action: (e, elem)=>{
+					update_payment_amount(mapping_dialog);
+				}
 			});
+			frappe.mapping_dialog = mapping_dialog
 	},
 	setup_method(){
 		var me = this.frm;
