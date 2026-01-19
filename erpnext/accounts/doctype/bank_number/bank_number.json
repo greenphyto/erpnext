@@ -16,7 +16,8 @@
   "column_break_6",
   "party_type",
   "party",
-  "currency"
+  "currency",
+  "country"
  ],
  "fields": [
   {
@@ -95,11 +96,18 @@
    "label": "Proxy Type",
    "options": "General\nUEN\nMSISDN\nNRIC\nVPA",
    "reqd": 1
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "label": "Country",
+   "options": "Country",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-19 12:51:17.997220",
+ "modified": "2026-01-19 15:47:03.173819",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Bank Number",

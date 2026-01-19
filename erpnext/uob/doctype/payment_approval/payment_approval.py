@@ -472,7 +472,7 @@ class PaymentApproval(Document):
 				"instruction_start":ins_start,
 				"instruction_end":ins_end,
 				"email":email,
-				"country": get_country_code("Singapore"),
+				"country": d.country,
 				"address": address,
 				"remitence_address": address,
 				"proxy_type":d.proxy_type,
@@ -547,6 +547,8 @@ class PaymentApproval(Document):
 			else:
 				map_invoice[key]["amount"] += flt(d.amount)
 				map_invoice[key]['invoices'].append(d)
+
+			map_invoice[key]["country"] = get_bank_number_country(d.supplier_bank_no)
 			
 		return list(map_invoice.values())
 
@@ -621,6 +623,11 @@ class PaymentApproval(Document):
 
 def get_company_code(company):
 	country = frappe.db.get_value("Company", company, "country")
+	code = frappe.db.get_value("Country", country, "code")
+	return (code or "SG").upper()
+
+def get_bank_number_country(bank_number):
+	country = frappe.db.get_value("Bank Number", bank_number)
 	code = frappe.db.get_value("Country", country, "code")
 	return (code or "SG").upper()
 
