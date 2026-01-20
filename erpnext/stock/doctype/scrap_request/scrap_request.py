@@ -4,7 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from frappe.desk.reportview import get_filters_cond, get_match_cond
-from frappe.utils import getdate, add_days
+from frappe.utils import getdate, add_days, cint
 from erpnext.stock.doctype.batch.batch import get_batch_qty
 from erpnext.stock.get_item_details import get_conversion_factor
 from erpnext.controllers.foms import get_wip_warehouse
@@ -117,12 +117,12 @@ def get_batch_numbers(doctype, txt, searchfield, start, page_len, filters):
 	return frappe.db.sql(query, filters)
 
 def collect_expired_items():
-	enable, within_days = frappe.db.get_value("Stock Settings","Stock Settings", ['enable_auto_collect_expired_items', 'expiry_days']) or 0, 0
+	enable, within_days = frappe.db.get_value("Stock Settings","Stock Settings", ['enable_auto_collect_expired_items', 'expiry_days']) or (0, 0)
 
-	if not enable:
+	if not cint(enable):
 		return
 	
-	use_date = add_days(getdate(), within_days)
+	use_date = add_days(getdate(), cint(within_days))
 	wip_warehouse = get_wip_warehouse()
 
 	# get data
@@ -198,12 +198,12 @@ def collect_expired_items():
 	return doc.name
 
 def collect_expired_product(date=""):
-	enable = frappe.db.get_value("Stock Settings","Stock Settings", 'enable_auto_collect_expired_products') or 0
+	enable, within_days = frappe.db.get_value("Stock Settings","Stock Settings", ['enable_auto_collect_expired_products', 'expiry_days_product']) or (0,0)
 
-	if not enable:
+	if not cint(enable):
 		return
 	
-	use_date = getdate(date)
+	use_date = add_days(getdate(), cint(within_days))
 	wip_warehouse = get_wip_warehouse()
 
 	# get data

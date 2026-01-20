@@ -61,8 +61,10 @@
   "scrap_settings_section",
   "enable_auto_collect_expired_items",
   "expiry_days",
-  "enable_auto_collect_expired_products",
   "account_for_raw_material_scrap",
+  "column_break_58",
+  "enable_auto_collect_expired_products",
+  "expiry_days_product",
   "account_for_product_scrap"
  ],
  "fields": [
@@ -401,6 +403,17 @@
    "fieldname": "enable_auto_collect_expired_products",
    "fieldtype": "Check",
    "label": "Enable auto collect expired products"
+  },
+  {
+   "fieldname": "column_break_58",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "-14",
+   "description": "Set negative value for older days",
+   "fieldname": "expiry_days_product",
+   "fieldtype": "Int",
+   "label": "Expiry within (days)"
   }
  ],
  "icon": "icon-cog",
@@ -408,7 +421,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-12-18 18:40:44.510181",
+ "modified": "2026-01-20 19:47:19.604285",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Settings",
