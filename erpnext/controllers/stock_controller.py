@@ -401,6 +401,12 @@ class StockController(AccountsController):
 				)
 				if has_batch_no and create_new_batch:
 					if not is_internal:
+						lot_id = ""
+						if self.work_order:
+							lot_id = frappe.db.get_value(
+								"Work Order", self.work_order, "foms_lot_name"
+							)
+
 						d.batch_no = (
 							frappe.get_doc(
 								dict(
@@ -409,11 +415,8 @@ class StockController(AccountsController):
 									supplier=getattr(self, "supplier", None),
 									reference_doctype=self.doctype,
 									reference_name=self.name,
+									foms_lot_id=lot_id,
 								)
-							)
-							.insert()
-							.name
-						)
 					else:
 						# find DN from PO
 						row_name, batch = frappe.db.get_value("Delivery Note Item", {

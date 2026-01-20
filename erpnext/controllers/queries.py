@@ -503,8 +503,8 @@ def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 			search_cond = " or " + " or ".join([field + " like %(txt)s" for field in searchfields])
 
 		batch_nos = frappe.db.sql(
-			"""select sle.batch_no, round(sum(sle.actual_qty),2), sle.stock_uom,
-				concat('MFG-',batch.manufacturing_date), concat('EXP-',batch.expiry_date)
+			"""select sle.batch_no, round(sum(sle.actual_qty),2), sle.stock_uom, batch.foms_lot_id,
+				concat('<br>MFG-',batch.manufacturing_date), concat('EXP-',batch.expiry_date)
 				{search_columns}
 			from `tabStock Ledger Entry` sle
 				INNER JOIN `tabBatch` batch on sle.batch_no = batch.name
