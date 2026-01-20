@@ -25,6 +25,9 @@ class Report():
 			"pic":{
 				"outlets":"PIC"
 			},
+			"dn":{
+				"outlets":"Delivery No",
+			},
 			"total_packs":{
 				  	"outlets":"Total Packs",
 					'po':0,
@@ -128,6 +131,7 @@ class Report():
 					self.row_map['pic'][key] = d.outlet_name
 				else:
 					self.row_map['pic'][key] = d.contact_display
+					self.row_map['dn'][key] = d.delivery_note
 				self.outlet_names.append(key)
 
 			# Item code
@@ -165,7 +169,7 @@ class Report():
 		]
 
 		for key, val in self.row_map.items():
-			if key not in ['total_packs', 'pic', 'total_cartons']:
+			if key not in ['total_packs', 'pic', 'total_cartons', 'dn']:
 				self.row_map["total_packs"]['po'] += val['po']
 				self.row_map["total_packs"]['return'] += val['return']
 				self.row_map["total_packs"]['delivery'] += val['delivery']

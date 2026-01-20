@@ -24,5 +24,13 @@ frappe.query_reports["Picking List Report"] = {
             "default": "All Outlets",
 			"options":"All Outlets\nDelivery Note"
         }
-    ]
+    ],
+    "formatter": function(value, row, column, data, default_formatter) {
+        value = default_formatter(value, row, column, data);
+        if (column.fieldname != "outlets" && row && row[0].rowIndex==1){
+            value = `<a href="/app/delivery-note/${value}" target="_blank" rel="noopener noreferrer">${value}</a>`;
+        }
+        
+        return value;
+    }
 };
