@@ -19,6 +19,7 @@ GLOBAL_ITEM = "items"
 class VATAuditReport(object):
 	def __init__(self, filters=None):
 		self.filters = frappe._dict(filters or {})
+		self.filters['name'] = "INV3157/2025"
 		self.columns = []
 		self.data = []
 		self.doctypes = ["Sales Invoice","Purchase Invoice"]
@@ -712,7 +713,11 @@ class VATAuditReport(object):
 					 
 						rowgross_amount = 0.0 if item_details.get("gross_amount") =="" else item_details.get("gross_amount")
 
-						row["gross_amount"] += item_details.get("gross_amount")
+						if len(items) == len(detail.keys()):
+							row["gross_amount"] += item_details.get("gross_amount")
+						else:
+							row["gross_amount"] = item_details.get("gross_amount")
+							
 						key = (inv_data.get("voucher_type"), inv)
 						gl_tax_amount = self.tax_amount_map.get(key)
 
