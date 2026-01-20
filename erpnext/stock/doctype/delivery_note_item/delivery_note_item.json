@@ -850,6 +850,7 @@
   {
    "allow_on_submit": 1,
    "columns": 1,
+   "fetch_from": "batch_no.foms_lot_id",
    "fieldname": "foms_lot_name",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -861,8 +862,8 @@
    "fieldname": "foms_work_order",
    "fieldtype": "Data",
    "label": "FOMS Work Order",
-   "read_only_depends_on": "eval:parent.foms_id",
-   "read_only": 1
+   "read_only": 1,
+   "read_only_depends_on": "eval:parent.foms_id"
   },
   {
    "fieldname": "replacement_qty",
@@ -875,7 +876,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-07-31 14:20:01.727467",
+ "modified": "2026-01-20 19:14:53.481875",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note Item",
