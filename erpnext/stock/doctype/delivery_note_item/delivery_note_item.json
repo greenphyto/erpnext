@@ -868,14 +868,6 @@
    "read_only_depends_on": "eval:parent.foms_id"
   },
   {
-   "allow_on_submit": 1,
-   "fieldname": "foms_work_order",
-   "fieldtype": "Data",
-   "label": "FOMS Work Order",
-   "read_only_depends_on": "eval:parent.foms_id",
-   "read_only": 1
-  },
-  {
    "fieldname": "replacement_qty",
    "fieldtype": "Float",
    "label": "Replacement Qty",
