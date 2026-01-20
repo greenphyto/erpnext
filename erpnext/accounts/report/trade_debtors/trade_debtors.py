@@ -732,7 +732,7 @@ class DebtorCreditorReport(object):
 			)
 			.left_join(party_table).on(ple.party == party_table.name)
 			.left_join(acc_tab).on(acc_tab.name == ple.account)
-			.where(ple.delinked == 0)
+			# .where(ple.delinked == 0)
 			.where(
 				((ple.voucher_type == "Journal Entry") & (ple.account == self.against_account)) |
 				((ple.voucher_type != "Journal Entry"))
