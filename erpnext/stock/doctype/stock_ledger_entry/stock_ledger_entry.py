@@ -157,6 +157,11 @@ class StockLedgerEntry(Document):
 				self.voucher_type in ["Delivery Note", "Sales Invoice"] and self.actual_qty > 0
 			):
 				return
+			
+			if self.voucher_type == "Delivery Note":
+				doc = frappe.get_doc(self.voucher_type, self.voucher_no)
+				if cint(doc.is_marketing) or cint(doc.is_donation):
+					return
 
 			expiry_date = frappe.db.get_value("Batch", self.batch_no, "expiry_date")
 			if expiry_date:

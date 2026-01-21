@@ -458,7 +458,7 @@ def get_delivery_notes_to_be_billed(doctype, txt, searchfield, start, page_len, 
 def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 	doctype = "Batch"
 	cond = ""
-	if filters.get("posting_date"):
+	if filters.get("posting_date") and not filters.get("allow_expired"):
 		cond = "and (batch.expiry_date is null or batch.expiry_date >= %(posting_date)s)"
 
 	batch_nos = None

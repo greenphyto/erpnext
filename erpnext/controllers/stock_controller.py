@@ -84,6 +84,7 @@ class StockController(AccountsController):
 
 		if self.doctype == "Sales Invoice" and not self.update_stock:
 			return
+		
 
 		is_material_issue = False
 		if self.doctype == "Stock Entry" and self.purpose == "Material Issue":
@@ -112,6 +113,9 @@ class StockController(AccountsController):
 			if flt(d.qty) > 0.0 and d.get("batch_no") and self.get("posting_date") and self.docstatus < 2:
 				expiry_date = frappe.get_cached_value("Batch", d.get("batch_no"), "expiry_date")
 
+				if self.doctype == "Delivery Note" and (cint(self.is_marketing) or cint(self.is_donation)):
+					continue
+				
 				if expiry_date and getdate(expiry_date) < getdate(self.posting_date):
 					frappe.throw(
 						_("Row #{0}: The batch {1} has already expired.").format(
