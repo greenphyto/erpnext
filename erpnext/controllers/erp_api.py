@@ -2,8 +2,8 @@ import frappe, json, erpnext
 from six import string_types
 from frappe.utils import flt, now_datetime, cint, getdate, cstr, get_datetime, add_days
 from erpnext.controllers.foms import (
-    create_bom_products, 
-    get_bom_for_work_order, 
+	create_bom_products, 
+	get_bom_for_work_order, 
 	get_foms_settings,
 	create_work_order as _create_work_order,
 	OPERATION_MAP_NAME,
@@ -1262,3 +1262,47 @@ def delete_item(itemCode):
 	else:
 		doc.db_set("disabled", 1)
 		return False
+		
+@frappe.whitelist()
+def get_document_lotid(lotid=""):
+	# 1. Validation for empty parameter
+	if not lotid:
+		frappe.throw(_("The parameter 'lotid' is required."), frappe.ValidationError)
+	
+	data = {"transactions": []}
+
+	# 2. Fetch Batch details
+	batch = frappe.db.get_value("Batch", {"foms_lot_id": lotid}, "*", as_dict=1)
+	
+	# 3. Check if Batch exists, if not throw 404
+	if not batch:
+		frappe.throw(
+			msg=_("Batch with Lot ID '{0}' not found.").format(lotid), 
+			exc=frappe.DoesNotExistError
+		)
+
+	# Batch
+	data['batch'] = batch
+
+	# get ledger
+	sle = frappe.db.sql("""
+		SELECT 
+			sle.posting_date,
+			sle.warehouse,
+			sle.voucher_type,
+			sle.voucher_no,
+			sle.actual_qty
+		FROM
+			`tabStock Ledger Entry` sle
+		WHERE
+			sle.batch_no = %s
+		ORDER BY sle.posting_date DESC, sle.posting_time DESC, sle.name DESC
+		LIMIT 10
+	""", (data['batch'].name), as_dict=1)
+	for d in sle:
+		doc = frappe.get_doc(d.voucher_type, d.voucher_no)
+		data["transactions"].append(doc.as_dict())
+		if doc.doctype == "Stock Entry" and doc.purpose == "Manufacture":
+			data['batch']['work_order'] = doc.work_order
+
+	return data

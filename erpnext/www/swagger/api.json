@@ -231,12 +231,14 @@
                   "fomsWorkOrderID": "FOMS-001",
                   "fomsLotID": "LOT12",
                   "productID": "37",
-                  "salesOrderNo": ["SO056/2024"],
+                  "salesOrderNo": [
+                    "SO056/2024"
+                  ],
                   "submit": true,
                   "qty": 2,
                   "gross_weight": 4,
                   "uom": "Kg",
-                  "company":"Greenphyto Pte Ltd"
+                  "company": "Greenphyto Pte Ltd"
                 }
               }
             }
@@ -285,7 +287,7 @@
                   "ERPWorkOrderID": "LOT135-001",
                   "operationNo": 1,
                   "percentage": 100,
-                  "rawMaterials":[
+                  "rawMaterials": [
                     {
                       "sourceWarehouseId": "48",
                       "sourceWarehouseRefNo": "Raw Materials - GPL",
@@ -361,8 +363,8 @@
                 "example": {
                   "erpWorkOrderID": "FOMS-001-005",
                   "qty": 1,
-                  "packets":20,
-                  "expiryDate":"2025-01-01"
+                  "packets": 20,
+                  "expiryDate": "2025-01-01"
                 }
               }
             }
@@ -482,44 +484,44 @@
                 "example": {
                   "ERPWorkOrderID": "FOMS-123-001",
                   "items": [
-                      {
-                          "sourceWarehouseId":"48",
-                          "sourceWarehouseRefNo":"Raw Materials - GPL",
-                          "rawMaterialId":"38",
-                          "rawMaterialRefNo":"RM-IN-WW",
-                          "rawMaterialBatchRefNo":"",
-                          "qtyReserve":196,
-                          "uom":"L"
-                      },
-                      {
-                          "sourceWarehouseId":"48",
-                          "sourceWarehouseRefNo":"Raw Materials - GPL",
-                          "rawMaterialId":"41",
-                          "rawMaterialRefNo":"RM-NS-NSB",
-                          "rawMaterialBatchRefNo":"",
-                          "qtyReserve":1980,
-                          "uom":"ml"
-                      },
-                      {
-                          "sourceWarehouseId":"48",
-                          "sourceWarehouseRefNo":"Raw Materials - GPL",
-                          "rawMaterialId":"72",
-                          "rawMaterialRefNo":"RM-NS-NSB",
-                          "rawMaterialBatchRefNo":"",
-                          "qtyReserve":2.57,
-                          "uom":"g"
-                      },  
-                      {
-                          "sourceWarehouseId":"48",
-                          "sourceWarehouseRefNo":"Raw Materials - GPL",
-                          "rawMaterialId":"40",
-                          "rawMaterialRefNo":"RM-NS-NSA",
-                          "rawMaterialBatchRefNo":"",
-                          "qtyReserve":2480,
-                          "uom":"ml"
-                      }
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "38",
+                      "rawMaterialRefNo": "RM-IN-WW",
+                      "rawMaterialBatchRefNo": "",
+                      "qtyReserve": 196,
+                      "uom": "L"
+                    },
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "41",
+                      "rawMaterialRefNo": "RM-NS-NSB",
+                      "rawMaterialBatchRefNo": "",
+                      "qtyReserve": 1980,
+                      "uom": "ml"
+                    },
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "72",
+                      "rawMaterialRefNo": "RM-NS-NSB",
+                      "rawMaterialBatchRefNo": "",
+                      "qtyReserve": 2.57,
+                      "uom": "g"
+                    },
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "40",
+                      "rawMaterialRefNo": "RM-NS-NSA",
+                      "rawMaterialBatchRefNo": "",
+                      "qtyReserve": 2480,
+                      "uom": "ml"
+                    }
                   ]
-              }
+                }
               }
             }
           },
@@ -685,13 +687,13 @@
                 },
                 "example": {
                   "data": {
-                    "productID":"FD-VG-01",
-                    "productName":"Red Bean",
-                    "productDetail":"Read bean F1 quality",
-                    "productDesc":"Read bean F1 quality from Taiwan",
-                    "unitOfMeasurement":"kg",
-                    "id":101,
-                    "defaultExpiryDays":30
+                    "productID": "FD-VG-01",
+                    "productName": "Red Bean",
+                    "productDetail": "Read bean F1 quality",
+                    "productDesc": "Read bean F1 quality from Taiwan",
+                    "unitOfMeasurement": "kg",
+                    "id": 101,
+                    "defaultExpiryDays": 30
                   }
                 }
               }
@@ -707,7 +709,7 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "ProductNo":"item-001"
+                      "ProductNo": "item-001"
                     }
                   }
                 }
@@ -766,7 +768,7 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "DeliveryOrderNo":""
+                      "DeliveryOrderNo": ""
                     }
                   }
                 }
@@ -786,7 +788,7 @@
         "operationId": "update delivery signature",
         "requestBody": {
           "description": {
-            "test":123
+            "test": 123
           },
           "content": {
             "application/json": {
@@ -798,20 +800,22 @@
                   }
                 },
                 "example": {
-                  "data":{
-                      "doNumber":"DO-2024-003-1",
-                      "attachments":[{
-                          "filename":"test-image.png",
-                          "image":"/9j/4AAQSkZJRgABAQEASwBLAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAw....",
-                          "imageUrl":"should have 'http' string"
-                      }],
-                      "signature_by":"Jing Wei",
-                      "taken_at":"2024-08-20 12:24",
-                      "signature":"iVBORw0KGgoAAAANSUhEUgAAApsAAAEUCAYAAABknP30AAAAAXNSR0IArs4c6QAA...",
-                      "completed_at":"2024-09-21 12:24",
-                      "completed_by":"Alex"
+                  "data": {
+                    "doNumber": "DO-2024-003-1",
+                    "attachments": [
+                      {
+                        "filename": "test-image.png",
+                        "image": "/9j/4AAQSkZJRgABAQEASwBLAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAw....",
+                        "imageUrl": "should have 'http' string"
+                      }
+                    ],
+                    "signature_by": "Jing Wei",
+                    "taken_at": "2024-08-20 12:24",
+                    "signature": "iVBORw0KGgoAAAANSUhEUgAAApsAAAEUCAYAAABknP30AAAAAXNSR0IArs4c6QAA...",
+                    "completed_at": "2024-09-21 12:24",
+                    "completed_by": "Alex"
                   }
-              }
+                }
               }
             }
           },
@@ -856,16 +860,18 @@
                   "data": {
                     "posting_date": "2024-02-24",
                     "posting_time": "08:12",
-                    "from_warehouse":"Raw Materials - GPL",
-                    "company":"Greenphyto Pte Ltd",
-                    "items":[{
-                      "item":"RM-MS-SP",
-                      "qty":"2",
-                      "uom":"Unit",
-                      "serial_no":"",
-                      "batch_no":"",
-                      "rate":1
-                    }]
+                    "from_warehouse": "Raw Materials - GPL",
+                    "company": "Greenphyto Pte Ltd",
+                    "items": [
+                      {
+                        "item": "RM-MS-SP",
+                        "qty": "2",
+                        "uom": "Unit",
+                        "serial_no": "",
+                        "batch_no": "",
+                        "rate": 1
+                      }
+                    ]
                   }
                 }
               }
@@ -881,7 +887,7 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "StockEntryNo":""
+                      "StockEntryNo": ""
                     }
                   }
                 }
@@ -914,16 +920,18 @@
                   "data": {
                     "posting_date": "2024-02-24",
                     "posting_time": "08:12",
-                    "from_warehouse":"Raw Materials - GPL",
-                    "company":"Greenphyto Pte Ltd",
-                    "items":[{
-                      "item":"RM-MS-SP",
-                      "qty":"2",
-                      "uom":"Unit",
-                      "serial_no":"",
-                      "batch_no":"",
-                      "rate":1
-                    }]
+                    "from_warehouse": "Raw Materials - GPL",
+                    "company": "Greenphyto Pte Ltd",
+                    "items": [
+                      {
+                        "item": "RM-MS-SP",
+                        "qty": "2",
+                        "uom": "Unit",
+                        "serial_no": "",
+                        "batch_no": "",
+                        "rate": 1
+                      }
+                    ]
                   }
                 }
               }
@@ -939,7 +947,7 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "StockEntryNo":""
+                      "StockEntryNo": ""
                     }
                   }
                 }
@@ -972,18 +980,20 @@
                   "data": {
                     "posting_date": "2024-02-24",
                     "posting_time": "08:12",
-                    "from_warehouse":"Raw Materials - GPL",
-                    "company":"Greenphyto Pte Ltd",
-                    "work_order":"",
-                    "operation_no":2,
-                    "items":[{
-                      "item":"RM-MS-SP",
-                      "qty":"2",
-                      "uom":"Unit",
-                      "serial_no":"",
-                      "batch_no":"",
-                      "rate":1
-                    }]
+                    "from_warehouse": "Raw Materials - GPL",
+                    "company": "Greenphyto Pte Ltd",
+                    "work_order": "",
+                    "operation_no": 2,
+                    "items": [
+                      {
+                        "item": "RM-MS-SP",
+                        "qty": "2",
+                        "uom": "Unit",
+                        "serial_no": "",
+                        "batch_no": "",
+                        "rate": 1
+                      }
+                    ]
                   }
                 }
               }
@@ -999,7 +1009,7 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "StockEntryNo":""
+                      "StockEntryNo": ""
                     }
                   }
                 }
@@ -1019,7 +1029,7 @@
         "operationId": "create request form",
         "requestBody": {
           "description": {
-            "test":123
+            "test": 123
           },
           "content": {
             "application/json": {
@@ -1031,23 +1041,23 @@
                   }
                 },
                 "example": {
-                  "data" : {
+                  "data": {
                     "department": "Sales",
-                    "posting_date":"2024-05-26",
-                    "delivery_date":"2024-05-30",
-                    "foms_order_id":"12",
-                    "company":"Greenphyto Pte Ltd",
-                    "items":[
+                    "posting_date": "2024-05-26",
+                    "delivery_date": "2024-05-30",
+                    "foms_order_id": "12",
+                    "company": "Greenphyto Pte Ltd",
+                    "items": [
                       {
-                        "item_code":"PR-AV-KLL",
-                        "qty":2,
-                        "uom":"Package",
-                        "packaging":"Package (200g) - GP Type A",
-                        "rate":1.2,
-                        "unit_qty":200,
-                        "unit_uom":"g",
-                        "unit_weight":0.20,
-                        "weight":0.40
+                        "item_code": "PR-AV-KLL",
+                        "qty": 2,
+                        "uom": "Package",
+                        "packaging": "Package (200g) - GP Type A",
+                        "rate": 1.2,
+                        "unit_qty": 200,
+                        "unit_uom": "g",
+                        "unit_weight": 0.20,
+                        "weight": 0.40
                       }
                     ]
                   }
@@ -1065,7 +1075,7 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "RequestNo":""
+                      "RequestNo": ""
                     }
                   }
                 }
@@ -1085,7 +1095,7 @@
         "operationId": "create finish goods stock",
         "requestBody": {
           "description": {
-            "test":123
+            "test": 123
           },
           "content": {
             "application/json": {
@@ -1097,22 +1107,22 @@
                   }
                 },
                 "example": {
-                  "data":{
-                    "work_order_id":"",
-                    "lot_id":"",
-                    "rack_no":"",
-                    "customer_order_no:":"",
-                    "posting_date":"2024-07-02 08:12:32",
-                    "company":"optional",
-                    "item_code":"PR-AV-KL",
-                    "bom":"optional or u can also refer to existing BOM",
-                    "qty":2,
-                    "uom":"kg",
-                    "batch":"optional | if not set it will generated from ERP side",
-                    "batch_exp":"optional", 
-                    "batch_mfg":"optional", 
-                    "warehouse":"Finished Goods - GPL",
-                    "id":1
+                  "data": {
+                    "work_order_id": "",
+                    "lot_id": "",
+                    "rack_no": "",
+                    "customer_order_no:": "",
+                    "posting_date": "2024-07-02 08:12:32",
+                    "company": "optional",
+                    "item_code": "PR-AV-KL",
+                    "bom": "optional or u can also refer to existing BOM",
+                    "qty": 2,
+                    "uom": "kg",
+                    "batch": "optional | if not set it will generated from ERP side",
+                    "batch_exp": "optional",
+                    "batch_mfg": "optional",
+                    "warehouse": "Finished Goods - GPL",
+                    "id": 1
                   }
                 }
               }
@@ -1128,7 +1138,7 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "RequestNo":""
+                      "RequestNo": ""
                     }
                   }
                 }
@@ -1148,7 +1158,7 @@
         "operationId": "Update request data",
         "requestBody": {
           "description": {
-            "test":123
+            "test": 123
           },
           "content": {
             "application/json": {
@@ -1160,12 +1170,14 @@
                   }
                 },
                 "example": {
-                  "data":{
-                    "request_no":"REQ0001/2024", 
-                    "items":[{
-                      "item_code":"PR-AV-KLL",
-                      "qty":6
-                    }], 
+                  "data": {
+                    "request_no": "REQ0001/2024",
+                    "items": [
+                      {
+                        "item_code": "PR-AV-KLL",
+                        "qty": 6
+                      }
+                    ],
                     "delivery_date": "2024-08-25"
                   }
                 }
@@ -1182,7 +1194,7 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "RequestNo":""
+                      "RequestNo": ""
                     }
                   }
                 }
@@ -1202,7 +1214,7 @@
         "operationId": "create packaging data",
         "requestBody": {
           "description": {
-            "test":123
+            "test": 123
           },
           "content": {
             "application/json": {
@@ -1214,13 +1226,13 @@
                   }
                 },
                 "example": {
-                  "data":{
-                    "itemCode":"PR-AV-KOM",
-                    "packageName":"Package (120g) - GP Type A",
-                    "packageType":"GP Type A",
-                    "packageWeight":120,
-                    "uom":"g",
-                    "id":"foms id"
+                  "data": {
+                    "itemCode": "PR-AV-KOM",
+                    "packageName": "Package (120g) - GP Type A",
+                    "packageType": "GP Type A",
+                    "packageWeight": 120,
+                    "uom": "g",
+                    "id": "foms id"
                   }
                 }
               }
@@ -1236,7 +1248,7 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "PackageID":""
+                      "PackageID": ""
                     }
                   }
                 }
@@ -1256,7 +1268,7 @@
         "operationId": "delete item erp",
         "requestBody": {
           "description": {
-            "test":123
+            "test": 123
           },
           "content": {
             "application/json": {
@@ -1268,7 +1280,7 @@
                   }
                 },
                 "example": {
-                  "itemCode":""
+                  "itemCode": ""
                 }
               }
             }
@@ -1306,9 +1318,15 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "item_code": {"type": "string"},
-                  "safety_stock": {"type": "number"},
-                  "company": {"type": "string"}
+                  "item_code": {
+                    "type": "string"
+                  },
+                  "safety_stock": {
+                    "type": "number"
+                  },
+                  "company": {
+                    "type": "string"
+                  }
                 },
                 "example": {
                   "item_code": "RM-NS-NSA",
@@ -1341,6 +1359,96 @@
           },
           "404": {
             "description": "Item not found or invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.get_document_lotid": {
+      "get": {
+        "summary": "Retrieve Batch details and associated Stock Transactions by external Lot ID",
+        "description": "Fetches details of a specific Batch using its external 'foms_lot_id', and retrieves the 10 most recent associated Stock Ledger Entries. For each ledger entry, it fetches the full document details (e.g., Delivery Note, Purchase Receipt).",
+        "operationId": "get_batch_transactions_by_lot_id",
+        "parameters": [
+          {
+            "name": "lotid",
+            "in": "query",
+            "description": "The external FOMS Lot ID to search for.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "LOT-ABC-12345"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "batch": {
+                      "type": "object",
+                      "description": "The full Batch document details.",
+                      "example": {
+                        "name": "BAT00001",
+                        "batch_id": "LOT-ABC-12345",
+                        "item_code": "RM-NS-NSA",
+                        "expiry_date": "2026-12-31",
+                        "foms_lot_id": "LOT-ABC-12345"
+                      }
+                    },
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "description": "Full document details of associated transactions (e.g., Delivery Note, Stock Entry)."
+                      },
+                      "example": [
+                        {
+                          "name": "DN-00045",
+                          "doctype": "Delivery Note",
+                          "posting_date": "2026-01-20",
+                          "customer": "Customer A",
+                          "items": [
+                            {
+                              "item_code": "...",
+                              "batch_no": "BAT00001",
+                              "qty": 10
+                            }
+                          ]
+                        },
+                        {
+                          "name": "STE-00099",
+                          "doctype": "Stock Entry",
+                          "posting_date": "2026-01-15",
+                          "purpose": "Material Issue"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "example": {
+                  "batch": {
+                    "name": "BAT00001",
+                    "foms_lot_id": "LOT-ABC-12345",
+                    "item_code": "RM-NS-NSA",
+                    "expiry_date": "2026-12-31"
+                  },
+                  "transactions": [
+                    {
+                      "name": "DN-00045",
+                      "doctype": "Delivery Note",
+                      "customer": "Customer A"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lot ID not found or no associated transactions found."
           }
         }
       }
