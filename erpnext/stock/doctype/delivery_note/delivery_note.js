@@ -197,7 +197,7 @@ frappe.ui.form.on("Delivery Note", {
 		}
 		
 		erpnext.add_image_slide(frm)
-		erpnext.set_batch_no_readonly(frm);
+		// erpnext.set_batch_no_readonly(frm);
 	},
 	is_return: function(frm){
 		frm.set_value("naming_series", "DO-RET-.YYYY.-.###")
