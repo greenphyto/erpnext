@@ -16,6 +16,8 @@ def execute(filters=None):
 
 GLOBAL_ITEM = "items"
 
+def flt2(value):
+	return flt(value,2)
 class VATAuditReport(object):
 	def __init__(self, filters=None):
 		self.filters = frappe._dict(filters or {})
@@ -726,10 +728,12 @@ class VATAuditReport(object):
 						else:
 							row["tax_amount"] += flt(item_details.get("tax_amount"))
 						row["tax_charge"] = inv_data.get("taxes_and_charges")
-      
-					row["net_amount"] = fmt_money( flt(row["gross_amount"]) - row["tax_amount"] )
-					row["tax_amount"] = fmt_money(row["tax_amount"] )
-					row["gross_amount"] = fmt_money(row["gross_amount"] )
+
+					row["net_amount"] = fmt_money( flt2(flt2(row["gross_amount"]) - flt2(row["tax_amount"])) )
+					row["tax_amount"] = fmt_money( flt2(row["tax_amount"]) )
+					row["gross_amount"] = fmt_money( flt2(row["gross_amount"]) )
+					if row["voucher_no"] == "CN161/2025":
+						print(731)
 					consolidated_data_map[taxType]["data"].append(row)
 
 		get_tax_type = self.get_tax_types(doctype)
