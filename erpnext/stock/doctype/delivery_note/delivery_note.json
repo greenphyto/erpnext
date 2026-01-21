@@ -311,7 +311,8 @@
    "label": "Is Return",
    "no_copy": 1,
    "print_hide": 1,
-   "read_only": 1
+   "read_only": 1,
+   "set_only_once": 1
   },
   {
    "default": "0",
@@ -1557,7 +1558,8 @@
    "default": "0",
    "fieldname": "is_replacement",
    "fieldtype": "Check",
-   "label": "Is Replacement"
+   "label": "Is Replacement",
+   "set_only_once": 1
   },
   {
    "fieldname": "delivery_date",
@@ -1599,13 +1601,15 @@
    "default": "0",
    "fieldname": "is_marketing",
    "fieldtype": "Check",
-   "label": "For Marketing"
+   "label": "For Marketing",
+   "set_only_once": 1
   },
   {
    "default": "0",
    "fieldname": "is_production",
    "fieldtype": "Check",
-   "label": "For Production"
+   "label": "For Production",
+   "set_only_once": 1
   },
   {
    "fieldname": "work_order",
@@ -1618,7 +1622,8 @@
    "default": "0",
    "fieldname": "is_pledge",
    "fieldtype": "Check",
-   "label": "For Pledge"
+   "label": "For Pledge",
+   "set_only_once": 1
   },
   {
    "depends_on": "eval:doc.is_pledge",
@@ -1631,7 +1636,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-01-15 16:25:34.022162",
+ "modified": "2026-01-21 11:20:08.637916",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
