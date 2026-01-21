@@ -16,6 +16,7 @@ CARTON_FACTOR = 15
 
 class Report():
 	def __init__(self, filters):
+		self.dn_key = {}
 		self.data = []
 		self.filters = filters
 		self.outlets = []
@@ -49,9 +50,9 @@ class Report():
 		if self.filters.date:
 			self.cond += " and dn.delivery_date = %(date)s "
 
-		self.group_by = "outlet_name"
+		# self.group_by = "outlet_name"
+		self.group_by = "dn.name"
 		if self.filters.view_type == "Delivery Note":
-			self.group_by = "dn.name"
 			self.row_map['pic'] = {"outlets":"Outlets"}
 			
 	
@@ -59,11 +60,12 @@ class Report():
 		# Fetch transaction data by joining Item table with the parent Delivery Note table
 		# We use dn.customer as the field that holds the outlet/customer name
 		self.raw_data = frappe.db.sql("""
-			SELECT 
+			SELECT t.* from (SELECT 
 				dni.item_code,
 				dn.customer,
 				dn.contact_display,
 				dn.name as delivery_note,
+				dn.is_marketing,
 				IFNULL(a.outlet_name, dn.customer) AS outlet_name,
 				SUM(CASE WHEN dn.is_return = 0 THEN dni.qty ELSE 0 END) AS total_qty,
 				ABS(SUM(CASE WHEN dn.is_return = 1 THEN dni.qty ELSE 0 END)) AS total_qty_return,
@@ -83,15 +85,13 @@ class Report():
 				`tabPackaging` p ON p.name = i.default_packaging
 			WHERE
 				dn.docstatus != 2 
-					AND dn.is_marketing = 0
 					AND dn.is_giveaway = 0
 					AND dn.is_donation = 0
 					AND dn.is_production = 0					
 					AND dn.is_pledge = 0
-
 					AND dn.customer != 'Marketing'
 					{}
-			GROUP BY dni.item_code , {}
+			GROUP BY dni.item_code , {}) t order by t.outlet_name asc
 		""".format(self.cond, self.group_by), self.filters, as_dict=1, debug=0)
 
 		processed_data = {}
@@ -110,11 +110,10 @@ class Report():
 		self.outlet_names = []
 		self.key_total = {}
 		for d in self.raw_data:
+			key, label = self.get_outlet_name(d.outlet_name, d.delivery_note)
 			if self.filters.view_type == "All Outlets":
-				key, label = self.get_outlet_name(d.outlet_name)
 				width = 220
 			else:
-				key, label = self.get_outlet_name(d.delivery_note)
 				width = 180
 
 			
@@ -132,7 +131,8 @@ class Report():
 				else:
 					self.row_map['pic'][key] = d.contact_display
 					self.row_map['dn'][key] = d.delivery_note
-				self.outlet_names.append(key)
+				self.outlet_names.append(key)			
+				
 
 			# Item code
 			if d.item_code not in self.row_map:
@@ -180,8 +180,37 @@ class Report():
 		self.row_map["total_cartons"]['delivery'] = flt(self.row_map["total_packs"]['delivery'] / CARTON_FACTOR,0)
 
 
-	def get_outlet_name(self, text):
-		return frappe.scrub(text), text
+	def get_outlet_name(self, outlet_name, dn_name):
+		if self.filters.view_type == "All Outlets":
+			text = outlet_name
+		else:
+			text = dn_name
+		
+		key = frappe.scrub(text)
+		if dn_name not in self.dn_key:
+			if key in self.outlet_names:
+				for d in range(2,10):
+					temp = text + f" #{d}"
+					key = frappe.scrub(temp)
+					if key not in self.outlet_names:
+						self.dn_key[dn_name] = {"key":key, "text":text}
+						return key, temp
+			else:
+				self.dn_key[dn_name] = {"key":key, "text":text}
+				return key, text
+		else:
+			if key in self.outlet_names:
+				if dn_name in self.dn_key:
+					return self.dn_key[dn_name]['key'], self.dn_key[dn_name]['text']
+
+				for d in range(2,10):
+					text += f" #{d}"
+					key = frappe.scrub(text)
+					if key not in self.outlet_names:
+						self.dn_key[dn_name] = {"key":key, "text":text}
+						return key, text
+			else:
+				return self.dn_key[dn_name]['key'], self.dn_key[dn_name]['text']
 	
 	def get_item_name(self, text):
 		return text
