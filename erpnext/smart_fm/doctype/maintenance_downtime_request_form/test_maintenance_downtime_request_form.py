@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestMaintenanceRequestProductionEquipment(FrappeTestCase):
+class TestMaintenanceDowntimeRequestForm(FrappeTestCase):
 	pass
