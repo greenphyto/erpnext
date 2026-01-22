@@ -1944,7 +1944,8 @@
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Is Internal Customer",
-   "read_only": 1
+   "read_only": 1,
+   "in_standard_filter": 1
   },
   {
    "allow_on_submit": 1,
@@ -2172,7 +2173,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2025-03-06 15:17:23.436041",
+ "modified": "2025-03-06 15:17:24.436041",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

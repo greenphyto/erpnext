@@ -1532,7 +1532,8 @@
    "fieldname": "is_internal_customer",
    "fieldtype": "Check",
    "label": "Is Internal Customer",
-   "read_only": 1
+   "read_only": 1,
+   "in_standard_filter": 1
   },
   {
    "allow_on_submit": 1,
@@ -1737,7 +1738,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-17 17:40:57.664327",
+ "modified": "2025-03-17 17:40:58.664327",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

@@ -1207,7 +1207,8 @@
    "fieldtype": "Check",
    "ignore_user_permissions": 1,
    "label": "Is Internal Supplier",
-   "read_only": 1
+   "read_only": 1,
+   "in_standard_filter": 1
   },
   {
    "fieldname": "credit_to",
@@ -1606,7 +1607,7 @@
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-06 14:57:43.395210",
+ "modified": "2025-03-06 14:57:44.395210",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",
