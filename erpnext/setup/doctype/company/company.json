@@ -52,6 +52,7 @@
   "column_break_goals",
   "default_selling_terms",
   "default_warehouse_for_sales_return",
+  "default_warehouse_for_delivery",
   "credit_limit",
   "transactions_annual_history",
   "default_settings",
@@ -880,6 +881,12 @@
    "fieldname": "theme_path",
    "fieldtype": "Data",
    "label": "Theme Path"
+  },
+  {
+   "fieldname": "default_warehouse_for_delivery",
+   "fieldtype": "Link",
+   "label": "Default Warehouse for Delivery",
+   "options": "Warehouse"
   }
  ],
  "icon": "fa fa-building",
@@ -887,7 +894,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-11-04 14:58:48.903962",
+ "modified": "2026-01-22 11:56:56.387745",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",
