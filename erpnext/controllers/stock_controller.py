@@ -393,25 +393,36 @@ class StockController(AccountsController):
 
 	def make_batches(self, warehouse_field):
 		"""Create batches if required. Called before submit"""
+		is_internal = cint(self.get("is_internal_supplier"))
 		for d in self.items:
 			if d.get(warehouse_field) and not d.batch_no:
 				has_batch_no, create_new_batch = frappe.db.get_value(
 					"Item", d.item_code, ["has_batch_no", "create_new_batch"]
 				)
 				if has_batch_no and create_new_batch:
-					d.batch_no = (
-						frappe.get_doc(
-							dict(
-								doctype="Batch",
-								item=d.item_code,
-								supplier=getattr(self, "supplier", None),
-								reference_doctype=self.doctype,
-								reference_name=self.name,
+					if not is_internal:
+						d.batch_no = (
+							frappe.get_doc(
+								dict(
+									doctype="Batch",
+									item=d.item_code,
+									supplier=getattr(self, "supplier", None),
+									reference_doctype=self.doctype,
+									reference_name=self.name,
+								)
 							)
+							.insert()
+							.name
 						)
-						.insert()
-						.name
-					)
+					else:
+						# find DN from PO
+						row_name, batch = frappe.db.get_value("Delivery Note Item", {
+							"purchase_order_item":d.purchase_order_item, 
+							"docstatus":0
+						}, ['name', 'batch_no'] ) or (None, None)
+						if not batch:
+							frappe.throw(_("Missing Delivery number from Company {}. Please, contact the Company's Vendor or wait until they send your goods.".format(self.supplier)))
+						d.batch_no = batch
 
 	def check_expense_account(self, item):
 		if not item.get("expense_account"):
