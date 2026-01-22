@@ -280,6 +280,11 @@ def item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=Fals
 			 
 		else:
 			filters.pop("department", None)
+
+	
+	is_child_company = True if frappe.db.get_value("Company", erpnext.get_default_company(), "parent_company") else False
+	if is_child_company:
+		filters['item_group'] = ['!=', 'Raw Material']
 		 
 
 	description_cond = ""

@@ -12,6 +12,10 @@ def get_default_company(user=None):
 	if not user:
 		user = frappe.session.user
 
+	def_comp = frappe.defaults.get_defaults().get("company")
+	if def_comp:
+		return def_comp
+
 	companies = get_user_default_as_list(user, "company")
 	if companies:
 		default_company = companies[0]
