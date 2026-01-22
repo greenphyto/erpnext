@@ -771,9 +771,12 @@ def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 		if target.company_address:
 			target.update(get_fetch_values("Delivery Note", "company_address", target.company_address))
 
+		if not target.shipping_address_name and source.is_internal_customer:
+			target.shipping_address_name = source.customer_address
+			target.address_display = source.shipping_address
+
 		target.customer_address = source.customer_address
 		target.address_display = source.address_display
-		target.shipping_address_name = source.shipping_address_name
 		target.shipping_address = source.shipping_address
 		target.contact_person = source.contact_person
 		target.contact_display = source.contact_display
