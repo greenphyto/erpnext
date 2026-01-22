@@ -79,6 +79,7 @@ def lead_query(doctype, txt, searchfield, start, page_len, filters):
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def customer_query(doctype, txt, searchfield, start, page_len, filters, as_dict=False):
+	filters = filters or {}
 	doctype = "Customer"
 	conditions = []
 	cust_master_name = frappe.defaults.get_user_default("cust_master_name")
@@ -89,6 +90,9 @@ def customer_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 	fields = get_fields(doctype, fields)
 	searchfields = frappe.get_meta(doctype).get_search_fields()
 	searchfields = " or ".join(field + " like %(txt)s" for field in searchfields)
+
+	def_company = frappe.defaults.get_defaults().get("company")
+	filters['company'] = def_company
 
 	return frappe.db.sql(
 		"""select {fields} from `tabCustomer`
@@ -117,6 +121,7 @@ def customer_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def supplier_query(doctype, txt, searchfield, start, page_len, filters, as_dict=False):
+	filters = filters or {}
 	doctype = "Supplier"
 	supp_master_name = frappe.defaults.get_user_default("supp_master_name")
 	fields = ["name"]
@@ -124,6 +129,9 @@ def supplier_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 		fields.append("supplier_name")
 
 	fields = get_fields(doctype, fields)
+
+	def_company = frappe.defaults.get_defaults().get("company")
+	filters['company'] = def_company
 
 	return frappe.db.sql(
 		"""select {field} from `tabSupplier`

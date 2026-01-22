@@ -624,11 +624,13 @@
    "read_only": 1
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
    "mandatory_depends_on": "eval:!doc.is_internal_customer",
-   "options": "Company"
+   "options": "Company",
+   "reqd": 1
   }
  ],
  "icon": "fa fa-user",
@@ -642,7 +644,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2025-12-10 10:45:58.522015",
+ "modified": "2026-01-22 18:18:36.673953",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",
