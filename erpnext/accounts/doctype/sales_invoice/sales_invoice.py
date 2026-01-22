@@ -2142,6 +2142,9 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 			target_doc.ignore_pricing_rule = 1
 			target_doc.buying_price_list = source_doc.selling_price_list
 
+			target_doc.cost_center = frappe.get_value("Company",target_doc.company, "cost_center")
+			target_doc.letter_head = frappe.get_value("Company",target_doc.company, "default_letter_head")
+
 			# Invert Addresses
 			update_address(target_doc, "supplier_address", "address_display", source_doc.company_address)
 			update_address(
@@ -2176,6 +2179,10 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 			elif source_doc.doctype in ("Purchase Invoice", "Purchase Receipt"):
 				target_doc.po_no = source_doc.name
 				target_doc.po_date = source_doc.posting_date
+
+			# cost center
+			target_doc.cost_center = frappe.get_value("Company",target_doc.company, "cost_center")
+			target_doc.letter_head = frappe.get_value("Company",target_doc.company, "default_letter_head")
 
 			update_address(
 				target_doc, "company_address", "company_address_display", source_doc.supplier_address
