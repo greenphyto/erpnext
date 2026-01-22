@@ -771,7 +771,16 @@ def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 		if target.company_address:
 			target.update(get_fetch_values("Delivery Note", "company_address", target.company_address))
 
+		target.customer_address = source.customer_address
+		target.address_display = source.address_display
+		target.shipping_address_name = source.shipping_address_name
+		target.shipping_address = source.shipping_address
+		target.contact_person = source.contact_person
+		target.contact_display = source.contact_display
+
 	def update_item(source, target, source_parent):
+		warehouse = frappe.get_value("Company", source_parent.company, "default_warehouse_for_delivery")
+		target.warehouse = warehouse
 		target.base_amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.base_rate)
 		target.amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.rate)
 		target.qty = flt(source.qty) - flt(source.delivered_qty)
