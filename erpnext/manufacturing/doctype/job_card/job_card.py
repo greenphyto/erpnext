@@ -402,7 +402,7 @@ class JobCard(Document):
 				)
 
 	def on_submit(self):
-		self.validate_transfer_qty()
+		# self.validate_transfer_qty()
 		# self.validate_job_card()
 		self.update_work_order()
 		self.set_transferred_qty()
@@ -412,7 +412,7 @@ class JobCard(Document):
 		self.set_transferred_qty()
 
 	def validate_transfer_qty(self):
-		if self.items and self.transferred_qty < self.for_quantity:
+		if self.items and flt(self.transferred_qty, 2) < flt(self.for_quantity-0.01, 2):
 			frappe.throw(
 				_(
 					"Materials needs to be transferred to the work in progress warehouse for the job card {0}"
