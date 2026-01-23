@@ -18,4 +18,8 @@ class MaintenanceDowntimeRequestForm(Document):
 
 		# Fill resolution_datetime if empty
 		if not self.resolution_datetime:
-				self.resolution_datetime = now_datetime()
+				self.resolution_datetime = now_datetime().strftime("%Y-%m-%d %H:%M:%S")
+
+		# Fill downtime_end if empty
+		if not self.downtime_end:
+				self.downtime_end = now_datetime().strftime("%Y-%m-%d %H:%M:%S")
