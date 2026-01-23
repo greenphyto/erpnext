@@ -418,7 +418,7 @@ class StockController(AccountsController):
 						# find DN from PO
 						row_name, batch = frappe.db.get_value("Delivery Note Item", {
 							"purchase_order_item":d.purchase_order_item, 
-							"docstatus":0
+							"docstatus":1
 						}, ['name', 'batch_no'] ) or (None, None)
 						if not batch:
 							frappe.throw(_("Missing Delivery number from Company {}. Please, contact the Company's Vendor or wait until they send your goods.".format(self.supplier)))
