@@ -61,10 +61,13 @@ $.extend(cur_frm.cscript, {
 		var frm = this.frm;
 		var fields = ['per_qty_rate_electricity', 'per_qty_rate_wages', 'per_qty_rate_machinery', 'per_qty_rate', 'per_qty_rate_consumable']
 		var desc = "per qty"
+		var label = "Net Hour Rate"
 		if (frm.doc.calculation_type=="Per KG"){
 			desc = "per KG"
+			var label = "Net Cost Rate"
 		}
-
+		
+		frm.set_df_property("per_qty_rate", 'label', label);
 		fields.forEach(field=>{
 			frm.set_df_property(field, 'description', desc);
 		})
