@@ -45,7 +45,8 @@
   "resolution_after",
   "requester_production_verification",
   "close_reason",
-  "amended_from"
+  "amended_from",
+  "workflow_state"
  ],
  "fields": [
   {
@@ -59,54 +60,14 @@
    "label": "Requested By"
   },
   {
-   "fieldname": "column_break_d6v4z",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "Now",
-   "fieldname": "issue_datetime",
-   "fieldtype": "Datetime",
-   "in_list_view": 1,
-   "label": "Issue Date/Time",
-   "reqd": 1
-  },
-  {
-   "fieldname": "section_break_xzeyl",
-   "fieldtype": "Section Break"
+   "fieldname": "machine_id",
+   "fieldtype": "Data",
+   "label": "Machine ID"
   },
   {
    "fieldname": "machine_name",
    "fieldtype": "Data",
    "label": "Machine Name"
-  },
-  {
-   "fieldname": "location",
-   "fieldtype": "Data",
-   "label": "Line / Zone / Level / Softzone"
-  },
-  {
-   "fieldname": "category",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Category",
-   "options": "Mechanical\nElectrical\nPneumatic\nPLC-Controls\nSensor\nSoftware\nUtility",
-   "reqd": 1
-  },
-  {
-   "default": "No",
-   "fieldname": "safety_risk",
-   "fieldtype": "Select",
-   "label": "Safety Risk",
-   "options": "Yes\nNo"
-  },
-  {
-   "fieldname": "column_break_8d7gi",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "machine_id",
-   "fieldtype": "Data",
-   "label": "Machine ID"
   },
   {
    "default": "P1 Line-down",
@@ -118,13 +79,24 @@
    "reqd": 1
   },
   {
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Category",
+   "options": "Mechanical\nElectrical\nPneumatic\nPLC-Controls\nSensor\nSoftware\nUtility",
+   "reqd": 1
+  },
+  {
    "fieldname": "error_code",
    "fieldtype": "Small Text",
    "label": "Symptom / Error Code"
   },
   {
-   "fieldname": "section_break_ebptd",
-   "fieldtype": "Section Break"
+   "default": "No",
+   "fieldname": "safety_risk",
+   "fieldtype": "Select",
+   "label": "Safety Risk",
+   "options": "Yes\nNo"
   },
   {
    "fieldname": "production_impact",
@@ -139,15 +111,6 @@
    "label": "Line Down"
   },
   {
-   "fieldname": "affected",
-   "fieldtype": "Small Text",
-   "label": "Lot ID / Batch Affected"
-  },
-  {
-   "fieldname": "column_break_wjlgw",
-   "fieldtype": "Column Break"
-  },
-  {
    "default": "Now",
    "fieldname": "downtime_start",
    "fieldtype": "Datetime",
@@ -155,18 +118,9 @@
    "mandatory_depends_on": "eval:doc.line_down == 1"
   },
   {
-   "fieldname": "section_break_kjsdo",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "issue_description",
+   "fieldname": "affected",
    "fieldtype": "Small Text",
-   "label": "Description (Steps to Reproduce)"
-  },
-  {
-   "fieldname": "issue_photos",
-   "fieldtype": "Attach",
-   "label": "Photos / Video (Before)"
+   "label": "Lot ID / Batch Affected"
   },
   {
    "fieldname": "attachment",
@@ -174,23 +128,13 @@
    "label": "Attachments / Logs (PLC Logs, screenshots, URLs)"
   },
   {
-   "fieldname": "assignee",
-   "fieldtype": "Data",
-   "label": "Assignee"
-  },
-  {
-   "fieldname": "sla_target",
-   "fieldtype": "Data",
-   "label": "Target Response / Resolution (SLA)"
-  },
-  {
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Failed' || doc.workflow_state == 'Resolved'",
    "fieldname": "resolution_close_out_section",
    "fieldtype": "Section Break",
    "label": "Resolution (Close Out)"
   },
   {
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Failed' || doc.workflow_state == 'Resolved'",
    "fieldname": "resolved_by",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -198,62 +142,20 @@
    "mandatory_depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'"
   },
   {
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
-   "fieldname": "column_break_li0og",
-   "fieldtype": "Column Break"
-  },
-  {
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
-   "fieldname": "resolution_datetime",
-   "fieldtype": "Datetime",
-   "label": "Resolution Date/Time",
-   "mandatory_depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'"
-  },
-  {
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
-   "fieldname": "section_break_xzr50",
-   "fieldtype": "Section Break"
-  },
-  {
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
-   "fieldname": "resolution_description",
-   "fieldtype": "Small Text",
-   "label": "Actions Taken / Fixed Details",
-   "mandatory_depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'"
-  },
-  {
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Failed' || doc.workflow_state == 'Resolved'",
    "fieldname": "root_cause",
    "fieldtype": "Small Text",
    "label": "Root Cause"
   },
   {
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Failed' || doc.workflow_state == 'Resolved'",
    "description": "SKU, qty, cost",
    "fieldname": "parts_used",
    "fieldtype": "Small Text",
    "label": "Parts Used"
   },
   {
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
-   "fieldname": "downtime_end",
-   "fieldtype": "Datetime",
-   "label": "Machine Back-in-Service"
-  },
-  {
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
-   "fieldname": "resolution_after",
-   "fieldtype": "Attach",
-   "label": "Photos (After)"
-  },
-  {
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
-   "fieldname": "requester_production_verification",
-   "fieldtype": "Data",
-   "label": "Requester / Production Verification"
-  },
-  {
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Failed' || doc.workflow_state == 'Resolved'",
    "fieldname": "close_reason",
    "fieldtype": "Select",
    "label": "Close Reason",
@@ -267,12 +169,118 @@
    "options": "Maintenance Downtime Request Form",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Failed' || doc.workflow_state == 'Resolved'",
+   "fieldname": "requester_production_verification",
+   "fieldtype": "Data",
+   "label": "Requester / Production Verification"
+  },
+  {
+   "fieldname": "column_break_8d7gi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_ebptd",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_wjlgw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_kjsdo",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_xzeyl",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_d6v4z",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Failed' || doc.workflow_state == 'Resolved'",
+   "fieldname": "column_break_li0og",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Failed' || doc.workflow_state == 'Resolved'",
+   "fieldname": "section_break_xzr50",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Line / Zone / Level / Softzone"
+  },
+  {
+   "default": "Now",
+   "fieldname": "issue_datetime",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Issue Date/Time",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Failed' || doc.workflow_state == 'Resolved'",
+   "fieldname": "resolution_datetime",
+   "fieldtype": "Datetime",
+   "label": "Resolution Date/Time",
+   "mandatory_depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'"
+  },
+  {
+   "fieldname": "assignee",
+   "fieldtype": "Data",
+   "label": "Assignee"
+  },
+  {
+   "fieldname": "sla_target",
+   "fieldtype": "Data",
+   "label": "Target Response / Resolution (SLA)"
+  },
+  {
+   "fieldname": "issue_description",
+   "fieldtype": "Small Text",
+   "label": "Description (Steps to Reproduce)"
+  },
+  {
+   "fieldname": "issue_photos",
+   "fieldtype": "Attach",
+   "label": "Photos / Video (Before)"
+  },
+  {
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Failed' || doc.workflow_state == 'Resolved'",
+   "fieldname": "resolution_description",
+   "fieldtype": "Small Text",
+   "label": "Actions Taken / Fixed Details",
+   "mandatory_depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'"
+  },
+  {
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Failed' || doc.workflow_state == 'Resolved'",
+   "fieldname": "resolution_after",
+   "fieldtype": "Attach",
+   "label": "Photos (After)"
+  },
+  {
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Failed' || doc.workflow_state == 'Resolved'",
+   "fieldname": "downtime_end",
+   "fieldtype": "Datetime",
+   "label": "Machine Back-in-Service"
+  },
+  {
+   "fieldname": "workflow_state",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nRejected\nSubmitted\nCancelled\nApproved",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-12-19 15:35:39.387551",
+ "modified": "2026-01-22 13:54:26.669220",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Maintenance Downtime Request Form",
