@@ -18,3 +18,4 @@ __pycache__
 node_modules/
 .backportrc.json
 test_scripts.py
+test_script.py
