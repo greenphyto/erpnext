@@ -49,6 +49,11 @@ class Report():
 			self.cond += " and dn.company = %(company)s "
 		if self.filters.date:
 			self.cond += " and dn.delivery_date = %(date)s "
+		if self.filters.status and self.filters.status != "All":
+			if self.filters.status == "Draft":
+				self.cond += " and dn.docstatus = 0 "
+			elif self.filters.status == "Submitted":
+				self.cond += " and dn.docstatus = 1 "
 
 		# self.group_by = "outlet_name"
 		self.group_by = "dn.name"
@@ -62,6 +67,7 @@ class Report():
 		self.raw_data = frappe.db.sql("""
 			SELECT t.* from (SELECT 
 				dni.item_code,
+				dn.docstatus,
 				dn.customer,
 				dn.contact_display,
 				dn.name as delivery_note,
@@ -131,6 +137,8 @@ class Report():
 				else:
 					self.row_map['pic'][key] = d.contact_display
 					self.row_map['dn'][key] = d.delivery_note
+					key_status = f"{key}_status"
+					self.row_map['dn'][key_status] = d.docstatus
 				self.outlet_names.append(key)			
 				
 
@@ -155,7 +163,7 @@ class Report():
 			else:
 				self.row_map["total_packs"][key] += flt(d.total_qty)
 
-			self.row_map["total_cartons"][key] = flt(flt(self.row_map["total_packs"].get(key)) / CARTON_FACTOR,0)
+			self.row_map["total_cartons"][key] = flt(flt(self.row_map["total_packs"].get(key)) / CARTON_FACTOR,0) or 1
 
 
 			self.row_map[d.item_code]['po'] += (d.total_qty - d.total_qty_return)
