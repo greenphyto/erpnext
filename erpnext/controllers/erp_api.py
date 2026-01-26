@@ -1306,3 +1306,46 @@ def get_document_lotid(lotid=""):
 			data['batch']['work_order'] = doc.work_order
 
 	return data
+
+@frappe.whitelist()
+def get_delivery_by_lotid(lotid=None, delivery_date=""):
+	if isinstance(lotid, str):
+		lotid = json.loads(lotid)
+
+	use_delivery_date = getdate(delivery_date)
+	dn_list = []
+	data = {}
+	for lot in lotid:
+		data[lot] = {}
+		batch = frappe.db.get_value("Batch", {"foms_lot_id": lot}, "*", as_dict=1)
+		if not batch:
+			continue
+
+		data[lot]['batch'] = batch
+
+		# Get Delivery Note Items for the batch on the specified delivery date
+		dn_items = frappe.db.sql("""
+			SELECT 
+				dn.name AS delivery_note,
+				dni.item_code,
+				dni.qty,
+				dni.batch_no,
+				dn.posting_date
+			FROM
+				`tabDelivery Note Item` dni
+					JOIN
+				`tabDelivery Note` dn ON dn.name = dni.parent
+			WHERE
+				dn.docstatus != 2
+				AND (dni.batch_no = %s or dni.foms_lot_name = %s)
+				AND dn.delivery_date = %s
+			ORDER BY dn.delivery_date DESC
+		""", (batch.name, lot, use_delivery_date), as_dict=1, debug=1)
+
+		data[lot]['transactions'] = []
+		for d in dn_items:
+			dn_list.append(d)
+			doc = frappe.get_doc("Delivery Note", d.delivery_note)
+			data[lot]['transactions'].append(doc.as_dict())
+
+	return data

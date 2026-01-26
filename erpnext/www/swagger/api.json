@@ -1452,6 +1452,65 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.get_delivery_by_lotid": {
+      "get": {
+        "summary": "Retrieve Delivery Note details by Lot IDs",
+        "description": "Fetches Batch info and Delivery Notes. Note: 'lotid' parameter must be a JSON formatted string array.",
+        "operationId": "get_delivery_note_by_lot_id",
+        "parameters": [
+          {
+            "name": "lotid",
+            "in": "query",
+            "description": "A JSON string array of Lot IDs. Example: [\"LOT-001\", \"LOT-002\"]",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "[\"25-1006\", \"25-0998\"]"
+          },
+          {
+            "name": "delivery_date",
+            "in": "query",
+            "description": "Target delivery date (YYYY-MM-DD).",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "example": "2026-01-26"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "batch": {
+                        "type": "object"
+                      },
+                      "transactions": {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON format in lotid parameter"
+          }
+        }
+      }
     }
   },
   "components": {
