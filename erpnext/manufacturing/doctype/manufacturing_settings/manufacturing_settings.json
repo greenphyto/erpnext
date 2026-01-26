@@ -34,6 +34,7 @@
   "other_settings_section",
   "update_bom_costs_automatically",
   "update_bom_rate_as_pr_price",
+  "enable_attrition_qty",
   "column_break_23",
   "make_serial_no_batch_from_work_order",
   "enable_create_sample_delivery",
@@ -238,13 +239,19 @@
    "fieldname": "enable_create_sample_delivery",
    "fieldtype": "Check",
    "label": "Enable Create Sample Delivery"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_attrition_qty",
+   "fieldtype": "Check",
+   "label": "Enable Attrition Qty"
   }
  ],
  "icon": "icon-wrench",
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-10-27 17:04:57.270349",
+ "modified": "2025-12-23 11:10:34.677228",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Manufacturing Settings",
