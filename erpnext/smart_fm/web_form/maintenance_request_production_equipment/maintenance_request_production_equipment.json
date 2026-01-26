@@ -10,12 +10,12 @@
  "amount_based_on_field": 0,
  "anonymous": 0,
  "apply_document_permissions": 1,
- "breadcrumbs": "[\n    {\"label\": \"Home\", \"route\":\"/\"},\n    {\"label\": \"Requests\", \"route\":\"requests\"},\n    {\"label\": \"Maintenance Request (Production Equipment)\", \"route\":\"requests/maintenance-request-production-equipment\"}\n]",
+ "breadcrumbs": "[\n    {\"label\": \"Home\", \"route\":\"/\"},\n    {\"label\": \"Requests\", \"route\":\"requests\"},\n    {\"label\": \"Maintenance Downtime Request Form\", \"route\":\"requests/maintenance-downtime-request-form\"}\n]",
  "button_label": "Save",
  "client_script": "",
  "creation": "2025-10-21 11:14:48.041419",
  "currency": "SGD",
- "doc_type": "Maintenance Request Production Equipment",
+ "doc_type": "Maintenance Downtime Request Form",
  "docstatus": 0,
  "doctype": "Web Form",
  "idx": 0,
@@ -54,18 +54,18 @@
  ],
  "login_required": 1,
  "max_attachment_size": 2,
- "modified": "2025-10-21 12:35:21.551452",
+ "modified": "2026-01-23 09:18:07.824560",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "maintenance-request-production-equipment",
  "owner": "Administrator",
  "payment_button_label": "Buy Now",
- "published": 1,
- "route": "requests/maintenance-request-production-equipment",
+ "published": 0,
+ "route": "requests/maintenance-downtime-request-form",
  "show_attachments": 1,
  "show_list": 1,
  "show_sidebar": 1,
- "title": "Maintenance Request Production Equipment",
+ "title": "Maintenance Downtime Request Form",
  "web_form_fields": [
   {
    "allow_read_on_all_link_options": 0,
@@ -375,7 +375,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Failed'",
    "fieldname": "",
    "fieldtype": "Section Break",
    "hidden": 0,
@@ -417,7 +417,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Failed'",
    "fieldname": "resolution_datetime",
    "fieldtype": "Datetime",
    "hidden": 0,
@@ -431,7 +431,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Failed'",
    "fieldname": "",
    "fieldtype": "Section Break",
    "hidden": 0,
@@ -445,7 +445,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Failed'",
    "fieldname": "resolution_description",
    "fieldtype": "Small Text",
    "hidden": 0,
@@ -459,7 +459,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Failed'",
    "fieldname": "root_cause",
    "fieldtype": "Small Text",
    "hidden": 0,
@@ -473,7 +473,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Failed'",
    "fieldname": "parts_used",
    "fieldtype": "Small Text",
    "hidden": 0,
@@ -487,7 +487,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Failed'",
    "fieldname": "downtime_end",
    "fieldtype": "Datetime",
    "hidden": 0,
@@ -501,7 +501,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Failed'",
    "fieldname": "resolution_after",
    "fieldtype": "Attach",
    "hidden": 0,
@@ -514,7 +514,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Failed'",
    "fieldname": "requester_production_verification",
    "fieldtype": "Data",
    "hidden": 0,
@@ -527,7 +527,7 @@
   },
   {
    "allow_read_on_all_link_options": 0,
-   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'",
+   "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Resolved' || doc.workflow_state == 'Failed'",
    "fieldname": "close_reason",
    "fieldtype": "Select",
    "hidden": 0,
@@ -553,5 +553,5 @@
    "show_in_filter": 0
   }
  ],
- "website_sidebar": "Request From 3rd Party"
+ "website_sidebar": "Request from 3rd Party"
 }
