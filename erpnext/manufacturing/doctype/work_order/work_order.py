@@ -1148,9 +1148,10 @@ class WorkOrder(Document):
 			self.packet_size = frappe.db.get_value("Item", self.production_item, "stock_uom")
 			self.conversion_factor = 1
 
-		for d in data:
-			self.packet_size = d.uom
-			self.conversion_factor = d.conversion_factor
+		# 26-01-26 dont use Request packaging
+		# for d in data:
+		# 	self.packet_size = d.uom
+		# 	self.conversion_factor = d.conversion_factor
 
 	def get_packaging_from_order(self):
 		total_pcs = 0
