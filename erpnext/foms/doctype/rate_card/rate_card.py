@@ -33,3 +33,31 @@ class RateCard(Document):
 				ws.per_qty_rate_consumable = d.consumable
 				ws.save()	
 			
+
+def update_bom_item(doc, method=""):
+	# update BOM to ralated rate card
+	if doc.rate_card:
+		rate_card = frappe.get_doc("Rate Card", doc.rate_card)
+		# get BVOM default
+		bom = frappe.get_doc("BOM", doc.default_bom)
+
+		# set new-version
+		new_bom = frappe.copy_doc(bom)
+		new_bom.is_default = 1
+		allow_create_new = False
+		for d in rate_card.rates:
+			for op in new_bom.operations:
+				if op.operation == d.operation:
+					if op.workstation != d.workstation:
+						allow_create_new = True
+					op.workstation = d.workstation
+					op.calculation_type = "Per KG"
+					op.wages_cost = d.manpower
+					op.electricity_cost = d.electricity
+					op.machinery_cost = d.machinery
+					op.consumable_cost = d.consumable
+					
+		if allow_create_new:
+			new_bom.insert()
+			new_bom.submit()
+			doc.default_bom = new_bom.name
