@@ -427,6 +427,7 @@ doc_events = {
             "erpnext.controllers.erp.create_sample_after_work_order",
             "erpnext.controllers.erp.detect_work_order_different",
 			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
+			"erpnext.controllers.foms.create_prod_variance_entry",
 		],
         "before_cancel":[
             "erpnext.controllers.foms.detect_salad_items",
