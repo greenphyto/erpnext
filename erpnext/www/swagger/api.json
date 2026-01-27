@@ -1526,7 +1526,7 @@
             "name": "lotid",
             "in": "query",
             "description": "A JSON string array of Lot IDs. Example: [\"LOT-001\", \"LOT-002\"]",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
             },
