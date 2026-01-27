@@ -1628,7 +1628,7 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 			bom.foms_recipe_version = log.productVersionName
 			bom.with_operations = 1
 			bom.transfer_material_against = TRANFER_AGAIN
-			bom.rm_cost_as_per = "Last Purchase Rate"
+			bom.rm_cost_as_per = "Valuation Rate"
 			bom.operations = []
 			bom.items = []
 						
@@ -2324,3 +2324,87 @@ def get_data_dummy_work_order(item='', qty=10, work_order="", lot_id='', reff=[]
 		payload['rawMaterials'] = item_list
 
 	return json.dumps(payload)
+
+def create_prod_variance_entry(doc, method=""):
+	if not doc.work_order or doc.docstatus != 1:
+		return
+
+	if doc.purpose != "Manufacture":
+		return
+	
+	wo_doc = frappe.get_doc("Work Order", doc.work_order)
+	
+	# collect prod variance from all process
+	# create journal entry
+	je = frappe.new_doc("Journal Entry")
+	je.voucher_type = "Production Variance"
+	je.work_order = doc.work_order
+	je.posting_date = doc.posting_date
+	je.company = doc.company
+	je.remark = f"Production Variance for Work Order {doc.work_order} based on Stock Entry {doc.name}"
+	account_settings = get_cost_account(wo_doc.production_item, doc.company)
+	total_variance = 0
+	costs_data = frappe.db.sql("""
+		SELECT 
+			ac.description AS cost_desc,
+			SUM(ac.amount) AS amount
+		FROM
+			`tabStock Entry` se
+				JOIN
+			`tabLanded Cost Taxes and Charges` ac ON ac.parent = se.name
+		WHERE
+			se.work_order = %s
+				AND se.purpose = 'Material Transfer for Manufacture'
+				AND se.docstatus = 1
+		GROUP BY ac.description
+		ORDER BY ac.description			   
+		""", (doc.work_order), as_dict=1, debug=0)
+	
+	total_variance = sum([d.amount for d in costs_data])
+	# credit variance account
+	cost_center = frappe.db.get_value("Company", doc.company, "cost_center_for_production")
+	credit = je.append("accounts")
+	credit.account = frappe.db.get_value("Company", doc.company, "default_cost_expense_account")
+	credit.cost_center = cost_center
+	credit.credit_in_account_currency = flt(total_variance)
+	credit.credit = flt(total_variance)
+	
+	for d in costs_data:
+		# append to journal entry
+		if flt(d.amount) == 0:
+			continue
+
+		# use 100% portion
+		debit = je.append("accounts")
+		debit.account = account_settings.get(d.cost_desc)
+		debit.debit_in_account_currency = flt(d.amount)
+		debit.debit = flt(d.amount)
+		debit.cost_center = cost_center
+
+	je.insert()
+	je.submit()
+
+def get_cost_account(item_code, company):
+	data = {}
+	res = frappe.db.sql("""
+		SELECT 
+			i.item_code,
+			r.expense_for_electricity,
+			r.expense_for_manpower,
+			r.expense_for_machinery,
+			r.expense_for_consumable
+		FROM
+			`tabItem` i
+				LEFT JOIN
+			`tabRate Card` r ON r.name = i.rate_card
+		WHERE
+			i.name = %s
+			""", (item_code), as_dict=1)
+	if res:		 
+		res = res[0]
+		data['Electrical Cost'] = res.expense_for_electricity
+		data['Wages Cost'] = res.expense_for_manpower
+		data['Machinery Cost'] = res.expense_for_machinery
+		data['Consumable Cost'] = res.expense_for_consumable
+	
+	return frappe._dict(data)
