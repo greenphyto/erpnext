@@ -803,13 +803,14 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 				finish_item_code = row.item_code
 
 	# add fake item
-	child = se_doc.append("items")
-	child.qty = producted_qty - qty
-	child.uom = finish_uom
-	child.item_code = finish_item_code
-	child.t_warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_scrap_warehouse")
-	child.is_process_loss = 1
-	child.expense_account = se_doc.expense_loss_account
+	if enable_excess_qty and producted_qty > qty:
+		child = se_doc.append("items")
+		child.qty = producted_qty - qty
+		child.uom = finish_uom
+		child.item_code = finish_item_code
+		child.t_warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_scrap_warehouse")
+		child.is_process_loss = 1
+		child.expense_account = se_doc.expense_loss_account
 
 	se_doc.set_expense_account()
 	se_doc.flags.ignore_double_entries = 1
