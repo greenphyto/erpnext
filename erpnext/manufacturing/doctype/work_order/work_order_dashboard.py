@@ -10,5 +10,6 @@ def get_data():
 		"transactions": [
 			{"label": _("Transactions"), "items": ["Stock Entry", "Job Card", "Pick List"]},
 			{"label": _("Reference"), "items": ["Serial No", "Batch", "Material Request"]},
+			{"label": _("Accounting"), "items": ["Journal Entry"]},
 		],
 	}
