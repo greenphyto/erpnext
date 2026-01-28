@@ -317,7 +317,7 @@ frappe.ui.form.on("Work Order", {
 		var added_min = false;
 
 		// produced qty
-		var title = __('{0} items produced', [frm.doc.produced_qty]);
+		var title = __('{0}/{1} items finished', [flt(frm.doc.produced_qty, 2), flt(frm.doc.qty, 2)]);
 		bars.push({
 			'title': title,
 			'width': (frm.doc.produced_qty / frm.doc.qty * 100) + '%',
@@ -333,7 +333,7 @@ frappe.ui.form.on("Work Order", {
 			var pending_complete = frm.doc.material_transferred_for_manufacturing - frm.doc.produced_qty;
 			if(pending_complete) {
 				var width = ((pending_complete / frm.doc.qty * 100) - added_min);
-				title = __('{0} items in progress', [pending_complete]);
+				title = __('{0} items is process loss', [flt(pending_complete, 2)]);
 				bars.push({
 					'title': title,
 					'width': (width > 100 ? "99.5" : width)  + '%',
