@@ -1359,7 +1359,6 @@ def get_document_lotid(lotid=""):
 		WHERE
 			sle.batch_no = %s
 		ORDER BY sle.posting_date DESC, sle.posting_time DESC, sle.name DESC
-		LIMIT 10
 	""", (data['batch'].name), as_dict=1)
 	for d in sle:
 		doc = frappe.get_doc(d.voucher_type, d.voucher_no)
@@ -1386,10 +1385,14 @@ def get_delivery_by_lotid(lotid=None, delivery_date=""):
 
 		data['batch'][lot] = batch
 
-	cond = " AND dn.delivery_date = %(delivery_date)s "
-	filters = {
-		"delivery_date": use_delivery_date
-	}
+	cond = ""
+	filters = {}
+	if delivery_date:
+		cond = " AND dn.delivery_date = %(delivery_date)s "
+		filters = {
+			"delivery_date": use_delivery_date
+		}
+
 	if lotid:
 		cond += " AND dni.foms_lot_name in %(lots)s "
 		filters['lots'] = lotid
