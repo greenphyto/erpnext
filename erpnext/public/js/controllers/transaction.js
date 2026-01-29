@@ -2284,7 +2284,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 				'posting_date': me.frm.doc.posting_date || frappe.datetime.nowdate(),
 			}
 
-			if (doc.doctype == "Delivery Note" && (doc.is_marketing || doc.is_donation)){
+			if (doc.doctype == "Delivery Note" && (doc.is_marketing || doc.is_donation || doc.is_replacement)){
 				filters['allow_expired'] = 1
 			}
 
