@@ -205,7 +205,9 @@ def create_bom(data):
 	return {"ERPBomId":result}
 
 @frappe.whitelist()
-def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, gross_weight, uom, submit=False):
+def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, gross_weight, uom, submit=False, company=""):
+	if not company:
+		company = erpnext.get_default_company()
 
 	data_name = f"Work Order {fomsLotID}"
 	save_log("Work Order", data_name, {
@@ -216,8 +218,9 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 		"qty":qty, 
 		"uom":uom, 
 		"gross_weight":gross_weight,
-		"submit":submit
-	})
+		"submit":submit,
+		"company":company
+	}, endpoint="create_work_order")
 
 	submit = get_foms_settings("auto_submit_work_order") or submit
 	item_code = frappe.get_value("Item", {"foms_product_id":productID})
@@ -237,7 +240,7 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 
 	doc = _create_work_order(log, item_code, bom_no, qty, gross_weight, submit, return_doc=1, args={
 		"use_rate_from_bom":1
-	})
+	}, company=company)
 	# seeding_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(1)})
 	# transplanting_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(2)})
 	# harvesting_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(3)})
@@ -927,7 +930,11 @@ def create_material_request(
 		requestedBy,
 		items=[],
 		cancel=False,
+		company=""
 	):
+	if not company:
+		company = erpnext.get_default_company()
+
 	item_str = ", ".join([d.get("rawMaterialRefNo") for d in items])
 	data_name = f"Create Material Request {item_str}"
 	save_log("Material Request", data_name, {
@@ -935,8 +942,9 @@ def create_material_request(
 		"requiredBy":requiredBy, 
 		"requestedBy":requestedBy, 
 		"items":items, 
-		"cancel":cancel, 
-	})
+		"company":company,
+		"cancel":cancel
+	}, endpoint="create_material_request" )
 	# find draft
 	doc_name = frappe.get_value("Material Request", {"requested_by":requestedBy, "workflow_state":"Draft"})
 	if doc_name:
@@ -944,6 +952,7 @@ def create_material_request(
 	else:
 		# create material request
 		doc = frappe.new_doc("Material Request")
+		doc.company = company
 		doc.transaction_date = getdate(transactionDate)
 		doc.requiredBy = getdate(requiredBy)
 		doc.requested_by = requestedBy

@@ -1,7 +1,7 @@
 # Copyright (c) 2024, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-import frappe, json
+import frappe, json, erpnext
 from frappe.model.document import Document
 from frappe.utils import getdate, flt, cstr
 from frappe import _
@@ -119,9 +119,13 @@ def create_request_form(data):
 	else:
 		doc = frappe.new_doc("Request")
 	
+	if not data.company:
+		data.company = erpnext.get_default_company()
+		
 	# set department if exist
 	dept = frappe.db.exists("Departemnt", data.department)
 	doc.department = dept
+	doc.company = data.company
 
 	# create packaging if missing
 	for d in data.get("items"):

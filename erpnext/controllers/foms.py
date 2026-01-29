@@ -1796,13 +1796,14 @@ def get_work_order(show_progress=False, work_order=""):
 		manual_save_log=1
 	).run()
 
-def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=False, return_doc=False, args={}):
+def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=False, return_doc=False, args={}, company=""):
 	doc = make_work_order(bom_no, item_code, qty, gross_weight, args=args)
 	validate_operation(doc)
 	doc.foms_work_order = log.workOrderNo
 	doc.foms_lot_id = log.id
 	doc.foms_lot_name = log.lotId
 	doc.gross_weight = gross_weight
+	doc.company = company
 	sales_order_no = []
 	request_no = []
 	for so in log.sales_order_no:
@@ -1858,9 +1859,12 @@ def create_delivery_order(log):
 	exists = frappe.get_value("Delivery Note", {"foms_id":cstr(log.id)})
 	if exists:
 		return exists
+
+	if not log.get("company"):
+		log.company = erpnext.get_default_company()
 	
 	doc.foms_id = log.id
-
+	doc.company = log.company
 	doc.customer = log.CustomerName
 	for d in log.get("items") or []:
 		d = frappe._dict(d)

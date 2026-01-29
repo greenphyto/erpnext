@@ -7,6 +7,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "company",
   "department",
   "foms_id",
   "column_break_3",
@@ -160,12 +161,19 @@
    "label": "Salad Items",
    "options": "BOM Item",
    "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-18 14:32:34.879468",
+ "modified": "2025-12-23 16:06:06.212501",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request",
