@@ -1089,3 +1089,24 @@ def get_item_rate(doc, row):
 	item_doc = frappe.db.get_value("Item", args.item_code, ["name", "variant_of"], as_dict=1)
 	rate = get_price_list_rate(args, item_doc)
 	return flt(rate.get("price_list_rate"))
+
+def add_donor_address(doc, method=""):
+	add_donor = False
+	skip_add = False
+	# check links
+	# fix exist donor customer 
+	if not frappe.db.exists("Customer", "Donor"):
+		return
+	
+	for d in doc.get("links"):
+		if d.link_name == "Donation":
+			add_donor = True
+		elif d.link_name == "Donor":
+			skip_add = True
+	
+	if add_donor and not skip_add:
+		# add donor address
+		row = doc.append("links")
+		row.link_doctype = "Customer"
+		row.link_name = "Donor"
+		row.link_title = "Donor"

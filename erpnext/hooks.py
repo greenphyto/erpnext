@@ -346,6 +346,7 @@ doc_events = {
 	"Address": {
 		"validate": [
 			"erpnext.regional.italy.utils.set_state_code",
+            "erpnext.controllers.erp.add_donor_address"
 		],
 	},
 	"Contact": {
