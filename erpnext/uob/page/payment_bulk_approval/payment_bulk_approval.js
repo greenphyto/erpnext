@@ -78,6 +78,14 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     background-color: unset;
                     border: unset;
                 }
+                
+                .show-attachment {
+                        font-size: 0.95em;
+                }
+
+                iframe.pdf_viewer {
+                    min-height: 75vh;
+                }
 
                 @media (max-width: 768px) {
                     .payment-bulk-approval .detail-body { padding: 6px 0px; }
@@ -577,6 +585,9 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                                 <tbody>${rows_html}</tbody>
                             </table>
                         </div>
+                        <div class="attachment-wrapper">
+                            <a class="show-attachment" doc-name = "${row.name}"><u>Show Attachment</u></a>
+                        </div>
                     </div>
                 `);
                 $body.append(mobile_html);
@@ -671,7 +682,17 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                 // Initialize parent amount display to reflect current selection
                 update_parent_row_amount();
                 $tr.data('detail-rendered', true);
+                
+                console.log(682, $body)
+                $body.find('.show-attachment').on('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // open pop up to show attachments
+                    show_attachment('Payment Approval', $(this).attr('doc-name'))
+                });
             }
+
+            
 
             function toggle_detail(forceOpen) {
                 const isVisible = $detailTr.is(':visible');
@@ -827,6 +848,33 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
             }
         });
     });
+
+    function show_attachment(doctype, docname) {
+        var pdf_dialog = new frappe.ui.Dialog({
+            title: 'Document Viewer',
+            size: 'extra-large',
+            fields: [
+                {
+                    label: 'Document Viewer',
+                    fieldname: 'pdf_viewer',
+                    fieldtype: 'HTML'
+                }
+            ],
+            primary_action_label: 'Tutup',
+            primary_action() {
+                pdf_dialog.hide();
+            }
+        });
+
+        const print_format = "Payment Approval"; 
+        const print_url = `/printview?doctype=${encodeURIComponent(doctype)}&name=${encodeURIComponent(docname)}&format=${encodeURIComponent(print_format)}`;
+
+        pdf_dialog.fields_dict.pdf_viewer.$wrapper.html(
+            `<iframe class="pdf_viewer" src="${print_url}" width="100%" height="75vh" frameborder="0"></iframe>`
+        );
+
+        pdf_dialog.show();
+    }
 
     function update_load_more(has_more) {
         paging.has_more = !!has_more;
