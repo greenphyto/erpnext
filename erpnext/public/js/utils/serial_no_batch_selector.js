@@ -153,7 +153,8 @@ erpnext.SerialNoBatchSelector = class SerialNoBatchSelector {
 
 		this.dialog = new frappe.ui.Dialog({
 			title: title,
-			fields: fields
+			fields: fields,
+			size: 'large'
 		});
 
 		this.dialog.set_primary_action(__('Insert'), function() {
@@ -186,6 +187,7 @@ erpnext.SerialNoBatchSelector = class SerialNoBatchSelector {
 					if(data.item_code == d.item_code) {
 						this.dialog.fields_dict.batches.df.data.push({
 							'batch_no': data.batch_no,
+							'foms_lot_name': data.foms_lot_name,
 							'actual_qty': data.actual_qty,
 							'selected_qty': data.qty,
 							'available_qty': data.actual_batch_qty
@@ -392,6 +394,7 @@ erpnext.SerialNoBatchSelector = class SerialNoBatchSelector {
 						'options': 'Batch',
 						'label': __('Select Batch'),
 						'in_list_view': 1,
+						'columns': 4,
 						get_query: function () {
 							return {
 								filters: {
@@ -441,7 +444,24 @@ erpnext.SerialNoBatchSelector = class SerialNoBatchSelector {
 								frappe.throw(__('Please select a warehouse to get available quantities'));
 							}
 							// e.stopImmediatePropagation();
+
+							// set foms_lot_id
+							frappe.db.get_value('Batch', batch_no, 'foms_lot_id')
+								.then(r => {
+									this.grid_row.on_grid_fields_dict.foms_lot_name
+										.set_value(r.message.foms_lot_id || '');
+								});
 						}
+					},
+					{
+						'fieldtype': 'Data',
+						'read_only': 1,
+						'fieldname': 'foms_lot_name',
+						'label': __('Lot ID'),
+						'in_list_view': 1,
+						'fetch_from': 'batch_no.foms_lot_id',
+						'default': 0,
+						'columns': 2
 					},
 					{
 						'fieldtype': 'Float',
@@ -450,9 +470,10 @@ erpnext.SerialNoBatchSelector = class SerialNoBatchSelector {
 						'label': __('Available'),
 						'in_list_view': 1,
 						'default': 0,
+						'columns': 2,
 						change: function () {
 							this.grid_row.on_grid_fields_dict.selected_qty.set_value('0');
-						}
+						},
 					},
 					{
 						'fieldtype': 'Float',
@@ -461,6 +482,7 @@ erpnext.SerialNoBatchSelector = class SerialNoBatchSelector {
 						'label': __('Qty'),
 						'in_list_view': 1,
 						'default': 0,
+						'columns': 2,
 						change: function () {
 							var batch_no = this.grid_row.on_grid_fields_dict.batch_no.get_value();
 							var available_qty = this.grid_row.on_grid_fields_dict.available_qty.get_value();

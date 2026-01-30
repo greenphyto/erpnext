@@ -282,12 +282,16 @@ class DeliveryNote(SellingController):
 					`tabWork Order` w ON w.name = se.work_order
 				WHERE
 					s.batch_no = %s
-						AND s.actual_qty > 0
+						-- AND s.actual_qty > 0
 						AND s.is_cancelled = 0
 						AND se.purpose = 'Manufacture'
 						""", (batch), as_dict=1, debug=0)
-			for d in temp:
-				return d.foms_lot_name, d.foms_work_order
+			if temp:
+				for d in temp:
+					return d.foms_lot_name, d.foms_work_order
+			else:
+				lot_id = frappe.db.get_value("Batch", batch, "foms_lot_id")
+				return lot_id, ""
 			
 		for d in self.get("items"):
 			d.foms_lot_name, d.foms_work_order = get_foms_lot_name(d.batch_no) or ("", "")
