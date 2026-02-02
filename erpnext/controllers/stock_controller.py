@@ -417,6 +417,8 @@ class StockController(AccountsController):
 									reference_name=self.name,
 									foms_lot_id=lot_id,
 								)
+							)
+						).insert().name
 					else:
 						# find DN from PO
 						row_name, batch = frappe.db.get_value("Delivery Note Item", {
