@@ -384,7 +384,8 @@ def add_formulas(report_name, xlsx_file, return_wb=False, column_widths=None):
 							if account == "'Profit / (Loss) for the Year'":
 								ws[f"{col}{row}"] = f"={col}{assets_total_row} - ({col}{liability_total_row} + {col}{equity_total_row})"
 							elif account == "'Total (Credit)'":
-								ws[f"{col}{row}"] = f"={col}{liability_total_row} + {col}{equity_total_row}"
+								# Total Credit = (liability + equity) + (asset - (liability + equity))
+								ws[f"{col}{row}"] = f"=({col}{liability_total_row} + {col}{equity_total_row}) + ({col}{assets_total_row} - ({col}{liability_total_row} + {col}{equity_total_row}))"
 
 						# Profit & Loss
 						required_keys = ["Income", "Expenses"]

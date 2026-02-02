@@ -369,19 +369,19 @@ def accumulate_values_into_parents(accounts, accounts_by_name, period_list):
 	for d in reversed(accounts):
 		if d.parent_account:
 			for period in period_list:
-				accounts_by_name[d.parent_account][period.key] = accounts_by_name[d.parent_account].get(
+				accounts_by_name[d.parent_account][period.key] = flt(accounts_by_name[d.parent_account].get(
 					period.key, 0.0
-				) + d.get(period.key, 0.0)
+				) + d.get(period.key, 0.0), 2)
 			
 			for key, val in d.items():
 				if key.startswith("cc_"):
-					accounts_by_name[d.parent_account][key] = accounts_by_name[d.parent_account].get(
+					accounts_by_name[d.parent_account][key] = flt(accounts_by_name[d.parent_account].get(
 						key, 0.0
-					) + d.get(key, 0.0)
+					) + d.get(key, 0.0), 2)
 
-			accounts_by_name[d.parent_account]["opening_balance"] = accounts_by_name[d.parent_account].get(
+			accounts_by_name[d.parent_account]["opening_balance"] = flt(accounts_by_name[d.parent_account].get(
 				"opening_balance", 0.0
-			) + d.get("opening_balance", 0.0)
+			) + d.get("opening_balance", 0.0), 2)
 
 
 def prepare_data(accounts, balance_must_be, period_list, company_currency):
@@ -586,8 +586,16 @@ def set_gl_entries_by_account(
 
 		gl_entries = frappe.db.sql(
 			"""
-			select posting_date, cost_center, account, debit, credit, is_opening, fiscal_year, voucher_type,
-				debit_in_account_currency, credit_in_account_currency, account_currency from `tabGL Entry`
+			select posting_date, cost_center, account, 
+				round(debit, 2) as debit, 
+				round(credit, 2) as credit, 
+				is_opening, 
+				fiscal_year, 
+				voucher_type,
+				round(debit_in_account_currency, 2) as debit_in_account_currency, 
+				round(credit_in_account_currency, 2) as credit_in_account_currency, 
+				account_currency 
+			from `tabGL Entry`
 			where company=%(company)s
 			{additional_conditions}
 			and posting_date <= %(to_date)s
