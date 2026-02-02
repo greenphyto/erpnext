@@ -1,7 +1,7 @@
 import frappe
 import frappe, json
 from frappe.utils import today, get_last_day, getdate, today, get_last_day
-from frappe.utils import cint, flt, getdate, cstr, safe_abs
+from frappe.utils import cint, flt, getdate, cstr, safe_abs, add_months
 from six import string_types
 from frappe.contacts.doctype.address.address import get_default_address
 
@@ -932,23 +932,22 @@ def is_doctype_exists(doctype):
 	except frappe.DoesNotExistError:
 		return None
 
-from datetime import date, timedelta
-from dateutil.relativedelta import relativedelta
+from datetime import date
 def trial_balance_different_issue():
 	for d in frappe.get_all("Company"):
 		_trial_balance_different_issue(d.name)
 		
 def _trial_balance_different_issue(company):
 	from frappe.desk.query_report import run
-	today = date.today()
-	prev_month = today - relativedelta(months=1)
-	from_date = date(today.year, 1, 1)      # 1 Januari tahun ini
-	to_date = date(today.year, 12, 31)
+	cur_date = getdate(today())
+	prev_month = add_months(cur_date, -1)
+	from_date = date(cur_date.year, 1, 1)      # 1 Januari tahun ini
+	to_date = date(cur_date.year, 12, 31)
 
 	allowed_value = 0.005
 	filters = {
 		"company": company,
-		"fiscal_year": str(today.year),
+		"fiscal_year": str(cur_date.year),
 		"from_date": from_date.strftime("%Y-%m-%d"),
 		"to_date": to_date.strftime("%Y-%m-%d"),
 		"with_period_closing_entry": 1,
@@ -966,7 +965,7 @@ def _trial_balance_different_issue(company):
 					"period_label": prev_month.strftime("%B %Y"), 
 					"company":company,
 					"difference": diff,
-					"fiscal_year":str(today.year)
+					"fiscal_year":str(cur_date.year)
 				})
 				doc_notif.send(doc)
 
