@@ -3,7 +3,7 @@
 
 import frappe, json, erpnext
 from frappe.model.document import Document
-from frappe.utils import getdate, flt, cstr, add_days
+from frappe.utils import getdate, flt, cstr, add_days, today
 from frappe import _
 from erpnext.controllers.foms import UOM_MAP
 from six import string_types
@@ -16,6 +16,7 @@ class Request(Document):
 		self.export_salad_items()
 
 	def validate_date(self):
+		self.posting_date = getdate(today())
 		if getdate(self.delivery_date) < getdate(self.posting_date):
 			frappe.throw(_("Delivery Date cannot before posting date."))
 
