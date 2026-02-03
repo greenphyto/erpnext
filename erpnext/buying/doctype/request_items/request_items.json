@@ -8,9 +8,10 @@
  "field_order": [
   "item_code",
   "item_name",
-  "qty",
+  "lead_time_days",
   "uom",
   "column_break_6",
+  "qty",
   "rate",
   "amount",
   "unit_weight",
@@ -144,12 +145,21 @@
    "label": "Batch No",
    "options": "Batch",
    "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fetch_from": "item_code.lead_time_days",
+   "fieldname": "lead_time_days",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Lead Time (days)",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-03-24 14:30:37.721515",
+ "modified": "2026-02-03 16:15:27.626085",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request Items",

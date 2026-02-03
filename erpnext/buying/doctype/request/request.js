@@ -89,6 +89,12 @@ frappe.ui.form.on("Request", {
 
 			}
 		});
+	},
+	posting_date:function(frm){
+		frm.cscript.calculate_duration_days();
+	},
+	delivery_date:function(frm){
+		frm.cscript.calculate_duration_days();
 	}
 
 });
@@ -115,6 +121,13 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 				frappe.set_route("Form", "Sales Order", r.message);
 			}
 		})
+	}
+
+	calculate_duration_days(){
+		if (this.frm.doc.delivery_date && this.frm.doc.posting_date){
+			let duration_days = frappe.datetime.get_day_diff(this.frm.doc.delivery_date, this.frm.doc.posting_date);
+			this.frm.set_value("duration_days", duration_days);
+		}
 	}
 
 	change_package_display(){

@@ -3,7 +3,7 @@
 
 import frappe, json, erpnext
 from frappe.model.document import Document
-from frappe.utils import getdate, flt, cstr
+from frappe.utils import getdate, flt, cstr, add_days
 from frappe import _
 from erpnext.controllers.foms import UOM_MAP
 from six import string_types
@@ -12,11 +12,22 @@ class Request(Document):
 		self.calculate_price()
 		self.calculate_weight()
 		self.validate_date()
+		self.validate_lead_time()
 		self.export_salad_items()
 
 	def validate_date(self):
 		if getdate(self.delivery_date) < getdate(self.posting_date):
 			frappe.throw(_("Delivery Date cannot before posting date."))
+
+	def validate_lead_time(self):
+		self.duration_days = (getdate(self.delivery_date) - getdate(self.posting_date)).days
+		for d in self.get("items"):
+			d.lead_time_days = frappe.get_value("Item", d.item_code, "lead_time_days") or 0
+			if d.lead_time_days > 0:
+				min_date = add_days(getdate(self.posting_date), d.lead_time_days)
+				if getdate(self.delivery_date) < min_date:
+					frappe.throw(_("Item {0} requires at least {1} days lead time. Please adjust Delivery Date accordingly.")
+						.format(d.item_code, d.lead_time_days))
 
 	def calculate_price(self):
 		self.total_price = 0
@@ -70,7 +81,6 @@ class Request(Document):
 					row.bom_no = frappe.get_value("Item", row.item_code, "default_bom")
 					if not row.bom_no:
 						row.progress = 100
-
 
 
 def create_request_form(data):
