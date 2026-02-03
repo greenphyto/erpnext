@@ -1624,16 +1624,23 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 		if bom.docstatus == 0 or force_new:
 			if force_new:
 				bom = frappe.new_doc("BOM")
+
+			item_lead_time = frappe.get_value("Item", item_name, "lead_time_days")
+
 			operation_map = {}
 			bom.item = item_name
 			bom.storage_duration = get_product_storage_duration(product_id)
 			bom.is_default = 1
 			bom.foms_recipe_version = log.productVersionName
+			bom.lead_time_days = cint(log.leadTimeDays) or item_lead_time or DEFAULT_LEAD_TIME
 			bom.with_operations = 1
 			bom.transfer_material_against = TRANFER_AGAIN
 			bom.rm_cost_as_per = "Valuation Rate"
 			bom.operations = []
 			bom.items = []
+
+			if item_lead_time != bom.lead_time_days:
+				frappe.db.set_value("Item", item_name, "lead_time_days", bom.lead_time_days)
 						
 			for op in all_process:
 				op = frappe._dict(op)

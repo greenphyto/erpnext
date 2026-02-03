@@ -120,6 +120,7 @@
                   "data": {
                     "productID": "37",
                     "productVersionName": "V1.6",
+                    "leadTimeDays": 30,
                     "process": [
                       {
                         "processName": "Seeding",

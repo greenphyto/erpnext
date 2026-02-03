@@ -13,6 +13,7 @@
   "operation_no",
   "foms_recipe_version",
   "storage_duration",
+  "lead_time_days",
   "cb0",
   "is_active",
   "is_default",
@@ -553,6 +554,11 @@
    "fieldname": "storage_duration",
    "fieldtype": "Int",
    "label": "Storage Duration"
+  },
+  {
+   "fieldname": "lead_time_days",
+   "fieldtype": "Int",
+   "label": "Lead Time Days"
   }
  ],
  "icon": "fa fa-sitemap",
@@ -560,7 +566,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-19 15:03:00.177518",
+ "modified": "2026-02-03 15:26:02.616770",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "BOM",
