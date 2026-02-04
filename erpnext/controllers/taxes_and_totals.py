@@ -550,6 +550,7 @@ class calculate_taxes_and_totals(object):
 		if self.doc.doctype in [
 			"Quotation",
 			"Sales Order",
+			"Consignment Request",
 			"Delivery Note",
 			"Sales Invoice",
 			"POS Invoice",

@@ -1,8 +1,117 @@
-# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
+# License: GNU General Public License v3. See license.txt
 
-# import frappe
-from frappe.model.document import Document
 
-class ConsignmentRequest(Document):
-	pass
+import json
+
+import frappe
+import frappe.utils
+from frappe import _
+from frappe.contacts.doctype.address.address import get_company_address
+from frappe.desk.notifications import clear_doctype_notifications
+from frappe.model.mapper import get_mapped_doc
+from frappe.model.utils import get_fetch_values
+from frappe.utils import add_days, cint, cstr, flt, get_link_to_form, getdate, nowdate, strip_html
+from frappe.utils import safe_abs as abs
+
+from erpnext.accounts.doctype.sales_invoice.sales_invoice import (
+	unlink_inter_company_doc,
+	update_linked_doc,
+	validate_inter_company_party,
+)
+from erpnext.accounts.party import get_party_account
+from erpnext.controllers.selling_controller import SellingController
+from erpnext.manufacturing.doctype.production_plan.production_plan import (
+	get_items_for_material_requests,
+)
+from erpnext.selling.doctype.customer.customer import check_credit_limit
+from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
+from erpnext.stock.doctype.item.item import get_item_defaults
+from erpnext.stock.get_item_details import get_default_bom
+from erpnext.stock.stock_balance import get_reserved_qty, update_bin_qty
+from erpnext.stock.doctype.batch.batch import get_batch_no
+
+form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
+
+
+class ConsignmentRequest(SellingController):
+	def __init__(self, *args, **kwargs):
+		super(ConsignmentRequest, self).__init__(*args, **kwargs)
+
+	def validate(self):
+		super(ConsignmentRequest, self).validate()
+		self.validate_uom_is_integer("stock_uom", "stock_qty")
+		self.validate_uom_is_integer("uom", "qty")
+		self.set_status()
+		self.reset_default_field_value("set_warehouse", "items", "warehouse")
+
+	def on_submit(self):
+		self.check_credit_limit()
+		frappe.get_doc("Authorization Control").validate_approving_authority(
+			self.doctype, self.company, self.base_grand_total, self
+		)
+		self.update_prevdoc_status("submit")
+
+	def on_cancel(self):
+		self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry", "Payment Ledger Entry")
+		super(ConsignmentRequest, self).on_cancel()
+
+		# Cannot cancel closed SO
+		if self.status == "Closed":
+			frappe.throw(_("Closed order cannot be cancelled. Unclose to cancel."))
+
+		self.update_prevdoc_status("cancel")
+		self.db_set("status", "Cancelled")
+
+
+	def check_credit_limit(self):
+		# if bypass credit limit check is set to true (1) at Consignment Request level,
+		# then we need not to check credit limit and vise versa
+		if not cint(
+			frappe.db.get_value(
+				"Customer Credit Limit",
+				{"parent": self.customer, "parenttype": "Customer", "company": self.company},
+				"bypass_credit_limit_check",
+			)
+		):
+			check_credit_limit(self.customer, self.company)
+
+	def check_modified_date(self):
+		mod_db = frappe.db.get_value("Consignment Request", self.name, "modified")
+		date_diff = frappe.db.sql("select TIMEDIFF('%s', '%s')" % (mod_db, cstr(self.modified)))
+		if date_diff and date_diff[0][0]:
+			frappe.throw(_("{0} {1} has been modified. Please refresh.").format(self.doctype, self.name))
+
+	def update_status(self, status):
+		self.check_modified_date()
+		self.set_status(update=True, status=status)
+
+	def set_indicator(self):
+		"""Set indicator for portal"""
+		if self.per_billed < 100 and self.per_delivered < 100:
+			self.indicator_color = "orange"
+			self.indicator_title = _("Not Paid and Not Delivered")
+
+		elif self.per_billed == 100 and self.per_delivered < 100:
+			self.indicator_color = "orange"
+			self.indicator_title = _("Paid and Not Delivered")
+
+		else:
+			self.indicator_color = "green"
+			self.indicator_title = _("Paid")
+
+
+def get_list_context(context=None):
+	from erpnext.controllers.website_list_for_contact import get_list_context
+
+	list_context = get_list_context(context)
+	list_context.update(
+		{
+			"show_sidebar": True,
+			"show_search": True,
+			"no_breadcrumbs": True,
+			"title": _("Orders"),
+		}
+	)
+
+	return list_context
