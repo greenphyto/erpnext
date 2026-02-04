@@ -1110,6 +1110,7 @@ def add_donor_address(doc, method=""):
 		row.link_name = "Donor"
 		row.link_title = "Donor"
 	
+@frappe.whitelist()
 def get_company_availabe():
 	data = frappe.db.get_list("Company", {}, ["name","name as value", "color"], ignore_permissions=1)
 	return data
