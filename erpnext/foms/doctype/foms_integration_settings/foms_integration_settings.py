@@ -502,6 +502,19 @@ class FomsAPI():
 		res =  self.req("POST", "/userportal/RawMaterialUP/CreateOrUpdateRawMaterialReconcilliation", data=data)
 		return res
 
+	def get_detail_product(self, product_id):
+		versions = self.req("GET", f"/Product/GetProductVersionsByProductId?productID={product_id}")
+		versionID = 0
+		if not versions:
+			return {}
+		
+		for d in versions:
+			if d.get("id") > versionID:
+				versionID = d.get("id")
+
+		res = self.req("GET", f"/Product/GetProductById?id={product_id}&versionID={versionID}")
+		return res
+
 
 	
 """

@@ -1501,7 +1501,7 @@ def create_raw_material(log):
 			doc.has_batch_no = 1
 			doc.create_new_batch = 1
 			doc.batch_number_series = doc.item_code + "-" + "BN.#####"
-			doc.lead_time_days = cint(log.requestLeadTime) or DEFAULT_LEAD_TIME
+			doc.lead_time_days = cint(log.requestLeadTime) or doc.lead_time_days or DEFAULT_LEAD_TIME
 			doc.min_order_qty = flt(log.minimumOrderQuantity)
 			doc.safety_stock = log.safetyLevel
 			doc.shelf_life_in_days = 365
@@ -1520,7 +1520,7 @@ def create_raw_material(log):
 		doc.description = log.rawMaterialDescription
 		if doc.item_code not in ['RM-NS-WW']:
 			doc.item_group = types
-			doc.lead_time_days = cint(log.requestLeadTime) or DEFAULT_LEAD_TIME
+			doc.lead_time_days = cint(log.requestLeadTime) or doc.lead_time_days or DEFAULT_LEAD_TIME
 			doc.min_order_qty = flt(log.minimumOrderQuantity)
 			doc.safety_stock = log.safetyLevel
 			doc.shelf_life_in_days = 365
