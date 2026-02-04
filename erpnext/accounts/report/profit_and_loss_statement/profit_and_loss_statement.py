@@ -12,7 +12,7 @@ try:
 except Exception:
 	openpyxl = None
 from frappe import _
-from frappe.utils import flt, now_datetime, get_datetime, now
+from frappe.utils import flt, now_datetime, get_datetime, now, cint
 
 from erpnext.accounts.report.financial_statements import (
 	get_columns,
@@ -199,7 +199,7 @@ def get_chart_data(filters, columns, income, expense, net_profit_loss):
 
 	chart = {"data": {"labels": labels, "datasets": datasets}}
 
-	if not filters.accumulated_values:
+	if not cint(filters.accumulated_values):
 		chart["type"] = "bar"
 	else:
 		chart["type"] = "line"

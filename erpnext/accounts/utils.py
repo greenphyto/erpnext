@@ -847,9 +847,9 @@ def get_outstanding_invoices(
 	precision = frappe.get_precision("Sales Invoice", "outstanding_amount") or 2
 
 	if account:
-		root_type, account_type = frappe.get_cached_value(
+		root_type, account_type = (frappe.get_cached_value(
 			"Account", account, ["root_type", "account_type"]
-		)
+		) or (None, None))
 		party_account_type = "Receivable" if root_type == "Asset" else "Payable"
 		party_account_type = account_type or party_account_type
 	else:
@@ -1842,5 +1842,50 @@ def get_barcode(text):
 	base64_encoded = base64.b64encode(temp_file.getvalue()).decode('utf-8')
 
 	res = """<img style="width: 100%;height: 100%;" src="data:image/svg+xml;base64,{}" alt="Barcode">""".format(base64_encoded)
-
 	return res
+
+def get_account_number_map(company: str):
+    accounts = frappe.db.get_all(
+        "Account",
+        filters={
+            "company": company,
+            "is_group": 0,
+            "disabled": 0,
+        },
+        fields=["name", "account_number", "account_name"],
+        order_by="account_number asc"
+    )
+
+    # build map by account_number
+    return {
+        acc.account_number: acc.name
+        for acc in accounts
+        if acc.account_number
+    }
+
+def get_price_list_with(doc):
+	buying_doctypes = [
+			"Purchase Order",
+			"Purchase Invoice",
+			"Purchase Receipt",
+			"Supplier Quotation",
+			"Material Request",
+			"Request for Quotation",
+		]
+	selling_doctypes = [
+		"Sales Order",
+		"Sales Invoice",
+		"Delivery Note",
+		"Quotation",
+		"POS Invoice",
+		"Sales Return",
+	]
+	if doc.doctype in buying_doctypes:
+		valid_price_list = frappe.db.get_value(
+			"Price List", {"enabled":1, "selling": 1, "currency":doc.currency}
+		)
+	elif doc.doctype in selling_doctypes:
+		valid_price_list = frappe.db.get_value(
+			"Price List", {"enabled":1, "buying": 1, "currency":doc.currency}
+		)
+	return valid_price_list

@@ -4,6 +4,9 @@
 frappe.ui.form.on('Part Number Settings', {
 	refresh: function(frm) {
 		frm.add_custom_button(__('Get Items'), () => {
+			if (!frm.doc.company){
+				frappe.throw("Company must be set!")
+			}
 			frappe.call({
 				method:"load_items",
 				doc:frm.doc,
@@ -13,7 +16,6 @@ frappe.ui.form.on('Part Number Settings', {
 				}
 			})
 		})
-
 		frm.add_custom_button(__('Edit All'), () => {
 			frappe.prompt([
 				{'fieldname': 'material_group', 'fieldtype': 'Link', 'label': 'Material Group', 'reqd': 1, "options":"Material Group"},
@@ -29,6 +31,14 @@ frappe.ui.form.on('Part Number Settings', {
 			'Update all account code',
 			'Submit'
 			)
+		})
+
+		frm.set_query("account_code", "data_mapping", (doc)=>{
+			return {
+				filters:{
+					company: doc.company
+				}
+			}
 		})
 	}
 });

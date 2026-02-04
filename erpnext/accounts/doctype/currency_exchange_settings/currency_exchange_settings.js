@@ -17,10 +17,10 @@ frappe.ui.form.on('Currency Exchange Settings', {
 				base: '{from_currency}',
 				symbols: '{to_currency}'
 			};
-			add_param(frm, "https://frankfurter.app/{transaction_date}", params, result);
+			add_param(frm, "https://api.frankfurter.dev/v1/{transaction_date}", params, result);
 		} else if (frm.doc.service_provider =="mas.gov.sg")
 		{
-			let result = ['elements','{from_currency}_{to_currency}'];
+			let result = ['keyid'];
 			let params = {
 				end_of_day: '{transaction_date}',
 			};

@@ -14,6 +14,7 @@ from frappe.utils import safe_abs as abs
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from erpnext.stock import get_warehouse_account_map, get_item_account
 from erpnext.accounts.general_ledger import make_gl_entries
+from erpnext.accounts.utils import get_price_list_with
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.controllers.selling_controller import SellingController
 from erpnext.stock.doctype.batch.batch import set_batch_nos, get_available_batch_portion
@@ -224,6 +225,66 @@ class DeliveryNote(SellingController):
 		if not self.installation_status:
 			self.installation_status = "Not Installed"
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
+		try:
+			self.link_internal_company()
+		except:
+			pass
+
+	def link_internal_company(self):
+		# Only for internal supplier flow
+		if not self.is_internal_customer:
+			return
+
+		so_number = next((d.against_sales_order for d in self.items if d.against_sales_order), None)
+		if not so_number:
+			return
+
+		# Get inter-company Sales Order (SO) reference from PO
+		inter_po_name = frappe.get_value("Sales Order", so_number, "inter_company_order_reference")
+		if not inter_po_name:
+			# fallback: find SO from sub-company that references this PO
+			inter_po_name = frappe.db.get_value(
+				"Sales Order",
+				{"inter_company_order_reference": so_number, "docstatus": 1},
+				"name",
+			)
+			if not inter_po_name:
+				return
+
+			# persist back to PO for future use
+			frappe.db.set_value("Sales Order", so_number, "inter_company_order_reference", inter_po_name)
+
+		# Represents Company from PO (PR should follow PO)
+		represents_company = frappe.get_value("Sales Order", so_number, "represents_company")
+
+		# Find inter-company Delivery Note (DN) created from that SO
+		# (DN Item commonly uses `against_sales_order`; some customizations use `sales_order`)
+		inter_pr_number = frappe.db.sql(
+			"""
+			SELECT DISTINCT dni.parent
+			FROM `tabDelivery Note Item` dni
+			JOIN `tabDelivery Note` dn ON dn.name = dni.parent
+			WHERE
+				dn.docstatus = 1
+				AND dni.against_sales_order = %s
+			ORDER BY dn.creation DESC
+			LIMIT 1
+			""",
+			(inter_po_name),
+			as_dict=False,
+		)
+
+		if not inter_pr_number:
+			return
+
+		inter_pr_number = inter_pr_number[0][0]
+		if inter_pr_number:
+			frappe.db.set_value("Purchase Receipt", inter_pr_number, "inter_company_reference", self.name)
+
+
+		# Pastikan field ini ada di Purchase Receipt (custom field)
+		self.inter_company_reference = inter_pr_number
+		self.represents_company = represents_company
 
 	def validate_donation(self):
 		if self.is_donation and not self.organization_name:
@@ -1291,6 +1352,7 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 	details = get_inter_company_details(source_doc, doctype)
 
 	def set_missing_values(source, target):
+		target.selling_price_list = get_price_list_with(source)
 		target.run_method("set_missing_values")
 		set_purchase_references(target)
 
@@ -1311,6 +1373,8 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 			target_doc.buying_price_list = source_doc.selling_price_list
 			target_doc.is_internal_supplier = 1
 			target_doc.inter_company_reference = source_doc.name
+			target_doc.cost_center = frappe.get_value("Company",target_doc.company, "cost_center")
+			target_doc.letter_head = frappe.get_value("Company",target_doc.company, "default_letter_head")
 
 			# Invert the address on target doc creation
 			update_address(target_doc, "supplier_address", "address_display", source_doc.company_address)
@@ -1337,6 +1401,12 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 			target_doc.selling_price_list = source_doc.buying_price_list
 			target_doc.is_internal_customer = 1
 			target_doc.inter_company_reference = source_doc.name
+			target_doc.cost_center = frappe.get_value("Company",target_doc.company, "cost_center")
+			target_doc.letter_head = frappe.get_value("Company",target_doc.company, "default_letter_head")
+
+			if source_doc.doctype in ("Purchase Invoice", "Purchase Receipt"):
+				target_doc.po_no = source_doc.name
+				target_doc.po_date = source_doc.posting_date
 
 			# Invert the address on target doc creation
 			update_address(

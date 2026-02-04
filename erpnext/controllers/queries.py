@@ -79,10 +79,10 @@ def lead_query(doctype, txt, searchfield, start, page_len, filters):
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def customer_query(doctype, txt, searchfield, start, page_len, filters, as_dict=False):
+	filters = filters or {}
 	doctype = "Customer"
 	conditions = []
 	cust_master_name = frappe.defaults.get_user_default("cust_master_name")
-
 	fields = ["name"]
 	if cust_master_name != "Customer Name":
 		fields.append("customer_name")
@@ -90,6 +90,9 @@ def customer_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 	fields = get_fields(doctype, fields)
 	searchfields = frappe.get_meta(doctype).get_search_fields()
 	searchfields = " or ".join(field + " like %(txt)s" for field in searchfields)
+
+	def_company = frappe.defaults.get_defaults().get("company")
+	filters['company'] = def_company
 
 	return frappe.db.sql(
 		"""select {fields} from `tabCustomer`
@@ -118,20 +121,23 @@ def customer_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def supplier_query(doctype, txt, searchfield, start, page_len, filters, as_dict=False):
+	filters = filters or {}
 	doctype = "Supplier"
 	supp_master_name = frappe.defaults.get_user_default("supp_master_name")
-
 	fields = ["name"]
 	if supp_master_name != "Supplier Name":
 		fields.append("supplier_name")
 
 	fields = get_fields(doctype, fields)
 
+	def_company = frappe.defaults.get_defaults().get("company")
+	filters['company'] = def_company
+
 	return frappe.db.sql(
 		"""select {field} from `tabSupplier`
 		where docstatus < 2
 			and ({key} like %(txt)s
-			or supplier_name like %(txt)s) and disabled=0
+			or supplier_name like %(txt)s) and disabled=0 
 			and (on_hold = 0 or (on_hold = 1 and CURRENT_DATE > release_date))
 			{mcond}
 		order by
@@ -282,6 +288,11 @@ def item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=Fals
 			 
 		else:
 			filters.pop("department", None)
+
+	
+	is_child_company = True if frappe.db.get_value("Company", erpnext.get_default_company(), "parent_company") else False
+	if is_child_company:
+		filters['item_group'] = ['!=', 'Raw Material']
 		 
 
 	description_cond = ""
@@ -905,3 +916,8 @@ def get_fields(doctype, fields=None):
 		fields.insert(1, meta.title_field.strip())
 
 	return unique(fields)
+
+def get_company_enable():
+	if frappe.session.user == "Administrator":
+		return []
+	return [d.name for d in frappe.db.get_list("Company")]

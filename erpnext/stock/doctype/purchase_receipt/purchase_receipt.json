@@ -1087,7 +1087,8 @@
    "fieldname": "is_internal_supplier",
    "fieldtype": "Check",
    "label": "Is Internal Supplier",
-   "read_only": 1
+   "read_only": 1,
+   "in_standard_filter": 1
   },
   {
    "allow_on_submit": 1,
@@ -1266,7 +1267,7 @@
  "idx": 261,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-06 15:07:14.463139",
+ "modified": "2025-03-06 15:07:15.463139",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Purchase Receipt",

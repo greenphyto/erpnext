@@ -1109,3 +1109,193 @@ def add_donor_address(doc, method=""):
 		row.link_doctype = "Customer"
 		row.link_name = "Donor"
 		row.link_title = "Donor"
+	
+def get_company_availabe():
+	data = frappe.db.get_list("Company", {}, ["name","name as value", "color"], ignore_permissions=1)
+	return data
+
+@frappe.whitelist()
+def switch_company(company, force=False, user=""):
+	user = user or frappe.session.user
+	
+	user_disabled = frappe.get_value("User", frappe.session.user, "cannot_change_company")
+	if user_disabled and not force:
+		return {"result":False, "error":"You are not allowed to change company."}
+	
+	# if administrator, always set to all
+	frappe.db.set_value("User", user, "company_selected", company)
+	# change role
+	filters = {
+		"user":user,
+		"allow":"Company",
+		"auto":1,
+		"hide_descendants":1
+	}
+	# set default
+	perm_name = frappe.db.exists("User Permission", filters)
+	if not perm_name:
+		perm_name = frappe.db.exists("User Permission", {
+			"user":user,
+			"allow":"Company",
+		})
+
+	if perm_name:
+		doc = frappe.get_doc("User Permission", perm_name)
+	else:
+		doc = frappe.new_doc("User Permission")
+
+	# change defaults
+	switch_default_values(user, company)
+	
+	doc.update(filters)
+	doc.for_value = company
+	doc.flags.ignore_permissions = 1
+	doc.save()
+	return {"result":True}
+
+from frappe.defaults import set_default
+def switch_default_values(user, company):
+	"""
+	change values for:
+	 - company
+	 - country
+	 - currency
+	 - time_zone
+	 - letter_head
+	 - default_letter_head_content
+	 - buying_price_list
+	 - selling_price_list
+	 - default_warehouse
+	"""
+	doc = frappe.get_doc("Company", company)
+	# company
+	set_default("company", company, user)
+
+	# currency
+	set_default("currency", doc.default_currency, user)
+
+	# country
+	set_default("country", doc.country, user)
+
+	# timezone
+	set_default("time_zone", doc.time_zone, user)
+
+	# Letter head & content
+	lh_name = frappe.db.get_value("Letter Head", {"company":company}, ["name", "content"], as_dict=1) 
+	if lh_name:
+		set_default("letter_head", lh_name.name, user)
+		set_default("default_letter_head_content", lh_name.content, user)
+	
+	# buying_price_list
+	name = frappe.db.get_value("Price List", {"buying":1, "enabled":1, "currency":doc.default_currency})
+	if name:
+		set_default("buying_price_list", name, user)
+
+	# selling_price_list
+	name = frappe.db.get_value("Price List", {"selling":1, "enabled":1, "currency":doc.default_currency})
+	if name:
+		set_default("selling_price_list", name, user)
+
+	if doc.default_warehouse:
+		set_default("default_warehouse", doc.default_warehouse, user)
+
+	
+
+def validate_company_selected(doc, method=""):
+	if doc.meta.has_field("company") or frappe.session.user == "Administrator":
+		return
+	
+	meta = frappe.get_meta("Accounts Settings")
+	if not meta.has_field("enable_switch_company_menu") or not cint(frappe.db.get_single_value("Accounts Settings", "enable_switch_company_menu")):
+		return
+	
+	cur_company = frappe.db.get_value("User", frappe.session.user, "company_selected")
+	if not cur_company or cur_company == "ALL":
+		return
+	
+	if doc.get("company") and doc.get("company") != cur_company:
+		frappe.throw("Company mismatch, please reload your browser or contact Administrator.")
+
+def set_permanent_company(doc, method=""):
+	if doc.get("company"):
+		switch_company(doc.company, force=1, user=doc.name)
+		doc.company_selected = doc.get("company")
+
+def change_naming_series(doc, method=""):
+	doctypes = [
+		# Buying
+		"Purchase Order",
+		"Purchase Receipt",
+		"Purchase Invoice",
+		"Supplier Quotation",
+
+		# Selling
+		"Sales Order",
+		"Delivery Note",
+		"Sales Invoice",
+		"Quotation",
+
+		# Stock / Manufacturing
+		"Stock Entry",
+		"Stock Reconciliation",
+		"Material Request",
+		"Work Order",
+		"Job Card",
+
+		# Payment & Accounting
+		"Payment Entry",
+		"Journal Entry",
+
+		# Optional / cross-module transactional docs
+		"Expense Claim",
+		"Landed Cost Voucher",
+		"Subcontracting Receipt",
+		"Subcontracting Order",
+	]
+
+	if doc.doctype not in doctypes:
+		return
+	
+	"""Attach the company abbreviation (e.g., 'MY') to the document name if not already present."""
+	abbr = frappe.db.get_value("Company", doc.get("company"), "series_abbr")
+
+	if not abbr:
+		return
+
+	abbr = abbr.strip().upper()
+	current_name = (doc.name or "").strip()
+
+	# Check if the current name already starts with the abbreviation
+	if not current_name.startswith(abbr):
+		doc.name = f"{abbr}{current_name}"
+
+from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_inter_company_transaction
+def auto_create_selling_from_internal(doc, method=""):
+	def try_save(d):
+		try:
+			d.flags.ignore_permissions = 1
+			d.save()
+		except:
+			pass
+	
+	if doc.get("supplier"):
+		with_internal_supplier = frappe.get_value("Supplier", doc.supplier, "is_internal_supplier")
+		if not with_internal_supplier:
+			return
+	elif doc.get("customer"):
+		with_internal_supplier = frappe.get_value("Customer", doc.customer, "is_internal_customer")
+		if not with_internal_supplier:
+			return
+	else:
+		return
+	
+	if doc.doctype in ['Purchase Order', 'Purchase Invoice']:
+		from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_inter_company_transaction
+		doc_res = make_inter_company_transaction(doc.doctype, doc.name, {})
+		doc_res.flags.ignore_mandatory = 1
+		try_save(doc_res)
+	else:
+		from erpnext.stock.doctype.delivery_note.delivery_note import make_inter_company_transaction
+		doc_res = make_inter_company_transaction(doc.doctype, doc.name, {})
+		try_save(doc_res)
+

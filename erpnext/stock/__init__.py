@@ -45,7 +45,7 @@ def get_warehouse_account_map(company=None):
 
 		# add part number settings account
 		# format {item_code:account}
-		item_account = get_part_number_account_settings()
+		item_account = get_part_number_account_settings(company)
 		warehouse_account.update(item_account)
 
 		# WIP 
@@ -78,9 +78,9 @@ def get_warehouse_account_map(company=None):
 
 	return frappe.flags.warehouse_account_map.get(company) or frappe.flags.warehouse_account_map
 
-def get_part_number_account_settings():
+def get_part_number_account_settings(company):
 	item_account = frappe._dict()
-	doc = frappe.get_doc("Part Number Settings")
+	doc = frappe.get_doc("Part Number Settings", company)
 	for d in doc.get("data_mapping"):
 		item_account.setdefault(d.code, frappe._dict({
 			"account":d.account_code,

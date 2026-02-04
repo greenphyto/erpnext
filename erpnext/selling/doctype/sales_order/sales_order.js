@@ -402,10 +402,11 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 		erpnext.selling.render_delivery_progress(this.frm);
 	}
 
-	pending_po(){
+	pending_po(refresh=false){
 		if (this.frm.doc.is_pledge) return;
 		if (this.frm.doc.pending_po){
 			if (this.frm.is_dirty()){
+				if (this.frm.doc.po_no && refresh==true) return;
 				this.frm.set_value("po_no", "Pending PO");
 				this.frm.set_value("po_date", "");
 			}
@@ -413,9 +414,9 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 			this.frm.set_df_property("po_date", "hidden", 1);
 		}else{
 			if (this.frm.is_dirty()){
+				if (this.frm.doc.po_no && refresh==true) return;
 				this.frm.set_value("po_no", "");
 				this.frm.set_value("po_date", "");
-
 			}
 			this.frm.set_df_property("po_no", "hidden", 0);
 			this.frm.set_df_property("po_date", "hidden", 0);

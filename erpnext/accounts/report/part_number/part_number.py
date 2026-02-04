@@ -23,8 +23,8 @@ def execute(filters=None):
 
 def get_data_from_settings(filters):
 	raw_data = frappe.db.sql("""
-		select * from `tabPart Number Details` order by idx
-	""", as_dict=1)
+		select * from `tabPart Number Details` where company = %s order by idx
+	""", (filters.company), as_dict=1, debug=1)
 	data = []
 	cur_group = ""
 	for d in raw_data:
@@ -52,7 +52,7 @@ def get_data_from_settings(filters):
 	return data
 
 def get_data_from_actual_item(filters):
-	warehouse_account = get_warehouse_account_map()
+	warehouse_account = get_warehouse_account_map(filters.company)
 
 	raw_data = frappe.db.sql("""
 		SELECT 

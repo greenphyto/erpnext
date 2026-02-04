@@ -14,6 +14,7 @@
   "abbr",
   "default_currency",
   "country",
+  "time_zone",
   "is_group",
   "default_holiday_list",
   "cb0",
@@ -22,6 +23,10 @@
   "domain",
   "date_of_establishment",
   "parent_company",
+  "theme_section",
+  "series_abbr",
+  "color",
+  "theme_path",
   "company_info",
   "company_logo",
   "date_of_incorporation",
@@ -47,6 +52,7 @@
   "column_break_goals",
   "default_selling_terms",
   "default_warehouse_for_sales_return",
+  "default_warehouse_for_delivery",
   "credit_limit",
   "transactions_annual_history",
   "default_settings",
@@ -89,6 +95,7 @@
   "enable_provisional_accounting_for_non_stock_items",
   "default_inventory_account",
   "stock_adjustment_account",
+  "default_warehouse",
   "default_in_transit_warehouse",
   "default_stock_scrap_item",
   "column_break_32",
@@ -895,6 +902,46 @@
    "fieldtype": "Link",
    "label": "Donor Customer",
    "options": "Customer"
+  },
+  {
+   "fieldname": "color",
+   "fieldtype": "Color",
+   "label": "Color"
+  },
+  {
+   "fieldname": "time_zone",
+   "fieldtype": "Select",
+   "label": "Time zone"
+  },
+  {
+   "fieldname": "series_abbr",
+   "fieldtype": "Data",
+   "label": "Series Abbr",
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "default_warehouse",
+   "fieldtype": "Link",
+   "label": "Default Warehouse",
+   "options": "Warehouse",
+   "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "theme_section",
+   "fieldtype": "Section Break",
+   "label": "Theme"
+  },
+  {
+   "fieldname": "theme_path",
+   "fieldtype": "Data",
+   "label": "Theme Path"
+  },
+  {
+   "fieldname": "default_warehouse_for_delivery",
+   "fieldtype": "Link",
+   "label": "Default Warehouse for Delivery",
+   "options": "Warehouse"
   }
  ],
  "icon": "fa fa-building",

@@ -27,6 +27,7 @@ from erpnext.accounts.party import (  # noqa
 	validate_party_accounts,
 )
 from erpnext.utilities.transaction_base import TransactionBase
+from erpnext.controllers.queries import get_company_enable
 
 class Customer(TransactionBase):
 	def get_feed(self):
@@ -54,7 +55,9 @@ class Customer(TransactionBase):
 
 	def set_code(self, force=False):
 		cash_sales = "C00008"
-		series = "C.#####"
+		comp_abbr = cstr(frappe.get_value("Company", self.company, "series_abbr"))
+		series = comp_abbr + "C.#####"
+
 		if self.customer_code:
 			if self.customer_code == cash_sales or force:
 				return
@@ -658,7 +661,7 @@ def get_customer_outstanding(
 
 	cond = ""
 	if cost_center:
-		lft, rgt = frappe.get_cached_value("Cost Center", cost_center, ["lft", "rgt"])
+		lft, rgt = (frappe.get_cached_value("Cost Center", cost_center, ["lft", "rgt"]) or (None, None))
 
 		cond = """ and cost_center in (select name from `tabCost Center` where
 			lft >= {0} and rgt <= {1})""".format(
@@ -826,3 +829,10 @@ def get_customer_primary_contact(doctype, txt, searchfield, start, page_len, fil
 		""",
 		{"customer": customer, "txt": "%%%s%%" % txt},
 	)
+
+def has_permission(doc, user):
+	if user == "Administrator":
+		return True
+
+	if doc.is_internal_customer:
+		return True

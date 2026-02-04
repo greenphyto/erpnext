@@ -14,6 +14,7 @@
   "supplier_name",
   "country",
   "supplier_code_series",
+  "company",
   "supplier_code",
   "foms_id",
   "foms_name",
@@ -479,9 +480,9 @@
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
-   "read_only": 1,
    "no_amend_copy": 1,
-   "no_copy": 1
+   "no_copy": 1,
+   "read_only": 1
   },
   {
    "fieldname": "foms_name",
@@ -532,6 +533,14 @@
    "fieldname": "supplier_keywords",
    "fieldtype": "Small Text",
    "label": "Supplier Keywords"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "mandatory_depends_on": "eval:!doc.is_internal_supplier",
+   "options": "Company",
+   "reqd": 1
   }
  ],
  "icon": "fa fa-user",
@@ -544,7 +553,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2025-09-03 19:03:46.770017",
+ "modified": "2025-12-10 10:45:26.853034",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",

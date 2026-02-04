@@ -432,6 +432,8 @@ def calculate_values(accounts_by_name, gl_entries_by_account, companies, filters
 
 				if entry.posting_date < getdate(start_date):
 					d["opening_balance"] = d.get("opening_balance", 0.0) + flt(debit) - flt(credit)
+			
+			accounts_by_name[account_name] = d
 
 
 def accumulate_values_into_parents(accounts, accounts_by_name, companies):
@@ -439,19 +441,25 @@ def accumulate_values_into_parents(accounts, accounts_by_name, companies):
 	for d in reversed(accounts):
 		if d.parent_account:
 			account = d.parent_account_name
+			if d.account_number:
+				cur_account = f"{d.account_number} - {d.account_name}"
+			else:
+				cur_account = d.account_name
 
 			for company in companies:
-				accounts_by_name[account][company] = accounts_by_name[account].get(company, 0.0) + d.get(
+				accounts_by_name[account][company] = accounts_by_name[account].get(company, 0.0) + (d.get(
 					company, 0.0
-				)
+				) or accounts_by_name[cur_account].get(company, 0.0))
 
-				accounts_by_name[account]["company_wise_opening_bal"][company] += d.get(
+				accounts_by_name[account]["company_wise_opening_bal"][company] += (d.get(
 					"company_wise_opening_bal", {}
-				).get(company, 0.0)
+				).get(company, 0.0) or accounts_by_name[cur_account]["company_wise_opening_bal"][company])
 
 			accounts_by_name[account]["opening_balance"] = accounts_by_name[account].get(
 				"opening_balance", 0.0
-			) + d.get("opening_balance", 0.0)
+			) + (d.get("opening_balance", 0.0) or accounts_by_name[cur_account].get(
+				"opening_balance", 0.0
+			))
 
 
 def get_account_heads(root_type, companies, filters):
@@ -504,7 +512,7 @@ def get_companies(filters):
 
 
 def get_subsidiary_companies(company):
-	lft, rgt = frappe.get_cached_value("Company", company, ["lft", "rgt"])
+	lft, rgt = (frappe.get_cached_value("Company", company, ["lft", "rgt"]) or (None, None))
 
 	return frappe.db.sql_list(
 		"""select name from `tabCompany`

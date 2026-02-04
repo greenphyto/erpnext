@@ -13,8 +13,25 @@ def boot_session(bootinfo):
 
 	if frappe.session["user"] != "Guest":
 
-		update_page_info(bootinfo)
+		# multi company
+		if multi_entity_enable():
+			bootinfo.sysdefaults.company_selected = get_company_selected()
+			if bootinfo.sysdefaults.company_selected != "ALL":
+				bootinfo.sysdefaults.company_color = frappe.db.get_value("Company", bootinfo.sysdefaults.company_selected, "color") or "#1F272E"
+				bootinfo.sysdefaults.company = bootinfo.sysdefaults.company_selected
 
+			# letter head
+			bootinfo.letter_heads = get_letter_heads(bootinfo.sysdefaults.company)
+			user_disabled = frappe.get_value("User", frappe.session.user, "cannot_change_company")
+			if user_disabled:
+				bootinfo.sysdefaults.cannot_switch_company = 1
+			else:
+				bootinfo.sysdefaults.cannot_switch_company = 0
+
+		else:
+			bootinfo.sysdefaults.company_selected = "Disabled"
+
+		update_page_info(bootinfo)
 		bootinfo.sysdefaults.territory = frappe.db.get_single_value("Selling Settings", "territory")
 		bootinfo.sysdefaults.customer_group = frappe.db.get_single_value(
 			"Selling Settings", "customer_group"
@@ -56,6 +73,44 @@ def boot_session(bootinfo):
 		bootinfo.sysdefaults.non_stock_item = frappe.db.get_single_value("Buying Settings", "non_stock_item")
 		bootinfo.sysdefaults.debit_note_item = frappe.db.get_value("Item", {"debit_note_item":1})
 		bootinfo.sysdefaults.default_selling_warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_fg_warehouse")
+		overide_user_defaults(bootinfo)
+
+def overide_user_defaults(bootinfo):
+	company = bootinfo.sysdefaults.company_selected
+	if company in ['Disabled', 'ALL']:
+		return
+
+	# basic company info
+	doc = frappe.get_doc("Company", company)
+	bootinfo.user.defaults.company = company
+	bootinfo.user.defaults.currency = doc.default_currency
+	bootinfo.user.defaults.country = doc.country
+	bootinfo.user.defaults.time_zone = doc.time_zone or bootinfo.user.defaults.time_zone
+
+	# price lists
+	cur = doc.default_currency
+	buying = frappe.db.get_value("Price List", {"buying": 1, "enabled": 1, "currency": cur})
+	selling = frappe.db.get_value("Price List", {"selling": 1, "enabled": 1, "currency": cur})
+	if buying: bootinfo.user.defaults.buying_price_list = buying
+	if selling: bootinfo.user.defaults.selling_price_list = selling
+
+	# letter head
+	letter_head, content = frappe.db.get_value("Letter Head", {"company": company, "disabled": 0}, ["name", "content"]) or (None, None)
+	if letter_head:
+		bootinfo.user.defaults.letter_head = letter_head
+		bootinfo.user.defaults.default_letter_head_content = content
+
+	# warehouse and cost center
+	wh = frappe.db.get_value("Warehouse", {"company": company, "is_group": 0}, "name")
+	cc = frappe.db.get_value("Cost Center", {"company": company, "is_group": 0}, "name")
+
+	if wh:
+		bootinfo.user.defaults.default_warehouse = wh
+	if cc:
+		bootinfo.user.defaults.cost_center = cc
+
+
+
 
 def update_page_info(bootinfo):
 	bootinfo.page_info.update(
@@ -68,3 +123,39 @@ def update_page_info(bootinfo):
 			"Sales Person Tree": {"title": "Sales Person Tree", "route": "Tree/Sales Person"},
 		}
 	)
+
+def multi_entity_enable():
+	meta = frappe.get_meta("Accounts Settings")	
+	if meta.has_field("enable_switch_company_menu") and frappe.db.get_single_value("Accounts Settings", "enable_switch_company_menu"):
+		return True
+	else:
+		return False
+
+@frappe.whitelist()
+def get_company_selected():
+	if multi_entity_enable():
+		return frappe.db.get_value("User", frappe.session.user, "company_selected") or "ALL"
+	else:
+		return "Disabled"
+	
+def get_letter_heads(company):
+	letter_heads = {}
+	for letter_head in frappe.get_all("Letter Head", filters={"company":company}, fields=["name", "content", "footer"]):
+		letter_heads.setdefault(
+			letter_head.name, {"header": letter_head.content, "footer": letter_head.footer}
+		)
+
+	return letter_heads
+
+def get_css_custom():
+	company = get_company_selected()
+	if (company != "All" or company != "Disabled") and company:
+		meta = frappe.get_meta("Company")
+		if not meta.has_field("theme_path"):
+			return 
+		
+		theme_file = frappe.db.get_value("Company", company, "theme_path")
+		if theme_file:
+			return [theme_file]
+
+	return []

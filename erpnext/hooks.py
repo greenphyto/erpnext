@@ -15,11 +15,13 @@ required_apps = ["payments"]
 
 develop_version = "14.x.x-develop"
 
-app_include_js = "erpnext.bundle.js"
+app_include_js = ["erpnext.bundle.js", "/assets/erpnext/js/company_view.js"]
 app_include_css = "erpnext.bundle.css"
 web_include_js = "erpnext-web.bundle.js"
 web_include_css = "erpnext-web.bundle.css"
 email_css = "email_erpnext.bundle.css"
+
+css_include_custom = ["erpnext.startup.boot.get_css_custom"] 
 
 doctype_js = {
 	"Address": "public/js/address.js",
@@ -279,16 +281,23 @@ before_tests = "erpnext.setup.utils.before_tests"
 
 standard_queries = {
 	"Customer": "erpnext.selling.doctype.customer.customer.get_customer_list",
+    "Supplier": "erpnext.controllers.queries.supplier_query"
 }
 
 doc_events = {
 	"*": {
-		"validate": "erpnext.support.doctype.service_level_agreement.service_level_agreement.apply",
-        # "after_insert": "erpnext.controllers.foms.sync_log"
+		"validate": [
+			"erpnext.support.doctype.service_level_agreement.service_level_agreement.apply",
+            "erpnext.controllers.erp.validate_company_selected",
+		],
+        "after_naming": "erpnext.controllers.erp.change_naming_series"
 	},
 	"User": {
 		"after_insert": "frappe.contacts.doctype.contact.contact.update_contact",
-		"validate": "erpnext.setup.doctype.employee.employee.validate_employee_role",
+		"validate": [
+            "erpnext.controllers.erp.set_permanent_company",
+			"erpnext.setup.doctype.employee.employee.validate_employee_role",
+		],
 		"on_update": [
 			"erpnext.setup.doctype.employee.employee.update_user_permissions",
 			"erpnext.portal.utils.set_default_role",
@@ -446,6 +455,9 @@ doc_events = {
 	},
     "Scheduled Job Log": {
         "after_insert":"erpnext.ai_agent.doctype.ai_agent_settings.ai_agent_settings.read_log"
+	},
+    ("Purchase Order","Purchase Receipt","Purchase Invoice"):{
+        "on_submit":"erpnext.controllers.erp.auto_create_selling_from_internal"
 	}
 }
 
@@ -778,4 +790,9 @@ override_whitelisted_methods = {
 custom_export_report = {
     "Balance Sheet": "erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2.add_formulas",
     "Profit and Loss Statement": "erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2.add_formulas",
+}
+
+has_permission = {
+	"Supplier": "erpnext.buying.doctype.supplier.supplier.has_permission",
+	"Customer": "erpnext.selling.doctype.customer.customer.has_permission",
 }

@@ -107,6 +107,13 @@ class AccountsController(TransactionBase):
 		)
 
 		if self.is_new():
+			data = frappe.defaults.get_defaults()
+			if not self.company:
+				self.company = data.company
+			if not self.currency:
+				self.currency = data.currency
+
+		if self.is_new():
 			relevant_docs = (
 				"Quotation",
 				"Purchase Order",

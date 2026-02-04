@@ -4,11 +4,57 @@
 import frappe
 from frappe.model.document import Document
 from frappe.utils import cint, cstr
-from erpnext.accounts.utils import get_balance_on
+from erpnext.accounts.utils import get_balance_on, get_account_number_map
 
 class PartNumberSettings(Document):
 	@frappe.whitelist()
 	def load_items(self):
+		self.set_parent_company()
+		if self.is_parent:
+			self.load_item_parent()
+		else:
+			self.load_item_child()
+
+	def load_item_child(self):
+		# load from another settings
+		parent_company = frappe.get_value("Company", self.company, "parent_company")
+		items = frappe.db.sql("""
+			SELECT
+				pnd.material_group,
+				pnd.code,
+				pnd.title,
+				pnd.description,
+				pnd.part_number,
+				pnd.price,
+				pnd.account_code,
+				acc.account_number AS account_number
+			FROM `tabPart Number Details` pnd
+			LEFT JOIN `tabAccount` acc
+				ON acc.name = pnd.account_code
+			WHERE pnd.parent = %s;
+		""", (parent_company), as_dict=1)
+
+		account_map = get_account_number_map(self.company)
+		
+		cur_mapping = {}
+		for d in list(self.data_mapping):
+			key = (d.part_number, d.code)
+			cur_mapping.setdefault(key, {
+				"account_code":d.account_code,
+				"pic":d.pic,
+			})
+			self.remove(d)
+
+		self.data_mapping = []
+		for d in items:
+			row = self.append("data_mapping")
+			for f in ["material_group", "code", "title", "description", "part_number", "price"]:
+				row.set(f, d.get(f))
+			row.account_code = account_map.get(d.account_number)
+			row.company = self.company
+
+
+	def load_item_parent(self):
 		items = frappe.db.sql('select * from `tabItem` where material_group is not null and material_group != "" order by material_group, material_number', as_dict=1)
 		data_mapping = list(self.data_mapping)
 		mat_groups = frappe.db.sql(' select * from `tabMaterial Group` order by number_start ', as_dict=1)
@@ -57,24 +103,37 @@ class PartNumberSettings(Document):
 					idx += 1
 
 	def validate(self):
-		self.validate_account_change()
+		self.set_parent_company()
+		# self.validate_account_change()
 		self.update_item_name()
+		self.update_company_item()
 
 	def update_item_name(self):
-		data = [ d.code.strip() for d in self.data_mapping ]
-		item_exists = frappe.db.sql(" select name, item_name from `tabItem` where name in %s ", (data,), as_dict=1)
-		item_map = {}
-		for item in item_exists:
-			item_map[item.name] = item.item_name
-		
+		if self.is_parent and self.data_mapping:
+			data = [ d.code.strip() for d in self.data_mapping ]
+			item_exists = frappe.db.sql(" select name, item_name from `tabItem` where name in %s ", (data,), as_dict=1)
+			item_map = {}
+			for item in item_exists:
+				item_map[item.name] = item.item_name
+			
+			for d in self.data_mapping:
+				key = d.code.strip()
+				cur_name = item_map.get(key)
+				if d.title != cur_name:
+					frappe.db.set_value("Item", key, "item_name", d.title)
+
+	def set_parent_company(self):
+		parent_company = frappe.get_value("Company", self.company, "parent_company")
+		if not parent_company:
+			self.is_parent = 1
+		else:
+			self.is_parent = 0
+	
+	def update_company_item(self):
 		for d in self.data_mapping:
-			key = d.code.strip()
-			cur_name = item_map.get(key)
-			if d.title != cur_name:
-				frappe.db.set_value("Item", key, "item_name", d.title)
+			d.company = d.company
 
 	def validate_account_change(self):
-		return
 		old_doc = self.get_doc_before_save()
 		if not old_doc:
 			return
@@ -93,3 +152,4 @@ class PartNumberSettings(Document):
 				if balance:
 					frappe.throw(f"Row {d.idx}, Cannot change account <b>{old_data.account_code}</b> to {d.account_code} becuase has existing balance")
 					d.account_code = old_data.account_code
+

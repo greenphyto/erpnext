@@ -21,7 +21,7 @@ from erpnext.accounts.doctype.tax_withholding_category.tax_withholding_category 
 )
 from erpnext.accounts.general_ledger import get_round_off_account_and_cost_center
 from erpnext.accounts.party import get_due_date, get_party_account, get_party_details
-from erpnext.accounts.utils import get_account_currency
+from erpnext.accounts.utils import get_account_currency, get_price_list_with
 from erpnext.assets.doctype.asset.depreciation import (
 	depreciate_asset,
 	get_disposal_account_and_cost_center,
@@ -174,6 +174,7 @@ class SalesInvoice(SellingController):
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
 		try:
 			self.set_other_reff()
+			self.link_internal_company()
 		except:
 			pass
 
@@ -202,6 +203,32 @@ class SalesInvoice(SellingController):
 		
 		if not self.delivery_note:
 			self.delivery_note = dn_name
+
+	def link_internal_company(self):
+		so_number = next((d.sales_order for d in self.items if d.sales_order), None)
+		inter_po_name = frappe.get_value("Sales Order", so_number, "inter_company_order_reference")
+		if not inter_po_name:
+			return
+	
+		represents_company = frappe.get_value("Sales Order", so_number, "represents_company")
+		# find inter SI if possible
+		inter_pi_number = frappe.db.sql("""
+				SELECT DISTINCT pii.parent
+				FROM `tabPurchase Invoice Item` pii
+				JOIN `tabPurchase Invoice` pi ON pi.name = pii.parent
+				WHERE
+					pii.purchase_order = %s
+					AND pi.docstatus = 1
+				ORDER BY pi.creation DESC
+				LIMIT 1
+			""", inter_po_name, as_dict=False)
+		
+		if not inter_pi_number:
+			return
+		
+		inter_pi_number = inter_pi_number[0][0] if inter_pi_number else None
+		self.inter_company_invoice_reference = inter_pi_number
+		self.represents_company = represents_company
 
 	def set_item_sku(self):
 		doc = frappe.get_doc("Customer", self.customer)
@@ -248,13 +275,16 @@ class SalesInvoice(SellingController):
 
 	def validate_item_cost_centers(self):
 		for item in self.items:
-			cost_center_company = frappe.get_cached_value("Cost Center", item.cost_center, "company")
-			if cost_center_company != self.company:
-				frappe.throw(
-					_("Row #{0}: Cost Center {1} does not belong to company {2}").format(
-						frappe.bold(item.idx), frappe.bold(item.cost_center), frappe.bold(self.company)
+			if item.cost_center:
+				cost_center_company = frappe.get_cached_value("Cost Center", item.cost_center, "company")
+				if cost_center_company != self.company:
+					frappe.throw(
+						_("Row #{0}: Cost Center {1} does not belong to company {2}").format(
+							frappe.bold(item.idx), frappe.bold(item.cost_center), frappe.bold(self.company)
+						)
 					)
-				)
+			else:
+				item.cost_center = erpnext.get_default_cost_center(self.company)
 
 	def validate_income_account(self):
 		for item in self.get("items"):
@@ -1968,6 +1998,10 @@ def set_account_for_mode_of_payment(self):
 
 def get_inter_company_details(doc, doctype):
 	if doctype in ["Sales Invoice", "Sales Order", "Delivery Note"]:
+		with_internal_supplier = frappe.get_value("Customer", doc.customer, "is_internal_customer")
+		if not with_internal_supplier:
+			return
+		
 		parties = frappe.db.get_all(
 			"Supplier",
 			fields=["name"],
@@ -1984,6 +2018,10 @@ def get_inter_company_details(doc, doctype):
 
 		party = get_internal_party(parties, "Supplier", doc)
 	else:
+		with_internal_supplier = frappe.get_value("Supplier", doc.supplier, "is_internal_supplier")
+		if not with_internal_supplier:
+			return
+		
 		parties = frappe.db.get_all(
 			"Customer",
 			fields=["name"],
@@ -2030,6 +2068,9 @@ def get_internal_party(parties, link_doctype, doc):
 def validate_inter_company_transaction(doc, doctype):
 
 	details = get_inter_company_details(doc, doctype)
+	if not details:
+		return
+	
 	price_list = (
 		doc.selling_price_list
 		if doctype in ["Sales Invoice", "Sales Order", "Delivery Note"]
@@ -2038,6 +2079,10 @@ def validate_inter_company_transaction(doc, doctype):
 	valid_price_list = frappe.db.get_value(
 		"Price List", {"name": price_list, "buying": 1, "selling": 1}
 	)
+
+	if not valid_price_list:
+		valid_price_list = get_price_list_with(doc)
+		
 	if not valid_price_list and not doc.is_internal_transfer():
 		frappe.throw(_("Selected Price List should have buying and selling fields checked."))
 
@@ -2080,6 +2125,10 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 	details = get_inter_company_details(source_doc, doctype)
 
 	def set_missing_values(source, target):
+		target.selling_price_list = get_price_list_with(source)
+		if target.doctype == "Sales Order":
+			target.delivery_date = source.schedule_date
+			
 		target.run_method("set_missing_values")
 		set_purchase_references(target)
 
@@ -2092,6 +2141,9 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 			target_doc.is_internal_supplier = 1
 			target_doc.ignore_pricing_rule = 1
 			target_doc.buying_price_list = source_doc.selling_price_list
+
+			target_doc.cost_center = frappe.get_value("Company",target_doc.company, "cost_center")
+			target_doc.letter_head = frappe.get_value("Company",target_doc.company, "default_letter_head")
 
 			# Invert Addresses
 			update_address(target_doc, "supplier_address", "address_display", source_doc.company_address)
@@ -2120,6 +2172,17 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 			target_doc.company = details.get("company")
 			target_doc.customer = details.get("party")
 			target_doc.selling_price_list = source_doc.buying_price_list
+
+			if source_doc.doctype == "Purchase Order":
+				target_doc.po_no = source_doc.name
+				target_doc.po_date = source_doc.transaction_date
+			elif source_doc.doctype in ("Purchase Invoice", "Purchase Receipt"):
+				target_doc.po_no = source_doc.name
+				target_doc.po_date = source_doc.posting_date
+
+			# cost center
+			target_doc.cost_center = frappe.get_value("Company",target_doc.company, "cost_center")
+			target_doc.letter_head = frappe.get_value("Company",target_doc.company, "default_letter_head")
 
 			update_address(
 				target_doc, "company_address", "company_address_display", source_doc.supplier_address

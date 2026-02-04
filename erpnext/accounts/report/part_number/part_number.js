@@ -3,6 +3,16 @@
 /* eslint-disable */
 
 frappe.query_reports["Part Number"] = {
+	filters: [
+		{
+			"fieldname":"company",
+			"label": __("Company"),
+			"fieldtype": "Link",
+			"options": "Company",
+			"default": frappe.defaults.get_user_default("Company"),
+			"reqd": 1
+		}
+	],
 	onload: function(report){
 		report.page.add_button(__("Edit Settings"), function() {
 			frappe.set_route('Form', 'Part Number Settings');
