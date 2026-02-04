@@ -669,7 +669,7 @@ def get_cost_centers_with_children(cost_centers):
 	return list(set(all_cost_centers))
 
 
-def get_columns(periodicity, period_list, accumulated_values=1, company=None):
+def get_columns(periodicity, period_list, accumulated_values=1, company=None, cost_center_all_show=False, filters={}):
 	accumulated_values = cint(accumulated_values)
 	columns = [
 		{
