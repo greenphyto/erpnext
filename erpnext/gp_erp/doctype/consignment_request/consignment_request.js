@@ -108,10 +108,24 @@ erpnext.selling.ConsignmentRequestController = class ConsignmentRequestControlle
 	refresh(doc, dt, dn) {
 		var me = this;
 		super.refresh();
+		this.setup_button();
 	}
 
 	tc_name() {
 		this.get_terms();
+	}
+
+		
+	setup_button() {
+		if(this.frm.doc.docstatus==1) {
+			this.frm.add_custom_button(__('Delivery Note'), function() {
+				frm.cscript.make_delivery_note();
+			}, __('Create'));
+			
+			this.frm.add_custom_button(__('Sales Invoice'), function() {
+				frm.cscript.make_sales_invoice();
+			}, __('Create'));
+		}
 	}
 
 

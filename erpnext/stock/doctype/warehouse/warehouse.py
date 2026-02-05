@@ -300,3 +300,15 @@ def apply_warehouse_filter(query, sle, filters):
 		query = query.where(ExistsCriterion(chilren_subquery))
 
 	return query
+
+def create_warehouse(warehouse_name, company, is_group, parent_warehouse=None, consignment_request=None, return_doc = False):
+	warehouse = frappe.new_doc("Warehouse")
+	warehouse.warehouse_name = warehouse_name
+	warehouse.company = company
+	warehouse.is_group = is_group
+	warehouse.parent_warehouse = parent_warehouse
+	warehouse.consignment_request = consignment_request
+	warehouse.insert()
+	if return_doc:
+		return warehouse
+	return warehouse.name

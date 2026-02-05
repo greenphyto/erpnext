@@ -50,7 +50,7 @@ class ConsignmentRequest(SellingController):
 		frappe.get_doc("Authorization Control").validate_approving_authority(
 			self.doctype, self.company, self.base_grand_total, self
 		)
-		self.update_prevdoc_status("submit")
+		self.create_customer_warehouse()
 
 	def on_cancel(self):
 		self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry", "Payment Ledger Entry")
@@ -60,9 +60,10 @@ class ConsignmentRequest(SellingController):
 		if self.status == "Closed":
 			frappe.throw(_("Closed order cannot be cancelled. Unclose to cancel."))
 
-		self.update_prevdoc_status("cancel")
 		self.db_set("status", "Cancelled")
 
+	def update_prevdoc_status(self, action):
+		pass
 
 	def check_credit_limit(self):
 		# if bypass credit limit check is set to true (1) at Consignment Request level,
@@ -100,6 +101,37 @@ class ConsignmentRequest(SellingController):
 			self.indicator_color = "green"
 			self.indicator_title = _("Paid")
 
+	def create_customer_warehouse(self):
+		from erpnext.stock.doctype.warehouse.warehouse import create_warehouse
+
+		# create parent warehouse if not exists
+		parent_name = "Consignment Warehouse"
+		parent = frappe.db.exists("Warehouse", {"warehouse_name": parent_name, "company": self.company})
+		if not parent:
+			parent = create_warehouse(
+				parent_name,
+				company=self.company,
+				is_group=1,
+			)
+
+		self.con_warehouse = frappe.db.get_value("Warehouse", {"consignment_request": self.name})
+		if not self.con_warehouse:
+			warehouse_name = f"Consignment - {self.customer}"
+			warehouse = create_warehouse(
+				warehouse_name,
+				company=self.company,
+				consignment_request=self.name,
+				is_group=0,
+				parent_warehouse=parent,
+				return_doc=True,
+			)
+			warehouse.customer=self.customer
+			frappe.msgprint(
+				_("Warehouse {0} created for Customer {1}").format(
+					get_link_to_form("Warehouse", warehouse.name), self.customer
+				)
+			)
+			self.con_warehouse = warehouse.name
 
 def get_list_context(context=None):
 	from erpnext.controllers.website_list_for_contact import get_list_context
