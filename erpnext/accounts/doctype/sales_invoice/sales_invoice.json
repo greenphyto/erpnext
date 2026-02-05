@@ -156,6 +156,7 @@
   "territory",
   "shipping_address_section",
   "shipping_address_name",
+  "outlet_name",
   "shipping_address",
   "shipping_addr_col_break",
   "dispatch_address_name",
@@ -1944,8 +1945,7 @@
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "Is Internal Customer",
-   "read_only": 1,
-   "in_standard_filter": 1
+   "read_only": 1
   },
   {
    "allow_on_submit": 1,
@@ -2161,6 +2161,13 @@
    "fieldname": "non_package_item",
    "fieldtype": "Check",
    "label": "Non Package Item"
+  },
+  {
+   "fetch_from": "shipping_address_name.outlet_name",
+   "fieldname": "outlet_name",
+   "fieldtype": "Data",
+   "label": "Outlet Name",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -2173,7 +2180,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2025-03-06 15:17:24.436041",
+ "modified": "2026-02-05 11:40:28.479693",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

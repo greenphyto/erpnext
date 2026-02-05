@@ -124,6 +124,7 @@
   "contact_email",
   "shipping_address_section",
   "shipping_address_name",
+  "outlet_name",
   "shipping_address",
   "column_break_95",
   "dispatch_address_name",
@@ -1288,9 +1289,9 @@
    "fetch_from": "customer.is_internal_customer",
    "fieldname": "is_internal_customer",
    "fieldtype": "Check",
+   "in_standard_filter": 1,
    "label": "Is Internal Customer",
-   "read_only": 1,
-   "in_standard_filter": 1
+   "read_only": 1
   },
   {
    "allow_on_submit": 1,
@@ -1631,13 +1632,20 @@
    "fieldname": "donor_name",
    "fieldtype": "Data",
    "label": "Donor Name"
+  },
+  {
+   "fetch_from": "shipping_address_name.outlet_name",
+   "fieldname": "outlet_name",
+   "fieldtype": "Data",
+   "label": "Outlet Name",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-01-21 11:20:08.637916",
+ "modified": "2026-02-05 11:37:53.014218",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
