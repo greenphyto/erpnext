@@ -13,6 +13,7 @@
   "customer_name",
   "po_no",
   "po_date",
+  "donor_name",
   "delivery_note",
   "tax_id",
   "company",
@@ -32,6 +33,7 @@
   "update_billed_amount_in_sales_order",
   "is_debit_note",
   "debit_note_transaction",
+  "is_pledge",
   "amended_from",
   "accounting_dimensions_section",
   "cost_center",
@@ -2168,6 +2170,18 @@
    "fieldtype": "Data",
    "label": "Outlet Name",
    "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.is_pledge",
+   "fieldname": "donor_name",
+   "fieldtype": "Data",
+   "label": "Donor Name"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_pledge",
+   "fieldtype": "Check",
+   "label": "For Pledge"
   }
  ],
  "icon": "fa fa-file-text",
@@ -2180,7 +2194,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2026-02-05 11:40:28.479693",
+ "modified": "2026-02-05 17:00:03.662822",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

@@ -211,6 +211,7 @@ class DeliveryNote(SellingController):
 		self.validate_donation()
 		self.validate_replacement()
 		self.add_item_batch_foms_id()
+		self.validate_pledge()
 
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 
@@ -229,6 +230,12 @@ class DeliveryNote(SellingController):
 			self.link_internal_company()
 		except:
 			pass
+
+	def validate_pledge(self):
+		if self.customer == "Donor":
+			self.is_pledge = 1
+			if not self.contact_display:
+				self.contact_display = self.donor_name
 
 	def link_internal_company(self):
 		# Only for internal supplier flow

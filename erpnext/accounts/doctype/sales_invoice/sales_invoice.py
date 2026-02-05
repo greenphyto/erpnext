@@ -110,6 +110,7 @@ class SalesInvoice(SellingController):
 		self.validate_income_account()
 		self.check_conversion_rate()
 		self.set_item_sku()
+		self.validate_pledge()
 
 		validate_inter_company_party(
 			self.doctype, self.customer, self.company, self.inter_company_invoice_reference
@@ -177,6 +178,12 @@ class SalesInvoice(SellingController):
 			self.link_internal_company()
 		except:
 			pass
+
+	def validate_pledge(self):
+		if self.customer == "Donor":
+			self.is_pledge = 1
+			if not self.contact_display:
+				self.contact_display = self.donor_name
 
 	def set_other_reff(self):
 		for d in self.get("items"):

@@ -81,6 +81,8 @@ class SalesOrder(SellingController):
 	def validate_pledge(self):
 		if self.is_pledge and not self.donor_name:
 			frappe.throw("Donor name must be set for pledge purpose.")
+			if not self.contact_display:
+				self.contact_display = self.donor_name
 
 	def on_update_after_submit(self):
 		self.update_po_no()
