@@ -47,7 +47,10 @@
   "tree_details",
   "lft",
   "rgt",
-  "old_parent"
+  "old_parent",
+  "links_section",
+  "consignment_request",
+  "customer"
  ],
  "fields": [
   {
@@ -263,9 +266,9 @@
    "fieldtype": "Data",
    "in_standard_filter": 1,
    "label": "FOMS ID",
-   "read_only": 1,
+   "no_amend_copy": 1,
    "no_copy": 1,
-   "no_amend_copy": 1
+   "read_only": 1
   },
   {
    "description": "If set, item stored to this warehouse will restricted",
@@ -334,13 +337,32 @@
    "fieldtype": "Select",
    "label": "Position",
    "options": "\n1\n2\n3"
+  },
+  {
+   "fieldname": "links_section",
+   "fieldtype": "Section Break",
+   "label": "Links"
+  },
+  {
+   "fieldname": "consignment_request",
+   "fieldtype": "Link",
+   "label": "Consignment Request",
+   "options": "Consignment Request",
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-building",
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-11-05 11:03:30.551149",
+ "modified": "2026-02-05 15:05:50.161599",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Warehouse",
