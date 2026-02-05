@@ -183,6 +183,7 @@ def get_gl_entries(filters, accounting_dimensions):
 	if accounting_dimensions:
 		dimension_fields = ", ".join(accounting_dimensions) + ","
 
+	use_conditions = get_conditions(filters)
 	gl_entries = frappe.db.sql(
 		"""
 		select
@@ -225,7 +226,7 @@ def get_gl_entries(filters, accounting_dimensions):
 	""".format(
 			dimension_fields=dimension_fields,
 			select_fields=select_fields,
-			conditions=get_conditions(filters),
+			conditions=use_conditions,
 			order_by_statement=order_by_statement,
 		),
 		filters,
@@ -286,7 +287,7 @@ def get_conditions(filters):
 
 	from frappe.desk.reportview import build_match_conditions
 
-	match_conditions = build_match_conditions("GL Entry")
+	match_conditions = build_match_conditions("GL Entry", table_alias="gl")
 
 	if match_conditions:
 		conditions.append(match_conditions)
