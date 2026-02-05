@@ -784,6 +784,9 @@ def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 		target.contact_person = source.contact_person
 		target.contact_display = source.contact_display
 
+		if source.is_pledge:
+			target.naming_series = 'PON-.YYYY.-.#####'
+
 	def update_item(source, target, source_parent):
 		warehouse = frappe.get_value("Company", source_parent.company, "default_warehouse_for_delivery")
 		target.warehouse = warehouse
