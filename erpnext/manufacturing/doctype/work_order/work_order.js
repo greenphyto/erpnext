@@ -317,10 +317,10 @@ frappe.ui.form.on("Work Order", {
 		var added_min = false;
 
 		// produced qty
-		var title = __('{0}/{1} items finished', [flt(frm.doc.produced_qty, 2), flt(frm.doc.qty, 2)]);
+		var title = __('{0}/{1} items finished', [flt(frm.doc.produced_qty, 2), flt(frm.doc.material_transferred_for_manufacturing, 2)]);
 		bars.push({
 			'title': title,
-			'width': (frm.doc.produced_qty / frm.doc.qty * 100) + '%',
+			'width': (frm.doc.produced_qty / frm.doc.material_transferred_for_manufacturing * 100) + '%',
 			'progress_class': 'progress-bar-success'
 		});
 		if (bars[0].width == '0%') {
@@ -332,7 +332,7 @@ frappe.ui.form.on("Work Order", {
 		if(!frm.doc.skip_transfer){
 			var pending_complete = frm.doc.material_transferred_for_manufacturing - frm.doc.produced_qty;
 			if(pending_complete) {
-				var width = ((pending_complete / frm.doc.qty * 100) - added_min);
+				var width = ((pending_complete / frm.doc.material_transferred_for_manufacturing * 100) - added_min);
 				title = __('{0} items is process loss', [flt(pending_complete, 2)]);
 				bars.push({
 					'title': title,
