@@ -91,8 +91,8 @@ def customer_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 	searchfields = frappe.get_meta(doctype).get_search_fields()
 	searchfields = " or ".join(field + " like %(txt)s" for field in searchfields)
 
-	def_company = frappe.defaults.get_defaults().get("company")
-	filters['company'] = def_company
+	# def_company = frappe.defaults.get_defaults().get("company")
+	# filters['company'] = def_company
 
 	return frappe.db.sql(
 		"""select {fields} from `tabCustomer`
@@ -130,8 +130,8 @@ def supplier_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 
 	fields = get_fields(doctype, fields)
 
-	def_company = frappe.defaults.get_defaults().get("company")
-	filters['company'] = def_company
+	# def_company = frappe.defaults.get_defaults().get("company")
+	# filters['company'] = def_company
 
 	return frappe.db.sql(
 		"""select {field} from `tabSupplier`
