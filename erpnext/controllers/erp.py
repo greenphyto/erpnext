@@ -4,6 +4,7 @@ from frappe.utils import today, get_last_day, getdate, today, get_last_day
 from frappe.utils import cint, flt, getdate, cstr, safe_abs, add_months
 from six import string_types
 from frappe.contacts.doctype.address.address import get_default_address
+from erpnext.stock.stock_ledger import get_valuation_rate
 
 # util: sanitize description by removing editor wrapper tags
 def _sanitize_desc(desc):
@@ -1300,3 +1301,47 @@ def auto_create_selling_from_internal(doc, method=""):
 		doc_res = make_inter_company_transaction(doc.doctype, doc.name, {})
 		try_save(doc_res)
 
+def detection_incoming_rate_not_logic(doc, method=""):
+	if cint(doc.get("non_stock_item")):
+		return
+	
+
+	def run():
+		prev_doc = doc.get_doc_before_save()
+		if prev_doc and prev_doc.get("workflow_state") == "Draft" and doc.get("workflow_state") != prev_doc.get("workflow_state"):
+			issues = []
+			for d in doc.get("items"):
+				stock_item = frappe.get_value("Item", d.item_code, "is_stock_item")
+				if not stock_item:
+					continue
+
+				warehouse = frappe.get_value("Company", doc.company, "default_warehouse")
+				cur_rate = get_valuation_rate(d.item_code, warehouse, "Material Request", d.name)
+				incoming_rate = flt(d.get("amount")) / flt(d.get("stock_qty"))
+				if cur_rate == 0:
+					continue
+
+				growth_rate = (incoming_rate - cur_rate) / cur_rate * 100
+				if growth_rate > 100:
+					# send notification
+					dt = {
+						"item_code": d.item_code,
+						"item_name": d.item_name,
+						"current_rate": flt(cur_rate, 2),
+						"incoming_rate": flt(incoming_rate, 2),
+						"growth_rate": flt(growth_rate,2),
+						"material_request": doc.name,
+						"row": d
+					}
+					issues.append(dt)
+			
+			if issues:
+				doc.issues = issues
+				notif = frappe.get_doc("Notification", "Material Request Rate Issue")
+				print("Sending notif...", issues)
+				notif.send(doc)
+
+	try:
+		run()
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "detection_incoming_rate_not_logic")

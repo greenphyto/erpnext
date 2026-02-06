@@ -458,6 +458,9 @@ doc_events = {
 	},
     ("Purchase Order","Purchase Receipt","Purchase Invoice"):{
         "on_submit":"erpnext.controllers.erp.auto_create_selling_from_internal"
+	},
+    "Material Request":{
+        "validate": "erpnext.controllers.erp.detection_incoming_rate_not_logic"
 	}
 }
 
