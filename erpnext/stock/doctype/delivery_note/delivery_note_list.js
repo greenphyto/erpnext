@@ -65,5 +65,6 @@ frappe.listview_settings['Delivery Note'] = {
 		listview.page.add_action_item(__("Packaging Slip From Delivery Note"), ()=>{
 			erpnext.bulk_transaction_processing.create(listview, "Delivery Note", "Packing Slip");
 		});
-	}
+	},
+	hide_sidebar:1
 };

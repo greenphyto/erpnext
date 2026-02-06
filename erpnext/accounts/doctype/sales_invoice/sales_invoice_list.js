@@ -31,5 +31,6 @@ frappe.listview_settings['Sales Invoice'] = {
 		listview.page.add_action_item(__("Payment"), ()=>{
 			erpnext.bulk_transaction_processing.create(listview, "Sales Invoice", "Payment Entry");
 		});
-	}
+	},
+	hide_sidebar:1
 };
