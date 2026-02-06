@@ -147,3 +147,24 @@ def get_list_context(context=None):
 	)
 
 	return list_context
+
+
+@frappe.whitelist()
+def make_stock_transfer(source_name, target_doc=None):
+	frappe.msgprint("Make Stock Transfer")
+
+@frappe.whitelist()
+def make_stock_return(source_name, target_doc=None):
+	frappe.msgprint("Make Stock Return")
+
+@frappe.whitelist()
+def make_salvage_process(source_name, target_doc=None):
+	frappe.msgprint("Make Salvage Process")
+
+@frappe.whitelist()
+def make_delivery_note(source_name, target_doc=None):
+	frappe.msgprint("Make Delivery Note")
+
+@frappe.whitelist()
+def make_sales_invoice(source_name, target_doc=None):
+	frappe.msgprint("Make Sales Invoice")
