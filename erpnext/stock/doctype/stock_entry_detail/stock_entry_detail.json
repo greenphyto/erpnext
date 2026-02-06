@@ -81,7 +81,9 @@
   "putaway_rule",
   "column_break_51",
   "reference_purchase_receipt",
-  "job_card_item"
+  "job_card_item",
+  "consignment_request",
+  "consignment_item"
  ],
  "fields": [
   {
@@ -634,13 +636,26 @@
    "fieldtype": "Currency",
    "label": "Rate Map",
    "read_only": 1
+  },
+  {
+   "fieldname": "consignment_request",
+   "fieldtype": "Link",
+   "label": "Consignment Request",
+   "options": "Consignment Request",
+   "read_only": 1
+  },
+  {
+   "fieldname": "consignment_item",
+   "fieldtype": "Data",
+   "label": "Consignment Item",
+   "read_only": 1
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-10-16 10:57:39.769108",
+ "modified": "2026-02-06 18:21:25.074068",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry Detail",
