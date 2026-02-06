@@ -117,21 +117,55 @@ erpnext.selling.ConsignmentRequestController = class ConsignmentRequestControlle
 
 		
 	setup_button() {
+		var me = this;
 		if(this.frm.doc.docstatus==1) {
+			this.frm.add_custom_button(__('Stock Transfer'), function() {
+				me.make_stock_transfer();
+			}, __('Create'));
+
+			this.frm.add_custom_button(__('Stock Return'), function() {
+				me.make_stock_return();
+			}, __('Create'));
+
+			this.frm.add_custom_button(__('Salvage Process'), function() {
+				me.make_salvage_process();
+			}, __('Create'));
+
 			this.frm.add_custom_button(__('Delivery Note'), function() {
-				frm.cscript.make_delivery_note();
+				me.make_delivery_note();
 			}, __('Create'));
 			
 			this.frm.add_custom_button(__('Sales Invoice'), function() {
-				frm.cscript.make_sales_invoice();
+				me.make_sales_invoice();
 			}, __('Create'));
 		}
+	}
+
+	make_stock_transfer() {
+		frappe.model.open_mapped_doc({
+			method: "erpnext.gp_erp.doctype.consignment_request.consignment_request.make_stock_transfer",
+			frm: this.frm,
+		})
+	}
+
+	make_stock_return() {
+		frappe.model.open_mapped_doc({
+			method: "erpnext.gp_erp.doctype.consignment_request.consignment_request.make_stock_return",
+			frm: this.frm,
+		})
+	}
+
+	make_salvage_process() {
+		frappe.model.open_mapped_doc({
+			method: "erpnext.gp_erp.doctype.consignment_request.consignment_request.make_salvage_process",
+			frm: this.frm
+		})
 	}
 
 
 	make_delivery_note(delivery_dates) {
 		frappe.model.open_mapped_doc({
-			method: "erpnext.selling.doctype.sales_order.sales_order.make_delivery_note",
+			method: "erpnext.gp_erp.doctype.consignment_request.consignment_request.make_delivery_note",
 			frm: this.frm,
 			args: {
 				delivery_dates
@@ -141,7 +175,7 @@ erpnext.selling.ConsignmentRequestController = class ConsignmentRequestControlle
 
 	make_sales_invoice() {
 		frappe.model.open_mapped_doc({
-			method: "erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice",
+			method: "erpnext.gp_erp.doctype.consignment_request.consignment_request.make_sales_invoice",
 			frm: this.frm
 		})
 	}
