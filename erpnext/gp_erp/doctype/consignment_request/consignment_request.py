@@ -151,7 +151,46 @@ def get_list_context(context=None):
 
 @frappe.whitelist()
 def make_stock_transfer(source_name, target_doc=None):
-	frappe.msgprint("Make Stock Transfer")
+	def postprocess(source, target):
+		target.purpose = "Material Transfer"
+		target.stock_entry_type = "Material Transfer"
+		target.stock_entry_type_view = "Consignment Transfer"
+		target.naming_series = "CON-TRF-.YYYY.-"
+		target.from_warehouse = source.set_warehouse
+		target.to_warehouse = source.con_warehouse
+
+	def update_item(source_doc, target_doc, source_parent):
+		target_doc.s_warehouse = source_parent.set_warehouse
+		target_doc.t_warehouse = source_parent.con_warehouse
+
+		# Rate configuration!
+
+	doclist = get_mapped_doc(
+		"Consignment Request",
+		source_name,
+		{
+			"Consignment Request": {
+				"doctype": "Stock Entry",
+				"field_map": {},
+				"field_no_map": ["payment_terms_template"],
+				"validation": {"docstatus": ["=", 1]},
+			},
+			"Consignment Request Item": {
+				"doctype": "Stock Entry Detail",
+				"field_map": {
+					"name": "consignment_item",
+					"parent": "consignment_request",
+				},
+				"postprocess": update_item,
+				# "condition": lambda doc: doc.delivered_qty < doc.qty,
+			},
+		},
+		target_doc,
+		postprocess,
+		ignore_permissions=1,
+	)
+
+	return doclist
 
 @frappe.whitelist()
 def make_stock_return(source_name, target_doc=None):
