@@ -20,6 +20,8 @@
   "maintain_same_rate",
   "allow_multiple_items",
   "bill_for_rejected_quantity_in_purchase_invoice",
+  "internal_transactions_section",
+  "allow_copy_batch_from_main_company",
   "subcontract",
   "backflush_raw_materials_of_subcontract_based_on",
   "column_break_11",
@@ -207,6 +209,18 @@
    "fieldname": "supplier_threshold",
    "fieldtype": "Percent",
    "label": "Supplier Threshold"
+  },
+  {
+   "fieldname": "internal_transactions_section",
+   "fieldtype": "Section Break",
+   "label": "Internal Transactions"
+  },
+  {
+   "default": "0",
+   "description": "This settings make incoming batch on GRN equal to main company (supplier)",
+   "fieldname": "allow_copy_batch_from_main_company",
+   "fieldtype": "Check",
+   "label": "Allow copy batch from main company"
   }
  ],
  "icon": "fa fa-cog",
@@ -214,7 +228,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-11-06 14:55:25.416198",
+ "modified": "2026-02-06 11:28:26.297121",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Buying Settings",

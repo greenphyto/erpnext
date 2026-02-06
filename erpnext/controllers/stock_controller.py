@@ -407,15 +407,19 @@ class StockController(AccountsController):
 				)
 				if has_batch_no and create_new_batch:
 					if is_internal:
+						allow_copy_batch = frappe.db.get_single_value("Buying Settings", "allow_copy_batch_from_main_company")
 						# find DN from PO
-						row_name, batch = frappe.db.get_value("Delivery Note Item", {
-							"purchase_order_item":d.purchase_order_item, 
-							"docstatus":0
-						}, ['name', 'batch_no'] ) or (None, None)
-						if not batch:
-							frappe.throw(_("Missing Delivery number from Company {}. Please, contact the Company's Vendor or wait until they send your goods.".format(self.supplier)))
-						d.batch_no = batch
-					else:
+						if cint(allow_copy_batch):
+							row_name, batch = frappe.db.get_value("Delivery Note Item", {
+								"purchase_order_item":d.purchase_order_item, 
+								"docstatus":0
+							}, ['name', 'batch_no'] ) or (None, None)
+
+							if not batch:
+								frappe.throw(_("Missing Delivery number from Company {}. Please, contact the Company's Vendor or wait until they send your goods.".format(self.supplier)))
+							d.batch_no = batch
+
+					if not is_internal or d.batch_no is None:
 						lot_id = ""
 						if self.work_order:
 							lot_id = frappe.db.get_value(
