@@ -38,6 +38,12 @@ class ConsignmentRequest(SellingController):
 	def __init__(self, *args, **kwargs):
 		super(ConsignmentRequest, self).__init__(*args, **kwargs)
 
+	# def onload(self):
+	# 	super(ConsignmentRequest, self).onload()
+	# 	return_warehouse = frappe.get_value("Warehouse", {"warehouse_name": "Salvage Room", "company":self.company})
+	# 	print("Return Warehouse:", return_warehouse, self.company)
+	# 	self.set_onload("return_warehouse", return_warehouse)
+
 	def validate(self):
 		super(ConsignmentRequest, self).validate()
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
@@ -151,11 +157,13 @@ def get_list_context(context=None):
 
 @frappe.whitelist()
 def make_stock_transfer(source_name, target_doc=None):
+	se_type = "Consignment Transfer"
+	se_series = frappe.get_value("Stock Entry Type", {"name": se_type}, "series")
 	def postprocess(source, target):
 		target.purpose = "Material Transfer"
 		target.stock_entry_type = "Material Transfer"
-		target.stock_entry_type_view = "Consignment Transfer"
-		target.naming_series = "CON-TRF-.YYYY.-"
+		target.stock_entry_type_view = se_type
+		target.naming_series = se_series
 		target.from_warehouse = source.set_warehouse
 		target.to_warehouse = source.con_warehouse
 
@@ -194,11 +202,97 @@ def make_stock_transfer(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_stock_return(source_name, target_doc=None):
-	frappe.msgprint("Make Stock Return")
+	se_type = "Consignment Return"
+	se_series = frappe.get_value("Stock Entry Type", {"name": se_type}, "series")
+	def postprocess(source, target):
+		target.purpose = "Material Transfer"
+		target.stock_entry_type = "Material Transfer"
+		target.stock_entry_type_view = se_type
+		target.naming_series = se_series
+		target.from_warehouse = source.con_warehouse
+		target.to_warehouse = source.salvage_warehouse
+
+	def update_item(source_doc, target_doc, source_parent):
+		target_doc.s_warehouse = source_parent.con_warehouse
+		target_doc.t_warehouse = source_parent.salvage_warehouse
+
+	doclist = get_mapped_doc(
+		"Consignment Request",
+		source_name,
+		{
+			"Consignment Request": {
+				"doctype": "Stock Entry",
+				"field_map": {},
+				"field_no_map": ["payment_terms_template"],
+				"validation": {"docstatus": ["=", 1]},
+			},
+			"Consignment Request Item": {
+				"doctype": "Stock Entry Detail",
+				"field_map": {
+					"name": "consignment_item",
+					"parent": "consignment_request",
+				},
+				"postprocess": update_item,
+				# "condition": lambda doc: doc.delivered_qty < doc.qty,
+			},
+		},
+		target_doc,
+		postprocess,
+		ignore_permissions=1,
+	)
+
+	return doclist
 
 @frappe.whitelist()
 def make_salvage_process(source_name, target_doc=None):
-	frappe.msgprint("Make Salvage Process")
+	se_type = "Salvage Process (Repack)"
+	se_series = frappe.get_value("Stock Entry Type", {"name": se_type}, "series")
+	def postprocess(source, target):
+		target.purpose = "Material Transfer"
+		target.stock_entry_type = "Material Transfer"
+		target.stock_entry_type_view = se_type
+		target.naming_series = se_series
+		target.from_warehouse = source.salvage_warehouse
+		target.to_warehouse = source.set_warehouse
+		# add row for repack product
+		for d in list(target.get("items")):
+			row = target.append("items")
+			row.t_warehouse = source.set_warehouse
+			row.item_code = d.item_code
+			row.qty = d.qty
+			row.uom = d.uom
+			row.stock_uom = d.stock_uom
+			row.conversion_factor = d.conversion_factor
+
+	def update_item(source_doc, target_doc, source_parent):
+		target_doc.s_warehouse = source_parent.salvage_warehouse
+
+	doclist = get_mapped_doc(
+		"Consignment Request",
+		source_name,
+		{
+			"Consignment Request": {
+				"doctype": "Stock Entry",
+				"field_map": {},
+				"field_no_map": ["payment_terms_template"],
+				"validation": {"docstatus": ["=", 1]},
+			},
+			"Consignment Request Item": {
+				"doctype": "Stock Entry Detail",
+				"field_map": {
+					"name": "consignment_item",
+					"parent": "consignment_request",
+				},
+				"postprocess": update_item,
+				# "condition": lambda doc: doc.delivered_qty < doc.qty,
+			},
+		},
+		target_doc,
+		postprocess,
+		ignore_permissions=1,
+	)
+
+	return doclist
 
 @frappe.whitelist()
 def make_delivery_note(source_name, target_doc=None):

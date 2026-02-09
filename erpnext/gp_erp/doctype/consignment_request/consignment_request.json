@@ -41,6 +41,7 @@
   "ignore_pricing_rule",
   "sec_warehouse",
   "set_warehouse",
+  "salvage_warehouse",
   "scan_barcode",
   "column_break_28",
   "con_warehouse",
@@ -561,7 +562,7 @@
    "fieldtype": "Link",
    "hide_days": 1,
    "hide_seconds": 1,
-   "label": "Set Source Warehouse",
+   "label": "Source Warehouse",
    "options": "Warehouse",
    "print_hide": 1
   },
@@ -1588,13 +1589,19 @@
    "label": "Consignment Warehouse",
    "options": "Warehouse",
    "read_only": 1
+  },
+  {
+   "fieldname": "salvage_warehouse",
+   "fieldtype": "Link",
+   "label": "Salvage Warehouse",
+   "options": "Warehouse"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-05 15:09:50.129087",
+ "modified": "2026-02-09 11:37:14.984710",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Request",
