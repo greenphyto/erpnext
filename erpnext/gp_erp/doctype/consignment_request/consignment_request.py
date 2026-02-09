@@ -296,8 +296,71 @@ def make_salvage_process(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_delivery_note(source_name, target_doc=None):
-	frappe.msgprint("Make Delivery Note")
+	def postprocess(source, target):
+		target.consignment_request = source.name
+
+	def update_item(source_doc, target_doc, source_parent):
+		pass
+	
+	doclist = get_mapped_doc(
+		"Consignment Request",
+		source_name,
+		{
+			"Consignment Request": {
+				"doctype": "Delivery Note",
+				"field_map": {},
+				"field_no_map": [""],
+				"validation": {"docstatus": ["=", 1]},
+			},
+			"Consignment Request Item": {
+				"doctype": "Delivery Note Item",
+				"field_map": {
+					"name": "cr_detail",
+					"parent": "against_consignment_request",
+				},
+				"postprocess": update_item,
+				# "condition": lambda doc: doc.delivered_qty < doc.qty,
+			},
+		},
+		target_doc,
+		postprocess,
+		ignore_permissions=1,
+	)
+
+	return doclist
 
 @frappe.whitelist()
 def make_sales_invoice(source_name, target_doc=None):
-	frappe.msgprint("Make Sales Invoice")
+	def postprocess(source, target):
+		target.consignment_request = source.name
+		target.set_missing_values()
+
+	def update_item(source_doc, target_doc, source_parent):
+		pass
+	
+	doclist = get_mapped_doc(
+		"Consignment Request",
+		source_name,
+		{
+			"Consignment Request": {
+				"doctype": "Sales Invoice",
+				"field_map": {},
+				"field_no_map": [""],
+				"validation": {"docstatus": ["=", 1]},
+			},
+			"Consignment Request Item": {
+				"doctype": "Sales Invoice Item",
+				"field_map": {
+					"name": "cr_detail",
+					"parent": "consignment_request",
+				},
+				"postprocess": update_item,
+				# "condition": lambda doc: doc.delivered_qty < doc.qty,
+			},
+		},
+		target_doc,
+		postprocess,
+		ignore_permissions=1,
+	)
+
+	return doclist
