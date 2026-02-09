@@ -313,11 +313,13 @@ doc_events = {
 			"erpnext.regional.italy.utils.sales_invoice_on_submit",
 			"erpnext.regional.saudi_arabia.utils.create_qr_code",
 			"erpnext.erpnext_integrations.taxjar_integration.create_transaction",
+            "erpnext.gp_erp.doctype.consignment_request.consignment_request.billing_consignment_controller"
 		],
 		"on_cancel": [
 			"erpnext.regional.italy.utils.sales_invoice_on_cancel",
 			"erpnext.erpnext_integrations.taxjar_integration.delete_transaction",
 			"erpnext.regional.saudi_arabia.utils.delete_qr_code_file",
+            "erpnext.gp_erp.doctype.consignment_request.consignment_request.billing_consignment_controller"
 		],
 		"on_trash": "erpnext.regional.check_deletion_permission",
 	},
@@ -428,6 +430,7 @@ doc_events = {
             "erpnext.controllers.erp.create_sample_after_work_order",
             "erpnext.controllers.erp.detect_work_order_different",
 			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
+            "erpnext.gp_erp.doctype.consignment_request.consignment_request.stock_entry_controller"
 		],
         "before_cancel":[
             "erpnext.controllers.foms.detect_salad_items",
@@ -436,6 +439,7 @@ doc_events = {
 		],
 		"on_cancel": [
 			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
+            "erpnext.gp_erp.doctype.consignment_request.consignment_request.stock_entry_controller"
 		]
 	},
     "Stock Ledger Entry": {
