@@ -400,34 +400,36 @@ class StockController(AccountsController):
 					"Item", d.item_code, ["has_batch_no", "create_new_batch"]
 				)
 				if has_batch_no and create_new_batch:
-					if not is_internal:
-						lot_id = ""
-						if self.work_order:
-							lot_id = frappe.db.get_value(
-								"Work Order", self.work_order, "foms_lot_name"
-							)
-
-						d.batch_no = (
-							frappe.get_doc(
-								dict(
-									doctype="Batch",
-									item=d.item_code,
-									supplier=getattr(self, "supplier", None),
-									reference_doctype=self.doctype,
-									reference_name=self.name,
-									foms_lot_id=lot_id,
-								)
-							)
-						).insert().name
+					lot_id = ""
+					if self.work_order:
+						lot_id = frappe.db.get_value(
+							"Work Order", self.work_order, "foms_lot_name"
+						)
+					
+					
+					if d.get("is_process_loss") or d.get("is_scrap_item"):
+						d.batch_no = finish_goods_batch
 					else:
-						# find DN from PO
-						row_name, batch = frappe.db.get_value("Delivery Note Item", {
-							"purchase_order_item":d.purchase_order_item, 
-							"docstatus":1
-						}, ['name', 'batch_no'] ) or (None, None)
-						if not batch:
-							frappe.throw(_("Missing Delivery number from Company {}. Please, contact the Company's Vendor or wait until they send your goods.".format(self.supplier)))
-						d.batch_no = batch
+						batch = frappe.get_doc(
+							dict(
+								doctype="Batch",
+								item=d.item_code,
+								supplier=getattr(self, "supplier", None),
+								reference_doctype=self.doctype,
+								reference_name=self.name,
+								foms_lot_id=lot_id,
+							)
+						)
+						if self.purpose == "Repack":
+							# all repack will add "R" at the end of batch no
+							batch.flags.add_last_symbol = "R"
+
+						batch.insert()
+						d.batch_no = batch.name
+
+					# copy batch from previous finish goods
+					if d.get("is_finished_item"):
+						finish_goods_batch = d.batch_no
 
 	def check_expense_account(self, item):
 		if not item.get("expense_account"):
