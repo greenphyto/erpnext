@@ -415,20 +415,22 @@ class StockController(AccountsController):
 					if d.get("is_process_loss") or d.get("is_scrap_item"):
 						d.batch_no = finish_goods_batch
 					else:
-						d.batch_no = (
-							frappe.get_doc(
-								dict(
-									doctype="Batch",
-									item=d.item_code,
-									supplier=getattr(self, "supplier", None),
-									reference_doctype=self.doctype,
-									reference_name=self.name,
-									foms_lot_id=lot_id,
-								)
+						batch = frappe.get_doc(
+							dict(
+								doctype="Batch",
+								item=d.item_code,
+								supplier=getattr(self, "supplier", None),
+								reference_doctype=self.doctype,
+								reference_name=self.name,
+								foms_lot_id=lot_id,
 							)
-							.insert()
-							.name
 						)
+						if self.purpose == "Repack":
+							# all repack will add "R" at the end of batch no
+							batch.flags.add_last_symbol = "R"
+
+						batch.insert()
+						d.batch_no = batch.name
 
 					# copy batch from previous finish goods
 					if d.get("is_finished_item"):
