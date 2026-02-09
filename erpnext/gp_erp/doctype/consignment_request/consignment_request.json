@@ -56,6 +56,14 @@
   "column_break_33a",
   "total",
   "net_total",
+  "status_section",
+  "total_transfer_qty",
+  "column_break_53",
+  "total_return_qty",
+  "column_break_52",
+  "total_sold_qty",
+  "column_break_55",
+  "total_billed_qty",
   "taxes_section",
   "taxes_and_charges",
   "column_break_38",
@@ -123,10 +131,11 @@
   "section_break_78",
   "status",
   "delivery_status",
-  "per_delivered",
+  "per_transfer",
   "column_break_81",
-  "per_billed",
-  "per_picked",
+  "per_return",
+  "per_sold",
+  "per_bill",
   "billing_status",
   "sales_team_section_break",
   "sales_partner",
@@ -1249,7 +1258,7 @@
    "no_copy": 1,
    "oldfieldname": "status",
    "oldfieldtype": "Select",
-   "options": "\nDraft\nOn Hold\nTo Deliver and Bill\nTo Bill\nTo Deliver\nCompleted\nCancelled\nClosed",
+   "options": "\nDraft\nOn Hold\nDeliver to Customer\nReturn from Customer\nTo Bill\nCompleted\nCancelled\nClosed",
    "print_hide": 1,
    "read_only": 1,
    "reqd": 1,
@@ -1269,40 +1278,10 @@
    "print_hide": 1
   },
   {
-   "depends_on": "eval:!doc.__islocal && !doc.skip_delivery_note_creation",
-   "description": "% of materials delivered against this Consignment Request",
-   "fieldname": "per_delivered",
-   "fieldtype": "Percent",
-   "hide_days": 1,
-   "hide_seconds": 1,
-   "label": "%  Delivered",
-   "no_copy": 1,
-   "oldfieldname": "per_delivered",
-   "oldfieldtype": "Currency",
-   "print_hide": 1,
-   "read_only": 1,
-   "width": "100px"
-  },
-  {
    "fieldname": "column_break_81",
    "fieldtype": "Column Break",
    "hide_days": 1,
    "hide_seconds": 1
-  },
-  {
-   "depends_on": "eval:!doc.__islocal",
-   "description": "% of materials billed against this Consignment Request",
-   "fieldname": "per_billed",
-   "fieldtype": "Percent",
-   "hide_days": 1,
-   "hide_seconds": 1,
-   "label": "% Amount Billed",
-   "no_copy": 1,
-   "oldfieldname": "per_billed",
-   "oldfieldtype": "Currency",
-   "print_hide": 1,
-   "read_only": 1,
-   "width": "100px"
   },
   {
    "fieldname": "billing_status",
@@ -1492,13 +1471,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "per_picked",
-   "fieldtype": "Percent",
-   "label": "% Picked",
-   "no_copy": 1,
-   "read_only": 1
-  },
-  {
    "collapsible": 1,
    "fieldname": "accounting_dimensions_section",
    "fieldtype": "Section Break",
@@ -1595,13 +1567,109 @@
    "fieldtype": "Link",
    "label": "Salvage Warehouse",
    "options": "Warehouse"
+  },
+  {
+   "depends_on": "eval:!doc.__islocal && !doc.skip_delivery_note_creation",
+   "description": "% of materials delivered against this Consignment Request",
+   "fieldname": "per_transfer",
+   "fieldtype": "Percent",
+   "hide_days": 1,
+   "hide_seconds": 1,
+   "label": "%  Transfer",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "oldfieldname": "per_delivered",
+   "oldfieldtype": "Currency",
+   "print_hide": 1,
+   "read_only": 1,
+   "width": "100px"
+  },
+  {
+   "depends_on": "eval:!doc.__islocal",
+   "description": "% of materials billed against this Consignment Request",
+   "fieldname": "per_return",
+   "fieldtype": "Percent",
+   "hide_days": 1,
+   "hide_seconds": 1,
+   "label": "% Return",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "oldfieldname": "per_billed",
+   "oldfieldtype": "Currency",
+   "print_hide": 1,
+   "read_only": 1,
+   "width": "100px"
+  },
+  {
+   "fieldname": "per_sold",
+   "fieldtype": "Percent",
+   "label": "% Sold",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "per_bill",
+   "fieldtype": "Data",
+   "label": "% Billed",
+   "no_amend_copy": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "status_section",
+   "fieldtype": "Section Break",
+   "label": "Status"
+  },
+  {
+   "fieldname": "total_return_qty",
+   "fieldtype": "Float",
+   "label": "Total Return Qty",
+   "read_only": 1,
+    "no_amend_copy": 1,
+    "no_copy": 1
+  },
+  {
+   "fieldname": "total_sold_qty",
+   "fieldtype": "Float",
+   "label": "Total Sold Qty",
+   "read_only": 1,
+    "no_amend_copy": 1,
+    "no_copy": 1
+  },
+  {
+   "fieldname": "total_transfer_qty",
+   "fieldtype": "Float",
+   "label": "Total Transfer Qty",
+   "read_only": 1,
+    "no_amend_copy": 1,
+    "no_copy": 1
+  },
+  {
+   "fieldname": "total_billed_qty",
+   "fieldtype": "Float",
+   "label": "Total Billed Qty",
+   "read_only": 1,  
+    "no_amend_copy": 1,
+    "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_52",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_55",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_53",
+   "fieldtype": "Column Break"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-09 11:37:14.984710",
+ "modified": "2026-02-09 19:07:46.413594",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Request",

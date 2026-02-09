@@ -379,6 +379,9 @@ class StockEntry(StockEntryAsset, StockController):
 				if not d.batch_no:
 					continue
 
+				if d.consignment_request:
+					continue
+
 				batch_source_qty = get_batch_qty(d.batch_no, d.s_warehouse, d.item_code)
 				if d.transfer_qty < batch_source_qty:
 					frappe.throw(_(f"Row {d.idx}, Cannot move stock partially for batch {d.batch_no}, you can only move all qty as {batch_source_qty} {d.uom}"))

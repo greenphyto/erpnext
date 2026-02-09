@@ -120,13 +120,13 @@ class ConsignmentRequest(SellingController):
 				is_group=1,
 			)
 
-		self.con_warehouse = frappe.db.get_value("Warehouse", {"consignment_request": self.name})
+		self.con_warehouse = frappe.db.get_value("Warehouse", {"customer": self.customer})
 		if not self.con_warehouse:
 			warehouse_name = f"Consignment - {self.customer}"
 			warehouse = create_warehouse(
 				warehouse_name,
 				company=self.company,
-				consignment_request=self.name,
+				customer=self.customer,
 				is_group=0,
 				parent_warehouse=parent,
 				return_doc=True,
@@ -138,6 +138,94 @@ class ConsignmentRequest(SellingController):
 				)
 			)
 			self.con_warehouse = warehouse.name
+
+	def set_status(self, update=False, status=None):
+		status = "Draft"
+		# if not status:
+		# 	if self.per_billed > 0:
+		# 		status = "Completed"
+		# 	elif self.per_sold > 0 or self.per_return > 0:
+		# 		status = "Return from Customer"
+		# 	if self.per_transfer == 100 and (self.per_sold == 0 or self.per_return == 100):
+		# 		status = "Deliver to Customer"
+		# 	elif self.per_billed == 100 and self.per_returned == 100:
+		# 		status = "Closed"
+		# 	elif self.per_billed == 100:
+		# 		status = "Billed"
+		# 	elif self.per_sold == 100:
+		# 		status = "Sold"
+		# 	elif self.per_transfer == 100:
+		# 		status = "Transferred"
+		# 	elif self.per_transfer > 0:
+		# 		status = "Partially Transferred"
+		# 	else:
+		# 		status = "Draft"
+		if update:
+			self.db_set("status", status)
+		else:
+			self.status = status
+	
+	def sync_qty(self, ):
+		self.total_transfer_qty = 0
+		self.total_returned_qty = 0
+		self.total_sold_qty = 0
+		self.total_billed_qty = 0
+		for d in self.get("items"):
+			self.total_transfer_qty += flt(d.transfer_qty)
+			self.total_sold_qty += flt(d.sold_qty)
+			self.total_returned_qty += flt(d.returned_qty)
+			self.total_billed_qty += flt(d.billed_qty)
+
+		self.per_transfer = flt(self.total_transfer_qty/ flt(self.total_qty)*100 if self.total_qty else 0, 2)
+		self.per_return = flt(self.total_returned_qty/ flt(self.total_transfer_qty)*100 if self.total_transfer_qty else 0, 2)
+		self.per_sold = flt(self.total_sold_qty/ flt(self.total_transfer_qty)*100 if self.total_transfer_qty else 0, 2)
+		self.per_billed = flt(self.total_billed_qty/ flt(self.total_sold_qty)*100 if self.total_sold_qty else 0, 2)
+
+		self.set_status()
+		self.db_update()
+
+# not yet status configuration for DN
+# and salvage
+# and validation for over delivery etc
+# qty based on left qty
+# rate configuration
+
+def stock_entry_controller(doc, method=""):
+	cancel = doc.docstatus == 2
+	if doc.stock_entry_type_view == "Consignment Transfer":
+		for d in doc.items:
+			cr = frappe.get_doc("Consignment Request", d.consignment_request)
+			for dt in cr.items:
+				if dt.name ==  d.consignment_item:
+					if cancel:
+						dt.db_set("transfer_qty", dt.transfer_qty - d.qty)
+					else:
+						dt.db_set("transfer_qty", dt.transfer_qty + d.qty)
+				cr.sync_qty()
+	elif doc.stock_entry_type_view == "Consignment Return":		
+		for d in doc.items:
+			cr = frappe.get_doc("Consignment Request", d.consignment_request)
+			for dt in cr.items:
+				if dt.name ==  d.consignment_item:
+					if cancel:
+						dt.db_set("returned_qty", dt.returned_qty - d.qty)
+					else:
+						dt.db_set("returned_qty", dt.returned_qty + d.qty)
+				cr.sync_qty()
+
+def billing_consignment_controller(doc, method=""):
+	cancel = doc.docstatus == 2
+	# from Delivery Note and Sales Invoice
+	if doc.doctype == "Sales Invoice":	
+		for d in doc.items:
+			cr = frappe.get_doc("Consignment Request", d.consignment_request)
+			for dt in cr.items:
+				if dt.name ==  d.cr_detail:
+					if cancel:
+						dt.db_set("billed_qty", dt.billed_qty - d.qty)
+					else:
+						dt.db_set("billed_qty", dt.billed_qty + d.qty)
+				cr.sync_qty()
 
 def get_list_context(context=None):
 	from erpnext.controllers.website_list_for_contact import get_list_context
