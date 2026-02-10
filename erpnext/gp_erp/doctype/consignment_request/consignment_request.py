@@ -142,17 +142,17 @@ class ConsignmentRequest(SellingController):
 	def set_status(self, update=False, status=None):
 		status = "Draft"
 
-		if self.per_billed > 0:
+		if flt(self.per_billed) > 0:
 			status = "Completed"
-		elif self.per_delivered > 0:
+		elif flt(self.per_delivered) > 0:
 			status = "To Bill"
-		elif (self.per_sold > 0 or self.per_return > 0) and self.per_delivered == 0:
+		elif (flt(self.per_sold) > 0 or flt(self.per_return) > 0) and flt(self.per_delivered) == 0:
 			status = "Returned and To Bill"
-		elif self.per_transfer == 100:
+		elif flt(self.per_transfer) == 100:
 			status = "Transfered to Customer"
-		elif self.per_transfer > 0:
+		elif flt(self.per_transfer) > 0:
 			status = "Partially Transfered"
-		elif self.per_transfer == 0:
+		elif flt(self.per_transfer) == 0:
 			status = "Waiting for Tranfer"
 
 		if update:
@@ -160,23 +160,22 @@ class ConsignmentRequest(SellingController):
 		else:
 			self.status = status
 	
-	def sync_qty(self, ):
+	def sync_qty(self):
 		self.total_transfer_qty = 0
-		self.total_returned_qty = 0
+		self.total_return_qty = 0
 		self.total_sold_qty = 0
 		self.total_billed_qty = 0
 		self.total_delivered_qty = 0
 		for d in self.get("items"):
 			self.total_transfer_qty += flt(d.transfer_qty)
-			d.sold_qty = flt(d.transfer_qty)- flt(d.returned_qty)
 			self.total_sold_qty += flt(d.sold_qty)
-			self.total_returned_qty += flt(d.returned_qty)
+			self.total_return_qty += flt(d.returned_qty)
 			self.total_billed_qty += flt(d.billed_qty)
 			self.total_delivered_qty += flt(d.delivered_qty)
 			d.db_update()
 
 		self.per_transfer = flt(self.total_transfer_qty/ flt(self.total_qty)*100 if self.total_qty else 0, 2)
-		self.per_return = flt(self.total_returned_qty/ flt(self.total_transfer_qty)*100 if self.total_transfer_qty else 0, 2)
+		self.per_return = flt(self.total_return_qty/ flt(self.total_transfer_qty)*100 if self.total_transfer_qty else 0, 2)
 		self.per_sold = flt(self.total_sold_qty/ flt(self.total_transfer_qty)*100 if self.total_transfer_qty else 0, 2)
 		self.per_billed = flt(self.total_billed_qty/ flt(self.total_sold_qty)*100 if self.total_sold_qty else 0, 2)
 		self.per_delivered = flt(self.total_delivered_qty/ flt(self.total_sold_qty)*100 if self.total_sold_qty else 0, 2)
@@ -190,27 +189,35 @@ class ConsignmentRequest(SellingController):
 # rate configuration
 
 def stock_entry_controller(doc, method=""):
-	cancel = doc.docstatus == 2
-	if doc.stock_entry_type_view == "Consignment Transfer":
-		for d in doc.items:
-			cr = frappe.get_doc("Consignment Request", d.consignment_request)
-			for dt in cr.items:
-				if dt.name ==  d.consignment_item:
-					if cancel:
-						dt.db_set("transfer_qty", dt.transfer_qty - d.qty)
-					else:
-						dt.db_set("transfer_qty", dt.transfer_qty + d.qty)
-				cr.sync_qty()
-	elif doc.stock_entry_type_view == "Consignment Return":		
-		for d in doc.items:
-			cr = frappe.get_doc("Consignment Request", d.consignment_request)
-			for dt in cr.items:
-				if dt.name ==  d.consignment_item:
-					if cancel:
-						dt.db_set("returned_qty", dt.returned_qty - d.qty)
-					else:
-						dt.db_set("returned_qty", dt.returned_qty + d.qty)
-				cr.sync_qty()
+	con_list = list(set(d.consignment_request for d in doc.items if d.consignment_request))
+	for con in con_list:
+		cr = frappe.get_doc("Consignment Request", con)
+
+		# sync for transfer qty
+		qty_map = get_qty_from_transfer(con, "Consignment Transfer")
+		for d in cr.get("items"):
+			key = (d.item_code, d.uom)
+			if key in qty_map:
+				d.transfer_qty = qty_map[key].get("qty")
+			else:
+				d.transfer_qty = 0
+
+		# sync for return	
+		qty_map = get_qty_from_transfer(con, "Consignment Return")
+		for d in cr.get("items"):
+			key = (d.item_code, d.uom)
+			if qty_map:
+				if key in qty_map:
+					d.returned_qty = qty_map[key].get("qty")
+					d.sold_qty = d.transfer_qty - d.returned_qty
+				else:
+					d.returned_qty = 0
+					d.sold_qty = d.transfer_qty
+			else:
+				d.returned_qty = 0
+				d.sold_qty = 0
+
+		cr.sync_qty()
 
 def billing_consignment_controller(doc, method=""):
 	cancel = doc.docstatus == 2
@@ -224,7 +231,7 @@ def billing_consignment_controller(doc, method=""):
 						dt.db_set("billed_qty", dt.billed_qty - d.qty)
 					else:
 						dt.db_set("billed_qty", dt.billed_qty + d.qty)
-				cr.sync_qty()
+			cr.sync_qty()
 
 	elif doc.doctype == "Delivery Note":	
 		for d in doc.items:
@@ -235,7 +242,7 @@ def billing_consignment_controller(doc, method=""):
 						dt.db_set("delivered_qty", dt.delivered_qty - d.qty)
 					else:
 						dt.db_set("delivered_qty", dt.delivered_qty + d.qty)
-				cr.sync_qty()
+			cr.sync_qty()
 
 def get_list_context(context=None):
 	from erpnext.controllers.website_list_for_contact import get_list_context
@@ -302,6 +309,10 @@ def make_stock_transfer(source_name, target_doc=None):
 def make_stock_return(source_name, target_doc=None):
 	se_type = "Consignment Return"
 	se_series = frappe.get_value("Stock Entry Type", {"name": se_type}, "series")
+	def post_process_item(row, batch):
+		row.consignment_item = batch.get("consignment_item")
+		row.consignment_request = batch.get("consignment_request")
+	
 	def postprocess(source, target):
 		target.purpose = "Material Transfer"
 		target.stock_entry_type = "Material Transfer"
@@ -309,6 +320,8 @@ def make_stock_return(source_name, target_doc=None):
 		target.naming_series = se_series
 		target.from_warehouse = source.con_warehouse
 		target.to_warehouse = source.salvage_warehouse
+		add_item_from_transfer(target, source.name, post_process_item)
+		target.set_missing_values()
 
 	def update_item(source_doc, target_doc, source_parent):
 		target_doc.s_warehouse = source_parent.con_warehouse
@@ -392,11 +405,78 @@ def make_salvage_process(source_name, target_doc=None):
 
 	return doclist
 
+def get_batch_from_transfer(con_order):
+	batch_map = {}
+	data = frappe.db.sql("""
+		SELECT 
+			se.item_code, se.batch_no, sum(se.qty) as qty, se.uom, se.stock_uom, 
+			se.conversion_factor, se.consignment_request, se.consignment_item
+		FROM
+			`tabStock Entry Detail` se
+				LEFT JOIN
+			`tabStock Entry` s ON s.name = se.parent
+		WHERE
+				s.stock_entry_type_view = 'Consignment Transfer'
+				AND se.consignment_request = %s
+				AND s.docstatus = 1
+		group by se.item_code, se.batch_no, se.uom
+		""", (con_order,), as_dict=1)
+	for d in data:
+		batch_map.setdefault((d.item_code, d.uom, d.batch_no), d)
+
+	return batch_map
+
+def get_qty_from_transfer(con_order, se_type):
+	qty_map = {}
+	temp = frappe.db.sql("""
+		SELECT 
+			se.item_code, se.batch_no, sum(se.qty) as qty, se.uom
+		FROM
+			`tabStock Entry Detail` se
+				LEFT JOIN
+			`tabStock Entry` s ON s.name = se.parent
+		WHERE
+				s.stock_entry_type_view = %s
+				AND se.consignment_request = %s
+				AND s.docstatus = 1
+		group by se.item_code,  se.uom
+		""", (se_type, con_order), as_dict=1)
+	
+	for d in temp:
+		qty_map.setdefault((d.item_code, d.uom), d)
+
+	return qty_map
+
+def add_item_from_transfer(doc, cr_name, post_process=None):
+	# get all batch from stock entry
+	batch_dict = get_batch_from_transfer(cr_name)
+	doc.items = []
+	for key, batch in batch_dict.items():
+		row = doc.append("items")
+		row.item_code = batch.get("item_code")
+		row.t_warehouse = doc.to_warehouse
+		row.s_warehouse = doc.from_warehouse
+		row.uom = batch.get("uom")
+		row.conversion_factor = batch.get("conversion_factor")
+		row.stock_uom = batch.get("stock_uom")
+		row.batch_no = batch.get("batch_no")
+		row.qty = batch.get("qty")
+		post_process(row, batch)
+	
+	return doc
+
 @frappe.whitelist()
 def make_delivery_note(source_name, target_doc=None):
 	# take from Consignment Transfer for batching
+
+	def post_process_item(row, batch):
+		row.cr_detail = batch.get("consignment_item")
+		row.consignment_request = batch.get("consignment_request")
+
 	def postprocess(source, target):
 		target.consignment_request = source.name
+		add_item_from_transfer(target, source.name, post_process_item)
+		target.set_missing_values()
 
 	def update_item(source_doc, target_doc, source_parent):
 		target_doc.qty = source_doc.sold_qty - source_doc.delivered_qty
