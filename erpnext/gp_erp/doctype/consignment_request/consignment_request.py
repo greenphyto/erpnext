@@ -221,6 +221,11 @@ def stock_entry_controller(doc, method=""):
 
 def billing_consignment_controller(doc, method=""):
 	cancel = doc.docstatus == 2
+	if doc.doctype == "Delivery Note":
+		con_list = list(set(d.against_consignment_request for d in doc.items if d.against_consignment_request))
+	else:
+		con_list = list(set(d.consignment_request for d in doc.items if d.consignment_request))
+
 	# from Delivery Note and Sales Invoice
 	if doc.doctype == "Sales Invoice":	
 		for d in doc.items:
@@ -233,16 +238,22 @@ def billing_consignment_controller(doc, method=""):
 						dt.db_set("billed_qty", dt.billed_qty + d.qty)
 			cr.sync_qty()
 
-	elif doc.doctype == "Delivery Note":	
+	for con in con_list:
+		cr = frappe.get_doc("Consignment Request", con)
 		for d in doc.items:
-			cr = frappe.get_doc("Consignment Request", d.consignment_request)
-			for dt in cr.items:
-				if dt.name ==  d.cr_detail:
-					if cancel:
-						dt.db_set("delivered_qty", dt.delivered_qty - d.qty)
-					else:
-						dt.db_set("delivered_qty", dt.delivered_qty + d.qty)
-			cr.sync_qty()
+			for dt in cr.get("items"):
+				if dt.name == d.cr_detail:
+					if doc.doctype == "Sales Invoice":
+						if cancel:
+							dt.db_set("sold_qty", dt.sold_qty - d.qty)
+						else:
+							dt.db_set("sold_qty", dt.sold_qty + d.qty)
+					if doc.doctype == "Delivery Note":
+						if cancel:
+							dt.db_set("delivered_qty", dt.delivered_qty - d.qty)
+						else:
+							dt.db_set("delivered_qty", dt.delivered_qty + d.qty)
+		cr.sync_qty()
 
 def get_list_context(context=None):
 	from erpnext.controllers.website_list_for_contact import get_list_context
@@ -309,11 +320,15 @@ def make_stock_transfer(source_name, target_doc=None):
 def make_stock_return(source_name, target_doc=None):
 	se_type = "Consignment Return"
 	se_series = frappe.get_value("Stock Entry Type", {"name": se_type}, "series")
-	def post_process_item(row, batch):
-		row.consignment_item = batch.get("consignment_item")
-		row.consignment_request = batch.get("consignment_request")
 	
 	def postprocess(source, target):
+
+		def post_process_item(row, batch):
+			row.consignment_item = batch.get("consignment_item")
+			row.consignment_request = batch.get("consignment_request")
+			row.t_warehouse = source.salvage_warehouse
+			row.s_warehouse = source.con_warehouse
+
 		target.purpose = "Material Transfer"
 		target.stock_entry_type = "Material Transfer"
 		target.stock_entry_type_view = se_type
@@ -447,20 +462,45 @@ def get_qty_from_transfer(con_order, se_type):
 
 	return qty_map
 
-def add_item_from_transfer(doc, cr_name, post_process=None):
+def get_qty_from_transfer_batch(con_order, se_type):
+	qty_map = {}
+	temp = frappe.db.sql("""
+		SELECT 
+			se.item_code, se.batch_no, sum(se.qty) as qty, se.uom
+		FROM
+			`tabStock Entry Detail` se
+				LEFT JOIN
+			`tabStock Entry` s ON s.name = se.parent
+		WHERE
+				s.stock_entry_type_view = %s
+				AND se.consignment_request = %s
+				AND s.docstatus = 1
+		group by se.item_code, se.batch_no, se.uom
+		""", (se_type, con_order), as_dict=1)
+	
+	for d in temp:
+		qty_map.setdefault((d.item_code, d.uom, d.batch_no), d)
+
+	return qty_map
+
+def add_item_from_transfer(doc, cr_name, post_process=None, with_return=False):
 	# get all batch from stock entry
 	batch_dict = get_batch_from_transfer(cr_name)
+	batch_return = {}
+	if with_return:
+		batch_return = get_qty_from_transfer_batch(cr_name, "Consignment Return")
+
 	doc.items = []
 	for key, batch in batch_dict.items():
 		row = doc.append("items")
 		row.item_code = batch.get("item_code")
-		row.t_warehouse = doc.to_warehouse
-		row.s_warehouse = doc.from_warehouse
 		row.uom = batch.get("uom")
 		row.conversion_factor = batch.get("conversion_factor")
 		row.stock_uom = batch.get("stock_uom")
 		row.batch_no = batch.get("batch_no")
 		row.qty = batch.get("qty")
+		if key in batch_return:
+			row.qty -= batch_return.get(key).get("qty")
 		post_process(row, batch)
 	
 	return doc
@@ -468,14 +508,16 @@ def add_item_from_transfer(doc, cr_name, post_process=None):
 @frappe.whitelist()
 def make_delivery_note(source_name, target_doc=None):
 	# take from Consignment Transfer for batching
-
-	def post_process_item(row, batch):
-		row.cr_detail = batch.get("consignment_item")
-		row.consignment_request = batch.get("consignment_request")
-
 	def postprocess(source, target):
+
+		def post_process_item(row, batch):
+			row.cr_detail = batch.get("consignment_item")
+			row.against_consignment_request = batch.get("consignment_request")
+			row.warehouse = source.con_warehouse
+
+		target.set_warehouse = source.con_warehouse
 		target.consignment_request = source.name
-		add_item_from_transfer(target, source.name, post_process_item)
+		add_item_from_transfer(target, source.name, post_process_item, with_return=True)
 		target.set_missing_values()
 
 	def update_item(source_doc, target_doc, source_parent):
