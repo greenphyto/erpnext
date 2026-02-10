@@ -62,6 +62,7 @@
   "total_return_qty",
   "column_break_52",
   "total_sold_qty",
+  "total_delivered_qty",
   "column_break_55",
   "total_billed_qty",
   "taxes_section",
@@ -132,6 +133,7 @@
   "status",
   "delivery_status",
   "per_transfer",
+  "per_delivered",
   "column_break_81",
   "per_return",
   "per_sold",
@@ -1258,7 +1260,7 @@
    "no_copy": 1,
    "oldfieldname": "status",
    "oldfieldtype": "Select",
-   "options": "\nDraft\nOn Hold\nDeliver to Customer\nReturn from Customer\nTo Bill\nCompleted\nCancelled\nClosed",
+   "options": "\nDraft\nOn Hold\nWaiting for Tranfer\nPartially Transfered\nTransfered to Customer\nReturned and To Bill\nTo Bill\nCompleted\nCancelled\nClosed",
    "print_hide": 1,
    "read_only": 1,
    "reqd": 1,
@@ -1592,7 +1594,6 @@
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "% Return",
-   "no_amend_copy": 1,
    "no_copy": 1,
    "oldfieldname": "per_billed",
    "oldfieldtype": "Currency",
@@ -1604,16 +1605,13 @@
    "fieldname": "per_sold",
    "fieldtype": "Percent",
    "label": "% Sold",
-   "no_amend_copy": 1,
    "no_copy": 1,
    "read_only": 1
   },
   {
    "fieldname": "per_bill",
-   "fieldtype": "Data",
-   "label": "% Billed",
-   "no_amend_copy": 1,
-   "no_copy": 1
+   "fieldtype": "Percent",
+   "label": "% Billed"
   },
   {
    "fieldname": "status_section",
@@ -1624,33 +1622,25 @@
    "fieldname": "total_return_qty",
    "fieldtype": "Float",
    "label": "Total Return Qty",
-   "read_only": 1,
-    "no_amend_copy": 1,
-    "no_copy": 1
+   "read_only": 1
   },
   {
    "fieldname": "total_sold_qty",
    "fieldtype": "Float",
    "label": "Total Sold Qty",
-   "read_only": 1,
-    "no_amend_copy": 1,
-    "no_copy": 1
+   "read_only": 1
   },
   {
    "fieldname": "total_transfer_qty",
    "fieldtype": "Float",
    "label": "Total Transfer Qty",
-   "read_only": 1,
-    "no_amend_copy": 1,
-    "no_copy": 1
+   "read_only": 1
   },
   {
    "fieldname": "total_billed_qty",
    "fieldtype": "Float",
    "label": "Total Billed Qty",
-   "read_only": 1,  
-    "no_amend_copy": 1,
-    "no_copy": 1
+   "read_only": 1
   },
   {
    "fieldname": "column_break_52",
@@ -1663,13 +1653,25 @@
   {
    "fieldname": "column_break_53",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_delivered_qty",
+   "fieldtype": "Float",
+   "label": "Total Delivered Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "per_delivered",
+   "fieldtype": "Percent",
+   "label": "% Delivered",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-09 19:07:46.413594",
+ "modified": "2026-02-10 12:21:08.716287",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Request",

@@ -141,25 +141,20 @@ class ConsignmentRequest(SellingController):
 
 	def set_status(self, update=False, status=None):
 		status = "Draft"
-		# if not status:
-		# 	if self.per_billed > 0:
-		# 		status = "Completed"
-		# 	elif self.per_sold > 0 or self.per_return > 0:
-		# 		status = "Return from Customer"
-		# 	if self.per_transfer == 100 and (self.per_sold == 0 or self.per_return == 100):
-		# 		status = "Deliver to Customer"
-		# 	elif self.per_billed == 100 and self.per_returned == 100:
-		# 		status = "Closed"
-		# 	elif self.per_billed == 100:
-		# 		status = "Billed"
-		# 	elif self.per_sold == 100:
-		# 		status = "Sold"
-		# 	elif self.per_transfer == 100:
-		# 		status = "Transferred"
-		# 	elif self.per_transfer > 0:
-		# 		status = "Partially Transferred"
-		# 	else:
-		# 		status = "Draft"
+
+		if self.per_billed > 0:
+			status = "Completed"
+		elif self.per_delivered > 0:
+			status = "To Bill"
+		elif (self.per_sold > 0 or self.per_return > 0) and self.per_delivered == 0:
+			status = "Returned and To Bill"
+		elif self.per_transfer == 100:
+			status = "Transfered to Customer"
+		elif self.per_transfer > 0:
+			status = "Partially Transfered"
+		elif self.per_transfer == 0:
+			status = "Waiting for Tranfer"
+
 		if update:
 			self.db_set("status", status)
 		else:
@@ -170,24 +165,28 @@ class ConsignmentRequest(SellingController):
 		self.total_returned_qty = 0
 		self.total_sold_qty = 0
 		self.total_billed_qty = 0
+		self.total_delivered_qty = 0
 		for d in self.get("items"):
 			self.total_transfer_qty += flt(d.transfer_qty)
+			d.sold_qty = flt(d.transfer_qty)- flt(d.returned_qty)
 			self.total_sold_qty += flt(d.sold_qty)
 			self.total_returned_qty += flt(d.returned_qty)
 			self.total_billed_qty += flt(d.billed_qty)
+			self.total_delivered_qty += flt(d.delivered_qty)
+			d.db_update()
 
 		self.per_transfer = flt(self.total_transfer_qty/ flt(self.total_qty)*100 if self.total_qty else 0, 2)
 		self.per_return = flt(self.total_returned_qty/ flt(self.total_transfer_qty)*100 if self.total_transfer_qty else 0, 2)
 		self.per_sold = flt(self.total_sold_qty/ flt(self.total_transfer_qty)*100 if self.total_transfer_qty else 0, 2)
 		self.per_billed = flt(self.total_billed_qty/ flt(self.total_sold_qty)*100 if self.total_sold_qty else 0, 2)
+		self.per_delivered = flt(self.total_delivered_qty/ flt(self.total_sold_qty)*100 if self.total_sold_qty else 0, 2)
 
 		self.set_status()
 		self.db_update()
 
-# not yet status configuration for DN
-# and salvage
+# and salvage, create repack from SE get from SE return
 # and validation for over delivery etc
-# qty based on left qty
+# qty based on left qty - ongoing
 # rate configuration
 
 def stock_entry_controller(doc, method=""):
@@ -225,6 +224,17 @@ def billing_consignment_controller(doc, method=""):
 						dt.db_set("billed_qty", dt.billed_qty - d.qty)
 					else:
 						dt.db_set("billed_qty", dt.billed_qty + d.qty)
+				cr.sync_qty()
+
+	elif doc.doctype == "Delivery Note":	
+		for d in doc.items:
+			cr = frappe.get_doc("Consignment Request", d.consignment_request)
+			for dt in cr.items:
+				if dt.name ==  d.cr_detail:
+					if cancel:
+						dt.db_set("delivered_qty", dt.delivered_qty - d.qty)
+					else:
+						dt.db_set("delivered_qty", dt.delivered_qty + d.qty)
 				cr.sync_qty()
 
 def get_list_context(context=None):
@@ -384,11 +394,12 @@ def make_salvage_process(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_delivery_note(source_name, target_doc=None):
+	# take from Consignment Transfer for batching
 	def postprocess(source, target):
 		target.consignment_request = source.name
 
 	def update_item(source_doc, target_doc, source_parent):
-		pass
+		target_doc.qty = source_doc.sold_qty - source_doc.delivered_qty
 	
 	doclist = get_mapped_doc(
 		"Consignment Request",
@@ -407,7 +418,7 @@ def make_delivery_note(source_name, target_doc=None):
 					"parent": "against_consignment_request",
 				},
 				"postprocess": update_item,
-				# "condition": lambda doc: doc.delivered_qty < doc.qty,
+				"condition": lambda doc: doc.sold_qty > 0,
 			},
 		},
 		target_doc,
@@ -419,12 +430,14 @@ def make_delivery_note(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_sales_invoice(source_name, target_doc=None):
+	# take from delivery note for billing
+
 	def postprocess(source, target):
 		target.consignment_request = source.name
 		target.set_missing_values()
 
 	def update_item(source_doc, target_doc, source_parent):
-		pass
+		target_doc.qty = source_doc.delivered_qty
 	
 	doclist = get_mapped_doc(
 		"Consignment Request",
@@ -443,7 +456,7 @@ def make_sales_invoice(source_name, target_doc=None):
 					"parent": "consignment_request",
 				},
 				"postprocess": update_item,
-				# "condition": lambda doc: doc.delivered_qty < doc.qty,
+				"condition": lambda doc: doc.delivered_qty > 0,
 			},
 		},
 		target_doc,
