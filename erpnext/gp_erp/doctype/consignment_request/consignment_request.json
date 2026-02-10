@@ -62,8 +62,9 @@
   "total_return_qty",
   "column_break_52",
   "total_sold_qty",
-  "total_delivered_qty",
   "column_break_55",
+  "total_delivered_qty",
+  "column_break_57",
   "total_billed_qty",
   "taxes_section",
   "taxes_and_charges",
@@ -137,7 +138,7 @@
   "column_break_81",
   "per_return",
   "per_sold",
-  "per_bill",
+  "per_billed",
   "billing_status",
   "sales_team_section_break",
   "sales_partner",
@@ -1587,31 +1588,11 @@
    "width": "100px"
   },
   {
-   "depends_on": "eval:!doc.__islocal",
-   "description": "% of materials billed against this Consignment Request",
-   "fieldname": "per_return",
-   "fieldtype": "Percent",
-   "hide_days": 1,
-   "hide_seconds": 1,
-   "label": "% Return",
-   "no_copy": 1,
-   "oldfieldname": "per_billed",
-   "oldfieldtype": "Currency",
-   "print_hide": 1,
-   "read_only": 1,
-   "width": "100px"
-  },
-  {
    "fieldname": "per_sold",
    "fieldtype": "Percent",
    "label": "% Sold",
    "no_copy": 1,
    "read_only": 1
-  },
-  {
-   "fieldname": "per_bill",
-   "fieldtype": "Percent",
-   "label": "% Billed"
   },
   {
    "fieldname": "status_section",
@@ -1665,13 +1646,37 @@
    "fieldtype": "Percent",
    "label": "% Delivered",
    "read_only": 1
+  },
+  {
+   "depends_on": "eval:!doc.__islocal",
+   "description": "% of materials billed against this Consignment Request",
+   "fieldname": "per_return",
+   "fieldtype": "Percent",
+   "hide_days": 1,
+   "hide_seconds": 1,
+   "label": "% Return",
+   "no_copy": 1,
+   "oldfieldname": "per_billed",
+   "oldfieldtype": "Currency",
+   "print_hide": 1,
+   "read_only": 1,
+   "width": "100px"
+  },
+  {
+   "fieldname": "per_billed",
+   "fieldtype": "Percent",
+   "label": "% Billed"
+  },
+  {
+   "fieldname": "column_break_57",
+   "fieldtype": "Column Break"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-10 12:21:08.716287",
+ "modified": "2026-02-10 18:15:16.973414",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Request",
