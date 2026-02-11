@@ -799,4 +799,5 @@ custom_export_report = {
 has_permission = {
 	"Supplier": "erpnext.buying.doctype.supplier.supplier.has_permission",
 	"Customer": "erpnext.selling.doctype.customer.customer.has_permission",
+    "Material Request":"erpnext.stock.doctype.material_request.material_request.has_permission"
 }

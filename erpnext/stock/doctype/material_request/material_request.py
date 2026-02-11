@@ -837,7 +837,15 @@ def validate_purchase_request_based_user(doc, user=None):
 	return allow_specific
 
 
-
+def has_permission(doc, user, ptype="read"):
+	if doc.owner == user:
+		return True
+	
+	res = validate_purchase_request_based_user(doc, user)
+	if not res:
+		return None
+	else:
+		return res
 
 	
 
