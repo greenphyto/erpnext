@@ -226,18 +226,6 @@ def billing_consignment_controller(doc, method=""):
 	else:
 		con_list = list(set(d.consignment_request for d in doc.items if d.consignment_request))
 
-	# from Delivery Note and Sales Invoice
-	if doc.doctype == "Sales Invoice":	
-		for d in doc.items:
-			cr = frappe.get_doc("Consignment Request", d.consignment_request)
-			for dt in cr.items:
-				if dt.name ==  d.cr_detail:
-					if cancel:
-						dt.db_set("billed_qty", dt.billed_qty - d.qty)
-					else:
-						dt.db_set("billed_qty", dt.billed_qty + d.qty)
-			cr.sync_qty()
-
 	for con in con_list:
 		cr = frappe.get_doc("Consignment Request", con)
 		for d in doc.items:
@@ -245,14 +233,14 @@ def billing_consignment_controller(doc, method=""):
 				if dt.name == d.cr_detail:
 					if doc.doctype == "Sales Invoice":
 						if cancel:
-							dt.db_set("sold_qty", dt.sold_qty - d.qty)
+							dt.billed_qty = dt.billed_qty - d.qty
 						else:
-							dt.db_set("sold_qty", dt.sold_qty + d.qty)
+							dt.billed_qty = dt.billed_qty + d.qty
 					if doc.doctype == "Delivery Note":
 						if cancel:
-							dt.db_set("delivered_qty", dt.delivered_qty - d.qty)
+							dt.delivered_qty = dt.delivered_qty - d.qty
 						else:
-							dt.db_set("delivered_qty", dt.delivered_qty + d.qty)
+							dt.delivered_qty = dt.delivered_qty + d.qty
 		cr.sync_qty()
 
 def get_list_context(context=None):
@@ -556,9 +544,14 @@ def make_sales_invoice(source_name, target_doc=None):
 
 	def postprocess(source, target):
 		target.consignment_request = source.name
+		target.total_net_weight = source.total_delivered_qty
 		target.set_missing_values()
 
 	def update_item(source_doc, target_doc, source_parent):
+		temp = frappe.get_value("Delivery Note Item", {"cr_detail": source_doc.name, "docstatus": 1}, ["name", "parent", "rate"], as_dict=1)
+		target_doc.delivery_note = temp.get("parent")
+		target_doc.dn_detail = temp.get("name")
+		target_doc.rate = temp.get("rate")
 		target_doc.qty = source_doc.delivered_qty
 	
 	doclist = get_mapped_doc(
