@@ -50,6 +50,7 @@ class ConsignmentRequest(SellingController):
 		self.validate_uom_is_integer("uom", "qty")
 		self.set_status()
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
+		self.create_customer_warehouse()
 
 	def on_submit(self):
 		self.check_credit_limit()
@@ -121,17 +122,16 @@ class ConsignmentRequest(SellingController):
 			)
 
 		self.con_warehouse = frappe.db.get_value("Warehouse", {"customer": self.customer})
-		if not self.con_warehouse:
+		if not self.con_warehouse and self.docstatus == 1:
 			warehouse_name = f"Consignment - {self.customer}"
 			warehouse = create_warehouse(
 				warehouse_name,
 				company=self.company,
-				customer=self.customer,
 				is_group=0,
 				parent_warehouse=parent,
 				return_doc=True,
 			)
-			warehouse.customer=self.customer
+			warehouse.db_set("customer", self.customer)
 			frappe.msgprint(
 				_("Warehouse {0} created for Customer {1}").format(
 					get_link_to_form("Warehouse", warehouse.name), self.customer
