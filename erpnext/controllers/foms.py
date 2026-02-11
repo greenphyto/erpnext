@@ -2363,6 +2363,9 @@ def create_prod_variance_entry(doc, method=""):
 		GROUP BY ac.description
 		ORDER BY ac.description			   
 		""", (doc.work_order), as_dict=1, debug=0)
+
+	if not costs_data:
+		return
 	
 	total_variance = sum([d.amount for d in costs_data])
 	# credit variance account
