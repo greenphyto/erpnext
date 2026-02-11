@@ -413,8 +413,14 @@ doc_events = {
         "on_cancel":"erpnext.controllers.foms.sync_log",
 	},
 	"Delivery Note": {
-        "on_submit":"erpnext.controllers.foms.sync_log",
-        "on_cancel":"erpnext.controllers.foms.sync_log",
+        "on_submit":{
+        	"erpnext.controllers.foms.sync_log",
+            "erpnext.gp_erp.doctype.consignment_request.consignment_request.billing_consignment_controller"
+		},
+        "on_cancel":[
+            "erpnext.controllers.foms.sync_log",
+            "erpnext.gp_erp.doctype.consignment_request.consignment_request.billing_consignment_controller"
+		],
 	},
     "Department": {
         "validate":"erpnext.controllers.foms.sync_log",
