@@ -26,7 +26,18 @@ frappe.ui.form.on("Consignment Request", {
 			};
 		})
 	},
+	customer: function(frm) {
+		frappe.call({
+			method:"on_customer_set",
+			doc: frm.doc,
+			freeze: true,
+			callback: function(r) {
+				frm.refresh_fields();
+			}
+		})
+	},
 	refresh: function(frm) {
+		console.log(90000)
 		frm.set_query("item_code", "items", function(doc, cdt, cdn) {
 			var filters = {"is_fixed_asset": 0, "item_group": "Products"};
 			if (!frm.doc.non_package_item){
@@ -34,6 +45,42 @@ frappe.ui.form.on("Consignment Request", {
 				filters['is_stock_item']=1;
 			}
 			return erpnext.queries.item(filters);
+		})
+		frm.set_query("set_warehouse", function(doc, cdt, cdn) {
+			return {
+				filters: {
+					"company": doc.company,
+					"is_group": 0
+				}
+			};
+		})
+		frm.set_query("salvage_warehouse", function(doc, cdt, cdn) {
+			return {
+				filters: {
+					"company": doc.company,
+					"is_group": 0
+				}
+			};
+		})
+		frm.set_query("con_warehouse", function(doc, cdt, cdn) {
+			if (!doc.customer){
+				frappe.throw(__('Please set Customer'));
+			}
+			return {
+				filters: {
+					"company": doc.company,
+					"is_group": 0,
+					"customer": doc.customer
+				}
+			};
+		})
+		frm.set_query("repack_warehouse", function(doc, cdt, cdn) {
+			return {
+				filters: {
+					"company": doc.company,
+					"is_group": 0
+				}
+			};
 		})
 	},
 

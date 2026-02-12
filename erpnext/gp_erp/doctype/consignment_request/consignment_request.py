@@ -69,6 +69,17 @@ class ConsignmentRequest(SellingController):
 
 		self.db_set("status", "Cancelled")
 
+	@frappe.whitelist()
+	def on_customer_set(self):
+		# default warehouse based on customer
+		self.con_warehouse = frappe.db.get_value("Warehouse", {"customer": self.customer})
+		self.set_warehouse = frappe.get_value("Stock Settings", "Stock Settings", "default_warehouse")
+		self.salvage_warehouse = frappe.get_value("Company", self.company, "default_salvage_warehouse")
+		self.repack_warehouse = self.set_warehouse
+		# self.taxes_and_charges = frappe.get_value("Sales Taxes and Charges Template", {"company": self.company, "is_default": 1}, "name")
+		# self.missing_values()
+		print("Customer set:", self.customer)
+
 	def update_prevdoc_status(self, action):
 		pass
 
@@ -183,7 +194,6 @@ class ConsignmentRequest(SellingController):
 		self.set_status()
 		self.db_update()
 
-# and salvage, create repack from SE get from SE return
 # and validation for over delivery etc:
 # - qty transfer cant more than request
 # default value warehouse source, salvage warehouse, and con warehouse
