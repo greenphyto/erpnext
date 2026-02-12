@@ -42,7 +42,7 @@ class Report():
 			{"fieldname": "operation", 			"label": "Operation", 		"fieldtype": "Data", 		"width":120, "options":""},
 			{"fieldname": "debit", 				"label": "Debit", 			"fieldtype": "Currency", 	"width":100, "options":""},
 			{"fieldname": "credit", 			"label": "Credit", 			"fieldtype": "Currency", 	"width":100, "options":""},
-			{"fieldname": "prev_value", 		"label": "Retrieved from Previous Step",	"fieldtype": "Currency", 	"width":210, "options":""},
+			# {"fieldname": "prev_value", 		"label": "Retrieved from Previous Step",	"fieldtype": "Currency", 	"width":210, "options":""},
 			{"fieldname": "raw_material", 		"label": "Raw Material",	"fieldtype": "Currency", 	"width":110, "options":""},
 			{"fieldname": "costs", 				"label": "Total Costs",	"fieldtype": "Currency", 	"width":110, "options":""}
 		]
