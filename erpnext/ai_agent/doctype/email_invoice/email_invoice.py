@@ -1379,6 +1379,8 @@ def change_temporary_invoice(doc, method=""):
 
 	frappe.rename_doc(doc.doctype, old_name, new_name, force=True, merge=False)
 
+	# update Payment Ledger Entry for against_voucher_no
+	frappe.db.set_value("Payment Ledger Entry", {"voucher_no":new_name, "voucher_type": doc.doctype}, "against_voucher_no", new_name)
 	return new_name
 
 def save_dict_to_json(data: dict, filename="data.json"):
