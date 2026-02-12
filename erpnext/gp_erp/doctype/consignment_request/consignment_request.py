@@ -184,8 +184,10 @@ class ConsignmentRequest(SellingController):
 		self.db_update()
 
 # and salvage, create repack from SE get from SE return
-# and validation for over delivery etc
-# qty based on left qty - ongoing
+# and validation for over delivery etc:
+# - qty transfer cant more than request
+# default value warehouse source, salvage warehouse, and con warehouse
+# uom based on packaging
 # rate configuration
 
 def stock_entry_controller(doc, method=""):
@@ -258,6 +260,7 @@ def get_list_context(context=None):
 
 	return list_context
 
+# BUTTON CONTEXT FUNCTIONS
 
 @frappe.whitelist()
 def make_stock_transfer(source_name, target_doc=None):
@@ -368,6 +371,13 @@ def make_salvage_process(source_name, target_doc=None):
 		target.naming_series = se_series
 		target.from_warehouse = source.salvage_warehouse
 		target.to_warehouse = source.set_warehouse
+		def post_process_item(row, batch):
+			row.consignment_item = batch.get("consignment_item")
+			row.consignment_request = batch.get("consignment_request")
+			row.s_warehouse = source.salvage_warehouse
+
+		add_item_from_transfer(target, source.name, post_process_item, only_return=True)
+
 		# add row for repack product
 		for d in list(target.get("items")):
 			row = target.append("items")
@@ -377,9 +387,11 @@ def make_salvage_process(source_name, target_doc=None):
 			row.uom = d.uom
 			row.stock_uom = d.stock_uom
 			row.conversion_factor = d.conversion_factor
+		
 
 	def update_item(source_doc, target_doc, source_parent):
 		target_doc.s_warehouse = source_parent.salvage_warehouse
+		target_doc.qty = source_doc.returned_qty
 
 	doclist = get_mapped_doc(
 		"Consignment Request",
@@ -398,7 +410,7 @@ def make_salvage_process(source_name, target_doc=None):
 					"parent": "consignment_request",
 				},
 				"postprocess": update_item,
-				# "condition": lambda doc: doc.delivered_qty < doc.qty,
+				"condition": lambda doc: doc.returned_qty > 0,
 			},
 		},
 		target_doc,
@@ -407,91 +419,6 @@ def make_salvage_process(source_name, target_doc=None):
 	)
 
 	return doclist
-
-def get_batch_from_transfer(con_order):
-	batch_map = {}
-	data = frappe.db.sql("""
-		SELECT 
-			se.item_code, se.batch_no, sum(se.qty) as qty, se.uom, se.stock_uom, 
-			se.conversion_factor, se.consignment_request, se.consignment_item
-		FROM
-			`tabStock Entry Detail` se
-				LEFT JOIN
-			`tabStock Entry` s ON s.name = se.parent
-		WHERE
-				s.stock_entry_type_view = 'Consignment Transfer'
-				AND se.consignment_request = %s
-				AND s.docstatus = 1
-		group by se.item_code, se.batch_no, se.uom
-		""", (con_order,), as_dict=1)
-	for d in data:
-		batch_map.setdefault((d.item_code, d.uom, d.batch_no), d)
-
-	return batch_map
-
-def get_qty_from_transfer(con_order, se_type):
-	qty_map = {}
-	temp = frappe.db.sql("""
-		SELECT 
-			se.item_code, se.batch_no, sum(se.qty) as qty, se.uom
-		FROM
-			`tabStock Entry Detail` se
-				LEFT JOIN
-			`tabStock Entry` s ON s.name = se.parent
-		WHERE
-				s.stock_entry_type_view = %s
-				AND se.consignment_request = %s
-				AND s.docstatus = 1
-		group by se.item_code,  se.uom
-		""", (se_type, con_order), as_dict=1)
-	
-	for d in temp:
-		qty_map.setdefault((d.item_code, d.uom), d)
-
-	return qty_map
-
-def get_qty_from_transfer_batch(con_order, se_type):
-	qty_map = {}
-	temp = frappe.db.sql("""
-		SELECT 
-			se.item_code, se.batch_no, sum(se.qty) as qty, se.uom
-		FROM
-			`tabStock Entry Detail` se
-				LEFT JOIN
-			`tabStock Entry` s ON s.name = se.parent
-		WHERE
-				s.stock_entry_type_view = %s
-				AND se.consignment_request = %s
-				AND s.docstatus = 1
-		group by se.item_code, se.batch_no, se.uom
-		""", (se_type, con_order), as_dict=1)
-	
-	for d in temp:
-		qty_map.setdefault((d.item_code, d.uom, d.batch_no), d)
-
-	return qty_map
-
-def add_item_from_transfer(doc, cr_name, post_process=None, with_return=False):
-	# get all batch from stock entry
-	batch_dict = get_batch_from_transfer(cr_name)
-	batch_return = {}
-	if with_return:
-		batch_return = get_qty_from_transfer_batch(cr_name, "Consignment Return")
-
-	doc.items = []
-	for key, batch in batch_dict.items():
-		row = doc.append("items")
-		row.item_code = batch.get("item_code")
-		row.uom = batch.get("uom")
-		row.conversion_factor = batch.get("conversion_factor")
-		row.stock_uom = batch.get("stock_uom")
-		row.batch_no = batch.get("batch_no")
-		row.qty = batch.get("qty")
-		if key in batch_return:
-			row.qty -= batch_return.get(key).get("qty")
-		post_process(row, batch)
-	
-	return doc
 
 @frappe.whitelist()
 def make_delivery_note(source_name, target_doc=None):
@@ -580,3 +507,96 @@ def make_sales_invoice(source_name, target_doc=None):
 	)
 
 	return doclist
+
+
+# TOOLS 
+
+def get_batch_from_transfer(con_order):
+	batch_map = {}
+	data = frappe.db.sql("""
+		SELECT 
+			se.item_code, se.batch_no, sum(se.qty) as qty, se.uom, se.stock_uom, 
+			se.conversion_factor, se.consignment_request, se.consignment_item
+		FROM
+			`tabStock Entry Detail` se
+				LEFT JOIN
+			`tabStock Entry` s ON s.name = se.parent
+		WHERE
+				s.stock_entry_type_view = 'Consignment Transfer'
+				AND se.consignment_request = %s
+				AND s.docstatus = 1
+		group by se.item_code, se.batch_no, se.uom
+		""", (con_order,), as_dict=1)
+	for d in data:
+		batch_map.setdefault((d.item_code, d.uom, d.batch_no), d)
+
+	return batch_map
+
+def get_qty_from_transfer(con_order, se_type):
+	qty_map = {}
+	temp = frappe.db.sql("""
+		SELECT 
+			se.item_code, se.batch_no, sum(se.qty) as qty, se.uom, se.stock_uom, 
+			se.conversion_factor
+		FROM
+			`tabStock Entry Detail` se
+				LEFT JOIN
+			`tabStock Entry` s ON s.name = se.parent
+		WHERE
+				s.stock_entry_type_view = %s
+				AND se.consignment_request = %s
+				AND s.docstatus = 1
+		group by se.item_code,  se.uom
+		""", (se_type, con_order), as_dict=1)
+	
+	for d in temp:
+		qty_map.setdefault((d.item_code, d.uom), d)
+
+	return qty_map
+
+def get_qty_from_transfer_batch(con_order, se_type):
+	qty_map = {}
+	temp = frappe.db.sql("""
+		SELECT 
+			se.item_code, se.batch_no, sum(se.qty) as qty, se.uom, se.stock_uom, 
+			se.conversion_factor
+		FROM
+			`tabStock Entry Detail` se
+				LEFT JOIN
+			`tabStock Entry` s ON s.name = se.parent
+		WHERE
+				s.stock_entry_type_view = %s
+				AND se.consignment_request = %s
+				AND s.docstatus = 1
+		group by se.item_code, se.batch_no, se.uom
+		""", (se_type, con_order), as_dict=1)
+	
+	for d in temp:
+		qty_map.setdefault((d.item_code, d.uom, d.batch_no), d)
+
+	return qty_map
+
+def add_item_from_transfer(doc, cr_name, post_process=None, with_return=False, only_return=False):
+	# get all batch from stock entry
+	batch_dict = get_batch_from_transfer(cr_name)
+	batch_return = {}
+	if with_return:
+		batch_return = get_qty_from_transfer_batch(cr_name, "Consignment Return")
+	if only_return:
+		batch_dict = get_qty_from_transfer_batch(cr_name, "Consignment Return")
+
+	doc.items = []
+	for key, batch in batch_dict.items():
+		row = doc.append("items")
+		row.item_code = batch.get("item_code")
+		row.uom = batch.get("uom")
+		row.conversion_factor = batch.get("conversion_factor")
+		row.stock_uom = batch.get("stock_uom")
+		row.batch_no = batch.get("batch_no")
+		row.qty = batch.get("qty")
+		if key in batch_return:
+			row.qty -= batch_return.get(key).get("qty")
+		post_process(row, batch)
+	
+	return doc
+
