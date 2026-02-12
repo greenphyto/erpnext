@@ -89,8 +89,9 @@
   "enable_provisional_accounting_for_non_stock_items",
   "default_inventory_account",
   "stock_adjustment_account",
-  "default_in_transit_warehouse",
   "default_stock_scrap_item",
+  "default_in_transit_warehouse",
+  "default_salvage_warehouse",
   "column_break_32",
   "stock_received_but_not_billed",
   "default_provisional_account",
@@ -125,7 +126,8 @@
   "registration_details",
   "lft",
   "rgt",
-  "old_parent"
+  "old_parent",
+  "production_loss_account"
  ],
  "fields": [
   {
@@ -895,6 +897,12 @@
    "fieldtype": "Link",
    "label": "Donor Customer",
    "options": "Customer"
+  },
+  {
+   "fieldname": "default_salvage_warehouse",
+   "fieldtype": "Link",
+   "label": "Default Salvage Warehouse",
+   "options": "Warehouse"
   }
  ],
  "icon": "fa fa-building",
@@ -902,7 +910,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2026-01-15 16:19:52.133140",
+ "modified": "2026-02-12 15:26:19.084641",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

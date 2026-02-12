@@ -45,6 +45,7 @@
   "scan_barcode",
   "column_break_28",
   "con_warehouse",
+  "repack_warehouse",
   "items_section",
   "items",
   "section_break_31",
@@ -570,6 +571,7 @@
    "label": "Items"
   },
   {
+   "description": "<br>\n<br>",
    "fieldname": "set_warehouse",
    "fieldtype": "Link",
    "hide_days": 1,
@@ -1559,11 +1561,11 @@
    "label": "Pending PO number?"
   },
   {
+   "description": "Virtual warehouse to represent customer's warehouse, it will created <b>auto</b> when submit this document",
    "fieldname": "con_warehouse",
    "fieldtype": "Link",
    "label": "Consignment Warehouse",
-   "options": "Warehouse",
-   "read_only": 1
+   "options": "Warehouse"
   },
   {
    "fieldname": "salvage_warehouse",
@@ -1670,13 +1672,19 @@
   {
    "fieldname": "column_break_57",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "repack_warehouse",
+   "fieldtype": "Link",
+   "label": "Repack Destination Warehouse",
+   "options": "Warehouse"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-10 18:15:16.973414",
+ "modified": "2026-02-12 15:33:22.789506",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Request",
