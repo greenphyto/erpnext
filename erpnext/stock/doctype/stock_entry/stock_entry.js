@@ -263,6 +263,23 @@ frappe.ui.form.on('Stock Entry', {
 		}
 
 		if (frm.doc.docstatus===0) {
+			frm.add_custom_button(__('Consignment Return'), function() {
+				erpnext.utils.map_current_doc({
+					method: "erpnext.gp_erp.doctype.consignment_request.consignment_request.make_salvage_process",
+					source_doctype: "Consignment Request",
+					target: frm,
+					date_field: "posting_date",
+					setters: {
+						// customer: undefined,
+						// posting_date: undefined
+					},
+					get_query_filters: {
+						docstatus: 1,
+						total_return_qty: [">", 0]
+					}
+				})
+			}, __("Get Items From"));
+
 			frm.add_custom_button(__('Purchase Invoice'), function() {
 				erpnext.utils.map_current_doc({
 					method: "erpnext.accounts.doctype.purchase_invoice.purchase_invoice.make_stock_entry",
