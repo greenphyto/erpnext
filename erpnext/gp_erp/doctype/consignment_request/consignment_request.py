@@ -362,8 +362,10 @@ def make_stock_return(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_salvage_process(source_name, target_doc=None):
+	print(9000, source_name, target_doc)
 	se_type = "Salvage Process (Repack)"
 	se_series = frappe.get_value("Stock Entry Type", {"name": se_type}, "series")
+	return_map = get_qty_from_transfer_batch(source_name, "Consignment Return")
 	def postprocess(source, target):
 		target.purpose = "Material Transfer"
 		target.stock_entry_type = "Material Transfer"
@@ -379,7 +381,14 @@ def make_salvage_process(source_name, target_doc=None):
 		add_item_from_transfer(target, source.name, post_process_item, only_return=True)
 
 		# add row for repack product
-		for d in list(target.get("items")):
+		temp_list = list(target.get("items"))
+		for d in temp_list:
+			# print(384, d.item_code, d.batch_no, d.consignment_item, d.consignment_request)
+			exist_row = [ x for x in target.get("items", {"consignment_item": d.consignment_item, "batch_no": d.batch_no}) if not x.t_warehouse and x.consignment_request == source_name ]
+			if not exist_row:
+				continue
+
+			# print("ADD", d.item_code, d.batch_no, d.consignment_item, d.consignment_request)
 			row = target.append("items")
 			row.t_warehouse = source.set_warehouse
 			row.item_code = d.item_code
@@ -387,11 +396,18 @@ def make_salvage_process(source_name, target_doc=None):
 			row.uom = d.uom
 			row.stock_uom = d.stock_uom
 			row.conversion_factor = d.conversion_factor
+			row.consignment_item = d.consignment_item
+			row.consignment_request = d.consignment_request
 		
 
 	def update_item(source_doc, target_doc, source_parent):
 		target_doc.s_warehouse = source_parent.salvage_warehouse
-		target_doc.qty = source_doc.returned_qty
+		target_doc.t_warehouse = None
+		# take one sample
+		for d in return_map.values():
+			if d.get("consignment_item") == source_doc.name:
+				target_doc.batch_no = d.get("batch_no")
+				break
 
 	doclist = get_mapped_doc(
 		"Consignment Request",
@@ -508,7 +524,6 @@ def make_sales_invoice(source_name, target_doc=None):
 
 	return doclist
 
-
 # TOOLS 
 
 def get_batch_from_transfer(con_order):
@@ -559,7 +574,7 @@ def get_qty_from_transfer_batch(con_order, se_type):
 	temp = frappe.db.sql("""
 		SELECT 
 			se.item_code, se.batch_no, sum(se.qty) as qty, se.uom, se.stock_uom, 
-			se.conversion_factor
+			se.conversion_factor, se.consignment_request, se.consignment_item
 		FROM
 			`tabStock Entry Detail` se
 				LEFT JOIN
@@ -585,9 +600,13 @@ def add_item_from_transfer(doc, cr_name, post_process=None, with_return=False, o
 	if only_return:
 		batch_dict = get_qty_from_transfer_batch(cr_name, "Consignment Return")
 
-	doc.items = []
+	# doc.items = []
 	for key, batch in batch_dict.items():
-		row = doc.append("items")
+		exist_row = doc.get("items", {"consignment_item": batch.get("consignment_item"), "batch_no": batch.get("batch_no")})
+		if exist_row:
+			row = exist_row[0]
+		else:
+			row = doc.append("items")
 		row.item_code = batch.get("item_code")
 		row.uom = batch.get("uom")
 		row.conversion_factor = batch.get("conversion_factor")
