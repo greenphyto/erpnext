@@ -264,6 +264,8 @@ frappe.ui.form.on('Stock Entry', {
 
 		if (frm.doc.docstatus===0) {
 			frm.add_custom_button(__('Consignment Return'), function() {
+				var cr_list = frm.doc.items.map(i => i.consignment_request);
+			
 				erpnext.utils.map_current_doc({
 					method: "erpnext.gp_erp.doctype.consignment_request.consignment_request.make_salvage_process",
 					source_doctype: "Consignment Request",
@@ -275,7 +277,8 @@ frappe.ui.form.on('Stock Entry', {
 					},
 					get_query_filters: {
 						docstatus: 1,
-						total_return_qty: [">", 0]
+						total_return_qty: [">", 0],
+						name: ["not in", cr_list],
 					}
 				})
 			}, __("Get Items From"));
