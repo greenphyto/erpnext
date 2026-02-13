@@ -113,8 +113,8 @@ class SalesOrder(SellingController):
 				GROUP BY d.name , d.po_no 
 			""", (self.name), as_dict=1)
 			for d in data:
-				frappe.db.set_value("Delivery Note", d.name, "po_no", self.po_no)
-				frappe.db.set_value("Delivery Note", d.name, "po_date", self.po_date)
+				frappe.db.set_value("Delivery Note", d.name, "po_no", self.get("po_no") or "")
+				frappe.db.set_value("Delivery Note", d.name, "po_date", getdate(self.po_date or ""))
 
 	def validate_working_progress(self, throw=False):
 		progress = False
