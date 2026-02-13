@@ -918,7 +918,7 @@
   {
    "fieldname": "default_warehouse_for_delivery",
    "fieldtype": "Link",
-   "label": "Default Warehouse for Delivery",
+   "label": "Default Warehouse for Delivery"
   },
   {
    "fieldname": "default_salvage_warehouse",
