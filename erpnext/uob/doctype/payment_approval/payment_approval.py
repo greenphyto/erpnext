@@ -31,7 +31,6 @@ class PaymentApproval(Document):
 	
 	def on_submit(self):
 		self.remove_unselected_row()
-		self.remove_another_record()
 		self.calculate_amount()
 		self.process_xml_file()
 		self.update_apporval_date()
@@ -52,10 +51,6 @@ class PaymentApproval(Document):
 				frappe.throw(_("Row {}, Bank number <u>{}</u> only for PayNow transfers".format(d.idx, d.supplier_bank_no)))
 			elif d.proxy_type == "General" and self.payment_method == "PayNow":
 				frappe.throw(_("Row {}, Bank number <u>{}</u> can't be used on PayNow transfers".format(d.idx, d.supplier_bank_no)))
-
-	def on_submit(self):
-		self.update_apporval_date()
-		self.remove_unselected_row()
 
 	def on_cancel(self):
 		if self.status in ['Approved', 'Received', 'In Progress', 'Complete']:
