@@ -407,20 +407,6 @@ frappe.ui.form.on('Payment Entry', {
 		}
 	},
 
-	paid_from: function(frm) {
-		set_cost_center(frm, frm.doc.paid_from, "from_cost_center").then(()=>{
-			if(frm.set_party_account_based_on_party) return;
-
-			frm.events.set_account_currency_and_balance(frm, frm.doc.paid_from,
-				"paid_from_account_currency", "paid_from_account_balance", function(frm) {
-					if (frm.doc.payment_type == "Pay") {
-						frm.events.paid_amount(frm);
-					}
-				}
-			);
-		})
-	},
-
 	paid_to: function(frm) {
 		set_cost_center(frm, frm.doc.paid_to, "cost_center").then(()=>{
 			if(frm.set_party_account_based_on_party) return;

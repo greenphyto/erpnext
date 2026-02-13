@@ -101,9 +101,8 @@ def overide_user_defaults(bootinfo):
 		bootinfo.user.defaults.default_letter_head_content = content
 
 	# warehouse and cost center
-	wh = frappe.db.get_value("Warehouse", {"company": company, "is_group": 0}, "name")
-	cc = frappe.db.get_value("Cost Center", {"company": company, "is_group": 0}, "name")
-
+	wh = doc.default_warehouse
+	cc = doc.cost_center
 	if wh:
 		bootinfo.user.defaults.default_warehouse = wh
 	if cc:
