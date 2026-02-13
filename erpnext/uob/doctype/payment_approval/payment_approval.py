@@ -23,20 +23,13 @@ from frappe import _
 
 class PaymentApproval(Document):
 	def validate(self):
-		self.validate_select()
 		self.set_status()
 		self.set_requested_by()
 		self.validate_data()
-		self.set_batch_number()
-	
-	def on_submit(self):
-		self.remove_unselected_row()
-		self.calculate_amount()
 		self.process_xml_file()
-		self.update_apporval_date()
+		self.set_batch_number()
 
 	def validate_data(self):
-		self.validate_bank()
 		self.validate_paynow()
 		self.validate_reqd_data()
 		self.validate_select()
@@ -51,6 +44,10 @@ class PaymentApproval(Document):
 				frappe.throw(_("Row {}, Bank number <u>{}</u> only for PayNow transfers".format(d.idx, d.supplier_bank_no)))
 			elif d.proxy_type == "General" and self.payment_method == "PayNow":
 				frappe.throw(_("Row {}, Bank number <u>{}</u> can't be used on PayNow transfers".format(d.idx, d.supplier_bank_no)))
+
+	def on_submit(self):
+		self.update_apporval_date()
+		self.remove_unselected_row()
 
 	def on_cancel(self):
 		if self.status in ['Approved', 'Received', 'In Progress', 'Complete']:
@@ -217,12 +214,9 @@ class PaymentApproval(Document):
 					# Complete
 					self.status = "Complete"
 					self.transfer_date = self.update_on
-				elif tr_success==0 :
-					self.status = "Failed"
 				else:
 					# Partially Complete
 					self.status = "Partially Complete"
-				
 			else:
 				self.status = "Failed"
 
@@ -309,10 +303,10 @@ class PaymentApproval(Document):
 		# validate invoice
 		# validate outstanding
 		already_add = []
-		limit_amt = frappe.db.get_single_value("UOB Integration Settings", "limit_amount")
 		for d in list(self.get("invoices")):
 			if d.invoice_no in already_add:
 				frappe.throw(f"row {d.idx}, invoice is duplicate.")
+				self.remove(d)
 				continue
 
 			# pull essential fields from Purchase Invoice (source document)
@@ -335,18 +329,14 @@ class PaymentApproval(Document):
 				
 			if flt(data.docstatus) != 1:
 				frappe.throw(f"Row {d.idx}, only for submitted invoice!")
+				self.remove(d)
 				continue
 
 			if flt(data.outstanding_amount) <= 0:
-				frappe.throw(f"Row {d.idx}, Invoice <b>{d.invoice_no}</b> not have outstanding amount")
+				frappe.throw(f"Row {d.idx}, invoice {d.invoice_no} not have outstanding amount")
+				self.remove(d)
 				continue
 
-			if limit_amt and flt(data.outstanding_amount) > limit_amt:
-				frappe.throw(
-					f"Row {d.idx}: Invoice <b>{d.invoice_no}</b> exceeds the maximum allowed amount of "
-					f"${frappe.utils.fmt_money(limit_amt)}."
-				)
-				
 			# company must match current document
 			if cstr(data.company) != cstr(self.company):
 				frappe.throw(_(f"Row {d.idx}, invoice company {data.company} must match Payment Approval company {self.company}."))
@@ -545,12 +535,8 @@ class PaymentApproval(Document):
 				dt[f] = source.get(f)
 			return dt
 		
-		limit_amt = frappe.db.get_single_value("UOB Integration Settings", "limit_amount")
 		for d in self.invoices:
 			if not cint(d.selected):
-				continue
-			
-			if limit_amt and d.amount > limit_amt:
 				continue
 			
 			key = (d.bank_account_no, d.supplier_bank, d.swift, d.currency)
