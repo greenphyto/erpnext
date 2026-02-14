@@ -49,6 +49,7 @@ class JobCardCancelError(frappe.ValidationError):
 class JobCardOverTransferError(frappe.ValidationError):
 	pass
 
+COMPLETE_OPERATION = "Harvesting"
 
 class JobCard(Document):
 	def onload(self):
@@ -630,15 +631,13 @@ class JobCard(Document):
 			doc = frappe.get_doc("Work Order", self.work_order)
 			if doc.transfer_material_against == "Job Card" and not doc.skip_transfer:
 				completed = True
-				for d in doc.operations:
-					if d.status != "Completed":
-						completed = False
-						break
+				if self.operation != COMPLETE_OPERATION:
+					completed = False
 
 				if completed:
 					job_cards = frappe.get_all(
 						"Job Card",
-						filters={"work_order": self.work_order, "docstatus": ("!=", 2)},
+						filters={"work_order": self.work_order, "docstatus": 1},
 						fields="sum(transferred_qty) as qty",
 						group_by="operation_id",
 					)
