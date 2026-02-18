@@ -946,7 +946,8 @@ def validate_company_selected(doc, method=""):
 
 def set_permanent_company(doc, method=""):
 	if doc.get("company"):
-		switch_company(doc.company, force=1, user=doc.name)
+		if not doc.get("__islocal"):
+			switch_company(doc.company, force=1, user=doc.name)
 		doc.company_selected = doc.get("company")
 
 def change_naming_series(doc, method=""):
