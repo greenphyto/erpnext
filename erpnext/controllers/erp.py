@@ -44,59 +44,66 @@ def read_email_inbox_enquee():
 def read_email_inbox():
 	# settings
 	enable = cint(frappe.get_value("Buying Settings","Buying Settings", 'enable_supplier_invoice'))
-	invoice_email_default = frappe.get_value("Buying Settings","Buying Settings", 'default_email_inbox')
-	if not enable or not invoice_email_default:
+	if not enable:
 		return
 
-	# get all communication coming
-	email_list = frappe.db.sql("""
-	SELECT 
-		c.name,
-		c.subject,
-		c.sender,
-		c.creation,
-		c.email_account,
-		c.reference_name,
-		c.reference_doctype
-	FROM
-		`tabCommunication` c
-			LEFT JOIN
-		`tabComment` com ON com.reference_doctype = 'Communication'
-			AND com.reference_name = c.name
-			AND com.comment_type = 'Info'
-			AND com.content = 'Checked by AI Agent'
-	WHERE
-		c.communication_type = 'Communication'
-			AND c.sent_or_received = 'Received'
-			AND com.name IS NULL
-			AND c.email_account = %s
-			AND (COALESCE(c.reference_name, '') = ''
-			OR COALESCE(c.reference_doctype, '') = '')
-	ORDER BY c.creation ASC limit 5
-		""", (invoice_email_default), as_dict=1 , debug=0)
-	
-	# filters
-	ignore_list = ["google.com"]
-	def check_ignore(sender):
-		# because this email has "invoice" in his name (invoices@gmail.com)
-		# so we need to ignore the sender if from google itself
-		# exp: email security etc
-		for d in ignore_list:
-			if d in sender:
-				return True
-		return False
-
-
-	# process
-	for comm in email_list:
-		set_checked_ai_status("Communication", comm.name)
+	company_enable = frappe.db.get_value("Company", {"enable_supplier_invoice": 1}, ["name", "default_email_inbox", "ai_user"], as_dict=1)
+	for comp in company_enable:
+		company = comp.name
+		invoice_email_default = comp.default_email_inbox
 		
-		if check_ignore(comm.sender):
-			continue
+		# change user
+		frappe.set_user(comp.ai_user or "Administrator")
 
-		_read_email_inbox(comm.name)
+		# get all communication coming
+		email_list = frappe.db.sql("""
+		SELECT 
+			c.name,
+			c.subject,
+			c.sender,
+			c.creation,
+			c.email_account,
+			c.reference_name,
+			c.reference_doctype
+		FROM
+			`tabCommunication` c
+				LEFT JOIN
+			`tabComment` com ON com.reference_doctype = 'Communication'
+				AND com.reference_name = c.name
+				AND com.comment_type = 'Info'
+				AND com.content = 'Checked by AI Agent'
+		WHERE
+			c.communication_type = 'Communication'
+				AND c.sent_or_received = 'Received'
+				AND com.name IS NULL
+				AND c.email_account = %s
+				AND (COALESCE(c.reference_name, '') = ''
+				OR COALESCE(c.reference_doctype, '') = '')
+		ORDER BY c.creation ASC limit 5
+			""", (invoice_email_default), as_dict=1 , debug=0)
+		
+		# filters
+		ignore_list = ["google.com"]
+		def check_ignore(sender):
+			# because this email has "invoice" in his name (invoices@gmail.com)
+			# so we need to ignore the sender if from google itself
+			# exp: email security etc
+			for d in ignore_list:
+				if d in sender:
+					return True
+			return False
 
-def _read_email_inbox(doc_name):
+
+		# process
+		for comm in email_list:
+			set_checked_ai_status("Communication", comm.name)
+			
+			if check_ignore(comm.sender):
+				continue
+
+			_read_email_inbox(comm.name, company)
+
+def _read_email_inbox(doc_name, company):
 
 	doc = frappe.get_doc("Communication", doc_name)
 	
@@ -111,6 +118,8 @@ def _read_email_inbox(doc_name):
 	else:
 		# create email invoice
 		em = frappe.new_doc("Email Invoice")
+		em.company = company
+		em.inbox = doc.name
 		em.flags.ignore_links = True
 		em.flags.ignore_permissions = True
 		em.insert()

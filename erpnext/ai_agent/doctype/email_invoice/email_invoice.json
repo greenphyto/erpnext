@@ -8,6 +8,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "company",
   "sender",
   "cc",
   "bcc",
@@ -165,12 +166,24 @@
    "fieldtype": "Table",
    "label": "Results",
    "options": "Email Invoice Result"
+  },
+  {
+   "depends_on": "eval:doc.data_result",
+   "fieldname": "print_console",
+   "fieldtype": "Button",
+   "label": "Print to Console"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-09 12:31:18.823474",
+ "modified": "2026-02-18 16:16:27.906984",
  "modified_by": "Administrator",
  "module": "AI Agent",
  "name": "Email Invoice",
