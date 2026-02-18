@@ -11,7 +11,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
         reload: () => {
             if (paging && paging.loading) return;
             if (typeof reset_and_load === 'function') {
-                reset_and_load().then(() => frappe.show_alert(__('Done refresh')));
+                reset_and_load().then(() => frappe.show_alert(__('Done reload')));
             }
         },
         back: () => frappe.set_route('List', 'Payment Approval'),
