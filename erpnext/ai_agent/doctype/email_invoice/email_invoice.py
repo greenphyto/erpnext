@@ -791,6 +791,7 @@ class EmailInvoice(Document):
 
 		# 3) Construct Purchase Invoice
 		doc = frappe.new_doc("Purchase Invoice")
+		doc.company = self.company
 		doc.created_with_ai = 1
 		doc.non_stock_item = 1
 		doc.naming_series = "TEMP-PI.#####./.YYYY"
@@ -1283,7 +1284,7 @@ def pull_erp_po():
 			row.update(val)
 			val = frappe._dict(val)
 		
-		doc.supplier = get_supplier_copy(doc.supplier, doc.currency)
+		doc.supplier = get_supplier_copy(doc.supplier, doc.currency, doc.company)
 		doc.transaction_date = getdate(doc.transaction_date)
 		doc.schedule_date = getdate(doc.schedule_date)
 		doc.save()
@@ -1292,12 +1293,13 @@ def pull_erp_po():
 	return
 
 
-def get_supplier_copy(supplier, currency):
+def get_supplier_copy(supplier, currency, company=None):
 	exists = frappe.db.exists("Supplier", supplier)
 	if exists:
 		return exists
 	
 	doc = frappe.new_doc("Supplier")
+	doc.company = company
 	doc.supplier_group = "All Supplier Groups"
 	doc.supplier_type = "Company"
 	doc.supplier_name = supplier
