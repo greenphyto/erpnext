@@ -1118,3 +1118,37 @@ def auto_create_selling_from_internal(doc, method=""):
 		doc_res = make_inter_company_transaction(doc.doctype, doc.name, {})
 		try_save(doc_res)
 
+
+def create_ai_user(doc, method=""):
+	if not cint(doc.get("enable_supplier_invoice")):
+		return
+	
+	# validate email
+	temp = frappe.db.get_value("Company", {"name": ['!=', doc.name], "default_email_inbox":doc.default_email_inbox}, "name", cache=False)
+	if temp:
+		frappe.throw(f"Email inbox <b>{doc.default_email_inbox}</b> already used in another company", title="Duplicate Email Inbox")
+		return
+	
+	abbr = doc.get("series_abbr") or "SG"
+	email = f"ai_user_{abbr}@example.com"
+	full_name = f"AI User {abbr}"
+	if not doc.ai_user:
+		user = frappe.get_doc({
+			"doctype": "User",
+			"name": "ai_user",
+			"email": email,
+			"first_name": full_name,
+			"full_name": full_name
+		})
+		user.company = doc.name
+		user.cannot_change_company = 1
+		user.company_selected = doc.name
+		user.send_welcome_email = 0
+		user.insert()
+		# roles checked all except employee
+		roles = frappe.db.get_all("Role", {"name": ["!=", "Employee"], "disabled": 0}, pluck="name")
+		for d in roles:
+			user.add_roles(d)
+		print("AI User created:", email)
+		user.save()
+		doc.ai_user = user.name

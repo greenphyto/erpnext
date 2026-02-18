@@ -129,6 +129,11 @@
   "unrealized_fx_account_map",
   "budget_detail",
   "exception_budget_approver_role",
+  "ai_agent_settings_section",
+  "default_email_inbox",
+  "ai_user",
+  "column_break_105",
+  "enable_supplier_invoice",
   "registration_info",
   "registration_details",
   "lft",
@@ -637,6 +642,7 @@
   {
    "fieldname": "registration_info",
    "fieldtype": "Section Break",
+   "label": "Others",
    "oldfieldtype": "Section Break",
    "width": "50%"
   },
@@ -925,6 +931,34 @@
    "fieldtype": "Link",
    "label": "Default Salvage Warehouse",
    "options": "Warehouse"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "ai_agent_settings_section",
+   "fieldtype": "Section Break",
+   "label": "AI Agent Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_supplier_invoice",
+   "fieldtype": "Check",
+   "label": "Enable Supplier Invoice"
+  },
+  {
+   "fieldname": "default_email_inbox",
+   "fieldtype": "Link",
+   "label": "Default Email Inbox",
+   "options": "Email Account"
+  },
+  {
+   "fieldname": "ai_user",
+   "fieldtype": "Link",
+   "label": "AI User",
+   "options": "User"
+  },
+  {
+   "fieldname": "column_break_105",
+   "fieldtype": "Column Break"
   }
  ],
  "icon": "fa fa-building",
@@ -932,7 +966,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2026-02-12 15:26:19.084641",
+ "modified": "2026-02-18 15:40:45.275212",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",
