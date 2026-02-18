@@ -363,7 +363,10 @@ doc_events = {
 	("Quotation", "Sales Order", "Sales Invoice"): {
 		"validate": ["erpnext.erpnext_integrations.taxjar_integration.set_sales_tax"]
 	},
-	"Company": {"on_trash": ["erpnext.regional.saudi_arabia.utils.delete_vat_settings_for_company"]},
+	"Company": {
+        "on_trash": ["erpnext.regional.saudi_arabia.utils.delete_vat_settings_for_company"],
+        "validate": ["erpnext.controllers.erp.create_ai_user"]
+    },
 	"Integration Request": {
 		"validate": "erpnext.accounts.doctype.payment_request.payment_request.validate_payment"
 	},
