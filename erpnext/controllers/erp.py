@@ -719,8 +719,7 @@ def create_ai_user(doc, method=""):
 		user.insert()
 		# roles checked all except employee
 		roles = frappe.db.get_all("Role", {"name": ["!=", "Employee"], "disabled": 0}, pluck="name")
-		for d in roles:
-			user.add_roles(d)
+		user.add_roles(*roles)
 		print("AI User created:", email)
 		user.save()
 		doc.ai_user = user.name
