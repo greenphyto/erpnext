@@ -124,6 +124,7 @@
   {
    "fieldname": "endpoint",
    "fieldtype": "Data",
+   "in_standard_filter": 1,
    "label": "Endpoint",
    "read_only": 1
   },
@@ -136,7 +137,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-06 18:30:29.304911",
+ "modified": "2026-02-18 12:03:45.741077",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Data Mapping",

@@ -1690,6 +1690,9 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 		if submit and bom:
 			if bom.docstatus == 0:
 				bom.submit()
+
+		# update packaging
+		get_packaging(item_code = item_name)
 	
 	return name
 
