@@ -574,7 +574,7 @@ class EmailInvoice(Document):
 						})
 
 		# Optional GST update if present in payload
-		doc.taxes_and_charges = get_gst_template(GST_DEFAULT)
+		doc.taxes_and_charges = get_gst_template(self.company)
 		doc.set_other_charges()
 
 		# Persist
@@ -744,6 +744,7 @@ class EmailInvoice(Document):
 		doc.company = self.company
 		doc.created_with_ai = 1
 		doc.non_stock_item = 1
+		doc.cost_center = frappe.get_value("Company", self.company, "cost_center") or ""
 
 		# Header mapping
 		# Supplier only if exists
@@ -810,6 +811,7 @@ class EmailInvoice(Document):
 				row.item_name_view = row.item_name
 				row.description = (it.get("description") or "")[:140]
 				row.qty = flt(qty)
+				row.cost_center = doc.cost_center
 				if rate is not None:
 					row.rate = flt(rate)
 				if amount is not None:
@@ -827,7 +829,7 @@ class EmailInvoice(Document):
 			if frappe.db.exists("Currency", ic):
 				doc.currency = ic
 
-		doc.taxes_and_charges = get_gst_template(GST_DEFAULT)
+		doc.taxes_and_charges = get_gst_template(self.company)
 		doc.set_other_charges()
 
 		# 4) Persist document; allow saving even if some links are missing
@@ -896,48 +898,6 @@ class EmailInvoice(Document):
 		
 		if exists:
 			return exists
-
-	def create_invoice2(self, data=""):
-		if not data:
-			data = json.loads(self.data_result)
-
-		if not data:
-			return
-	
-		# make PI
-		doc = make_purchase_invoice(data.get("po_no"))
-		doc.set_default_number_fields()
-		doc.created_with_ai = 1
-
-		for d in data.get("items"):
-			rows = doc.get("items", {"item_code":d['item_code']})
-			if rows:
-				# rate from PDF
-				row = rows[0]
-				row.rate = flt(d['rate'])
-				row.qty = flt(d['qty'])
-
-		# add GST 
-		doc.taxes_and_charges = get_gst_template(GST_DEFAULT)
-		doc.set_other_charges()
-
-		doc.flags.ignore_mandatory = 1
-		doc.flags.ignore_permissions = 1
-		doc.flags.ignore_links = 1
-		doc.save()
-
-		file = frappe.get_doc('File', data.get("file"))
-		attachment = frappe.get_doc({
-			'doctype': 'File',
-			'attached_to_doctype': doc.doctype,  # e.g., 'Sales Invoice', 'Purchase Order', etc.
-			'attached_to_name': doc.name,    # The name of the document to attach to
-			'file_name': file.file_name,
-			'file_url': file.file_url,
-			'is_private': file.is_private,   # Whether the file is private or public
-		})
-		attachment.insert()
-
-		return doc.name
 
 # erpnext.ai_agent.doctype.email_invoice.email_invoice.extract_all_bank_data
 def extract_all_bank_data():
@@ -1062,25 +1022,8 @@ def extract_domains(items):
                 out.append(s)
     return out
 	
-def get_gst_template(rate):
-	rate = flt(rate)
-	res = frappe.db.sql("""
-		SELECT DISTINCT
-			stct.name
-		FROM
-			`tabPurchase Taxes and Charges Template` stct
-				JOIN
-			`tabPurchase Taxes and Charges` stc ON stct.name = stc.parent
-		WHERE
-			stc.rate = {}
-				AND stc.parenttype = 'Purchase Taxes and Charges Template';
-
-			   """.format(rate), as_dict=1)
-	if res:
-		res = res[0]
-		return res.get("name")
-	else:
-		return  ""
+def get_gst_template(company):
+	return frappe.db.get_value("Purchase Taxes and Charges Template", {"company":company,"is_default":1, "disabled":0}, "name")
 
 def convert_pdf_to_img(path):
 	import fitz  # PyMuPDF

@@ -47,7 +47,7 @@ def read_email_inbox():
 	if not enable:
 		return
 
-	company_enable = frappe.db.get_value("Company", {"enable_supplier_invoice": 1}, ["name", "default_email_inbox", "ai_user"], as_dict=1)
+	company_enable = frappe.db.get_list("Company", {"enable_supplier_invoice": 1}, ["name", "default_email_inbox", "ai_user"])
 	for comp in company_enable:
 		company = comp.name
 		invoice_email_default = comp.default_email_inbox
