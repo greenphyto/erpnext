@@ -183,8 +183,13 @@ erpnext.SerialNoBatchSelector = class SerialNoBatchSelector {
 			}
 
 			if (this.has_batch && !this.has_serial_no && d.batch_no) {
-				this.frm.doc.items.forEach(data => {
+				this.frm.doc.items.forEach(async data => {
 					if(data.item_code == d.item_code) {
+						if (!data.foms_lot_name) {
+							var temp = await frappe.db.get_value('Batch', data.batch_no, 'foms_lot_id')
+								.then(r => r.message);
+							data.foms_lot_name = temp.foms_lot_id;
+						}
 						this.dialog.fields_dict.batches.df.data.push({
 							'batch_no': data.batch_no,
 							'foms_lot_name': data.foms_lot_name,
@@ -258,6 +263,7 @@ erpnext.SerialNoBatchSelector = class SerialNoBatchSelector {
 				}
 				row.actual_batch_qty = batch.actual_qty;
 				// row.uom = me.item.uom;
+				row.foms_lot_name = batch.foms_lot_name;
 
 				// this ensures that qty & batch no is set
 				this.map_row_values(row, batch, 'batch_no',
