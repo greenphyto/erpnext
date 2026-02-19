@@ -262,6 +262,8 @@ frappe.ui.form.on('Stock Entry', {
 			}
 		}
 
+		frm.cscript.add_back_cons_button()
+
 		if (frm.doc.docstatus===0) {
 			frm.add_custom_button(__('Consignment Return'), function() {
 				var cr_list = frm.doc.items.map(i => i.consignment_request);
@@ -1199,6 +1201,19 @@ erpnext.stock.StockEntry = class StockEntry extends erpnext.stock.StockControlle
 		table.grid.reset_grid();
 
 		return
+	}
+
+	add_back_cons_button() {
+		var frm = this.frm;
+		if (["Consignment Return", "Consignment Transfer", "Salvage Process (Repack)"].includes(frm.doc.stock_entry_type_view)){
+			var cons = $.map(this.frm.doc.items, r=>{ return r.consignment_request});
+			if (cons.length && cons[0]){
+				var btn = frm.add_custom_button(__("Back to Consignment"), function() {
+					frappe.set_route("form", "Consignment Request", cons[0])
+				});
+				btn.removeClass("btn-default").addClass("btn-warning")
+			}
+		}
 	}
 };
 
