@@ -285,58 +285,66 @@ def read_email_inbox_enquee():
 def read_email_inbox():
 	# settings
 	enable = cint(frappe.get_value("Buying Settings","Buying Settings", 'enable_supplier_invoice'))
-	invoice_email_default = frappe.get_value("Buying Settings","Buying Settings", 'default_email_inbox')
-	if not enable or not invoice_email_default:
+	if not enable:
 		return
 
-	# get all communication coming
-	email_list = frappe.db.sql("""
-	SELECT 
-		c.name,
-		c.subject,
-		c.sender,
-		c.creation,
-		c.email_account,
-		c.reference_name,
-		c.reference_doctype
-	FROM
-		`tabCommunication` c
-			LEFT JOIN
-		`tabComment` com ON com.reference_doctype = 'Communication'
-			AND com.reference_name = c.name
-			AND com.comment_type = 'Info'
-			AND com.content = 'Checked by AI Agent'
-	WHERE
-		c.communication_type = 'Communication'
-			AND c.sent_or_received = 'Received'
-			AND com.name IS NULL
-			AND c.email_account = %s
-			AND (COALESCE(c.reference_name, '') = ''
-			OR COALESCE(c.reference_doctype, '') = '')
-	ORDER BY c.creation ASC limit 5
-		""", (invoice_email_default), as_dict=1 , debug=0)
-	
-	# filters
-	ignore_list = ["google.com"]
-	def check_ignore(sender):
-		# because this email has "invoice" in his name (invoices@gmail.com)
-		# so we need to ignore the sender if from google itself
-		# exp: email security etc
-		for d in ignore_list:
-			if d in sender:
-				return True
-		return False
-
-	# process
-	for comm in email_list:
-		set_checked_ai_status("Communication", comm.name)
+	company_enable = frappe.db.get_list("Company", {"enable_supplier_invoice": 1}, ["name", "default_email_inbox", "ai_user"])
+	for comp in company_enable:
+		company = comp.name
+		invoice_email_default = comp.default_email_inbox
 		
-		if check_ignore(comm.sender):
-			continue
+		# change user
+		frappe.set_user(comp.ai_user or "Administrator")
 
-		_read_email_inbox(comm.name)
+		# get all communication coming
+		email_list = frappe.db.sql("""
+		SELECT 
+			c.name,
+			c.subject,
+			c.sender,
+			c.creation,
+			c.email_account,
+			c.reference_name,
+			c.reference_doctype
+		FROM
+			`tabCommunication` c
+				LEFT JOIN
+			`tabComment` com ON com.reference_doctype = 'Communication'
+				AND com.reference_name = c.name
+				AND com.comment_type = 'Info'
+				AND com.content = 'Checked by AI Agent'
+		WHERE
+			c.communication_type = 'Communication'
+				AND c.sent_or_received = 'Received'
+				AND com.name IS NULL
+				AND c.email_account = %s
+				AND (COALESCE(c.reference_name, '') = ''
+				OR COALESCE(c.reference_doctype, '') = '')
+		ORDER BY c.creation ASC limit 5
+			""", (invoice_email_default), as_dict=1 , debug=0)
+		
+		# filters
+		ignore_list = ["google.com"]
+		def check_ignore(sender):
+			# because this email has "invoice" in his name (invoices@gmail.com)
+			# so we need to ignore the sender if from google itself
+			# exp: email security etc
+			for d in ignore_list:
+				if d in sender:
+					return True
+			return False
 
-def _read_email_inbox(doc_name):
+
+		# process
+		for comm in email_list:
+			set_checked_ai_status("Communication", comm.name)
+			
+			if check_ignore(comm.sender):
+				continue
+
+			_read_email_inbox(comm.name, company)
+
+def _read_email_inbox(doc_name, company):
 
 	doc = frappe.get_doc("Communication", doc_name)
 	
@@ -351,6 +359,8 @@ def _read_email_inbox(doc_name):
 	else:
 		# create email invoice
 		em = frappe.new_doc("Email Invoice")
+		em.company = company
+		em.inbox = doc.name
 		em.flags.ignore_links = True
 		em.flags.ignore_permissions = True
 		em.insert()
@@ -1346,3 +1356,37 @@ def detection_incoming_rate_not_logic(doc, method=""):
 		run()
 	except Exception as e:
 		frappe.log_error(frappe.get_traceback(), "detection_incoming_rate_not_logic")
+	
+	
+def create_ai_user(doc, method=""):
+	if not cint(doc.get("enable_supplier_invoice")):
+		return
+	
+	# validate email
+	temp = frappe.db.get_value("Company", {"name": ['!=', doc.name], "default_email_inbox":doc.default_email_inbox}, "name", cache=False)
+	if temp:
+		frappe.throw(f"Email inbox <b>{doc.default_email_inbox}</b> already used in another company", title="Duplicate Email Inbox")
+		return
+	
+	abbr = doc.get("series_abbr") or "SG"
+	email = f"ai_user_{abbr}@example.com"
+	full_name = f"AI User {abbr}"
+	if not doc.ai_user:
+		user = frappe.get_doc({
+			"doctype": "User",
+			"name": "ai_user",
+			"email": email,
+			"first_name": full_name,
+			"full_name": full_name
+		})
+		user.company = doc.name
+		user.cannot_change_company = 1
+		user.company_selected = doc.name
+		user.send_welcome_email = 0
+		user.insert()
+		# roles checked all except employee
+		roles = frappe.db.get_all("Role", {"name": ["!=", "Employee"], "disabled": 0}, pluck="name")
+		user.add_roles(*roles)
+		print("AI User created:", email)
+		user.save()
+		doc.ai_user = user.name
