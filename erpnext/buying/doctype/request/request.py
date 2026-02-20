@@ -15,6 +15,9 @@ class Request(Document):
 		self.validate_lead_time()
 		self.export_salad_items()
 
+	def on_cancel(self):
+		self.detect_work_order_exists()
+
 	def validate_date(self):
 		self.posting_date = getdate(today())
 		if getdate(self.delivery_date) < getdate(self.posting_date):
@@ -83,6 +86,15 @@ class Request(Document):
 					if not row.bom_no:
 						row.progress = 100
 
+
+	
+	def detect_work_order_exists(self):
+		data = frappe.db.sql(" select name, status, request_no from `tabWork Order` where request_no like %s and docstatus = 1", ("%" + self.name + "%",), as_dict=1)
+		for d in data:
+			if d.status == "Not Started":
+				frappe.throw(_("Work Order {0} already exists for this request. Please cancel the work order before cancelling this request.").format(frappe.utils.get_link_to_form("Work Order", d.name)))
+			else:
+				frappe.throw(_("Work Order {0} for this request already in progress. Please resolve manually before cancel this request").format(frappe.utils.get_link_to_form("Work Order", d.name)))
 
 def create_request_form(data):
 
