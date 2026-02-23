@@ -56,6 +56,7 @@ class SellingController(StockController):
 		self.validate_for_duplicate_items()
 		self.validate_target_warehouse()
 		self.validate_wip_warehouse()
+		self.validate_reff_row()
 
 	def set_missing_values(self, for_validate=False):
 
@@ -119,6 +120,32 @@ class SellingController(StockController):
 			taxes = get_taxes_and_charges("Sales Taxes and Charges Template", self.taxes_and_charges)
 			for tax in taxes:
 				self.append("taxes", tax)
+
+	def validate_reff_row(self):
+		reff_map = {}
+		if self.doctype == "Delivery Note":
+			for d in self.get("items"):
+				# Sales Order
+				key = (d.item_code, d.uom)
+				reff_map.setdefault(key, {})
+				if d.against_sales_order and d.so_detail:
+					reff_map[key].update({"so_name": d.against_sales_order, "so_detail": d.so_detail})
+				# Sales Invoice
+				if d.against_sales_invoice and d.si_detail:
+					reff_map[key].update({"si_name": d.against_sales_invoice, "si_detail": d.si_detail})
+
+			# Update
+			for d in self.get("items"):
+				key = (d.item_code, d.uom)
+				if key in reff_map:
+					data = reff_map[key]
+					if not d.get("so_detail"):
+						d.against_sales_order = data.get("so_name")
+						d.so_detail = data.get("so_detail")
+					if not d.get("si_detail"):
+						d.against_sales_invoice = data.get("si_name")
+						d.si_detail = data.get("si_detail")
+
 
 	def set_price_list_and_item_details(self, for_validate=False):
 		self.set_price_list_currency("Selling")
