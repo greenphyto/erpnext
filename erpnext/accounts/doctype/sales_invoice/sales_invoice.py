@@ -84,6 +84,7 @@ class SalesInvoice(SellingController):
 			self.indicator_title = _("Paid")
 
 	def validate(self):
+		self.validate_item_price_list()
 		super(SalesInvoice, self).validate()
 		self.validate_auto_set_posting_time()
 
@@ -91,7 +92,6 @@ class SalesInvoice(SellingController):
 			self.so_dn_required()
 
 		self.set_tax_withholding()
-		self.validate_item_price_list()
 
 		self.validate_proj_cust()
 		self.validate_pos_return()
