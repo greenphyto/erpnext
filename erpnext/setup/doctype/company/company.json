@@ -963,6 +963,64 @@
    "fieldtype": "Link",
    "label": "Default Bank Charge Account",
    "options": "Account"
+  },
+  {
+   "fieldname": "donor_delivery_account",
+   "fieldtype": "Link",
+   "label": "Donor Delivery Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "donor_customer",
+   "fieldtype": "Link",
+   "label": "Donor Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "default_warehouse_for_delivery",
+   "fieldtype": "Link",
+   "label": "Default Warehouse for Delivery",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "default_salvage_warehouse",
+   "fieldtype": "Link",
+   "label": "Default Salvage Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "ai_agent_settings_section",
+   "fieldtype": "Section Break",
+   "label": "AI Agent Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_supplier_invoice",
+   "fieldtype": "Check",
+   "label": "Enable Supplier Invoice"
+  },
+  {
+   "fieldname": "default_email_inbox",
+   "fieldtype": "Link",
+   "label": "Default Email Inbox",
+   "options": "Email Account"
+  },
+  {
+   "fieldname": "ai_user",
+   "fieldtype": "Link",
+   "label": "AI User",
+   "options": "User"
+  },
+  {
+   "fieldname": "column_break_105",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_bank_charge_account",
+   "fieldtype": "Link",
+   "label": "Default Bank Charge Account",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-building",
