@@ -232,7 +232,7 @@ class UOBFileLog(Document):
 				}
 			
 			# need key for bank account specific
-			if row["Transaction Description"] == "SVC Chg":
+			if row["Transaction Description"] in ("SVC Chg", "SERV CHARGE"):
 				# charges
 				trans_map[pay_name]['charges'].append(row)
 			else:
@@ -305,18 +305,23 @@ class UOBFileLog(Document):
 							"error_code": None        
 						})
 							
-						# create PE based on same party/supplier
-						# find submit version
-						use_exists_pe = frappe.db.get_value("Payment Entry", {"payment_approval":pay_doc.name, "docstatus":1}, 'name')
-						if use_exists_pe:
-							continue
-
-						# find draft
-						use_exists_pe = frappe.db.get_value("Payment Entry", {"payment_approval":pay_doc.name, "docstatus":0}, 'name')
 
 						if supplier not in pe_map:
+							# create PE based on same party/supplier
+							# find submit version
+							use_exists_pe = frappe.db.get_value("Payment Entry", {"payment_approval":pay_doc.name, "docstatus":1}, 'name')
+							if use_exists_pe:
+								continue
+
+							# find draft
+							use_exists_pe = frappe.db.get_value("Payment Entry", {"payment_approval":pay_doc.name, "docstatus":0}, 'name')				
+
+
 							if not use_exists_pe:
 								pe = get_payment_entry(dt="Purchase Invoice", dn=pi_name)
+								pe.paid_amount = 0
+								for d in pe.get("references"):
+									pe.remove(d)
 								pe.__newname = get_next_pay_name(pay_doc.name)
 								pe.name = pay_doc.name
 								pe.flags.name_set = True
@@ -324,6 +329,7 @@ class UOBFileLog(Document):
 								frappe.db.sql("delete from `tabPayment Entry Reference` where parent = %s ", use_exists_pe)
 								pe = frappe.get_doc("Payment Entry", use_exists_pe)
 
+							pe_map[supplier] = pe
 							pe.payment_approval = pay_doc.name
 							pe.bank_account = self.get_bank_account(tr["Account Number"])
 							default_bank_account = get_company_default(pay_doc.company, "default_bank_account", ignore_validation=True)
@@ -335,38 +341,46 @@ class UOBFileLog(Document):
 								pe.paid_from = valid_bank_account
 
 							pe.mode_of_payment = "Bank Draft"
-							pe.paid_amount = amount
 							pe.reference_no = cheque_no or tr["Our Reference"]
 							pe.bank = frappe.get_value("Bank Account", pe.bank_account, "bank")
 							pe.reference_date = tr["Transaction Date"]
 							pe.additional_info = self.get_transfer_info(tr)
 							pe.auto_generated = 1
+							row_id = cstr(tr['Internal Transaction Code']).replace('="', '').replace('"', '')
 
 							# add charges
 							if fee_rate:
-								pe.append("deductions", {
-									"account": default_charge_account,  # ganti dengan COA sesuai
-									"cost_center": cost_center_charge,      # opsional kalau mandatory
-									"amount": fee_rate
-								})
-								pe.paid_amount += fee_rate
+								exists_row = pe.get("taxes", {"reff_id": row_id})
+								if not exists_row:
+									row = pe.append("taxes")
+									row.update({
+										"charge_type": "Actual",
+										"account_head": default_charge_account, 
+										"cost_center": cost_center_charge,    
+										"tax_amount": fee_rate,
+										"description": f"Bank Charge for {pi_name} - {tr['Transaction Description']}",
+										"reff_id": row_id
+									})
+									pe.paid_amount += fee_rate
 
-							pe_map[supplier] = pe
-						else:
-							pe = pe_map[supplier]
+						
 							# add invoice
-							pe.append("references", {
-								"reference_doctype": "Purchase Invoice",
-								"reference_name": pi_name,
-								"total_amount": amount,
-								"outstanding_amount": amount,
-								"allocated_amount": amount,
-							})
-							pe.paid_amount += amount		
+							exists_row = pe.get("references", {"reff_id": row_id, "reference_name": pi_name})
+							if not exists_row:
+								row = pe.append("references")
+								row.update({
+									"reference_doctype": "Purchase Invoice",
+									"reference_name": pi_name,
+									"total_amount": amount,
+									"outstanding_amount": amount,
+									"allocated_amount": amount,
+									"reff_id": row_id
+								})
+								pe.paid_amount += amount		
 		
 		for pe in pe_map.values():
 			pe.flags.ignore_validate = 1
-			pe.insert(ignore_permissions=1)
+			pe.save(ignore_permissions=1)
 			# pe.submit()
 
 		for d in approval_update.values():
