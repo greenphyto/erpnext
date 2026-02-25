@@ -107,8 +107,8 @@ class TransactionBase(StatusUpdater):
 
 							if role_allowed_to_override not in frappe.get_roles():
 								frappe.throw(
-									_("Row #{0}: Rate must be same as {1}: {2} ({3} / {4})").format(
-										d.idx, ref_dt, d.get(ref_dn_field), d.rate, ref_rate
+									_("Row #{0}: Rate must be same as {1}: {2} ({3})").format(
+										d.idx, ref_dt, d.get(ref_dn_field), ref_rate
 									)
 								)
 						else:
