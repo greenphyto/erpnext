@@ -821,6 +821,7 @@ def validate_purchase_request_based_user(doc, user=None):
 	data = frappe.get_all("Purchase User Permissions List", filters={
 		"parenttype":'Buying Settings',
 		'parentfield':"purchase_approval",
+		'company':doc.company,
 		'requester':creator,
 	}, fields="approver")
 	allow_specific = False
