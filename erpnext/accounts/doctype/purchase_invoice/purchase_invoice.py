@@ -1887,6 +1887,7 @@ def hide_older_cancelled_document():
 def make_payment_approval(source_name, target_doc=None):
 	def postprocess(source_doc, target_doc):
 		row = target_doc.append("invoices")
+		row.selected = 1
 		row.invoice_no = source_doc.name
 		row.party = source_doc.supplier
 		row.amount = flt(source_doc.outstanding_amount)
