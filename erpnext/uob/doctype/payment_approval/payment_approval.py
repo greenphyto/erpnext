@@ -439,7 +439,9 @@ class PaymentApproval(Document):
 
 		invoices = []
 		group_invoices = self.get_invoice_group()
+		batch = self.name.replace("-", "")
 
+		idx = 0
 		for d in group_invoices:
 			bic = frappe.get_value("Bank",d.supplier_bank,"swift_number", debug=0)
 			if dummy:
@@ -465,6 +467,7 @@ class PaymentApproval(Document):
 					"postal_code":addr.pincode,
 					"country": get_country_code(addr.country),
 				}
+			batch_id = batch + get_alpha(idx)
 			row = {
 				'invoice_number': d.invoice_no,
 				'amount': d.amount,
@@ -480,6 +483,7 @@ class PaymentApproval(Document):
 				"address": address,
 				"remitence_address": address,
 				"proxy_type":d.proxy_type,
+				"batch_id":batch_id,
 				"invoices":[]
 			}
 			for inv in d['invoices']:
@@ -489,12 +493,12 @@ class PaymentApproval(Document):
 					"currency": inv.currency
 				})
 			invoices.append(row)
+			idx +=1
 
 		bic = frappe.get_value("Bank", self.bank, "swift_number")
 		if dummy:
 			bic = change_to_dummy_bic(bic)
 		file_name = self.get_file_name()
-		batch = self.name.replace("-", "")
 		debtor_info = {
 			'company_name': self.company,
 			'name': self.bank_account_name,
@@ -804,3 +808,14 @@ def get_available_purchase_invoices(doctype, txt, searchfield, start, page_len, 
 		"cur_name": filters.get("cur_name"),
 	}, debug=0)
 
+def get_alpha(index):
+    """
+    Convert index to alphabetical suffix
+    0 = A, 1 = B, ... 25 = Z, 26 = AA, 27 = AB, ...
+    """
+    result = ""
+    index += 1  
+    while index > 0:
+        index, remainder = divmod(index - 1, 26)
+        result = chr(ord('A') + remainder) + result
+    return result

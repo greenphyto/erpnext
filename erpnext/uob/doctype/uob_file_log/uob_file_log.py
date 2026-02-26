@@ -409,18 +409,20 @@ class UOBFileLog(Document):
 		return txt
 
 def convert_inv_no(inv_txt):
-	inv_txt = inv_txt.strip()
-	# not yet upgrade
-	if "PAY" in inv_txt:
-		return inv_txt.replace("PAY", "PAY-")
-	elif inv_txt:
-		if "-" in inv_txt:
-			part, yymm = inv_txt.split("-")
-		else:
-			part, yymm = inv_txt[:-4], inv_txt[-4:]
-		year = "20" + yymm[:2]
-		formatted = f"{part}/{year}"
-		return formatted
+    inv_txt = inv_txt.strip()
+    # not yet upgrade
+    if "PAY" in inv_txt:
+        # Strip trailing letter(s) seperti PAY260025A -> PAY260025
+        base = inv_txt.rstrip('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+        return base.replace("PAY", "PAY-")
+    elif inv_txt:
+        if "-" in inv_txt:
+            part, yymm = inv_txt.split("-")
+        else:
+            part, yymm = inv_txt[:-4], inv_txt[-4:]
+        year = "20" + yymm[:2]
+        formatted = f"{part}/{year}"
+        return formatted
 
 def get_next_pay_name(base_name):
 	"""

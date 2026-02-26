@@ -268,8 +268,8 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 		
 		# Payment ID
 		pmt_id = ET.SubElement(cdt_trf_tx_inf, 'PmtId')
-		ET.SubElement(pmt_id, 'InstrId').text = f"{debtor_info['batch']}"
-		ET.SubElement(pmt_id, 'EndToEndId').text = f"{debtor_info['batch']}"
+		ET.SubElement(pmt_id, 'InstrId').text = f"{invoice['batch_id']}"
+		ET.SubElement(pmt_id, 'EndToEndId').text = f"{invoice['batch_id']}"
 		
 		# Amount
 		amt = ET.SubElement(cdt_trf_tx_inf, 'Amt')
