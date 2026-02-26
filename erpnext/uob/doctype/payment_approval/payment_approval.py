@@ -100,10 +100,7 @@ class PaymentApproval(Document):
 
 	def update_payment_status(self, process_id, transactions=[], file_date="", error_message=""):
 		# sync with L1,2,3,4 and when any riject
-		bypass= False
-		if process_id == 3:
-			bypass = True
-		if cint(self.process_id) > cint(process_id) and not bypass:
+		if cint(self.process_id) > cint(process_id):
 			return
 		
 		self.process_id = process_id
