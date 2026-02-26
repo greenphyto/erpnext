@@ -124,8 +124,10 @@ class PaymentApproval(Document):
 					row.status = status
 					if row.status == "Failed":
 						row.error_code = tr["error_code"]
+						row.error_info = tr["error_info"]
 					else:
 						row.error_code = ""
+						row.error_info = ""
 						use_amount = 0
 						if amount >= row.amount:
 							amount -= row.amount
@@ -146,6 +148,11 @@ class PaymentApproval(Document):
 			
 			if account_no == "*":
 				break
+		
+		if not error_message:
+			# try find from row
+			temp = ['{}: {}'.format(d.error_code, d.error_info) for d in self.get("invoices") if d.status == "Failed" and d.error_code]
+			error_message = "<br> ".join(temp)
 
 		self.update_on = get_datetime(file_date)
 		self.sync_status(db_update=True, error_message=error_message)
@@ -218,9 +225,11 @@ class PaymentApproval(Document):
 					# Complete
 					self.status = "Complete"
 					self.transfer_date = self.update_on
-				else:
+				elif tr_success > 0:
 					# Partially Complete
 					self.status = "Partially Complete"
+				else:
+					self.status = "Failed"
 			else:
 				self.status = "Failed"
 
