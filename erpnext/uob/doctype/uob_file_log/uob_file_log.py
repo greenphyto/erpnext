@@ -133,6 +133,7 @@ class UOBFileLog(Document):
 			for tx in txs:
 				temp = tx.get("OrgnlEndToEndId") or ""
 				error_code = get_nested(tx, ["StsRsnInf", "Rsn", "Cd"] ) or error_code_group
+				error_info = get_nested(tx, ["StsRsnInf", "AddtlInf"] ) or ""
 				result = ""
 				if ProcessID in [1,3]:
 					result = status_name
@@ -146,6 +147,7 @@ class UOBFileLog(Document):
 					"bank_account": get_nested(tx, ['OrgnlTxRef','DbtrAcct','Id','Othr','Id']),
 					"account_no": get_nested(tx, ["OrgnlTxRef","CdtrAcct","Id","Othr","Id"]) or "*",
 					"error_code": error_code,
+					"error_info": error_info,
 					"amount": flt(get_nested(tx, ['OrgnlTxRef','Amt','InstdAmt','#text'])),
 					"currency": get_nested(tx, ['OrgnlTxRef','Amt','InstdAmt','@Ccy']),
 					"bic": get_nested(tx, ['OrgnlTxRef','CdtrAgt','FinInstnId','BIC']),

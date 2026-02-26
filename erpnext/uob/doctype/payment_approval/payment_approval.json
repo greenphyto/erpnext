@@ -58,6 +58,8 @@
   {
    "fieldname": "requested_by",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Requested By",
    "no_amend_copy": 1,
    "no_copy": 1,
@@ -212,6 +214,7 @@
   {
    "fieldname": "total_amount",
    "fieldtype": "Currency",
+   "in_list_view": 1,
    "label": "Total Amount",
    "options": "currency",
    "read_only": 1
@@ -286,6 +289,7 @@
    "depends_on": "eval:doc.status == \"Failed\"",
    "fieldname": "error_message",
    "fieldtype": "Small Text",
+   "in_list_view": 1,
    "label": "Error Message",
    "read_only": 1
   },
@@ -304,6 +308,8 @@
    "default": "Today",
    "fieldname": "request_date",
    "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Request Date",
    "no_copy": 1
   },
@@ -317,7 +323,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-01-19 12:51:45.259709",
+ "modified": "2026-02-26 16:14:04.114757",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "Payment Approval",
