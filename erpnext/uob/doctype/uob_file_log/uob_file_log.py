@@ -261,6 +261,7 @@ class UOBFileLog(Document):
 				# individual charge
 				type_fee = "IND"
 
+			pe_name_list = []
 			for x in invoice_group:
 				for i, tr in enumerate(d['transfer']):
 					# based on value, its not not a good way, but temporary for current version
@@ -309,24 +310,27 @@ class UOBFileLog(Document):
 							
 
 						if supplier not in pe_map:
+							filters = {"payment_approval":pay_doc.name, "docstatus":1, "party":supplier}
 							# create PE based on same party/supplier
 							# find submit version
-							use_exists_pe = frappe.db.get_value("Payment Entry", {"payment_approval":pay_doc.name, "docstatus":1}, 'name')
+							use_exists_pe = frappe.db.get_value("Payment Entry", filters, 'name')
 							if use_exists_pe:
 								continue
 
 							# find draft
-							use_exists_pe = frappe.db.get_value("Payment Entry", {"payment_approval":pay_doc.name, "docstatus":0}, 'name')				
+							filters['docstatus'] = 0
+							use_exists_pe = frappe.db.get_value("Payment Entry", filters, 'name')				
 
 
 							if not use_exists_pe:
 								pe = get_payment_entry(dt="Purchase Invoice", dn=pi_name)
 								pe.paid_amount = 0
-								for d in pe.get("references"):
-									pe.remove(d)
-								pe.__newname = get_next_pay_name(pay_doc.name)
-								pe.name = pay_doc.name
+								for drow in pe.get("references"):
+									pe.remove(drow)
+								pe.__newname = get_next_pay_name(pay_doc.name, pe_name_list)
+								pe.name = pe.__newname
 								pe.flags.name_set = True
+								pe_name_list.append(pe.name)
 							else:
 								frappe.db.sql("delete from `tabPayment Entry Reference` where parent = %s ", use_exists_pe)
 								pe = frappe.get_doc("Payment Entry", use_exists_pe)
@@ -426,7 +430,7 @@ def convert_inv_no(inv_txt):
         formatted = f"{part}/{year}"
         return formatted
 
-def get_next_pay_name(base_name):
+def get_next_pay_name(base_name, pe_name_list=None):
 	"""
 	Generate a new unique name based on base_name.
 	Example:
@@ -440,7 +444,7 @@ def get_next_pay_name(base_name):
 		"Payment Entry",  # CHANGE to the correct DocType if needed
 		filters={"name": ["like", f"{base_name}%"]},
 		pluck="name"
-	)
+	) + (pe_name_list or [])  # Include names from the current session if provided
 
 	if not existing_names:
 		return base_name  # No existing record → use base_name
