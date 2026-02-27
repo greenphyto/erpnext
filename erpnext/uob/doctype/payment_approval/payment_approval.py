@@ -77,7 +77,10 @@ class PaymentApproval(Document):
 		if "UOVB" not in bic:
 			frappe.throw(_(f"This transaction requires a UOB bank account. Please select a valid UOB account to proceed."))
 
-		account_no, account_name, currency = frappe.db.get_value("Bank Account", self.bank_account, ["bank_account_no", "bank_account_name", 'currency']) or ("", "", "")
+		bank_num = frappe.get_doc("Bank Number", self.supplier_bank_no)
+		account_no, account_name, currency = bank_num.bank_account_no, bank_num.bank_account_name, bank_num.currency
+		if self.payment_method == "PayNow" and not bank_num.proxy_number:
+			frappe.throw(_("Row {}, Bank number <u>{}</u> not have PayNow number".format(d.idx, d.supplier_bank_no)))
 		if not account_no or not account_name:
 			links = get_link_to_form("Bank Account", self.bank_account)
 			frappe.throw(_(f"Please update the <b>Bank Account No</b> and <b>Bank Account Name</b> for {links}"))
@@ -117,7 +120,7 @@ class PaymentApproval(Document):
 				status = "Failed"
 
 			for row in self.get("invoices"):
-				if row.bank_account_no == account_no or account_no == "*":
+				if row.bank_account_no == account_no  or account_no == "*" or row.proxy_number == account_no:
 					row.status = status
 					if row.status == "Failed":
 						row.error_code = tr["error_code"]
@@ -177,6 +180,8 @@ class PaymentApproval(Document):
 
 	def get_bank_account(self, account_no):
 		bank_name = frappe.db.get_value("Bank Account", {"bank_account_no":account_no}, "name")
+		if not bank_name:
+			bank_name = frappe.db.get_value("Bank Account", {"proxy_number":account_no}, "name")
 		return bank_name
 
 	def get_transfer_info(self, row, tr):
@@ -375,12 +380,7 @@ class PaymentApproval(Document):
 			if not bank_number_name:
 				frappe.throw(_(f"Row {d.idx}, Supplier Bank No is required for supplier {data.supplier}."))
 
-			bn = frappe.db.get_value(
-				"Bank Number",
-				bank_number_name,
-				["party_type", "party", "currency", "bank", "bank_number", "bank_account_name", "branch_code", "swift"],
-				as_dict=1,
-			)
+			bn = frappe.get_doc("Bank Number", bank_number_name)
 			if not bn:
 				frappe.throw(_(f"Row {d.idx}, Bank Number {bank_number_name} not found."))
 
@@ -396,6 +396,7 @@ class PaymentApproval(Document):
 			d.supplier_bank_no = bank_number_name
 			d.supplier_bank = bn.bank
 			d.bank_account_no = bn.bank_number
+			d.proxy_number = bn.proxy_number
 			d.bank_account_name = bn.bank_account_name
 			d.branch_code = bn.branch_code
 			d.swift = bn.swift
@@ -454,7 +455,7 @@ class PaymentApproval(Document):
 				bic = change_to_dummy_bic(bic)
 				
 			# if include branch code
-			bank_account_no = cstr(d.bank_account_no)
+			bank_account_no = cstr(d.bank_account_no) if self.payment_method != "PayNow" else cstr(d.proxy_number)
 
 			doc = frappe.get_doc("Purchase Invoice", d.invoice_no)
 			doc_name = doc.name[:-5]
@@ -541,7 +542,8 @@ class PaymentApproval(Document):
 			"bank_account_no",
 			"currency",
 			"party",
-			"proxy_type"
+			"proxy_type",
+			"proxy_number"
 		]
 		def copy_data(source):
 			dt = frappe._dict({})
@@ -552,8 +554,8 @@ class PaymentApproval(Document):
 		for d in self.invoices:
 			if not cint(d.selected):
 				continue
-			
-			key = (d.bank_account_no, d.supplier_bank, d.swift, d.currency)
+			bank_account_no = cstr(d.bank_account_no) if self.payment_method != "PayNow" else cstr(d.proxy_number)
+			key = (bank_account_no, d.supplier_bank, d.swift, d.currency)
 
 			if key not in map_invoice:
 				map_invoice[key] = copy_data(d)

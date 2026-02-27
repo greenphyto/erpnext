@@ -117,7 +117,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-27 15:39:48.036082",
+ "modified": "2026-02-27 18:26:36.917877",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Bank Number",
@@ -138,7 +138,7 @@
   }
  ],
  "quick_entry": 1,
- "search_fields": "bank_account_name, bank_number",
+ "search_fields": "bank_account_name, bank_number, proxy_type, proxy_number",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
