@@ -335,18 +335,12 @@ class UOBFileLog(Document):
 								frappe.db.sql("delete from `tabPayment Entry Reference` where parent = %s ", use_exists_pe)
 								pe = frappe.get_doc("Payment Entry", use_exists_pe)
 
+							payment_mode = get_payment_mode(pay_doc.company, pay_doc.account)
 							pe_map[supplier] = pe
 							pe.payment_approval = pay_doc.name
-							pe.bank_account = self.get_bank_account(tr["Account Number"])
-							default_bank_account = get_company_default(pay_doc.company, "default_bank_account", ignore_validation=True)
-							valid_bank_account = None
-							if pe.bank_account:
-								valid_bank_account = frappe.db.get_value("Bank Account", pe.bank_account, "account") or default_bank_account
-							
-							if valid_bank_account:
-								pe.paid_from = valid_bank_account
-
-							pe.mode_of_payment = "Bank Draft"
+							pe.bank_account = pay_doc.bank_account
+							pe.paid_from = pay_doc.account
+							pe.mode_of_payment = payment_mode
 							pe.reference_no = cheque_no or tr["Our Reference"]
 							pe.bank = frappe.get_value("Bank Account", pe.bank_account, "bank")
 							pe.reference_date = tr["Transaction Date"]
@@ -515,3 +509,19 @@ def get_nested(data, keys, default=None, collect_multiple=False):
 		else:
 			return default
 	return data
+
+def get_payment_mode(company, bank_account):
+	data = frappe.db.sql("""
+		SELECT 
+			mopa.parent, mopa.default_account, mop.paynow
+		FROM
+			`tabMode of Payment Account` mopa
+				INNER JOIN
+			`tabMode of Payment` mop ON mop.name = mopa.parent
+		WHERE
+			mopa.default_account = %s
+				AND mopa.company = %s
+				AND mop.paynow = 1""", (bank_account, company), as_dict=1)
+	if data:
+		return data[0].parent
+	return frappe.db.get_value("Mode of Payment", {"type": "Bank", "enabled":1}, "name")
