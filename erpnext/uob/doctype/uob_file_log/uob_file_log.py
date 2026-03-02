@@ -165,7 +165,10 @@ class UOBFileLog(Document):
 				'StsRsnInf', 
 				'AddtlInf'
 			], collect_multiple=True) or []
-			error_message = "\n".join(temp)
+			if type(temp) == list:
+				error_message = "\n".join(temp)
+			else:
+				error_message = temp
 				
 			# Get Payment Approval
 			temp = get_nested(data, ['Document','CstmrPmtStsRpt','OrgnlPmtInfAndSts','OrgnlPmtInfId']) or ""
