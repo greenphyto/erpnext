@@ -109,7 +109,8 @@ class Batch(Document):
 			# User might have manually created a batch with next number
 			if frappe.db.exists("Batch", self.batch_id):
 				self.batch_id = None
-
+		if self.flags.add_last_symbol:
+			self.batch_id += "-"+str(self.flags.add_last_symbol)
 		self.name = self.batch_id
 
 	def onload(self):

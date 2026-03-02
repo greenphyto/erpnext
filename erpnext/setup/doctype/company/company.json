@@ -98,6 +98,7 @@
   "default_warehouse",
   "default_in_transit_warehouse",
   "default_stock_scrap_item",
+  "default_salvage_warehouse",
   "column_break_32",
   "stock_received_but_not_billed",
   "default_provisional_account",
@@ -137,7 +138,8 @@
   "registration_details",
   "lft",
   "rgt",
-  "old_parent"
+  "old_parent",
+  "production_loss_account"
  ],
  "fields": [
   {
@@ -976,6 +978,12 @@
   {
    "fieldname": "column_break_105",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_salvage_warehouse",
+   "fieldtype": "Link",
+   "label": "Default Salvage Warehouse",
+   "options": "Warehouse"
   }
  ],
  "icon": "fa fa-building",
@@ -983,7 +991,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2026-02-18 15:40:45.275212",
+ "modified": "2026-02-18 15:40:45.275213",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

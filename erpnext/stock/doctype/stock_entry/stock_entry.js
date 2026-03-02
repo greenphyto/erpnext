@@ -262,7 +262,29 @@ frappe.ui.form.on('Stock Entry', {
 			}
 		}
 
+		frm.cscript.add_back_cons_button()
+
 		if (frm.doc.docstatus===0) {
+			frm.add_custom_button(__('Consignment Return'), function() {
+				var cr_list = frm.doc.items.map(i => i.consignment_request);
+			
+				erpnext.utils.map_current_doc({
+					method: "erpnext.gp_erp.doctype.consignment_request.consignment_request.make_salvage_process",
+					source_doctype: "Consignment Request",
+					target: frm,
+					date_field: "posting_date",
+					setters: {
+						// customer: undefined,
+						// posting_date: undefined
+					},
+					get_query_filters: {
+						docstatus: 1,
+						total_return_qty: [">", 0],
+						name: ["not in", cr_list],
+					}
+				})
+			}, __("Get Items From"));
+
 			frm.add_custom_button(__('Purchase Invoice'), function() {
 				erpnext.utils.map_current_doc({
 					method: "erpnext.accounts.doctype.purchase_invoice.purchase_invoice.make_stock_entry",
@@ -1179,6 +1201,19 @@ erpnext.stock.StockEntry = class StockEntry extends erpnext.stock.StockControlle
 		table.grid.reset_grid();
 
 		return
+	}
+
+	add_back_cons_button() {
+		var frm = this.frm;
+		if (["Consignment Return", "Consignment Transfer", "Salvage Process (Repack)"].includes(frm.doc.stock_entry_type_view)){
+			var cons = $.map(this.frm.doc.items, r=>{ return r.consignment_request});
+			if (cons.length && cons[0]){
+				var btn = frm.add_custom_button(__("Back to Consignment"), function() {
+					frappe.set_route("form", "Consignment Request", cons[0])
+				});
+				btn.removeClass("btn-default").addClass("btn-warning")
+			}
+		}
 	}
 };
 
