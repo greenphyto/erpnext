@@ -40,10 +40,8 @@ class PaymentApproval(Document):
 
 	def validate_paynow(self):
 		for d in self.invoices:
-			if d.proxy_type != "General" and self.payment_method != "PayNow":
-				frappe.throw(_("Row {}, Bank number <u>{}</u> only for PayNow transfers".format(d.idx, d.supplier_bank_no)))
-			elif d.proxy_type == "General" and self.payment_method == "PayNow":
-				frappe.throw(_("Row {}, Bank number <u>{}</u> can't be used on PayNow transfers".format(d.idx, d.supplier_bank_no)))
+			if not d.proxy_number and self.payment_method == "PayNow":
+				frappe.throw(_("Row {}, Bank number <u>{}</u> not available for PayNow transfers".format(d.idx, d.supplier_bank_no)))
 
 	def on_submit(self):
 		self.update_apporval_date()
