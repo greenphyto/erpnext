@@ -18,6 +18,7 @@ from erpnext.accounts.party import (  # noqa
 	validate_party_accounts,
 )
 from erpnext.utilities.transaction_base import TransactionBase
+from frappe.utils import cstr
 
 class Supplier(TransactionBase):
 	def get_feed(self):
@@ -52,15 +53,25 @@ class Supplier(TransactionBase):
 		self.set_code()
 
 	def set_code(self, force=False):
+		comp_abbr = cstr(frappe.get_value("Company", self.company, "series_abbr"))
 		series = self.supplier_code_series or "S0.####"
+		if comp_abbr and comp_abbr not in series:
+			series = comp_abbr + series
+			self.supplier_code_series = series
+		
+		if not self.supplier_code:
+			self.supplier_code = parse_naming_series(series, doc=self)
+
+		if self.supplier_code and not force:
+			if comp_abbr and comp_abbr not in self.supplier_code:
+				self.supplier_code = comp_abbr+self.supplier_code
+			else:
+				return
+			
 		exists = frappe.db.get_value("Supplier", {"name":["!=", self.name], "supplier_code":self.supplier_code})
 		if exists:
 			frappe.throw("Supplier code <b>{}</b> already used.".format(self.supplier_code))
 
-		if self.supplier_code and not force:
-			return
-		
-		self.supplier_code = parse_naming_series(series, doc=self)
 		self.set_account_default()
 
 	def set_account_default(self):

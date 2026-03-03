@@ -65,11 +65,16 @@ frappe.ui.form.on("Customer", {
 		});
 	},
 	is_cash_sales: function(frm){
-		if (frm.doc.is_cash_sales){
-			frm.set_value("customer_code", "C00008")
-		}else{
-			frm.set_value("customer_code", "")
-		}
+		var cash_sales = "C00008"
+		frappe.db.get_value("Company", frm.doc.company, "series_abbr").then(r=>{
+			console.log(70, r)
+			if (frm.doc.is_cash_sales){
+				cash_sales = cstr(r.message.series_abbr) + cash_sales
+				frm.set_value("customer_code", cash_sales);
+			}else{
+				frm.set_value("customer_code", "")
+			}
+		})
 	},
 	customer_primary_address: function(frm){
 		if(frm.doc.customer_primary_address){
