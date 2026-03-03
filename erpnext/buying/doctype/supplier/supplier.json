@@ -78,7 +78,10 @@
   "column_break_59",
   "release_date",
   "ai_info_section",
-  "supplier_keywords"
+  "supplier_keywords",
+  "bank_tab",
+  "bank_list_html",
+  "default_bank_account_no"
  ],
  "fields": [
   {
@@ -474,7 +477,7 @@
    "fieldname": "supplier_code_series",
    "fieldtype": "Select",
    "label": "Supplier Code Series",
-   "options": "S0.####\nS1.####\nS2.####\nS3.####\nS4.####\nS5.####"
+   "options": "S0.####\nS1.####\nS2.####\nMYS0.####\nMYS1.####"
   },
   {
    "fieldname": "foms_id",
@@ -521,8 +524,7 @@
   {
    "fieldname": "default_bank_account_no",
    "fieldtype": "Data",
-   "label": "Default Bank Account No",
-   "options": ""
+   "label": "Default Bank Account No"
   },
   {
    "fieldname": "ai_info_section",
@@ -553,7 +555,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2025-12-10 10:45:26.853034",
+ "modified": "2026-03-03 10:52:22.578354",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",

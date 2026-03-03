@@ -106,7 +106,8 @@ frappe.ui.form.on("Supplier", {
 			{"label":"S0.#### (AP Trade Creditors)", "value":"S0.####"},
 			{"label":"S1.#### (Other Creditors)", "value":"S1.####"},
 			{"label":"S2.#### (Bank Accounts)", "value":"S2.####"},
-			{"label":"S3.#### (Hire Purchase)", "value":"S3.####"},
+			{"label":"MYS0.#### (AP Trade Creditors)", "value":"MYS0.####"},
+			{"label":"MYS1.#### (Other Creditors)", "value":"MYS1.####"},
 		])
 	},
 	supplier_code_series: function(frm){
