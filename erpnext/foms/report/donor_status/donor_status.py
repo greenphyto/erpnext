@@ -79,7 +79,7 @@ class Report():
 				{}
 			ORDER BY
 				so.transaction_date DESC
-		""".format(self.cond), as_dict=1, debug=1)
+		""".format(self.cond), as_dict=1, debug=0)
 	
 	def process_data(self):
 		grouped = {}

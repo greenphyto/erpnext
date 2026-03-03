@@ -7,13 +7,15 @@ frappe.query_reports["Donor Status"] = {
 			"fieldname": "from_date",
 			"label": "From Date",
 			"fieldtype": "Date",
-			"reqd": 1
+			"reqd": 1,
+			"default": frappe.datetime.year_start()
 		},
 		{
 			"fieldname": "to_date",
 			"label": "To Date",
 			"fieldtype": "Date",
-			"reqd": 1
+			"reqd": 1,
+			"default": frappe.datetime.year_start()
 		},
 		{
 			"fieldname": "sales_order",
