@@ -632,6 +632,7 @@
    "collapsible": 1,
    "fieldname": "taxes_and_charges_section",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Taxes and Charges"
   },
   {
@@ -765,7 +766,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-09-17 15:45:54.961730",
+ "modified": "2026-03-04 16:33:55.201530",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry",
