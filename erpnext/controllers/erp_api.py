@@ -567,7 +567,7 @@ def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 		}
 
 	# Skip if the mapping status is not Unknown
-	if log.status != "Unknown":
+	if log.status == "Mapped":
 		return
 
 	make_in_progress(log.name, commit=1)
@@ -686,8 +686,8 @@ def run_pending_harvesting_transfer():
 	now_time = get_datetime()
 	end_range = now_time - timedelta(minutes=5)
 
-	for d in frappe.db.sql("select name,data_name, raw_data from `tabFOMS Data Mapping` where status = 'Unknown' and data_type = 'Work Order' and created_on < %s ", (end_range), as_dict=1):
-		print(d)
+	data = frappe.db.sql("select name,data_name, raw_data from `tabFOMS Data Mapping` where status in ('Unknown', 'In Progress') and data_type = 'Work Order' and created_on < %s ", (end_range), as_dict=1)
+	for d in data:
 		data = json.loads(d.raw_data)
 
 		if not data.get('ERPWorkOrderID'):
