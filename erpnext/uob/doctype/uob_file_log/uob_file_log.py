@@ -355,14 +355,13 @@ class UOBFileLog(Document):
 
 							# add charges
 							if fee_rate:
-								exists_row = pe.get("taxes", {"reff_id": row_id})
+								exists_row = pe.get("deductions", {"reff_id": row_id})
 								if not exists_row:
-									row = pe.append("taxes")
+									row = pe.append("deductions")
 									row.update({
-										"charge_type": "Actual",
-										"account_head": default_charge_account, 
+										"account": default_charge_account, 
 										"cost_center": cost_center_charge,    
-										"tax_amount": fee_rate,
+										"amount": fee_rate,
 										"description": f"Bank Charge for {pi_name} - {tr['Transaction Description']}",
 										"reff_id": row_id
 									})
