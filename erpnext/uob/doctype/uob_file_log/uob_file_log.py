@@ -428,44 +428,31 @@ def convert_inv_no(inv_txt):
         return formatted
 
 def get_next_pay_name(base_name, pe_name_list=None):
-	"""
-	Generate a new unique name based on base_name.
-	Example:
-	  - base_name = 'PAY-250024'
-	  - If existing names are: 'PAY-250024', 'PAY-250024-1'
-		→ return 'PAY-250024-2'
-	"""
+    existing_names = frappe.db.get_list(
+        "Payment Entry",
+        filters={"name": ["like", f"{base_name}%"]},
+        pluck="name"
+    ) + (pe_name_list or [])
 
-	# Fetch all documents that start with base_name
-	existing_names = frappe.db.get_list(
-		"Payment Entry",  # CHANGE to the correct DocType if needed
-		filters={"name": ["like", f"{base_name}%"]},
-		pluck="name"
-	) + (pe_name_list or [])  # Include names from the current session if provided
+    if not existing_names:
+        return base_name
 
-	if not existing_names:
-		return base_name  # No existing record → use base_name
+    max_suffix = 0
+    base_exists = False
 
-	max_suffix = 0
+    for name in existing_names:
+        match = re.match(rf"{re.escape(base_name)}-(\d+)$", name)
+        if match:
+            num = int(match.group(1))
+            if num > max_suffix:
+                max_suffix = num
+        elif name == base_name:
+            base_exists = True
 
-	# Check all existing names
-	for name in existing_names:
-		# Match suffix number after base_name, such as "-1", "-2"
-		match = re.match(rf"{re.escape(base_name)}-(\d+)$", name)
-		if match:
-			num = int(match.group(1))
-			if num > max_suffix:
-				max_suffix = num
-
-		# If exact name "PAY-250024" exists and no suffix found yet
-		if name == base_name and max_suffix == 0:
-			max_suffix = 1
-
-	# Return new name with incremented suffix
-	if max_suffix == 1:
-		return f"{base_name}-{max_suffix}"
-	else:
-		return f"{base_name}-{max_suffix + 1}"
+    if not base_exists and max_suffix == 0:
+        return base_name
+    
+    return f"{base_name}-{max_suffix + 1}"
 
 
 def transform_code(code: str):
