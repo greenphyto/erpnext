@@ -248,6 +248,8 @@ class UOBFileLog(Document):
 		pe_map = {}
 		approval_update = {}
 		for pay_name, d in trans_map.items():
+			# if pay_name!= "PAY-260051":
+			# 	continue
 			pay_doc = frappe.get_doc("Payment Approval", pay_name)
 			default_charge_account = get_company_default(pay_doc.company, "default_bank_charge_account")
 			cost_center_charge = get_company_default(pay_doc.company, "cost_center")
@@ -311,8 +313,8 @@ class UOBFileLog(Document):
 							"error_code": None        
 						})
 							
-
-						if supplier not in pe_map:
+						key = (supplier, pay_doc.name)
+						if key not in pe_map:
 							filters = {"payment_approval":pay_doc.name, "docstatus":1, "party":supplier}
 							# create PE based on same party/supplier
 							# find submit version
@@ -339,7 +341,7 @@ class UOBFileLog(Document):
 								pe = frappe.get_doc("Payment Entry", use_exists_pe)
 
 							payment_mode = get_payment_mode(pay_doc.company, pay_doc.account)
-							pe_map[supplier] = pe
+							pe_map[key] = pe
 							pe.payment_approval = pay_doc.name
 							pe.bank_account = pay_doc.bank_account
 							pe.paid_from = pay_doc.account
