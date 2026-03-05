@@ -297,12 +297,14 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 		cdtr = ET.SubElement(cdt_trf_tx_inf, 'Cdtr')
 		ET.SubElement(cdtr, 'Nm').text = invoice['creditor_name']
 		
+		cdtr_pstl_adr = ET.SubElement(cdtr, 'PstlAdr')
 		if invoice.get("address"):
 			addr = invoice.get("address")
-			cdtr_pstl_adr = ET.SubElement(cdtr, 'PstlAdr')
 			ET.SubElement(cdtr_pstl_adr, 'PstCd').text = addr.get("postal_code")
 			ET.SubElement(cdtr_pstl_adr, 'Ctry').text = invoice.get("country") or addr.get("country")
 			ET.SubElement(cdtr_pstl_adr, 'AdrLine').text = addr.get("address_line")
+		else:
+			ET.SubElement(cdtr_pstl_adr, 'Ctry').text = invoice.get("country")
 
 		# Creditor Account
 		cdtr_acct = ET.SubElement(cdt_trf_tx_inf, 'CdtrAcct')
