@@ -412,6 +412,75 @@ class UOBFileLog(Document):
 		txt = txt.replace("\t", "")
 		return txt
 
+	def get_l4_mapping(self, pay_name):
+		doc = frappe.get_doc("Payment Approval", pay_name)
+		group_invoices = doc.get_invoice_group()
+		date = getdate(doc.request_date)
+		l4_log_name = find_uob_file_log( date.year, doc.batch_number)
+		if not l4_log_name:
+			return {}
+		
+		l4_log = frappe.get_doc("UOB File Log", l4_log_name.name)
+		file = frappe.get_doc("File", l4_log.file)
+		xml_content = l4_log.get_file_data(file, "XML", False)
+		if not xml_content:
+			return {}
+		
+		xml_map = parse_xml_transactions(xml_content)
+		res_map = {}
+		for d in group_invoices:
+			key = (d['bank_account_name'], d['bank_account_no'])
+			if key not in xml_map:
+				continue
+
+			result = xml_map.get(key)
+			d['status_result'] = result['status']
+			res_map[key] = d
+		return res_map
+
+import xml.etree.ElementTree as ET
+def parse_xml_transactions(xml_content):
+    # xml_content = hasil xmltodict.parse()
+    tx_list = xml_content["Document"]["CstmrPmtStsRpt"]["OrgnlPmtInfAndSts"]["TxInfAndSts"]
+
+    if isinstance(tx_list, dict):
+        tx_list = [tx_list]
+
+    result = {}
+
+    for tx in tx_list:
+        ref       = tx.get("OrgnlTxRef", {})
+        amt_node  = ref.get("Amt", {}).get("InstdAmt", {})
+        cdtr_nm   = ref.get("Cdtr", {}).get("Nm")
+        cdtr_acct = ref.get("CdtrAcct", {}).get("Id", {}).get("Othr", {}).get("Id")
+
+        key = (cdtr_nm, cdtr_acct)
+
+        result[key] = {
+            "orgn_instr_id": tx.get("OrgnlInstrId"),
+            "status":        tx.get("TxSts"),
+            "amount":        amt_node.get("#text") if isinstance(amt_node, dict) else amt_node,
+            "currency":      amt_node.get("@Ccy")  if isinstance(amt_node, dict) else "",
+        }
+
+    return result
+
+def find_uob_file_log(year, batch_no):
+    year_2d  = str(year)[-2:]
+    batch_3d = str(batch_no).zfill(3)
+
+    like_pattern = f"%{year_2d}%{batch_3d}O1001%.xml"
+
+    result = frappe.db.sql("""
+        SELECT `name`, `filename`
+        FROM `tabUOB File Log`
+        WHERE `filename` LIKE %(pattern)s
+        ORDER BY `modified` DESC
+        LIMIT 1
+    """, {"pattern": like_pattern}, as_dict=True)
+
+    return result[0] if result else None
+
 def convert_inv_no(inv_txt):
     inv_txt = inv_txt.strip()
     # not yet upgrade

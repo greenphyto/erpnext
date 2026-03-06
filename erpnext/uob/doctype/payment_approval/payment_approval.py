@@ -472,7 +472,6 @@ class PaymentApproval(Document):
 					"postal_code":addr.pincode,
 					"country": get_country_code(addr.country),
 				}
-			batch_id = batch + get_alpha(idx)
 			row = {
 				'invoice_number': d.invoice_no,
 				'amount': d.amount,
@@ -488,7 +487,7 @@ class PaymentApproval(Document):
 				"address": address,
 				"remitence_address": address,
 				"proxy_type":d.proxy_type,
-				"batch_id":batch_id,
+				"batch_id":d.batch_id,
 				"invoices":[]
 			}
 			for inv in d['invoices']:
@@ -549,6 +548,8 @@ class PaymentApproval(Document):
 				dt[f] = source.get(f)
 			return dt
 		
+		batch = self.name.replace("-", "")
+		idx = 0
 		for d in self.invoices:
 			if not cint(d.selected):
 				continue
@@ -558,11 +559,13 @@ class PaymentApproval(Document):
 			if key not in map_invoice:
 				map_invoice[key] = copy_data(d)
 				map_invoice[key]["invoices"]=[d]
+				map_invoice[key]['batch_id'] = batch + get_alpha(idx)
 			else:
 				map_invoice[key]["amount"] += flt(d.amount)
 				map_invoice[key]['invoices'].append(d)
 
 			map_invoice[key]["country"] = get_bank_number_country(d.supplier_bank_no)
+			idx += 1
 			
 		return list(map_invoice.values())
 
