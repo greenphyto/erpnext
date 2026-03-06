@@ -244,19 +244,21 @@ class UOBFileLog(Document):
 				# transfer
 				trans_map[pay_name]['transfer'].append(row)
 
+		# get net amount mapping
+		net_amount_mapping = get_net_amount(df_tx)
 
 		pe_map = {}
 		approval_update = {}
 		for pay_name, d in trans_map.items():
-			# if pay_name!= "PAY-260051":
+			# if pay_name!= "PAY-260045":
 			# 	continue
 			pay_doc = frappe.get_doc("Payment Approval", pay_name)
 			default_charge_account = get_company_default(pay_doc.company, "default_bank_charge_account")
 			cost_center_charge = get_company_default(pay_doc.company, "cost_center")
 			fee_rate = 0
 			type_fee = 0
-			invoice_group = pay_doc.get_invoice_group()
-			trans_count = len(invoice_group)
+			invoice_group = self.get_l4_mapping(pay_name)
+			trans_count = len(invoice_group.values())
 			if len(d['charges']) == 1:
 				# bulk charge
 				total_fee = flt(d['charges'][0]['Transaction Amount'])
@@ -267,11 +269,19 @@ class UOBFileLog(Document):
 				type_fee = "IND"
 
 			pe_name_list = []
-			for x in invoice_group:
+			for x in invoice_group.values():
+				if x.get("status_result") == "RJCT":
+					continue
+				
+				paid_amount = flt(net_amount_mapping.get(x['pay_no']))
+
 				for i, tr in enumerate(d['transfer']):
+					if tr['Base Transaction Code'].strip() == "C":
+						continue
+
 					# based on value, its not not a good way, but temporary for current version
-					paid_amount = flt(tr['Transaction Amount'])
 					for row in x['invoices']:
+
 						pi_name = row.invoice_no
 						supplier = row.party
 
@@ -283,6 +293,7 @@ class UOBFileLog(Document):
 							paid_amount = 0
 							amount = row.amount
 						elif paid_amount == 0:
+							amount = 0
 							continue
 
 						docstatus, status = frappe.db.get_value("Purchase Invoice", pi_name, ["docstatus", "status"]) or (0, "")
@@ -326,7 +337,6 @@ class UOBFileLog(Document):
 							filters['docstatus'] = 0
 							use_exists_pe = frappe.db.get_value("Payment Entry", filters, 'name')				
 
-
 							if not use_exists_pe:
 								pe = get_payment_entry(dt="Purchase Invoice", dn=pi_name)
 								pe.paid_amount = 0
@@ -339,6 +349,7 @@ class UOBFileLog(Document):
 							else:
 								frappe.db.sql("delete from `tabPayment Entry Reference` where parent = %s ", use_exists_pe)
 								pe = frappe.get_doc("Payment Entry", use_exists_pe)
+								pe.paid_amount = 0
 
 							payment_mode = get_payment_mode(pay_doc.company, pay_doc.account)
 							pe_map[key] = pe
@@ -417,25 +428,25 @@ class UOBFileLog(Document):
 		group_invoices = doc.get_invoice_group()
 		date = getdate(doc.request_date)
 		l4_log_name = find_uob_file_log( date.year, doc.batch_number)
-		if not l4_log_name:
-			return {}
+		xml_content = None
+		xml_map = {}
+		if l4_log_name:
+			l4_log = frappe.get_doc("UOB File Log", l4_log_name.name)
+			file = frappe.get_doc("File", l4_log.file)
+			xml_content = l4_log.get_file_data(file, "XML", False)
+
+		if xml_content:
+			xml_map = parse_xml_transactions(xml_content)
 		
-		l4_log = frappe.get_doc("UOB File Log", l4_log_name.name)
-		file = frappe.get_doc("File", l4_log.file)
-		xml_content = l4_log.get_file_data(file, "XML", False)
-		if not xml_content:
-			return {}
-		
-		xml_map = parse_xml_transactions(xml_content)
 		res_map = {}
 		for d in group_invoices:
 			key = (d['bank_account_name'], d['bank_account_no'])
-			if key not in xml_map:
-				continue
-
-			result = xml_map.get(key)
-			d['status_result'] = result['status']
+			if key in xml_map:
+				result = xml_map.get(key)
+				d['status_result'] = result['status']
+			
 			res_map[key] = d
+
 		return res_map
 
 import xml.etree.ElementTree as ET
@@ -585,3 +596,50 @@ def get_payment_mode(company, bank_account):
 	if data:
 		return data[0].parent
 	return frappe.db.get_value("Mode of Payment", {"type": "Bank", "enabled":1}, "name")
+
+def clean_amount(value) -> float:
+    """Remove commas and Excel formula artifacts, convert to float."""
+    if pd.isna(value):
+        return 0.0
+    value = re.sub(r'^="?(.*?)"?$', r'\1', str(value).strip())
+    value = value.replace(",", "").strip()
+    try:
+        return float(value)
+    except ValueError:
+        return 0.0
+
+
+def get_net_amount(df: pd.DataFrame) -> dict:
+    """
+    Given a DataFrame of bank transactions, return a mapping of
+    PAY reference → net amount.
+
+    Net per PAY = sum(ALL D amounts) - sum(ALL C amounts)
+    Includes both NIBF (transfer) and NSVC (service charge).
+
+    Your Reference is converted via convert_inv_no: PAY260044 → PAY-260044
+
+    Returns:
+        { "PAY-260044": 36.0, "PAY-260045": 2301.32, ... }
+    """
+    df = df.copy()
+
+    # Normalize columns
+    df["Base Transaction Code"]      = df["Base Transaction Code"].astype(str).str.strip()
+    df["Your Reference"]             = df["Your Reference"].astype(str).str.strip()
+    df["Transaction Amount"]         = df["Transaction Amount"].apply(clean_amount)
+
+    # Keep only PAY references
+    df = df[df["Your Reference"].str.startswith("PAY", na=False)]
+
+    # Convert reference format: PAY260044 → PAY-260044
+    df["Your Reference"] = df["Your Reference"].apply(convert_inv_no)
+
+    result = {}
+    for ref in df["Your Reference"].unique():
+        subset = df[df["Your Reference"] == ref]
+        debit  = subset[subset["Base Transaction Code"] == "D"]["Transaction Amount"].sum()
+        credit = subset[subset["Base Transaction Code"] == "C"]["Transaction Amount"].sum()
+        result[ref] = round(debit - credit, 2)
+
+    return result

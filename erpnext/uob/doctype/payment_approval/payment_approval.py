@@ -560,6 +560,7 @@ class PaymentApproval(Document):
 				map_invoice[key] = copy_data(d)
 				map_invoice[key]["invoices"]=[d]
 				map_invoice[key]['batch_id'] = batch + get_alpha(idx)
+				map_invoice[key]['pay_no'] = self.name
 			else:
 				map_invoice[key]["amount"] += flt(d.amount)
 				map_invoice[key]['invoices'].append(d)
