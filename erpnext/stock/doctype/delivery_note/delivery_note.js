@@ -459,6 +459,7 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 			}, __('Create'))
 		}
 		me.frm.cscript.change_package_display();
+		me.frm.cscript.show_billed_amt();
 
 		me.frm.set_query("item_code", "items", function(doc, cdt, cdn) {
 			var row = locals[cdt][cdn];
@@ -486,6 +487,27 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 		}else{
 			this.frm.cscript.change_package_label(0);
 		}
+	}
+
+	show_billed_amt(){
+		const item_table = "items";
+		var change = cint(this.frm.doc.is_return)==1;
+		var table = this.frm.fields_dict[item_table];
+		if (!table) return;
+		var amt = table.grid.fields_map.billed_amt;
+		var wh = table.grid.fields_map.warehouse;
+		if (!amt) return;
+		if (change){
+			amt.in_list_view = 1;
+			amt.columns = 1;
+			wh.columns = 1;
+		}else{
+			amt.in_list_view = 0;
+			amt.columns = 0;
+			wh.columns = 2;
+		}
+
+		table.grid.reset_grid();
 	}
 
 	make_shipment() {
