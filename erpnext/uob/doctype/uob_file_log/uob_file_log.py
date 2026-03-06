@@ -273,7 +273,13 @@ class UOBFileLog(Document):
 				if x.get("status_result") == "RJCT":
 					continue
 				
-				paid_amount = flt(net_amount_mapping.get(x['pay_no']))
+				temp = net_amount_mapping.get(x['pay_no'])
+				paid_amount = flt(temp.get("amount"))
+				has_return = temp.get("has_return")
+
+				if has_return and not "status_result" in x:
+					# forbidden payment entry if has return but not have L4
+					continue
 
 				for i, tr in enumerate(d['transfer']):
 					if tr['Base Transaction Code'].strip() == "C":
@@ -611,35 +617,31 @@ def clean_amount(value) -> float:
 
 def get_net_amount(df: pd.DataFrame) -> dict:
     """
-    Given a DataFrame of bank transactions, return a mapping of
-    PAY reference → net amount.
-
-    Net per PAY = sum(ALL D amounts) - sum(ALL C amounts)
-    Includes both NIBF (transfer) and NSVC (service charge).
-
-    Your Reference is converted via convert_inv_no: PAY260044 → PAY-260044
-
     Returns:
-        { "PAY-260044": 36.0, "PAY-260045": 2301.32, ... }
+        {
+            "PAY-260044": {"amount": 37.50,   "has_return": False},
+            "PAY-260045": {"amount": 2301.32, "has_return": True},
+            ...
+        }
     """
     df = df.copy()
 
-    # Normalize columns
-    df["Base Transaction Code"]      = df["Base Transaction Code"].astype(str).str.strip()
-    df["Your Reference"]             = df["Your Reference"].astype(str).str.strip()
-    df["Transaction Amount"]         = df["Transaction Amount"].apply(clean_amount)
+    df["Base Transaction Code"] = df["Base Transaction Code"].astype(str).str.strip()
+    df["Your Reference"]        = df["Your Reference"].astype(str).str.strip()
+    df["Transaction Amount"]    = df["Transaction Amount"].apply(clean_amount)
 
-    # Keep only PAY references
     df = df[df["Your Reference"].str.startswith("PAY", na=False)]
-
-    # Convert reference format: PAY260044 → PAY-260044
     df["Your Reference"] = df["Your Reference"].apply(convert_inv_no)
 
     result = {}
     for ref in df["Your Reference"].unique():
-        subset = df[df["Your Reference"] == ref]
-        debit  = subset[subset["Base Transaction Code"] == "D"]["Transaction Amount"].sum()
-        credit = subset[subset["Base Transaction Code"] == "C"]["Transaction Amount"].sum()
-        result[ref] = round(debit - credit, 2)
+        subset     = df[df["Your Reference"] == ref]
+        debit      = subset[subset["Base Transaction Code"] == "D"]["Transaction Amount"].sum()
+        credit     = subset[subset["Base Transaction Code"] == "C"]["Transaction Amount"].sum()
+        has_return = not subset[subset["Base Transaction Code"] == "C"].empty
+        result[ref] = {
+            "amount":     round(debit - credit, 2),
+            "has_return": has_return,
+        }
 
     return result
