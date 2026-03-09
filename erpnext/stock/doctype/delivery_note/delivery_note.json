@@ -81,6 +81,7 @@
   "shipping_rule",
   "inter_company_terms",
   "carton_weight",
+  "total_cartons",
   "column_break_72",
   "mode_of_transport",
   "port_of_discharge",
@@ -1719,14 +1720,21 @@
   {
    "fieldname": "total_gross_weight",
    "fieldtype": "Float",
-   "label": "Total Gross Weight"
+   "label": "Total Gross Weight",
+   "read_only": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "total_cartons",
+   "fieldtype": "Int",
+   "label": "Total Cartons"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-09 16:26:02.264897",
+ "modified": "2026-03-09 16:55:11.824725",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

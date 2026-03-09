@@ -60,6 +60,9 @@ class ShippingRule(Document):
 		shipping_amount = 0.0
 		by_value = False
 
+		if not self.shipping_amount:
+			return
+
 		if doc.get_shipping_address():
 			# validate country only if there is address
 			self.validate_countries(doc)

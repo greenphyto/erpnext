@@ -584,11 +584,15 @@ class DeliveryNote(SellingController):
 			elif d.so_detail:
 				updated_delivery_notes += update_billed_amount_based_on_so(d.so_detail, update_modified)
 
-		for dn in set(updated_delivery_notes):
-			dn_doc = self if (dn == self.name) else frappe.get_doc("Delivery Note", dn)
-			dn_doc.update_billing_percentage(update_modified=update_modified)
-
-		self.load_from_db()
+		# if not fetch_only:
+		if not self.is_new() and not fetch_only:
+			for dn in set(updated_delivery_notes):
+				dn_doc = self if (dn == self.name) else frappe.get_doc("Delivery Note", dn)
+				dn_doc.update_billing_percentage(update_modified=update_modified)
+			self.load_from_db()
+		else:
+			for d in self.get("items"):
+				d.billed_amt = d.amount - (d.returned_qty * d.rate)
 
 	def make_return_invoice(self):
 		try:
