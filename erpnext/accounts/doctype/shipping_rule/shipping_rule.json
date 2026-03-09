@@ -1,14 +1,25 @@
 {
+ "actions": [],
  "allow_import": 1,
+ "allow_rename": 1,
  "autoname": "field:label",
  "creation": "2013-06-25 11:48:03",
  "description": "Specify conditions to calculate shipping amount",
  "doctype": "DocType",
+ "engine": "InnoDB",
  "field_order": [
   "label",
+  "shipping_rule_type",
+  "column_break_3",
   "disabled",
   "column_break_4",
-  "shipping_rule_type",
+  "default_inter_company_terms",
+  "carton_weight",
+  "column_break_7",
+  "mode_of_transport",
+  "port_of_discharge",
+  "port_of_loading",
+  "shipping_rate_tab",
   "section_break_10",
   "company",
   "column_break_12",
@@ -42,7 +53,8 @@
   },
   {
    "fieldname": "column_break_4",
-   "fieldtype": "Column Break"
+   "fieldtype": "Section Break",
+   "label": "Shipping Location"
   },
   {
    "fieldname": "shipping_rule_type",
@@ -136,14 +148,62 @@
   {
    "fieldname": "dimension_col_break",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "shipping_rate_tab",
+   "fieldtype": "Tab Break",
+   "label": "Shipping Rate"
+  },
+  {
+   "default": "Land",
+   "fieldname": "mode_of_transport",
+   "fieldtype": "Select",
+   "label": "Mode of Transport",
+   "options": "Land\nSea\nAir"
+  },
+  {
+   "fieldname": "port_of_discharge",
+   "fieldtype": "Link",
+   "label": "Port of Discharge",
+   "options": "Port"
+  },
+  {
+   "fieldname": "port_of_loading",
+   "fieldtype": "Link",
+   "label": "Port of Loading",
+   "options": "Port"
+  },
+  {
+   "fieldname": "default_inter_company_terms",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Default Inter Company Terms",
+   "options": "Terms and Conditions"
+  },
+  {
+   "description": "in KG",
+   "fieldname": "carton_weight",
+   "fieldtype": "Float",
+   "label": "Carton Weight"
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 1,
- "modified": "2019-05-25 23:12:26.156405",
+ "links": [],
+ "modified": "2026-03-09 16:21:43.910961",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Shipping Rule",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -189,5 +249,7 @@
    "write": 1
   }
  ],
- "sort_order": "ASC"
+ "sort_field": "modified",
+ "sort_order": "ASC",
+ "states": []
 }

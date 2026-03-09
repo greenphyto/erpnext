@@ -70,18 +70,26 @@
   "section_break_31",
   "total_qty",
   "total_net_weight",
+  "total_gross_weight",
   "column_break_35",
   "base_total",
   "base_net_total",
   "column_break_33",
   "total",
   "net_total",
+  "shipping_method_section",
+  "shipping_rule",
+  "inter_company_terms",
+  "carton_weight",
+  "column_break_72",
+  "mode_of_transport",
+  "port_of_discharge",
+  "port_of_loading",
   "taxes_section",
   "taxes_and_charges",
   "column_break_43",
   "tax_category",
   "column_break_39",
-  "shipping_rule",
   "section_break_41",
   "taxes",
   "section_break_44",
@@ -684,7 +692,6 @@
    "allow_on_submit": 1,
    "fieldname": "shipping_rule",
    "fieldtype": "Link",
-   "hidden": 1,
    "label": "Shipping Rule",
    "oldfieldtype": "Button",
    "options": "Shipping Rule",
@@ -1649,13 +1656,77 @@
    "fieldname": "donor_name",
    "fieldtype": "Data",
    "label": "Donor Name"
+  },
+  {
+   "fetch_from": "shipping_address_name.outlet_name",
+   "fieldname": "outlet_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Outlet Name",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:doc.shipping_rule",
+   "fieldname": "shipping_method_section",
+   "fieldtype": "Section Break",
+   "label": "Shipping Method"
+  },
+  {
+   "fetch_from": "shipping_rule.mode_of_transport",
+   "fetch_if_empty": 1,
+   "fieldname": "mode_of_transport",
+   "fieldtype": "Select",
+   "label": "Mode of Transport",
+   "options": "Land\nSea\nAir"
+  },
+  {
+   "fetch_from": "shipping_rule.port_of_discharge",
+   "fetch_if_empty": 1,
+   "fieldname": "port_of_discharge",
+   "fieldtype": "Link",
+   "label": "Port of Discharge",
+   "options": "Port"
+  },
+  {
+   "fetch_from": "shipping_rule.port_of_loading",
+   "fetch_if_empty": 1,
+   "fieldname": "port_of_loading",
+   "fieldtype": "Link",
+   "label": "Port of Loading",
+   "options": "Port"
+  },
+  {
+   "fieldname": "column_break_72",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Carton weight at single pcs (KG)",
+   "fetch_from": "shipping_rule.carton_weight",
+   "fetch_if_empty": 1,
+   "fieldname": "carton_weight",
+   "fieldtype": "Float",
+   "label": "Carton Weight"
+  },
+  {
+   "fetch_from": "shipping_rule.default_inter_company_terms",
+   "fetch_if_empty": 1,
+   "fieldname": "inter_company_terms",
+   "fieldtype": "Link",
+   "label": "Inter Company Terms",
+   "options": "Terms and Conditions"
+  },
+  {
+   "fieldname": "total_gross_weight",
+   "fieldtype": "Float",
+   "label": "Total Gross Weight"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-01-15 16:25:35.022162",
+ "modified": "2026-03-09 16:26:02.264897",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
