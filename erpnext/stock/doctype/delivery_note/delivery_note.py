@@ -212,6 +212,7 @@ class DeliveryNote(SellingController):
 		self.validate_replacement()
 		self.add_item_batch_foms_id()
 		self.validate_pledge()
+		self.update_billing_status(fetch_only=True)
 
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 
@@ -609,19 +610,23 @@ class DeliveryNote(SellingController):
 		self.notify_update()
 		clear_doctype_notifications(self)
 
-	def update_billing_status(self, update_modified=True):
+	def update_billing_status(self, update_modified=True, fetch_only=False):
 		updated_delivery_notes = [self.name]
 		for d in self.get("items"):
 			if d.si_detail and not d.so_detail:
 				d.db_set("billed_amt", d.amount, update_modified=update_modified)
 			elif d.so_detail:
-				updated_delivery_notes += update_billed_amount_based_on_so(d.so_detail, update_modified)
+				updated_delivery_notes += update_billed_amount_based_on_so(d.so_detail, update_modified, fetch_only)
 
-		for dn in set(updated_delivery_notes):
-			dn_doc = self if (dn == self.name) else frappe.get_doc("Delivery Note", dn)
-			dn_doc.update_billing_percentage(update_modified=update_modified)
-
-		self.load_from_db()
+		# if not fetch_only:
+		if not self.is_new():
+			for dn in set(updated_delivery_notes):
+				dn_doc = self if (dn == self.name) else frappe.get_doc("Delivery Note", dn)
+				dn_doc.update_billing_percentage(update_modified=update_modified)
+			self.load_from_db()
+		else:
+			for d in self.get("items"):
+				d.billed_amt = d.amount - (d.returned_qty * d.rate)
 
 	def make_return_invoice(self):
 		try:
@@ -828,7 +833,7 @@ class DeliveryNote(SellingController):
 		else:
 			return False
 
-def update_billed_amount_based_on_so(so_detail, update_modified=True):
+def update_billed_amount_based_on_so(so_detail, update_modified=True, fetch_only=False):
 	from frappe.query_builder.functions import Sum
 
 	# Billed against Sales Order directly
@@ -840,7 +845,7 @@ def update_billed_amount_based_on_so(so_detail, update_modified=True):
 		.select(sum_amount)
 		.where(
 			(si_item.so_detail == so_detail)
-			& ((si_item.dn_detail.isnull()) | (si_item.dn_detail == ""))
+			# & ((si_item.dn_detail.isnull()) | (si_item.dn_detail == ""))
 			& (si_item.docstatus == 1)
 		)
 		.run()
@@ -892,13 +897,14 @@ def update_billed_amount_based_on_so(so_detail, update_modified=True):
 				billed_amt_agianst_dn += billed_against_so
 				billed_against_so = 0
 
-		frappe.db.set_value(
-			"Delivery Note Item",
-			dnd.name,
-			"billed_amt",
-			billed_amt_agianst_dn,
-			update_modified=update_modified,
-		)
+		if not fetch_only:
+			frappe.db.set_value(
+				"Delivery Note Item",
+				dnd.name,
+				"billed_amt",
+				billed_amt_agianst_dn,
+				update_modified=update_modified,
+			)
 
 		updated_dn.append(dnd.parent)
 
