@@ -451,8 +451,8 @@ class calculate_taxes_and_totals(object):
 		tax_rate = self._get_tax_rate(tax, item_tax_map)
 		current_tax_amount = 0.0
 
-		if tax.charge_type == "Actual" and not self.doc.net_total:
-			frappe.msgprint("Please set <b>On Item Quantity</b> on the taxes type, if only applying tax on the items.")
+		# if tax.charge_type == "Actual" and not self.doc.net_total:
+		# 	frappe.msgprint("Please set <b>On Item Quantity</b> on the taxes type, if only applying tax on the items.")
 
 		if tax.charge_type == "Actual":
 			# distribute the tax amount proportionally to each item row
@@ -592,14 +592,20 @@ class calculate_taxes_and_totals(object):
 			self.doc.total_net_weight = 0.0
 			for d in self.doc.items:
 				default_weight_per_unit = frappe.get_value("Item", "weight_per_unit") or 1
-				if self.doc.doctype == "Sales Order":
+				if self.doc.doctype in ["Sales Order", "Delivery Note", "Sales Invoice"]:
 					d.weight_per_unit = frappe.get_value("Packaging", d.uom, "total_weight") 
 				if not d.weight_per_unit:
 					d.weight_per_unit = default_weight_per_unit
 
 				weight = flt(d.get("weight_per_unit"))
-				d.total_weight = weight * d.qty
+				d.total_weight = weight * d.qty 
 				self.doc.total_net_weight += d.total_weight
+		
+		if self.doc.meta.get_field("total_gross_weight") and self.doc.meta.get_field("total_cartons"):
+			self.doc.total_cartons = cint(self.doc.total_qty / 12)
+			total_carton_weight = cint(self.doc.get("total_cartons")) * flt(self.doc.get("carton_weight"))  + self.doc.total_net_weight
+			self.doc.total_gross_weight = total_carton_weight
+
 
 	def set_rounded_total(self):
 		if self.doc.get("is_consolidated") and self.doc.get("rounding_adjustment"):
