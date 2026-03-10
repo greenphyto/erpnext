@@ -48,6 +48,7 @@ class PackingSlip(StatusUpdater):
 
 		self.set_missing_values()
 		self.calculate_net_total_pkg()
+		self.set_case()
 
 	def on_submit(self):
 		self.update_prevdoc_status()
@@ -137,16 +138,14 @@ class PackingSlip(StatusUpdater):
 				)
 
 	def set_missing_values(self):
-		if not self.from_case_no:
-			self.from_case_no = self.get_recommended_case_no()
-
+		
 		for item in self.items:
 			weight_per_unit, weight_uom = frappe.db.get_value(
 				"Item", item.item_code, ["weight_per_unit", "weight_uom"]
 			)
 
 			if weight_per_unit and not item.net_weight:
-				item.net_weight = weight_per_unit
+				item.unit_weight = weight_per_unit
 			if weight_uom and not item.weight_uom:
 				item.weight_uom = weight_uom
 
@@ -158,31 +157,39 @@ class PackingSlip(StatusUpdater):
 				frappe.db.get_value(
 					"Packing Slip",
 					{"delivery_note": self.delivery_note, "docstatus": 1},
-					[{"MAX": "to_case_no"}],
+					["max(to_case_no)"],
 				)
 			)
 			+ 1
 		)
+	
+	def set_case(self):
+		if self.from_case_no:
+			self.from_case_no = self.get_recommended_case_no()
+		if self.from_case_no:
+			self.to_case_no = self.from_case_no + self.get_to_case_no()
+
+
+	def get_to_case_no(self):
+		return sum([d.cartons for d in self.get("items")])
 
 	def calculate_net_total_pkg(self):
 		self.net_weight_uom = self.items[0].weight_uom if self.items else None
 		self.gross_weight_uom = self.net_weight_uom
 
 		net_weight_pkg = 0
+		gross_weight_pkg = 0
 		for item in self.items:
-			if item.weight_uom != self.net_weight_uom:
-				frappe.throw(
-					_(
-						"Different UOM for items will lead to incorrect (Total) Net Weight value. Make sure that Net Weight of each item is in the same UOM."
-					)
-				)
-
-			net_weight_pkg += flt(item.net_weight) * flt(item.qty)
+			item.weight_uom = self.net_weight_uom
+			item.cartons = cint(cint(item.qty)/self.unit_per_carton)
+			carton_weight = item.cartons * self.carton_weight
+			item.net_weight = flt(item.unit_weight) * flt(item.qty)
+			item.gross_weight = item.net_weight + carton_weight
+			net_weight_pkg += flt(item.net_weight)
+			gross_weight_pkg += flt(item.gross_weight)
 
 		self.net_weight_pkg = round(net_weight_pkg, 2)
-
-		if not flt(self.gross_weight_pkg):
-			self.gross_weight_pkg = self.net_weight_pkg
+		self.gross_weight_pkg = round(gross_weight_pkg, 2)
 
 
 @frappe.whitelist()
