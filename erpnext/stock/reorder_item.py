@@ -142,6 +142,7 @@ def create_material_request(material_requests):
 	"""Create indent on reaching reorder level"""
 	mr_list = []
 	exceptions_list = []
+	send_notif = False
 
 	def _log_exception(mr):
 		if frappe.local.message_log:
@@ -254,24 +255,27 @@ def create_material_request(material_requests):
 							}
 						exist_row = find_existing_row(mr, item_row)
 						if not exist_row:
+							send_notif = True
 							row = mr.append("items")
+							row.notif = 1
 							row.update(item_row)
 							if not mr.is_new():
 								row.insert()
 
-					schedule_dates = [ cstr(d.schedule_date) for d in mr.items ] + [ nowdate()]
+					schedule_dates = [ getdate(d.schedule_date) for d in mr.items ] + [ getdate()]
 					mr.schedule_date = min(schedule_dates)
 					mr.pic = pic
 					mr.from_reorder_level = 1
 					mr.flags.ignore_mandatory = True
-					mr.save()
+					if send_notif:
+						mr.save()
 					mr_list.append(mr)
 
 				except Exception:
 					if mr:
 						_log_exception(mr)
 
-	if mr_list:
+	if mr_list and send_notif:
 		if getattr(frappe.local, "reorder_email_notify", None) is None:
 			frappe.local.reorder_email_notify = cint(
 				frappe.db.get_value("Stock Settings", None, "reorder_email_notify")
