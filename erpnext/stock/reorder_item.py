@@ -10,6 +10,7 @@ from frappe import _
 from frappe.utils import add_days, cint, flt, nowdate, getdate, cstr
 
 import erpnext
+from erpnext.setup.doctype.company.company import switch_to_company_admin
 
 
 def reorder_item():
@@ -171,6 +172,7 @@ def create_material_request(material_requests):
 
 	for request_type in material_requests:
 		for company in material_requests[request_type]:
+			switch_to_company_admin(company)
 			for pic in material_requests[request_type][company]:
 				try:
 					mr = None
