@@ -821,3 +821,9 @@ def create_transaction_deletion_request(company):
 	tdr = frappe.get_doc({"doctype": "Transaction Deletion Record", "company": company})
 	tdr.insert()
 	tdr.submit()
+
+def switch_to_company_admin(company, change_user=True):
+	user = frappe.get_value("Company", company, "admin_user")
+	if change_user:
+		frappe.set_user(user)
+	return user

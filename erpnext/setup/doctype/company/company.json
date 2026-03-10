@@ -135,6 +135,7 @@
   "column_break_105",
   "enable_supplier_invoice",
   "registration_info",
+  "admin_user",
   "registration_details",
   "lft",
   "rgt",
@@ -984,6 +985,13 @@
    "fieldtype": "Link",
    "label": "Default Salvage Warehouse",
    "options": "Warehouse"
+  },
+  {
+   "description": "User from specific company to do automation",
+   "fieldname": "admin_user",
+   "fieldtype": "Link",
+   "label": "Admin User",
+   "options": "User"
   }
  ],
  "icon": "fa fa-building",
@@ -991,7 +999,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2026-02-18 15:40:45.275213",
+ "modified": "2026-03-10 12:33:06.414886",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

@@ -162,6 +162,43 @@ class TestCompany(unittest.TestCase):
 		child_company.save()
 		self.test_basic_tree()
 
+	def test_add_company_admin_user(self):
+		"""Patch `add_company_admin` should populate admin_user field and create a user
+		with all roles but without sending welcome email."""
+		from erpnext.patches.v14_0.add_company_admin_user import add_company_admin
+
+		# create a temporary company
+		company = frappe.get_doc({
+			"doctype": "Company",
+			"company_name": "Temp Company for Admin",
+			"abbr": "TMP",
+			"default_currency": "USD",
+		})
+		company.insert()
+
+		# ensure no admin_user exists initially
+		self.assertFalse(frappe.db.get_value("Company", company.name, "admin_user"))
+
+		# run the patch function
+		add_company_admin()
+
+		# verify company record updated
+		admin = frappe.db.get_value("Company", company.name, "admin_user")
+		self.assertTrue(admin)
+
+		# verify that user document exists and has roles
+		user = frappe.get_doc("User", admin)
+		self.assertEqual(user.email, f"admin_{company.abbr}@example.com")
+		# welcome email flag should be off
+		self.assertFalse(user.send_welcome_email)
+		roles = frappe.db.get_all("Role", {"disabled": 0}, pluck="name")
+		for r in roles:
+			self.assertIn(r, user.get("roles_as_list") or [d.role for d in user.roles])
+
+		# cleanup
+		user.delete()
+		company.delete()
+
 
 def create_company_communication(doctype, docname):
 	comm = frappe.get_doc(
