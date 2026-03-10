@@ -13,11 +13,15 @@
   "delivery_note",
   "column_break1",
   "naming_series",
+  "shipping_detail_section",
+  "mode_of_transport",
   "section_break0",
   "column_break2",
   "from_case_no",
+  "carton_weight",
   "column_break3",
   "to_case_no",
+  "unit_per_carton",
   "package_item_details",
   "items",
   "package_weight_details",
@@ -65,7 +69,8 @@
   },
   {
    "fieldname": "section_break0",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Package Detail"
   },
   {
    "fieldname": "column_break2",
@@ -170,13 +175,37 @@
    "options": "Packing Slip",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "shipping_detail_section",
+   "fieldtype": "Section Break",
+   "label": "Shipping Detail"
+  },
+  {
+   "fetch_from": "delivery_note.mode_of_transport",
+   "fieldname": "mode_of_transport",
+   "fieldtype": "Data",
+   "label": "Mode of Transport",
+   "read_only": 1
+  },
+  {
+   "description": "Carton weight in KG",
+   "fieldname": "carton_weight",
+   "fieldtype": "Float",
+   "label": "Carton Weight",
+   "precision": "4"
+  },
+  {
+   "fieldname": "unit_per_carton",
+   "fieldtype": "Int",
+   "label": "Unit per Carton"
   }
  ],
  "icon": "fa fa-suitcase",
  "idx": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-10 15:54:13.958505",
+ "modified": "2026-03-10 18:33:58.349896",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Packing Slip",
