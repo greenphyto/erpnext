@@ -9,9 +9,6 @@ from frappe.model.document import Document
 from frappe.utils import cint, flt
 from frappe.utils import safe_abs as abs
 
-from frappe.query_builder.functions import Sum
-from frappe.utils import cint, flt
-
 from erpnext.controllers.status_updater import StatusUpdater
 
 
@@ -117,7 +114,7 @@ class PackingSlip(StatusUpdater):
 			remaining_qty = frappe.db.get_value(
 				"Delivery Note Item" if item.dn_detail else "Packed Item",
 				{"name": item.dn_detail or item.pi_detail, "docstatus": 0},
-				Sum(DocType.qty - DocType.packed_qty),
+				"sum(qty - packed_qty)",
 			)
 
 			if remaining_qty is None:
