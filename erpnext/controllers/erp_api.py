@@ -30,6 +30,7 @@ from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms
 from datetime import datetime, timedelta
 # from erpnext.stock.utils import get_default_warehouse
 from erpnext.stock.stock_ledger import get_valuation_rate
+from erpnext.setup.doctype.company.company import switch_to_company_admin
 
 PRECISION_FACTOR = 4
 
@@ -208,6 +209,8 @@ def create_bom(data):
 def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, gross_weight, uom, submit=False, company=""):
 	if not company:
 		company = erpnext.get_default_company()
+
+	switch_to_company_admin(company)
 
 	data_name = f"Work Order {fomsLotID}"
 	save_log("Work Order", data_name, {
@@ -540,8 +543,11 @@ def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 	operationNo = cint(operationNo)
 	operationName = OPERATION_MAP_NAME.get(operationNo)
 	work_order_name = frappe.db.get_value("Work Order", ERPWorkOrderID)
+	company = frappe.db.get_value("Work Order", ERPWorkOrderID, "company")
 	data_name = f"Operation {operationNo} Work Order {ERPWorkOrderID}"
 	log = frappe.get_doc("FOMS Data Mapping", log_name)
+
+	switch_to_company_admin(company)
 
 	# Check if a job card has been created
 	existing_jc = frappe.db.get_value("Job Card", {
@@ -677,22 +683,39 @@ def get_previous_qty(work_order, cur_operation):
 def run_pending_harvesting_transfer():
 	now_time = get_datetime()
 	end_range = now_time - timedelta(minutes=5)
+	old_month = now_time - timedelta(days=30)
 
-	for d in frappe.db.sql("select name,data_name, raw_data from `tabFOMS Data Mapping` where status = 'Unknown' and created_on < %s ", (end_range), as_dict=1):
+	# save traceback and print after end of looping
+	errors = []
+
+	data = frappe.db.sql("select name,data_name, raw_data from `tabFOMS Data Mapping` where status in ('Unknown', 'In Progress') and data_type = 'Work Order' and created_on between %s and %s ", (old_month, end_range), as_dict=1)
+	for d in data:
 		data = json.loads(d.raw_data)
 
 		if not data.get('ERPWorkOrderID'):
 			continue
 
 		if "Operation 3" in d.data_name:
-			_update_work_order_operation_status(
-				log_name=d.name,
-				ERPWorkOrderID=data.get('ERPWorkOrderID'), 
-				operationNo=flt(data.get('operationNo')), 
-				percentage=flt(data.get('percentage')), 
-				rawMaterials=data.get('rawMaterials'),
-			)
-
+			try:
+				_update_work_order_operation_status(
+					log_name=d.name,
+					ERPWorkOrderID=data.get('ERPWorkOrderID'), 
+					operationNo=flt(data.get('operationNo')), 
+					percentage=flt(data.get('percentage')), 
+					rawMaterials=data.get('rawMaterials'),
+				)
+				frappe.db.commit()
+			except Exception as e:
+				errors.append({
+					"data_name": d.data_name,
+					"error": str(e),
+					"traceback": frappe.get_traceback()
+				})
+	if errors:
+		frappe.log_error(message=json.dumps(errors), title="Error in scheduled harvesting transfer")
+		err_msg = "\n".join([f"{e['data_name']}:\n{e['error']}\n{e['traceback']}" for e in errors])
+		frappe.throw(_(f"Errors occurred during scheduled harvesting transfer:\n{err_msg}"))	
+		
 @frappe.whitelist()
 def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate="", draft=False, now=False):
 	data_name = f"Finish Work Order {erpWorkOrderID}"
@@ -737,7 +760,10 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 		return {
 			"ERPStockEntry": "Temporary disabled"
 		}
-	
+
+	company = frappe.db.get_value("Work Order", ERPWorkOrderID, "company")
+	switch_to_company_admin(company)
+
 	wo_doc = frappe.get_doc("Work Order", ERPWorkOrderID)
 	work_order_name = wo_doc.name
 	status = wo_doc.status
@@ -828,8 +854,12 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 def run_pending_harvesting():
 	now_time = get_datetime()
 	end_range = now_time - timedelta(minutes=10)
+	old_month = now_time - timedelta(days=30)
 
-	for d in frappe.db.sql("select name, raw_data, data_name from `tabFOMS Data Mapping` where status = 'Unknown' and created_on < %s ", (end_range), as_dict=1):
+	errors = []
+
+	data_list = frappe.db.sql("select name, raw_data, data_name from `tabFOMS Data Mapping` where status = 'Unknown' and created_on between  %s and %s ", (old_month, end_range), as_dict=1)
+	for d in data_list:
 		data = json.loads(d.raw_data)
 		if "ERPWorkOrderID" in data:
 			data['erpWorkOrderID'] = cstr(data['ERPWorkOrderID'])
@@ -839,13 +869,26 @@ def run_pending_harvesting():
 			continue
 		
 		if "Finish Work Order" in d.data_name:
-			_submit_work_order_finish_goods(
-				erpWorkOrderID=data.get('erpWorkOrderID'), 
-				packets=flt(data.get('packets')), 
-				qty=flt(data.get('qty')), 
-				expiryDate=data.get('expiryDate'), 
-				draft=cint(data.get('draft'))
-			)
+			try:
+				_submit_work_order_finish_goods(
+					erpWorkOrderID=data.get('erpWorkOrderID'), 
+					packets=flt(data.get('packets')), 
+					qty=flt(data.get('qty')), 
+					expiryDate=data.get('expiryDate'), 
+					draft=cint(data.get('draft')),
+					log_name=d.name
+				)
+				frappe.db.commit()
+			except Exception as e:
+				errors.append({
+					"data_name": d.data_name,
+					"error": str(e),
+					"traceback": frappe.get_traceback()
+				})
+	if errors:
+		frappe.log_error(message=json.dumps(errors), title="Error in scheduled harvesting finish")
+		err_msg = "\n".join([f"{e['data_name']}:\n{e['error']}\n{e['traceback']}" for e in errors])
+		frappe.throw(_(f"Errors occurred during scheduled harvesting finish:\n{err_msg}"))
 
 def add_wip_additional_cost(stock_entry, work_order):
 	# get all additional from transfer material
