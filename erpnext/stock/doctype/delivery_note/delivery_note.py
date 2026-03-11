@@ -737,6 +737,8 @@ class DeliveryNote(SellingController):
 				row.return_qty =  d.new_qty - d.qty
 				# chaneg batch to new
 				row.batch_no = d.batch_no
+				temp = frappe.get_value("Batch", d.batch_no, ["foms_lot_id"], as_dict=1) or {}
+				row.foms_lot_name = temp.get("foms_lot_id")
 				row.db_update()
 
 				item_row = frappe._dict(row.as_dict())

@@ -989,10 +989,10 @@ erpnext.utils.do_update_child_items = function(opts) {
 			fieldname:"batch_no",
 			options: "Batch",
 			default: 0,
-			read_only: 1,
+			read_only: 0,
 			in_list_view: 1,
 			label: __('Batch'),
-			columns:4,
+			columns:2,
 			reqd:1,
 			get_query:function(item){
 				let filters = {
@@ -1010,7 +1010,24 @@ erpnext.utils.do_update_child_items = function(opts) {
 					query : "erpnext.controllers.queries.get_batch_no",
 					filters: filters
 				}
+			},
+			change: function(){
+				var grid = this.grid_row;
+				frappe.db.get_value("Batch", this.value, "foms_lot_id").then(r=>{
+					grid.doc.foms_lot_name = r.message.foms_lot_id;
+					grid.refresh();
+				})
 			}
+		},
+		{
+			fieldtype:'Data',
+			fieldname:"foms_lot_name",
+			default: 0,
+			read_only: 1,
+			fetch_from: "batch_no.foms_lot_id",
+			in_list_view: 1,
+			label: __('FOMS Lot Name'),
+			columns:2
 		}]
 		fields.push(...new_fields);
 	}
@@ -1065,7 +1082,7 @@ erpnext.utils.do_update_child_items = function(opts) {
 			this.hide();
 			refresh_field("items");
 		},
-		size:"large",
+		size:"extra-large",
 		primary_action_label: __('Update')
 	});
 
@@ -1082,7 +1099,8 @@ erpnext.utils.do_update_child_items = function(opts) {
 			"rate": d.rate,
 			"uom": d.uom,
 			"warehouse": d.warehouse,
-			"batch_no": d.batch_no
+			"batch_no": d.batch_no,
+			"foms_lot_name": d.foms_lot_name,
 		});
 		this.data = dialog.fields_dict.trans_items.df.data;
 		dialog.fields_dict.trans_items.grid.refresh();
