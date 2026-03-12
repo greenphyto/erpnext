@@ -35,6 +35,7 @@
   "series_required_pr",
   "permissions_section",
   "enable_specific_purchase_approval",
+  "enable_filter_on_list_view",
   "purchase_approval",
   "supplier_threshold"
  ],
@@ -221,6 +222,12 @@
    "fieldname": "allow_copy_batch_from_main_company",
    "fieldtype": "Check",
    "label": "Allow copy batch from main company"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_filter_on_list_view",
+   "fieldtype": "Check",
+   "label": "Enable filter on list view"
   }
  ],
  "icon": "fa fa-cog",
@@ -228,7 +235,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-02-06 11:28:26.297121",
+ "modified": "2026-03-12 10:06:29.467736",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Buying Settings",

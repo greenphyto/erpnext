@@ -811,7 +811,7 @@ def validate_purchase_request(doc, workflow=None, transition=None, user=None):
 	return all(condition)
 
 def validate_purchase_request_based_user(doc, user=None):
-	if not frappe.db.get_single_value("Buying Settings", "enable_specific_purchase_approval"):
+	if not cint(frappe.db.get_single_value("Buying Settings", "enable_specific_purchase_approval")):
 		return True
 	
 	creator = doc.owner
@@ -849,4 +849,27 @@ def has_permission(doc, user, ptype="read"):
 		return res
 
 	
+def get_permission_query_conditions(user=None):
+	temp = frappe.db.get_value("Buying Settings", "Buying Settings", ["enable_specific_purchase_approval", "enable_filter_on_list_view"], as_dict=True)
+	if cint(temp.enable_specific_purchase_approval) == 0 or cint(temp.enable_filter_on_list_view) == 0:
+		return ""
 
+	if not user:
+		user = frappe.session.user
+	# allow if creator = user object approver or owner
+
+	if user == "Administrator":
+		return ""
+
+	company = frappe.db.get_value("User", user, "company_selected")
+
+	object_user = frappe.get_all("Purchase User Permissions List", filters={
+		"parenttype":'Buying Settings',
+		'parentfield':"purchase_approval",
+		'company':company,
+		'approver':user,
+	}, pluck="requester") or [""]
+
+	return """ (`tabMaterial Request`.`owner` in ({0}) or `tabMaterial Request`.`owner`={1})""".format(
+		", ".join([frappe.db.escape(d) for d in object_user]), frappe.db.escape(user)
+	)

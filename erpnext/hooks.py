@@ -281,7 +281,11 @@ before_tests = "erpnext.setup.utils.before_tests"
 
 standard_queries = {
 	"Customer": "erpnext.selling.doctype.customer.customer.get_customer_list",
-    "Supplier": "erpnext.controllers.queries.supplier_query"
+    "Supplier": "erpnext.controllers.queries.supplier_query",
+}
+
+permission_query_conditions = {
+    "Material Request": "erpnext.stock.doctype.material_request.material_request.get_permission_query_conditions",
 }
 
 doc_events = {
