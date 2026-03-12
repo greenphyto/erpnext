@@ -281,7 +281,11 @@ before_tests = "erpnext.setup.utils.before_tests"
 
 standard_queries = {
 	"Customer": "erpnext.selling.doctype.customer.customer.get_customer_list",
-    "Supplier": "erpnext.controllers.queries.supplier_query"
+    "Supplier": "erpnext.controllers.queries.supplier_query",
+}
+
+permission_query_conditions = {
+    "Material Request": "erpnext.stock.doctype.material_request.material_request.get_permission_query_conditions",
 }
 
 doc_events = {
@@ -812,5 +816,5 @@ custom_export_report = {
 has_permission = {
 	"Supplier": "erpnext.buying.doctype.supplier.supplier.has_permission",
 	"Customer": "erpnext.selling.doctype.customer.customer.has_permission",
-    "Material Request":"erpnext.stock.doctype.material_request.material_request.has_permission"
+    # "Material Request":"erpnext.stock.doctype.material_request.material_request.has_permission"
 }
