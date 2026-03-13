@@ -21,6 +21,7 @@
   "allow_multiple_items",
   "bill_for_rejected_quantity_in_purchase_invoice",
   "internal_transactions_section",
+  "forbidden_pr_before_dn",
   "allow_copy_batch_from_main_company",
   "subcontract",
   "backflush_raw_materials_of_subcontract_based_on",
@@ -228,6 +229,12 @@
    "fieldname": "enable_filter_on_list_view",
    "fieldtype": "Check",
    "label": "Enable filter on list view"
+  },
+  {
+   "default": "0",
+   "fieldname": "forbidden_pr_before_dn",
+   "fieldtype": "Check",
+   "label": "Forbidden create Purchase Receipt before Delivery Note"
   }
  ],
  "icon": "fa fa-cog",
@@ -235,7 +242,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-03-12 10:06:29.467736",
+ "modified": "2026-03-13 18:42:26.288005",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Buying Settings",

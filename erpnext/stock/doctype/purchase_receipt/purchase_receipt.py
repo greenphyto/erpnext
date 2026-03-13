@@ -135,6 +135,7 @@ class PurchaseReceipt(BuyingController):
 			self.link_internal_company()
 		except:
 			pass
+		self.validate_delivery_note_internal_sent()
 
 	def link_internal_company(self):
 		# Only for internal supplier flow
@@ -841,6 +842,17 @@ class PurchaseReceipt(BuyingController):
 			update_billing_percentage(pr_doc, update_modified=update_modified)
 
 		self.load_from_db()
+
+		if not self.is_internal_supplier:
+			return
+		
+	def validate_delivery_note_internal_sent(self):
+		make_strict = frappe.db.get_single_value("Buying Settings", "forbidden_pr_before_dn")
+		if not make_strict:
+			return	
+		
+		if not self.inter_company_reference:
+			frappe.throw(_("Cannot create Purchase Receipt before Delivery Note is sent. <br>Please contact {} for more information.".format(self.supplier)))
 
 
 def update_billed_amount_based_on_po(po_details, update_modified=True):
