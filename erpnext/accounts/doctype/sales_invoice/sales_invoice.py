@@ -2073,7 +2073,6 @@ def get_internal_party(parties, link_doctype, doc):
 
 
 def validate_inter_company_transaction(doc, doctype):
-
 	details = get_inter_company_details(doc, doctype)
 	if not details:
 		return
@@ -2097,13 +2096,6 @@ def validate_inter_company_transaction(doc, doctype):
 	if not party:
 		partytype = "Supplier" if doctype in ["Sales Invoice", "Sales Order"] else "Customer"
 		frappe.throw(_("No {0} found for Inter Company Transactions.").format(partytype))
-
-	company = details.get("company")
-	default_currency = frappe.get_cached_value("Company", company, "default_currency")
-	if default_currency != doc.currency:
-		frappe.throw(
-			_("Company currencies of both the companies should match for Inter Company Transactions.")
-		)
 
 	return
 

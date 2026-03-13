@@ -128,7 +128,7 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 		out.bom = args.get("bom") or get_default_bom(args.item_code)
 
 	get_gross_profit(out)
-	if args.doctype == "Material Request":
+	if args.doctype in ("Material Request", "Delivery Note"):
 		out.rate = args.rate or out.price_list_rate
 		out.amount = flt(args.qty) * flt(out.rate)
 

@@ -159,6 +159,45 @@ class TransactionBase(StatusUpdater):
 		if len(child_table_values) > 1:
 			self.set(default_field, None)
 
+	def update_internal_company_data(self, target_name):
+		align_internal_document(self.doctype, self.name, target_name)
+
+def align_internal_document(source_doctype, source_name, target_name):
+	# Currently from GRN to DN
+	versus_map = {
+		"Sales Order":"Purchase Order",
+		"Sales Invoice": "Sales Order",
+		"Delivery Note": "Purchase Receipt",
+		"Purchase Order":"Sales Order",
+		"Purchase Invoice": "Purchase Order",
+		"Purchase Receipt": "Delivery Note",
+	}
+	target_doctype = versus_map.get(source_doctype)
+	if not target_doctype:
+		print(f"No target doctype mapping found for source doctype {source_doctype}")
+		return
+	
+	# This function is to align the internal company of linked document, for example between PR and PI, or DN and SI
+	source_doc = frappe.get_doc(source_doctype, source_name)
+	target_doc = frappe.get_doc(target_doctype, target_name)
+
+	if source_doctype == "Purchase Receipt":
+		if not source_doc.inter_company_reference:
+			source_doc.inter_company_reference = target_doc.inter_company_reference
+
+		item_map = {}
+		for item in target_doc.items:
+			item_map[(item.item_code, item.uom, item.qty)] = item
+
+		for source_item in source_doc.items:
+			target_item = item_map.get((source_item.item_code, source_item.uom, source_item.qty))
+			# copy batch and rate
+			# not yet for multiple-batch
+			source_item.batch_no = target_item.batch_no
+			source_item.rate = target_item.rate
+			source_item.db_update()
+		source_doc.db_update()
+
 
 def delete_events(ref_type, ref_name):
 	events = (

@@ -2,7 +2,7 @@
 # License: GNU General Public License v3. See license.txt
 
 
-import frappe
+import frappe, erpnext
 from frappe import _
 from frappe.contacts.doctype.address.address import get_company_address
 from frappe.desk.notifications import clear_doctype_notifications
@@ -834,6 +834,62 @@ class DeliveryNote(SellingController):
 			return True
 		else:
 			return False
+	
+	def update_dn_price_list_rate(self):
+		from erpnext.stock.get_item_details import get_item_details
+
+		changes = False
+
+		for item in self.items:
+			if item.so_detail:
+				so_item = frappe.db.get_value("Sales Order Item", item.so_detail,
+					["price_list_rate", "discount_percentage", "rate"], as_dict=True)
+				if so_item:
+					item.price_list_rate = so_item.price_list_rate
+					item.discount_percentage = so_item.discount_percentage or 0
+					item.rate = so_item.rate
+					item.amount = item.rate * item.qty
+					item.db_update()
+					changes = True
+					continue
+
+			args = frappe._dict({
+				"item_code": item.item_code,
+				"uom": item.uom,
+				"qty": item.qty,
+				"stock_qty": item.stock_qty,
+				"doctype": self.doctype,
+				"name": self.name,
+				"customer": self.customer,
+				"customer_group": self.customer_group,
+				"territory": self.territory,
+				"company": self.company,
+				"price_list": self.selling_price_list,
+				"price_list_currency": self.price_list_currency,
+				"plc_conversion_rate": self.plc_conversion_rate,
+				"conversion_rate": self.conversion_rate,
+				"transaction_date": self.posting_date,
+				"transaction_type": "selling",
+				"ignore_pricing_rule": 0,
+			})
+
+			details = get_item_details(args, self) or {}
+			if details:
+				item.price_list_rate = details.get("price_list_rate") or item.price_list_rate
+				item.discount_percentage = details.get("discount_percentage") or 0
+				item.rate = details.get("rate") or item.rate
+				item.amount = item.rate * item.qty
+				item.db_update()
+				changes = True
+
+		if changes:
+			self.calculate_taxes_and_totals()
+			for item in self.items:
+				item.db_update()
+			self.db_update()
+			return True
+
+		return False
 
 def update_billed_amount_based_on_so(so_detail, update_modified=True, fetch_only=False):
 	from frappe.query_builder.functions import Sum
@@ -1384,10 +1440,13 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 		target_doc.inter_company_invoice_reference = source_doc.name
 		if target_doc.doctype == "Purchase Receipt":
 			target_doc.company = details.get("company")
+			target_doc.set_warehouse = frappe.get_value("Company", target_doc.company, "default_warehouse_for_delivery")
+			target_doc.taxes_and_charges = frappe.db.get_value("Purchase Taxes and Charges Template", {"company":target_doc.company, "default_for_zero": 1}, "name")
 			target_doc.supplier = details.get("party")
 			target_doc.buying_price_list = source_doc.selling_price_list
 			target_doc.is_internal_supplier = 1
 			target_doc.inter_company_reference = source_doc.name
+			target_doc.currency = erpnext.get_default_currency()
 			target_doc.cost_center = frappe.get_value("Company",target_doc.company, "cost_center")
 			target_doc.letter_head = frappe.get_value("Company",target_doc.company, "default_letter_head")
 
@@ -1400,19 +1459,12 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 				target_doc, "billing_address", "billing_address_display", source_doc.customer_address
 			)
 
-			update_taxes(
-				target_doc,
-				party=target_doc.supplier,
-				party_type="Supplier",
-				company=target_doc.company,
-				doctype=target_doc.doctype,
-				party_address=target_doc.supplier_address,
-				company_address=target_doc.shipping_address,
-			)
 		else:
 			target_doc.company = details.get("company")
 			target_doc.customer = details.get("party")
+			target_doc.taxes_and_charges = frappe.db.get_value("Purchase Taxes and Charges Template", {"company":target_doc.company, "default_for_zero": 1}, "name")
 			target_doc.company_address = source_doc.supplier_address
+			target_doc.currency = erpnext.get_default_currency()
 			target_doc.selling_price_list = source_doc.buying_price_list
 			target_doc.is_internal_customer = 1
 			target_doc.inter_company_reference = source_doc.name
@@ -1432,16 +1484,6 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 			)
 			update_address(target_doc, "customer_address", "address_display", source_doc.shipping_address)
 
-			update_taxes(
-				target_doc,
-				party=target_doc.customer,
-				party_type="Customer",
-				company=target_doc.company,
-				doctype=target_doc.doctype,
-				party_address=target_doc.customer_address,
-				company_address=target_doc.company_address,
-				shipping_address_name=target_doc.shipping_address_name,
-			)
 
 	doclist = get_mapped_doc(
 		doctype,
