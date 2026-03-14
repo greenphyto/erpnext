@@ -32,5 +32,25 @@ frappe.ui.form.on('Stock Settings', {
 				frm.set_value("allow_negative_stock", 0);
 			}
 		);
+	},
+	send_missing_item_price: function(frm) {
+		frappe.confirm(
+			"Send Missing Item Price notification email now?",
+			() => {
+				frappe.call({
+					method: "erpnext.stock.doctype.stock_settings.stock_settings.send_missing_item_price_notification",
+					freeze: true,
+					freeze_message: "Sending notification...",
+					callback(r) {
+						if (!r.exc) {
+							frappe.show_alert({
+								message: "Missing Item Price notification sent successfully.",
+								indicator: "green"
+							});
+						}
+					}
+				});
+			}
+		);
 	}
 });

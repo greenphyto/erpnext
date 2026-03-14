@@ -1,0 +1,29 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "creation": "2026-03-14 10:51:59.057266",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Stock Settings",
+ "enabled": 1,
+ "event": "Custom",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<p>Dear Team,</p>\n<p>The following items under <strong>Item Group: Products</strong> do not have a <strong>General Selling Price</strong> configured for one or more of their UOMs. Please review and update the Item Price accordingly.</p>\n\n{% if doc.get_missing_item_price() %}\n<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\" style=\"border-collapse: collapse; width: 100%; font-size: 13px;\">\n    <thead style=\"background-color: #f0f0f0;\">\n        <tr>\n            <th>Item Code</th>\n            <th>Item Name</th>\n            <th>Item Group</th>\n            <th>Packing Size</th>\n            <th>Rate</th>\n        </tr>\n    </thead>\n    <tbody>\n        {% for row in doc.get_missing_item_price() %}\n        <tr>\n            <td>{{ row.item_code }}</td>\n            <td>{{ row.item_name }}</td>\n            <td>{{ row.item_group }}</td>\n            <td>{{ row.uom }}</td>\n            <td>{{ row.rate }}</td>\n        </tr>\n        {% endfor %}\n    </tbody>\n</table>\n<p>Total missing: <strong>{{ doc.get_missing_item_price() | length }}</strong> item-UOM combination(s).</p>\n{% else %}\n<p style=\"color: green;\">\u2705 All items have complete General Selling Prices for all UOMs.</p>\n{% endif %}\n\n<p>Please update the missing prices in <strong>ERPNext \u2192 Stock \u2192 Item Price</strong>.</p>\n<p>Regards,<br>\n<strong>ERPNext Automated Notification</strong></p>",
+ "modified": "2026-03-14 10:57:49.545985",
+ "modified_by": "Administrator",
+ "module": "Stock",
+ "name": "Missing Item Price",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_role": "System Manager"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "sender": "ERP",
+ "sender_email": "erp@greenphyto.com",
+ "subject": "[Action Required!] Missing Item Price \u2013 {{ frappe.utils.today() }}"
+}

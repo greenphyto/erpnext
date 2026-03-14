@@ -136,10 +136,41 @@ class StockSettings(Document):
 			validate_fields_for_doctype=False,
 		)
 
-
+	def get_missing_item_price(self):
+		return frappe.db.sql("""
+			SELECT 
+				i.item_code,
+				i.item_name,
+				i.item_group,
+				ucd.uom,
+				ucd.conversion_factor,
+				ip.price_list_rate AS rate
+			FROM `tabItem` i
+			LEFT JOIN `tabUOM Conversion Detail` ucd 
+				ON ucd.parent = i.item_code
+			LEFT JOIN `tabItem Price` ip 
+				ON ip.item_code = i.item_code
+				AND ip.selling = 1
+				AND (ip.customer IS NULL OR ip.customer = '')
+				AND ip.uom = ucd.uom
+			WHERE i.item_group = 'Products'
+				AND i.disabled = 0
+				AND (
+					ip.name IS NULL
+					OR ip.uom != ucd.uom
+				)
+			ORDER BY i.item_code, ucd.uom
+		""", as_dict=True)
+	
 def clean_all_descriptions():
 	for item in frappe.get_all("Item", ["name", "description"]):
 		if item.description:
 			clean_description = clean_html(item.description)
 		if item.description != clean_description:
 			frappe.db.set_value("Item", item.name, "description", clean_description)
+
+@frappe.whitelist()
+def send_missing_item_price_notification():
+    doc = frappe.get_single("Stock Settings")
+    notification = frappe.get_doc("Notification", "Missing Item Price")
+    notification.send(doc)

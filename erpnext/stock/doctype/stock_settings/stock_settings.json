@@ -17,6 +17,7 @@
   "valuation_method",
   "price_list_defaults_section",
   "auto_insert_price_list_rate_if_missing",
+  "send_missing_item_price",
   "column_break_12",
   "update_existing_price_list_rate",
   "stock_validations_tab",
@@ -414,6 +415,11 @@
    "fieldname": "expiry_days_product",
    "fieldtype": "Int",
    "label": "Expiry within (days)"
+  },
+  {
+   "fieldname": "send_missing_item_price",
+   "fieldtype": "Button",
+   "label": "Send Missing Item Price"
   }
  ],
  "icon": "icon-cog",
@@ -421,7 +427,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-01-20 19:47:19.604285",
+ "modified": "2026-03-14 10:41:52.001009",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Settings",
