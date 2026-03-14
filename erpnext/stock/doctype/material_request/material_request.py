@@ -840,6 +840,7 @@ def validate_purchase_request_based_user(doc, user=None):
 
 
 def has_permission(doc, user, ptype="read"):
+	# user = user or frappe.session.user
 	if doc.owner == user:
 		return True
 	

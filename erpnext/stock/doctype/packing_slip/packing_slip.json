@@ -13,8 +13,23 @@
   "delivery_note",
   "column_break1",
   "naming_series",
+  "importerexporter_section",
+  "shipper",
+  "shipper_address_name",
+  "shipper_address",
+  "shipper_contact_name",
+  "shipper_contact",
+  "column_break_10",
+  "importer",
+  "importer_address_name",
+  "importer_address",
+  "importer_contact_name",
+  "importer_contact",
   "shipping_detail_section",
   "mode_of_transport",
+  "inter_company_terms",
+  "country_of_origin",
+  "destination",
   "section_break0",
   "column_break2",
   "from_case_no",
@@ -30,6 +45,9 @@
   "column_break4",
   "gross_weight_pkg",
   "gross_weight_uom",
+  "handling_instruction_section",
+  "handling_instruction_template",
+  "handling_instruction",
   "letter_head_details",
   "letter_head",
   "misc_details",
@@ -199,13 +217,113 @@
    "fieldname": "unit_per_carton",
    "fieldtype": "Int",
    "label": "Unit per Carton"
+  },
+  {
+   "fieldname": "importerexporter_section",
+   "fieldtype": "Section Break",
+   "label": "Importer/Exporter"
+  },
+  {
+   "fieldname": "shipper",
+   "fieldtype": "Link",
+   "label": "Shipper",
+   "options": "Company"
+  },
+  {
+   "fieldname": "shipper_address",
+   "fieldtype": "Small Text",
+   "label": "Shipper Address"
+  },
+  {
+   "fieldname": "shipper_contact",
+   "fieldtype": "Small Text",
+   "label": "Shipper Contact"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "importer",
+   "fieldtype": "Link",
+   "label": "Importer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "importer_address",
+   "fieldtype": "Small Text",
+   "label": "Importer Address"
+  },
+  {
+   "fieldname": "importer_contact",
+   "fieldtype": "Small Text",
+   "label": "Importer Contact"
+  },
+  {
+   "fieldname": "inter_company_terms",
+   "fieldtype": "Link",
+   "label": "Inter Company Terms",
+   "options": "Terms and Conditions"
+  },
+  {
+   "fetch_from": "delivery_note.port_of_discharge",
+   "fieldname": "country_of_origin",
+   "fieldtype": "Data",
+   "label": "Country of Origin",
+   "read_only": 1
+  },
+  {
+   "fieldname": "destination",
+   "fieldtype": "Data",
+   "label": "Destination",
+   "read_only": 1
+  },
+  {
+   "fieldname": "handling_instruction_section",
+   "fieldtype": "Section Break",
+   "label": "Handling Instruction"
+  },
+  {
+   "fieldname": "handling_instruction_template",
+   "fieldtype": "Link",
+   "label": "Handling Instruction Template",
+   "options": "Terms and Conditions"
+  },
+  {
+   "fieldname": "handling_instruction",
+   "fieldtype": "Text Editor",
+   "label": "Handling Instruction"
+  },
+  {
+   "fieldname": "shipper_address_name",
+   "fieldtype": "Link",
+   "label": "Shipper Address Name",
+   "options": "Address"
+  },
+  {
+   "fieldname": "shipper_contact_name",
+   "fieldtype": "Link",
+   "label": "Shipper Contact Name",
+   "options": "Contact"
+  },
+  {
+   "fieldname": "importer_address_name",
+   "fieldtype": "Link",
+   "label": "Importer Address Name",
+   "options": "Address"
+  },
+  {
+   "fieldname": "importer_contact_name",
+   "fieldtype": "Link",
+   "label": "Importer Contact Name",
+   "options": "Contact"
   }
  ],
  "icon": "fa fa-suitcase",
  "idx": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-10 18:33:58.349896",
+ "modified": "2026-03-12 18:40:12.462996",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Packing Slip",
