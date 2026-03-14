@@ -268,7 +268,8 @@
    "fieldname": "inter_company_terms",
    "fieldtype": "Link",
    "label": "Inter Company Terms",
-   "options": "Terms and Conditions"
+   "options": "Terms and Conditions",
+   "reqd": 1
   },
   {
    "fieldname": "country_of_origin",
@@ -362,7 +363,7 @@
  "idx": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-14 13:31:47.658330",
+ "modified": "2026-03-14 13:34:21.534997",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Packing Slip",

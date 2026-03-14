@@ -157,7 +157,7 @@ class PackingSlip(StatusUpdater):
 			DocType = frappe.qb.DocType("Delivery Note Item" if item.dn_detail else "Packed Item")
 			remaining_qty = frappe.db.get_value(
 				"Delivery Note Item" if item.dn_detail else "Packed Item",
-				{"name": item.dn_detail or item.pi_detail, "docstatus": 0},
+				{"name": item.dn_detail or item.pi_detail},
 				"sum(qty - packed_qty)",
 			)
 
@@ -192,7 +192,7 @@ class PackingSlip(StatusUpdater):
 			self.shipper_address_name = get_default_address("Company", dn.company)
 			self.shipper_address = get_address_display(self.shipper_address_name).replace("<br>", "\n")
 			self.country_of_origin = frappe.db.get_value("Address", self.shipper_address_name, "country")
-			
+
 			# Set shipper contact from Company default contact
 			self.shipper_contact_name = get_default_contact("Company", dn.company)
 			if self.shipper_contact_name:

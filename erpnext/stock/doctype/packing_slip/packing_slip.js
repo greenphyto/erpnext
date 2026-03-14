@@ -6,7 +6,7 @@ frappe.ui.form.on('Packing Slip', {
         frm.set_query('delivery_note', () => {
             return {
                 filters: {
-                    docstatus: 0,
+                    docstatus: ["!=", 2],
                 }
             }
         });
