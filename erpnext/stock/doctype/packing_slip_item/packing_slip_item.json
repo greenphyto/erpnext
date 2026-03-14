@@ -16,6 +16,7 @@
   "quantity_section",
   "qty",
   "stock_uom",
+  "uom_view",
   "unit_weight",
   "section_break_9",
   "unit_per_carton",
@@ -158,13 +159,19 @@
    "fieldname": "unit_weight",
    "fieldtype": "Float",
    "label": "Unit Weight",
+   "precision": "4",
    "read_only": 1
+  },
+  {
+   "fieldname": "uom_view",
+   "fieldtype": "Data",
+   "label": "UOM View"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-03-10 18:44:43.046566",
+ "modified": "2026-03-14 12:49:37.952491",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Packing Slip Item",

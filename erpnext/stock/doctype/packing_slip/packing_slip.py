@@ -81,6 +81,7 @@ class PackingSlip(StatusUpdater):
 				"description": item.description,
 				"qty": item.qty,
 				"stock_uom": item.uom,
+				"unit_weight": item.weight_per_unit,
 				"dn_detail": item.name,
 			})
 		
@@ -101,9 +102,9 @@ class PackingSlip(StatusUpdater):
 	def validate_delivery_note(self):
 		"""Raises an exception if the `Delivery Note` status is not Draft"""
 
-		if cint(frappe.db.get_value("Delivery Note", self.delivery_note, "docstatus")) != 0:
+		if cint(frappe.db.get_value("Delivery Note", self.delivery_note, "docstatus")) == 2:
 			frappe.throw(
-				_("A Packing Slip can only be created for Draft Delivery Note.").format(self.delivery_note)
+				_("A Packing Slip can only be created for Draft/Submitted Delivery Note.").format(self.delivery_note)
 			)
 
 	def validate_case_nos(self):
@@ -190,6 +191,7 @@ class PackingSlip(StatusUpdater):
 			# Set shipper address name (Link) from DN company_address or fetch from Company
 			self.shipper_address_name = get_default_address("Company", dn.company)
 			self.shipper_address = get_address_display(self.shipper_address_name).replace("<br>", "\n")
+			self.country_of_origin = frappe.db.get_value("Address", self.shipper_address_name, "country")
 			
 			# Set shipper contact from Company default contact
 			self.shipper_contact_name = get_default_contact("Company", dn.company)
@@ -204,14 +206,11 @@ class PackingSlip(StatusUpdater):
 			self.importer_contact_name = dn.contact_person
 			if self.importer_contact_name:
 				self.importer_contact = get_contact_details(self.importer_contact_name).get("contact_display")
-		
+			self.destination = frappe.db.get_value("Address", dn.shipping_address_name, "country")
 		for item in self.items:
 			weight_per_unit, weight_uom = frappe.db.get_value(
 				"Item", item.item_code, ["weight_per_unit", "weight_uom"]
 			)
-
-			if weight_per_unit and not item.net_weight:
-				item.unit_weight = weight_per_unit
 			if weight_uom and not item.weight_uom:
 				item.weight_uom = weight_uom
 		
@@ -257,6 +256,7 @@ class PackingSlip(StatusUpdater):
 			item.gross_weight = item.net_weight + carton_weight
 			net_weight_pkg += flt(item.net_weight)
 			gross_weight_pkg += flt(item.gross_weight)
+			item.uom_view = "{} Gr".format(cint(item.unit_weight * 1000))
 
 		self.net_weight_pkg = round(net_weight_pkg, 2)
 		self.gross_weight_pkg = round(gross_weight_pkg, 2)

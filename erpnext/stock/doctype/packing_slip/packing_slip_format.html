@@ -1,0 +1,222 @@
+{% if letter_head %}
+    {{ letter_head }}
+{% endif %}
+<p class="text-center" style="font-size: 1.125rem; margin-bottom: 1rem">
+	<b>{{ _("Packing Slip") }}</b><br>
+</p>
+<div class="row">
+    <div class="col-xs-7">
+        <div class="row row-no-gutters">
+            <span class="col-xs-5 line-height">
+            	<b>{{ _("Packing Slip No.") }}:</b>
+            </span>
+            <span class="col-xs-7 line-height">
+            	{{ doc.name }}
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-5 line-height">
+            	<b>{{ _("Delivery Note") }}:</b>
+            </span>
+            <span class="col-xs-7 line-height">
+            	{{ doc.delivery_note }}
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-5 line-height">
+            	<b>{{ _("Shipper") }}:</b>
+            </span>
+            <span class="col-xs-7 line-height">
+            	{{ doc.shipper }}<br>
+            	{{ doc.shipper_address or "" }}
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-5 line-height">
+            	<b>{{ _("Shipper Contact") }}:</b>
+            </span>
+            <span class="col-xs-7 line-height">
+            	{{ doc.shipper_contact or "" }}
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-5 line-height">
+            	<b>{{ _("Importer") }}:</b>
+            </span>
+            <span class="col-xs-7 line-height">
+            	{{ doc.importer }}<br>
+            	{{ doc.importer_address or "" }}
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-5 line-height">
+            	<b>{{ _("Importer Contact") }}:</b>
+            </span>
+            <span class="col-xs-7 line-height">
+                {{ doc.importer_contact or "" }}
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-5 line-height">
+            	<b>{{ _("Mode of Transport") }}:</b>
+            </span>
+            <span class="col-xs-7 line-height">
+            	{{ doc.get("mode_of_transport") or "-" }}
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-5 line-height">
+            	<b>{{ _("Port of Loading") }}:</b>
+            </span>
+            <span class="col-xs-7 line-height">
+            	{{ doc.get("port_of_loading") or "-" }}
+            </span>
+        </div>
+    </div>
+    <div class="col-xs-5">
+        <div class="row row-no-gutters">
+            <span class="col-xs-6 line-height">
+            	<b>{{ _("Date.") }}:</b>
+            </span>
+            <span class="col-xs-6 line-height">
+                {{ doc.get_formatted("posting_date") }}
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-6 line-height">
+            	<b>{{ _("Package No.") }}:</b>
+            </span>
+            <span class="col-xs-6 line-height">
+                {{ doc.from_case_no }} {% if doc.to_case_no and doc.to_case_no != doc.from_case_no %}to {{ doc.to_case_no }}{% endif %}
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-6 line-height">
+            	<b>{{ _("Country of Origin") }}:</b>
+            </span>
+            <span class="col-xs-6 line-height">
+            	{{ doc.country_of_origin or "-" }}
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-6 line-height">
+            	<b>{{ _("Destination") }}:</b>
+            </span>
+            <span class="col-xs-6 line-height">
+                {{ doc.destination or "-" }}
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-6 line-height">
+            	<b>{{ _("PO No") }}:</b>
+            </span>
+            <span class="col-xs-6 line-height">
+                {{ doc.po_no or "-" }}
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-6 line-height">
+            	<b>{{ _("Incoterms") }}:</b>
+            </span>
+            <span class="col-xs-6 line-height">
+                {{ doc.get("inter_company_terms") or "-" }}
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-6 line-height">
+            	<b>{{ _("Unit per Carton") }}:</b>
+            </span>
+            <span class="col-xs-6 line-height">
+                {{ doc.unit_per_carton or "-" }}
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-6 line-height">
+            	<b>{{ _("Carton Weight") }}:</b>
+            </span>
+            <span class="col-xs-6 line-height">
+                {{ doc.carton_weight or "-" }} KG
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-5 line-height">
+            	<b>{{ _("Port of Discharge") }}:</b>
+            </span>
+            <span class="col-xs-7 line-height">
+            	{{ doc.get("port_of_discharge") or "-" }}
+            </span>
+        </div>
+    </div>
+</div>
+<br>
+<table class="table">
+	<thead>
+		<tr class="table-header">
+			<th width="5%" class="text-center">{{ _("No") }}</th>
+			<th width="25%" class="text-left">{{ _("Item Code") }}</th>
+			<th width="10%" class="text-center">{{ _("Qty") }}</th>
+			<th width="10%" class="text-center">{{ _("UOM") }}</th>
+			<th width="10%" class="text-center">{{ _("Cartons") }}</th>
+			<th width="10%" class="text-right">{{ _("Net Weight") }}</th>
+			<th width="10%" class="text-right">{{ _("Gross Weight") }}</th>
+			<th width="10%" class="text-center">{{ _("Weight UOM") }}</th>
+		</tr>
+	</thead>
+	<tbody>
+		{%- for item in doc.items -%}
+		<tr>
+			<td class="text-center no-border">{{ item.idx }}</td>
+			<td class="text-left no-border">
+                item.item_name
+			</td>
+			<td class="text-center no-border">{{ item.qty }}</td>
+			<td class="text-center no-border">{{ item.uom_view }}</td>
+			<td class="text-center no-border">{{ item.cartons or "-" }}</td>
+			<td class="text-right no-border">{{ frappe.utils.flt(item.net_weight,2) or "-" }}</td>
+			<td class="text-right no-border">{{ frappe.utils.flt(item.gross_weight,2) or "-" }}</td>
+			<td class="text-center no-border">{{ item.weight_uom or "-" }}</td>
+		</tr>
+		{%- endfor -%}
+	</tbody>
+</table>
+<div class="row" style="margin-top: 1rem;">
+	<div class="col-xs-12">
+		<div class="row row-no-gutters">
+			<span class="col-xs-3 line-height">
+				<b>{{ _("Total Net Weight") }}:</b>
+			</span>
+			<span class="col-xs-3 line-height">
+				{{ frappe.utils.flt(doc.net_weight_pkg,2) or 0 }} {{ doc.net_weight_uom or "" }}
+			</span>
+			<span class="col-xs-3 line-height">
+				<b>{{ _("Total Gross Weight") }}:</b>
+			</span>
+			<span class="col-xs-3 line-height">
+				{{ frappe.utils.flt(doc.gross_weight_pkg,2) or 0 }} {{ doc.gross_weight_uom or "" }}
+			</span>
+		</div>
+	</div>
+</div>
+<div class="row" style="margin-top: unset !important;">
+    <div class="col-xs-12">
+        {% if doc.handling_instruction %}
+        <div class="row row-no-gutters">
+            <span class="col-xs-12 line-height">
+            	<b>{{ _("Handling Instruction") }}:</b>
+            </span>
+        </div>
+        <div class="row row-no-gutters">
+            <span class="col-xs-12 line-height">
+                {{ doc.handling_instruction }}
+            </span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<div id="footer-html">
+    {% if not no_letterhead and footer %}
+    <div class="letter-head-footer">
+        {{ footer }}
+    </div>
+    {% endif %}
+</div>

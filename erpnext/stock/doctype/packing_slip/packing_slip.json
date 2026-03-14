@@ -11,8 +11,10 @@
   "packing_slip_details",
   "column_break0",
   "delivery_note",
+  "po_no",
   "column_break1",
   "naming_series",
+  "posting_date",
   "importerexporter_section",
   "shipper",
   "shipper_address_name",
@@ -28,8 +30,11 @@
   "shipping_detail_section",
   "mode_of_transport",
   "inter_company_terms",
+  "port_of_loading",
+  "column_break_21",
   "country_of_origin",
   "destination",
+  "port_of_discharge",
   "section_break0",
   "column_break2",
   "from_case_no",
@@ -266,16 +271,17 @@
    "options": "Terms and Conditions"
   },
   {
-   "fetch_from": "delivery_note.port_of_discharge",
    "fieldname": "country_of_origin",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "label": "Country of Origin",
+   "options": "Country",
    "read_only": 1
   },
   {
    "fieldname": "destination",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "label": "Destination",
+   "options": "Country",
    "read_only": 1
   },
   {
@@ -317,13 +323,46 @@
    "fieldtype": "Link",
    "label": "Importer Contact Name",
    "options": "Contact"
+  },
+  {
+   "fieldname": "column_break_21",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "delivery_note.po_no",
+   "fieldname": "po_no",
+   "fieldtype": "Data",
+   "label": "PO No",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "delivery_note.port_of_loading",
+   "fieldname": "port_of_loading",
+   "fieldtype": "Link",
+   "label": "Port of Loading",
+   "options": "Port",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "delivery_note.port_of_discharge",
+   "fieldname": "port_of_discharge",
+   "fieldtype": "Link",
+   "label": "Port of Discharge",
+   "options": "Port",
+   "read_only": 1
+  },
+  {
+   "default": "now",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date"
   }
  ],
  "icon": "fa fa-suitcase",
  "idx": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-12 18:40:12.462996",
+ "modified": "2026-03-14 13:31:47.658330",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Packing Slip",
