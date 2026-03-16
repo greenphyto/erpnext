@@ -847,6 +847,9 @@ class PurchaseReceipt(BuyingController):
 			return
 		
 	def validate_delivery_note_internal_sent(self):
+		if not self.is_internal_supplier:
+			return
+		
 		make_strict = frappe.db.get_single_value("Buying Settings", "forbidden_pr_before_dn")
 		if not make_strict:
 			return	
