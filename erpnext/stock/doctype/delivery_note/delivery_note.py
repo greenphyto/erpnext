@@ -9,12 +9,11 @@ from frappe.desk.notifications import clear_doctype_notifications
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.utils import get_fetch_values
 from frappe.utils import cint, flt,format_date, get_datetime, get_time, getdate
+from frappe.utils import safe_abs as abs
+
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from erpnext.stock import get_warehouse_account_map, get_item_account
 from erpnext.accounts.general_ledger import make_gl_entries
-from frappe.utils import cint, flt
-from frappe.utils import safe_abs as abs
-
 from erpnext.accounts.utils import get_price_list_with
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.controllers.selling_controller import SellingController
@@ -29,27 +28,31 @@ form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 class DeliveryNote(SellingController):
 	def __init__(self, *args, **kwargs):
 		super(DeliveryNote, self).__init__(*args, **kwargs)
-		self.status_updater = [
-			{
-				"source_dt": "Delivery Note Item",
-				"target_dt": "Sales Order Item",
-				"join_field": "so_detail",
-				"target_field": "delivered_qty",
-				"target_parent_dt": "Sales Order",
-				"target_parent_field": "per_delivered",
-				"target_ref_field": "qty",
-				"source_field": "qty",
-				"percent_join_field": "against_sales_order",
-				"status_field": "delivery_status",
-				"keyword": "Delivered",
-				"second_source_dt": "Sales Invoice Item",
-				"second_source_field": "qty",
-				"second_join_field": "so_detail",
-				"overflow_type": "delivery",
-				"second_source_extra_cond": """ and exists(select name from `tabSales Invoice`
-				where name=`tabSales Invoice Item`.parent and update_stock = 1)""",
-			},
-			{
+		self.status_updater = []
+		if not cint(self.is_return):
+			field_args = {
+					"source_dt": "Delivery Note Item",
+					"target_dt": "Sales Order Item",
+					"join_field": "so_detail",
+					"target_field": "delivered_qty",
+					"target_parent_dt": "Sales Order",
+					"target_parent_field": "per_delivered",
+					"target_ref_field": "qty",
+					"source_field": "qty",
+					"percent_join_field": "against_sales_order",
+					"status_field": "delivery_status",
+					"keyword": "Delivered",
+					"second_source_dt": "Sales Invoice Item",
+					"second_source_field": "qty",
+					"second_join_field": "so_detail",
+					"overflow_type": "delivery",
+					"second_source_extra_cond": """ and exists(select name from `tabSales Invoice`
+					where name=`tabSales Invoice Item`.parent and update_stock = 1)""",
+					"extra_cond":" and qty > 0"
+				}
+			self.status_updater.append(field_args)
+
+		self.status_updater.append({
 				"source_dt": "Delivery Note Item",
 				"target_dt": "Sales Invoice Item",
 				"join_field": "si_detail",
@@ -60,8 +63,8 @@ class DeliveryNote(SellingController):
 				"percent_join_field": "against_sales_invoice",
 				"overflow_type": "delivery",
 				"no_allowance": 1,
-			},
-		]
+			})
+		
 		if cint(self.is_return):
 			self.status_updater.extend(
 				[
@@ -208,6 +211,8 @@ class DeliveryNote(SellingController):
 		self.validate_donation()
 		self.validate_replacement()
 		self.add_item_batch_foms_id()
+		self.validate_pledge()
+		self.update_billing_status(fetch_only=True)
 
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 
@@ -226,6 +231,12 @@ class DeliveryNote(SellingController):
 			self.link_internal_company()
 		except:
 			pass
+
+	def validate_pledge(self):
+		if self.customer == "Donor":
+			self.is_pledge = 1
+			if not self.contact_display:
+				self.contact_display = self.donor_name
 
 	def link_internal_company(self):
 		# Only for internal supplier flow
@@ -301,6 +312,12 @@ class DeliveryNote(SellingController):
 
 		elif self.is_replacement:
 			account = frappe.get_value("Company", self.company, "sales_replacement_account")
+		
+		elif self.is_production:
+			account = frappe.get_value("Company", self.company, "production_delivery_account")
+		
+		elif self.is_marketing:
+			account = frappe.get_value("Company", self.company, "marketing_delivery_account")
 
 		elif self.is_pledge:
 			account = frappe.get_value("Company", self.company, "donor_delivery_account")
@@ -334,12 +351,16 @@ class DeliveryNote(SellingController):
 					`tabWork Order` w ON w.name = se.work_order
 				WHERE
 					s.batch_no = %s
-						AND s.actual_qty > 0
+						-- AND s.actual_qty > 0
 						AND s.is_cancelled = 0
 						AND se.purpose = 'Manufacture'
 						""", (batch), as_dict=1, debug=0)
-			for d in temp:
-				return d.foms_lot_name, d.foms_work_order
+			if temp:
+				for d in temp:
+					return d.foms_lot_name, d.foms_work_order
+			else:
+				lot_id = frappe.db.get_value("Batch", batch, "foms_lot_id")
+				return lot_id, ""
 			
 		for d in self.get("items"):
 			d.foms_lot_name, d.foms_work_order = get_foms_lot_name(d.batch_no) or ("", "")
@@ -442,12 +463,18 @@ class DeliveryNote(SellingController):
 		self.update_stock_ledger()
 		self.make_gl_entries()
 		self.repost_future_sle_and_gle()
+		self.clear_foms_id()
 		try:
 			self.set_other_reff()
 		except:
 			pass
-
+	
+	def clear_foms_id(self):
+		if self.foms_id:
+			self.foms_id = None
+			
 	def set_other_reff(self):
+		invoice = False
 		for d in self.get("items"):
 			if d.get("si_detail"):
 				# get So from SI
@@ -469,6 +496,10 @@ class DeliveryNote(SellingController):
 					frappe.db.set_value("Sales Invoice", si_name, "delivery_note", self.name)
 					d.si_detail = si_detail
 					d.against_sales_invoice = si_name
+					invoice = True
+		
+		if invoice:
+			self.per_billed = 100
 
 	def on_cancel(self):
 		super(DeliveryNote, self).on_cancel()
@@ -544,7 +575,11 @@ class DeliveryNote(SellingController):
 			(self.name),
 		)
 		if submit_rv:
-			frappe.throw(_("Sales Invoice {0} has already been submitted").format(submit_rv[0][0]))
+			frappe.db.sql("""
+				update `tabSales Invoice Item` set delivery_note = "", dn_detail=""
+				where parent = %s	 
+			""", submit_rv[0][0])
+			# frappe.throw(_("Sales Invoice {0} has already been submitted").format(submit_rv[0][0]))
 
 		submit_in = frappe.db.sql(
 			"""select t1.name
@@ -576,13 +611,13 @@ class DeliveryNote(SellingController):
 		self.notify_update()
 		clear_doctype_notifications(self)
 
-	def update_billing_status(self, update_modified=True):
+	def update_billing_status(self, update_modified=True, fetch_only=False):
 		updated_delivery_notes = [self.name]
 		for d in self.get("items"):
 			if d.si_detail and not d.so_detail:
 				d.db_set("billed_amt", d.amount, update_modified=update_modified)
 			elif d.so_detail:
-				updated_delivery_notes += update_billed_amount_based_on_so(d.so_detail, update_modified)
+				updated_delivery_notes += update_billed_amount_based_on_so(d.so_detail, update_modified, fetch_only)
 
 		# if not fetch_only:
 		if not self.is_new() and not fetch_only:
@@ -801,7 +836,7 @@ class DeliveryNote(SellingController):
 		else:
 			return False
 
-def update_billed_amount_based_on_so(so_detail, update_modified=True):
+def update_billed_amount_based_on_so(so_detail, update_modified=True, fetch_only=False):
 	from frappe.query_builder.functions import Sum
 
 	# Billed against Sales Order directly
@@ -813,7 +848,7 @@ def update_billed_amount_based_on_so(so_detail, update_modified=True):
 		.select(sum_amount)
 		.where(
 			(si_item.so_detail == so_detail)
-			& ((si_item.dn_detail.isnull()) | (si_item.dn_detail == ""))
+			# & ((si_item.dn_detail.isnull()) | (si_item.dn_detail == ""))
 			& (si_item.docstatus == 1)
 		)
 		.run()
@@ -865,13 +900,14 @@ def update_billed_amount_based_on_so(so_detail, update_modified=True):
 				billed_amt_agianst_dn += billed_against_so
 				billed_against_so = 0
 
-		frappe.db.set_value(
-			"Delivery Note Item",
-			dnd.name,
-			"billed_amt",
-			billed_amt_agianst_dn,
-			update_modified=update_modified,
-		)
+		if not fetch_only:
+			frappe.db.set_value(
+				"Delivery Note Item",
+				dnd.name,
+				"billed_amt",
+				billed_amt_agianst_dn,
+				update_modified=update_modified,
+			)
 
 		updated_dn.append(dnd.parent)
 
