@@ -99,6 +99,8 @@
   "default_in_transit_warehouse",
   "default_stock_scrap_item",
   "default_salvage_warehouse",
+  "account_for_product_scrap",
+  "account_for_raw_material_scrap",
   "column_break_32",
   "stock_received_but_not_billed",
   "default_provisional_account",
@@ -992,6 +994,18 @@
    "fieldtype": "Link",
    "label": "Admin User",
    "options": "User"
+  },
+  {
+   "fieldname": "account_for_product_scrap",
+   "fieldtype": "Link",
+   "label": "Account for Product Scrap",
+   "options": "Account"
+  },
+  {
+   "fieldname": "account_for_raw_material_scrap",
+   "fieldtype": "Link",
+   "label": "Account for Raw Material Scrap",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-building",
@@ -999,7 +1013,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2026-03-10 12:33:06.414886",
+ "modified": "2026-03-16 17:32:25.073093",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

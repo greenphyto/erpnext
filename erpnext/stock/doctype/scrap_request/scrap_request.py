@@ -8,6 +8,7 @@ from frappe.utils import getdate, add_days, cint
 from erpnext.stock.doctype.batch.batch import get_batch_qty
 from erpnext.stock.get_item_details import get_conversion_factor
 from erpnext.controllers.foms import get_wip_warehouse
+from erpnext.setup.doctype.company.company import switch_to_company_admin
 class ScrapRequest(Document):
 	def validate(self):
 		if self.docstatus == 0:
@@ -135,6 +136,7 @@ def collect_expired_items():
 				sle.batch_no AS batch,
 					b.item,
 					sle.warehouse,
+					sle.company,
 					SUM(sle.actual_qty) AS batch_qty,
 					b.expiry_date
 			FROM
@@ -156,46 +158,53 @@ def collect_expired_items():
 
 	if not data:
 		return
+
+	companys = list(set([d.company for d in data]))
+	result = {}
 	
-	sr_name = frappe.get_value("Scrap Request", {
-		"system_generated":1, 
-		"docstatus":0
-	}, debug=0)
+	for company in companys:
+		switch_to_company_admin(company)
+		sr_name = frappe.get_value("Scrap Request", {
+			"system_generated":1, 
+			"docstatus":0
+		}, debug=0)
 
-	if sr_name:
-		doc = frappe.get_doc("Scrap Request", sr_name)
-		# add tollerance approval on progress not more than 14 days ago
-		if doc.status != "Pending" and getdate(doc.posting_date) > add_days(getdate(), -14):
-			return
-	else:
-		doc = frappe.new_doc("Scrap Request")
-
-	# create scrap request
-	for d in data:
-		temp = doc.get("items", {"batch":d.batch})
-		if temp:
-			row = temp[0]
+		if sr_name:
+			doc = frappe.get_doc("Scrap Request", sr_name)
+			# add tollerance approval on progress not more than 14 days ago
+			if doc.status != "Pending" and getdate(doc.posting_date) > add_days(getdate(), -14):
+				return
 		else:
-			row = doc.append("items")
-			row.item_code = d.item
-			row.batch = d.batch
+			doc = frappe.new_doc("Scrap Request")
 
-		row.qty = d.batch_qty
-	
-	rm_account = frappe.db.get_single_value("Stock Settings", "account_for_raw_material_scrap")
-	pr_account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
-	for d in doc.items:
-		if d.item_group == "Raw Material":
-			d.expense_account = rm_account
-		if d.item_group == "Products":
-			d.expense_account = pr_account		
+		# create scrap request
+		for d in data:
+			if d.company != company:
+				continue
 
-	doc.posting_date = getdate()
-	doc.scrap_account = rm_account
-	doc.reason = "Expired item (system)"
-	doc.system_generated = 1
-	doc.save(ignore_permissions=1)
-	return doc.name
+			temp = doc.get("items", {"batch":d.batch})
+			if temp:
+				row = temp[0]
+			else:
+				row = doc.append("items")
+				row.item_code = d.item
+				row.batch = d.batch
+
+			row.qty = d.batch_qty
+		
+		rm_account = frappe.db.get_value("Company", company, "account_for_raw_material_scrap")
+		for d in doc.items:
+			if d.item_group == "Raw Material":
+				d.expense_account = rm_account	
+
+		doc.posting_date = getdate()
+		doc.scrap_account = rm_account
+		doc.reason = "Expired item (system)"
+		doc.system_generated = 1
+		doc.save(ignore_permissions=1)
+		result[company] = doc.name
+
+	return result
 
 def collect_expired_product(date=""):
 	enable, within_days = frappe.db.get_value("Stock Settings","Stock Settings", ['enable_auto_collect_expired_products', 'expiry_days_product']) or (0,0)
@@ -203,7 +212,7 @@ def collect_expired_product(date=""):
 	if not cint(enable):
 		return
 	
-	use_date = add_days(getdate(), cint(within_days))
+	use_date = add_days(getdate(date), cint(within_days))
 	wip_warehouse = get_wip_warehouse()
 
 	# get data
@@ -217,6 +226,7 @@ def collect_expired_product(date=""):
 					sle.warehouse,
 					SUM(sle.actual_qty) AS batch_qty,
 					b.expiry_date,
+					sle.company,
 					sle.stock_uom as uom
 			FROM
 				`tabStock Ledger Entry` sle
@@ -229,37 +239,48 @@ def collect_expired_product(date=""):
 					AND b.expiry_date <= %(exp)s
 					AND b.item_group = 'Products'
 			GROUP BY sle.batch_no , sle.warehouse
-			ORDER BY sle.modified ASC) a
+			ORDER BY sle.company, b.expiry_date ASC) a
 		WHERE
 			a.batch_qty > 0
-	""", {"wh":wip_warehouse, "exp":use_date}, as_dict=1)
+	""", {"wh":wip_warehouse, "exp":use_date}, as_dict=1, debug=0)
 
 	if not data:
 		return
+	companys = list(set([d.company for d in data]))
+	result = {}
+	for company in companys:
+		switch_to_company_admin(company)
 
-	# create SE directly
-	stock_entry = frappe.new_doc("Stock Entry")
-	stock_entry.stock_entry_type_view = "Waste Materials"
-	stock_entry.purpose = "Material Issue"
-	stock_entry.set_stock_entry_type()
-	stock_entry.request_no = "Expired Product"
-	expense_account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
+		# create SE directly
+		stock_entry = frappe.new_doc("Stock Entry")
+		stock_entry.company = company
+		stock_entry.stock_entry_type_view = "Waste Materials"
+		stock_entry.purpose = "Material Issue"
+		stock_entry.set_stock_entry_type()
+		stock_entry.request_no = "Expired Product"
+		expense_account = frappe.db.get_value("Company", company, "account_for_product_scrap")
 
-	for d in data:
-		row = stock_entry.append("items")
-		row.item_code = d.item
-		row.qty = d.batch_qty
-		row.uom = d.uom
-		row.batch_no = d.batch
-		row.is_scrap_item = 1
-		row.conversion_factor = 1
-		row.s_warehouse = d.get("warehouse")
-		row.expense_account = expense_account
-	
-	stock_entry.system_generated = 1
-	stock_entry.remarks = "Expired products (system)"
-	stock_entry.set_missing_values()
-	stock_entry.insert(ignore_permissions=1)
-	stock_entry.submit()
+		for d in data:
+			if d.company != company:
+				continue
+			row = stock_entry.append("items")
+			row.item_code = d.item
+			row.qty = d.batch_qty
+			row.uom = d.uom
+			row.batch_no = d.batch
+			row.is_scrap_item = 1
+			row.conversion_factor = 1
+			row.s_warehouse = d.get("warehouse")
+			row.expense_account = expense_account
+		
+		stock_entry.system_generated = 1
+		stock_entry.remarks = "Expired products (system)"
+		stock_entry.set_missing_values()
+		stock_entry.insert(ignore_permissions=1)
+		try:
+			stock_entry.submit()
+		except Exception as e:
+			frappe.log_error(frappe.get_traceback(), "Submit Stock Entry Failed for expired product")
+		result[company] = stock_entry.name
 
-	return stock_entry.name
+	return result
