@@ -1456,10 +1456,14 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 			for tax in get_taxes_and_charges(master_doctype, target.get("taxes_and_charges")):
 				target.append("taxes", tax)
 
+		for item in target.get("items"):
+			item.warehouse = target.set_warehouse
+
 	def update_details(source_doc, target_doc, source_parent):
 		target_doc.inter_company_invoice_reference = source_doc.name
 		if target_doc.doctype == "Purchase Receipt":
 			target_doc.company = details.get("company")
+			target_doc.currency = source_doc.currency
 			target_doc.set_warehouse = frappe.get_value("Company", target_doc.company, "default_warehouse_for_delivery")
 			target_doc.taxes_and_charges = frappe.db.get_value("Purchase Taxes and Charges Template", {"company":target_doc.company, "default_for_zero": 1}, "name")
 			target_doc.supplier = details.get("party")
@@ -1504,6 +1508,8 @@ def make_inter_company_transaction(doctype, source_name, target_doc=None):
 			)
 			update_address(target_doc, "customer_address", "address_display", source_doc.shipping_address)
 
+	if target_doc:
+		target_doc.items = []
 
 	doclist = get_mapped_doc(
 		doctype,
