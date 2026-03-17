@@ -11,7 +11,9 @@ from frappe.utils import safe_abs as abs
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 	get_checks_for_pl_and_bs_accounts,
 )
+from erpnext.setup.doctype.company.company import switch_to_company_admin
 from erpnext.accounts.doctype.journal_entry.journal_entry import make_reverse_journal_entry
+
 from frappe.utils import getdate, add_days, get_last_day
 from six import string_types
 
@@ -41,12 +43,14 @@ def post_depreciation_entries(date=None, commit=True, asset_category=[]):
 		if key not in data_map:
 			data_map[key] = {
 				"date": use_date,
-				"assets": [d.name]
+				"assets": [d.name],
+				"company": d.company
 			}
 		else:
 			data_map[key]['assets'] += [d.name]
 
 	for category, dt in data_map.items():
+		switch_to_company_admin(dt['company'])
 		make_depreciation_entry( dt['assets'], dt['date'])
 		if commit:
 			frappe.db.commit()
