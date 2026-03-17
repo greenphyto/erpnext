@@ -2,6 +2,8 @@
 # License: GNU General Public License v3. See license.txt
 
 
+import math
+
 import frappe
 from frappe import _
 from frappe.contacts.doctype.contact.contact import get_contact_details, get_default_contact
@@ -61,6 +63,8 @@ class PackingSlip(StatusUpdater):
 		"""Fetch items from Delivery Note"""
 		if not self.delivery_note:
 			frappe.throw(_("Please select a Delivery Note"))
+
+		self.flags.first_fetch = True
 		
 		self.items = []
 		dn = frappe.get_doc("Delivery Note", self.delivery_note)
@@ -233,10 +237,17 @@ class PackingSlip(StatusUpdater):
 	
 	def set_case(self):
 		self.from_case_no = self.get_recommended_case_no()
+		carton_qty = self.get_to_case_no()
 		if self.from_case_no == 1:
-			self.to_case_no = self.get_to_case_no()
+			self.to_case_no = carton_qty
 		else:
-			self.to_case_no = self.from_case_no + self.get_to_case_no()
+			self.to_case_no = self.from_case_no + carton_qty
+
+		if not carton_qty:
+			frappe.throw(_("Please add carton quantity for at least one item."))
+
+		if not self.to_case_no:
+			self.to_case_no = self.from_case_no
 
 
 	def get_to_case_no(self):
@@ -253,7 +264,8 @@ class PackingSlip(StatusUpdater):
 		total_qty = 0
 		for item in self.items:
 			item.weight_uom = self.net_weight_uom
-			item.cartons = cint(cint(item.qty)/self.unit_per_carton)
+			if self.flags.first_fetch:
+				item.cartons = math.ceil(cint(item.qty)/self.unit_per_carton) or 1
 			carton_weight = item.cartons * self.carton_weight
 			item.net_weight = flt(item.unit_weight) * flt(item.qty)
 			item.gross_weight = item.net_weight + carton_weight
