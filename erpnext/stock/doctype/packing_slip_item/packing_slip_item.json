@@ -15,9 +15,15 @@
   "description",
   "quantity_section",
   "qty",
-  "net_weight",
-  "column_break_10",
   "stock_uom",
+  "uom_view",
+  "unit_weight",
+  "section_break_9",
+  "unit_per_carton",
+  "cartons",
+  "net_weight",
+  "gross_weight",
+  "column_break_10",
   "weight_uom",
   "page_break",
   "dn_detail"
@@ -42,7 +48,6 @@
    "fetch_from": "item_code.item_name",
    "fieldname": "item_name",
    "fieldtype": "Data",
-   "in_list_view": 1,
    "label": "Item Name",
    "print_width": "200px",
    "read_only": 1,
@@ -71,15 +76,17 @@
    "label": "Quantity"
   },
   {
+   "columns": 1,
    "fieldname": "qty",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "Quantity",
+   "label": "Qty",
    "print_width": "100px",
    "reqd": 1,
    "width": "100px"
   },
   {
+   "columns": 1,
    "fieldname": "net_weight",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -92,8 +99,10 @@
    "fieldtype": "Column Break"
   },
   {
+   "columns": 2,
    "fieldname": "stock_uom",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "UOM",
    "options": "UOM",
    "print_width": "100px",
@@ -113,7 +122,6 @@
    "default": "0",
    "fieldname": "page_break",
    "fieldtype": "Check",
-   "in_list_view": 1,
    "label": "Page Break"
   },
   {
@@ -122,12 +130,48 @@
    "hidden": 1,
    "in_list_view": 1,
    "label": "DN Detail"
+  },
+  {
+   "columns": 1,
+   "fieldname": "gross_weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Gross Weight",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_9",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "unit_per_carton",
+   "fieldtype": "Int",
+   "label": "Unit per Carton"
+  },
+  {
+   "columns": 1,
+   "fieldname": "cartons",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Cartons"
+  },
+  {
+   "fieldname": "unit_weight",
+   "fieldtype": "Float",
+   "label": "Unit Weight",
+   "precision": "4",
+   "read_only": 1
+  },
+  {
+   "fieldname": "uom_view",
+   "fieldtype": "Data",
+   "label": "UOM View"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-12-14 01:22:00.715935",
+ "modified": "2026-03-14 12:49:37.952491",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Packing Slip Item",
@@ -136,5 +180,6 @@
  "permissions": [],
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

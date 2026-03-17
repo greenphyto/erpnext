@@ -1,264 +1,456 @@
 {
-   "allow_import": 1,
-   "autoname": "MAT-PAC-.YYYY.-.#####",
-   "creation": "2013-04-11 15:32:24",
-   "description": "Generate packing slips for packages to be delivered. Used to notify package number, package contents and its weight.",
-   "doctype": "DocType",
-   "document_type": "Document",
-   "engine": "InnoDB",
-   "field_order": [
-    "packing_slip_details",
-    "column_break0",
-    "delivery_note",
-    "column_break1",
-    "naming_series",
-    "section_break0",
-    "column_break2",
-    "from_case_no",
-    "column_break3",
-    "to_case_no",
-    "package_item_details",
-    "get_items",
-    "items",
-    "package_weight_details",
-    "net_weight_pkg",
-    "net_weight_uom",
-    "column_break4",
-    "gross_weight_pkg",
-    "gross_weight_uom",
-    "letter_head_details",
-    "letter_head",
-    "misc_details",
-    "amended_from"
-   ],
-   "fields": [
-    {
-     "fieldname": "packing_slip_details",
-     "fieldtype": "Section Break"
-    },
-    {
-     "fieldname": "column_break0",
-     "fieldtype": "Column Break"
-    },
-    {
-     "description": "Indicates that the package is a part of this delivery (Only Draft)",
-     "fieldname": "delivery_note",
-     "fieldtype": "Link",
-     "in_global_search": 1,
-     "in_list_view": 1,
-     "label": "Delivery Note",
-     "options": "Delivery Note",
-     "reqd": 1
-    },
-    {
-     "fieldname": "column_break1",
-     "fieldtype": "Column Break"
-    },
-    {
-     "fieldname": "naming_series",
-     "fieldtype": "Select",
-     "label": "Series",
-     "options": "MAT-PAC-.YYYY.-",
-     "print_hide": 1,
-     "reqd": 1,
-     "set_only_once": 1
-    },
-    {
-     "fieldname": "section_break0",
-     "fieldtype": "Section Break"
-    },
-    {
-     "fieldname": "column_break2",
-     "fieldtype": "Column Break"
-    },
-    {
-     "description": "Identification of the package for the delivery (for print)",
-     "fieldname": "from_case_no",
-     "fieldtype": "Int",
-     "in_list_view": 1,
-     "label": "From Package No.",
-     "no_copy": 1,
-     "reqd": 1,
-     "width": "50px"
-    },
-    {
-     "fieldname": "column_break3",
-     "fieldtype": "Column Break"
-    },
-    {
-     "description": "If more than one package of the same type (for print)",
-     "fieldname": "to_case_no",
-     "fieldtype": "Int",
-     "in_list_view": 1,
-     "label": "To Package No.",
-     "no_copy": 1,
-     "width": "50px"
-    },
-    {
-     "fieldname": "package_item_details",
-     "fieldtype": "Section Break"
-    },
-    {
-     "fieldname": "get_items",
-     "fieldtype": "Button",
-     "label": "Get Items"
-    },
-    {
-     "fieldname": "items",
-     "fieldtype": "Table",
-     "label": "Items",
-     "options": "Packing Slip Item",
-     "reqd": 1
-    },
-    {
-     "fieldname": "package_weight_details",
-     "fieldtype": "Section Break",
-     "label": "Package Weight Details"
-    },
-    {
-     "description": "The net weight of this package. (calculated automatically as sum of net weight of items)",
-     "fieldname": "net_weight_pkg",
-     "fieldtype": "Float",
-     "label": "Net Weight",
-     "no_copy": 1,
-     "read_only": 1
-    },
-    {
-     "fieldname": "net_weight_uom",
-     "fieldtype": "Link",
-     "label": "Net Weight UOM",
-     "no_copy": 1,
-     "options": "UOM",
-     "read_only": 1
-    },
-    {
-     "fieldname": "column_break4",
-     "fieldtype": "Column Break"
-    },
-    {
-     "description": "The gross weight of the package. Usually net weight + packaging material weight. (for print)",
-     "fieldname": "gross_weight_pkg",
-     "fieldtype": "Float",
-     "label": "Gross Weight",
-     "no_copy": 1
-    },
-    {
-     "fieldname": "gross_weight_uom",
-     "fieldtype": "Link",
-     "label": "Gross Weight UOM",
-     "no_copy": 1,
-     "options": "UOM"
-    },
-    {
-     "fieldname": "letter_head_details",
-     "fieldtype": "Section Break",
-     "label": "Letter Head"
-    },
-    {
-     "allow_on_submit": 1,
-     "fieldname": "letter_head",
-     "fieldtype": "Link",
-     "label": "Letter Head",
-     "options": "Letter Head",
-     "print_hide": 1
-    },
-    {
-     "fieldname": "misc_details",
-     "fieldtype": "Section Break"
-    },
-    {
-     "fieldname": "amended_from",
-     "fieldtype": "Link",
-     "ignore_user_permissions": 1,
-     "label": "Amended From",
-     "no_copy": 1,
-     "options": "Packing Slip",
-     "print_hide": 1,
-     "read_only": 1
-    }
-   ],
-   "icon": "fa fa-suitcase",
-   "idx": 1,
-   "is_submittable": 1,
-   "modified": "2019-09-09 04:45:08.082862",
-   "modified_by": "Administrator",
-   "module": "Stock",
-   "name": "Packing Slip",
-   "owner": "Administrator",
-   "permissions": [
-    {
-     "amend": 1,
-     "cancel": 1,
-     "create": 1,
-     "delete": 1,
-     "email": 1,
-     "print": 1,
-     "read": 1,
-     "report": 1,
-     "role": "Stock User",
-     "share": 1,
-     "submit": 1,
-     "write": 1
-    },
-    {
-     "amend": 1,
-     "cancel": 1,
-     "create": 1,
-     "delete": 1,
-     "email": 1,
-     "print": 1,
-     "read": 1,
-     "report": 1,
-     "role": "Sales User",
-     "share": 1,
-     "submit": 1,
-     "write": 1
-    },
-    {
-     "amend": 1,
-     "cancel": 1,
-     "create": 1,
-     "delete": 1,
-     "email": 1,
-     "print": 1,
-     "read": 1,
-     "report": 1,
-     "role": "Item Manager",
-     "share": 1,
-     "submit": 1,
-     "write": 1
-    },
-    {
-     "amend": 1,
-     "cancel": 1,
-     "create": 1,
-     "delete": 1,
-     "email": 1,
-     "print": 1,
-     "read": 1,
-     "report": 1,
-     "role": "Stock Manager",
-     "share": 1,
-     "submit": 1,
-     "write": 1
-    },
-    {
-     "amend": 1,
-     "cancel": 1,
-     "create": 1,
-     "delete": 1,
-     "email": 1,
-     "print": 1,
-     "read": 1,
-     "report": 1,
-     "role": "Sales Manager",
-     "share": 1,
-     "submit": 1,
-     "write": 1
-    }
-   ],
-   "search_fields": "delivery_note",
-   "show_name_in_global_search": 1,
-   "sort_field": "modified",
-   "sort_order": "DESC"
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "MAT-PAC-.YYYY.-.#####",
+ "creation": "2013-04-11 15:32:24",
+ "description": "Generate packing slips for packages to be delivered. Used to notify package number, package contents and its weight.",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "engine": "InnoDB",
+ "field_order": [
+  "packing_slip_details",
+  "column_break0",
+  "delivery_note",
+  "po_no",
+  "column_break1",
+  "naming_series",
+  "posting_date",
+  "importerexporter_section",
+  "shipper",
+  "shipper_address_name",
+  "shipper_address",
+  "shipper_contact_name",
+  "shipper_contact",
+  "column_break_10",
+  "importer",
+  "importer_address_name",
+  "importer_address",
+  "importer_contact_name",
+  "importer_contact",
+  "shipping_detail_section",
+  "mode_of_transport",
+  "inter_company_terms",
+  "port_of_loading",
+  "column_break_21",
+  "country_of_origin",
+  "destination",
+  "port_of_discharge",
+  "section_break0",
+  "column_break2",
+  "from_case_no",
+  "carton_weight",
+  "column_break3",
+  "to_case_no",
+  "unit_per_carton",
+  "package_item_details",
+  "items",
+  "total_qty",
+  "package_weight_details",
+  "net_weight_pkg",
+  "net_weight_uom",
+  "column_break4",
+  "gross_weight_pkg",
+  "gross_weight_uom",
+  "handling_instruction_section",
+  "handling_instruction_template",
+  "handling_instruction",
+  "letter_head_details",
+  "letter_head",
+  "misc_details",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "packing_slip_details",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Indicates that the package is a part of this delivery (Only Draft)",
+   "fieldname": "delivery_note",
+   "fieldtype": "Link",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "label": "Delivery Note",
+   "options": "Delivery Note",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "MAT-PAC-.YYYY.-",
+   "print_hide": 1,
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "section_break0",
+   "fieldtype": "Section Break",
+   "label": "Package Detail"
+  },
+  {
+   "fieldname": "column_break2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Identification of the package for the delivery (for print)",
+   "fieldname": "from_case_no",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "From Package No.",
+   "no_copy": 1,
+   "reqd": 1,
+   "width": "50px"
+  },
+  {
+   "fieldname": "column_break3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "If more than one package of the same type (for print)",
+   "fieldname": "to_case_no",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "To Package No.",
+   "no_copy": 1,
+   "width": "50px"
+  },
+  {
+   "fieldname": "package_item_details",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Packing Slip Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "package_weight_details",
+   "fieldtype": "Section Break",
+   "label": "Package Weight Details"
+  },
+  {
+   "description": "The net weight of this package. (calculated automatically as sum of net weight of items)",
+   "fieldname": "net_weight_pkg",
+   "fieldtype": "Float",
+   "label": "Net Weight",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "net_weight_uom",
+   "fieldtype": "Link",
+   "label": "Net Weight UOM",
+   "no_copy": 1,
+   "options": "UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "The gross weight of the package. Usually net weight + packaging material weight. (for print)",
+   "fieldname": "gross_weight_pkg",
+   "fieldtype": "Float",
+   "label": "Gross Weight",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "gross_weight_uom",
+   "fieldtype": "Link",
+   "label": "Gross Weight UOM",
+   "no_copy": 1,
+   "options": "UOM"
+  },
+  {
+   "fieldname": "letter_head_details",
+   "fieldtype": "Section Break",
+   "label": "Letter Head"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "letter_head",
+   "fieldtype": "Link",
+   "label": "Letter Head",
+   "options": "Letter Head",
+   "print_hide": 1
+  },
+  {
+   "fieldname": "misc_details",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Packing Slip",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "shipping_detail_section",
+   "fieldtype": "Section Break",
+   "label": "Shipping Detail"
+  },
+  {
+   "fetch_from": "delivery_note.mode_of_transport",
+   "fieldname": "mode_of_transport",
+   "fieldtype": "Data",
+   "label": "Mode of Transport",
+   "read_only": 1
+  },
+  {
+   "description": "Carton weight in KG",
+   "fieldname": "carton_weight",
+   "fieldtype": "Float",
+   "label": "Carton Weight",
+   "precision": "4"
+  },
+  {
+   "fieldname": "unit_per_carton",
+   "fieldtype": "Int",
+   "label": "Unit per Carton"
+  },
+  {
+   "fieldname": "importerexporter_section",
+   "fieldtype": "Section Break",
+   "label": "Importer/Exporter"
+  },
+  {
+   "fieldname": "shipper",
+   "fieldtype": "Link",
+   "label": "Shipper",
+   "options": "Company"
+  },
+  {
+   "fieldname": "shipper_address",
+   "fieldtype": "Small Text",
+   "label": "Shipper Address"
+  },
+  {
+   "fieldname": "shipper_contact",
+   "fieldtype": "Small Text",
+   "label": "Shipper Contact"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "importer",
+   "fieldtype": "Link",
+   "label": "Importer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "importer_address",
+   "fieldtype": "Small Text",
+   "label": "Importer Address"
+  },
+  {
+   "fieldname": "importer_contact",
+   "fieldtype": "Small Text",
+   "label": "Importer Contact"
+  },
+  {
+   "fieldname": "inter_company_terms",
+   "fieldtype": "Link",
+   "label": "Inter Company Terms",
+   "options": "Terms and Conditions",
+   "reqd": 1
+  },
+  {
+   "fieldname": "country_of_origin",
+   "fieldtype": "Link",
+   "label": "Country of Origin",
+   "options": "Country",
+   "read_only": 1
+  },
+  {
+   "fieldname": "destination",
+   "fieldtype": "Link",
+   "label": "Destination",
+   "options": "Country",
+   "read_only": 1
+  },
+  {
+   "fieldname": "handling_instruction_section",
+   "fieldtype": "Section Break",
+   "label": "Handling Instruction"
+  },
+  {
+   "fieldname": "handling_instruction_template",
+   "fieldtype": "Link",
+   "label": "Handling Instruction Template",
+   "options": "Terms and Conditions"
+  },
+  {
+   "fieldname": "handling_instruction",
+   "fieldtype": "Text Editor",
+   "label": "Handling Instruction"
+  },
+  {
+   "fieldname": "shipper_address_name",
+   "fieldtype": "Link",
+   "label": "Shipper Address Name",
+   "options": "Address"
+  },
+  {
+   "fieldname": "shipper_contact_name",
+   "fieldtype": "Link",
+   "label": "Shipper Contact Name",
+   "options": "Contact"
+  },
+  {
+   "fieldname": "importer_address_name",
+   "fieldtype": "Link",
+   "label": "Importer Address Name",
+   "options": "Address"
+  },
+  {
+   "fieldname": "importer_contact_name",
+   "fieldtype": "Link",
+   "label": "Importer Contact Name",
+   "options": "Contact"
+  },
+  {
+   "fieldname": "column_break_21",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "delivery_note.po_no",
+   "fieldname": "po_no",
+   "fieldtype": "Data",
+   "label": "PO No",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "delivery_note.port_of_loading",
+   "fieldname": "port_of_loading",
+   "fieldtype": "Link",
+   "label": "Port of Loading",
+   "options": "Port",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "delivery_note.port_of_discharge",
+   "fieldname": "port_of_discharge",
+   "fieldtype": "Link",
+   "label": "Port of Discharge",
+   "options": "Port",
+   "read_only": 1
+  },
+  {
+   "default": "now",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date"
+  },
+  {
+   "fieldname": "total_qty",
+   "fieldtype": "Float",
+   "label": "Total Qty",
+   "read_only": 1
   }
+ ],
+ "icon": "fa fa-suitcase",
+ "idx": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-03-17 10:53:37.532379",
+ "modified_by": "Administrator",
+ "module": "Stock",
+ "name": "Packing Slip",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Item Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "delivery_note",
+ "show_name_in_global_search": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

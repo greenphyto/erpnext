@@ -7,6 +7,7 @@
 
 import json
 
+from annotated_types import doc
 import frappe
 from frappe import _, msgprint
 from frappe.model.mapper import get_mapped_doc
@@ -839,6 +840,7 @@ def validate_purchase_request_based_user(doc, user=None):
 
 
 def has_permission(doc, user, ptype="read"):
+	# user = user or frappe.session.user
 	if doc.owner == user:
 		return True
 	
