@@ -164,9 +164,10 @@ class PackingSlip(StatusUpdater):
 		)
 	
 	def set_case(self):
-		if self.from_case_no:
-			self.from_case_no = self.get_recommended_case_no()
-		if self.from_case_no:
+		self.from_case_no = self.get_recommended_case_no()
+		if self.from_case_no == 1:
+			self.to_case_no = self.get_to_case_no()
+		else:
 			self.to_case_no = self.from_case_no + self.get_to_case_no()
 
 
@@ -179,6 +180,7 @@ class PackingSlip(StatusUpdater):
 
 		net_weight_pkg = 0
 		gross_weight_pkg = 0
+		total_qty = 0
 		for item in self.items:
 			item.weight_uom = self.net_weight_uom
 			item.cartons = cint(cint(item.qty)/self.unit_per_carton)
@@ -187,7 +189,10 @@ class PackingSlip(StatusUpdater):
 			item.gross_weight = item.net_weight + carton_weight
 			net_weight_pkg += flt(item.net_weight)
 			gross_weight_pkg += flt(item.gross_weight)
+			item.uom_view = "{} Gr".format(cint(item.unit_weight * 1000))
+			total_qty += item.qty
 
+		self.total_qty = total_qty
 		self.net_weight_pkg = round(net_weight_pkg, 2)
 		self.gross_weight_pkg = round(gross_weight_pkg, 2)
 

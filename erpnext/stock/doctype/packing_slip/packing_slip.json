@@ -24,6 +24,7 @@
   "unit_per_carton",
   "package_item_details",
   "items",
+  "total_qty",
   "package_weight_details",
   "net_weight_pkg",
   "net_weight_uom",
@@ -199,13 +200,154 @@
    "fieldname": "unit_per_carton",
    "fieldtype": "Int",
    "label": "Unit per Carton"
+  },
+  {
+   "fieldname": "importerexporter_section",
+   "fieldtype": "Section Break",
+   "label": "Importer/Exporter"
+  },
+  {
+   "fieldname": "shipper",
+   "fieldtype": "Link",
+   "label": "Shipper",
+   "options": "Company"
+  },
+  {
+   "fieldname": "shipper_address",
+   "fieldtype": "Small Text",
+   "label": "Shipper Address"
+  },
+  {
+   "fieldname": "shipper_contact",
+   "fieldtype": "Small Text",
+   "label": "Shipper Contact"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "importer",
+   "fieldtype": "Link",
+   "label": "Importer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "importer_address",
+   "fieldtype": "Small Text",
+   "label": "Importer Address"
+  },
+  {
+   "fieldname": "importer_contact",
+   "fieldtype": "Small Text",
+   "label": "Importer Contact"
+  },
+  {
+   "fieldname": "inter_company_terms",
+   "fieldtype": "Link",
+   "label": "Inter Company Terms",
+   "options": "Terms and Conditions",
+   "reqd": 1
+  },
+  {
+   "fieldname": "country_of_origin",
+   "fieldtype": "Link",
+   "label": "Country of Origin",
+   "options": "Country",
+   "read_only": 1
+  },
+  {
+   "fieldname": "destination",
+   "fieldtype": "Link",
+   "label": "Destination",
+   "options": "Country",
+   "read_only": 1
+  },
+  {
+   "fieldname": "handling_instruction_section",
+   "fieldtype": "Section Break",
+   "label": "Handling Instruction"
+  },
+  {
+   "fieldname": "handling_instruction_template",
+   "fieldtype": "Link",
+   "label": "Handling Instruction Template",
+   "options": "Terms and Conditions"
+  },
+  {
+   "fieldname": "handling_instruction",
+   "fieldtype": "Text Editor",
+   "label": "Handling Instruction"
+  },
+  {
+   "fieldname": "shipper_address_name",
+   "fieldtype": "Link",
+   "label": "Shipper Address Name",
+   "options": "Address"
+  },
+  {
+   "fieldname": "shipper_contact_name",
+   "fieldtype": "Link",
+   "label": "Shipper Contact Name",
+   "options": "Contact"
+  },
+  {
+   "fieldname": "importer_address_name",
+   "fieldtype": "Link",
+   "label": "Importer Address Name",
+   "options": "Address"
+  },
+  {
+   "fieldname": "importer_contact_name",
+   "fieldtype": "Link",
+   "label": "Importer Contact Name",
+   "options": "Contact"
+  },
+  {
+   "fieldname": "column_break_21",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "delivery_note.po_no",
+   "fieldname": "po_no",
+   "fieldtype": "Data",
+   "label": "PO No",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "delivery_note.port_of_loading",
+   "fieldname": "port_of_loading",
+   "fieldtype": "Link",
+   "label": "Port of Loading",
+   "options": "Port",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "delivery_note.port_of_discharge",
+   "fieldname": "port_of_discharge",
+   "fieldtype": "Link",
+   "label": "Port of Discharge",
+   "options": "Port",
+   "read_only": 1
+  },
+  {
+   "default": "now",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date"
+  },
+  {
+   "fieldname": "total_qty",
+   "fieldtype": "Float",
+   "label": "Total Qty",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-suitcase",
  "idx": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-10 18:33:58.349896",
+ "modified": "2026-03-17 10:53:37.532379",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Packing Slip",
