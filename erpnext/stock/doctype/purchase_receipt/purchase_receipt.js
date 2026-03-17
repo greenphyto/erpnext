@@ -109,6 +109,33 @@ frappe.ui.form.on("Purchase Receipt", {
 	toggle_display_account_head: function(frm) {
 		var enabled = erpnext.is_perpetual_inventory_enabled(frm.doc.company)
 		frm.fields_dict["items"].grid.set_column_disp(["cost_center"], enabled);
+	},
+
+	supplier_delivery_note: function(frm){
+		// fetch internal company
+		if (frm.doc.supplier && frm.doc.is_internal_supplier) {
+			if (frm.doc.supplier_delivery_note){
+				frm.set_value('items', []);
+				frappe.call({
+					method: 'fetch_internal_delivery_note',
+					doc: frm.doc,
+					freeze: true,
+					freeze_message: __('Fetching items from Delivery Note...'),
+					callback: function(r) {
+						frm.refresh()
+					}
+				});
+			}else{
+				// reset everthing
+				frm.set_value('items', []);	
+				frm.set_value('taxes', []);	
+				frm.set_value('set_warehouse', "");
+				frm.set_value('inter_company_reference', "");
+				frm.set_value("taxes_and_charges", "");
+				frm.refresh();
+
+			}
+		}
 	}
 });
 

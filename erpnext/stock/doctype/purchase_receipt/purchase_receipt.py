@@ -857,6 +857,18 @@ class PurchaseReceipt(BuyingController):
 		if not self.inter_company_reference:
 			frappe.throw(_("Cannot create Purchase Receipt before Delivery Note is sent. <br>Please contact {} for more information.".format(self.supplier)))
 
+	@frappe.whitelist()
+	def fetch_internal_delivery_note(self):
+		if not self.is_internal_supplier:
+			return
+		
+		dn_name = frappe.db.get_value("Delivery Note", self.supplier_delivery_note, "name")
+
+		if dn_name:
+			from erpnext.stock.doctype.delivery_note.delivery_note import make_inter_company_transaction
+			doc_res = make_inter_company_transaction("Delivery Note", dn_name, self)
+			return doc_res.as_dict()
+
 
 def update_billed_amount_based_on_po(po_details, update_modified=True):
 	po_billed_amt_details = get_billed_amount_against_po(po_details)
