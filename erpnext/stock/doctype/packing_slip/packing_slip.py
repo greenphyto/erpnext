@@ -4,6 +4,8 @@
 
 import frappe
 from frappe import _
+from frappe.contacts.doctype.contact.contact import get_contact_details, get_default_contact
+from frappe.contacts.doctype.address.address import get_default_address, get_address_display
 from frappe.model import no_value_fields
 from frappe.model.document import Document
 from frappe.utils import cint, flt
@@ -47,8 +49,6 @@ class PackingSlip(StatusUpdater):
 		validate_uom_is_integer(self, "weight_uom", "net_weight")
 
 		self.set_missing_values()
-		self.calculate_net_total_pkg()
-		self.set_case()
 
 	def on_submit(self):
 		self.update_prevdoc_status()
@@ -56,12 +56,55 @@ class PackingSlip(StatusUpdater):
 	def on_cancel(self):
 		self.update_prevdoc_status()
 
+	@frappe.whitelist()
+	def fetch_delivery_note(self):
+		"""Fetch items from Delivery Note"""
+		if not self.delivery_note:
+			frappe.throw(_("Please select a Delivery Note"))
+		
+		self.items = []
+		dn = frappe.get_doc("Delivery Note", self.delivery_note)
+		
+		# Set letter head from Delivery Note
+		if dn.letter_head:
+			self.letter_head = dn.letter_head
+		
+		# Add items from Delivery Note Items
+		for item in dn.items:
+			# Skip if item is a Product Bundle
+			if frappe.db.exists("Product Bundle", {"new_item_code": item.item_code}):
+				continue
+			
+			self.append("items", {
+				"item_code": item.item_code,
+				"item_name": item.item_name,
+				"description": item.description,
+				"qty": item.qty,
+				"stock_uom": item.uom,
+				"unit_weight": item.weight_per_unit,
+				"dn_detail": item.name,
+			})
+		
+		# Add items from Packed Items
+		for packed_item in dn.packed_items:
+			self.append("items", {
+				"item_code": packed_item.item_code,
+				"item_name": packed_item.item_name,
+				"batch_no": packed_item.batch_no,
+				"description": packed_item.description,
+				"qty": packed_item.qty,
+				"pi_detail": packed_item.name,
+			})
+		
+		# Set missing values
+		self.set_missing_values()
+
 	def validate_delivery_note(self):
 		"""Raises an exception if the `Delivery Note` status is not Draft"""
 
-		if cint(frappe.db.get_value("Delivery Note", self.delivery_note, "docstatus")) != 0:
+		if cint(frappe.db.get_value("Delivery Note", self.delivery_note, "docstatus")) == 2:
 			frappe.throw(
-				_("A Packing Slip can only be created for Draft Delivery Note.").format(self.delivery_note)
+				_("A Packing Slip can only be created for Draft/Submitted Delivery Note.").format(self.delivery_note)
 			)
 
 	def validate_case_nos(self):
@@ -114,7 +157,7 @@ class PackingSlip(StatusUpdater):
 			DocType = frappe.qb.DocType("Delivery Note Item" if item.dn_detail else "Packed Item")
 			remaining_qty = frappe.db.get_value(
 				"Delivery Note Item" if item.dn_detail else "Packed Item",
-				{"name": item.dn_detail or item.pi_detail, "docstatus": 0},
+				{"name": item.dn_detail or item.pi_detail},
 				"sum(qty - packed_qty)",
 			)
 
@@ -138,16 +181,41 @@ class PackingSlip(StatusUpdater):
 				)
 
 	def set_missing_values(self):
-		
+		# Set shipper information from Delivery Note
+		if self.delivery_note:
+			dn = frappe.get_doc("Delivery Note", self.delivery_note)
+			# Set shipper as company from DN
+			if not self.shipper and dn.company:
+				self.shipper = dn.company
+			
+			# Set shipper address name (Link) from DN company_address or fetch from Company
+			self.shipper_address_name = get_default_address("Company", dn.company)
+			self.shipper_address = get_address_display(self.shipper_address_name).replace("<br>", "\n")
+			self.country_of_origin = frappe.db.get_value("Address", self.shipper_address_name, "country")
+
+			# Set shipper contact from Company default contact
+			self.shipper_contact_name = get_default_contact("Company", dn.company)
+			if self.shipper_contact_name:
+				self.shipper_contact = get_contact_details(self.shipper_contact_name).get("contact_display")
+
+			if not self.importer and dn.customer:
+				self.importer = dn.customer	
+			
+			self.importer_address_name = dn.shipping_address_name
+			self.importer_address = get_address_display(dn.shipping_address_name).replace("<br>", "\n")
+			self.importer_contact_name = dn.contact_person
+			if self.importer_contact_name:
+				self.importer_contact = get_contact_details(self.importer_contact_name).get("contact_display")
+			self.destination = frappe.db.get_value("Address", dn.shipping_address_name, "country")
 		for item in self.items:
 			weight_per_unit, weight_uom = frappe.db.get_value(
 				"Item", item.item_code, ["weight_per_unit", "weight_uom"]
 			)
-
-			if weight_per_unit and not item.net_weight:
-				item.unit_weight = weight_per_unit
 			if weight_uom and not item.weight_uom:
 				item.weight_uom = weight_uom
+		
+		self.calculate_net_total_pkg()
+		self.set_case()
 
 	def get_recommended_case_no(self):
 		"""Returns the next case no. for a new packing slip for a delivery note"""
@@ -177,6 +245,8 @@ class PackingSlip(StatusUpdater):
 	def calculate_net_total_pkg(self):
 		self.net_weight_uom = self.items[0].weight_uom if self.items else None
 		self.gross_weight_uom = self.net_weight_uom
+		self.unit_per_carton = self.unit_per_carton or 12
+		self.carton_weight = self.carton_weight or 0.435
 
 		net_weight_pkg = 0
 		gross_weight_pkg = 0
@@ -198,7 +268,6 @@ class PackingSlip(StatusUpdater):
 
 
 @frappe.whitelist()
-@frappe.validate_and_sanitize_search_inputs
 def item_details(doctype, txt, searchfield, start, page_len, filters):
 	from erpnext.controllers.queries import get_match_cond
 
@@ -211,3 +280,55 @@ def item_details(doctype, txt, searchfield, start, page_len, filters):
 		% ("%s", searchfield, "%s", get_match_cond(doctype), "%s", "%s"),
 		((filters or {}).get("delivery_note"), "%%%s%%" % txt, page_len, start),
 	)
+
+def get_company_billing_address(company):
+    """
+    Fetch default billing address for a given Company.
+    Returns address name and full display.
+    """
+    # Cari primary billing address
+    address = frappe.db.get_value(
+        "Address",
+        {
+            "link_doctype": "Company",
+            "link_name": company,
+            "is_primary_address": 1,
+        },
+        ["name", "address_line1", "address_line2", "city", "state", "pincode", "country"],
+        as_dict=True
+    )
+
+    if not address:
+        # Fallback: ambil address pertama yang terkait company
+        address_name = frappe.db.get_value(
+            "Dynamic Link",
+            {
+                "link_doctype": "Company",
+                "link_name": company,
+                "parenttype": "Address"
+            },
+            "parent"
+        )
+        if address_name:
+            address = frappe.db.get_value(
+                "Address",
+                address_name,
+                ["name", "address_line1", "address_line2", "city", "state", "pincode", "country"],
+                as_dict=True
+            )
+
+    if not address:
+        return None
+
+    # Format display
+    parts = [
+        address.get("address_line1"),
+        address.get("address_line2"),
+        address.get("city"),
+        address.get("state"),
+        address.get("pincode"),
+        address.get("country"),
+    ]
+    address["display"] = ", ".join(filter(None, parts))
+
+    return address

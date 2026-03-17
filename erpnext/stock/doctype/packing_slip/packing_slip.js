@@ -6,7 +6,7 @@ frappe.ui.form.on('Packing Slip', {
         frm.set_query('delivery_note', () => {
             return {
                 filters: {
-                    docstatus: 0,
+                    docstatus: ["!=", 2],
                 }
             }
         });
@@ -34,13 +34,36 @@ frappe.ui.form.on('Packing Slip', {
 		frm.set_value('items', null);
 
 		if (frm.doc.delivery_note) {
-			erpnext.utils.map_current_doc({
-				method: 'erpnext.stock.doctype.delivery_note.delivery_note.make_packing_slip',
-				source_name: frm.doc.delivery_note,
-				target_doc: frm,
+			frappe.call({
+				method: 'fetch_delivery_note',
+				doc: frm.doc,
 				freeze: true,
-				freeze_message: __('Creating Packing Slip ...'),
+				freeze_message: __('Fetching items from Delivery Note...'),
+				callback: function(r) {
+                    frm.refresh()
+				}
 			});
 		}
 	},
+
+    handling_instruction_template: (frm) => {   
+        frm.cscripts.handling_instruction_template(frm);
+    }
+    
 });
+
+
+frappe.provide("cur_frm.cscripts")
+$.extend(cur_frm.cscripts, {
+    // terms
+    // fetch Terms and Condition from field handling_instruction_template
+    handling_instruction_template: function (frm) {
+        if (frm.doc.handling_instruction_template) {
+            frappe.db.get_value('Terms and Conditions', frm.doc.handling_instruction_template, 'terms', (r) => {
+                if (r && r.terms) {
+                    frm.set_value('handling_instruction', r.terms);
+                }
+            });
+        }
+    }
+})
