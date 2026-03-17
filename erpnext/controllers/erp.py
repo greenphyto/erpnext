@@ -1159,10 +1159,12 @@ def switch_company(company, force=False, user=""):
 	# change defaults
 	switch_default_values(user, company)
 	
-	doc.update(filters)
-	doc.for_value = company
-	doc.flags.ignore_permissions = 1
-	doc.save()
+	if "CEO" not in frappe.get_roles(): 
+		doc.update(filters)
+		doc.for_value = company
+		doc.flags.ignore_permissions = 1
+		doc.save()
+		
 	return {"result":True}
 
 from frappe.defaults import set_default
