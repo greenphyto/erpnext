@@ -10,7 +10,7 @@ from frappe.contacts.doctype.contact.contact import get_contact_details, get_def
 from frappe.contacts.doctype.address.address import get_default_address, get_address_display
 from frappe.model import no_value_fields
 from frappe.model.document import Document
-from frappe.utils import cint, flt
+from frappe.utils import cint, flt, cstr
 from frappe.utils import safe_abs as abs
 
 from erpnext.controllers.status_updater import StatusUpdater
@@ -194,22 +194,22 @@ class PackingSlip(StatusUpdater):
 			
 			# Set shipper address name (Link) from DN company_address or fetch from Company
 			self.shipper_address_name = get_default_address("Company", dn.company)
-			self.shipper_address = get_address_display(self.shipper_address_name).replace("<br>", "\n")
+			self.shipper_address = cstr(get_address_display(self.shipper_address_name)).replace("<br>", "\n")
 			self.country_of_origin = frappe.db.get_value("Address", self.shipper_address_name, "country")
 
 			# Set shipper contact from Company default contact
 			self.shipper_contact_name = get_default_contact("Company", dn.company)
 			if self.shipper_contact_name:
-				self.shipper_contact = get_contact_details(self.shipper_contact_name).get("contact_display")
+				self.shipper_contact = (get_contact_details(self.shipper_contact_name) or {}).get("contact_display")
 
 			if not self.importer and dn.customer:
 				self.importer = dn.customer	
 			
 			self.importer_address_name = dn.shipping_address_name
-			self.importer_address = get_address_display(dn.shipping_address_name).replace("<br>", "\n")
+			self.importer_address = cstr(get_address_display(dn.shipping_address_name)).replace("<br>", "\n")
 			self.importer_contact_name = dn.contact_person
 			if self.importer_contact_name:
-				self.importer_contact = get_contact_details(self.importer_contact_name).get("contact_display")
+				self.importer_contact = (get_contact_details(self.importer_contact_name) or {}).get("contact_display")
 			self.destination = frappe.db.get_value("Address", dn.shipping_address_name, "country")
 		for item in self.items:
 			weight_per_unit, weight_uom = frappe.db.get_value(
