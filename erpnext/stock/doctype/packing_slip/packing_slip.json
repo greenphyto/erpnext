@@ -44,6 +44,7 @@
   "unit_per_carton",
   "package_item_details",
   "items",
+  "total_qty",
   "package_weight_details",
   "net_weight_pkg",
   "net_weight_uom",
@@ -357,13 +358,19 @@
    "fieldname": "posting_date",
    "fieldtype": "Date",
    "label": "Posting Date"
+  },
+  {
+   "fieldname": "total_qty",
+   "fieldtype": "Float",
+   "label": "Total Qty",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-suitcase",
  "idx": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-14 13:34:21.534997",
+ "modified": "2026-03-17 10:53:37.532379",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Packing Slip",
