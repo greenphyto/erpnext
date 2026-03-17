@@ -1462,3 +1462,33 @@ def get_delivery_by_lotid(lotid=None, delivery_date=""):
 		data['transactions'].append(doc.as_dict())
 
 	return data
+
+@frappe.whitelist()
+def update_package_size(lotID, newSize):
+	existing_work_order = frappe.db.get_value("Work Order", {"foms_lot_name": lotID})
+	if not existing_work_order:
+		frappe.throw(_(f"No Work Order found for Lot ID {lotID}"), frappe.DoesNotExistError)
+
+	# find packaging size name
+	packname = frappe.get_value("Packaging", {"quantity": newSize, "uom":"Gram"}, "name") or frappe.throw(_(f"Packaging Size {newSize} Gram not found"), frappe.DoesNotExistError)
+	uompack = frappe.get_value("UOM", packname, "name") or frappe.throw(_(f"UOM for Packaging Size {newSize} Gram not found"), frappe.DoesNotExistError)
+
+	wo_doc = frappe.get_doc("Work Order", existing_work_order)
+	old_size = wo_doc.packet_size
+	if old_size == uompack:
+		return True
+	
+	# change size WO
+	wo_doc.packet_size = uompack
+	wo_doc.conversion_factor = flt(newSize)/1000
+	# update packaging item qty
+	for row in wo_doc.get("required_items"):
+		if row.is_packaging:
+			row.required_qty = wo_doc.qty / wo_doc.conversion_factor
+			row.amount = row.required_qty * row.rate
+			row.db_update()
+	wo_doc.db_update()
+
+	# add comment
+	wo_doc.add_comment("Comment", f"Packet size updated from {old_size} to <b>{uompack}</b>")	
+	return True

@@ -1575,6 +1575,55 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.update_package_size": {
+      "post": {
+        "summary": "Update package size for work order",
+        "description": "Update the packaging size for a work order based on Lot ID. Changes the packet size, conversion factor, and required packaging item quantities.",
+        "operationId": "update package size",
+        "requestBody": {
+          "description": "Update package size",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "lotID": {
+                    "type": "string",
+                    "description": "The FOMS Lot ID of the work order"
+                  },
+                  "newSize": {
+                    "type": "number",
+                    "description": "New package size in grams"
+                  }
+                },
+                "example": {
+                  "lotID": "25-1097",
+                  "newSize": 240
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": true
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Work Order not found or Packaging Size not found"
+          }
+        }
+      }
     }
   },
   "components": {
