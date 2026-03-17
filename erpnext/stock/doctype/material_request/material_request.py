@@ -7,7 +7,6 @@
 
 import json
 
-from annotated_types import doc
 import frappe
 from frappe import _, msgprint
 from frappe.model.mapper import get_mapped_doc
