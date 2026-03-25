@@ -26,7 +26,7 @@ frappe.ui.form.on('Accident or Incident Report', {
 			args: {
 				"name": frm.doc.name,
 			},
-			method: "erpnext.smart_fm.doctype.incident_report.incident_report.create_to_do",
+			method: "erpnext.smart_fm.doctype.accident_or_incident_report.accident_or_incident_report.create_to_do",
 			callback: function(r) {
 				var doclist = frappe.model.sync(r.message);
 				frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
