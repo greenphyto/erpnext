@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "item_code",
+  "item_name_view",
   "customer_item_code",
   "ensure_delivery_based_on_produced_serial_no",
   "col_break1",
@@ -941,55 +942,60 @@
    "read_only": 1
   },
   {
-    "depends_on": "eval:doc.is_salad_product",
-    "fieldname": "salad_product_section",
-    "fieldtype": "Section Break",
-    "label": "Salad Product"
-   },
-   {
-    "default": "0",
-    "fetch_from": "item_code.salad_product",
-    "fieldname": "is_salad_product",
-    "fieldtype": "Check",
-    "label": "Is Salad Product",
-    "read_only": 1
-   },
-   {
-    "fetch_from": "item_code.default_bom",
-    "fieldname": "salad_recipe",
-    "fieldtype": "Link",
-    "label": "Salad Recipe",
-    "options": "BOM",
-    "read_only": 1
-   },
-   {
-    "fieldname": "stock_entry",
-    "fieldtype": "Data",
-    "label": "Stock Entry",
-    "read_only": 1
-   },
-   {
-    "fieldname": "column_break_14",
-    "fieldtype": "Column Break"
-   },
-   {
-    "fieldname": "progress",
-    "fieldtype": "Percent",
-    "label": "Progress",
-    "read_only": 1
-   },
-   {
-    "fieldname": "batch_no",
-    "fieldtype": "Link",
-    "label": "Batch No",
-    "options": "Batch",
-    "read_only": 1
-   }
+   "depends_on": "eval:doc.is_salad_product",
+   "fieldname": "salad_product_section",
+   "fieldtype": "Section Break",
+   "label": "Salad Product"
+  },
+  {
+   "default": "0",
+   "fetch_from": "item_code.salad_product",
+   "fieldname": "is_salad_product",
+   "fieldtype": "Check",
+   "label": "Is Salad Product",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.default_bom",
+   "fieldname": "salad_recipe",
+   "fieldtype": "Link",
+   "label": "Salad Recipe",
+   "options": "BOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stock_entry",
+   "fieldtype": "Data",
+   "label": "Stock Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "progress",
+   "fieldtype": "Percent",
+   "label": "Progress",
+   "read_only": 1
+  },
+  {
+   "fieldname": "batch_no",
+   "fieldtype": "Link",
+   "label": "Batch No",
+   "options": "Batch",
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_name_view",
+   "fieldtype": "Data",
+   "label": "Item Name View"
+  }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-07-31 14:18:15.714908",
+ "modified": "2026-03-26 19:16:19.738131",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

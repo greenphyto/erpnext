@@ -58,6 +58,7 @@
   "set_target_warehouse",
   "section_break_42",
   "non_package_item",
+  "non_stock_item",
   "items",
   "section_break_30",
   "total_qty",
@@ -2165,13 +2166,6 @@
    "label": "Non Package Item"
   },
   {
-   "fetch_from": "shipping_address_name.outlet_name",
-   "fieldname": "outlet_name",
-   "fieldtype": "Data",
-   "label": "Outlet Name",
-   "read_only": 1
-  },
-  {
    "depends_on": "eval:doc.is_pledge",
    "fieldname": "donor_name",
    "fieldtype": "Data",
@@ -2182,6 +2176,19 @@
    "fieldname": "is_pledge",
    "fieldtype": "Check",
    "label": "For Pledge"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_stock_item",
+   "fieldtype": "Check",
+   "label": "Non Stock Item"
+  },
+  {
+   "fetch_from": "shipping_address_name.outlet_name",
+   "fieldname": "outlet_name",
+   "fieldtype": "Data",
+   "label": "Outlet Name",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -2194,7 +2201,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2026-02-05 17:00:03.662822",
+ "modified": "2026-03-26 19:13:07.029713",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",
