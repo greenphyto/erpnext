@@ -38,6 +38,7 @@
   "is_marketing",
   "is_production",
   "is_pledge",
+  "non_stock_item",
   "replacement_reason_section",
   "replacement_reason",
   "column_break_29",
@@ -1728,13 +1729,19 @@
    "fieldname": "total_cartons",
    "fieldtype": "Int",
    "label": "Total Cartons"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_stock_item",
+   "fieldtype": "Check",
+   "label": "For Non-stock Item"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-09 16:55:11.824725",
+ "modified": "2026-03-26 17:06:42.505389",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

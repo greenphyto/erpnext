@@ -197,6 +197,7 @@ class DeliveryNote(SellingController):
 			self.delivery_date = min(delivery_date)
 
 	def validate(self):
+		self.validate_non_stock()
 		self.validate_posting_time()
 		super(DeliveryNote, self).validate()
 		self.set_status()
@@ -231,6 +232,14 @@ class DeliveryNote(SellingController):
 			self.link_internal_company()
 		except:
 			pass
+
+	def validate_non_stock(self):
+		if not self.non_stock_item:
+			return
+		
+		for d in self.get("items"):
+			d.warehouse = ""
+		self.set_warehouse = ""
 
 	def validate_pledge(self):
 		if self.customer == "Donor":
@@ -628,6 +637,12 @@ class DeliveryNote(SellingController):
 		else:
 			for d in self.get("items"):
 				d.billed_amt = d.amount - (d.returned_qty * d.rate)
+		
+		if self.non_stock_item:
+			for d in self.get("items"):
+				if not d.si_detail:
+					d.billed_amt = 0
+			self.per_billed = sum(d.billed_amt for d in self.get("items")) / self.base_grand_total * 100 if self.base_grand_total else 0
 
 	def make_return_invoice(self):
 		try:
