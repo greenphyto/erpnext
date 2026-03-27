@@ -760,6 +760,17 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                         .filter(x => !!x);
                     selected_invoices = Array.from(new Set(selected_invoices));
                 }
+                
+                if ($detail.find('.invoice-select').length==0) {
+                    // Restore buttons to original state
+                    $tr.removeClass('processing');
+                    [$btnApprove, $btnApproveM].forEach($b => $b.prop('disabled', false).text(originalApproveText));
+                    [$btnReject, $btnRejectM].forEach($b => $b.prop('disabled', false).text(originalRejectText));
+                    page.set_indicator(__('Loaded'), 'green');
+                    // open the row
+                    $tr.find('.toggle-detail').trigger('click');
+                    return;
+                }
 
                 frappe.xcall('erpnext.uob.page.payment_bulk_approval.payment_bulk_approval.get_apply_workflow', {
                     docname: name,
