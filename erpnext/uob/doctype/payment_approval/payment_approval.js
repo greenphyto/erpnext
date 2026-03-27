@@ -28,19 +28,6 @@ frappe.ui.form.on('Payment Approval', {
 			}
 		})
 
-		frm.set_query("invoice_no", "invoices", (doc, cdt, cdn)=>{
-			if (!doc.company){
-				frappe.throw(_("Company is not set."))
-			}
-			return{
-				filters:{
-					"company":doc.company,
-					"docstatus":1,
-					"outstanding_amount": [">", 0]
-				}
-			}
-		})
-
 		frm.set_query("supplier_bank_no", "invoices", (doc, cdt, cdn)=>{
 			var d = locals[cdt][cdn]
 			if (!doc.currency){
