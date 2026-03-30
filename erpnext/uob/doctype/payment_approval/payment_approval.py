@@ -220,7 +220,7 @@ class PaymentApproval(Document):
 			elif self.process_id == 3:
 				# In Progress
 				self.status = "In Progress"
-			elif self.process_id == 4:
+			elif self.process_id == 4 and self.status not in ["Failed", "Partially Complete"]:
 				if tr_success == 100:
 					# Complete
 					self.status = "Complete"
