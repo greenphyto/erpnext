@@ -249,6 +249,7 @@ class UOBFileLog(Document):
 
 		pe_map = {}
 		approval_update = {}
+		single_charge_map = []
 		for pay_name, d in trans_map.items():
 			# if pay_name!= "PAY-260045":
 			# 	continue
@@ -279,6 +280,20 @@ class UOBFileLog(Document):
 
 				if has_return and not "status_result" in x:
 					# forbidden payment entry if has return but not have L4
+					if paid_amount > 0:
+						bank_account_no = frappe.get_value("Bank Account", pay_doc.bank_account, "bank_account_no")
+						single_charge_map.append({
+							"amount": paid_amount,
+							"account": default_charge_account,
+							"cost_center": cost_center_charge,
+							"description": f"Bank Charge for {x['invoice_no']}",
+							"company": pay_doc.company,
+							"bank_account": pay_doc.account,
+							"bank_account_no": bank_account_no,
+							"payment_approval": pay_doc.name,
+							"posting_date": getdate(),
+							"filename": filename
+						})
 					continue
 
 				for i, tr in enumerate(d['transfer']):
@@ -404,9 +419,86 @@ class UOBFileLog(Document):
 			pe.save(ignore_permissions=1)
 			# pe.submit()
 
+		if single_charge_map:
+			self.create_journal_entry(single_charge_map)
+
 		for d in approval_update.values():
 			d['doc'].update_payment_status(4, d['trans'])
 
+	def create_journal_entry(self, charges):
+		"""Create journal entry for bank charges when transaction fails but charge is still deducted"""
+		if not charges:
+			return
+
+		# Group charges by company and bank account
+		from collections import defaultdict
+		grouped_charges = defaultdict(list)
+		
+		for charge in charges:
+			key = (charge.get('company'), charge.get('bank_account'), charge.get('posting_date'), charge.get('filename'))
+			grouped_charges[key].append(charge)
+		
+		# Create separate JE for each group
+		for (company, bank_account, posting_date, filename), charge_list in grouped_charges.items():
+			je = frappe.new_doc("Journal Entry")
+			je.posting_date = posting_date or getdate()
+			je.voucher_type = "Bank Entry"
+			je.company = company
+			je.cheque_no = filename.replace(".csv", "") if filename else ""
+			je.cheque_date = posting_date or getdate()
+			
+			total_debit = 0
+			cost_center = ""
+			payment_approval_list = []
+			bank_account_no = ""
+			
+			# Add debit entries for bank charges
+			for d in charge_list:
+				amount = flt(d.get('amount', 0))
+				if amount > 0:
+					je.append("accounts", {
+						"account": d.get('account'),
+						"debit_in_account_currency": amount,
+						"debit": amount,
+						"cost_center": d.get('cost_center'),
+						"reference_detail_no": d.get('payment_approval'),
+						"user_remark": d.get('description', '')
+					})
+					cost_center = d.get('cost_center') or cost_center
+					total_debit += amount
+					
+					# Collect payment approval for parent remark
+					pay_app = d.get('payment_approval')
+					if pay_app and pay_app not in payment_approval_list:
+						payment_approval_list.append(pay_app)
+					
+					# Get bank account number
+					if not bank_account_no:
+						bank_account_no = d.get('bank_account_no', '')
+			
+			# Add credit entry for bank account
+			if total_debit > 0:
+				je.append("accounts", {
+					"account": bank_account,
+					"credit_in_account_currency": total_debit,
+					"credit": total_debit,
+					"cost_center": cost_center,
+					"user_remark": f"Bank charges for failed transactions (Total: {total_debit})"
+				})
+				
+				# Set parent user_remark with comprehensive info
+				payment_list_str = ", ".join(payment_approval_list)
+				je.user_remark = f"""Bank Charges - Failed Transactions
+Bank Account: {bank_account_no or 'N/A'}
+Payment Approval: {payment_list_str}
+Date: {posting_date.strftime('%d-%m-%Y') if posting_date else getdate().strftime('%d-%m-%Y')}
+Total Charges: {frappe.utils.fmt_money(total_debit, currency=frappe.get_cached_value('Company', company, 'default_currency'))}"""
+				
+				try:
+					je.flags.ignore_validate = 1
+					je.save(ignore_permissions=True)
+				except Exception as e:
+					frappe.log_error(f"Failed to create journal entry for bank charges: {str(e)}")
 
 	def get_bank_account(self, account_no):
 		bank_name = frappe.db.get_value("Bank Account", {"bank_account_no":account_no}, "name")
