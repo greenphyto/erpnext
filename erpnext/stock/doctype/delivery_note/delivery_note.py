@@ -1202,7 +1202,7 @@ def make_installation_note(source_name, target_doc=None):
 @frappe.whitelist()
 def make_packing_slip(source_name, target_doc=None):
 	def set_missing_values(source, target):
-		target.run_method("set_missing_values")
+		target.run_method("fetch_delivery_note")
 
 	doclist = get_mapped_doc(
 		"Delivery Note",
@@ -1212,6 +1212,11 @@ def make_packing_slip(source_name, target_doc=None):
 				"doctype": "Packing Slip",
 				"field_map": {"name": "delivery_note", "letter_head": "letter_head"},
 				"validation": {"docstatus": ["=", 0]},
+				"field_no_map": [
+					"amended_from",
+					"status",
+					"naming_series"
+				],
 			},
 			"Delivery Note Item": {
 				"doctype": "Packing Slip Item",

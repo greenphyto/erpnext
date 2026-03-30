@@ -10,7 +10,7 @@ from frappe.contacts.doctype.contact.contact import get_contact_details, get_def
 from frappe.contacts.doctype.address.address import get_default_address, get_address_display
 from frappe.model import no_value_fields
 from frappe.model.document import Document
-from frappe.utils import cint, flt, cstr
+from frappe.utils import cint, flt, cstr, getdate
 from frappe.utils import safe_abs as abs
 
 from erpnext.controllers.status_updater import StatusUpdater
@@ -68,6 +68,11 @@ class PackingSlip(StatusUpdater):
 		
 		self.items = []
 		dn = frappe.get_doc("Delivery Note", self.delivery_note)
+
+		if self.posting_date == "Now":
+			self.posting_date = ""
+
+		self.posting_date = getdate() or getdate(dn.posting_date)
 		
 		# Set letter head from Delivery Note
 		if dn.letter_head:
