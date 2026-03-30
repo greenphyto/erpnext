@@ -244,19 +244,22 @@ class UOBFileLog(Document):
 				# transfer
 				trans_map[pay_name]['transfer'].append(row)
 
+		# get net amount mapping
+		net_amount_mapping = get_net_amount(df_tx)
 
 		pe_map = {}
 		approval_update = {}
+		single_charge_map = []
 		for pay_name, d in trans_map.items():
-			# if pay_name!= "PAY-260051":
+			# if pay_name!= "PAY-260045":
 			# 	continue
 			pay_doc = frappe.get_doc("Payment Approval", pay_name)
 			default_charge_account = get_company_default(pay_doc.company, "default_bank_charge_account")
 			cost_center_charge = get_company_default(pay_doc.company, "cost_center")
 			fee_rate = 0
 			type_fee = 0
-			invoice_group = pay_doc.get_invoice_group()
-			trans_count = len(invoice_group)
+			invoice_group = self.get_l4_mapping(pay_name)
+			trans_count = len(invoice_group.values())
 			if len(d['charges']) == 1:
 				# bulk charge
 				total_fee = flt(d['charges'][0]['Transaction Amount'])
@@ -267,11 +270,39 @@ class UOBFileLog(Document):
 				type_fee = "IND"
 
 			pe_name_list = []
-			for x in invoice_group:
+			for x in invoice_group.values():
+				if x.get("status_result") == "RJCT":
+					continue
+				
+				temp = net_amount_mapping.get(x['pay_no'])
+				paid_amount = flt(temp.get("amount"))
+				has_return = temp.get("has_return")
+
+				if has_return and not "status_result" in x:
+					# forbidden payment entry if has return but not have L4
+					if paid_amount > 0:
+						bank_account_no = frappe.get_value("Bank Account", pay_doc.bank_account, "bank_account_no")
+						single_charge_map.append({
+							"amount": paid_amount,
+							"account": default_charge_account,
+							"cost_center": cost_center_charge,
+							"description": f"Bank Charge for {x['invoice_no']}",
+							"company": pay_doc.company,
+							"bank_account": pay_doc.account,
+							"bank_account_no": bank_account_no,
+							"payment_approval": pay_doc.name,
+							"posting_date": getdate(),
+							"filename": filename
+						})
+					continue
+
 				for i, tr in enumerate(d['transfer']):
+					if tr['Base Transaction Code'].strip() == "C":
+						continue
+
 					# based on value, its not not a good way, but temporary for current version
-					paid_amount = flt(tr['Transaction Amount'])
 					for row in x['invoices']:
+
 						pi_name = row.invoice_no
 						supplier = row.party
 
@@ -283,6 +314,7 @@ class UOBFileLog(Document):
 							paid_amount = 0
 							amount = row.amount
 						elif paid_amount == 0:
+							amount = 0
 							continue
 
 						docstatus, status = frappe.db.get_value("Purchase Invoice", pi_name, ["docstatus", "status"]) or (0, "")
@@ -326,7 +358,6 @@ class UOBFileLog(Document):
 							filters['docstatus'] = 0
 							use_exists_pe = frappe.db.get_value("Payment Entry", filters, 'name')				
 
-
 							if not use_exists_pe:
 								pe = get_payment_entry(dt="Purchase Invoice", dn=pi_name)
 								pe.paid_amount = 0
@@ -339,6 +370,7 @@ class UOBFileLog(Document):
 							else:
 								frappe.db.sql("delete from `tabPayment Entry Reference` where parent = %s ", use_exists_pe)
 								pe = frappe.get_doc("Payment Entry", use_exists_pe)
+								pe.paid_amount = 0
 
 							payment_mode = get_payment_mode(pay_doc.company, pay_doc.account)
 							pe_map[key] = pe
@@ -387,9 +419,86 @@ class UOBFileLog(Document):
 			pe.save(ignore_permissions=1)
 			# pe.submit()
 
+		if single_charge_map:
+			self.create_journal_entry(single_charge_map)
+
 		for d in approval_update.values():
 			d['doc'].update_payment_status(4, d['trans'])
 
+	def create_journal_entry(self, charges):
+		"""Create journal entry for bank charges when transaction fails but charge is still deducted"""
+		if not charges:
+			return
+
+		# Group charges by company and bank account
+		from collections import defaultdict
+		grouped_charges = defaultdict(list)
+		
+		for charge in charges:
+			key = (charge.get('company'), charge.get('bank_account'), charge.get('posting_date'), charge.get('filename'))
+			grouped_charges[key].append(charge)
+		
+		# Create separate JE for each group
+		for (company, bank_account, posting_date, filename), charge_list in grouped_charges.items():
+			je = frappe.new_doc("Journal Entry")
+			je.posting_date = posting_date or getdate()
+			je.voucher_type = "Bank Entry"
+			je.company = company
+			je.cheque_no = filename.replace(".csv", "") if filename else ""
+			je.cheque_date = posting_date or getdate()
+			
+			total_debit = 0
+			cost_center = ""
+			payment_approval_list = []
+			bank_account_no = ""
+			
+			# Add debit entries for bank charges
+			for d in charge_list:
+				amount = flt(d.get('amount', 0))
+				if amount > 0:
+					je.append("accounts", {
+						"account": d.get('account'),
+						"debit_in_account_currency": amount,
+						"debit": amount,
+						"cost_center": d.get('cost_center'),
+						"reference_detail_no": d.get('payment_approval'),
+						"user_remark": d.get('description', '')
+					})
+					cost_center = d.get('cost_center') or cost_center
+					total_debit += amount
+					
+					# Collect payment approval for parent remark
+					pay_app = d.get('payment_approval')
+					if pay_app and pay_app not in payment_approval_list:
+						payment_approval_list.append(pay_app)
+					
+					# Get bank account number
+					if not bank_account_no:
+						bank_account_no = d.get('bank_account_no', '')
+			
+			# Add credit entry for bank account
+			if total_debit > 0:
+				je.append("accounts", {
+					"account": bank_account,
+					"credit_in_account_currency": total_debit,
+					"credit": total_debit,
+					"cost_center": cost_center,
+					"user_remark": f"Bank charges for failed transactions (Total: {total_debit})"
+				})
+				
+				# Set parent user_remark with comprehensive info
+				payment_list_str = ", ".join(payment_approval_list)
+				je.user_remark = f"""Bank Charges - Failed Transactions
+Bank Account: {bank_account_no or 'N/A'}
+Payment Approval: {payment_list_str}
+Date: {posting_date.strftime('%d-%m-%Y') if posting_date else getdate().strftime('%d-%m-%Y')}
+Total Charges: {frappe.utils.fmt_money(total_debit, currency=frappe.get_cached_value('Company', company, 'default_currency'))}"""
+				
+				try:
+					je.flags.ignore_validate = 1
+					je.save(ignore_permissions=True)
+				except Exception as e:
+					frappe.log_error(f"Failed to create journal entry for bank charges: {str(e)}")
 
 	def get_bank_account(self, account_no):
 		bank_name = frappe.db.get_value("Bank Account", {"bank_account_no":account_no}, "name")
@@ -411,6 +520,75 @@ class UOBFileLog(Document):
 		Remarks: {row["Remarks"]}"""
 		txt = txt.replace("\t", "")
 		return txt
+
+	def get_l4_mapping(self, pay_name):
+		doc = frappe.get_doc("Payment Approval", pay_name)
+		group_invoices = doc.get_invoice_group()
+		date = getdate(doc.request_date)
+		l4_log_name = find_uob_file_log( date.year, doc.batch_number)
+		xml_content = None
+		xml_map = {}
+		if l4_log_name:
+			l4_log = frappe.get_doc("UOB File Log", l4_log_name.name)
+			file = frappe.get_doc("File", l4_log.file)
+			xml_content = l4_log.get_file_data(file, "XML", False)
+
+		if xml_content:
+			xml_map = parse_xml_transactions(xml_content)
+		
+		res_map = {}
+		for d in group_invoices:
+			key = (d['bank_account_name'], d['bank_account_no'])
+			if key in xml_map:
+				result = xml_map.get(key)
+				d['status_result'] = result['status']
+			
+			res_map[key] = d
+
+		return res_map
+
+import xml.etree.ElementTree as ET
+def parse_xml_transactions(xml_content):
+    # xml_content = hasil xmltodict.parse()
+    tx_list = xml_content["Document"]["CstmrPmtStsRpt"]["OrgnlPmtInfAndSts"]["TxInfAndSts"]
+
+    if isinstance(tx_list, dict):
+        tx_list = [tx_list]
+
+    result = {}
+
+    for tx in tx_list:
+        ref       = tx.get("OrgnlTxRef", {})
+        amt_node  = ref.get("Amt", {}).get("InstdAmt", {})
+        cdtr_nm   = ref.get("Cdtr", {}).get("Nm")
+        cdtr_acct = ref.get("CdtrAcct", {}).get("Id", {}).get("Othr", {}).get("Id")
+
+        key = (cdtr_nm, cdtr_acct)
+
+        result[key] = {
+            "orgn_instr_id": tx.get("OrgnlInstrId"),
+            "status":        tx.get("TxSts"),
+            "amount":        amt_node.get("#text") if isinstance(amt_node, dict) else amt_node,
+            "currency":      amt_node.get("@Ccy")  if isinstance(amt_node, dict) else "",
+        }
+
+    return result
+
+def find_uob_file_log(year, batch_no):
+    year_2d  = str(year)[-2:]
+    batch_3d = str(batch_no).zfill(3)
+
+    like_pattern = f"%{year_2d}%{batch_3d}O1001%.xml"
+
+    result = frappe.db.sql("""
+        SELECT `name`, `filename`
+        FROM `tabUOB File Log`
+        WHERE `filename` LIKE %(pattern)s
+        ORDER BY `modified` DESC
+        LIMIT 1
+    """, {"pattern": like_pattern}, as_dict=True)
+
+    return result[0] if result else None
 
 def convert_inv_no(inv_txt):
     inv_txt = inv_txt.strip()
@@ -516,3 +694,46 @@ def get_payment_mode(company, bank_account):
 	if data:
 		return data[0].parent
 	return frappe.db.get_value("Mode of Payment", {"type": "Bank", "enabled":1}, "name")
+
+def clean_amount(value) -> float:
+    """Remove commas and Excel formula artifacts, convert to float."""
+    if pd.isna(value):
+        return 0.0
+    value = re.sub(r'^="?(.*?)"?$', r'\1', str(value).strip())
+    value = value.replace(",", "").strip()
+    try:
+        return float(value)
+    except ValueError:
+        return 0.0
+
+
+def get_net_amount(df: pd.DataFrame) -> dict:
+    """
+    Returns:
+        {
+            "PAY-260044": {"amount": 37.50,   "has_return": False},
+            "PAY-260045": {"amount": 2301.32, "has_return": True},
+            ...
+        }
+    """
+    df = df.copy()
+
+    df["Base Transaction Code"] = df["Base Transaction Code"].astype(str).str.strip()
+    df["Your Reference"]        = df["Your Reference"].astype(str).str.strip()
+    df["Transaction Amount"]    = df["Transaction Amount"].apply(clean_amount)
+
+    df = df[df["Your Reference"].str.startswith("PAY", na=False)]
+    df["Your Reference"] = df["Your Reference"].apply(convert_inv_no)
+
+    result = {}
+    for ref in df["Your Reference"].unique():
+        subset     = df[df["Your Reference"] == ref]
+        debit      = subset[subset["Base Transaction Code"] == "D"]["Transaction Amount"].sum()
+        credit     = subset[subset["Base Transaction Code"] == "C"]["Transaction Amount"].sum()
+        has_return = not subset[subset["Base Transaction Code"] == "C"].empty
+        result[ref] = {
+            "amount":     round(debit - credit, 2),
+            "has_return": has_return,
+        }
+
+    return result
