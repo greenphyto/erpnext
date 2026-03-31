@@ -10,6 +10,7 @@
   "invoice_and_billing_tab",
   "multi_company_section",
   "enable_switch_company_menu",
+  "skip_ceo_role_from_strict_permissions",
   "enable_features_section",
   "unlink_payment_on_cancellation_of_invoice",
   "unlink_advance_payment_on_cancelation_of_order",
@@ -387,6 +388,12 @@
    "fieldname": "enable_switch_company_menu",
    "fieldtype": "Check",
    "label": "Enable Switch Company Menu"
+  },
+  {
+   "default": "0",
+   "fieldname": "skip_ceo_role_from_strict_permissions",
+   "fieldtype": "Check",
+   "label": "Skip CEO role from strict permissions"
   }
  ],
  "icon": "icon-cog",
@@ -394,7 +401,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-10-01 15:50:17.755390",
+ "modified": "2026-03-31 16:42:55.927773",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounts Settings",
