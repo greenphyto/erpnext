@@ -780,7 +780,7 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 	conversion_factor = wo_doc.conversion_factor
 	producted_qty = wo_doc.qty
 	qty_from_packet = flt(conversion_factor) * flt(packets)
-	qty = cint(qty) or qty_from_packet
+	qty = flt(qty) or qty_from_packet
 	
 	# skip before operation 3 has done
 	operation_3_status = frappe.db.get_value("Stock Entry", {
