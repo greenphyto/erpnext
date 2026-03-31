@@ -38,7 +38,7 @@ def load_bank_list(doc):
 			"bank_number", 
 			"bank_account_name",
 			"bank",
-			"branch",
+			"branch_code",
 			"swift"
 		], order_by="creation asc") 
 	doc.set_onload("bank_account_list", bank_list)
