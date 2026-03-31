@@ -1159,13 +1159,18 @@ def switch_company(company, force=False, user=""):
 	# change defaults
 	switch_default_values(user, company)
 	
-	if "CEOx" not in frappe.get_roles(): 
-		doc.update(filters)
-		doc.for_value = company
-		doc.flags.ignore_permissions = 1
-		doc.save()
-		
-	return {"result":True}
+	is_skip_enabled = frappe.db.get_single_value("Accounts Settings", "skip_ceo_role_from_strict_permissions")
+	is_ceo = "CEO" in frappe.get_roles()
+
+	if is_skip_enabled and is_ceo:
+		return {"result": True}
+
+	doc.update(filters)
+	doc.for_value = company
+	doc.flags.ignore_permissions = 1
+	doc.save()
+
+	return {"result": True}
 
 from frappe.defaults import set_default
 def switch_default_values(user, company):
