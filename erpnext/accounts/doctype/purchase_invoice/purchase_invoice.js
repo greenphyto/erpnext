@@ -101,12 +101,18 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 					__('Create')
 				);
 			} else if (!doc.on_hold) {
+				
 				this.frm.add_custom_button(
 					__('Block Invoice'),
 					function() {me.block_invoice()},
 					__('Create')
 				);
 			}
+			this.frm.add_custom_button(
+					__('Payment Approval'),
+					function() {me.create_payment_approval()},
+					__('Create')
+				);
 		}
 
 		if(doc.docstatus == 1 && doc.outstanding_amount != 0
@@ -220,6 +226,13 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 		} else {
 			return true;
 		}
+	}
+
+	create_payment_approval(){
+		frappe.model.open_mapped_doc({
+			method: "erpnext.accounts.doctype.purchase_invoice.purchase_invoice.make_payment_approval",
+			frm: cur_frm
+		})
 	}
 
 	make_comment_dialog_and_block_invoice(){
@@ -564,6 +577,16 @@ frappe.ui.form.on("Purchase Invoice", {
 			};
 		});
 
+		// Filter Bank Number by party = current supplier
+		frm.set_query('bank_number', function() {
+			return {
+				filters: {
+					party_type: 'Supplier',
+					party: frm.doc.supplier
+				}
+			};
+		});
+
 		frm.fields_dict['items'].grid.get_field('deferred_expense_account').get_query = function(doc) {
 			return {
 				filters: {
@@ -587,6 +610,8 @@ frappe.ui.form.on("Purchase Invoice", {
 
 	refresh: function(frm) {
 		frm.events.add_custom_buttons(frm);
+		// keep bank details HTML in sync on refresh
+		frm.events.update_bank_details(frm);
 	},
 
 	add_custom_buttons: function(frm) {
@@ -624,6 +649,14 @@ frappe.ui.form.on("Purchase Invoice", {
 		if (frm.is_new()) {
 			frm.clear_table("tax_withheld_vouchers");
 		}
+
+		// render bank details on load as well
+		frm.events.update_bank_details(frm);
+	},
+
+	// whenever bank_number changes, update the HTML viewer
+	bank_number: function(frm) {
+		frm.events.update_bank_details(frm);
 	},
 
 	is_subcontracted: function(frm) {
@@ -637,6 +670,127 @@ frappe.ui.form.on("Purchase Invoice", {
 	update_stock: function(frm) {
 		hide_fields(frm.doc);
 		frm.fields_dict.items.grid.toggle_reqd("item_code", frm.doc.update_stock? true: false);
+	},
+
+	// Build and show bank details HTML from linked Bank Number document
+	update_bank_details: function(frm) {
+		const field = frm.get_field('bank_details');
+		const $html = field && field.$wrapper;
+		if (!$html) return;
+
+		const esc = (v) => (v || v === 0) ? String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])) : '';
+
+		const canEdit = !!frm.doc.bank_number && Number(frm.doc.docstatus || 0) === 0;
+
+		const showEmpty = () => {
+			let content = '<div class="text-muted">No bank details</div>';
+			if (canEdit) {
+				content += '<div style="margin-top:8px;"><button type="button" class="btn btn-sm btn-secondary bn-edit-btn">Edit</button></div>';
+			}
+			$html.html(content);
+		};
+
+		// no link selected
+		if (!frm.doc.bank_number) {
+			showEmpty();
+			return;
+		}
+
+		frappe.call({
+			method: 'frappe.client.get',
+			args: { doctype: 'Bank Number', name: frm.doc.bank_number },
+			callback: function(r) {
+				const d = r && r.message;
+				if (!d) { showEmpty(); return; }
+
+				const rows = [];
+				const bankLine = [d.bank, d.branch].filter(Boolean).join(' - ');
+				if (bankLine) rows.push({ label: 'Bank', value: bankLine });
+				if (d.bank_account_name) rows.push({ label: 'Account Name', value: d.bank_account_name });
+				if (d.bank_number) rows.push({ label: 'Account No.', value: d.bank_number });
+				if (d.swift) rows.push({ label: 'SWIFT', value: d.swift });
+				if (d.currency) rows.push({ label: 'Currency', value: d.currency });
+
+				if (!rows.length) { showEmpty(); return; }
+
+				const body = rows.map(({label, value}) => (
+					`<div class="clearfix" style="margin: 2px 0;">
+						<span class="text-muted" style="min-width: 120px; display: inline-block;">${esc(label)}</span>
+						<span><b>${esc(value)}</b></span>
+					</div>`
+				)).join('');
+
+				const html = `
+					<div class="frappe-control" style="padding: 6px 8px; border: 1px solid var(--border-color, #d1d8dd); border-radius: 6px; background: var(--bg-color, #fff);">
+						${body}
+					</div>`;
+
+
+				if (canEdit) {
+					const footer = `
+						<div class="text-right" style="margin-top:8px;">
+							<button type="button" class="btn btn-sm btn-secondary bn-edit-btn">Edit</button>
+						</div>`;
+					$html.html(html + footer);
+				} else {
+					$html.html(html);
+				}
+			},
+			error: function() { showEmpty(); }
+		});
+
+		// bind once: open dialog to edit bank number
+		if (!$html.data('bnEditBound')) {
+			$html.on('click', '.bn-edit-btn', function() {
+				if (!frm.doc.bank_number) {
+					frappe.msgprint(__('Please select a Bank Number first'));
+					return;
+				}
+
+				frappe.call({
+					method: 'frappe.client.get',
+					args: { doctype: 'Bank Number', name: frm.doc.bank_number },
+					callback: function(r) {
+						const dval = r && r.message ? r.message : {};
+						const d = new frappe.ui.Dialog({
+							title: __('Edit Bank Details'),
+							fields: [
+								{ fieldname: 'bank_number', label: __('Bank Number'), fieldtype: 'Data', reqd: 1, default: dval.bank_number },
+								{ fieldname: 'bank_account_name', label: __('Account Name'), fieldtype: 'Data', default: dval.bank_account_name },
+								{ fieldname: 'bank', label: __('Bank'), fieldtype: 'Data', default: dval.bank },
+								{ fieldname: 'branch', label: __('Branch'), fieldtype: 'Data', default: dval.branch },
+								{ fieldname: 'swift', label: __('SWIFT'), fieldtype: 'Data', default: dval.swift },
+							]
+						});
+
+						d.set_primary_action(__('Submit'), () => {
+							const values = d.get_values();
+							if (!values) return;
+
+							frappe.call({
+								method: 'erpnext.accounts.doctype.purchase_invoice.purchase_invoice.update_bank_number_details',
+								args: {
+									bank_number_name: frm.doc.bank_number,
+									bank_number: values.bank_number,
+									bank_account_name: values.bank_account_name,
+									bank: values.bank,
+									branch: values.branch,
+									swift: values.swift,
+								},
+								freeze: true,
+								callback: function() {
+									d.hide();
+									frm.events.update_bank_details(frm);
+								}
+							});
+						});
+
+						d.show();
+					}
+				});
+			});
+			$html.data('bnEditBound', true);
+		}
 	},
 
 	make_purchase_receipt: function(frm) {

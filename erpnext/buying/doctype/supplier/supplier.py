@@ -25,8 +25,10 @@ class Supplier(TransactionBase):
 		return self.supplier_name
 
 	def onload(self):
+		from erpnext.accounts.doctype.bank_number.bank_number import load_bank_list
 		"""Load address and contacts in `__onload`"""
 		load_address_and_contact(self)
+		load_bank_list(self)
 		self.load_dashboard_info()
 
 	def before_save(self):

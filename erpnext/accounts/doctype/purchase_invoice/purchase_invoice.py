@@ -174,7 +174,7 @@ class PurchaseInvoice(BuyingController):
 			frappe.throw(_("Please set Base Value for GST input"))
 
 		self.base_currency_of_base_value = flt(self.base_value_for_gst_input) * self.conversion_rate
-			
+		
 
 	def validate_release_date(self):
 		if self.release_date and getdate(nowdate()) >= getdate(self.release_date):
@@ -1922,3 +1922,82 @@ def hide_older_cancelled_document():
 
 
 	return data
+
+@frappe.whitelist()
+@frappe.read_only()
+def make_payment_approval(source_name, target_doc=None):
+	def postprocess(source_doc, target_doc):
+		row = target_doc.append("invoices")
+		row.selected = 1
+		row.invoice_no = source_doc.name
+		row.party = source_doc.supplier
+		row.amount = flt(source_doc.outstanding_amount)
+		row.basic_amount = flt(source_doc.outstanding_amount)
+		row.currency = source_doc.currency
+		row.exchange_rate = flt(source_doc.conversion_rate)
+
+		# Fetch bank information from supplier's default bank account
+		supplier = frappe.get_doc("Supplier", source_doc.supplier)
+		if supplier.default_bank_account_no:
+			row.supplier_bank_no = supplier.default_bank_account_no
+			bank_account = frappe.get_doc("Bank Number", supplier.default_bank_account_no)
+			if bank_account.bank:
+				row.supplier_bank = bank_account.bank
+				bank = frappe.get_doc("Bank", bank_account.bank)
+				row.swift = bank.swift_number
+
+	doc = get_mapped_doc(
+		"Purchase Invoice",
+		source_name,
+		{
+			"Purchase Invoice": {
+				"doctype": "Payment Approval",
+				"validation": {
+					"docstatus": ["=", 1],
+				},
+			}
+		},
+		target_doc,
+		postprocess
+	)
+
+	return doc
+
+
+@frappe.whitelist()
+def update_bank_number_details(bank_number_name: str,
+							   bank_number: str = None, bank_account_name: str = None,
+							   bank: str = None, branch: str = None, swift: str = None):
+	"""
+	Safely update selected fields on the linked "Bank Number" document associated with a
+	Purchase Invoice, then return the updated values for client-side refresh.
+	"""
+
+	# Load the Bank Number doc and require write permission
+	bn = frappe.get_doc('Bank Number', bank_number_name)
+	if not bn.has_permission('write'):
+		frappe.throw(_('No write permission for Bank Number'))
+
+	# Update allowed fields only
+	if bank_number is not None:
+		bn.bank_number = bank_number
+	if bank_account_name is not None:
+		bn.bank_account_name = bank_account_name
+	if bank is not None:
+		bn.bank = bank
+	if branch is not None:
+		bn.branch = branch
+	if swift is not None:
+		bn.swift = swift
+
+	bn.save()
+
+	return {
+		'name': bn.name,
+		'bank_number': bn.get('bank_number'),
+		'bank_account_name': bn.get('bank_account_name'),
+		'bank': bn.get('bank'),
+		'branch': bn.get('branch'),
+		'swift': bn.get('swift'),
+		'currency': bn.get('currency'),
+	}

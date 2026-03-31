@@ -24,10 +24,11 @@ dependencies = [
     "imgkit",
     "minio",
     "python-barcode",
+    "iso3166",
+    "xmltodict",
     "pypdf",
     "reportlab",
-    "pymupdf",
-    "numpy"
+    "pandas"
 ]
 
 [build-system]

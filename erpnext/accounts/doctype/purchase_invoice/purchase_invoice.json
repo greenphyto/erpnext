@@ -1615,8 +1615,9 @@
   },
   {
    "fieldname": "bank_number",
-   "fieldtype": "Data",
-   "label": "Bank Number"
+   "fieldtype": "Link",
+   "label": "Bank Number",
+   "options": "Bank Number"
   },
   {
    "fieldname": "bank_details",
@@ -1638,7 +1639,7 @@
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-10-31 19:57:58.507931",
+ "modified": "2025-09-10 12:17:14.033670",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",

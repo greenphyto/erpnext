@@ -57,6 +57,7 @@
   "transactions_annual_history",
   "default_settings",
   "default_bank_account",
+  "default_bank_charge_account",
   "default_cash_account",
   "default_receivable_account",
   "round_off_account",
@@ -900,6 +901,12 @@
    "fieldname": "default_stock_scrap_item",
    "fieldtype": "Link",
    "label": "Default Stock Scrap Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "default_bank_charge_account",
+   "fieldtype": "Link",
+   "label": "Default Bank Charge Account",
    "options": "Account"
   },
   {

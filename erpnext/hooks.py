@@ -494,7 +494,8 @@ scheduler_events = {
 		"*/5 * * * *": [
 			"erpnext.manufacturing.doctype.bom_update_log.bom_update_log.resume_bom_cost_update_jobs",
             "erpnext.controllers.erp_api.run_pending_harvesting_transfer",
-            "erpnext.controllers.erp_api.run_pending_harvesting"
+            "erpnext.controllers.erp_api.run_pending_harvesting",
+			"erpnext.controllers.erp.read_email_inbox"
 		],
 		"0/30 * * * *": [
 			"erpnext.utilities.doctype.video.video.update_youtube_data",
@@ -524,6 +525,9 @@ scheduler_events = {
 		],
         "0 */4 * * *":[
             "erpnext.controllers.erp.read_email_inbox"
+		],
+        "*/30 * * * *": [
+            "erpnext.controllers.uob.sync_uob_file"
 		]
 	},
 	"all": [

@@ -11,6 +11,7 @@
   "naming_series",
   "payment_type",
   "payment_order_status",
+  "auto_generated",
   "column_break_5",
   "posting_date",
   "company",
@@ -74,6 +75,7 @@
   "deductions",
   "transaction_references",
   "reference_no",
+  "additional_info",
   "column_break_23",
   "reference_date",
   "clearance_date",
@@ -93,7 +95,8 @@
   "subscription_section",
   "auto_repeat",
   "amended_from",
-  "title"
+  "title",
+  "payment_approval"
  ],
  "fields": [
   {
@@ -623,6 +626,7 @@
    "collapsible": 1,
    "fieldname": "taxes_and_charges_section",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Taxes and Charges"
   },
   {
@@ -724,12 +728,39 @@
    "fieldname": "section_break_60",
    "fieldtype": "Section Break",
    "hide_border": 1
+  },
+  {
+   "fieldname": "from_cost_center",
+   "fieldtype": "Link",
+   "label": "From Cost Center",
+   "options": "Cost Center"
+  },
+  {
+   "fieldname": "additional_info",
+   "fieldtype": "Small Text",
+   "label": "Additional Info",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.auto_generated",
+   "description": "This Payment Entry is <b>auto generated</b> from Bank Account's Statement and Report",
+   "fieldname": "auto_generated",
+   "fieldtype": "Check",
+   "label": "Auto Generated"
+  },
+  {
+   "fieldname": "payment_approval",
+   "fieldtype": "Link",
+   "label": "Payment Approval",
+   "options": "Payment Approval",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-13 18:08:59.814371",
+ "modified": "2026-03-04 16:33:55.201530",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry",
