@@ -12,6 +12,7 @@
   "bank",
   "bank_account_no",
   "bank_account_name",
+  "currency",
   "column_break_7",
   "is_default",
   "is_company_account",
@@ -23,6 +24,7 @@
   "party_type",
   "party",
   "account_details_section",
+  "swift_number",
   "iban",
   "column_break_12",
   "branch_code",
@@ -207,10 +209,26 @@
    "fieldtype": "Data",
    "label": "Bank Account Name",
    "reqd": 1
+  },
+  {
+   "fetch_from": "bank.swift_number",
+   "fieldname": "swift_number",
+   "fieldtype": "Data",
+   "label": "SWIFT number",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "account.account_currency",
+   "fetch_if_empty": 1,
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
   }
  ],
  "links": [],
- "modified": "2025-05-23 17:47:59.226404",
+ "modified": "2025-07-09 16:56:36.190307",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Bank Account",

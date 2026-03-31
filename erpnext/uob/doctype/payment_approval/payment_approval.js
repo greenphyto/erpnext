@@ -76,6 +76,7 @@ frappe.ui.form.on('Payment Approval', {
 			frm.set_value("requested_by", frappe.session.user)
 		}
 		frm.cscript.setup_method();
+		frm.cscript.render_summary(frm);
 	},
 	payment_method: function(frm){
 		frm.cscript.setup_method();
@@ -91,6 +92,11 @@ frappe.ui.form.on('Payment Approval', {
 				}
 			});
 		})
+	},
+	currency: function(frm) {
+		setTimeout(() => {
+			if (frm.cscript.render_summary) frm.cscript.render_summary(frm);
+		}, 0);
 	}
 })
 
@@ -269,26 +275,17 @@ $.extend(cur_frm.cscript, {
 			total += flt(r.amount)
 		})
 		frm.set_value("total_amount", total)
-	}
+	},
+	invoices_add: function(doc) {
+		var frm = this.frm;
+		frm.cscript.render_summary(frm);
+	},
+	invoices_remove: function(doc) {
+		var frm = this.frm;
+		frm.cscript.render_summary(frm);
+		frm.cscript.calculate_amount(frm);
+	},
 })
-
-// Ensure summary renders on refresh and currency changes
-frappe.ui.form.on('Payment Approval', {
-	refresh(frm) {
-		if (frm.cscript.render_summary) frm.cscript.render_summary(frm);
-	},
-	currency(frm) {
-		setTimeout(() => {
-			if (frm.cscript.render_summary) frm.cscript.render_summary(frm);
-		}, 0);
-	},
-	invoices_add(frm) {
-		if (frm.cscript.render_summary) frm.cscript.render_summary(frm);
-	},
-	invoices_remove(frm) {
-		if (frm.cscript.render_summary) frm.cscript.render_summary(frm);
-	},
-});
 
 // Child table field events to keep summary in sync real-time
 frappe.ui.form.on('Payment Invoice List', {

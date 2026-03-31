@@ -707,6 +707,7 @@ def map_purchase_invoices(source_name, target_doc=None, args=None):
 @frappe.whitelist()
 def make_payment_approval(source_name, target_doc=None):
 	def postprocess(source_doc, target_doc):
+		target_doc.total_amount = sum(flt(d.amount) for d in target_doc.get("invoices"))
 		row = target_doc.append("invoices")
 		row.invoice_no = source_doc.name
 		row.party = source_doc.supplier
@@ -714,7 +715,9 @@ def make_payment_approval(source_name, target_doc=None):
 		row.basic_amount = flt(source_doc.outstanding_amount)
 		row.currency = source_doc.currency
 		row.exchange_rate = flt(source_doc.conversion_rate)
+		row.selected = 1
 		target_doc.days_ago = 90
+		target_doc.total_amount += flt(source_doc.outstanding_amount)
 		source_doc.days_ago = 8
 
 		# Fetch bank information from supplier's default bank account
