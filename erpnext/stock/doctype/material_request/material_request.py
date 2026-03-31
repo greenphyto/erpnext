@@ -874,3 +874,43 @@ def get_permission_query_conditions(user=None):
 	return """ (`tabMaterial Request`.`owner` in ({0}) or `tabMaterial Request`.`owner`={1})""".format(
 		", ".join([frappe.db.escape(d) for d in object_user]), frappe.db.escape(user)
 	)
+
+def confirm_workflow_action_page(doc, context=None):
+	"""
+	Hook to customize workflow action confirmation page for Material Request.
+	Adds company mismatch detection and switch company functionality.
+	"""
+	if context is None:
+		context = {}
+
+	# Check for company mismatch and add switch company functionality
+	try:
+		if frappe.get_meta(doc.get("doctype")).has_field("company"):
+			doc_company = doc.get("company")
+			user = frappe.form_dict.get("user") or frappe.session.user
+			user_company = frappe.db.get_value("User", user, "company_selected")
+			
+			# Check if companies match
+			if doc_company and user_company and user_company != "ALL" and doc_company != user_company:
+				context["company_mismatch"] = True
+				context["doc_company"] = doc_company
+				context["user_company"] = user_company
+				context["current_user"] = user
+				
+				# Generate signed URL for switching company
+				from frappe.utils.verified_command import get_signed_params
+				params = get_signed_params({
+					"user": user,
+					"to_company": doc_company
+				})
+				context["switch_company_url"] = f"/api/method/erpnext.controllers.erp.switch_company_web?{params}"
+			else:
+				context["company_mismatch"] = False
+		else:
+			context["company_mismatch"] = False
+	except Exception as e:
+		# If any error occurs, just set company_mismatch to False
+		context["company_mismatch"] = False
+		frappe.log_error(frappe.get_traceback(), "Material Request - Company Mismatch Check Error")
+	
+	return context
