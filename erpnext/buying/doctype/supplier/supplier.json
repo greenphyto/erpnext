@@ -81,10 +81,7 @@
   "column_break_59",
   "release_date",
   "ai_info_section",
-  "supplier_keywords",
-  "bank_tab",
-  "bank_list_html",
-  "default_bank_account_no"
+  "supplier_keywords"
  ],
  "fields": [
   {
@@ -526,8 +523,9 @@
   },
   {
    "fieldname": "default_bank_account_no",
-   "fieldtype": "Data",
-   "label": "Default Bank Account No"
+   "fieldtype": "Link",
+   "label": "Default Bank Account No",
+   "options": "Bank Number"
   },
   {
    "fieldname": "ai_info_section",
@@ -546,11 +544,6 @@
    "mandatory_depends_on": "eval:!doc.is_internal_supplier",
    "options": "Company",
    "reqd": 1
-  },
-  {
-   "fieldtype": "Link",
-   "label": "Default Bank Account No",
-   "options": "Bank Number"
   }
  ],
  "icon": "fa fa-user",
