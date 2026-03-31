@@ -1159,7 +1159,7 @@ def switch_company(company, force=False, user=""):
 	# change defaults
 	switch_default_values(user, company)
 	
-	if "CEO" not in frappe.get_roles(): 
+	if "CEOx" not in frappe.get_roles(): 
 		doc.update(filters)
 		doc.for_value = company
 		doc.flags.ignore_permissions = 1
@@ -1392,3 +1392,10 @@ def create_ai_user(doc, method=""):
 		print("AI User created:", email)
 		user.save()
 		doc.ai_user = user.name
+
+def control_bypass_workflow(user, doc):
+	enable_switch_company = frappe.db.get_value("User", user, "cannot_change_company")
+	if not enable_switch_company:
+		return True
+	else:
+		return False
