@@ -822,3 +822,7 @@ has_permission = {
 	"Customer": "erpnext.selling.doctype.customer.customer.has_permission",
     # "Material Request":"erpnext.stock.doctype.material_request.material_request.has_permission"
 }
+
+bypass_workflow_permission = {
+    "Material Request": "erpnext.controllers.erp.control_bypass_workflow"
+}
