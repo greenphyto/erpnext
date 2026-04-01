@@ -194,8 +194,18 @@ custom.show_company_switcher = function (companies) {
 });
 };
 
-function hard_reload(){
-  frappe.ui.toolbar.clear_cache();
+function hard_reload() {
+  const route = frappe.get_route();
+
+  if (route[0] === "Form") {
+    const doctype = route[1];
+    frappe.set_route("List", doctype, "List").then(() => {
+      frappe.ui.toolbar.clear_cache();
+    });
+  } else {
+    frappe.ui.toolbar.clear_cache();
+    window.location.reload();
+  }
 }
 
 custom.listen_tab_change = async function () {
