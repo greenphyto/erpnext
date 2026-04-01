@@ -802,3 +802,7 @@ has_permission = {
 bypass_workflow_permission = {
     "Material Request": "erpnext.controllers.erp.control_bypass_workflow"
 }
+
+confirm_workflow_action_page = {
+    "Material Request": "erpnext.stock.doctype.material_request.material_request.confirm_workflow_action_page"
+}

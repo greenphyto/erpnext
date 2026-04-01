@@ -303,12 +303,12 @@ class MaterialRequest(BuyingController):
 				general_item_totals += flt(d.base_net_amount)
 
 		forbidden = []
-		if flt(raw_material_totals) < 50001:
+		if flt(raw_material_totals) < 5001:
 			forbidden.append(False)
 		else:
 			forbidden.append(True)
 
-		if flt(general_item_totals) < 5001:
+		if flt(general_item_totals) < 1001:
 			forbidden.append(False)
 		else:
 			forbidden.append(True)
@@ -428,7 +428,7 @@ def make_purchase_order(source_name, target_doc=None, args=None):
 			target_doc.amount / flt(obj.rate) if (flt(obj.rate) and flt(obj.billed_amt)) else flt(obj.qty)
 		)
 		item = get_item_defaults(target_doc.item_code, source_parent.company)
-		
+		target_doc.keep_margin_rate = 1
 		item_group = get_item_group_defaults(target_doc.item_code, source_parent.company)
 		target_doc.cost_center = (
 			obj.cost_center
@@ -811,7 +811,7 @@ def validate_purchase_request(doc, workflow=None, transition=None, user=None):
 	return all(condition)
 
 def validate_purchase_request_based_user(doc, user=None):
-	if not frappe.db.get_single_value("Buying Settings", "enable_specific_purchase_approval"):
+	if not cint(frappe.db.get_single_value("Buying Settings", "enable_specific_purchase_approval")):
 		return True
 	
 	creator = doc.owner
@@ -821,6 +821,7 @@ def validate_purchase_request_based_user(doc, user=None):
 	data = frappe.get_all("Purchase User Permissions List", filters={
 		"parenttype":'Buying Settings',
 		'parentfield':"purchase_approval",
+		'company':doc.company,
 		'requester':creator,
 	}, fields="approver")
 	allow_specific = False
@@ -837,7 +838,79 @@ def validate_purchase_request_based_user(doc, user=None):
 	return allow_specific
 
 
-
+def has_permission(doc, user, ptype="read"):
+	# user = user or frappe.session.user
+	if doc.owner == user:
+		return True
+	
+	res = validate_purchase_request_based_user(doc, user)
+	if not res:
+		return None
+	else:
+		return res
 
 	
+def get_permission_query_conditions(user=None):
+	temp = frappe.db.get_value("Buying Settings", "Buying Settings", ["enable_specific_purchase_approval", "enable_filter_on_list_view"], as_dict=True)
+	if cint(temp.enable_specific_purchase_approval) == 0 or cint(temp.enable_filter_on_list_view) == 0:
+		return ""
 
+	if not user:
+		user = frappe.session.user
+	# allow if creator = user object approver or owner
+
+	if user == "Administrator":
+		return ""
+
+	company = frappe.db.get_value("User", user, "company_selected")
+
+	object_user = frappe.get_all("Purchase User Permissions List", filters={
+		"parenttype":'Buying Settings',
+		'parentfield':"purchase_approval",
+		'company':company,
+		'approver':user,
+	}, pluck="requester") or [""]
+
+	return """ (`tabMaterial Request`.`owner` in ({0}) or `tabMaterial Request`.`owner`={1})""".format(
+		", ".join([frappe.db.escape(d) for d in object_user]), frappe.db.escape(user)
+	)
+
+def confirm_workflow_action_page(doc, context=None):
+	"""
+	Hook to customize workflow action confirmation page for Material Request.
+	Adds company mismatch detection and switch company functionality.
+	"""
+	if context is None:
+		context = {}
+
+	# Check for company mismatch and add switch company functionality
+	try:
+		if frappe.get_meta(doc.get("doctype")).has_field("company"):
+			doc_company = doc.get("company")
+			user = frappe.form_dict.get("user") or frappe.session.user
+			user_company = frappe.db.get_value("User", user, "company_selected")
+			
+			# Check if companies match
+			if doc_company and user_company and user_company != "ALL" and doc_company != user_company:
+				context["company_mismatch"] = True
+				context["doc_company"] = doc_company
+				context["user_company"] = user_company
+				context["current_user"] = user
+				
+				# Generate signed URL for switching company
+				from frappe.utils.verified_command import get_signed_params
+				params = get_signed_params({
+					"user": user,
+					"to_company": doc_company
+				})
+				context["switch_company_url"] = f"/api/method/erpnext.controllers.erp.switch_company_web?{params}"
+			else:
+				context["company_mismatch"] = False
+		else:
+			context["company_mismatch"] = False
+	except Exception as e:
+		# If any error occurs, just set company_mismatch to False
+		context["company_mismatch"] = False
+		frappe.log_error(frappe.get_traceback(), "Material Request - Company Mismatch Check Error")
+	
+	return context

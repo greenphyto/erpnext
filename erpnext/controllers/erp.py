@@ -852,6 +852,7 @@ def switch_company(company, force=False, user=""):
 	
 	# if administrator, always set to all
 	frappe.db.set_value("User", user, "company_selected", company)
+	frappe.db.set_value("User", user, "company", company)
 	# change role
 	filters = {
 		"user":user,
@@ -887,6 +888,13 @@ def switch_company(company, force=False, user=""):
 	doc.save()
 
 	return {"result": True}
+
+from frappe.utils.verified_command import verify_request
+@frappe.whitelist(allow_guest=True)
+def switch_company_web(user, to_company):
+	if not verify_request():
+		return
+	return switch_company(to_company, user=user)
 
 from frappe.defaults import set_default
 def switch_default_values(user, company):
