@@ -894,7 +894,10 @@ from frappe.utils.verified_command import verify_request
 def switch_company_web(user, to_company):
 	if not verify_request():
 		return
-	return switch_company(to_company, user=user)
+
+	if frappe.db.exists("User", user) and frappe.db.exists("Company", to_company):
+		frappe.set_user(user)
+		return switch_company(to_company, user=user)
 
 from frappe.defaults import set_default
 def switch_default_values(user, company):
