@@ -49,7 +49,7 @@
       
       // Call switch_company_web endpoint
       fetch('{{ switch_company_url }}', {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'X-Frappe-CSRF-Token': frappe.csrf_token || ''
