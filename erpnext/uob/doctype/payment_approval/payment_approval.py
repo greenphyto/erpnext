@@ -10,6 +10,8 @@ from erpnext.controllers.uob import create_payment_xml
 from erpnext.controllers.uob import UOBAPI, get_country_code
 from frappe.model.mapper import get_mapped_doc
 from erpnext.accounts.doctype.payment_entry.payment_entry import get_payment_entry
+from frappe.contacts.doctype.address.address import get_company_address
+
 
 from frappe import _
 """ TODO
@@ -464,13 +466,17 @@ class PaymentApproval(Document):
 				
 			ins_end = "{}-{}".format(doc_name, get_date_simple(doc.posting_date)[:-2])
 			email = settings.remitance_email_dummy
-			address = None
-			if doc.supplier_address:
-				addr = frappe.get_doc("Address", doc.supplier_address)
+			address = {}
+			if doc.billing_address:
+				addr = frappe.get_doc("Address", doc.billing_address)
 				address = {
 					"address_line":addr.address_line1,
 					"postal_code":addr.pincode,
 					"country": get_country_code(addr.country),
+					"address_line1": addr.address_line1,
+					"address_line2": addr.address_line2,
+					"city": addr.city,
+					"state": addr.state
 				}
 			row = {
 				'invoice_number': d.invoice_no,
@@ -503,6 +509,19 @@ class PaymentApproval(Document):
 		if dummy:
 			bic = change_to_dummy_bic(bic)
 		file_name = self.get_file_name()
+		address = {}
+		if comp_address := get_company_address(self.company):
+			addr = frappe.get_doc("Address", comp_address.get("company_address"))
+			address = {
+				"address_line":addr.address_line1,
+				"postal_code":addr.pincode,
+				"country": get_country_code(addr.country),
+				"address_line1": addr.address_line1,
+				"address_line2": addr.address_line2,
+				"city": addr.city,
+				"state": addr.state
+			}
+
 		debtor_info = {
 			'company_name': self.company,
 			'name': self.bank_account_name,
@@ -515,7 +534,8 @@ class PaymentApproval(Document):
 			"msg_id": file_name,
 			"cheque_method": self.cheque_method,
 			"country": get_company_code(self.company),
-			"currency": self.currency
+			"currency": self.currency,
+			"address": address
 		}
 		debtor_info.update(self.method)
 

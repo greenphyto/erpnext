@@ -241,7 +241,18 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	
 	dbtr_pstl_adr = ET.SubElement(dbtr, 'PstlAdr')
 	ET.SubElement(dbtr_pstl_adr, 'Ctry').text = debtor_info['country']
-	
+	comp_addr = debtor_info.get("address")
+	if comp_addr:
+		ET.SubElement(dbtr_pstl_adr, 'AdrLine').text = comp_addr.get("address_line")
+		if comp_addr.get("address_line1"):
+			ET.SubElement(dbtr_pstl_adr, 'StrtNm').text = comp_addr.get("address_line1")
+		if comp_addr.get("address_line2"):
+			ET.SubElement(dbtr_pstl_adr, 'BldgNb').text = comp_addr.get("address_line2")
+		if comp_addr.get("city"):
+			ET.SubElement(dbtr_pstl_adr, 'TwnNm').text = comp_addr.get("city")
+		if comp_addr.get("state"):
+			ET.SubElement(dbtr_pstl_adr, 'CtrySubDvsn').text = comp_addr.get("state")
+			
 	dbtr_id = ET.SubElement(dbtr, 'Id')
 	dbtr_org_id = ET.SubElement(dbtr_id, 'OrgId')
 	dbtr_othr = ET.SubElement(dbtr_org_id, 'Othr')
@@ -303,6 +314,14 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 			ET.SubElement(cdtr_pstl_adr, 'PstCd').text = addr.get("postal_code")
 			ET.SubElement(cdtr_pstl_adr, 'Ctry').text = invoice.get("country") or addr.get("country")
 			ET.SubElement(cdtr_pstl_adr, 'AdrLine').text = addr.get("address_line")
+			if addr.get("address_line1"):
+				ET.SubElement(cdtr_pstl_adr, 'StrtNm').text = addr.get("address_line1")
+			if addr.get("address_line2"):
+				ET.SubElement(cdtr_pstl_adr, 'BldgNb').text = addr.get("address_line2")
+			if addr.get("city"):
+				ET.SubElement(cdtr_pstl_adr, 'TwnNm').text = addr.get("city")
+			if addr.get("state"):
+				ET.SubElement(cdtr_pstl_adr, 'CtrySubDvsn').text = addr.get("state")
 		else:
 			ET.SubElement(cdtr_pstl_adr, 'Ctry').text = invoice.get("country")
 
