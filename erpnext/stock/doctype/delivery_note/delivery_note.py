@@ -696,7 +696,7 @@ class DeliveryNote(SellingController):
 					# not yet for SO
 
 	@frappe.whitelist()
-	def update_items(self,types, data):
+	def update_items(self, types, data):
 		# it will return qty before have sales invoice, after have sales invoice it should do Sales Return
 		# possibilities only for return qty (not adding)
 		if types == "qty":
@@ -797,29 +797,44 @@ class DeliveryNote(SellingController):
 	def make_only_return_qty(self, data, update_modified=False):
 		sl_entries = []
 		changes = 0
+		updated_items = {}  # Track which items were updated
 		now = get_datetime()
 		posting_date = getdate(now)
 		posting_time = get_time(now)
+		
+		# First pass: update item quantities
 		for d in data:
 			d = frappe._dict(d)
 			row = self.get("items", {"name":d.docname})
 			if not row:
 				continue
 			row = row[0]
-			diff_qty = flt(d.return_qty)
+			
+			# Calculate diff_qty from new_qty if not provided
+			if "new_qty" in d:
+				diff_qty = flt(row.qty) - flt(d.new_qty)
+			else:
+				diff_qty = flt(d.return_qty)
+				
 			if not diff_qty:
 				continue
 
-			row.qty = d.new_qty
-			row.returned_qty = diff_qty * -1
+			# Update quantities
+			row.qty = flt(d.new_qty) if "new_qty" in d else flt(row.qty) - flt(diff_qty)
+			row.returned_qty = diff_qty * -1  # Store as negative for return, positive for add
 			row.stock_qty = row.qty * flt(row.conversion_factor)
 			row.db_update()
+			
+			# Track this item for SLE creation
+			updated_items[row.name] = row
 			changes = True
 
 		if changes:
 			# make_reverse_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
 			self.calculate_taxes_and_totals()
-			for d in self.items:
+			
+			# Second pass: create SLE only for updated items
+			for item_name, d in updated_items.items():
 				item_row = frappe._dict(d.as_dict())
 				item_row.qty = d.returned_qty * flt(d.conversion_factor)
 				item_row.is_return = 1

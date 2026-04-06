@@ -952,24 +952,24 @@ erpnext.utils.do_update_child_items = function(opts) {
 				precision: get_precision("qty")
 			}, {
 				fieldtype:'Float',
-				fieldname:"return_qty",
+				fieldname:"new_qty",
 				default: 0,
 				read_only: 0,
 				in_list_view: 1,
-				label: __('Return Qty'),
+				label: __('New Qty'),
 				precision: get_precision("qty"),
 				onchange: (el, grid)=>{
-					grid.doc.new_qty = flt(grid.doc.qty) - flt(grid.doc.return_qty);
+					grid.doc.return_qty = flt(grid.doc.qty) - flt(grid.doc.new_qty);
 					grid.refresh();
 				}
 			}, {
 				fieldtype:'Float',
-				fieldname:"new_qty",
+				fieldname:"return_qty",
 				options: "",
 				default: 0,
 				read_only: 1,
 				in_list_view: 1,
-				label: __('New Qty'),
+				label: __('Qty Change'),
 				precision: get_precision("qty")
 			}] 
 		fields.push(...new_fields);
@@ -1053,8 +1053,8 @@ erpnext.utils.do_update_child_items = function(opts) {
 			const trans_items = this.get_values()["trans_items"].filter((item) => !!item.item_code);
 			if (opts.update=="qty"){
 				$.each(trans_items, (i, row)=>{
-					if (row.return_qty > row.qty){
-						frappe.throw(`Row ${row.idx}, Can't return more than actual qty`)
+					if (row.new_qty < 0){
+						frappe.throw(`Row ${row.idx + 1}, New Qty cannot be negative`)
 						return
 					}
 				})
@@ -1094,8 +1094,8 @@ erpnext.utils.do_update_child_items = function(opts) {
 			"name": d.name,
 			"item_code": d.item_code,
 			"qty": d.qty,
-			"return_qty":0,
-			"new_qty":d.qty,
+			"new_qty": d.qty,
+			"return_qty": 0,
 			"rate": d.rate,
 			"uom": d.uom,
 			"warehouse": d.warehouse,
