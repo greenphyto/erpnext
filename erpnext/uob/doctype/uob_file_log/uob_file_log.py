@@ -438,228 +438,177 @@ class UOBFileLog(Document):
 				.apply(lambda x: datetime.datetime.strptime(x, "%d/%m/%Y").date())
 			)
 
+		# Get net amount mapping per invoice (amount sudah jelas per invoice)
+		net_amount_per_invoice = get_net_amount_per_invoice(df_tx)
+		
+		# Get transaction info for each payment approval
 		trans_map = {}
 		for idx, row in df_tx.iterrows():
-			# get PI
 			pay_name = convert_inv_no(row["Your Reference"])
 			if not pay_name:
 				continue
 			
 			if pay_name not in trans_map:
-				trans_map[pay_name] = {
-					"transfer":[],
-					"charges":[]
-				}
+				trans_map[pay_name] = []
 			
-			# need key for bank account specific
-			if row["Transaction Description"] in ("SVC Chg", "SERV CHARGE"):
-				# charges
-				trans_map[pay_name]['charges'].append(row)
-			else:
-				# transfer
-				trans_map[pay_name]['transfer'].append(row)
-
-		# get net amount mapping
-		net_amount_mapping = get_net_amount_per_invoice(df_tx)
-		"""
-		net_amount_mapping = {
-			"PAY-260045": {
-				# if success
-				"INV001":{
-					"amount": 100,
-					"fee": 2
-				},
-				# if return all
-				"INV002":{
-					"amount": 0,
-					"fee": 0
-				},
-				# if only fee
-				"INV001":{
-					"amount": 0,
-					"fee": 2
-				}
-			}
-		}
-		"""
+			# Only store transfer transactions (exclude charges, we already have them in net_amount_per_invoice)
+			if row["Base Transaction Code"].strip() == "D" and row["Transaction Description"] not in ("SVC Chg", "SERV CHARGE"):
+				trans_map[pay_name].append(row)
 
 		pe_map = {}
 		approval_update = {}
-		single_charge_map = []
-		for pay_name, d in trans_map.items():
-			# if pay_name!= "PAY-260045":
-			# 	continue
-			pay_doc = frappe.get_doc("Payment Approval", pay_name)
+		charge_only_map = []  # For invoices with only charges, no successful transfer
+		
+		for pay_no, invoice_details in net_amount_per_invoice.items():
+			if not frappe.db.exists("Payment Approval", pay_no):
+				continue
+				
+			pay_doc = frappe.get_doc("Payment Approval", pay_no)
 			default_charge_account = get_company_default(pay_doc.company, "default_bank_charge_account")
 			cost_center_charge = get_company_default(pay_doc.company, "cost_center")
-			fee_rate = 0
-			type_fee = 0
-			invoice_group = self.get_l4_mapping(pay_name)
-			trans_count = len(invoice_group.values())
-			if len(d['charges']) == 1:
-				# bulk charge
-				total_fee = flt(d['charges'][0]['Transaction Amount'])
-				fee_rate = round(total_fee/trans_count, 2)
-				type_fee = "SUM"
-			else:
-				# individual charge
-				type_fee = "IND"
-
+			
+			# Get first transaction for reference info
+			transactions = trans_map.get(pay_no, [])
+			if not transactions:
+				continue
+			
+			first_tr = transactions[0]
+			cheque_no = first_tr["Cheque Number"] if flt(first_tr["Cheque Number"]) else None
+			
+			# Track if this payment approval has any successful payments
+			has_successful_payment = False
 			pe_name_list = []
-			for x in invoice_group.values():
-				if x.get("status_result") == "RJCT":
+			
+			# Process each invoice
+			for invoice_no, details in invoice_details.items():
+				amount = flt(details.get('amount', 0))
+				fee = flt(details.get('fee', 0))
+				status = details.get('status')
+				
+				# Get invoice info
+				if not frappe.db.exists("Purchase Invoice", invoice_no):
 					continue
 				
-				temp = net_amount_mapping.get(x['pay_no'])
-				if not temp:
+				pi_doc = frappe.get_doc("Purchase Invoice", invoice_no)
+				if pi_doc.docstatus != 1 or pi_doc.status == "Paid":
 					continue
-				paid_amount = flt(temp.get("amount"))
-				has_return = temp.get("has_return")
-
-				if has_return and not "status_result" in x:
-					# forbidden payment entry if has return but not have L4
-					if paid_amount > 0:
-						bank_account_no = frappe.get_value("Bank Account", pay_doc.bank_account, "bank_account_no")
-						single_charge_map.append({
-							"amount": paid_amount,
-							"account": default_charge_account,
-							"cost_center": cost_center_charge,
-							"description": f"Bank Charge for {x['invoice_no']}",
-							"company": pay_doc.company,
-							"bank_account": pay_doc.account,
-							"bank_account_no": bank_account_no,
-							"payment_approval": pay_doc.name,
-							"posting_date": getdate(),
-							"filename": filename
-						})
-					continue
-
-				for i, tr in enumerate(d['transfer']):
-					if tr['Base Transaction Code'].strip() == "C":
-						continue
-
-					# based on value, its not not a good way, but temporary for current version
-					for row in x['invoices']:
-
-						pi_name = row.invoice_no
-						supplier = row.party
-
-						# use update amount value
-						if paid_amount > row.amount:
-							paid_amount -= row.amount
-							amount = row.amount
-						elif math.isclose(paid_amount, row.amount, abs_tol=0.1):
-							paid_amount = 0
-							amount = row.amount
-						elif paid_amount == 0:
-							amount = 0
-							continue
-
-						docstatus, status = frappe.db.get_value("Purchase Invoice", pi_name, ["docstatus", "status"]) or (0, "")
-						if docstatus != 1 or status == "Paid":
+				
+				supplier = pi_doc.supplier
+				
+				# Update approval status
+				if pay_no not in approval_update:
+					approval_update[pay_no] = {
+						"doc": pay_doc,
+						"trans": []
+					}
+				
+				# Case 1: Amount > 0, create payment entry
+				if amount > 0:
+					has_successful_payment = True
+					approval_update[pay_no]['trans'].append({
+						"account_no": pi_doc.get("bank_account_no", "*"),
+						"amount": details.get('original_amount', amount),
+						"result": "ACCP",
+						"error_code": None
+					})
+					
+					key = (supplier, pay_no)
+					
+					# Get or create payment entry for this supplier
+					if key not in pe_map:
+						filters = {"payment_approval": pay_no, "docstatus": 1, "party": supplier}
+						use_exists_pe = frappe.db.get_value("Payment Entry", filters, 'name')
+						if use_exists_pe:
 							continue
 						
-						cheque_no = None
-						if flt(tr["Cheque Number"]):
-							cheque_no = tr["Cheque Number"]
+						filters['docstatus'] = 0
+						use_exists_pe = frappe.db.get_value("Payment Entry", filters, 'name')
 						
-						if type_fee == "IND":
-							temp = None
-							if len(d['charges']) > i:
-								charge = d['charges']
-								temp = charge.iloc[0] if isinstance(charge, pd.Series) else charge[i]
-							
-							fee_rate = flt(temp['Transaction Amount']) if temp is not None else 0
-
-						if pay_doc.name not in approval_update:
-							approval_update[pay_doc.name] = {
-								"doc":pay_doc,
-								"trans":[]
-							}
-						approval_update[pay_doc.name]['trans'].append({
-							"account_no": row.bank_account_no,
-							"amount": row.amount,
-							"result": "ACCP",         
-							"error_code": None        
+						if not use_exists_pe:
+							pe = get_payment_entry(dt="Purchase Invoice", dn=invoice_no)
+							pe.paid_amount = 0
+							for drow in pe.get("references"):
+								pe.remove(drow)
+							pe.__newname = get_next_pay_name(pay_no, pe_name_list)
+							pe.name = pe.__newname
+							pe.flags.name_set = True
+							pe_name_list.append(pe.name)
+						else:
+							frappe.db.sql("delete from `tabPayment Entry Reference` where parent = %s", use_exists_pe)
+							pe = frappe.get_doc("Payment Entry", use_exists_pe)
+							pe.paid_amount = 0
+						
+						payment_mode = get_payment_mode(pay_doc.company, pay_doc.account)
+						pe_map[key] = pe
+						pe.payment_approval = pay_no
+						pe.bank_account = pay_doc.bank_account
+						pe.paid_from = pay_doc.account
+						pe.mode_of_payment = payment_mode
+						pe.reference_no = cheque_no or first_tr["Our Reference"]
+						pe.bank = frappe.get_value("Bank Account", pe.bank_account, "bank")
+						pe.reference_date = first_tr["Transaction Date"]
+						pe.additional_info = self.get_transfer_info(first_tr)
+						pe.auto_generated = 1
+					
+					pe = pe_map[key]
+					row_id = f"{pay_no}_{invoice_no}"
+					
+					# Add service charge as deduction
+					if fee > 0:
+						exists_row = pe.get("deductions", {"reff_id": row_id})
+						if not exists_row:
+							deduction_row = pe.append("deductions")
+							deduction_row.update({
+								"account": default_charge_account,
+								"cost_center": cost_center_charge,
+								"amount": fee,
+								"description": f"Bank Charge for {invoice_no}",
+								"reff_id": row_id
+							})
+							pe.paid_amount += fee
+					
+					# Add invoice reference
+					exists_row = pe.get("references", {"reff_id": row_id, "reference_name": invoice_no})
+					if not exists_row:
+						ref_row = pe.append("references")
+						ref_row.update({
+							"reference_doctype": "Purchase Invoice",
+							"reference_name": invoice_no,
+							"total_amount": amount,
+							"outstanding_amount": amount,
+							"allocated_amount": amount,
+							"reff_id": row_id
 						})
-							
-						key = (supplier, pay_doc.name)
-						if key not in pe_map:
-							filters = {"payment_approval":pay_doc.name, "docstatus":1, "party":supplier}
-							# create PE based on same party/supplier
-							# find submit version
-							use_exists_pe = frappe.db.get_value("Payment Entry", filters, 'name')
-							if use_exists_pe:
-								continue
-
-							# find draft
-							filters['docstatus'] = 0
-							use_exists_pe = frappe.db.get_value("Payment Entry", filters, 'name')				
-
-							if not use_exists_pe:
-								pe = get_payment_entry(dt="Purchase Invoice", dn=pi_name)
-								pe.paid_amount = 0
-								for drow in pe.get("references"):
-									pe.remove(drow)
-								pe.__newname = get_next_pay_name(pay_doc.name, pe_name_list)
-								pe.name = pe.__newname
-								pe.flags.name_set = True
-								pe_name_list.append(pe.name)
-							else:
-								frappe.db.sql("delete from `tabPayment Entry Reference` where parent = %s ", use_exists_pe)
-								pe = frappe.get_doc("Payment Entry", use_exists_pe)
-								pe.paid_amount = 0
-
-							payment_mode = get_payment_mode(pay_doc.company, pay_doc.account)
-							pe_map[key] = pe
-							pe.payment_approval = pay_doc.name
-							pe.bank_account = pay_doc.bank_account
-							pe.paid_from = pay_doc.account
-							pe.mode_of_payment = payment_mode
-							pe.reference_no = cheque_no or tr["Our Reference"]
-							pe.bank = frappe.get_value("Bank Account", pe.bank_account, "bank")
-							pe.reference_date = tr["Transaction Date"]
-							pe.additional_info = self.get_transfer_info(tr)
-							pe.auto_generated = 1
-							row_id = cstr(tr['Internal Transaction Code']).replace('="', '').replace('"', '')
-
-							# add charges
-							if fee_rate:
-								exists_row = pe.get("deductions", {"reff_id": row_id})
-								if not exists_row:
-									row = pe.append("deductions")
-									row.update({
-										"account": default_charge_account, 
-										"cost_center": cost_center_charge,    
-										"amount": fee_rate,
-										"description": f"Bank Charge for {pi_name} - {tr['Transaction Description']}",
-										"reff_id": row_id
-									})
-									pe.paid_amount += fee_rate
-
-						
-							# add invoice
-							exists_row = pe.get("references", {"reff_id": row_id, "reference_name": pi_name})
-							if not exists_row:
-								row = pe.append("references")
-								row.update({
-									"reference_doctype": "Purchase Invoice",
-									"reference_name": pi_name,
-									"total_amount": amount,
-									"outstanding_amount": amount,
-									"allocated_amount": amount,
-									"reff_id": row_id
-								})
-								pe.paid_amount += amount		
+						pe.paid_amount += amount
+				
+				# Case 2: Amount = 0 but fee > 0 (transaction failed but charge deducted)
+				elif fee > 0 and not has_successful_payment:
+					bank_account_no = frappe.get_value("Bank Account", pay_doc.bank_account, "bank_account_no")
+					charge_only_map.append({
+						"amount": fee,
+						"account": default_charge_account,
+						"cost_center": cost_center_charge,
+						"description": f"Bank Charge for {invoice_no} ({status})",
+						"company": pay_doc.company,
+						"bank_account": pay_doc.account,
+						"bank_account_no": bank_account_no,
+						"payment_approval": pay_no,
+						"posting_date": first_tr["Transaction Date"],
+						"filename": filename,
+						"invoice_no": invoice_no
+					})
 		
+		# Save all payment entries
 		for pe in pe_map.values():
 			pe.flags.ignore_validate = 1
 			pe.save(ignore_permissions=1)
 			# pe.submit()
-
-		if single_charge_map:
-			self.create_journal_entry(single_charge_map)
-
+		
+		# Create journal entries for charge-only transactions
+		if charge_only_map:
+			self.create_journal_entry(charge_only_map)
+		
+		# Update payment approval status
 		for d in approval_update.values():
 			d['doc'].update_payment_status(4, d['trans'])
 
