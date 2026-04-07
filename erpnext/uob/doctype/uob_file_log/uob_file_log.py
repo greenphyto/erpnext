@@ -275,6 +275,8 @@ class UOBFileLog(Document):
 					continue
 				
 				temp = net_amount_mapping.get(x['pay_no'])
+				if not temp:
+					continue
 				paid_amount = flt(temp.get("amount"))
 				has_return = temp.get("has_return")
 
@@ -326,12 +328,12 @@ class UOBFileLog(Document):
 							cheque_no = tr["Cheque Number"]
 						
 						if type_fee == "IND":
-							# get rate by same order with transaction - its not best practice, but temporary
-							temp = d['charges'][i] if len(d['charges']) > i else None
-							if temp:
-								fee_rate = flt(temp['Transaction Amount'])
-							else:
-								fee_rate = 0
+							temp = None
+							if len(d['charges']) > i:
+								charge = d['charges']
+								temp = charge.iloc[0] if isinstance(charge, pd.Series) else charge[i]
+							
+							fee_rate = flt(temp['Transaction Amount']) if temp is not None else 0
 
 						if pay_doc.name not in approval_update:
 							approval_update[pay_doc.name] = {
@@ -542,7 +544,7 @@ Total Charges: {frappe.utils.fmt_money(total_debit, currency=frappe.get_cached_v
 			if key in xml_map:
 				result = xml_map.get(key)
 				d['status_result'] = result['status']
-			
+			d['pay_no'] = pay_name
 			res_map[key] = d
 
 		return res_map
