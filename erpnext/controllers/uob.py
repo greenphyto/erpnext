@@ -399,7 +399,13 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 
 def get_country_code(country):
 	from iso3166 import countries
-	return countries.get(country).alpha2
+	try:
+		return countries.get(country).alpha2
+	except:
+		code = frappe.db.get_value("Country", country, "code")
+		if not code:
+			frappe.throw(f"Country code not found for <b>{country}</b>")
+		return code.upper()
 
 def sync_uob_file():
 	settings = frappe.get_single("UOB Integration Settings")
