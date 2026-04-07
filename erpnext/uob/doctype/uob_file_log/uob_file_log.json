@@ -14,7 +14,8 @@
   "datetime",
   "section_break_5",
   "filepath",
-  "file"
+  "file",
+  "payment_approval"
  ],
  "fields": [
   {
@@ -77,12 +78,18 @@
    "label": "File",
    "options": "File",
    "read_only": 1
+  },
+  {
+   "fieldname": "payment_approval",
+   "fieldtype": "Data",
+   "label": "Payment Approval",
+   "read_only": 1
   }
  ],
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-12 13:13:00.826343",
+ "modified": "2026-04-07 15:59:51.245877",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "UOB File Log",
