@@ -1410,7 +1410,7 @@ def create_ai_user(doc, method=""):
 		doc.ai_user = user.name
 
 def control_bypass_workflow(user, doc):
-	enable_switch_company = frappe.db.get_value("User", user, "cannot_change_company")
+	enable_switch_company = cint(frappe.db.get_value("User", user, "cannot_change_company"))
 	if not enable_switch_company:
 		return True
 	else:
