@@ -23,12 +23,18 @@ class DuplicateBudgetError(frappe.ValidationError):
 
 class Budget(Document):
 	def validate(self):
+		pass
 		if not self.get(frappe.scrub(self.budget_against)):
 			frappe.throw(_("{0} is mandatory").format(self.budget_against))
-		self.validate_duplicate()
-		self.validate_accounts()
-		self.set_null_value()
-		self.validate_applicable_for()
+		
+		if self.accounts:
+			self.validate_duplicate()
+			self.validate_accounts()
+			self.set_null_value()
+			self.validate_applicable_for()
+		else:
+			if self.docstatus == 1:
+				frappe.throw(_("At least one budget account is required to submit the document"))
 
 	def validate_duplicate(self):
 		budget_against_field = frappe.scrub(self.budget_against)
@@ -435,3 +441,142 @@ def get_expense_cost_center(doctype, args):
 		return frappe.db.get_value(
 			doctype, args.get(frappe.scrub(doctype)), ["cost_center", "default_expense_account"]
 		)
+
+
+@frappe.whitelist()
+def upload_budget_template(docname, file_url):
+	"""
+	Upload and process Excel template to populate budget accounts
+	Format: Cost Center | Account | January | February | ... | December
+	"""
+	import openpyxl
+	from frappe.utils.file_manager import get_file_path
+	
+	if not docname or not file_url:
+		frappe.throw(_("Document name and file URL are required"))
+	
+	# Get the budget document
+	budget_doc = frappe.get_doc("Budget", docname)
+	
+	# Check permissions
+	if not budget_doc.has_permission("write"):
+		frappe.throw(_("You don't have permission to modify this Budget"))
+	
+	# Get file path
+	try:
+		file_path = get_file_path(file_url)
+	except Exception as e:
+		frappe.throw(_("Error getting file: {0}").format(str(e)))
+	
+	# Read Excel file
+	try:
+		workbook = openpyxl.load_workbook(file_path, data_only=True)
+		sheet = workbook.active
+	except Exception as e:
+		frappe.throw(_("Error reading Excel file: {0}").format(str(e)))
+	
+	# Parse header row to get column mapping
+	header_row = []
+	for cell in sheet[1]:
+		header_row.append(str(cell.value).strip().lower() if cell.value else "")
+	
+	# Month mapping
+	months = ["january", "february", "march", "april", "may", "june",
+			  "july", "august", "september", "october", "november", "december"]
+	
+	# Find required column indices
+	try:
+		cost_center_col = header_row.index("cost center") if "cost center" in header_row else header_row.index("cost_center")
+		account_col = header_row.index("account")
+	except ValueError as e:
+		frappe.throw(_("Excel file must contain 'Cost Center' and 'Account' columns"))
+	
+	# Find month columns
+	month_cols = {}
+	for month in months:
+		try:
+			month_cols[month] = header_row.index(month)
+		except ValueError:
+			pass
+	
+	if not month_cols:
+		frappe.throw(_("Excel file must contain at least one month column (January, February, etc.)"))
+	
+	# Clear existing accounts
+	budget_doc.accounts = []
+	
+	# Process data rows
+	processed_count = 0
+	for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+		if not row or not any(row):
+			continue
+			
+		cost_center = row[cost_center_col] if len(row) > cost_center_col else None
+		account = row[account_col] if len(row) > account_col else None
+		
+		if not account:
+			continue
+		
+		# Validate cost center if budget is against cost center
+		if budget_doc.budget_against == "Cost Center":
+			if not cost_center:
+				frappe.msgprint(_("Row {0}: Cost Center is required. Skipping.").format(row_idx))
+				continue
+			
+			if not frappe.db.exists("Cost Center", cost_center):
+				frappe.msgprint(_("Row {0}: Cost Center '{1}' does not exist. Skipping.").format(row_idx, cost_center))
+				continue
+		
+		# Validate account exists and belongs to company
+		if not frappe.db.exists("Account", account):
+			frappe.msgprint(_("Row {0}: Account '{1}' does not exist. Skipping.").format(row_idx, account))
+			continue
+		
+		account_details = frappe.db.get_value(
+			"Account", account, ["company", "is_group", "report_type"], as_dict=1
+		)
+		
+		if account_details.company != budget_doc.company:
+			frappe.msgprint(_("Row {0}: Account '{1}' does not belong to company {2}. Skipping.").format(
+				row_idx, account, budget_doc.company
+			))
+			continue
+		
+		if account_details.is_group:
+			frappe.msgprint(_("Row {0}: Account '{1}' is a group account. Skipping.").format(row_idx, account))
+			continue
+		
+		if account_details.report_type != "Profit and Loss":
+			frappe.msgprint(_("Row {0}: Account '{1}' is not a Profit and Loss account. Skipping.").format(row_idx, account))
+			continue
+		
+		# Calculate total budget amount from monthly values
+		budget_amount = 0
+		
+		for month, col_idx in month_cols.items():
+			if len(row) > col_idx:
+				monthly_value = flt(row[col_idx])
+				budget_amount += monthly_value
+		
+		# Add to budget accounts
+		budget_doc.append("accounts", {
+			"account": account,
+			"budget_amount": budget_amount
+		})
+		
+		processed_count += 1
+	
+	if processed_count == 0:
+		frappe.throw(_("No valid budget accounts found in the Excel file"))
+	
+	# Save the document
+	budget_doc.save()
+	
+	frappe.msgprint(_("Successfully imported {0} budget account(s)").format(processed_count))
+	
+	return {
+		"success": True,
+		"processed_count": processed_count,
+		"message": _("Budget template uploaded successfully")
+	}
+
