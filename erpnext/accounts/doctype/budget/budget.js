@@ -33,14 +33,6 @@ frappe.ui.form.on('Budget', {
 			frm.add_custom_button(__('Upload Budget Template'), function() {
 				frm.trigger('show_upload_dialog');
 			});
-			
-			// Add Download Template button
-			frm.add_custom_button(__('Download Template'), function() {
-				window.open(
-					'/api/method/erpnext.accounts.doctype.budget.budget_upload_template.download_budget_template?company=' 
-					+ encodeURIComponent(frm.doc.company)
-				);
-			});
 		}
 	},
 
@@ -48,6 +40,23 @@ frappe.ui.form.on('Budget', {
 		const d = new frappe.ui.Dialog({
 			title: __('Upload Budget Template'),
 			fields: [
+				{
+					fieldtype: 'HTML',
+					fieldname: 'download_section',
+					options: `
+						<div class="form-group">
+							<div class="clearfix">
+								<label class="control-label" style="padding-right: 0px;">Download Template</label>
+							</div>
+							<button class="btn btn-default btn-sm" id="btn-download-budget-template">
+								<i class="fa fa-download"></i> Download Excel Template
+							</button>
+							<p class="help-box small text-muted">
+								Download the Excel template with the format: Cost Center | Account | January - December
+							</p>
+						</div>
+					`
+				},
 				{
 					fieldname: 'upload_file',
 					fieldtype: 'Attach',
@@ -67,7 +76,7 @@ frappe.ui.form.on('Budget', {
 							<strong>Template Format:</strong><br>
 							Excel file should contain columns:<br>
 							<strong>Cost Center | Account | January | February | March | ... | December</strong><br>
-							<small>Click 'Download Template' button to get the sample Excel file.</small>
+							<small>Total Budget Amount will be calculated automatically from the sum of all months.</small>
 						</div>
 					`
 				}
@@ -114,6 +123,14 @@ frappe.ui.form.on('Budget', {
 		});
 		
 		d.show();
+		
+		// Attach click event to download button after dialog is shown
+		d.$wrapper.find('#btn-download-budget-template').on('click', function() {
+			window.open(
+				'/api/method/erpnext.accounts.doctype.budget.budget_upload_template.download_budget_template?company=' 
+				+ encodeURIComponent(frm.doc.company)
+			);
+		});
 	},
 
 	budget_against: function(frm) {
