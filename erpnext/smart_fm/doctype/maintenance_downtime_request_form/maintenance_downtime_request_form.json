@@ -255,7 +255,7 @@
    "fieldname": "resolution_description",
    "fieldtype": "Small Text",
    "label": "Actions Taken / Fixed Details",
-   "mandatory_depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Accepted' || doc.workflow_state == 'Submitted'"
+   "mandatory_depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Failed' || doc.workflow_state == 'Resolved'"
   },
   {
    "depends_on": "eval:doc.workflow_state == 'Started' || doc.workflow_state == 'Failed' || doc.workflow_state == 'Resolved'",
@@ -273,7 +273,7 @@
    "fieldname": "workflow_state",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "Draft\nRejected\nSubmitted\nCancelled\nApproved",
+   "options": "Draft\nRejected\nSubmitted\nAccepted\nStarted\nFailed\nRejected\nResolved",
    "read_only": 1
   }
  ],
