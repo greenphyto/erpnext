@@ -552,18 +552,28 @@ def upload_budget_template(docname, file_url):
 		
 		# Calculate total budget amount from monthly values
 		budget_amount = 0
+		monthly_distribution = {}
 		
+		budget_account = {
+			"account": account,
+			"budget_amount": budget_amount
+		}
 		for month, col_idx in month_cols.items():
 			if len(row) > col_idx:
 				monthly_value = flt(row[col_idx])
+				budget_account[month] = monthly_value
 				budget_amount += monthly_value
+				monthly_distribution[month] = monthly_value
 		
-		# Add to budget accounts
-		budget_doc.append("accounts", {
-			"account": account,
-			"budget_amount": budget_amount
-		})
+		# Prepare budget account data with monthly breakdown
+		budget_account["budget_amount"] = budget_amount
+
+		# Add monthly breakdown
+		for month in months:
+			if month in monthly_distribution:
+				budget_account[month] = monthly_distribution[month]
 		
+		budget_doc.append("accounts", budget_account)
 		processed_count += 1
 	
 	if processed_count == 0:
