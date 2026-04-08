@@ -26,7 +26,94 @@ frappe.ui.form.on('Budget', {
 	},
 
 	refresh: function(frm) {
-		frm.trigger("toggle_reqd_fields")
+		frm.trigger("toggle_reqd_fields");
+		
+		// Add Upload Budget Template button
+		if (!frm.is_new()) {
+			frm.add_custom_button(__('Upload Budget Template'), function() {
+				frm.trigger('show_upload_dialog');
+			});
+			
+			// Add Download Template button
+			frm.add_custom_button(__('Download Template'), function() {
+				window.open(
+					'/api/method/erpnext.accounts.doctype.budget.budget_upload_template.download_budget_template?company=' 
+					+ encodeURIComponent(frm.doc.company)
+				);
+			});
+		}
+	},
+
+	show_upload_dialog: function(frm) {
+		const d = new frappe.ui.Dialog({
+			title: __('Upload Budget Template'),
+			fields: [
+				{
+					fieldname: 'upload_file',
+					fieldtype: 'Attach',
+					label: __('Select Excel File'),
+					reqd: 1,
+					options: {
+						restrictions: {
+							allowed_file_types: ['.xlsx', '.xls', '.csv']
+						}
+					}
+				},
+				{
+					fieldtype: 'HTML',
+					fieldname: 'help_text',
+					options: `
+						<div class="alert alert-info">
+							<strong>Template Format:</strong><br>
+							Excel file should contain columns:<br>
+							<strong>Cost Center | Account | January | February | March | ... | December</strong><br>
+							<small>Click 'Download Template' button to get the sample Excel file.</small>
+						</div>
+					`
+				}
+			],
+			primary_action_label: __('Upload & Process'),
+			primary_action: function(values) {
+				if (!values.upload_file) {
+					frappe.msgprint(__('Please select a file to upload'));
+					return;
+				}
+				
+				frappe.show_alert({
+					message: __('Processing file...'),
+					indicator: 'blue'
+				}, 3);
+
+				frappe.call({
+					method: 'erpnext.accounts.doctype.budget.budget.upload_budget_template',
+					args: {
+						docname: frm.doc.name,
+						file_url: values.upload_file
+					},
+					freeze: true,
+					freeze_message: __('Processing Budget Template...'),
+					callback: function(r) {
+						if (r.message) {
+							d.hide();
+							frappe.show_alert({
+								message: __('Budget data imported successfully!'),
+								indicator: 'green'
+							}, 5);
+							frm.reload_doc();
+						}
+					},
+					error: function(r) {
+						frappe.msgprint({
+							title: __('Upload Failed'),
+							message: r.message || __('An error occurred while processing the file'),
+							indicator: 'red'
+						});
+					}
+				});
+			}
+		});
+		
+		d.show();
 	},
 
 	budget_against: function(frm) {
