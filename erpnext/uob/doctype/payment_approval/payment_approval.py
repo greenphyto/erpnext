@@ -591,8 +591,6 @@ class PaymentApproval(Document):
 			map_invoice[key]["tt_purpose"] = d.tt_purpose
 			map_invoice[key]["tt_purpose_code"] = d.tt_purpose_code
 
-			idx += 1
-			
 		return list(map_invoice.values())
 
 	def create_xml_file(self, invoices, debtor_info, filepath=""):
