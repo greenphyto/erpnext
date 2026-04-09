@@ -1,0 +1,210 @@
+Code,Purpose
+71100,Small transactions between Resident and Non-residents
+71200,Money market transactions between Resident FIs and Non-resident FIs
+71300,Foreign exchange transactions between Resident FIs and Non-Resident FIs
+71400,Foreign exchange transactions between Residents and Non-resident FIs or between Resident FIs and Non-residents
+72100,Money market transactions between Resident FIs
+72200,Interbank transfer between resident FIs
+72300,Statutory deposits with Bank Negara Malaysia in Foreign Currency
+72400,Amount due to Government in Foreign Currency
+72511,Foreign Currency transactions between different accounts of the same Resident within the same FI
+72512,Foreign Currency transactions between different accounts of the same Resident effected between different FIs
+72521,Foreign currency transactions between 2 different Residents within the same FI
+72522,Foreign currency transactions between 2 different Residents effected by different FIs
+72530,Transfers between two overseas accounts of Resident
+72600,Foreign exchange transactions between Residents and Resident FIs
+73100,Money market transactions between Non-resident FIs effected by Resident FIs
+73200,Foreign exchange transactions between Non-resident FIs effected by resident FIs
+73310,Abroad transactions between Non-residents effected by Resident FIs
+73320,Transactions between Non-residents within Malaysia
+74100,"Cancellation of demand drafts, mail/telegraphic transfers"
+74200,Difference due to rounding of amounts to the nearest unit of currency transacted
+74300,Redesignation of Resident accounts to Non-resident accounts and vice versa arising from the change in resident status or due to wrong designation of accounts
+74500,Adjustment (For use by the Bank only)
+22110,Debt forgiveness
+22130,Other capital transfers
+23000,"Acquisition/ disposal of non-produced, non-financial assets"
+22210,Debt forgiveness
+22220,Migrant transfer
+22230,Other capital transfers
+35130,Mergers and acquisitions
+35140,Equity investment other than mergers and acquisitions
+35200,Liquidation of investment
+35300,Head office accounts in branches
+35400,Capital Expenditure in Special Enterprises/Projects
+31411,Financial lease extension to/receipt from Non-residents
+31412,Repayment of financial lease to/receipt from Non-residents
+31413,Prepayment of financial lease to/receipt from Non-residents
+31111,Extension/receipt (drawdown) of long-term term loan to/from Non-resident
+31112,Repayment of principal to/by Non-resident on long-term term loan
+31113,Prepayment of principal to/by Non-resident on long-term term loan
+31611,Cash Pooling Extension to /receipt of cash pooling from Non-resident
+31612,Cash Pooling Repayment of cash pooling to/by Non-resident
+31613,Cash Pooling Prepayment of cash pooling to/by Non-resident
+31911,Extension to /receipt from Non-resident
+31912,Repayment of other loans facilities to/by Non-resident
+31913,Prepayment of other loans facilities to/by Non-resident
+31921,Extension to /receipt from Non-resident
+31922,Repayment of other loans facilities to/by Non-resident
+31923,Prepayment of other loans facilities to/by Non-resident
+39111,Purchase/sale of real estate in Malaysia (commercial)
+39112,Purchase/sale of real estate in Malaysia (residential)
+39121,Purchase/sale of real estate abroad (commercial)
+39122,Purchase/sale of real estate abroad (residential)
+14130,Retained Earnings
+31511,Credit facilities extension to/receipt from Non-resident
+31512,Repayment of credit facilities to/by Non-resident
+31513,Prepayment of credit facilities to/by Non-resident
+31121,Extension/receipt (drawdown) of short-term term loan to/from Non-resident
+31122,Repayment of principal to/by Non-resident on short-term term loan
+31123,Prepayment of principal to/by Non-resident on short-term term loan
+31311,Issuance
+31312,Redemption
+31621,Cash Pooling Extension to /receipt of cash pooling from Non-resident
+31622,Cash Pooling Repayment of cash pooling to/by Non-resident
+31623,Cash Pooling Prepayment of cash pooling to/by Non-resident
+33000,Employee stock options
+37100,Swaps
+37200,Forwards
+37300,Futures
+37400,Options
+37900,Others derivatives
+00000,Food and live animals
+01000,Beverages and tobacco
+02000,"Crude materials, inedible, except fuels"
+03000,"Mineral fuels, lubricants and related materials"
+04000,"Animal and vegetable oils, fats and waxes"
+05000,"Chemicals and related products, not classified elsewhere"
+06000,Manufactured goods
+07000,"Machinery, non-customised packaged software and transport equipment"
+07100,"Power lines, pipelines and undersea communication cables"
+08000,Miscellaneous manufactured articles
+09000,"Commodities and miscellaneous transactions, not classified elsewhere"
+9001,Goods (Broad Classification)
+09100,Refunds relating to goods transactions
+16711,Merchanting trade in Malaysia
+16712,Merchanting trade abroad
+09700,Non-monetary gold
+34000,Subscriptions/ Contributions to/ Reimbursement from International Organisations
+39210,Placement/withdrawal of deposits of residents with/from financial institutions abroad
+39220,Placement/withdrawal of deposits of residents with/from offshore financial institutions in Labuan.
+36210,Bonds and Notes Issued by residents in domestic capital mark
+36220,Bonds and Notes Issued by residents in international markets
+36230,Bonds and Notes Issued by Non-residents in international markets
+36240,Bonds and Notes Issued by Non-residents in domestic capital market
+36310,Money Market Instruments Issued by residents in domestic capital market
+36320,Money Market Instruments Issued by residents in international markets
+36330,Money Market Instruments Issued by Non-residents in international markets
+36340,Money Market Instruments Issued by Non-residents in domestic capital market
+36410,Government Securities purchase/sale of Malaysian Government securitie
+36420,Government Securities purchase/sale of Foreign Government securities
+36110,Issued by residents in domestic capital market
+36120,Issued by residents in international markets
+36130,Issued by Non-residents in international markets
+36140,Issued by Non-residents in domestic capital market
+14310,Wages and salaries in cash
+14320,Wages and salaries in kind/benefits attributable to employees
+14330,Employer�s social contribution
+14210,"Interest paid to/ received from related Non-resident company relating to loan obligations, including non-participating preference shares and financial leases."
+14220,"Interest paid to/ received from non-related Non-resident company relating to loan obligations, including non-participating preference shares and financial leases."
+14230,Interest paid to/received from Non-residents on deposits and negotiable instruments of deposits (NIDs).
+14240,Interest paid to/received from Non-residents on investment in bonds and notes.
+14250,Interest paid to/received from Non-residents on money market instruments/financial derivates.
+14110,Direct investment income
+14120,Portfolio investment income
+14140,"Investment income attributable to Non-resident policyholders in insurance, pension schemes and standardised guarantees"
+14410,Taxes on products and productions
+14420,Subsidies on products and productions
+14430,Rental on natural resources
+21110,"Grants, aid, donations and unclaimed monies"
+21120,"Pension, gratuity"
+21131,"Taxes on income, wealth and other taxable assets"
+21132,Fines and penalties
+21133,Social contributions and benefits
+21140,Compensation and pledging
+21210,Grants and gifts
+21220,Workers� remittances
+21230,"Legacies, compensations and prizes"
+21241,"Taxes on income, wealth and other taxable assets"
+21242,Fines and penalties
+21245,Net premiums on non-life insurance and standardised guarantees
+21246,Non-life insurance claims and calls under standardised guarantees
+12110,Airport services
+12120,Port services
+12130,Other terminal facilities
+13210,Goods and services purchased through business and official travel
+13220,Goods and services purchased by short term workers
+16610,Charges associated with intellectual property rights
+16620,License fees to reproduce and distribute intellectual property
+12210,Charter of aircraft (with crew)
+12220,Charter of ships and vessels (with crew)
+12230,Charter of other modes of transport (with crew)
+16210,Construction and installation services in Malaysia
+16220,Construction and installation services abroad
+16410,Explicitly-charged financial services
+16420,Explicit margins on buying and selling of financial instruments
+16430,Explicitly-charged asset management services
+16440,Financial intermediation service charges indirectly measured (FISIM)
+11110,Freight by air
+11120,Freight by sea
+11130,Freight by other modes of transportation
+15100,Malaysian government offices abroad and foreign offices in Malaysia
+15200,International organisations
+15300,Trade missions
+15400,Commission & other charges relating to loan obligations of the Malaysian Government
+15500,The Bank minting of coins and printing of notes
+16311,"Premium paid/received on high risk insurance/takaful relating to fire, marine, aviation, etc."
+16312,Premiums paid/received on other general insurance/takaful
+16313,Premium paid/received on life insurance/takaful
+16314,Premiums paid/received on reinsurance/retakaful
+16315,Premium paid/received on insurance/takaful on goods
+16321,"Claims settlements on high risk insurance/takaful relating to fire, marine, aviation, etc."
+16322,Claims settlements on other general insurance/takaful
+16323,Claims settlements on life insurance/takaful
+16324,Claims paid/received on reinsurance/retakaful
+16325,Claims paid/received on insurance/takaful on goods
+16332,Auxiliary insurance services
+12500,"Maintenance and repair of aircraft, ships and other transport equipment"
+10010,Manufacturing services on physical inputs that owned by others (goods for processing)
+12310,Rentals/operating leasing of aircraft (without crew)
+12320,Rentals/operating leasing of ships and vessels (without crew)
+12330,Rentals/operating leasing of other transport equipment (without crew)
+16780,"Rentals/operating leasing of dwellings, other buildings and machinery"
+16900,Other services transactions not identified elsewhere
+16910,Refunds relating to services transactions
+11210,Passenger fare by air
+11220,Passenger fare by sea
+11230,Passenger fare by other modes of transportation
+13110,Goods and services purchased by travellers
+13300,Travel for pilgrimage and religious observances
+13400,Travel for medical treatment
+13500,Education-related
+16810,Audio-visual and artistic related services
+16820,Health services
+16830,Education services
+16840,Heritage and recreational services
+16850,Other personal services
+12140,Postal and courier services
+16760,"Advertising, market research and public opinion polling services"
+16771,Legal services
+16772,Accounting services
+16773,Management consulting services
+16730,Research and Development
+12400,Fees for salvage operations
+16720,Sharing of administrative expenses
+16740,"Architectural, engineering, and other technical services"
+16750,"Agricultural, mining, and on-site processing"
+16791,Trade-related services
+16792,Waste treatment services
+16793,Other business services
+16100,Telecommunication services
+16510,Computer services
+16520,Information services
+17010,Inter-company settlement for offsetting payables against receivables.
+17020,Transfer by a company to/from its own current account overseas
+17030,Bilateral trade transactions. (For use by the Bank only)
+17040,Transfer of funds between overseas accounts of same resident company. (Applicable for monthly Overseas Account report)
+17050,Transfer of funds between banking institutions� nostro accounts on behalf of specific resident company. (Only upon instruction from the Bank)
+17060,Transfer of funds between overseas accounts maintained by different resident companies. (Applicable for monthly Overseas Account report)
+17070,Transfer by a resident (excludes bank) to/from current account overseas of another resident company.
+17080,Settlement between Remittance Services Providers (RSPs) with resident financial institutions. (Applicable for company that submits monthly Settlement RSP Report to the Bank)

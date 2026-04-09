@@ -1,0 +1,192 @@
+Code,Purpose
+2011,Export
+2012,Import
+2802,Export Refunds
+2803,Import Refunds
+2018,Advance Payment (full payment)
+2019,Advance Payment (partial payment)
+2015,Bunkers & Stores
+2097,Other goods transactions - Trade within Indonesia territory
+2098,Other goods transactions - Trade from/to outside Indonesia
+2804,Refunds - Others
+2400,Goods processing
+2405,Goods maintenance and repair
+2411,Public transportation - sea transport
+2412,Public transportation - air transport
+2413,Public transportation - others
+2421,Export import freight - sea transport
+2422,Export import freight - air transport
+2423,Export import freight - others
+2431,Non export import freight - sea transport
+2432,Non export import freight - air transport
+2433,Non export import freight - others
+2441,Transportation support - sea transport
+2442,Transportation support - air transport
+2443,Transportation support - others
+2450,Transportation service - Post and courier
+2461,Business travel
+2462,Personal travel
+2466,Health services - operated in Indonesia
+2467,Health services - operated outside Indonesia
+2468,Education/ training - operated in Indonesia
+2469,Education/ training - operated outside Indonesia
+2480,Telecommunication services
+2490,Computer services
+2495,Information services
+2501,Construction service in Indonesia <= 1 year
+2502,Construction service in Indonesia > 1 year
+2511,Overseas construction <= 1 year
+2512,Overseas construction > 1 year
+2521,Life insurance - premium
+2522,Life insurance - benefit
+2523,Freight insurance - premium
+2524,Freight insurance - claim
+2525,Other insurance - premium
+2526,Other insurance - claim
+2531,Reinsurance - premium
+2532,Reinsurance - claim
+2533,Reinsurance - comission
+2541,Auxiliary insurance services
+2546,Pension fund - contribution
+2547,Pension fund - benefit
+2550,Financial services
+2560,Intellectual rights usage
+2570,Research and development
+2580,"Legal, accountant, management consultation and public relations"
+2590,"Advertising, market research, and public survey"
+2600,"Architecture, engineering, and other technics"
+2610,"Mining, agriculture, and waste and pollution treatment"
+2615,Operational leasing - goods
+2616,Operational leasing - transportation without crew
+2630,Trade related services
+2640,Other business services
+2651,"Art, cultural, and entertainment - performed in Indonesia"
+2652,"Art, cultural, and entertainment - performed outside Indonesia"
+2660,Government services
+2670,Other services
+2127,Netting account balance - export related
+2129,Netting account balance - non-export related
+2701,"Interest, profit sharing, margin, and bonus <= 1 year"
+2702,"Interest, profit sharing, margin, and bonus > 1 year"
+2705,"Interest/profit sharing/margin/bonus for current account and deposit, including mudharabah saving and deposit"
+2710,Interest/profit sharing/margin/bonus for loan
+2716,Interest/profit sharing/margin/bonus for commercial paper issued by resident <= 1 year
+2717,Interest/profit sharing/margin/bonus for commercial paper issued by resident > 1 year
+2720,Interest/profit sharing/margin/bonus for gold swap
+2725,"Shared divident and revenue/profit, including revenue from mutual funds"
+2730,Fee received by commercial paper owner in securities lending transactions
+2731,Fee received by gold owner in gold loans or gold swaps transactions.
+2150,Worker's remittances
+2163,Employees' income
+2741,Land lease
+2742,"Office, apartment, house lease, etc."
+2743,"Land with office building, apartment, house lease, etc."
+2751,Grant (in cash) not related to liability to buy fixed asset
+2752,Grant (in cash) related to liability to buy fixed asset
+2760,"Sanction/Penalty, etc"
+2765,"Value added tax, payroll tax, property tax, and business lisence"
+2766,"Income and wealth tax (income tax, and capital gain on financial asset ownership) and tax for financial transaction"
+2767,"Other tax, retribution, and restitution"
+2770,Royalty for nature resources utilisation
+2193,Non-financial assets transaction - marketing assets
+2194,"Non-financial assets transaction - contracts, lease, and lisence such as sale/purchase of of rights to marketable operating lease"
+2197,Land sale and purchase transactions
+2198,Building sale and purchase transactions
+2203,Capital investment in Indonesia
+2204,Capital investment outside Indonesia
+2206,Capital divestment  in Indonesia
+2207,Capital divestment outside Indonesia
+2311,Transaction on commercial paper by non resident - stock
+2321,Transaction on commercial paper by non resident - > 1 year term - obligation
+2322,Transaction on commercial paper by non resident - > 1 year term - Medium Term Notes (MTNs)
+2323,Transaction on commercial paper by non resident - > 1 year term - others
+2331,Transaction on commercial paper by non resident - <= 1 year term - Treasury Bills
+2332,Transaction on commercial paper by non resident - <= 1 year term - Promissory Notes
+2333,Transaction on commercial paper by non resident - <= 1 year term - others
+2341,Transaction on commercial paper by resident - equity - stock
+2342,Transaction on commercial paper by resident - other equity like warrant and right
+2351,Transaction on commercial paper by resident - > 1 year term - Indonesia government obligation and Indonesia Retail Obligation (ORI)
+2352,Transaction on commercial paper by resident - > 1 year term - Corporate obligation
+2353,Transaction on commercial paper by resident - > 1 year term - Medium Term Notes (MTNs)
+2354,Transaction on commercial paper by resident - > 1 year term - others
+2361,Transaction on commercial paper by resident - <= 1 year term - BI Certificate (SBI) and BI Wadiah Certificate (SWBI)
+2362,Transaction on commercial paper by resident - <= 1 year term - SPN
+2363,Transaction on commercial paper by resident - <= 1 year term - Promissory Notes (PNs)
+2364,Transaction on commercial paper by resident - <= 1 year term - Negotiable Certificate of Deposit (NCD)
+2365,Transaction on commercial paper by resident - <= 1 year term - others
+2366,Transaction on commercial paper by resident - <= 1 year term - BI deposit certificate
+2371,Mutual Fund
+2372,Exchange Traded Fund
+2375,Commercial paper selling (issued by resident) - repo by the owner - <= 1 year term
+2376,Commercial paper selling (issued by resident) - repo by the owner - > 1 year term
+2377,Commercial paper reselling (issued by resident) - repo by the buyer - <= 1 year term
+2378,Commercial paper reselling (issued by resident) - repo by the buyer - > 1 year term
+2379,Commercial paper repurchase by the owner (issued by resident) which have been sold - <= 1 year term
+2380,Commercial paper repurchase by the owner (issued by resident) which have been sold - > 1 year term
+2381,Commercial paper purchase  (issued by non resident) which sold by repo - <= 1 year term
+2382,Commercial paper purchase  (issued by non resident) which sold by repo - > 1 year term
+2821,Commercial paper selling (issued by non resident) - repo by the owner - <= 1 year term
+2822,Commercial paper selling (issued by non resident) - repo by the owner - > 1 year term
+2823,Commercial paper reselling (issued by non resident) - repo by the buyer - <= 1 year term
+2824,Commercial paper reselling (issued by non resident) - repo by the buyer - > 1 year term
+2825,Commercial paper repurchase by the owner (issued by non resident) which have been sold - <= 1 year term
+2826,Commercial paper repurchase by the owner (issued by non resident) which have been sold - > 1 year term
+2827,Commercial paper purchase  (issued by non resident) which sold by repo - <= 1 year term
+2828,Commercial paper purchase  (issued by non resident) which sold by repo - > 1 year term
+2221,Loan disbursement/ withdrawal - <= 1 year term
+2222,Loan disbursement/ withdrawal - > 1 year term
+2231,Loan repayment - <= 1 year term
+2232,Loan repayment - > 1 year term
+2233,Financial leasing
+2383,Factoring - debtor is Bank in Indonesia - <= 1 year term
+2384,Factoring - debtor is Bank in Indonesia - > 1 year term
+2385,Factoring - debtor is Company in Indonesia - <= 1 year term
+2386,Factoring - debtor is Company in Indonesia - > 1 year term
+2387,Factoring - debtor is overseas Bank - <= 1 year term
+2388,Factoring - debtor is overseas Bank - > 1 year term
+2389,Factoring - debtor is overseas Company - <= 1 year term
+2390,Factoring - debtor is overseas Company  - > 1 year term
+2391,Fund handover by cash provider in gold swap transaction - <= 1 year term
+2392,Fund handover by cash provider in gold swap transaction - > 1 year term
+2393,Fund return by gold owner in gold swap transaction - <= 1 year term
+2394,Fund return by gold owner in gold swap transaction - > 1 year term
+2395,Fund receipt by cash provider in gold swap transaction - <= 1 year term
+2396,Fund receipt by cash provider in gold swap transaction - > 1 year term
+2397,Fund receipt by gold owner in gold swap transaction - <= 1 year term
+2398,Fund receipt by gold owner in gold swap transaction - > 1 year term
+2808,Working capital/ cashcall - oil and gas
+2809,Working capital/ cashcall - non oil and gas
+2811,Advance payment - goods other than export import
+2812,Advance payment - insurance
+2813,Advance payment - others
+2814,Receipt/ return of order fund (based on IPO and private placement)
+2815,Reimbursement on bail fund
+2240,Up to 3 months Term Deposit in Indonesia
+2241,"Up to 3 months Term Deposit in Indonesia, including current account and call money"
+2242,3 - 6 months Term Deposit in Indonesia
+2243,> 6 months Term Deposit in Indonesia
+2244,Up to 3 months Term Deposit release in Indonesia
+2245,"Up to 3 months Term Deposit release in Indonesia,  including current account and call money"
+2246,3 - 6 months Term Deposit release in Indonesia
+2247,> 6 months Term Deposit release in Indonesia
+2251,"Up to 3 months Overseas Term Deposit, including current account and call money"
+2252,> 3 months Overseas Term Deposit
+2255,"Up to 3 months Overseas Term Deposit release, including current account and call money"
+2256,> 3 months Overseas Term Deposit release
+2257,Withdrawal for foreign exchange export from account abroad
+2261,Forex - spot against IDR
+2262,Forex - spot between foreign ccy
+2263,Forex - forward against IDR
+2264,Forex - forward between foreign ccy
+2271,Profit on forward transaction or ets (such as swaps and futures)
+2272,Receipt for forward rate agreement (FRA)
+2273,Receipt on interest rate swap transaction or currency swap (monthly interest for floating leg transaction and annual coupon payment for fixed leg)
+2274,"Receipt for initial/ repayable margin such as initial margin in commercial paper repo transaction, securities lending"
+2275,Receipt for variation/ nonrepayable margin
+2276,Receipt of premium in option transaction
+2277,Principal recipt in currency swap transaction when transaction begins (first leg). Including advance payment in over the counter (OTC) swaps transaction
+2278,Principal recipt in currency swap transaction when transaction ends (final leg)
+2279,Premium receipt in credit default swap transaction
+2280,Deposit/ return of guarantee
+2282,Fund return on transaction other than goods export/ import and other goods transaction
+2299,Other investment/ financial transaction
