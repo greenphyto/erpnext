@@ -360,6 +360,13 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 			ET.SubElement(rmt_adr, 'AdrLine').text = addr.get("address_line")
 		else:
 			ET.SubElement(rmt_adr, 'Ctry').text = invoice.get("country")
+
+		# Purpose payment for China, Malaysia, Indonesia, Thailand
+		if invoice.get("tt_purpose"):
+			rmt_inf = ET.SubElement(cdt_trf_tx_inf, 'RgltryRptg')
+			dtls = ET.SubElement(rmt_inf, 'Dtls')
+			ET.SubElement(dtls, 'Tp').text = invoice['tt_purpose']
+			ET.SubElement(dtls, 'Cd').text = invoice['tt_purpose_code']
 		
 		# Remittance Information
 		rmt_inf = ET.SubElement(cdt_trf_tx_inf, 'RmtInf')
