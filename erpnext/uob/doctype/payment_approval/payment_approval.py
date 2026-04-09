@@ -467,8 +467,8 @@ class PaymentApproval(Document):
 			ins_end = "{}-{}".format(doc_name, get_date_simple(doc.posting_date)[:-2])
 			email = settings.remitance_email_dummy
 			address = {}
-			if doc.billing_address:
-				addr = frappe.get_doc("Address", doc.billing_address)
+			if doc.supplier_address:
+				addr = frappe.get_doc("Address", doc.supplier_address)
 				address = {
 					"address_line":addr.address_line1,
 					"postal_code":addr.pincode,
@@ -497,12 +497,16 @@ class PaymentApproval(Document):
 				"batch_id":batch_id,
 				"invoices":[]
 			}
+			if d.country_name in ['China', 'Malaysia', 'Indonesia', 'Thailand']:
+				row['tt_purpose'] = d.tt_purpose
+				row['tt_purpose_code'] = d.tt_purpose_code
+
 			for inv in d['invoices']:
 				row['invoices'].append({
 					"invoice_number": inv.bill_no or inv.invoice_no,
 					"amount": inv.amount,
 					"currency": inv.currency
-				})
+			})
 			invoices.append(row)
 			idx +=1
 
@@ -583,6 +587,11 @@ class PaymentApproval(Document):
 				map_invoice[key]['invoices'].append(d)
 
 			map_invoice[key]["country"] = get_bank_number_country(d.supplier_bank_no)
+			map_invoice[key]["country_name"] = d.country
+			map_invoice[key]["tt_purpose"] = d.tt_purpose
+			map_invoice[key]["tt_purpose_code"] = d.tt_purpose_code
+
+			idx += 1
 			
 		return list(map_invoice.values())
 
@@ -843,3 +852,13 @@ def get_alpha(index):
         index, remainder = divmod(index - 1, 26)
         result = chr(ord('A') + remainder) + result
     return result
+
+@frappe.whitelist()
+def get_invoice_country(invoice_no):
+	country = frappe.db.sql("""
+		SELECT a.country
+		FROM `tabPurchase Invoice` pi
+		JOIN `tabAddress` a ON pi.supplier_address = a.name
+		WHERE pi.name = %s
+	""", invoice_no, as_dict=1)
+	return country[0].country if country else ""

@@ -24,6 +24,10 @@
   "currency",
   "exchange_rate",
   "basic_amount",
+  "country",
+  "remitance_purpose",
+  "tt_purpose",
+  "tt_purpose_code",
   "status_section",
   "status",
   "error_code",
@@ -210,12 +214,38 @@
    "fieldtype": "Data",
    "label": "Proxy Number",
    "read_only": 1
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "label": "Country",
+   "options": "Country"
+  },
+  {
+   "fieldname": "remitance_purpose",
+   "fieldtype": "Link",
+   "label": "Remitance Purpose",
+   "options": "Remitance Purpose"
+  },
+  {
+   "fetch_from": "remitance_purpose.purpose",
+   "fieldname": "tt_purpose",
+   "fieldtype": "Data",
+   "label": "Purpose",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "remitance_purpose.purpose_code",
+   "fieldname": "tt_purpose_code",
+   "fieldtype": "Data",
+   "label": "Purpose Code",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-02-27 18:10:07.174146",
+ "modified": "2026-04-09 12:04:59.557229",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "Payment Invoice List",

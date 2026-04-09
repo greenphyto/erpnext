@@ -313,6 +313,22 @@ $.extend(cur_frm.cscript, {
 			total += flt(r.amount)
 		})
 		frm.set_value("total_amount", total)
+	},
+	fetch_invoice_country(frm, cdt, cdn){
+		var d = locals[cdt][cdn]
+		if (d.invoice_no){
+			frappe.call({
+				method: "erpnext.uob.doctype.payment_approval.payment_approval.get_invoice_country",
+				args: {
+					invoice_no: d.invoice_no
+				},
+				callback: function(r) {
+					if (r.message) {
+						frappe.model.set_value(cdt, cdn, "country", r.message);
+					}
+				}
+			});
+		}
 	}
 })
 
@@ -343,9 +359,10 @@ frappe.ui.form.on('Payment Invoice List', {
 });
 
 frappe.ui.form.on('Payment Invoice List', {
-	invoice_no(frm){
+	invoice_no(frm, cdt, cdn){
 		setTimeout(()=>{
 			frm.cscript.calculate_amount(frm)
 		}, 100)
+		frm.cscript.fetch_invoice_country(frm, cdt, cdn)
 	}
 })
