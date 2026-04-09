@@ -1,0 +1,26 @@
+Code,Purpose
+INTC,Intracompany Payment
+GDDS,Payment for Goods
+ROYA,Royalty Payment
+SCVE,Purchase of Services
+CHAR,Donations for Charity
+INSC,Insurance Claim Payment
+INSU,Insurance Premium Payment
+LOAN,Loan Disbursement
+LOAR,Loan Repayment
+CBFF,Capital Transfer
+CORT,Other Trade related payments
+EDUC,Education related expense
+GIFT,Gifts
+OTHR,Others
+RENT,Rental Payment
+DIVD,Dividend and Profits Payment
+INVS,Securities and Investment
+TREA,Treasury Payment
+MDCS,Medical-related expenses
+ADCS,Donations and Sponsorship Payment
+PENS,Pension Services
+SALA,Employee Salary
+TAXS,Tax Payment
+UBIL,Utilities Fees
+PDEP,Real Estate Payment

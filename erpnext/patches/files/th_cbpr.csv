@@ -1,0 +1,112 @@
+Code,Purpose
+318004,Freight charges
+318005,Goods insurance and reinsurance premiums
+318006,Goods insurance claims
+318007,Other service charges relating to international freight
+318009,Fares
+318010,Various service fees for international vehicles and other transportation costs
+318012,Traveling expenses - Tourists
+318013,Traveling expenses - Students
+318014,Overseas traveling expenses - Others
+318015,Medical expenses
+318016,Remaining travelling expenses sold/bought back by travelers
+318017,Expenses from the use of debit/credit cards
+318018,Service fees of government entities
+318023,Telecommunication fees
+318024,Construction contract fees
+318025,"Royalty fees, trademark/patent fees, and copyright fees"
+318026,Insurance and reinsurance premiums not relating to goods
+318027,Insurance claims not relating to goods
+318028,Consulting fees
+318029,Financial service fees and commissions 
+318030,Other fees and commissions
+318031,News and information service fees
+318032,Representative office expenses
+318033,Advertisement fees
+318034,Asset rental fees
+318035,"Expenses relating to movies, television and shows"
+318036,Other fees (please indicate details)
+318037,Manufacturing or processing fees
+318040,Income repatriated by workers
+318042,Profit from private foreign investment and lending
+318043,Dividend from private foreign investment and lending
+318044,Loan interest from private foreign investment and lending
+318045,Other interest from private foreign investment and lending
+318046,Benefit from government investment and government lending
+318052,Private grants
+318053,Government grants
+318057,Remittance of funds belonging to Thais permanently living abroad
+318058,Remittance of inheritance to those permanently living abroad
+318059,Remittance of funds to families or relatives permanently living abroad
+318062,Foreign direct investments
+318065,Thai direct investments
+318068,Real estate investments from abroad
+318072,Investments in real estate abroad
+318076,Foreign portfolio investments
+318083,Foreign loans
+318086,Foreign debt instruments
+318090,Thai loans
+318093,Thai debt instruments
+318097,Foreign currency position adjustments - NR
+318104,Foreign currency position adjustments - Thai commercial bank
+318113,Advances from abroad
+318116,Advance payments for services from abroad
+318122,Unsettled loan payments transferred back
+318123,Reserves for repayment of loans abroad
+318125,Advances abroad
+318128,Advance payments for services abroad
+318131,Others (please indicate details)
+318143,Withdrawing money from FCD to sell for Baht
+318144,Transferring money between FCD of the same owner
+318151,Value of foreign currencies brought into country for sale
+318153,A non-resident closes a non-resident Baht account in order to buy foreign currency
+318154,Withdrawal from Non-residents Thai baht account to purchase foreign currency for transfer to accounts abroad
+318155,Withdrawal from Non-residents Thai baht account to purchase foreign currency for deposit in non-resident's domestic FCD
+318156,Non-residents Thai baht account receives Thai Baht from another non-resident Thai Baht account
+318158,Transfer Thai Baht to other non-resident Baht account for spot transaction
+318159,Transfer Thai Baht to other non-resident Baht account for outright forward transaction
+318160,Transfer Thai Baht to other non-resident Baht account for swap Transaction
+318161,Transfer Thai Baht to other non-resident Baht account for other derivatives transaction
+318162,Transfer Thai Baht to other non-resident Baht account for purchase of equity securities
+318163,Transfer Thai Baht to other non-resident Baht account for purchase of debt securities
+318164,Transfer Thai Baht to other non-resident Baht account for spot transaction for other transaction
+318165,Transactions of non-banks:Authorized persons
+318166,Transactions of non-banks Authorized companies
+318167,International money transfer agents
+318171,Thai portfolio investment in domestic market
+318175,Non-Resident Thai Baht Account for Lending / Repayment of Loan for Investment in Neighboring Countries
+318197,Non-resident Thai baht account to buy foreign currency for investment abroad
+318198,Non-resident Thai baht account to buy foreign currency for lending/borrowing abroad
+318205,Transaction between a treasury center and companies in same group for buying foreign currency from companies in same group
+318206,Transaction between a treasury center and companies in same group for selling foreign currency to companies in same group
+318207,Transaction between a treasury center and companies in same group for exchanging foreign currency with companies in same group
+318208,Transaction between a treasury center and companies in same group for payments for goods and services abroad of companies in same group
+318209,Transaction between a treasury center and companies in same group for other purposes (please provide details)
+318210,Transfer money between FCD of other parties and FCD accounts were opened with banks in the country
+318212,Gains and losses from derivative transactions
+318213,Investments in foreign securities abroad
+318215,Authorized securities companies
+318216,Investments in Thai securities abroad
+318219,Purchasing and depositing foreign currency bought domestically in the accounts for purchase of goods
+318220,Purchasing and depositing foreign currency bought domestically in the accounts for payments of services
+318221,Purchasing and depositing foreign currency bought domestically in the accounts for investment
+318222,Purchasing and depositing foreign currency bought domestically in the accounts for lending/ borrowing
+318223,Purchasing and depositing foreign currency bought domestically in the accounts for other purposes
+318225,Depositing foreign currency with financial institutions abroad for other purpose
+318230,Non-Resident Thai Baht Account for Loans / repayments for Investment in Thailand
+318231,Payments for exported and imported goods
+318232,"Discounts, deposits, excess payments, and other payments for goods"
+318233,Payments for gold
+318234,Transaction as a Market Maker to manage exchange rate risk
+318236,Market maker transaction for derivatives linked to gold price
+318237,Market maker transaction for derivatives linked to other variables
+318238,Transferring money between FCD of Treasury Center with group companies
+318239,Transferring money between FCD of Treasury Center with group companies for lending/borrowing purposes
+318240,Transferring money between FCD of Treasury Center with group companies for payment of goods and services
+318241,Transferring money between FCD of Treasury Center with group companies for FX trading purposes
+318242,Transferring money between FCD of affiliated businesses for other purposes
+318243,Transfer money between FCD of other parties for goods and services
+318244,Transfer money between FCD of other parties for investment in securities
+318245,Transfer money between FCD of other parties for other purposes
+318246,Other (please specify details)
+318247,Service for maintenance machine/equipment
