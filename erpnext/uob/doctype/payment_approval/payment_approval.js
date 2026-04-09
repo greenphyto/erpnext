@@ -59,6 +59,18 @@ frappe.ui.form.on('Payment Approval', {
 			}
 		})
 
+		frm.set_query("remitance_purpose", "invoices", (doc, cdt, cdn)=>{
+			var d = locals[cdt][cdn];
+			if (!d.country){
+				frappe.throw(_("Country is not set."))
+			}
+			return{
+				filters:{
+					"country":d.country
+				}
+			}
+		})
+
 		if(!frm.doc.requested_by && frm.is_dirty()){
 			frm.set_value("requested_by", frappe.session.user)
 		}

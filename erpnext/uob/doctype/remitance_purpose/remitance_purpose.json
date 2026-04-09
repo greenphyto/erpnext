@@ -50,7 +50,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-09 15:53:00.618479",
+ "modified": "2026-04-09 16:44:19.198604",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "Remitance Purpose",
@@ -72,7 +72,7 @@
   }
  ],
  "quick_entry": 1,
- "search_fields": "country,purpose,purpose_code",
+ "search_fields": "country,purpose_code,purpose",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

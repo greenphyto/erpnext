@@ -38,6 +38,7 @@ class PaymentApproval(Document):
 		self.validate_payment()
 		self.validate_bank_number()
 		self.validate_invoice()
+		self.validate_remitance()
 		self.calculate_amount()
 
 	def validate_paynow(self):
@@ -402,6 +403,14 @@ class PaymentApproval(Document):
 			d.swift = bn.swift
 
 			already_add.append(d.invoice_no)
+
+	def validate_remitance(self):
+		if not self.payment_method == "TT":
+			return
+		
+		for d in self.get("invoices"):
+			if d.country in ['China', 'Malaysia', 'Indonesia', 'Thailand'] and not d.remitance_purpose:
+				frappe.throw(_(f"Row {d.idx}, Remitance Purpose is required for invoice with supplier from {d.country}."))
 
 	def calculate_amount(self):
 		total = 0
