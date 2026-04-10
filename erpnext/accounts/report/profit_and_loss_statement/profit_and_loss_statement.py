@@ -5,6 +5,7 @@
 import frappe
 import re
 import json
+import datetime
 from urllib.parse import quote
 from io import BytesIO
 try:
@@ -69,6 +70,34 @@ def execute(filters=None):
 	data.extend(expense or [])
 	if net_profit_loss:
 		data.append(net_profit_loss)
+
+	# Fetch budget data if show_budget_amount is enabled
+	budget_map = {}
+	if filters.show_budget_amount and filters.periodicity == "Monthly":
+		budget_map = get_budget_data(filters)
+		
+		# Add budget amounts to data rows
+		for row in data:
+			# Skip profit/loss row and group accounts
+			if row.get("profit_data") or row.get("is_group"):
+				continue
+				
+			account = row.get("account_origin") or row.get("account")
+			if account and account in budget_map:
+				for period in period_list:
+					# Extract month name from period
+					from frappe.utils import getdate
+					period_date = getdate(period.from_date) if period.from_date else None
+					month_name = period_date.strftime("%B") if period_date else None
+					
+					if month_name:
+						budget_key = period.key + "_budget"
+						row[budget_key] = budget_map.get(account, {}).get(month_name, 0)
+			elif account:
+				# Set budget to 0 for accounts without budget
+				for period in period_list:
+					budget_key = period.key + "_budget"
+					row[budget_key] = 0
 
 	new_data = []
 	if filters.show_number_group:
@@ -402,3 +431,112 @@ def get_export_with_cost_centers_url(filters=None):
 		f"?filters={payload}"
 	)
 	return {"url": url}
+
+
+def get_budget_data(filters):
+	"""
+	Fetch budget data for accounts based on fiscal year, company, and cost center.
+	Returns a dict mapping account -> month -> budget_amount
+	"""
+	if not filters.get("show_budget_amount"):
+		return {}
+	
+	budget_against = "cost_center"
+	cost_centers = filters.get("cost_center") or []
+	
+	# Build condition for cost centers
+	cost_center_cond = ""
+	if cost_centers:
+		cost_center_list = ", ".join([f"'{cc}'" for cc in cost_centers])
+		cost_center_cond = f"and b.cost_center in ({cost_center_list})"
+	
+	# Fetch budget details
+	budget_details = frappe.db.sql(
+		f"""
+			select
+				ba.account,
+				ba.budget_amount,
+				b.monthly_distribution,
+				b.fiscal_year,
+				b.cost_center
+			from
+				`tabBudget` b,
+				`tabBudget Account` ba
+			where
+				b.name = ba.parent
+				and b.docstatus = 1
+				and b.company = %(company)s
+				and b.fiscal_year = %(fiscal_year)s
+				{cost_center_cond}
+			order by
+				ba.account
+		""",
+		{
+			"company": filters.get("company"),
+			"fiscal_year": filters.get("from_fiscal_year"),
+		},
+		as_dict=True,
+	)
+	
+	# Fetch monthly distribution details
+	monthly_distributions = get_monthly_distribution_data(filters)
+	
+	# Build account -> month -> budget mapping
+	budget_map = {}
+	for bd in budget_details:
+		account = bd.account
+		if account not in budget_map:
+			budget_map[account] = {}
+		
+		# Calculate budget for each month
+		for month_id in range(1, 13):
+			month_name = datetime.date(2013, month_id, 1).strftime("%B")
+			
+			# Get percentage allocation for this month
+			if bd.monthly_distribution:
+				month_percentage = monthly_distributions.get(bd.monthly_distribution, {}).get(month_name, 0)
+			else:
+				# Equal distribution if no monthly distribution
+				month_percentage = 100.0 / 12
+			
+			# Calculate monthly budget amount
+			monthly_budget = flt(bd.budget_amount) * month_percentage / 100
+			
+			# Add to existing budget for this account-month (in case multiple budgets exist)
+			if month_name not in budget_map[account]:
+				budget_map[account][month_name] = 0
+			budget_map[account][month_name] += monthly_budget
+	
+	return budget_map
+
+
+def get_monthly_distribution_data(filters):
+	"""
+	Fetch monthly distribution percentages.
+	Returns a dict mapping distribution_name -> month -> percentage
+	"""
+	distribution_details = {}
+	
+	distributions = frappe.db.sql(
+		"""
+			select
+				md.name,
+				mdp.month,
+				mdp.percentage_allocation
+			from
+				`tabMonthly Distribution Percentage` mdp,
+				`tabMonthly Distribution` md
+			where
+				mdp.parent = md.name
+				and md.fiscal_year = %(fiscal_year)s
+		""",
+		{"fiscal_year": filters.get("from_fiscal_year")},
+		as_dict=True,
+	)
+	
+	for d in distributions:
+		if d.name not in distribution_details:
+			distribution_details[d.name] = {}
+		distribution_details[d.name][d.month] = flt(d.percentage_allocation)
+	
+	return distribution_details
