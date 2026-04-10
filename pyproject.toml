@@ -13,6 +13,7 @@ dependencies = [
     "python-stdnum~=1.16",
     "Unidecode~=1.2.0",
     "redisearch~=2.1.0",
+    "pycryptodome~=3.10.1",
 
     # integration dependencies
     "gocardless-pro~=1.22.0",
