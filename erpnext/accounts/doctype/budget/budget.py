@@ -30,6 +30,7 @@ class Budget(Document):
 		if self.accounts:
 			self.validate_duplicate()
 			self.validate_accounts()
+			self.calculate_total_budget_amount()
 			self.set_null_value()
 			self.validate_applicable_for()
 		else:
@@ -60,6 +61,13 @@ class Budget(Document):
 				).format(d.name, self.budget_against, budget_against, d.account, self.fiscal_year),
 				DuplicateBudgetError,
 			)
+	
+	def calculate_total_budget_amount(self):
+		month_name = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
+		for d in self.get("accounts"):
+			d.budget_amount = 0
+			for month in month_name:
+				d.budget_amount += flt(d.get(month, 0))
 
 	def validate_accounts(self):
 		account_list = []
