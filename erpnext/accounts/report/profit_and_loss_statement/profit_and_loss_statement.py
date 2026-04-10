@@ -22,7 +22,8 @@ from erpnext.accounts.report.financial_statements import (
 )
 from erpnext.accounts.utils import remove_account_number
 from erpnext.accounts.report.utils import convert_wrap_report_data
-
+from frappe.desk.query_report import add_title_report, get_filters_data, build_xlsx_data
+from openpyxl.utils import get_column_letter
 
 def execute(filters=None):
 	filters = frappe._dict(filters)
@@ -138,7 +139,6 @@ def execute(filters=None):
 
 	return columns, new_data, None, chart, report_summary
 
-
 def get_report_summary(
 	period_list, periodicity, income, expense, net_profit_loss, currency, filters, consolidated=False
 ):
@@ -245,8 +245,6 @@ def get_chart_data(filters, columns, income, expense, net_profit_loss):
 
 	return chart
 
-from frappe.desk.query_report import add_title_report, get_filters_data, build_xlsx_data
-from openpyxl.utils import get_column_letter
 def get_export_cost_center(filters):
 	"""
 	Generate grouped Profit & Loss data per non-group Cost Center.
@@ -302,7 +300,6 @@ def get_export_cost_center(filters):
 		}
 
 	return group_data
-
 
 def _sanitize_sheet_name(name):
 	name = (name or "Sheet").strip()
