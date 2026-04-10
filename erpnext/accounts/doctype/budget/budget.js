@@ -151,3 +151,52 @@ frappe.ui.form.on('Budget', {
 		frm.toggle_reqd("project", frm.doc.budget_against=="Project");
 	}
 });
+
+frappe.ui.form.on('Budget Account', {
+	january: function(frm, cdt, cdn) {
+		frm.cscript.calculate_total_row(frm, cdt, cdn);
+	},
+	february: function(frm, cdt, cdn) {
+		frm.cscript.calculate_total_row(frm, cdt, cdn);
+	},
+	march: function(frm, cdt, cdn) {
+		frm.cscript.calculate_total_row(frm, cdt, cdn);
+	},
+	april: function(frm, cdt, cdn) {
+		frm.cscript.calculate_total_row(frm, cdt, cdn);
+	},
+	may: function(frm, cdt, cdn) {
+		frm.cscript.calculate_total_row(frm, cdt, cdn);
+	},
+	june: function(frm, cdt, cdn) {
+		frm.cscript.calculate_total_row(frm, cdt, cdn);
+	},
+	july: function(frm, cdt, cdn) {
+		frm.cscript.calculate_total_row(frm, cdt, cdn);
+	},
+	august: function(frm, cdt, cdn) {
+		frm.cscript.calculate_total_row(frm, cdt, cdn);
+	},
+	september: function(frm, cdt, cdn) {
+		frm.cscript.calculate_total_row(frm, cdt, cdn);
+	},
+	october: function(frm, cdt, cdn) {
+		frm.cscript.calculate_total_row(frm, cdt, cdn);
+	},
+	november: function(frm, cdt, cdn) {
+		frm.cscript.calculate_total_row(frm, cdt, cdn);
+	},
+	december: function(frm, cdt, cdn) {
+		frm.cscript.calculate_total_row(frm, cdt, cdn);
+	}
+})
+
+$.extend(cur_frm.cscript, {
+	calculate_total_row: function(frm, cdt, cdn) {
+		var row = locals[cdt][cdn];
+		row.budget_amount = flt(row.january) + flt(row.february) + flt(row.march) + flt(row.april)
+			+ flt(row.may) + flt(row.june) + flt(row.july) + flt(row.august)
+			+ flt(row.september) + flt(row.october) + flt(row.november) + flt(row.december);
+		frm.refresh_field("accounts");
+	}
+})
