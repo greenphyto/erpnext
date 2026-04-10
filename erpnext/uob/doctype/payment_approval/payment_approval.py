@@ -357,7 +357,7 @@ class PaymentApproval(Document):
 			if cstr(data.company) != cstr(self.company):
 				frappe.throw(_(f"Row {d.idx}, invoice company {data.company} must match Payment Approval company {self.company}."))
 
-			if d.currency != self.currency:
+			if d.currency != self.currency and self.payment_method != "TT":
 				frappe.throw(_(f"Row {d.idx}, cannot use invoice with currency except {self.currency}. Please change the invoice."))
 			
 			# find another exist approval with same invoice use
@@ -390,7 +390,7 @@ class PaymentApproval(Document):
 				frappe.throw(_(f"Row {d.idx}, Bank Number {bank_number_name} does not belong to supplier {data.supplier}."))
 
 			# bank currency must match PA currency and row currency
-			if cstr(bn.currency) != cstr(self.currency):
+			if cstr(bn.currency) != cstr(self.currency) and self.payment_method != "TT":
 				frappe.throw(_(f"Row {d.idx}, Bank Number currency {bn.currency} must match Payment Approval currency {self.currency}."))
 
 			# set bank fields on row to reflect current bank number
@@ -821,13 +821,16 @@ def get_available_purchase_invoices(doctype, txt, searchfield, start, page_len, 
 	limit_amt = frappe.db.get_single_value("UOB Integration Settings", "limit_amount")
 	if limit_amt:
 		limit_amount = f" AND pi.outstanding_amount <= {flt(limit_amt)} "
+	cond = ""
+	if filters.get("currency"):
+		cond += " AND pi.currency = %(currency)s "
 
 	return frappe.db.sql("""
-		SELECT pi.name, pi.supplier, pi.posting_date,pi.outstanding_amount
+		SELECT pi.name, pi.supplier, pi.posting_date, pi.currency, pi.outstanding_amount
 		FROM `tabPurchase Invoice` pi
 		WHERE pi.docstatus = 1
 		  AND pi.outstanding_amount > 0
-		  AND pi.currency = %(currency)s
+		  {cond}
 		  AND pi.name NOT IN (
 			  SELECT pil.invoice_no
 			  FROM `tabPayment Invoice List` pil
@@ -840,7 +843,7 @@ def get_available_purchase_invoices(doctype, txt, searchfield, start, page_len, 
 		  {limit_amount}
 		ORDER BY pi.posting_date DESC, pi.name DESC
 		LIMIT %(start)s, %(page_len)s
-	""".format(searchfield=searchfield, limit_amount=limit_amount), {
+	""".format(searchfield=searchfield, cond=cond, limit_amount=limit_amount), {
 		"txt": "%%%s%%" % txt,
 		"start": start,
 		"page_len": page_len,
