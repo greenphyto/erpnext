@@ -1,6 +1,6 @@
 // Copyright (c) 2025, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
-
+console.log("Payment Approval JS loaded");
 frappe.ui.form.on('Payment Approval', {
 	refresh: function(frm) {
 		// Add button similar to "Get Items From" in Sales Invoice
@@ -16,28 +16,19 @@ frappe.ui.form.on('Payment Approval', {
 			if (!doc.company){
 				frappe.throw(_("Company is not set."))
 			}
+			let filters = {
+				docstatus:1,
+				outstanding_amount:[">", 0],
+				company: doc.company,
+				cur_name:doc.name
+			}
+			if (doc.payment_method!="TT") {
+				filters.currency = doc.currency;
+			}
+			console.log(filters)
 			return{
-				filters:{
-					docstatus:1,
-					outstanding_amount:[">", 0],
-					currency: doc.currency,
-					company: doc.company,
-					cur_name:doc.name
-				},
+				filters:filters,
 				query:"erpnext.uob.doctype.payment_approval.payment_approval.get_available_purchase_invoices"
-			}
-		})
-
-		frm.set_query("invoice_no", "invoices", (doc, cdt, cdn)=>{
-			if (!doc.company){
-				frappe.throw(_("Company is not set."))
-			}
-			return{
-				filters:{
-					"company":doc.company,
-					"docstatus":1,
-					"outstanding_amount": [">", 0]
-				}
 			}
 		})
 
@@ -50,7 +41,7 @@ frappe.ui.form.on('Payment Approval', {
 				filters:{
 					party: d.party,
 					party_type:"Supplier",
-					currency:doc.currency
+					currency:d.currency
 				}
 			}
 		})
