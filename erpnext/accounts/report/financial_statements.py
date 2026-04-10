@@ -396,6 +396,7 @@ def prepare_data(accounts, balance_must_be, period_list, company_currency):
 		row = frappe._dict(
 			{
 				"account": _(d.name),
+				"account_origin": d.name,
 				"acc_code": d.account_number,
 				"parent_account": _(d.parent_account) if d.parent_account else "",
 				"indent": flt(d.indent),
@@ -741,7 +742,7 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None, co
 						"label": _(budget_label),
 						"fieldtype": "Currency",
 						"options": "currency",
-						"width": 150,
+						"width": 110,
 					}
 				)
 		if periodicity != "Yearly":
