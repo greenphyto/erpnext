@@ -168,7 +168,7 @@ def validate_expense_against_budget(args, expense_amount=0):
 			budget_records = frappe.db.sql(
 				"""
 				select
-					b.{budget_against_field} as budget_against, ba.budget_amount, b.monthly_distribution,
+					b.name as budget_name, b.{budget_against_field} as budget_against, ba.budget_amount, b.monthly_distribution,
 					ifnull(b.applicable_on_material_request, 0) as for_material_request,
 					ifnull(applicable_on_purchase_order, 0) as for_purchase_order,
 					ifnull(applicable_on_booking_actual_expenses,0) as for_actual_expenses,
@@ -200,7 +200,8 @@ def validate_budget_records(args, budget_records, expense_amount):
 
 			if monthly_action in ["Stop", "Warn"]:
 				budget_amount = get_accumulated_monthly_budget(
-					budget.monthly_distribution, args.posting_date, args.fiscal_year, budget.budget_amount
+					budget.monthly_distribution, args.posting_date, args.fiscal_year, budget.budget_amount,
+					budget.budget_name, args.account
 				)
 
 				args["month_end_date"] = get_last_day(args.posting_date)
@@ -381,7 +382,38 @@ def get_actual_expense(args):
 	return amount
 
 
-def get_accumulated_monthly_budget(monthly_distribution, posting_date, fiscal_year, annual_budget):
+def get_accumulated_monthly_budget(monthly_distribution, posting_date, fiscal_year, annual_budget, budget_name=None, account=None):
+	# First, try to get monthly amounts from Budget Account if budget_name and account are provided
+	monthly_amounts = {}
+	if budget_name and account:
+		budget_account = frappe.db.get_value(
+			"Budget Account",
+			{"parent": budget_name, "account": account},
+			["january", "february", "march", "april", "may", "june", 
+			 "july", "august", "september", "october", "november", "december"],
+			as_dict=1
+		)
+		
+		if budget_account:
+			months = ["January", "February", "March", "April", "May", "June",
+					  "July", "August", "September", "October", "November", "December"]
+			for month in months:
+				if budget_account.get(month.lower()):
+					monthly_amounts[month] = flt(budget_account.get(month.lower()))
+	
+	# If we have monthly amounts defined in Budget Account, use those
+	if monthly_amounts:
+		dt = frappe.db.get_value("Fiscal Year", fiscal_year, "year_start_date")
+		accumulated_budget = 0.0
+		
+		while dt <= getdate(posting_date):
+			month_name = getdate(dt).strftime("%B")
+			accumulated_budget += monthly_amounts.get(month_name, 0)
+			dt = add_months(dt, 1)
+			
+		return accumulated_budget
+	
+	# Otherwise, fall back to the original logic with monthly distribution
 	distribution = {}
 	if monthly_distribution:
 		for d in frappe.db.sql(
