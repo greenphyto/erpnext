@@ -719,6 +719,7 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None, co
 					"fieldtype": "Currency",
 					"options": "currency",
 					"width": 150,
+					"align": "right",
 				}
 			)
 			
@@ -736,12 +737,13 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None, co
 						"fieldtype": "Currency",
 						"options": "currency",
 						"width": 110,
+						"align": "right",
 					}
 				)
 		if periodicity != "Yearly":
 			if not accumulated_values:
 				columns.append(
-					{"fieldname": "total", "label": _("Total"), "fieldtype": "Currency", "width": 150}
+					{"fieldname": "total", "label": _("Total"), "fieldtype": "Currency", "width": 150, "align": "right"}
 				)
 
 	return columns
@@ -772,7 +774,8 @@ def get_cost_center_columns(company, cost_center):
 			"label": _(cc.cost_center_name),
 			"fieldtype": "Currency",
 			"options": "",
-			"width": 120
+			"width": 120,
+			"align": "right",
 		})
 
 	return columns
