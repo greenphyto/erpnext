@@ -701,6 +701,8 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None, co
 	if cost_center_all_show:
 		columns += get_cost_center_columns(company, filters.get("cost_center"))
 	
+	show_budget = filters.get("show_budget_amount")
+	
 	if not cost_center_all_show or len(period_list)==1:
 
 
@@ -718,6 +720,23 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None, co
 					"width": 150,
 				}
 			)
+			
+			# Add budget column right after each period column
+			if show_budget and periodicity == "Monthly":
+				budget_key = period.key + "_budget"
+				# Extract month name from label (e.g., "Jan 2024" -> "Jan")
+				month_label = label.split()[0] if label else ""
+				budget_label = month_label + " Budget" if month_label else "Budget"
+				
+				columns.append(
+					{
+						"fieldname": budget_key,
+						"label": _(budget_label),
+						"fieldtype": "Currency",
+						"options": "currency",
+						"width": 150,
+					}
+				)
 		if periodicity != "Yearly":
 			if not accumulated_values:
 				columns.append(
