@@ -25,6 +25,14 @@ jobs:
         script_stop: true
         script: |
           cd greenphyto/erpnextbuild/candidate01/frappe_docker/
+          git checkout images/worker/Dockerfile
+          
+          # Inject the force-reinstall right before the install-app copy
+          sed -i '/COPY install-app.sh/i RUN env/bin/pip install --force-reinstall pycryptodome==3.10.1' images/worker/Dockerfile
+          
+          export FRAPPE_VERSION=gp.v14.12.0
+          docker buildx bake --load -f docker-bake.hcl
+          
           docker builder prune -a -f
           docker image prune -a -f
           export FRAPPE_VERSION=gp.v14.12.0
