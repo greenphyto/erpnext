@@ -25,7 +25,6 @@ jobs:
         script_stop: true
         script: |
           cd greenphyto/erpnextbuild/candidate01/frappe_docker/
-          sed -i '/python -m venv env/a \    && env/bin/pip install pycryptodome~=3.10.1 \\' images/worker/Dockerfile
           docker builder prune -a -f
           docker image prune -a -f
           export FRAPPE_VERSION=gp.v14.12.0
