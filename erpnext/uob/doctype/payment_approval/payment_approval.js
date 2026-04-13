@@ -25,7 +25,6 @@ frappe.ui.form.on('Payment Approval', {
 			if (doc.payment_method!="TT") {
 				filters.currency = doc.currency;
 			}
-			console.log(filters)
 			return{
 				filters:filters,
 				query:"erpnext.uob.doctype.payment_approval.payment_approval.get_available_purchase_invoices"
@@ -284,6 +283,8 @@ $.extend(cur_frm.cscript, {
 				callback: function(r) {
 					if (r.message) {
 						frappe.model.set_value(cdt, cdn, "country", r.message);
+					}else{
+						frappe.model.set_value(cdt, cdn, "country", frappe.defaults.get_default("country"));
 					}
 				}
 			});

@@ -878,4 +878,7 @@ def get_invoice_country(invoice_no):
 		JOIN `tabAddress` a ON pi.supplier_address = a.name
 		WHERE pi.name = %s
 	""", invoice_no, as_dict=1)
+	if not country:
+		frappe.msgprint(_(f"Missing address for invoice {invoice_no}"))
+
 	return country[0].country if country else ""
