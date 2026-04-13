@@ -517,10 +517,8 @@ scheduler_events = {
         "0 23 * * *": [
 			"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_last_day",
 		],
-        "0 6 * * *":[
-            "erpnext.controllers.erp.reminder_submit_invoice",
-		],
         "0 6 * * *": [
+            "erpnext.controllers.erp.reminder_submit_invoice",
 			"erpnext.controllers.erp.reminder_submit_purchase_invoice"
 		],
         "0 */4 * * *":[
