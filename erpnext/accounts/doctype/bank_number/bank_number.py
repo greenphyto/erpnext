@@ -7,6 +7,24 @@ from frappe import _
 from frappe.utils import cstr
 
 class BankNumber(Document):
+	def before_validate(self):
+		if self.proxy_type != "General":
+			self.bank_number = self.proxy_number
+
+	def autoname(self):
+		self.before_validate()
+		swift = frappe.db.get_value("Bank", self.bank, "swift_number")
+		if swift:
+			bank = swift[:4]
+		else:
+			bank = self.bank
+		if self.proxy_type != "General":
+			# MSSIDN & etc Bank Number
+			self.name = f"{bank}-{self.proxy_type}{self.bank_number}"
+		else:
+			# General Bank Number
+			self.name = f"{bank}-G{self.bank_number}"
+
 	def validate(self):
 		self.validate_data()
 		self.validate_bank_number()
