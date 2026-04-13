@@ -190,7 +190,7 @@
    "fieldname": "proxy_type",
    "fieldtype": "Select",
    "label": "Proxy Type",
-   "options": "None\nGeneral\nUEN\nMSISDN\nNRIC\nVPA",
+   "options": "General\nUEN\nMSISDN\nNRIC\nVPA",
    "read_only": 1
   },
   {
@@ -245,7 +245,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-04-10 12:20:58.580469",
+ "modified": "2026-04-13 12:38:39.613324",
  "modified_by": "Administrator",
  "module": "UOB",
  "name": "Payment Invoice List",

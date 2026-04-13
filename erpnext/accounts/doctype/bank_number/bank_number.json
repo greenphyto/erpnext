@@ -1,7 +1,6 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{bank}-{bank_number}",
  "creation": "2025-05-20 11:56:15.378963",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -22,12 +21,14 @@
  ],
  "fields": [
   {
+   "allow_in_quick_entry": 1,
+   "depends_on": "eval:doc.proxy_type == \"None\"",
    "fieldname": "bank_number",
    "fieldtype": "Data",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Bank Account No",
-   "reqd": 1
+   "mandatory_depends_on": "eval:doc.proxy_type == \"None\""
   },
   {
    "fieldname": "bank",
@@ -91,11 +92,11 @@
   },
   {
    "default": "UEN",
-   "description": "\"None\" - Only have general Bank Account<br>\n\"UEN\" - Unique Entity Number<br>\n\"MSISDN\" - Mobile Number<br>\n\"NRIC\" - National Reg. Id Code (including FIN)<br>\n\"VPA\" - Virtual Payment Address ",
+   "description": "\"General\" - General Bank Account<br>\n\"UEN\" - Unique Entity Number<br>\n\"MSISDN\" - Mobile Number<br>\n\"NRIC\" - National Reg. Id Code (including FIN)<br>\n\"VPA\" - Virtual Payment Address ",
    "fieldname": "proxy_type",
    "fieldtype": "Select",
    "label": "Proxy Type",
-   "options": "None\nUEN\nMSISDN\nNRIC\nVPA",
+   "options": "General\nUEN\nMSISDN\nNRIC\nVPA",
    "reqd": 1
   },
   {
@@ -117,11 +118,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-27 18:26:36.917877",
+ "modified": "2026-04-13 12:38:03.901993",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Bank Number",
- "naming_rule": "Expression (old style)",
+ "naming_rule": "By script",
  "owner": "Administrator",
  "permissions": [
   {
