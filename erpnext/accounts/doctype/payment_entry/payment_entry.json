@@ -96,7 +96,8 @@
   "auto_repeat",
   "amended_from",
   "title",
-  "payment_approval"
+  "payment_approval",
+  "from_cost_center"
  ],
  "fields": [
   {
@@ -240,6 +241,7 @@
   },
   {
    "depends_on": "paid_from",
+   "fetch_from": "paid_from.account_currency",
    "fieldname": "paid_from_account_currency",
    "fieldtype": "Link",
    "label": "Account Currency",
@@ -273,6 +275,7 @@
   },
   {
    "depends_on": "paid_to",
+   "fetch_from": "paid_to.account_currency",
    "fieldname": "paid_to_account_currency",
    "fieldtype": "Link",
    "label": "Account Currency",
@@ -760,7 +763,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-04 16:33:55.201530",
+ "modified": "2026-04-13 11:24:43.737855",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry",
