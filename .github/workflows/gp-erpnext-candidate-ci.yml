@@ -3,7 +3,7 @@ on:
     branches:
       - gpcandidate.v14.3.1
 
-name: Deploy to ERPNext Candidate Environment
+name: Deploy to ERPNext Candidate Environments
 
 jobs:
   deploy:
