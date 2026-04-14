@@ -66,6 +66,16 @@ class calculate_taxes_and_totals(object):
 		self._cleanup()
 		self.calculate_total_net_weight()
 
+	def align_price_list_rate_with_rate(self):
+		for d in self.items:
+			disable_discount = frappe.db.get_value("Item", d.item_code, "disable_discount_amount")
+			if disable_discount:
+				d.price_list_rate = 0
+				d.discount_percentage = 0
+				d.discount_amount = 0
+				d.total_discount_amount = 0
+
+
 	def calculate_tax_withholding_net_total(self):
 		if hasattr(self.doc, "tax_withholding_net_total"):
 			sum_net_amount = 0
