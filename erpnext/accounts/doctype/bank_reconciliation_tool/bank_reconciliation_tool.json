@@ -88,7 +88,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2021-04-21 11:13:49.831769",
+ "modified": "2026-04-14 11:30:23.494265",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Bank Reconciliation Tool",
@@ -103,9 +103,20 @@
    "role": "System Manager",
    "share": 1,
    "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
   }
  ],
  "quick_entry": 1,
  "sort_field": "modified",
- "sort_order": "DESC"
+ "sort_order": "DESC",
+ "states": []
 }
