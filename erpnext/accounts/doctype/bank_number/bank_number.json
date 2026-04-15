@@ -22,13 +22,13 @@
  "fields": [
   {
    "allow_in_quick_entry": 1,
-   "depends_on": "eval:doc.proxy_type == \"None\"",
+   "depends_on": "eval:doc.proxy_type == \"General\"",
    "fieldname": "bank_number",
    "fieldtype": "Data",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Bank Account No",
-   "mandatory_depends_on": "eval:doc.proxy_type == \"None\""
+   "mandatory_depends_on": "eval:doc.proxy_type == \"General\""
   },
   {
    "fieldname": "bank",
@@ -108,17 +108,17 @@
   },
   {
    "allow_in_quick_entry": 1,
-   "depends_on": "eval:doc.proxy_type != \"None\"",
+   "depends_on": "eval:doc.proxy_type != \"General\"",
    "description": "UEN/MSISDN/NRICVPA Number",
    "fieldname": "proxy_number",
    "fieldtype": "Data",
    "label": "Proxy Number",
-   "mandatory_depends_on": "eval:doc.proxy_type != \"None\""
+   "mandatory_depends_on": "eval:doc.proxy_type != \"General\""
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-13 12:38:03.901993",
+ "modified": "2026-04-15 12:21:24.196628",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Bank Number",
