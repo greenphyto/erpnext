@@ -427,3 +427,12 @@ def get_workspace_calendar_events(doctype, start, end, field_map, filters=None, 
 			and status != "Cancelled"
 		ORDER BY `tabToDo`.`modified` DESC
 	""", (start, end), as_dict=1)
+
+@frappe.whitelist()
+def apply_workflow_on_webform(docname,doctype, action=""):
+	doc = frappe.get_doc(doctype, docname)
+
+	if not validate_workflow(doc, action):
+		frappe.throw(_("You don't have permission to do this action"))
+	
+	return apply_workflow(doc, action)
