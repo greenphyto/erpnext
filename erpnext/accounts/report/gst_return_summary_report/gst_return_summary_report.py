@@ -228,18 +228,25 @@ class VATAuditReport(object):
 		#, is_zero_rated
 		items = frappe.db.sql(
 			"""
-			SELECT
-				rate, parent
-			FROM
-				`tab{doc_type}`
-			WHERE
-				parenttype = "{doc_type} Template"
+				SELECT
+					tc.rate, 
+					tc.parent,
+					tct.company
+				FROM
+					`tab{doc_type}` tc
+				INNER JOIN
+					`tab{doc_type} Template` tct ON tct.name = tc.parent
+				WHERE
+					tc.parenttype = "{doc_type} Template"
+					AND tct.company = %s
 			""".format(
-				  doc_type=tax_doctype
+				doc_type=tax_doctype
 			),
-			as_dict=1,debug=0
+			(self.filters.company),
+			as_dict=1,
+			debug=1
 		)
-	 
+	
 		return items	
 
 	def get_items_based_on_tax_rate(self, doctype):
@@ -661,80 +668,79 @@ class VATAuditReport(object):
 			if inv_data.get("voucher_type") == 'Journal Entry with GST':
 				inv_data['voucher_type'] = 'Journal Entry'
 
-			if True:
-				data = self.items_based_on_tax_rate.get(inv) or {0: ['']}
-				for rate, items in data.items():
-					row = {"tax_amount": 0.0, "gross_amount": 0.0, "net_amount": 0.0}
-					docprefix = _("purchases ") if doctype == "Purchase Invoice" else _("sales ")
-					taxdata = default_for_zero_tax if inv_data.get("taxes_and_charges") is None else inv_data.get("taxes_and_charges")
-					taxType = docprefix + taxdata
-					consolidated_data_map.setdefault(taxType, {"data": []})
-					key = inv
-					if key not in self.already_add:
-						self.already_add.append(key)
-					else:
+			data = self.items_based_on_tax_rate.get(inv) or {0: ['']}
+			for rate, items in data.items():
+				row = {"tax_amount": 0.0, "gross_amount": 0.0, "net_amount": 0.0}
+				docprefix = _("purchases ") if doctype == "Purchase Invoice" else _("sales ")
+				taxdata = default_for_zero_tax if inv_data.get("taxes_and_charges") is None else inv_data.get("taxes_and_charges")
+				taxType = docprefix + taxdata
+				consolidated_data_map.setdefault(taxType, {"data": []})
+				key = inv
+				if key not in self.already_add:
+					self.already_add.append(key)
+				else:
+					continue
+
+				for item in items:
+					detail = self.item_tax_rate.get(inv) or {}
+					item_details = detail.get(GLOBAL_ITEM)
+
+					row['inv_date'] = inv_data.get("posting_date")
+					row["account"] = inv_data.get("account")
+					row["Invoice_No"]= inv_data.get("Invoice_No")
+					row["posting_date"] = inv #formatdate(inv_data.get("posting_date"), "dd-mm-yyyy")
+
+					row["Date"] = formatdate(inv_data.get("posting_date"), "dd-mm-yyyy")
+					#row["voucher_type"] = ""
+					row["voucher_no"] = inv
+					row["voucher_type"] = inv_data.get("voucher_type")
+					row["party_type"] = "Customer" if doctype == "Sales Invoice" else "Supplier"
+					row["party"] = inv_data.get("party")
+					row["remarks"] = inv_data.get("remarks")
+
+					if inv_data.docstatus == 2:
+						row['posting_date'] = f"{inv} - Cancelled"
 						continue
 
-					for item in items:
-						detail = self.item_tax_rate.get(inv) or {}
-						item_details = detail.get(GLOBAL_ITEM)
+					if inv_data.docstatus == 3:
+						row['posting_date'] = f"{inv} - Deleted"
+						continue
 
-						row['inv_date'] = inv_data.get("posting_date")
-						row["account"] = inv_data.get("account")
-						row["Invoice_No"]= inv_data.get("Invoice_No")
-						row["posting_date"] = inv #formatdate(inv_data.get("posting_date"), "dd-mm-yyyy")
+					if inv_data.get("debit_note_transaction"):
+						row['posting_date'] = f"{inv} - Debit Note"
+						# continue
+					
+					if inv_data.get("is_journal_entry"):
+						row['posting_date'] = f"{inv} - Journal Entry"
 
-						row["Date"] = formatdate(inv_data.get("posting_date"), "dd-mm-yyyy")
-						#row["voucher_type"] = ""
-						row["voucher_no"] = inv
-						row["voucher_type"] = inv_data.get("voucher_type")
-						row["party_type"] = "Customer" if doctype == "Sales Invoice" else "Supplier"
-						row["party"] = inv_data.get("party")
-						row["remarks"] = inv_data.get("remarks")
+					if inv_data.get("is_tax_refund"):
+						row['posting_date'] += " (refund)"
 
-						if inv_data.docstatus == 2:
-							row['posting_date'] = f"{inv} - Cancelled"
-							continue
+					if not item_details:
+						continue
+					
+					rowgross_amount = 0.0 if item_details.get("gross_amount") =="" else item_details.get("gross_amount")
 
-						if inv_data.docstatus == 3:
-							row['posting_date'] = f"{inv} - Deleted"
-							continue
-
-						if inv_data.get("debit_note_transaction"):
-							row['posting_date'] = f"{inv} - Debit Note"
-							# continue
+					if len(items) == len(detail.keys()):
+						row["gross_amount"] += item_details.get("gross_amount")
+					else:
+						row["gross_amount"] = item_details.get("gross_amount")
 						
-						if inv_data.get("is_journal_entry"):
-							row['posting_date'] = f"{inv} - Journal Entry"
+					key = (inv_data.get("voucher_type"), inv)
+					gl_tax_amount = self.tax_amount_map.get(key)
 
-						if inv_data.get("is_tax_refund"):
-							row['posting_date'] += " (refund)"
+					if gl_tax_amount is not None:
+						row["tax_amount"] = flt(gl_tax_amount)
+					else:
+						row["tax_amount"] += flt(item_details.get("tax_amount"))
+					row["tax_charge"] = inv_data.get("taxes_and_charges")
 
-						if not item_details:
-							continue
-					 
-						rowgross_amount = 0.0 if item_details.get("gross_amount") =="" else item_details.get("gross_amount")
-
-						if len(items) == len(detail.keys()):
-							row["gross_amount"] += item_details.get("gross_amount")
-						else:
-							row["gross_amount"] = item_details.get("gross_amount")
-							
-						key = (inv_data.get("voucher_type"), inv)
-						gl_tax_amount = self.tax_amount_map.get(key)
-
-						if gl_tax_amount is not None:
-							row["tax_amount"] = flt(gl_tax_amount)
-						else:
-							row["tax_amount"] += flt(item_details.get("tax_amount"))
-						row["tax_charge"] = inv_data.get("taxes_and_charges")
-
-					row["net_amount"] = fmt_money( flt2(flt2(row["gross_amount"]) - flt2(row["tax_amount"])) )
-					row["tax_amount"] = fmt_money( flt2(row["tax_amount"]) )
-					row["gross_amount"] = fmt_money( flt2(row["gross_amount"]) )
-					if row["voucher_no"] == "CN161/2025":
-						print(731)
-					consolidated_data_map[taxType]["data"].append(row)
+				row["net_amount"] = fmt_money( flt2(flt2(row["gross_amount"]) - flt2(row["tax_amount"])) )
+				row["tax_amount"] = fmt_money( flt2(row["tax_amount"]) )
+				row["gross_amount"] = fmt_money( flt2(row["gross_amount"]) )
+				# if row["voucher_no"] == "CN161/2025":
+				# 	print(731)
+				consolidated_data_map[taxType]["data"].append(row)
 
 		get_tax_type = self.get_tax_types(doctype)
 		
