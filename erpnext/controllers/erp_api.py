@@ -32,8 +32,10 @@ from datetime import datetime, timedelta
 from erpnext.stock.utils import get_default_warehouse
 from erpnext.stock.stock_ledger import get_valuation_rate
 from erpnext.setup.doctype.company.company import switch_to_company_admin
+from erpnext.stock.doctype.batch.batch import get_batch_qty, make_batch
 
 PRECISION_FACTOR = 4
+STOCK_TOLERANCE = 0.001
 
 def get_data(data):
 	if isinstance(data, string_types):
@@ -388,12 +390,21 @@ def make_stock_entry_with_materials(wo_doc, job_card_name, materials, wip_wareho
 		# Round qty if needed
 		if uom == 'Unit':
 			qty = round(qty)
-		qty = flt(qty, PRECISION_FACTOR, floor=True)
 
 		# Auto get batch for override items
 		batch_no = d.rawMaterialBatchRefNo
 		if is_override:
 			batch_no = get_batch_no(item_code, source_warehouse, qty)
+
+		qty = flt(qty, PRECISION_FACTOR, floor=True)
+		# validate qty based on tolerance
+		actual_qty = get_batch_qty(batch_no, source_warehouse)
+		if abs(qty - actual_qty) < STOCK_TOLERANCE:
+			qty = actual_qty
+		else:
+			# throw qty not enough
+			if qty > actual_qty:
+				frappe.throw(_(f"Not enough stock for item {item_code} in warehouse {source_warehouse}. Required: {qty}, Available: {actual_qty}"))
 
 		# Add item row to stock entry
 		row = se.append("items")
@@ -655,7 +666,6 @@ def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 	job_card.submit()
 
 	update_log("Work Order", data_name, "Job Card", job_card.name, log_name)
-
 	return {
 		"result": True,
 		"percentage": percentage
