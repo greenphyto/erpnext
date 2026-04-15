@@ -396,6 +396,7 @@ def prepare_data(accounts, balance_must_be, period_list, company_currency):
 		row = frappe._dict(
 			{
 				"account": _(d.name),
+				"account_origin": d.name,
 				"acc_code": d.account_number,
 				"parent_account": _(d.parent_account) if d.parent_account else "",
 				"indent": flt(d.indent),
@@ -701,6 +702,8 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None, co
 	if cost_center_all_show:
 		columns += get_cost_center_columns(company, filters.get("cost_center"))
 	
+	show_budget = filters.get("show_budget_amount")
+	
 	if not cost_center_all_show or len(period_list)==1:
 
 
@@ -716,12 +719,31 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None, co
 					"fieldtype": "Currency",
 					"options": "currency",
 					"width": 150,
+					"align": "right",
 				}
 			)
+			
+			# Add budget column right after each period column
+			if show_budget and periodicity == "Monthly":
+				budget_key = period.key + "_budget"
+				# Extract month name from label (e.g., "Jan 2024" -> "Jan")
+				month_label = label.split()[0] if label else ""
+				budget_label = month_label + " Budget" if month_label else "Budget"
+				
+				columns.append(
+					{
+						"fieldname": budget_key,
+						"label": _(budget_label),
+						"fieldtype": "Currency",
+						"options": "currency",
+						"width": 110,
+						"align": "right",
+					}
+				)
 		if periodicity != "Yearly":
 			if not accumulated_values:
 				columns.append(
-					{"fieldname": "total", "label": _("Total"), "fieldtype": "Currency", "width": 150}
+					{"fieldname": "total", "label": _("Total"), "fieldtype": "Currency", "width": 150, "align": "right"}
 				)
 
 	return columns
@@ -752,7 +774,8 @@ def get_cost_center_columns(company, cost_center):
 			"label": _(cc.cost_center_name),
 			"fieldtype": "Currency",
 			"options": "",
-			"width": 120
+			"width": 120,
+			"align": "right",
 		})
 
 	return columns

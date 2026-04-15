@@ -43,6 +43,14 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 			"fieldtype": "Check",
 			"default": 0,
 			"description": __("When enabled, columns are generated per Cost Center for the selected period(s).")
+		},
+		{
+			"fieldname": "show_budget_amount",
+			"label": __("Show Budget Amount"),
+			"fieldtype": "Check",
+			"default": 0,
+			"depends_on": "eval:doc.periodicity == 'Monthly'",
+			"description": __("When enabled, budget amounts are displayed in the report.")
 		}
 	);
 

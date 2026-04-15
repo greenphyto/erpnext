@@ -190,8 +190,7 @@
    "fieldname": "accounts",
    "fieldtype": "Table",
    "label": "Budget Accounts",
-   "options": "Budget Account",
-   "reqd": 1
+   "options": "Budget Account"
   },
   {
    "fieldname": "naming_series",
@@ -207,7 +206,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-10-10 22:14:36.361509",
+ "modified": "2026-04-08 12:02:14.773972",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Budget",

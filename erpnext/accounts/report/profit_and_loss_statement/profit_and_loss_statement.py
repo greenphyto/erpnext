@@ -70,6 +70,40 @@ def execute(filters=None):
 	if net_profit_loss:
 		data.append(net_profit_loss)
 
+	# Fetch budget data if show_budget_amount is enabled
+	budget_map = {}
+	if filters.show_budget_amount and filters.periodicity == "Monthly":
+		budget_map = get_budget_data(filters)
+		
+		# Add budget amounts to data rows
+		for row in data:
+			# Skip profit/loss row
+			if row.get("profit_data"):
+				continue
+			
+			# Skip group accounts
+			if row.get("is_group"):
+				continue
+				
+			account = row.get("account_origin") or row.get("account")
+			if not account:
+				continue
+			
+			# Add budget for each period
+			for period in period_list:
+				# Extract month number from period (1-12)
+				from frappe.utils import getdate
+				period_date = getdate(period.from_date) if period.from_date else None
+				month_num = period_date.month if period_date else None
+				
+				if month_num:
+					budget_key = period.key + "_budget"
+					# Get budget value from map, default to 0 if not found
+					budget_value = 0
+					if account in budget_map:
+						budget_value = budget_map.get(account, {}).get(month_num, 0)
+					row[budget_key] = budget_value
+
 	new_data = []
 	if filters.show_number_group:
 		new_data = data
@@ -102,7 +136,7 @@ def execute(filters=None):
 	# if frappe.flags.in_export:
 	# 	convert_wrap_report_data(columns, data, precision=2)
 
-	return columns, data, None, chart, report_summary
+	return columns, new_data, None, chart, report_summary
 
 
 def get_report_summary(
@@ -177,11 +211,14 @@ def get_net_profit_loss(income, expense, period_list, company, currency=None, co
 
 
 def get_chart_data(filters, columns, income, expense, net_profit_loss):
-	labels = [d.get("label") for d in columns[2:]]
+	# Filter out budget columns from chart data
+	period_columns = [d for d in columns[2:] if not d.get("fieldname", "").endswith("_budget")]
+	
+	labels = [d.get("label") for d in period_columns]
 
 	income_data, expense_data, net_profit = [], [], []
 
-	for p in columns[2:]:
+	for p in period_columns:
 		if income:
 			income_data.append(income[-2].get(p.get("fieldname")))
 		if expense:
@@ -402,3 +439,93 @@ def get_export_with_cost_centers_url(filters=None):
 		f"?filters={payload}"
 	)
 	return {"url": url}
+
+
+def get_budget_data(filters):
+	"""
+	Fetch budget data for accounts based on fiscal year, company, and cost center.
+	Returns a dict mapping account -> month_number -> budget_amount
+	"""
+	if not filters.get("show_budget_amount"):
+		return {}
+	
+	budget_against = "cost_center"
+	cost_centers = filters.get("cost_center") or []
+	
+	# Build condition for cost centers
+	cost_center_cond = ""
+	if cost_centers:
+		cost_center_list = ", ".join([f"'{cc}'" for cc in cost_centers])
+		cost_center_cond = f"and b.cost_center in ({cost_center_list})"
+	
+	# Fetch budget details with monthly columns
+	budget_details = frappe.db.sql(
+		f"""
+			select
+				ba.account,
+				ba.january,
+				ba.february,
+				ba.march,
+				ba.april,
+				ba.may,
+				ba.june,
+				ba.july,
+				ba.august,
+				ba.september,
+				ba.october,
+				ba.november,
+				ba.december,
+				b.fiscal_year,
+				b.cost_center
+			from
+				`tabBudget` b,
+				`tabBudget Account` ba
+			where
+				b.name = ba.parent
+				and b.docstatus = 1
+				and b.company = %(company)s
+				and b.fiscal_year = %(fiscal_year)s
+				{cost_center_cond}
+			order by
+				ba.account
+		""",
+		{
+			"company": filters.get("company"),
+			"fiscal_year": filters.get("from_fiscal_year"),
+		},
+		as_dict=True,
+	)
+	
+	# Month mapping: month_number -> field_name
+	month_fields = {
+		1: "january",
+		2: "february",
+		3: "march",
+		4: "april",
+		5: "may",
+		6: "june",
+		7: "july",
+		8: "august",
+		9: "september",
+		10: "october",
+		11: "november",
+		12: "december"
+	}
+	
+	# Build account -> month_number -> budget mapping
+	budget_map = {}
+	for bd in budget_details:
+		account = bd.account
+		if account not in budget_map:
+			budget_map[account] = {}
+		
+		# Map each month's budget value
+		for month_num, field_name in month_fields.items():
+			monthly_budget = flt(bd.get(field_name, 0))
+			
+			# Add to existing budget for this account-month (in case multiple budgets exist)
+			if month_num not in budget_map[account]:
+				budget_map[account][month_num] = 0
+			budget_map[account][month_num] += monthly_budget
+	
+	return budget_map
