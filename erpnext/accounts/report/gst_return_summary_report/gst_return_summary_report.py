@@ -159,22 +159,26 @@ class VATAuditReport(object):
 		temp = frappe.db.sql("""
 			SELECT DISTINCT account_head
 			FROM (
-				SELECT account_head
-				FROM `tabPurchase Taxes and Charges`
-				WHERE parenttype = 'Purchase Taxes and Charges Template'
-				AND account_head IS NOT NULL
-				AND account_head != ''
-				
+				SELECT ptc.account_head
+				FROM `tabPurchase Taxes and Charges` ptc
+				INNER JOIN `tabPurchase Taxes and Charges Template` ptct ON ptct.name = ptc.parent
+				WHERE ptc.parenttype = 'Purchase Taxes and Charges Template'
+				AND ptct.company = %(company)s
+				AND ptc.account_head IS NOT NULL
+				AND ptc.account_head != ''
+
 				UNION
 
-				SELECT account_head
-				FROM `tabSales Taxes and Charges`
-				WHERE parenttype = 'Sales Taxes and Charges Template'
-				AND account_head IS NOT NULL
-				AND account_head != ''
+				SELECT stc.account_head
+				FROM `tabSales Taxes and Charges` stc
+				INNER JOIN `tabSales Taxes and Charges Template` stct ON stct.name = stc.parent
+				WHERE stc.parenttype = 'Sales Taxes and Charges Template'
+				AND stct.company = %(company)s
+				AND stc.account_head IS NOT NULL
+				AND stc.account_head != ''
 			) AS combined
 			ORDER BY account_head
-					   """, as_list=1)
+		""", {"company": self.filters.company}, as_list=1)
 		accounts = [a[0] for a in temp]
 
 		from_date = getdate(self.filters.from_date)
@@ -244,7 +248,7 @@ class VATAuditReport(object):
 			),
 			(self.filters.company),
 			as_dict=1,
-			debug=1
+			debug=0
 		)
 	
 		return items	
@@ -273,12 +277,14 @@ class VATAuditReport(object):
 				`tab{}` t on t.parent = s.name
 			WHERE
 				s.docstatus in (1)
+				and s.company = %(company)s
 				and s.name in %(invoices)s
 			ORDER BY
 				t.account_head
 			""".format(doctype, self.tax_doctype),
 			{
 				"doctype":doctype,
+				"company": self.filters.company,
 				"tax_doctype":self.tax_doctype,
 				"invoices": [x for x in self.invoices.keys()]
 			}
@@ -515,6 +521,7 @@ class VATAuditReport(object):
 		for opts in (
 			("from_date", " and posting_date>=%(from_date)s"),
 			("to_date", " and posting_date<=%(to_date)s"),
+			("company", " and company=%(company)s"),
 		):
 			if self.filters.get(opts[0]):
 				conditions += opts[1]
