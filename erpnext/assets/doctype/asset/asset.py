@@ -1498,6 +1498,72 @@ def add_reference_in_jv_on_split(entry_name, new_asset_name, old_asset_name, dep
 
 
 @frappe.whitelist()
+def create_child_assets(parent_asset, number_of_assets):
+	"""
+	Create multiple child assets by copying the parent asset.
+	Each child asset will have a name with series like: parent-01, parent-02, etc.
+	"""
+	number_of_assets = cint(number_of_assets)
+	
+	if number_of_assets < 1:
+		frappe.throw(_("Number of assets must be at least 1"))
+	
+	if number_of_assets > 100:
+		frappe.throw(_("Cannot create more than 100 assets at once"))
+	
+	# Get the parent asset
+	parent = frappe.get_doc("Asset", parent_asset)
+	
+	if parent.docstatus != 1:
+		frappe.throw(_("Parent asset must be submitted before creating child assets"))
+	
+	created_assets = []
+	
+	for i in range(1, number_of_assets + 1):
+		# Copy the parent asset
+		new_asset = frappe.copy_doc(parent)
+		
+		# Generate the child asset name with series
+		series_number = str(i).zfill(2)  # 01, 02, 03, etc.
+		
+		# Update asset name to include series
+		if parent.asset_name:
+			new_asset.asset_name = f"{parent.asset_name}-{series_number}"
+		
+		# Set parent reference
+		new_asset.parent_asset = parent.name
+		
+		# Reset fields that should not be copied
+		new_asset.docstatus = 0  # Draft status
+		new_asset.status = None
+		new_asset.qrcode_image = None
+		new_asset.booked_fixed_asset = 0
+		new_asset.journal_entry_for_scrap = None
+		new_asset.disposal_date = None
+		new_asset.split_from = None
+		
+		# Clear depreciation entries
+		if new_asset.get("schedules"):
+			for schedule in new_asset.get("schedules"):
+				schedule.journal_entry = None
+		
+		# Clear asset quantity if it's more than 1
+		if new_asset.asset_quantity and new_asset.asset_quantity > 1:
+			new_asset.asset_quantity = 1
+		
+		try:
+			# Insert the new asset
+			new_asset.insert()
+			created_assets.append(new_asset.name)
+			frappe.db.commit()
+		except Exception as e:
+			frappe.log_error(message=str(e), title=f"Error creating child asset {i}")
+			frappe.throw(_("Error creating child asset {0}: {1}").format(i, str(e)))
+	
+	return created_assets
+
+
+@frappe.whitelist()
 def get_children(doctype, parent=None, asset=None, is_root=False):
 	if parent is None or parent == "All Assets":
 		parent = ""
