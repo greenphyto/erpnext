@@ -566,6 +566,18 @@ def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 	data_name = f"Operation {operationNo} Work Order {ERPWorkOrderID}"
 	log = frappe.get_doc("FOMS Data Mapping", log_name)
 
+	# skip before operation 3 has done
+	operation_2_status = frappe.db.get_value("Stock Entry", {
+		"work_order":work_order_name,
+		"operation": OPERATION_MAP_NAME.get(2),
+		"docstatus":1
+	})
+	if not operation_2_status:
+		return {
+			"result":False,
+			"error":"Operation 2 should be complete first."
+		}
+
 	switch_to_company_admin(company)
 
 	# Check if a job card has been created
