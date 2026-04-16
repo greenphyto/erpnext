@@ -122,6 +122,10 @@ frappe.ui.form.on('Asset', {
 				frm.trigger("split_asset");
 			}, __("Manage"));
 
+			frm.add_custom_button(__("Create Child Assets"), function() {
+				frm.trigger("create_child_assets");
+			}, __("Manage"));
+
 			if (frm.doc.status != 'Fully Depreciated') {
 				frm.add_custom_button(__("Adjust Asset Value"), function() {
 					frm.trigger("create_asset_value_adjustment");
@@ -404,6 +408,70 @@ frappe.ui.form.on('Asset', {
 			});
 
 			dialog.hide();
+		});
+
+		dialog.show();
+	},
+
+	create_child_assets: function(frm) {
+		const title = __("Create Child Assets");
+
+		const fields = [
+			{
+				fieldname: 'number_of_assets',
+				fieldtype: 'Int',
+				label: __("Number of Assets"),
+				description: __("Number of child assets to create"),
+				reqd: 1,
+				default: 1
+			}
+		];
+
+		let dialog = new frappe.ui.Dialog({
+			title: title,
+			fields: fields
+		});
+
+		dialog.set_primary_action(__("Create"), function() {
+			const dialog_data = dialog.get_values();
+			const number_of_assets = cint(dialog_data.number_of_assets);
+			
+			if (number_of_assets < 1) {
+				frappe.msgprint(__("Please enter a valid number of assets"));
+				return;
+			}
+
+			dialog.hide();
+
+			frappe.call({
+				method: "erpnext.assets.doctype.asset.asset.create_child_assets",
+				args: {
+					"parent_asset": frm.doc.name,
+					"number_of_assets": number_of_assets
+				},
+				freeze: true,
+				freeze_message: __("Creating Child Assets..."),
+				callback: function(r) {
+					if (r.message) {
+						let created_assets = r.message;
+						let message = __("Successfully created {0} child asset(s):", [created_assets.length]);
+						message += "<br><br>";
+						
+						created_assets.forEach(function(asset) {
+							message += `<a href="/app/asset/${asset}">${asset}</a><br>`;
+						});
+						
+						frappe.msgprint({
+							title: __("Child Assets Created"),
+							message: message,
+							indicator: 'green'
+						});
+						
+						// Refresh the current form
+						frm.reload_doc();
+					}
+				}
+			});
 		});
 
 		dialog.show();
