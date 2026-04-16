@@ -1498,37 +1498,56 @@ def add_reference_in_jv_on_split(entry_name, new_asset_name, old_asset_name, dep
 
 
 @frappe.whitelist()
-def create_child_assets(parent_asset, number_of_assets):
+def create_child_assets(parent_asset, assets_detail):
 	"""
 	Create multiple child assets by copying the parent asset.
-	Each child asset will have a name with series like: parent-01, parent-02, etc.
+	Each child asset will be created based on the details provided in assets_detail.
+	
+	Args:
+		parent_asset: Name of the parent asset
+		assets_detail: List of dicts containing asset details (asset_name, location, available_for_use_date, gross_purchase_amount)
 	"""
-	number_of_assets = cint(number_of_assets)
+	import json
 	
-	if number_of_assets < 1:
-		frappe.throw(_("Number of assets must be at least 1"))
+	# Parse assets_detail if it's a string
+	if isinstance(assets_detail, str):
+		assets_detail = json.loads(assets_detail)
 	
-	if number_of_assets > 100:
+	if not assets_detail or len(assets_detail) == 0:
+		frappe.throw(_("No asset details provided"))
+	
+	if len(assets_detail) > 100:
 		frappe.throw(_("Cannot create more than 100 assets at once"))
 	
 	# Get the parent asset
 	parent = frappe.get_doc("Asset", parent_asset)
+	parent.db_set("is_group", 1)
 	
 	if parent.docstatus != 1:
 		frappe.throw(_("Parent asset must be submitted before creating child assets"))
 	
 	created_assets = []
 	
-	for i in range(1, number_of_assets + 1):
+	for idx, detail in enumerate(assets_detail, start=1):
+		# Validate required fields
+		if not detail.get('asset_name'):
+			frappe.throw(_("Row {0}: Asset Name is required").format(idx))
+		if not detail.get('available_for_use_date'):
+			frappe.throw(_("Row {0}: Available For Use Date is required").format(idx))
+		if not detail.get('gross_purchase_amount'):
+			frappe.throw(_("Row {0}: Gross Purchase Amount is required").format(idx))
+		
 		# Copy the parent asset
 		new_asset = frappe.copy_doc(parent)
 		
-		# Generate the child asset name with series
-		series_number = str(i).zfill(2)  # 01, 02, 03, etc.
+		# Set custom values from the detail row
+		new_asset.asset_name = detail.get('asset_name')
+		new_asset.available_for_use_date = detail.get('available_for_use_date')
+		new_asset.gross_purchase_amount = flt(detail.get('gross_purchase_amount'))
 		
-		# Update asset name to include series
-		if parent.asset_name:
-			new_asset.asset_name = f"{parent.asset_name}-{series_number}"
+		# Set location if provided
+		if detail.get('location'):
+			new_asset.location = detail.get('location')
 		
 		# Set parent reference
 		new_asset.parent_asset = parent.name
@@ -1541,11 +1560,21 @@ def create_child_assets(parent_asset, number_of_assets):
 		new_asset.journal_entry_for_scrap = None
 		new_asset.disposal_date = None
 		new_asset.split_from = None
+		new_asset.purchase_receipt_amount = new_asset.gross_purchase_amount
 		
 		# Clear depreciation entries
 		if new_asset.get("schedules"):
 			for schedule in new_asset.get("schedules"):
 				schedule.journal_entry = None
+		
+		# Update finance books with new gross purchase amount
+		if new_asset.get("finance_books"):
+			for fb in new_asset.get("finance_books"):
+				# Recalculate value_after_depreciation based on new gross_purchase_amount
+				if new_asset.opening_accumulated_depreciation:
+					fb.value_after_depreciation = flt(new_asset.gross_purchase_amount) - flt(new_asset.opening_accumulated_depreciation)
+				else:
+					fb.value_after_depreciation = flt(new_asset.gross_purchase_amount)
 		
 		# Clear asset quantity if it's more than 1
 		if new_asset.asset_quantity and new_asset.asset_quantity > 1:
@@ -1555,11 +1584,16 @@ def create_child_assets(parent_asset, number_of_assets):
 			# Insert the new asset
 			new_asset.insert()
 			created_assets.append(new_asset.name)
-			frappe.db.commit()
 		except Exception as e:
-			frappe.log_error(message=str(e), title=f"Error creating child asset {i}")
-			frappe.throw(_("Error creating child asset {0}: {1}").format(i, str(e)))
-	
+			frappe.log_error(message=str(e), title=f"Error creating child asset {idx}")
+			frappe.throw(_("Error creating child asset {0} ({1}): {2}").format(idx, detail.get('asset_name'), str(e)))
+	try:
+		for d in created_assets:
+			doc = frappe.get_doc("Asset", d)
+			doc.submit()
+	except Exception as e:
+		frappe.log_error(message=str(e), title="Error submitting child assets")
+		frappe.throw(_("Error submitting child assets: {0}").format(str(e)))
 	return created_assets
 
 

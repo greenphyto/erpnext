@@ -414,64 +414,166 @@ frappe.ui.form.on('Asset', {
 	},
 
 	create_child_assets: function(frm) {
-		const title = __("Create Child Assets");
-
+		let me = this;
+		
 		const fields = [
 			{
 				fieldname: 'number_of_assets',
 				fieldtype: 'Int',
 				label: __("Number of Assets"),
-				description: __("Number of child assets to create"),
+				description: __("Enter quantity and click Generate to create rows"),
 				reqd: 1,
 				default: 1
+			},
+			{
+				fieldname: 'generate_btn',
+				fieldtype: 'Button',
+				label: __('Generate Rows'),
+				click: function() {
+					let qty = cint(dialog.get_value('number_of_assets'));
+					if (qty < 1) {
+						frappe.msgprint(__("Please enter a valid number of assets"));
+						return;
+					}
+					if (qty > 100) {
+						frappe.msgprint(__("Cannot create more than 100 assets at once"));
+						return;
+					}
+					
+					// Clear existing data
+					let assets_table = dialog.fields_dict.assets_detail;
+					assets_table.df.data = [];
+					
+					// Generate rows data
+					for (let i = 1; i <= qty; i++) {
+						let series_number = String(i).padStart(2, '0');
+						assets_table.df.data.push({
+							'asset_name': `${frm.doc.asset_name || 'Asset'}-${series_number}`,
+							'location': frm.doc.location || '',
+							'available_for_use_date': frm.doc.available_for_use_date || frappe.datetime.nowdate(),
+							'gross_purchase_amount': frm.doc.gross_purchase_amount || 0
+						});
+					}
+					
+					// Refresh grid to show the new data
+					assets_table.grid.refresh();
+				}
+			},
+			{
+				fieldtype: 'Section Break',
+				label: __('Asset Details')
+			},
+			{
+				fieldname: 'assets_detail',
+				fieldtype: 'Table',
+				label: __('Assets to Create'),
+				cannot_add_rows: false,
+				cannot_delete_rows: false,
+				in_place_edit: true,
+				data: [],
+				fields: [
+					{
+						fieldtype: 'Data',
+						fieldname: 'asset_name',
+						label: __('Asset Name'),
+						in_list_view: 1,
+						reqd: 1,
+						columns: 4
+					},
+					{
+						fieldtype: 'Link',
+						fieldname: 'location',
+						options: 'Location',
+						label: __('Location'),
+						in_list_view: 1,
+						columns: 3,
+						get_query: function() {
+							return {
+								filters: {
+									is_group: 0
+								}
+							};
+						}
+					},
+					{
+						fieldtype: 'Date',
+						fieldname: 'available_for_use_date',
+						label: __('Available For Use Date'),
+						in_list_view: 1,
+						reqd: 1,
+						columns: 2
+					},
+					{
+						fieldtype: 'Currency',
+						fieldname: 'gross_purchase_amount',
+						label: __('Gross Purchase Amount'),
+						in_list_view: 1,
+						reqd: 1,
+						columns: 3
+					}
+				],
+				get_data: function() {
+					return this.data;
+				}
 			}
 		];
 
 		let dialog = new frappe.ui.Dialog({
-			title: title,
-			fields: fields
-		});
-
-		dialog.set_primary_action(__("Create"), function() {
-			const dialog_data = dialog.get_values();
-			const number_of_assets = cint(dialog_data.number_of_assets);
-			
-			if (number_of_assets < 1) {
-				frappe.msgprint(__("Please enter a valid number of assets"));
-				return;
-			}
-
-			dialog.hide();
-
-			frappe.call({
-				method: "erpnext.assets.doctype.asset.asset.create_child_assets",
-				args: {
-					"parent_asset": frm.doc.name,
-					"number_of_assets": number_of_assets
-				},
-				freeze: true,
-				freeze_message: __("Creating Child Assets..."),
-				callback: function(r) {
-					if (r.message) {
-						let created_assets = r.message;
-						let message = __("Successfully created {0} child asset(s):", [created_assets.length]);
-						message += "<br><br>";
-						
-						created_assets.forEach(function(asset) {
-							message += `<a href="/app/asset/${asset}">${asset}</a><br>`;
-						});
-						
-						frappe.msgprint({
-							title: __("Child Assets Created"),
-							message: message,
-							indicator: 'green'
-						});
-						
-						// Refresh the current form
-						frm.reload_doc();
-					}
+			title: __("Create Child Assets"),
+			fields: fields,
+			size: 'extra-large',
+			primary_action_label: __('Create Assets'),
+			primary_action: function(values) {
+				let assets_detail = dialog.fields_dict.assets_detail.grid.get_data();
+				
+				if (!assets_detail || assets_detail.length === 0) {
+					frappe.msgprint(__("Please generate rows first by clicking 'Generate Rows' button"));
+					return;
 				}
-			});
+				
+				// Validate all rows
+				let valid = true;
+				assets_detail.forEach(function(row, idx) {
+					if (!row.asset_name || !row.available_for_use_date || !row.gross_purchase_amount) {
+						frappe.msgprint(__("Row {0}: Please fill all required fields", [idx + 1]));
+						valid = false;
+					}
+				});
+				
+				if (!valid) return;
+				
+				dialog.hide();
+
+				frappe.call({
+					method: "erpnext.assets.doctype.asset.asset.create_child_assets",
+					args: {
+						"parent_asset": frm.doc.name,
+						"assets_detail": assets_detail
+					},
+					freeze: true,
+					freeze_message: __("Creating Child Assets..."),
+					callback: function(r) {
+						if (r.message) {
+							let created_assets = r.message;
+							let message = __("Successfully created {0} child asset(s):", [created_assets.length]);
+							message += "<br><br>";
+							
+							created_assets.forEach(function(asset) {
+								message += `<a href="/app/asset/${asset}">${asset}</a><br>`;
+							});
+							
+							frappe.msgprint({
+								title: __("Child Assets Created"),
+								message: message,
+								indicator: 'green'
+							});
+							
+							// Refresh the current form
+							frm.reload_doc();
+						}
+					}
+				});
+			}
 		});
 
 		dialog.show();
