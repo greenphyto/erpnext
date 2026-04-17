@@ -1540,6 +1540,9 @@ def create_child_assets(parent_asset, assets_detail):
 		# Copy the parent asset
 		new_asset = frappe.copy_doc(parent)
 		
+		# Use __newname if provided for the asset ID
+		new_name = detail.get('__newname') or detail.get('new_asset_id')
+		
 		# Set custom values from the detail row
 		new_asset.asset_name = detail.get('asset_name')
 		new_asset.available_for_use_date = detail.get('available_for_use_date')
@@ -1553,6 +1556,8 @@ def create_child_assets(parent_asset, assets_detail):
 		new_asset.parent_asset = parent.name
 		
 		# Reset fields that should not be copied
+		new_asset.name = new_name
+		new_asset.__newname = new_name
 		new_asset.docstatus = 0  # Draft status
 		new_asset.status = None
 		new_asset.qrcode_image = None
@@ -1581,21 +1586,29 @@ def create_child_assets(parent_asset, assets_detail):
 			new_asset.asset_quantity = 1
 		
 		try:
-			# Insert the new asset
+			# Insert the new asset with the specified name
 			new_asset.insert()
-			created_assets.append(new_asset.name)
+			created_assets.append(new_name)
 		except Exception as e:
 			frappe.log_error(message=str(e), title=f"Error creating child asset {idx}")
 			frappe.throw(_("Error creating child asset {0} ({1}): {2}").format(idx, detail.get('asset_name'), str(e)))
+	
+	# Submit all created assets
 	try:
-		for d in created_assets:
-			doc = frappe.get_doc("Asset", d)
-			doc.submit()
+		if created_assets:
+			frappe.enqueue("assets.doctype.asset.asset.submit_child_assets", created_assets=created_assets)
 	except Exception as e:
 		frappe.log_error(message=str(e), title="Error submitting child assets")
 		frappe.throw(_("Error submitting child assets: {0}").format(str(e)))
 	return created_assets
 
+def submit_child_assets(created_assets):
+	for asset_name in created_assets:
+		doc = frappe.get_doc("Asset", asset_name)
+		try:
+			doc.submit()
+		except Exception as e:
+			pass
 
 @frappe.whitelist()
 def get_children(doctype, parent=None, asset=None, is_root=False):
