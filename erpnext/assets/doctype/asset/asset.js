@@ -440,26 +440,43 @@ frappe.ui.form.on('Asset', {
 						return;
 					}
 					
-					// Clear existing data
-					let assets_table = dialog.fields_dict.assets_detail;
-					assets_table.df.data = [];
-					
-					// Generate rows data
-					for (let i = 1; i <= qty; i++) {
-						let series_number = String(i).padStart(2, '0');
-						let new_asset_id = `${frm.doc.name}-${series_number}`;
-						assets_table.df.data.push({
-							'__newname': new_asset_id,
-							'new_asset_id': new_asset_id,
-							'asset_name': `${frm.doc.asset_name || 'Asset'}-${series_number}`,
-							'location': frm.doc.location || '',
-							'available_for_use_date': frm.doc.available_for_use_date || frappe.datetime.nowdate(),
-							'gross_purchase_amount': frm.doc.gross_purchase_amount || 0
-						});
-					}
-					
-					// Refresh grid to show the new data
-					assets_table.grid.refresh();
+					// Call backend to generate rows with conflict checking
+					frappe.call({
+						method: "erpnext.assets.doctype.asset.asset.generate_child_asset_rows",
+						args: {
+							"parent_asset": frm.doc.name,
+							"number_of_assets": qty
+						},
+						freeze: true,
+						freeze_message: __("Generating rows..."),
+						callback: function(r) {
+							if (r.message) {
+								// Clear existing data
+								let assets_table = dialog.fields_dict.assets_detail;
+								assets_table.df.data = [];
+								
+								// Populate with generated rows from backend
+								r.message.forEach(function(row) {
+									assets_table.df.data.push({
+										'__newname': row.new_asset_id,
+										'new_asset_id': row.new_asset_id,
+										'asset_name': row.asset_name,
+										'location': row.location,
+										'available_for_use_date': row.available_for_use_date,
+										'gross_purchase_amount': row.gross_purchase_amount
+									});
+								});
+								
+								// Refresh grid to show the new data
+								assets_table.grid.refresh();
+								
+								frappe.show_alert({
+									message: __('Generated {0} rows successfully', [r.message.length]),
+									indicator: 'green'
+								});
+							}
+						}
+					});
 				}
 			},
 			{
