@@ -1498,6 +1498,89 @@ def add_reference_in_jv_on_split(entry_name, new_asset_name, old_asset_name, dep
 
 
 @frappe.whitelist()
+def generate_child_asset_rows(parent_asset, number_of_assets):
+	"""
+	Generate rows for child assets with validation to avoid naming conflicts.
+	
+	Args:
+		parent_asset: Name of the parent asset
+		number_of_assets: Number of child assets to generate
+	
+	Returns:
+		List of dicts with pre-filled asset details
+	"""
+	import json
+	
+	number_of_assets = cint(number_of_assets)
+	
+	if number_of_assets < 1:
+		frappe.throw(_("Please enter a valid number of assets"))
+	
+	if number_of_assets > 100:
+		frappe.throw(_("Cannot create more than 100 assets at once"))
+	
+	# Get the parent asset
+	parent = frappe.get_doc("Asset", parent_asset)
+	
+	if parent.docstatus != 1:
+		frappe.throw(_("Parent asset must be submitted before creating child assets"))
+	
+	# Get existing child assets to determine starting series number
+	existing_assets = frappe.get_all(
+		"Asset",
+		filters={
+			"name": ["like", f"{parent_asset}-%"]
+		},
+		fields=["name"]
+	)
+	
+	# Extract series numbers from existing assets
+	existing_series = set()
+	for asset in existing_assets:
+		asset_name = asset.name
+		if asset_name.startswith(f"{parent_asset}-"):
+			series_part = asset_name[len(parent_asset) + 1:]
+			# Try to extract the numeric part (assuming format like 01, 02, etc.)
+			if series_part.isdigit():
+				existing_series.add(int(series_part))
+	
+	# Generate rows
+	generated_rows = []
+	series_counter = 1
+	
+	for i in range(number_of_assets):
+		# Find next available series number
+		while series_counter in existing_series:
+			series_counter += 1
+		
+		series_number = str(series_counter).zfill(2)
+		new_asset_id = f"{parent_asset}-{series_number}"
+		
+		# Double check that this ID doesn't exist
+		if frappe.db.exists("Asset", new_asset_id):
+			# Skip to next number
+			series_counter += 1
+			while series_counter in existing_series or frappe.db.exists("Asset", f"{parent_asset}-{str(series_counter).zfill(2)}"):
+				series_counter += 1
+			series_number = str(series_counter).zfill(2)
+			new_asset_id = f"{parent_asset}-{series_number}"
+		
+		row = {
+			"new_asset_id": new_asset_id,
+			"asset_name": f"{parent.asset_name or 'Asset'}-{series_number}",
+			"location": parent.location or "",
+			"available_for_use_date": parent.available_for_use_date or frappe.utils.nowdate(),
+			"gross_purchase_amount": parent.gross_purchase_amount or 0
+		}
+		
+		generated_rows.append(row)
+		existing_series.add(series_counter)
+		series_counter += 1
+	
+	return generated_rows
+
+
+@frappe.whitelist()
 def create_child_assets(parent_asset, assets_detail):
 	"""
 	Create multiple child assets by copying the parent asset.
@@ -1537,11 +1620,15 @@ def create_child_assets(parent_asset, assets_detail):
 		if not detail.get('gross_purchase_amount'):
 			frappe.throw(_("Row {0}: Gross Purchase Amount is required").format(idx))
 		
-		# Copy the parent asset
-		new_asset = frappe.copy_doc(parent)
-		
 		# Use __newname if provided for the asset ID
 		new_name = detail.get('__newname') or detail.get('new_asset_id')
+		
+		# Check if asset ID already exists
+		if frappe.db.exists("Asset", new_name):
+			frappe.throw(_("Row {0}: Asset ID '{1}' already exists. Please regenerate rows to avoid conflicts.").format(idx, new_name))
+		
+		# Copy the parent asset
+		new_asset = frappe.copy_doc(parent)
 		
 		# Set custom values from the detail row
 		new_asset.asset_name = detail.get('asset_name')
