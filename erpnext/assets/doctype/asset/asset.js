@@ -447,7 +447,10 @@ frappe.ui.form.on('Asset', {
 					// Generate rows data
 					for (let i = 1; i <= qty; i++) {
 						let series_number = String(i).padStart(2, '0');
+						let new_asset_id = `${frm.doc.name}-${series_number}`;
 						assets_table.df.data.push({
+							'__newname': new_asset_id,
+							'new_asset_id': new_asset_id,
 							'asset_name': `${frm.doc.asset_name || 'Asset'}-${series_number}`,
 							'location': frm.doc.location || '',
 							'available_for_use_date': frm.doc.available_for_use_date || frappe.datetime.nowdate(),
@@ -474,11 +477,19 @@ frappe.ui.form.on('Asset', {
 				fields: [
 					{
 						fieldtype: 'Data',
+						fieldname: 'new_asset_id',
+						label: __('New Asset ID'),
+						in_list_view: 1,
+						read_only: 1,
+						columns: 2
+					},
+					{
+						fieldtype: 'Data',
 						fieldname: 'asset_name',
 						label: __('Asset Name'),
 						in_list_view: 1,
 						reqd: 1,
-						columns: 4
+						columns: 3
 					},
 					{
 						fieldtype: 'Link',
@@ -486,7 +497,7 @@ frappe.ui.form.on('Asset', {
 						options: 'Location',
 						label: __('Location'),
 						in_list_view: 1,
-						columns: 3,
+						columns: 2,
 						get_query: function() {
 							return {
 								filters: {
