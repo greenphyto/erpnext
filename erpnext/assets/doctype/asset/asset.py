@@ -1683,7 +1683,7 @@ def create_child_assets(parent_asset, assets_detail):
 	# Submit all created assets
 	try:
 		if created_assets:
-			frappe.enqueue("assets.doctype.asset.asset.submit_child_assets", created_assets=created_assets)
+			frappe.enqueue(method="erpnext.assets.doctype.asset.asset.submit_child_assets", created_assets=created_assets, queue='long', job_name="submit_child_assets_{}".format(parent_asset))
 	except Exception as e:
 		frappe.log_error(message=str(e), title="Error submitting child assets")
 		frappe.throw(_("Error submitting child assets: {0}").format(str(e)))
