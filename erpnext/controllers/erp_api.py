@@ -572,7 +572,7 @@ def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 		"operation": OPERATION_MAP_NAME.get(2),
 		"docstatus":1
 	})
-	if not operation_2_status:
+	if operationNo == 3  and not operation_2_status:
 		return {
 			"result":False,
 			"error":"Operation 2 should be complete first."
