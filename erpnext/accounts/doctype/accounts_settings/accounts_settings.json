@@ -7,6 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "invoice_and_billing_tab",
+  "multi_company_section",
   "enable_features_section",
   "unlink_payment_on_cancellation_of_invoice",
   "unlink_advance_payment_on_cancelation_of_order",
@@ -16,9 +17,12 @@
   "invoicing_features_section",
   "check_supplier_invoice_uniqueness",
   "automatically_fetch_payment_terms",
+  "mandatory_reference_on_journal_entry",
   "column_break_17",
   "enable_common_party_accounting",
   "allow_multi_currency_invoices_against_single_party_account",
+  "report_setting_section",
+  "use_custom_cash_flow",
   "journals_section",
   "merge_similar_account_heads",
   "deferred_accounting_settings_section",
@@ -50,6 +54,7 @@
   "allow_pegged_currencies_exchange_rates",
   "column_break_yuug",
   "stale_days",
+  "save_fetched_currency_exchange_rates",
   "section_break_jpd0",
   "auto_reconcile_payments",
   "auto_reconciliation_job_trigger",
@@ -74,6 +79,7 @@
   "calculate_depr_using_total_days",
   "column_break_gjcc",
   "book_asset_depreciation_entry_automatically",
+  "series_mapping_section",
   "closing_settings_tab",
   "period_closing_settings_section",
   "acc_frozen_upto",
@@ -81,6 +87,7 @@
   "use_legacy_controller_for_pcv",
   "column_break_25",
   "frozen_accounts_modifier",
+  "report_settings_sb",
   "tab_break_dpet",
   "show_balance_in_coa",
   "banking_tab",
@@ -99,7 +106,10 @@
   "ignore_is_opening_check_for_reporting",
   "payment_request_settings",
   "create_pr_in_draft_status",
-  "column_break_xrnd"
+  "column_break_xrnd",
+  "enable_switch_company_menu",
+  "skip_ceo_role_from_strict_permissions",
+  "asset_code_map"
  ],
  "fields": [
   {
@@ -657,6 +667,63 @@
    "fieldname": "show_party_balance",
    "fieldtype": "Check",
    "label": "Show Party Balance"
+  },
+  {
+   "default": "0",
+   "fieldname": "mandatory_reference_on_journal_entry",
+   "fieldtype": "Check",
+   "label": "Mandatory Reference on Journal Entry"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_switch_company_menu",
+   "fieldtype": "Check",
+   "label": "Enable Switch Company Menu"
+  },
+  {
+   "default": "0",
+   "fieldname": "save_fetched_currency_exchange_rates",
+   "fieldtype": "Check",
+   "label": "Save fetched currency exchange rates"
+  },
+  {
+   "default": "0",
+   "fieldname": "skip_ceo_role_from_strict_permissions",
+   "fieldtype": "Check",
+   "label": "Skip CEO role from strict permissions"
+  },
+  {
+   "fieldname": "report_settings_sb",
+   "fieldtype": "Section Break",
+   "label": "Report Settings"
+  },
+  {
+   "fieldname": "asset_code_map",
+   "fieldtype": "Table",
+   "label": "Asset Code Map",
+   "options": "Asset Code Map"
+  },
+  {
+   "fieldname": "series_mapping_section",
+   "fieldtype": "Section Break",
+   "label": "Series Mapping"
+  },
+  {
+   "fieldname": "multi_company_section",
+   "fieldtype": "Section Break",
+   "label": "Multi Company"
+  },
+  {
+   "fieldname": "report_setting_section",
+   "fieldtype": "Section Break",
+   "label": "Report Setting"
+  },
+  {
+   "default": "0",
+   "description": "Only select this if you have set up the Cash Flow Mapper documents",
+   "fieldname": "use_custom_cash_flow",
+   "fieldtype": "Check",
+   "label": "Enable Custom Cash Flow Format"
   }
  ],
  "icon": "icon-cog",
@@ -664,7 +731,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-11-06 17:48:07.682837",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounts Settings",

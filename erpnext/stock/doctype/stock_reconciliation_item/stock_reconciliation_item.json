@@ -38,7 +38,9 @@
   "section_break_14",
   "quantity_difference",
   "column_break_16",
-  "amount_difference"
+  "amount_difference",
+  "foms_section",
+  "foms_sync"
  ],
  "fields": [
   {
@@ -261,11 +263,22 @@
    "fieldname": "reconcile_all_serial_batch",
    "fieldtype": "Check",
    "label": "Reconcile All Serial Nos / Batches"
+  },
+  {
+   "fieldname": "foms_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS"
+  },
+  {
+   "default": "0",
+   "fieldname": "foms_sync",
+   "fieldtype": "Check",
+   "label": "FOMS Sync"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2025-11-20 15:27:13.868179",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Reconciliation Item",

@@ -12,6 +12,7 @@
   "posting_date",
   "company",
   "account",
+  "group_by",
   "categorize_by",
   "cost_center",
   "territory",
@@ -41,6 +42,7 @@
   "include_break",
   "include_ageing",
   "ageing_based_on",
+  "pdf_template",
   "section_break_14",
   "letter_head",
   "terms_and_conditions",
@@ -398,10 +400,24 @@
    "fieldtype": "Select",
    "label": "Categorize By",
    "options": "\nCategorize by Voucher\nCategorize by Voucher (Consolidated)"
+  },
+  {
+   "default": "Simple",
+   "fieldname": "pdf_template",
+   "fieldtype": "Select",
+   "label": "PDF Template",
+   "options": "Simple\nDetailed"
+  },
+  {
+   "default": "Group by Voucher (Consolidated)",
+   "fieldname": "group_by",
+   "fieldtype": "Select",
+   "label": "Group By",
+   "options": "\nGroup by Voucher\nGroup by Voucher (Consolidated)"
   }
  ],
  "links": [],
- "modified": "2025-08-04 18:21:12.603623",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Process Statement Of Accounts",

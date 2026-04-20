@@ -11,6 +11,7 @@
   "operation",
   "column_break_3",
   "do_not_explode",
+  "parent_item",
   "bom_no",
   "source_warehouse",
   "allow_alternative_item",
@@ -40,7 +41,11 @@
   "include_item_in_manufacturing",
   "original_item",
   "column_break_33",
-  "sourced_by_supplier"
+  "sourced_by_supplier",
+  "foms_id",
+  "work_order",
+  "progress",
+  "batch_no"
  ],
  "fields": [
   {
@@ -293,13 +298,45 @@
    "fieldtype": "Check",
    "label": "Is Stock Item",
    "read_only": 1
+  },
+  {
+   "fieldname": "work_order",
+   "fieldtype": "Data",
+   "label": "Work Order",
+   "read_only": 1
+  },
+  {
+   "fieldname": "progress",
+   "fieldtype": "Percent",
+   "label": "Progress",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "batch_no",
+   "fieldtype": "Link",
+   "label": "Batch No",
+   "options": "Batch",
+   "read_only": 1
+  },
+  {
+   "fieldname": "parent_item",
+   "fieldtype": "Link",
+   "label": "Parent Item",
+   "options": "Item",
+   "read_only": 1
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-12-20 16:21:55.477883",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "BOM Item",

@@ -9,13 +9,18 @@
  "field_order": [
   "warehouse_detail",
   "disabled",
+  "rack_details_section",
   "warehouse_name",
+  "foms_id",
+  "foms_name",
   "column_break_3",
   "is_group",
+  "is_wip_warehouse",
   "parent_warehouse",
   "is_rejected_warehouse",
   "column_break_4",
   "account",
+  "only_for_item",
   "company",
   "address_and_contact",
   "address_html",
@@ -38,7 +43,16 @@
   "tree_details",
   "lft",
   "rgt",
-  "old_parent"
+  "old_parent",
+  "links_section",
+  "customer",
+  "lane_no",
+  "level_no",
+  "store",
+  "position",
+  "column_break_18",
+  "row_no",
+  "colour"
  ],
  "fields": [
   {
@@ -257,6 +271,102 @@
    "fieldname": "is_rejected_warehouse",
    "fieldtype": "Check",
    "label": "Is Rejected Warehouse"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "description": "<b>1-99</b>",
+   "fieldname": "lane_no",
+   "fieldtype": "Data",
+   "label": "Lane No"
+  },
+  {
+   "fieldname": "links_section",
+   "fieldtype": "Section Break",
+   "label": "Links"
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "FOMS ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "If checked, stock in this warehouse cannot sell",
+   "fieldname": "is_wip_warehouse",
+   "fieldtype": "Check",
+   "label": "Is WIP Warehouse"
+  },
+  {
+   "fieldname": "foms_name",
+   "fieldtype": "Data",
+   "label": "FOMS Name",
+   "read_only": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "description": "Store locator: <b>Main (1), Cold room (2), Sub-store (3)</b>\n\n",
+   "fieldname": "store",
+   "fieldtype": "Select",
+   "label": "Store",
+   "options": "\n1\n2\n3"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "column_break_18",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "description": "<b>A-Z</b> column",
+   "fieldname": "row_no",
+   "fieldtype": "Data",
+   "label": "Row No"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "description": "Visual aid",
+   "fieldname": "colour",
+   "fieldtype": "Color",
+   "label": "Colour"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "description": "<b>A-Z</b>",
+   "fieldname": "level_no",
+   "fieldtype": "Data",
+   "label": "Level No"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "description": "Position: <b>Left (1), Middle (2), Right (3)</b>",
+   "fieldname": "position",
+   "fieldtype": "Select",
+   "label": "Position",
+   "options": "\n1\n2\n3"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "rack_details_section",
+   "fieldtype": "Section Break",
+   "label": "Rack Details"
+  },
+  {
+   "description": "If set, item stored to this warehouse will restricted",
+   "fieldname": "only_for_item",
+   "fieldtype": "Link",
+   "label": "Only for Item",
+   "options": "Item"
   }
  ],
  "grid_page_length": 50,
@@ -264,7 +374,7 @@
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2025-06-26 11:19:04.673115",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Warehouse",

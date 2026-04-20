@@ -51,6 +51,7 @@
   "for_job_card",
   "is_corrective_job_card",
   "column_break_33",
+  "operation_rate",
   "hour_rate",
   "for_operation",
   "more_information",
@@ -61,17 +62,20 @@
   "status",
   "column_break_20",
   "operation_row_number",
+  "column_break_18",
   "operation_id",
   "sequence_id",
   "remarks",
   "serial_and_batch_bundle",
   "batch_no",
+  "operation_section_section",
   "serial_no",
   "barcode",
   "job_started",
   "started_time",
   "current_time",
   "amended_from",
+  "percentage",
   "connections_tab"
  ],
  "fields": [
@@ -507,11 +511,32 @@
   {
    "fieldname": "column_break_fcmp",
    "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "is_corrective_job_card",
+   "fieldname": "operation_rate",
+   "fieldtype": "Currency",
+   "label": "Operation Rate"
+  },
+  {
+   "fieldname": "operation_section_section",
+   "fieldtype": "Section Break",
+   "label": "Operation Section"
+  },
+  {
+   "fieldname": "percentage",
+   "fieldtype": "Percent",
+   "label": "Percentage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_18",
+   "fieldtype": "Column Break"
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2025-08-04 15:47:54.514290",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Job Card",

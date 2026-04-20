@@ -17,6 +17,9 @@
   "account_currency",
   "column_break_ifvf",
   "against",
+  "against_party",
+  "against_account",
+  "against_account_number",
   "party_type",
   "party",
   "transaction_details_section",
@@ -49,6 +52,7 @@
   "column_break_8abq",
   "to_rename",
   "is_cancelled",
+  "do_not_merge",
   "remarks"
  ],
  "fields": [
@@ -352,13 +356,38 @@
   {
    "fieldname": "column_break_8abq",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "against_party",
+   "fieldtype": "Data",
+   "label": "Against Party",
+   "length": 250
+  },
+  {
+   "fieldname": "against_account",
+   "fieldtype": "Data",
+   "label": "Against Account",
+   "length": 500
+  },
+  {
+   "default": "0",
+   "fieldname": "do_not_merge",
+   "fieldtype": "Check",
+   "label": "Do not Merge",
+   "read_only": 1
+  },
+  {
+   "fieldname": "against_account_number",
+   "fieldtype": "Data",
+   "label": "Against Account Number",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-list",
  "idx": 1,
  "in_create": 1,
  "links": [],
- "modified": "2025-02-21 14:36:49.431166",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "GL Entry",

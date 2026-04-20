@@ -16,8 +16,10 @@
   "column_break_6",
   "posting_date",
   "posting_time",
+  "posting_datetime",
   "set_posting_time",
   "due_date",
+  "delivery_note_no",
   "column_break1",
   "is_paid",
   "is_return",
@@ -28,6 +30,7 @@
   "apply_tds",
   "tax_withholding_category",
   "amended_from",
+  "po_amount_different",
   "supplier_invoice_details",
   "bill_no",
   "column_break_15",
@@ -55,7 +58,9 @@
   "is_subcontracted",
   "rejected_warehouse",
   "supplier_warehouse",
+  "gst_input_section_section",
   "items_section",
+  "non_stock_item",
   "items",
   "section_break_26",
   "total_qty",
@@ -115,6 +120,7 @@
   "raw_materials_supplied",
   "supplied_items",
   "payments_tab",
+  "supplier_bank_account_section",
   "payments_section",
   "mode_of_payment",
   "base_paid_amount",
@@ -199,7 +205,15 @@
   "inter_company_invoice_reference",
   "is_old_subcontracting_flow",
   "remarks",
-  "connections_tab"
+  "connections_tab",
+  "column_break_38",
+  "base_value_for_gst_input",
+  "base_currency_of_base_value",
+  "column_break_47",
+  "gst_input_tax",
+  "bank_number",
+  "bank_details",
+  "column_break_110"
  ],
  "fields": [
   {
@@ -1652,6 +1666,82 @@
    "fieldtype": "Data",
    "is_virtual": 1,
    "label": "Last Scanned Warehouse"
+  },
+  {
+   "depends_on": "eval:doc.gst_input_tax",
+   "fieldname": "base_value_for_gst_input",
+   "fieldtype": "Currency",
+   "label": "Base Value for GST input"
+  },
+  {
+   "default": "0",
+   "fieldname": "gst_input_tax",
+   "fieldtype": "Check",
+   "label": "GST Input Tax"
+  },
+  {
+   "fieldname": "column_break_38",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "gst_input_section_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "GST Input"
+  },
+  {
+   "fieldname": "delivery_note_no",
+   "fieldtype": "Data",
+   "label": "Delivery Note No"
+  },
+  {
+   "fieldname": "bank_number",
+   "fieldtype": "Link",
+   "label": "Bank Number",
+   "options": "Bank Number"
+  },
+  {
+   "fieldname": "posting_datetime",
+   "fieldtype": "Datetime",
+   "label": "Posting Date & Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "supplier_bank_account_section",
+   "fieldtype": "Section Break",
+   "label": "Supplier Bank Account"
+  },
+  {
+   "depends_on": "eval:doc.base_value_for_gst_input!=doc.base_currency_of_base_value",
+   "fieldname": "base_currency_of_base_value",
+   "fieldtype": "Currency",
+   "label": "Base Currency of Base Value",
+   "read_only": 1
+  },
+  {
+   "fieldname": "bank_details",
+   "fieldtype": "HTML",
+   "label": "Bank Details"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_stock_item",
+   "fieldtype": "Check",
+   "label": "Non Stock Item"
+  },
+  {
+   "fieldname": "column_break_47",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "po_amount_different",
+   "fieldtype": "Check",
+   "label": "PO Amount Different!"
+  },
+  {
+   "fieldname": "column_break_110",
+   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
@@ -1659,7 +1749,7 @@
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-08-04 19:19:11.380664",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",

@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "item_code",
+  "item_name_view",
   "customer_item_code",
   "ensure_delivery_based_on_produced_serial_no",
   "is_stock_item",
@@ -15,6 +16,7 @@
   "col_break1",
   "delivery_date",
   "item_name",
+  "marketing_name",
   "section_break_5",
   "description",
   "item_group",
@@ -29,6 +31,8 @@
   "uom",
   "conversion_factor",
   "stock_qty",
+  "packaging_section",
+  "weight_order",
   "stock_reserved_qty",
   "section_break_16",
   "price_list_rate",
@@ -95,6 +99,7 @@
   "delivered_qty",
   "produced_qty",
   "returned_qty",
+  "replacement_qty",
   "picked_qty",
   "shopping_cart_section",
   "additional_notes",
@@ -108,10 +113,20 @@
   "column_break_89",
   "material_request_item",
   "purchase_order_item",
+  "foms_detail_section",
+  "foms_id",
   "accounting_dimensions_section",
   "cost_center",
   "column_break_ihdh",
-  "project"
+  "project",
+  "column_break_14",
+  "progress",
+  "stock_entry",
+  "lot_id",
+  "salad_product_section",
+  "salad_recipe",
+  "batch_no",
+  "is_salad_product"
  ],
  "fields": [
   {
@@ -966,12 +981,107 @@
    "label": "Project",
    "options": "Project",
    "search_index": 1
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "foms_detail_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS Detail"
+  },
+  {
+   "fieldname": "lot_id",
+   "fieldtype": "Data",
+   "label": "Lot ID",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_name_view",
+   "fieldtype": "Data",
+   "label": "Item Name View"
+  },
+  {
+   "fieldname": "packaging_section",
+   "fieldtype": "Section Break",
+   "label": "Packaging"
+  },
+  {
+   "fieldname": "progress",
+   "fieldtype": "Percent",
+   "label": "Progress",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "weight_order",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Is weight order?"
+  },
+  {
+   "fetch_from": "item_code.default_bom",
+   "fieldname": "salad_recipe",
+   "fieldtype": "Link",
+   "label": "Salad Recipe",
+   "options": "BOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "batch_no",
+   "fieldtype": "Link",
+   "label": "Batch No",
+   "options": "Batch",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fetch_from": "item_code.salad_product",
+   "fieldname": "is_salad_product",
+   "fieldtype": "Check",
+   "label": "Is Salad Product",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.is_salad_product",
+   "fieldname": "salad_product_section",
+   "fieldtype": "Section Break",
+   "label": "Salad Product"
+  },
+  {
+   "fieldname": "stock_entry",
+   "fieldtype": "Data",
+   "label": "Stock Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "replacement_qty",
+   "fieldtype": "Float",
+   "label": "Replacement Qty",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.marketing_name",
+   "fieldname": "marketing_name",
+   "fieldtype": "Data",
+   "label": "Marketing Name"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-02-28 09:45:44.934947",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

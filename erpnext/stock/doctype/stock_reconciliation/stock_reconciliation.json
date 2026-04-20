@@ -14,6 +14,7 @@
   "posting_date",
   "posting_time",
   "set_posting_time",
+  "foms_sync_no",
   "section_break_8",
   "set_warehouse",
   "section_break_22",
@@ -30,7 +31,10 @@
   "amended_from",
   "accounting_dimensions_section",
   "cost_center",
-  "dimension_col_break"
+  "dimension_col_break",
+  "foms_section",
+  "sync_percent",
+  "reff_id"
  ],
  "fields": [
   {
@@ -186,13 +190,37 @@
    "fieldtype": "Data",
    "is_virtual": 1,
    "label": "Last Scanned Warehouse"
+  },
+  {
+   "default": "0",
+   "fieldname": "sync_percent",
+   "fieldtype": "Percent",
+   "label": "% Sync",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS"
+  },
+  {
+   "default": "0",
+   "fieldname": "foms_sync_no",
+   "fieldtype": "Check",
+   "label": "Don't Sync to FOMS"
+  },
+  {
+   "fieldname": "reff_id",
+   "fieldtype": "Data",
+   "label": "Reff ID",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-upload-alt",
  "idx": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-08-04 19:21:20.179658",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Reconciliation",

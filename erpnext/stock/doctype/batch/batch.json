@@ -13,14 +13,18 @@
   "use_batchwise_valuation",
   "sb_batch",
   "batch_id",
+  "foms_lot_id",
   "item",
   "item_name",
+  "item_group",
   "image",
   "parent_batch",
   "manufacturing_date",
+  "column_break_16",
   "column_break_3",
   "batch_qty",
   "stock_uom",
+  "section_break_14",
   "expiry_date",
   "source",
   "supplier",
@@ -32,7 +36,10 @@
   "manufacturing_section",
   "qty_to_produce",
   "column_break_23",
-  "produced_qty"
+  "produced_qty",
+  "foms_section",
+  "foms_id",
+  "foms_name"
  ],
  "fields": [
   {
@@ -201,6 +208,49 @@
    "label": "Use Batch-wise Valuation",
    "read_only": 1,
    "set_only_once": 1
+  },
+  {
+   "fieldname": "foms_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS"
+  },
+  {
+   "fetch_from": "item.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "Foms ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_14",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "foms_name",
+   "fieldtype": "Data",
+   "label": "Foms Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_lot_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "FOMS Lot ID",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-archive",
@@ -208,7 +258,7 @@
  "image_field": "image",
  "links": [],
  "max_attachments": 5,
- "modified": "2023-11-09 12:17:28.339975",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Batch",

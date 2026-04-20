@@ -10,7 +10,8 @@
   "amount",
   "column_break_2",
   "is_exchange_gain_loss",
-  "description"
+  "description",
+  "row_id"
  ],
  "fields": [
   {
@@ -54,12 +55,18 @@
    "fieldtype": "Check",
    "label": "Is Exchange Gain / Loss?",
    "read_only": 1
+  },
+  {
+   "fieldname": "row_id",
+   "fieldtype": "Data",
+   "label": "Row ID",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-11-05 16:07:47.307971",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry Deduction",

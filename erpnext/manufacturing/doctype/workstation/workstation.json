@@ -12,6 +12,8 @@
   "workstation_dashboard",
   "details_tab",
   "workstation_name",
+  "section_break_2",
+  "item_code",
   "workstation_type",
   "plant_floor",
   "column_break_3",
@@ -25,6 +27,7 @@
   "column_break_etmc",
   "off_status_image",
   "over_heads",
+  "calculation_type",
   "hour_rate_electricity",
   "hour_rate_consumable",
   "column_break_11",
@@ -32,13 +35,26 @@
   "hour_rate_labour",
   "section_break_11",
   "hour_rate",
+  "cost_based_quantity_section",
+  "per_qty_rate_electricity",
   "workstaion_description",
   "description",
   "working_hours_section",
   "holiday_list",
   "working_hours",
+  "amended_from",
+  "from_system",
   "total_working_hours",
-  "connections_tab"
+  "connections_tab",
+  "per_qty_rate_wages",
+  "per_qty_rate",
+  "per_qty_rate_machinery",
+  "column_break_17",
+  "section_break_6",
+  "column_break_4",
+  "operation",
+  "version",
+  "per_qty_rate_consumable"
  ],
  "fields": [
   {
@@ -239,13 +255,111 @@
    "fieldname": "workstation_dashboard",
    "fieldtype": "HTML",
    "label": "Workstation Dashboard"
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval:doc.calculation_type==\"Per Qty\" || doc.calculation_type==\"Per KG\"",
+   "fieldname": "cost_based_quantity_section",
+   "fieldtype": "Section Break",
+   "label": "Cost based Quantity"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Workstation",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "description": "per qty",
+   "fieldname": "per_qty_rate_wages",
+   "fieldtype": "Currency",
+   "label": "Wages Cost"
+  },
+  {
+   "description": "per qty",
+   "fieldname": "per_qty_rate_machinery",
+   "fieldtype": "Currency",
+   "label": "Machinery Cost"
+  },
+  {
+   "fieldname": "column_break_17",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "default": "Per KG",
+   "fieldname": "calculation_type",
+   "fieldtype": "Select",
+   "label": "Calculation Type",
+   "options": "Per KG\nPer Qty\nPer Hour"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "version",
+   "fieldtype": "Data",
+   "label": "Version",
+   "read_only": 1
+  },
+  {
+   "description": "per qty",
+   "fieldname": "per_qty_rate_consumable",
+   "fieldtype": "Currency",
+   "label": "Consumable Cost"
+  },
+  {
+   "default": "0",
+   "fieldname": "from_system",
+   "fieldtype": "Check",
+   "label": "From System",
+   "read_only": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "description": "per qty",
+   "fieldname": "per_qty_rate",
+   "fieldtype": "Currency",
+   "label": "Net Hour Rate",
+   "read_only": 1
+  },
+  {
+   "description": "per qty",
+   "fieldname": "per_qty_rate_electricity",
+   "fieldtype": "Currency",
+   "label": "Electricity Cost"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "operation",
+   "fieldtype": "Link",
+   "label": "Operation",
+   "options": "Operation"
   }
  ],
  "icon": "icon-wrench",
  "idx": 1,
  "image_field": "on_status_image",
  "links": [],
- "modified": "2025-07-13 16:02:13.615001",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Workstation",

@@ -6,7 +6,19 @@
  "engine": "InnoDB",
  "field_order": [
   "account",
-  "budget_amount"
+  "budget_amount",
+  "january",
+  "february",
+  "november",
+  "december",
+  "may",
+  "june",
+  "july",
+  "august",
+  "september",
+  "october",
+  "april",
+  "march"
  ],
  "fields": [
   {
@@ -25,11 +37,83 @@
    "label": "Budget Amount",
    "options": "Company:company:default_currency",
    "reqd": 1
+  },
+  {
+   "fieldname": "november",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "November"
+  },
+  {
+   "fieldname": "december",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "December"
+  },
+  {
+   "fieldname": "may",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "May"
+  },
+  {
+   "fieldname": "september",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "September"
+  },
+  {
+   "fieldname": "october",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "October"
+  },
+  {
+   "fieldname": "june",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "June"
+  },
+  {
+   "fieldname": "april",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "April"
+  },
+  {
+   "fieldname": "july",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "July"
+  },
+  {
+   "fieldname": "january",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "January"
+  },
+  {
+   "fieldname": "august",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "August"
+  },
+  {
+   "fieldname": "march",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "March"
+  },
+  {
+   "fieldname": "february",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "February"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2024-03-04 15:43:27.016947",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Budget Account",

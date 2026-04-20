@@ -28,6 +28,7 @@
   "maintain_same_rate",
   "allow_multiple_items",
   "bill_for_rejected_quantity_in_purchase_invoice",
+  "internal_transactions_section",
   "set_valuation_rate_for_rejected_materials",
   "disable_last_purchase_rate",
   "show_pay_button",
@@ -36,13 +37,27 @@
   "backflush_raw_materials_of_subcontract_based_on",
   "column_break_11",
   "over_transfer_allowance",
+  "default_supplier_account_section",
+  "default_supplier_account",
   "validate_consumed_qty",
   "section_break_xcug",
   "auto_create_subcontracting_order",
   "column_break_izrr",
   "auto_create_purchase_receipt",
   "request_for_quotation_tab",
-  "fixed_email"
+  "fixed_email",
+  "mandatory_series_section",
+  "series_required_pr",
+  "forbidden_pr_before_dn",
+  "allow_copy_batch_from_main_company",
+  "non_stock_item_section",
+  "non_stock_item",
+  "permissions_section",
+  "enable_specific_purchase_approval",
+  "enable_filter_on_list_view",
+  "update_supplier",
+  "purchase_approval",
+  "supplier_threshold"
  ],
  "fields": [
   {
@@ -279,6 +294,93 @@
    "fieldname": "validate_consumed_qty",
    "fieldtype": "Check",
    "label": "Validate Consumed Qty (as per BOM)"
+  },
+  {
+   "fieldname": "mandatory_series_section",
+   "fieldtype": "Section Break",
+   "label": "Mandatory Series"
+  },
+  {
+   "default": "0",
+   "fieldname": "forbidden_pr_before_dn",
+   "fieldtype": "Check",
+   "label": "Forbidden create Purchase Receipt before Delivery Note"
+  },
+  {
+   "fieldname": "internal_transactions_section",
+   "fieldtype": "Section Break",
+   "label": "Internal Transactions"
+  },
+  {
+   "fieldname": "non_stock_item_section",
+   "fieldtype": "Section Break",
+   "label": "Non Stock Item"
+  },
+  {
+   "fieldname": "permissions_section",
+   "fieldtype": "Section Break",
+   "label": "Permissions"
+  },
+  {
+   "fieldname": "update_supplier",
+   "fieldtype": "Button",
+   "label": "Update Supplier"
+  },
+  {
+   "fieldname": "default_supplier_account_section",
+   "fieldtype": "Section Break",
+   "label": "Default Supplier Account"
+  },
+  {
+   "depends_on": "eval:doc.enable_specific_purchase_approval",
+   "fieldname": "purchase_approval",
+   "fieldtype": "Table",
+   "label": "Purchase Approval",
+   "options": "Purchase User Permissions List"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_specific_purchase_approval",
+   "fieldtype": "Check",
+   "label": "Enable specific purchase approval"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_filter_on_list_view",
+   "fieldtype": "Check",
+   "label": "Enable filter on list view"
+  },
+  {
+   "default": "0",
+   "description": "This settings make incoming batch on GRN equal to main company (supplier)",
+   "fieldname": "allow_copy_batch_from_main_company",
+   "fieldtype": "Check",
+   "label": "Allow copy batch from main company"
+  },
+  {
+   "fieldname": "default_supplier_account",
+   "fieldtype": "Table",
+   "label": "Default Supplier Account",
+   "options": "Supplier Code Account"
+  },
+  {
+   "fieldname": "series_required_pr",
+   "fieldtype": "Table",
+   "label": "Series Required PR",
+   "options": "Series PO required PR"
+  },
+  {
+   "description": "To be use as free text item entry",
+   "fieldname": "non_stock_item",
+   "fieldtype": "Link",
+   "label": "Non Stock Item",
+   "options": "Item"
+  },
+  {
+   "default": "85",
+   "fieldname": "supplier_threshold",
+   "fieldtype": "Percent",
+   "label": "Supplier Threshold"
   }
  ],
  "grid_page_length": 50,
@@ -287,7 +389,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-11-20 12:59:09.925862",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Buying Settings",

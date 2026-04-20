@@ -1,0 +1,394 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-05-19 17:04:02.316968",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "company",
+  "requested_by",
+  "approved_by",
+  "column_break_2",
+  "request_date",
+  "approved_date",
+  "time",
+  "transfer_method_section",
+  "payment_type",
+  "payment_method",
+  "payment_property",
+  "cheque_method",
+  "column_break_1",
+  "purpose",
+  "purpose_description",
+  "bank_account_section",
+  "currency",
+  "bank_account",
+  "bank",
+  "account",
+  "column_break_10",
+  "swift",
+  "bank_account_no",
+  "bank_account_name",
+  "section_break_5",
+  "invoices",
+  "total_amount",
+  "summary_section",
+  "summary_wrapper",
+  "section_break_6",
+  "status",
+  "error_message",
+  "column_break_28",
+  "batch_number",
+  "amended_from",
+  "process_id",
+  "update_on",
+  "transfer_date",
+  "filename"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "PAY--.YY.-####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "requested_by",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Requested By",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "options": "User",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "time",
+   "fieldtype": "Time",
+   "label": "Time",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "transfer_method_section",
+   "fieldtype": "Section Break",
+   "label": "Transfer method"
+  },
+  {
+   "default": "Transfer",
+   "fieldname": "payment_type",
+   "fieldtype": "Data",
+   "label": "Payment Type",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "default": "PayNow",
+   "fieldname": "payment_method",
+   "fieldtype": "Select",
+   "label": "Payment Method",
+   "options": "PayNow\nTT\nMEPS\nIAFT\nFAST\nIBG\nIBG Express"
+  },
+  {
+   "fieldname": "payment_property",
+   "fieldtype": "Select",
+   "label": "Payment Property"
+  },
+  {
+   "depends_on": "eval:doc.payment_type == \"Cheque\"",
+   "fieldname": "cheque_method",
+   "fieldtype": "Select",
+   "label": "Cheque Method",
+   "mandatory_depends_on": "eval:doc.payment_type == \"Cheque\"",
+   "options": "MLCD\nMLFA\nPUDB"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "SUPP",
+   "fieldname": "purpose",
+   "fieldtype": "Link",
+   "label": "Purpose",
+   "options": "Bank Purpose",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "purpose.purpose",
+   "fieldname": "purpose_description",
+   "fieldtype": "Data",
+   "label": "Purpose Description",
+   "read_only": 1
+  },
+  {
+   "fieldname": "bank_account_section",
+   "fieldtype": "Section Break",
+   "label": "Bank Account"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "fieldname": "bank_account",
+   "fieldtype": "Link",
+   "label": "Bank Account",
+   "options": "Bank Account",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "bank_account.bank",
+   "fieldname": "bank",
+   "fieldtype": "Link",
+   "label": "Bank",
+   "options": "Bank",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "bank_account.account",
+   "fieldname": "account",
+   "fieldtype": "Link",
+   "label": "Account",
+   "options": "Account",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "swift",
+   "fieldtype": "Data",
+   "label": "SWIFT",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "bank_account.bank_account_no",
+   "fieldname": "bank_account_no",
+   "fieldtype": "Data",
+   "label": "Bank Account No",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "bank_account.bank_account_name",
+   "fieldname": "bank_account_name",
+   "fieldtype": "Data",
+   "label": "Bank Account Name",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.bank_account",
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break",
+   "label": "Invoices"
+  },
+  {
+   "fieldname": "invoices",
+   "fieldtype": "Table",
+   "label": "Invoices",
+   "options": "Payment Invoice List",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval:doc.total_amount",
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break",
+   "label": "More Information"
+  },
+  {
+   "fieldname": "filename",
+   "fieldtype": "Data",
+   "label": "File ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nPending\nApproved\nRejected\nCancelled\nReceived\nIn Progress\nPartially Complete\nComplete\nFailed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "transfer_date",
+   "fieldtype": "Date",
+   "label": "Transfer Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_28",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "batch_number",
+   "fieldtype": "Int",
+   "label": "Batch Number",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Payment Approval",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "process_id",
+   "fieldtype": "Int",
+   "label": "Process ID",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "description": "Time update by UOB's File",
+   "fieldname": "update_on",
+   "fieldtype": "Datetime",
+   "label": "Update On",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.status == \"Failed\"",
+   "fieldname": "error_message",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Error Message",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.total_amount",
+   "fieldname": "summary_section",
+   "fieldtype": "Section Break",
+   "label": "Summary"
+  },
+  {
+   "fieldname": "summary_wrapper",
+   "fieldtype": "HTML",
+   "label": "summary wrapper"
+  },
+  {
+   "default": "Today",
+   "fieldname": "request_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Request Date",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "approved_date",
+   "fieldtype": "Date",
+   "label": "Approved Date",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-04-20 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "UOB",
+ "name": "Payment Approval",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "1",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

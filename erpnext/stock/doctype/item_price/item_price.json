@@ -9,6 +9,7 @@
  "engine": "InnoDB",
  "field_order": [
   "item_code",
+  "item_group",
   "uom",
   "packing_unit",
   "column_break_17",
@@ -218,13 +219,23 @@
    "fieldtype": "Link",
    "label": "Batch No",
    "options": "Batch"
+  },
+  {
+   "fetch_from": "item_code.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Item Group",
+   "options": "Item Group",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-flag",
  "idx": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-02 22:18:00.450641",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item Price",

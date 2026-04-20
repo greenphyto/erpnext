@@ -8,6 +8,7 @@
   "operation",
   "item_code",
   "source_warehouse",
+  "is_packaging",
   "column_break_3",
   "item_name",
   "description",
@@ -15,6 +16,7 @@
   "include_item_in_manufacturing",
   "qty_section",
   "required_qty",
+  "uom",
   "stock_uom",
   "rate",
   "amount",
@@ -147,11 +149,23 @@
    "label": "Stock UOM",
    "options": "UOM",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_packaging",
+   "fieldtype": "Check",
+   "label": "Is Packaging"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2024-11-19 15:48:16.823384",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order Item",

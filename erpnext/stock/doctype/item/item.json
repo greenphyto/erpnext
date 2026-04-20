@@ -14,17 +14,23 @@
   "naming_series",
   "item_code",
   "item_name",
+  "marketing_name",
   "item_group",
   "stock_uom",
+  "material_group",
+  "material_number",
+  "default_supplier",
   "column_break0",
   "disabled",
   "allow_alternative_item",
   "is_stock_item",
+  "disable_discount_amount",
   "has_variants",
   "opening_stock",
   "valuation_rate",
   "standard_rate",
   "is_fixed_asset",
+  "asset_code",
   "auto_create_assets",
   "is_grouped_asset",
   "asset_category",
@@ -70,12 +76,15 @@
   "accounting",
   "deferred_accounting_section",
   "enable_deferred_expense",
+  "deferred_expense_account",
   "no_of_months_exp",
   "column_break_9s9o",
   "enable_deferred_revenue",
+  "deferred_revenue_account",
   "no_of_months",
   "section_break_avcp",
   "item_defaults",
+  "debit_note_item",
   "purchasing_tab",
   "purchase_uom",
   "min_order_qty",
@@ -90,16 +99,21 @@
   "delivered_by_supplier",
   "column_break2",
   "supplier_items",
+  "deferred_expense_section",
   "foreign_trade_details",
   "country_of_origin",
   "column_break_59",
   "customs_tariff_number",
   "sales_details",
+  "packaging_details_section",
   "sales_uom",
   "grant_commission",
   "is_sales_item",
   "column_break3",
   "max_discount",
+  "customer_price_section",
+  "customer_price",
+  "deferred_revenue",
   "customer_details",
   "customer_items",
   "item_tax_section_break",
@@ -111,12 +125,25 @@
   "manufacturing",
   "include_item_in_manufacturing",
   "is_sub_contracted_item",
+  "rate_card",
   "default_bom",
   "column_break_74",
   "customer_code",
   "default_item_manufacturer",
   "default_manufacturer_part_no",
-  "total_projected_qty"
+  "published_in_website",
+  "total_projected_qty",
+  "department_tab",
+  "item_department",
+  "foms_tab",
+  "packaging",
+  "default_packaging",
+  "foms_product_id",
+  "foms_raw_id",
+  "salad_product",
+  "is_package_item",
+  "sales_details_section",
+  "asset_for_item"
  ],
  "fields": [
   {
@@ -888,6 +915,183 @@
    "fieldname": "deferred_accounting_section",
    "fieldtype": "Section Break",
    "label": "Deferred Accounting"
+  },
+  {
+   "fieldname": "rate_card",
+   "fieldtype": "Link",
+   "label": "Rate Card",
+   "options": "Rate Card"
+  },
+  {
+   "fieldname": "customer_price_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Price"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "depends_on": "eval:doc.is_fixed_asset",
+   "fieldname": "asset_code",
+   "fieldtype": "Link",
+   "label": "Asset Code",
+   "mandatory_depends_on": "is_fixed_asset",
+   "options": "Account"
+  },
+  {
+   "default": "0",
+   "depends_on": "published_in_website",
+   "fieldname": "published_in_website",
+   "fieldtype": "Check",
+   "label": "Published in Website",
+   "read_only": 1
+  },
+  {
+   "fieldname": "department_tab",
+   "fieldtype": "Tab Break",
+   "label": "Department",
+   "options": "fa fa-cogs"
+  },
+  {
+   "fieldname": "packaging",
+   "fieldtype": "Table",
+   "label": "Packaging",
+   "options": "Packaging List Available"
+  },
+  {
+   "allow_bulk_edit": 1,
+   "fieldname": "customer_price",
+   "fieldtype": "Table",
+   "label": "Customer Price",
+   "options": "Item Customer Price"
+  },
+  {
+   "depends_on": "eval:doc.foms_product_id",
+   "description": "Product ID from FOMS",
+   "fieldname": "foms_product_id",
+   "fieldtype": "Int",
+   "label": "FOMS Product ID",
+   "read_only": 1
+  },
+  {
+   "depends_on": "enable_deferred_revenue",
+   "fieldname": "deferred_revenue_account",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "label": "Deferred Revenue Account",
+   "options": "Account"
+  },
+  {
+   "default": "0",
+   "fieldname": "salad_product",
+   "fieldtype": "Check",
+   "label": "Salad Product"
+  },
+  {
+   "fieldname": "item_department",
+   "fieldtype": "Table",
+   "label": "Item Department",
+   "options": "Item Department"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_package_item",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Is Package Item"
+  },
+  {
+   "fieldname": "packaging_details_section",
+   "fieldtype": "Section Break",
+   "label": "Packaging Details"
+  },
+  {
+   "fieldname": "marketing_name",
+   "fieldtype": "Data",
+   "label": "Marketing Name"
+  },
+  {
+   "fieldname": "asset_for_item",
+   "fieldtype": "Data",
+   "label": "Asset for Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sales_details_section",
+   "fieldtype": "Section Break",
+   "label": "Sales Details"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "material_group",
+   "fieldtype": "Link",
+   "label": "Material Group",
+   "options": "Material Group"
+  },
+  {
+   "depends_on": "eval:doc.foms_raw_id",
+   "fieldname": "foms_raw_id",
+   "fieldtype": "Int",
+   "label": "FOMS Raw ID",
+   "read_only": 1
+  },
+  {
+   "depends_on": "enable_deferred_expense",
+   "fieldname": "deferred_expense_account",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "label": "Deferred Expense Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "material_number",
+   "fieldtype": "Data",
+   "in_filter": 1,
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Material Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_tab",
+   "fieldtype": "Tab Break",
+   "label": "FOMS"
+  },
+  {
+   "fieldname": "default_supplier",
+   "fieldtype": "Link",
+   "label": "Default Supplier",
+   "options": "Supplier"
+  },
+  {
+   "default": "0",
+   "fieldname": "disable_discount_amount",
+   "fieldtype": "Check",
+   "label": "Disable Discount Amount"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "deferred_revenue",
+   "fieldtype": "Section Break",
+   "label": "Deferred Revenue"
+  },
+  {
+   "default": "0",
+   "fieldname": "debit_note_item",
+   "fieldtype": "Check",
+   "label": "Debit Note Item"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "deferred_expense_section",
+   "fieldtype": "Section Break",
+   "label": "Deferred Expense"
+  },
+  {
+   "fieldname": "default_packaging",
+   "fieldtype": "Link",
+   "label": "Default Packaging",
+   "options": "Packaging",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-tag",
@@ -895,7 +1099,7 @@
  "image_field": "image",
  "links": [],
  "make_attachments_public": 1,
- "modified": "2025-12-15 20:08:35.634046",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",

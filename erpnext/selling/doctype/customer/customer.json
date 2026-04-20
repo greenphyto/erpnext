@@ -16,6 +16,8 @@
   "customer_name",
   "customer_type",
   "customer_group",
+  "company",
+  "customer_code",
   "column_break0",
   "territory",
   "gender",
@@ -86,8 +88,15 @@
   "column_break_53",
   "is_frozen",
   "disabled",
+  "sku_tab",
   "portal_users_tab",
-  "portal_users"
+  "portal_users",
+  "is_cash_sales",
+  "debit_note_enable",
+  "customer_sku",
+  "total_item",
+  "foms_id",
+  "foms_name"
  ],
  "fields": [
   {
@@ -597,6 +606,72 @@
    "fieldtype": "Read Only",
    "hidden": 1,
    "label": "Last Name"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "mandatory_depends_on": "eval:!doc.is_internal_customer",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "default": "0",
+   "fieldname": "is_cash_sales",
+   "fieldtype": "Check",
+   "label": "Is Cash Sales"
+  },
+  {
+   "allow_bulk_edit": 1,
+   "fieldname": "customer_sku",
+   "fieldtype": "Table",
+   "label": "Customer SKU",
+   "options": "Customer SKU"
+  },
+  {
+   "fieldname": "total_item",
+   "fieldtype": "Int",
+   "label": "Total Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "debit_note_enable",
+   "fieldtype": "Check",
+   "label": "Debit Note enable"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "customer_code",
+   "fieldtype": "Data",
+   "in_filter": 1,
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Customer Code",
+   "read_only_depends_on": "eval:doc.foms_id"
+  },
+  {
+   "fieldname": "foms_name",
+   "fieldtype": "Data",
+   "label": "FOMS Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sku_tab",
+   "fieldtype": "Tab Break",
+   "label": "SKU"
   }
  ],
  "icon": "fa fa-user",
@@ -610,7 +685,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2025-11-25 09:35:56.772949",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

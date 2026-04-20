@@ -20,6 +20,7 @@
   "is_finished_item",
   "is_scrap_item",
   "quality_inspection",
+  "is_process_loss",
   "subcontracted_item",
   "section_break_8",
   "description",
@@ -38,6 +39,7 @@
   "sample_quantity",
   "rates_section",
   "basic_rate",
+  "rate_map",
   "additional_cost",
   "valuation_rate",
   "allow_zero_valuation_rate",
@@ -56,6 +58,7 @@
   "batch_no",
   "accounting",
   "expense_account",
+  "asset_section",
   "accounting_dimensions_section",
   "cost_center",
   "project",
@@ -77,7 +80,15 @@
   "putaway_rule",
   "column_break_51",
   "reference_purchase_receipt",
-  "job_card_item"
+  "job_card_item",
+  "consignment_request",
+  "consignment_item",
+  "created_asset",
+  "purchase_value",
+  "asset_code",
+  "asset_category",
+  "column_break_49",
+  "item_asset"
  ],
  "fields": [
   {
@@ -609,6 +620,69 @@
   {
    "fieldname": "column_break_prps",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_process_loss",
+   "fieldtype": "Check",
+   "label": "Is Process Loss"
+  },
+  {
+   "fieldname": "created_asset",
+   "fieldtype": "Small Text",
+   "label": "Created Asset",
+   "read_only": 1
+  },
+  {
+   "fieldname": "consignment_request",
+   "fieldtype": "Link",
+   "label": "Consignment Request",
+   "options": "Consignment Request",
+   "read_only": 1
+  },
+  {
+   "fieldname": "asset_code",
+   "fieldtype": "Link",
+   "label": "Asset Code",
+   "options": "Account"
+  },
+  {
+   "fieldname": "purchase_value",
+   "fieldtype": "Currency",
+   "label": "Purchase Value"
+  },
+  {
+   "fieldname": "column_break_49",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item_asset",
+   "fieldtype": "Data",
+   "label": "Item Asset",
+   "read_only": 1
+  },
+  {
+   "fieldname": "asset_category",
+   "fieldtype": "Link",
+   "label": "Asset Category",
+   "options": "Asset Category"
+  },
+  {
+   "fieldname": "asset_section",
+   "fieldtype": "Section Break",
+   "label": "Asset"
+  },
+  {
+   "fieldname": "rate_map",
+   "fieldtype": "Currency",
+   "label": "Rate Map",
+   "read_only": 1
+  },
+  {
+   "fieldname": "consignment_item",
+   "fieldtype": "Data",
+   "label": "Consignment Item",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
@@ -616,7 +690,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-10-14 15:10:38.373099",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry Detail",

@@ -11,6 +11,7 @@
   "company",
   "item_code",
   "item_name",
+  "asset_code_series",
   "asset_owner",
   "asset_owner_company",
   "is_existing_asset",
@@ -20,10 +21,12 @@
   "image",
   "journal_entry_for_scrap",
   "column_break_3",
+  "disabled",
   "naming_series",
   "asset_name",
   "asset_category",
   "location",
+  "vendor",
   "split_from",
   "custodian",
   "department",
@@ -45,8 +48,11 @@
   "total_asset_cost",
   "section_break_23",
   "calculate_depreciation",
+  "accumulated_depreciation_amount",
   "column_break_33",
   "opening_accumulated_depreciation",
+  "number_of_depreciations_booked",
+  "warranty_information_section",
   "opening_number_of_booked_depreciations",
   "is_fully_depreciated",
   "section_break_36",
@@ -58,6 +64,8 @@
   "column_break_24",
   "frequency_of_depreciation",
   "next_depreciation_date",
+  "section_break_14",
+  "schedules",
   "depreciation_schedule_sb",
   "depreciation_schedule_view",
   "insurance_details",
@@ -74,10 +82,17 @@
   "status",
   "booked_fixed_asset",
   "column_break_51",
+  "purchase_receipt_amount",
   "purchase_amount",
   "default_finance_book",
   "depr_entry_posting_status",
-  "amended_from"
+  "amended_from",
+  "qrcode_image",
+  "warranty_end",
+  "warranty_agreement",
+  "warranty_coverage",
+  "column_break_43",
+  "warranty_start"
  ],
  "fields": [
   {
@@ -554,6 +569,105 @@
    "hidden": 1,
    "label": "Purchase Invoice Item",
    "options": "Purchase Invoice Item"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "warranty_end",
+   "fieldtype": "Date",
+   "label": "Warranty End"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "warranty_agreement",
+   "fieldtype": "Attach",
+   "label": "Warranty Agreement"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "warranty_coverage",
+   "fieldtype": "Text Editor",
+   "label": "Warranty Coverage"
+  },
+  {
+   "depends_on": "eval:(doc.is_existing_asset && doc.opening_accumulated_depreciation)",
+   "fieldname": "number_of_depreciations_booked",
+   "fieldtype": "Int",
+   "label": "Number of Depreciations Booked",
+   "no_copy": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "warranty_start",
+   "fieldtype": "Date",
+   "label": "Warranty Start"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.asset_code",
+   "fieldname": "asset_code_series",
+   "fieldtype": "Link",
+   "label": "Asset Code Series",
+   "options": "Account",
+   "read_only": 1
+  },
+  {
+   "fieldname": "purchase_receipt_amount",
+   "fieldtype": "Currency",
+   "hidden": 1,
+   "label": "Purchase Receipt Amount",
+   "no_copy": 1,
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "depends_on": "calculate_depreciation",
+   "fieldname": "section_break_14",
+   "fieldtype": "Section Break",
+   "label": "Depreciation Schedule"
+  },
+  {
+   "fieldname": "qrcode_image",
+   "fieldtype": "Data",
+   "label": "QRCode Image",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_43",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "vendor",
+   "fieldtype": "Link",
+   "label": "Vendor",
+   "options": "Supplier"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:doc.warranty_coverage",
+   "fieldname": "warranty_information_section",
+   "fieldtype": "Section Break",
+   "label": "Warranty Information"
+  },
+  {
+   "fieldname": "schedules",
+   "fieldtype": "Table",
+   "label": "Depreciation Schedule",
+   "no_copy": 1,
+   "options": "Depreciation Schedule"
+  },
+  {
+   "fieldname": "accumulated_depreciation_amount",
+   "fieldtype": "Currency",
+   "label": "Accumulated Depreciation Amount",
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "idx": 72,
@@ -597,7 +711,7 @@
    "link_fieldname": "target_asset"
   }
  ],
- "modified": "2025-12-23 16:01:10.195932",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",

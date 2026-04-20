@@ -1,0 +1,164 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "FMAP.#####",
+ "creation": "2024-01-25 15:54:43.747596",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_2",
+  "reference",
+  "data_type",
+  "data_name",
+  "reference_column",
+  "destination",
+  "doc_type",
+  "doc_name",
+  "section_break_8",
+  "status",
+  "last_sync",
+  "created_on",
+  "raw_data_section",
+  "endpoint",
+  "raw_data",
+  "edit_data",
+  "view_in_console",
+  "section_break_15"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "data_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Data Type"
+  },
+  {
+   "fieldname": "data_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Data Name"
+  },
+  {
+   "fieldname": "reference_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "doc_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Doc Type"
+  },
+  {
+   "fieldname": "doc_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Doc Name"
+  },
+  {
+   "fieldname": "section_break_8",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "Unknown",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Unknown\nIn Progress\nMapped"
+  },
+  {
+   "fieldname": "reference",
+   "fieldtype": "Heading",
+   "label": "Reference"
+  },
+  {
+   "fieldname": "destination",
+   "fieldtype": "Heading",
+   "label": "Destination"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "raw_data_section",
+   "fieldtype": "Section Break",
+   "label": "Raw Data"
+  },
+  {
+   "fieldname": "raw_data",
+   "fieldtype": "Code",
+   "label": "Raw Data",
+   "read_only_depends_on": "eval:doc.edit_data==0"
+  },
+  {
+   "fieldname": "view_in_console",
+   "fieldtype": "Button",
+   "label": "View in console"
+  },
+  {
+   "default": "Now",
+   "fieldname": "last_sync",
+   "fieldtype": "Datetime",
+   "label": "Last Sync",
+   "read_only": 1
+  },
+  {
+   "default": "Now",
+   "fieldname": "created_on",
+   "fieldtype": "Datetime",
+   "label": "Created On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_15",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "endpoint",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Endpoint",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "edit_data",
+   "fieldtype": "Check",
+   "label": "Edit Data"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-04-20 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FOMS",
+ "name": "FOMS Data Mapping",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

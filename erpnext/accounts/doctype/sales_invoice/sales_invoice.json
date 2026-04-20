@@ -17,6 +17,7 @@
   "column_break1",
   "posting_date",
   "posting_time",
+  "posting_datetime",
   "set_posting_time",
   "due_date",
   "column_break_14",
@@ -29,11 +30,14 @@
   "update_billed_amount_in_sales_order",
   "update_billed_amount_in_delivery_note",
   "is_debit_note",
+  "debit_note_transaction",
+  "is_pledge",
   "amended_from",
   "accounting_dimensions_section",
   "cost_center",
   "dimension_col_break",
   "project",
+  "column_break_27",
   "currency_and_price_list",
   "currency",
   "conversion_rate",
@@ -50,6 +54,8 @@
   "set_warehouse",
   "set_target_warehouse",
   "section_break_42",
+  "non_package_item",
+  "non_stock_item",
   "items",
   "section_break_30",
   "total_qty",
@@ -154,6 +160,7 @@
   "territory",
   "shipping_address_section",
   "shipping_address_name",
+  "outlet_name",
   "shipping_address",
   "shipping_addr_col_break",
   "dispatch_address_name",
@@ -176,6 +183,8 @@
   "po_no",
   "column_break_23",
   "po_date",
+  "donor_name",
+  "delivery_note",
   "more_info",
   "debit_to",
   "party_account_currency",
@@ -2186,6 +2195,59 @@
    "fieldtype": "Data",
    "is_virtual": 1,
    "label": "Last Scanned Warehouse"
+  },
+  {
+   "depends_on": "eval:doc.is_pledge",
+   "fieldname": "donor_name",
+   "fieldtype": "Data",
+   "label": "Donor Name"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "delivery_note",
+   "fieldtype": "Data",
+   "label": "Delivery Note"
+  },
+  {
+   "fieldname": "posting_datetime",
+   "fieldtype": "Datetime",
+   "label": "Posting Date & Time",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "debit_note_transaction",
+   "fieldtype": "Check",
+   "label": "Debit Note Transaction (without reference document)"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_pledge",
+   "fieldtype": "Check",
+   "label": "For Pledge"
+  },
+  {
+   "fieldname": "column_break_27",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "non_package_item",
+   "fieldtype": "Check",
+   "label": "Non Package Item"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_stock_item",
+   "fieldtype": "Check",
+   "label": "Non Stock Item"
+  },
+  {
+   "fetch_from": "shipping_address_name.outlet_name",
+   "fieldname": "outlet_name",
+   "fieldtype": "Data",
+   "label": "Outlet Name",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,

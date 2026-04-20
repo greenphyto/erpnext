@@ -22,9 +22,11 @@
   "company",
   "posting_date",
   "apply_tds",
+  "tax_details_section",
   "2_add_edit_gl_entries",
   "accounts",
   "section_break99",
+  "tax_type",
   "cheque_no",
   "cheque_date",
   "user_remark",
@@ -34,9 +36,11 @@
   "difference",
   "get_balance",
   "multi_currency",
+  "currency_base",
   "total_amount_currency",
   "total_amount",
   "total_amount_in_words",
+  "column_for_currency_base_column",
   "reference",
   "clearance_date",
   "remark",
@@ -63,9 +67,36 @@
   "column_break3",
   "is_opening",
   "stock_entry",
+  "work_order",
   "subscription_section",
   "auto_repeat",
-  "amended_from"
+  "amended_from",
+  "total_credit_in_currency_base",
+  "difference_in_currency_base",
+  "tax_template",
+  "tax_template_based_on",
+  "base_value",
+  "gst_entry",
+  "section_break_36",
+  "total_tax_amount_debit",
+  "col_brk",
+  "tax_template_",
+  "total_taxable_amount_credit",
+  "party_source",
+  "column_break_17",
+  "exchange_rate",
+  "section_break_31",
+  "section_break_28",
+  "total_debit_in_currency_base",
+  "party_name",
+  "transaction_type",
+  "invoice_no",
+  "invoice_type",
+  "column_break_37",
+  "total_tax_amount_credit",
+  "template_tax_based_on",
+  "total_taxable_amount_debit",
+  "is_tax_refund"
  ],
  "fields": [
   {
@@ -552,6 +583,211 @@
    "hidden": 1,
    "label": "Party Not Required",
    "no_copy": 1
+  },
+  {
+   "depends_on": "eval:doc.multi_currency",
+   "fieldname": "total_credit_in_currency_base",
+   "fieldtype": "Currency",
+   "label": "Total Credit in Currency Base",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tax_template",
+   "fieldtype": "Dynamic Link",
+   "label": "Tax Template",
+   "mandatory_depends_on": "eval: doc.voucher_type == \"GST Input Tax\"",
+   "options": "tax_template_based_on"
+  },
+  {
+   "fieldname": "gst_entry",
+   "fieldtype": "Table",
+   "label": "GST Entry",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "options": "GST for Journal Entry"
+  },
+  {
+   "fieldname": "col_brk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tax_template_",
+   "fieldtype": "Dynamic Link",
+   "label": "Tax Template",
+   "options": "template_tax_based_on"
+  },
+  {
+   "default": "Supplier",
+   "fieldname": "party_source",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Party Source",
+   "options": "Supplier\nCustomer"
+  },
+  {
+   "default": "1",
+   "depends_on": "eval:doc.multi_currency",
+   "fieldname": "exchange_rate",
+   "fieldtype": "Float",
+   "label": "Exchange Rate",
+   "mandatory_depends_on": "eval:doc.multi_currency",
+   "precision": "4"
+  },
+  {
+   "depends_on": "eval:doc.voucher_type == \"Journal Entry with GST\"",
+   "fieldname": "section_break_31",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_28",
+   "fieldtype": "Section Break",
+   "label": "Reference Details"
+  },
+  {
+   "depends_on": "eval:doc.multi_currency",
+   "fieldname": "total_debit_in_currency_base",
+   "fieldtype": "Currency",
+   "label": "Total Debit in Currency Base",
+   "read_only": 1
+  },
+  {
+   "fieldname": "party_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Party Name",
+   "options": "party_source"
+  },
+  {
+   "depends_on": "eval:doc.voucher_type == \"Journal Entry with GST\"",
+   "fieldname": "section_break_36",
+   "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval:doc.multi_currency",
+   "fieldname": "currency_base",
+   "fieldtype": "Link",
+   "label": "Currency Base",
+   "mandatory_depends_on": "eval:doc.multi_currency",
+   "options": "Currency"
+  },
+  {
+   "default": "Buying",
+   "fieldname": "transaction_type",
+   "fieldtype": "Select",
+   "label": "Transaction Type",
+   "mandatory_depends_on": "eval: doc.voucher_type == \"GST Input Tax\"",
+   "options": "Buying\nSelling"
+  },
+  {
+   "fieldname": "work_order",
+   "fieldtype": "Link",
+   "label": "Work Order",
+   "options": "Work Order",
+   "read_only": 1
+  },
+  {
+   "default": "Purchase Invoice",
+   "fieldname": "invoice_type",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Invoice Type",
+   "options": "Purchase Invoice\nSales Invoice"
+  },
+  {
+   "default": "Sales Taxes and Charges Template",
+   "fieldname": "tax_template_based_on",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Tax Template Based On",
+   "options": "Sales Taxes and Charges Template\nPurchase Taxes and Charges Template"
+  },
+  {
+   "fieldname": "column_break_37",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.multi_currency&&doc.difference_in_currency_base",
+   "fieldname": "difference_in_currency_base",
+   "fieldtype": "Currency",
+   "label": "Difference (Dr - Cr)"
+  },
+  {
+   "fieldname": "total_tax_amount_debit",
+   "fieldtype": "Currency",
+   "label": "Total Tax Amount Debit",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "default": "Purchase Taxes and Charges Template",
+   "fieldname": "template_tax_based_on",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Template Tax Based On",
+   "options": "Sales Taxes and Charges Template\nPurchase Taxes and Charges Template"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_tax_refund",
+   "fieldtype": "Check",
+   "label": "Is Tax Refund"
+  },
+  {
+   "fieldname": "total_tax_amount_credit",
+   "fieldtype": "Currency",
+   "label": "Total Tax Amount Credit",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.multi_currency",
+   "fieldname": "column_for_currency_base_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Buying",
+   "fieldname": "tax_type",
+   "fieldtype": "Select",
+   "label": "Tax Type",
+   "options": "Buying\nSelling"
+  },
+  {
+   "fieldname": "total_taxable_amount_credit",
+   "fieldtype": "Data",
+   "label": "Total Taxable Amount (Credit)",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "invoice_no",
+   "fieldtype": "Dynamic Link",
+   "label": "Invoice No",
+   "options": "invoice_type"
+  },
+  {
+   "depends_on": "eval: doc.voucher_type == \"GST Input Tax\"",
+   "fieldname": "tax_details_section",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "label": "Tax Details"
+  },
+  {
+   "fieldname": "column_break_17",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "base_value",
+   "fieldtype": "Currency",
+   "label": "Base Value",
+   "mandatory_depends_on": "eval: doc.voucher_type == \"GST Input Tax\""
+  },
+  {
+   "fieldname": "total_taxable_amount_debit",
+   "fieldtype": "Currency",
+   "label": "Total Taxable Amount (Debit)",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -566,7 +802,7 @@
    "table_fieldname": "payment_entries"
   }
  ],
- "modified": "2025-09-29 13:05:46.982277",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Journal Entry",

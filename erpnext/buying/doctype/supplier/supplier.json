@@ -13,6 +13,7 @@
   "naming_series",
   "supplier_name",
   "country",
+  "supplier_code_series",
   "column_break0",
   "supplier_group",
   "supplier_type",
@@ -34,6 +35,7 @@
   "website",
   "language",
   "dashboard_tab",
+  "item_tab",
   "tax_tab",
   "tax_id",
   "column_break_27",
@@ -56,6 +58,7 @@
   "payment_terms",
   "default_accounts_section",
   "accounts",
+  "bank_tab",
   "settings_tab",
   "allow_purchase_invoice_creation_without_purchase_order",
   "allow_purchase_invoice_creation_without_purchase_receipt",
@@ -71,9 +74,19 @@
   "hold_type",
   "column_break_59",
   "release_date",
+  "ai_info_section",
   "portal_users_tab",
   "portal_users",
-  "column_break_1mqv"
+  "column_break_1mqv",
+  "company",
+  "supplier_code",
+  "foms_id",
+  "foms_name",
+  "supplier_keywords",
+  "default_bank_account_no",
+  "enable_item_supplier",
+  "item_supplier",
+  "bank_list_html"
  ],
  "fields": [
   {
@@ -473,6 +486,91 @@
   {
    "fieldname": "column_break_mglr",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "mandatory_depends_on": "eval:!doc.is_internal_supplier",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "supplier_code",
+   "fieldtype": "Data",
+   "in_filter": 1,
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Supplier Code",
+   "read_only_depends_on": "eval:doc.foms_id"
+  },
+  {
+   "fieldname": "supplier_keywords",
+   "fieldtype": "Small Text",
+   "label": "Supplier Keywords"
+  },
+  {
+   "fieldname": "default_bank_account_no",
+   "fieldtype": "Link",
+   "label": "Default Bank Account No",
+   "options": "Bank Number"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_item_supplier",
+   "fieldtype": "Check",
+   "label": "Enable Item Supplier"
+  },
+  {
+   "fieldname": "bank_list_html",
+   "fieldtype": "HTML",
+   "label": "Bank List html"
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "description": "Specify the item for only can buy from this supplier",
+   "fieldname": "item_supplier",
+   "fieldtype": "Table",
+   "label": "Item Supplier",
+   "options": "Item List"
+  },
+  {
+   "fieldname": "item_tab",
+   "fieldtype": "Tab Break",
+   "label": "Item"
+  },
+  {
+   "fieldname": "foms_name",
+   "fieldtype": "Data",
+   "label": "FOMS Name",
+   "read_only": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "default": "S0.####",
+   "fieldname": "supplier_code_series",
+   "fieldtype": "Select",
+   "label": "Supplier Code Series",
+   "options": "S0.####\nS1.####\nS2.####\nMYS0.####\nMYS1.####"
+  },
+  {
+   "fieldname": "bank_tab",
+   "fieldtype": "Tab Break",
+   "label": "Bank"
+  },
+  {
+   "fieldname": "ai_info_section",
+   "fieldtype": "Section Break",
+   "label": "AI Info"
   }
  ],
  "icon": "fa fa-user",
@@ -485,7 +583,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2024-05-08 18:02:57.342931",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",

@@ -20,6 +20,7 @@
   "column_break1",
   "posting_date",
   "posting_time",
+  "posting_datetime",
   "set_posting_time",
   "column_break_12",
   "company",
@@ -49,6 +50,7 @@
   "is_subcontracted",
   "supplier_warehouse",
   "items_section",
+  "non_stock_item",
   "items",
   "section_break0",
   "total_qty",
@@ -1294,6 +1296,18 @@
    "fieldtype": "Data",
    "is_virtual": 1,
    "label": "Last Scanned Warehouse"
+  },
+  {
+   "fieldname": "posting_datetime",
+   "fieldtype": "Datetime",
+   "label": "Posting Date & Time",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "non_stock_item",
+   "fieldtype": "Check",
+   "label": "Non Stock Item"
   }
  ],
  "grid_page_length": 50,
@@ -1301,7 +1315,7 @@
  "idx": 261,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-11-27 16:46:30.210628",
+ "modified": "2026-04-20 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Purchase Receipt",
