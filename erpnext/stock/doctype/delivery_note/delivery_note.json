@@ -1643,6 +1643,7 @@
    "label": "Donor Name"
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "shipping_address_name.outlet_name",
    "fieldname": "outlet_name",
    "fieldtype": "Data",
@@ -1724,7 +1725,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-26 17:06:42.505389",
+ "modified": "2026-04-20 10:33:39.719661",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

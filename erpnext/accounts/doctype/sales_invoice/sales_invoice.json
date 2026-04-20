@@ -2184,6 +2184,7 @@
    "label": "Non Stock Item"
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "shipping_address_name.outlet_name",
    "fieldname": "outlet_name",
    "fieldtype": "Data",
@@ -2201,7 +2202,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2026-03-26 19:13:07.029713",
+ "modified": "2026-04-20 10:34:02.799174",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",
