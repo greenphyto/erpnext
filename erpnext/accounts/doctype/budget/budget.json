@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_import": 1,
+ "allow_rename": 1,
  "autoname": "naming_series:",
  "creation": "2016-05-16 11:42:29.632528",
  "doctype": "DocType",
@@ -187,12 +188,14 @@
    "fieldtype": "Section Break"
   },
   {
+   "allow_bulk_edit": 1,
    "fieldname": "accounts",
    "fieldtype": "Table",
    "label": "Budget Accounts",
    "options": "Budget Account"
   },
   {
+   "default": "BUDGET-.{fiscal_year}.-",
    "fieldname": "naming_series",
    "fieldtype": "Data",
    "hidden": 1,
@@ -206,7 +209,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-04-08 12:02:14.773972",
+ "modified": "2026-04-21 14:59:01.236100",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Budget",
@@ -233,5 +236,6 @@
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
+ "title_field": "cost_center",
  "track_changes": 1
 }
