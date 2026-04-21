@@ -1,0 +1,12 @@
+<ul class="list-unstyled sidebar-menu">
+    <li class="sidebar-label tags-label"> 
+        <svg class="icon icon-sm">
+            <use href="#icon-image"></use>
+        </svg> QR Code
+    </li>
+    <li class="sidebar-qrcode">
+        {% if (img) { %}
+            <img src="{{img}}" alt="" class="img-qrcode">
+        {% } %}
+    </li>
+</ul>

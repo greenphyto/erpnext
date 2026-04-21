@@ -1,0 +1,43 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2025-03-17 12:01:56.134261",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "json": "{\"filters\":[],\"fields\":[[\"name\",\"Delivery Note\"],[\"customer\",\"Delivery Note\"],[\"company\",\"Delivery Note\"],[\"grand_total\",\"Delivery Note\"],[\"status\",\"Delivery Note\"],[\"per_installed\",\"Delivery Note\"],[\"currency\",\"Delivery Note\"],[\"customer_name\",\"Delivery Note\"],[\"base_grand_total\",\"Delivery Note\"],[\"per_billed\",\"Delivery Note\"],[\"transporter_name\",\"Delivery Note\"],[\"is_return\",\"Delivery Note\"],[\"item_code\",\"Delivery Note Item\"],[\"item_name\",\"Delivery Note Item\"],[\"marketing_name\",\"Delivery Note Item\"],[\"shipping_address\",\"Delivery Note\"],[\"posting_date\",\"Delivery Note\"],[\"qty\",\"Delivery Note Item\"]],\"order_by\":\"`tabDelivery Note`.`modified` desc\",\"add_totals_row\":0,\"page_length\":20,\"column_widths\":{\"name\":120,\"customer\":120,\"company\":150,\"grand_total\":150,\"status\":150,\"per_installed\":120,\"currency\":120,\"customer_name\":120,\"base_grand_total\":150,\"per_billed\":120,\"transporter_name\":120,\"is_return\":120,\"Delivery Note Item:item_code\":150,\"Delivery Note Item:item_name\":150,\"Delivery Note Item:marketing_name\":120,\"shipping_address\":120,\"posting_date\":100,\"Delivery Note Item:qty\":100},\"group_by\":null}",
+ "letter_head": "Greenphyto",
+ "modified": "2025-03-17 12:12:26.796449",
+ "modified_by": "Administrator",
+ "module": "Stock",
+ "name": "Delivery Note Items",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Delivery Note",
+ "report_name": "Delivery Note Items",
+ "report_type": "Report Builder",
+ "roles": [
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "Stock Manager"
+  },
+  {
+   "role": "Accounts (View Only)"
+  },
+  {
+   "role": "Stock (View Only)"
+  }
+ ]
+}

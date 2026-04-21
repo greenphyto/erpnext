@@ -1,0 +1,28 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2024-05-08 18:04:35.033771",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "json": "{\"filters\":[[\"Email Queue\",\"message\",\"like\",\"%PR00066/2024%\",false]],\"fields\":[[\"name\",\"Email Queue\"],[\"docstatus\",\"Email Queue\"],[\"status\",\"Email Queue\"],[\"owner\",\"Email Queue\"],[\"recipient\",\"Email Queue Recipient\"],[\"creation\",\"Email Queue\"],[\"modified\",\"Email Queue\"]],\"order_by\":\"`tabEmail Queue`.`modified` desc\",\"add_totals_row\":0,\"page_length\":20,\"column_widths\":{\"name\":120,\"status\":120,\"owner\":203,\"Email Queue Recipient:recipient\":198,\"creation\":174,\"modified\":159},\"group_by\":null}",
+ "letter_head": "Greenphyto",
+ "modified": "2024-05-08 18:11:56.745033",
+ "modified_by": "Administrator",
+ "module": "Selling",
+ "name": "Email Queue in Details",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Email Queue",
+ "report_name": "Email Queue in Details",
+ "report_type": "Report Builder",
+ "roles": [
+  {
+   "role": "System Manager"
+  }
+ ]
+}

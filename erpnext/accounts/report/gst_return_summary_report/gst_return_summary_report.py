@@ -1,0 +1,841 @@
+# Copyright (c) 2021, Frappe Technologies Pvt. Ltd. and contributors
+# For license information, please see license.txt
+
+
+from inspect import _void
+import json
+
+import frappe
+from frappe import _
+from frappe.contacts.report.addresses_and_contacts import test_addresses_and_contacts
+from frappe.utils import formatdate, get_link_to_form, fmt_money, getdate, get_url_to_form
+from frappe.utils import flt
+
+def execute(filters=None):
+	return VATAuditReport(filters).run()
+
+GLOBAL_ITEM = "items"
+
+def flt2(value):
+	return flt(value,2)
+class VATAuditReport(object):
+	def __init__(self, filters=None):
+		self.filters = frappe._dict(filters or {})
+		self.filters['name'] = "INV3157/2025"
+		self.columns = []
+		self.data = []
+		self.doctypes = ["Sales Invoice","Purchase Invoice"]
+
+	def run(self):
+		#self.get_sa_vat_accounts()
+		self.invoice_items = frappe._dict()
+		self.get_columns()
+		gftotal_net = gstotal_net = gptotal_net = 0
+		totalsstr = "Output Tax Due"
+		totalpstr = "Less:Input Tax and Refunds claimed"
+		totalfstr = "Equals: Net GST to be paid by you or Net GST to be claimed by you"
+		self.get_tax_from_gl_entry()
+		for doctype in self.doctypes:
+			self.select_columns = """
+			name as voucher_no,
+			taxes_and_charges,
+			posting_date, remarks"""
+			columns = (
+				", supplier as party, credit_to as account, bill_no as Invoice_No"
+				if doctype == "Purchase Invoice"
+				else ", customer as party, debit_to as account, name as Invoice_No, debit_note_transaction"
+			)
+			self.select_columns += columns
+
+			self.setup_data()
+			self.get_journal_entry_data(doctype)
+			self.get_invoice_data(doctype)
+
+			if self.invoices:
+				self.get_invoice_items(doctype)
+				self.get_items_based_on_tax_rate(doctype)
+				self.get_data(doctype)
+				taxdata = self.data
+			
+				if doctype == "Purchase Invoice" :
+					gptotal_net = taxdata[-2]["tax_amount"]
+				if doctype == "Sales Invoice" :
+					gstotal_net = taxdata[-2]["tax_amount"]
+		gftotal_net=( 0.0 if flt(gstotal_net) =="" else flt(gstotal_net)  )- ( 0.0 if flt(gptotal_net) =="" else flt(gptotal_net)  )  
+		gstotal = {
+				"posting_date":  totalsstr,
+				"gross_amount": '',
+				"tax_amount": '',
+				"tax_amount": fmt_money(gstotal_net),
+				"bold": 0,
+			}
+		gptotal = {
+				"posting_date": totalpstr,
+				"gross_amount": '',
+				"tax_amount": '',
+				"tax_amount": fmt_money(gptotal_net),
+				"bold": 0,
+			}
+		gftotal = {
+				"posting_date": totalfstr,
+				"gross_amount": '',
+				"tax_amount": '',
+				"tax_amount": fmt_money(gftotal_net ),
+				"bold": 0,
+			}
+		self.data.append(gstotal)
+		self.data.append(gptotal)
+		self.data.append(gftotal)
+		
+		return self.columns, self.data
+
+	# def get_sa_vat_accounts(self):
+	# 	self.sa_vat_accounts = frappe.get_all(
+	# 		"South Africa VAT Account", filters={"parent": self.filters.company}, pluck="account"
+	# 	)
+	# 	if not self.sa_vat_accounts and not frappe.flags.in_test and not frappe.flags.in_migrate:
+	# 		link_to_settings = get_link_to_form(
+	# 			"South Africa VAT Settings", "", label="South Africa VAT Settings"
+	# 		)
+	# 		frappe.throw(_("Please set VAT Accounts in {0}").format(link_to_settings))
+
+	def setup_data(self):
+		self.invoices = frappe._dict()
+		self.tax_details = []
+
+	def get_invoice_data(self, doctype):
+		conditions = self.get_conditions()
+
+		invoice_data = frappe.db.sql(
+			"""
+			SELECT
+				docstatus, posting_date as inv_date, '{doctype}' as voucher_type,
+				{select_columns}
+			FROM
+				`tab{doctype}`
+			WHERE
+				docstatus in (1) 
+				and is_opening = 'No'
+				{where_conditions}
+			ORDER BY
+				posting_date DESC
+			""".format(
+				select_columns=self.select_columns, doctype=doctype, where_conditions=conditions
+			),
+			self.filters,
+			as_dict=1,
+			debug=0
+		)
+
+		self.get_deleted_data(doctype)
+
+		invoice_data += self.deleted_data
+		invoice_data.sort(key=lambda x: x.posting_date, reverse=True)
+
+		for d in invoice_data:
+			self.invoices.setdefault(d.voucher_no, d)
+
+	def get_invoice_items(self, doctype):
+		#, is_zero_rated
+		items = frappe.db.sql(
+			"""
+			SELECT
+				ifnull(item_code, item_name) as item_code, parent, base_net_amount
+			FROM
+				`tab%s Item`
+			WHERE
+				parent in (%s)
+			"""
+			% (doctype, ", ".join(["%s"] * len(self.invoices))),
+			tuple(self.invoices),
+			as_dict=1,
+		)
+		for d in items:
+			self.invoice_items.setdefault(d.parent, {}).setdefault(d.item_code, {"net_amount": 0.0})
+			self.invoice_items[d.parent][d.item_code]["net_amount"] += d.get("base_net_amount", 0)
+
+	def get_tax_from_gl_entry(self):
+		# find tax account
+		temp = frappe.db.sql("""
+			SELECT DISTINCT account_head
+			FROM (
+				SELECT ptc.account_head
+				FROM `tabPurchase Taxes and Charges` ptc
+				INNER JOIN `tabPurchase Taxes and Charges Template` ptct ON ptct.name = ptc.parent
+				WHERE ptc.parenttype = 'Purchase Taxes and Charges Template'
+				AND ptct.company = %(company)s
+				AND ptc.account_head IS NOT NULL
+				AND ptc.account_head != ''
+
+				UNION
+
+				SELECT stc.account_head
+				FROM `tabSales Taxes and Charges` stc
+				INNER JOIN `tabSales Taxes and Charges Template` stct ON stct.name = stc.parent
+				WHERE stc.parenttype = 'Sales Taxes and Charges Template'
+				AND stct.company = %(company)s
+				AND stc.account_head IS NOT NULL
+				AND stc.account_head != ''
+			) AS combined
+			ORDER BY account_head
+		""", {"company": self.filters.company}, as_list=1)
+		accounts = [a[0] for a in temp]
+
+		from_date = getdate(self.filters.from_date)
+		to_date = getdate(self.filters.to_date)
+
+		gl_tax = frappe.db.sql("""
+			SELECT
+				gle.voucher_type,
+				gle.voucher_no,
+				je.voucher_type AS je_voucher_type,
+				je.tax_type as je_tax_type,
+				SUM(gle.credit_in_account_currency - gle.debit_in_account_currency) AS tax_amount_output,
+				SUM(gle.debit_in_account_currency - gle.credit_in_account_currency) AS tax_amount_input
+			FROM
+				`tabGL Entry` gle
+				LEFT JOIN `tabJournal Entry` je
+					ON je.name = gle.voucher_no
+					AND gle.voucher_type = 'Journal Entry'
+			WHERE
+				gle.docstatus = 1
+				AND gle.account IN %(accounts)s
+				AND gle.posting_date BETWEEN %(start)s AND %(end)s
+			GROUP BY
+				gle.voucher_type, gle.voucher_no
+		""", {
+			"start": from_date,
+			"end": to_date,
+			"accounts":accounts
+		}, as_dict=1, debug=0)
+
+		self.tax_amount_map = {}
+		for row in gl_tax:
+			if row.voucher_type == "Sales Invoice":
+				self.tax_amount_map[(row.voucher_type, row.voucher_no)] = flt(row.tax_amount_output)
+			elif row.voucher_type == "Journal Entry":
+				if row.je_voucher_type == "GST Input Tax" or row.je_tax_type == "Selling":
+					self.tax_amount_map[(row.voucher_type, row.voucher_no)] = flt(row.tax_amount_output)
+				else:
+					self.tax_amount_map[(row.voucher_type, row.voucher_no)] = flt(row.tax_amount_input)
+			else:
+				self.tax_amount_map[(row.voucher_type, row.voucher_no)] = flt(row.tax_amount_input)
+
+		return self.tax_amount_map
+
+	
+	def get_tax_types(self, doctype):
+		tax_type = frappe._dict()
+		tax_doctype = (
+			"Purchase Taxes and Charges" if doctype == "Purchase Invoice" else "Sales Taxes and Charges"
+		)
+		#, is_zero_rated
+		items = frappe.db.sql(
+			"""
+				SELECT
+					tc.rate, 
+					tc.parent,
+					tct.company
+				FROM
+					`tab{doc_type}` tc
+				INNER JOIN
+					`tab{doc_type} Template` tct ON tct.name = tc.parent
+				WHERE
+					tc.parenttype = "{doc_type} Template"
+					AND tct.company = %s
+			""".format(
+				doc_type=tax_doctype
+			),
+			(self.filters.company),
+			as_dict=1,
+			debug=0
+		)
+	
+		return items	
+
+	def get_items_based_on_tax_rate(self, doctype):
+		self.items_based_on_tax_rate = frappe._dict()
+		self.item_tax_rate = frappe._dict()
+		self.tax_doctype = (
+			"Purchase Taxes and Charges" if doctype == "Purchase Invoice" else "Sales Taxes and Charges"
+		)
+
+		self.tax_details += list(frappe.db.sql(
+			"""
+			SELECT
+				s.name as parent,
+				t.name, t.tax_amount,
+				t.account_head as account,
+				t.item_wise_tax_detail,
+				t.charge_type,
+				t.row_id,
+				%(doctype)s as parenttype,
+				s.posting_date
+			FROM
+				`tab{}` s
+			LEFT JOIN 
+				`tab{}` t on t.parent = s.name
+			WHERE
+				s.docstatus in (1)
+				and s.company = %(company)s
+				and s.name in %(invoices)s
+			ORDER BY
+				t.account_head
+			""".format(doctype, self.tax_doctype),
+			{
+				"doctype":doctype,
+				"company": self.filters.company,
+				"tax_doctype":self.tax_doctype,
+				"invoices": [x for x in self.invoices.keys()]
+			}
+			, debug=0, as_dict=1
+		))
+
+		self.tax_details += self.tax_detail_on_deleted 
+
+		tax_detail_map = {}
+		# summarize first
+		for tax in self.tax_details:
+			parent = tax['parent']
+			temp = {}
+			if tax['item_wise_tax_detail']:
+				try:
+					temp = json.loads(tax['item_wise_tax_detail'])
+				except:
+					temp = {}
+			
+			if parent not in tax_detail_map:
+				tax_detail_map[parent] = temp.copy()
+			else:
+				tax_detail_map[parent].update(temp)
+		
+		for parent, v in tax_detail_map.items():
+			for item, detail in self.invoice_items.get(parent).items():
+				if item not in tax_detail_map[parent]:
+					tax_detail_map[parent][item] = [0, 0]
+
+		already_add = []
+		for tax in self.tax_details:
+			# primary data
+			parent = tax['parent']
+			item_wise_tax_detail = tax_detail_map.get(parent)
+			parenttype = tax['parenttype']
+
+			# optional data
+			tax_amount = flt(tax.get("tax_amount"))
+
+			if parent not in already_add:
+				already_add.append(parent)
+			else:
+				continue
+
+			if item_wise_tax_detail:
+				for item_code, taxes in item_wise_tax_detail.items():
+					if tax.get("charge_type")!="On Item Row" and taxes[1] == 0 and tax_amount:
+						taxes[1] = tax_amount
+
+					tax_rate = self.get_item_amount_map(parent, parenttype, item_code, taxes)
+
+					if tax_rate is not None:
+						rate_based_dict = self.items_based_on_tax_rate.setdefault(parent, {}).setdefault(
+							tax_rate, []
+						)
+						if item_code not in rate_based_dict:
+							rate_based_dict.append(item_code)
+
+			else:
+				items = []
+				for item, detail in self.invoice_items.get(parent).items():
+					items.append(item)
+					taxes = [0, 0]
+					self.get_item_amount_map(parent, parenttype, item, taxes)
+
+				self.items_based_on_tax_rate.setdefault(parent, {}).setdefault(
+					0, items
+				)
+
+	def get_item_amount_map(self, parent, parenttype, item_code, taxes):
+		net_amount = flt(self.invoice_items.get(parent, {}).get(item_code, {}).get("net_amount"))
+		gst_item = False
+		if not net_amount and parent and parenttype == "Purchase Invoice":
+			net_amount = flt(frappe.get_value("Purchase Invoice", parent, "base_value_for_gst_input"))
+			gst_item = True
+
+		tax_rate = taxes[0]
+		tax_amount = taxes[1]
+		
+		gross_amount = net_amount + tax_amount
+
+		self.item_tax_rate.setdefault(parent, {}).setdefault(
+			GLOBAL_ITEM,
+			{
+				"tax_rate": tax_rate,
+				"gross_amount": 0.0,
+				"tax_amount": 0.0,
+				"net_amount": 0.0,
+				"parent":parent,
+			},
+		)
+
+		self.item_tax_rate[parent][GLOBAL_ITEM]["tax_amount"] += tax_amount
+		if not gst_item:
+			self.item_tax_rate[parent][GLOBAL_ITEM]["net_amount"] += net_amount
+			self.item_tax_rate[parent][GLOBAL_ITEM]["gross_amount"] += gross_amount
+		else:
+			gross_amount = net_amount + self.item_tax_rate[parent][GLOBAL_ITEM]["tax_amount"]
+			self.item_tax_rate[parent][GLOBAL_ITEM]["net_amount"] = net_amount
+			self.item_tax_rate[parent][GLOBAL_ITEM]["gross_amount"] = gross_amount
+
+		return tax_rate
+
+	def get_conditions(self):
+		conditions = ""
+		for opts in (
+			("company", " and company=%(company)s"),
+			("from_date", " and posting_date>=%(from_date)s"),
+			("to_date", " and posting_date<=%(to_date)s"),
+		):
+			if self.filters.get(opts[0]):
+				conditions += opts[1]
+
+		return conditions
+
+	def get_data(self, doctype):
+		consolidated_data = self.get_consolidated_data(doctype)
+		isloop = False
+		section_name = _("Input tax/ Purchase tax") if doctype == "Purchase Invoice" else _("Output tax/ Sales tax")
+
+		 
+		gtotal_gross = gtotal_tax = gtotal_net = 0.0
+		totalstr = " "
+		for taxType, section in consolidated_data.items():
+			label = frappe.bold(section_name )
+			section_head = {"posting_date": label}
+			total_gross = total_tax = total_net = 0.0
+			self.data.append(section_head) if isloop == False else  _void
+			isloop = True
+			invoice_detail = []
+			for row in section.get("data"):
+				if (self.filters.show_details):
+					invoice_detail.append(row)
+
+				total_tax += 0 if  row["tax_amount"] =="" else  flt(row["tax_amount"])
+				total_gross += 0 if  row["gross_amount"]=="" else flt(row["gross_amount"])
+				if row['voucher_type'] == "Journal Entry with GST":
+					row['voucher_type'] = "Journal Entry"
+
+			total_net = total_gross - total_tax
+			
+			self.data += invoice_detail
+			totalstr = _("Total value of taxable ") if doctype == "Purchase Invoice" else _("Total value of taxable ")
+			doctypestr = _("Purchases") if doctype == "Purchase Invoice" else _("Sales")
+			total = {
+				"posting_date": totalstr + taxType,
+				"gross_amount": fmt_money(total_gross),
+				"tax_amount": fmt_money(total_tax),
+				"net_amount": fmt_money(total_net),
+				"bold": 0,
+			}
+			
+			self.data.append(total)
+			gross_amount= 0.0 if  row["gross_amount"] =="" else flt(total["gross_amount"])
+			gtotal_gross += gross_amount
+			gtotal_tax +=  0.0 if  row["tax_amount"] =="" else flt(total["tax_amount"])
+			gtotal_net +=  0.0 if  row["net_amount"] =="" else flt(total["net_amount"])
+			
+		gtotal = {
+				"posting_date": totalstr + doctypestr,
+				"gross_amount": fmt_money(gtotal_gross),
+				"tax_amount": fmt_money(gtotal_tax),
+				"net_amount": fmt_money(gtotal_net),
+				"bold": 0,
+				"voucher_type":doctype,
+			}
+		self.data.append(gtotal)
+		self.data.append({}) #if doctype == "Purchase Invoice" else _void
+
+	def get_deleted_data(self, doctype):
+		self.deleted_data = []
+		self.tax_detail_on_deleted = []
+		conditions = ""
+		for opts in (
+			("from_date", " and document_date>=%(from_date)s"),
+			("to_date", " and document_date<=%(to_date)s"),
+		):
+			if self.filters.get(opts[0]):
+				conditions += opts[1]
+		data = frappe.db.sql("""
+			SELECT 
+				name, document_date, data
+			FROM
+				`tabDeleted Document`
+			WHERE
+				deleted_doctype = "{doctype}" 
+				{where_conditions}
+					   
+		""".format(
+			where_conditions=conditions, doctype=doctype
+		), self.filters, as_dict=1, debug=0)
+
+		for d in data:
+			dt = frappe._dict(json.loads(d.data))
+
+			if dt.docstatus == 0:
+				continue
+
+			# overide data
+			dt.voucher_no = dt.name
+			dt.docstatus = 3
+			dt.voucher_type = doctype
+			dt.posting_date = getdate(dt.posting_date)
+			if doctype == "Purchase Invoice":
+				dt.Invoice_No = dt.bill_no
+				dt.party = dt.supplier
+				dt.account = dt.credit_to
+			else:
+				dt.Invoice_No = dt.name
+				dt.party = dt.customer
+				dt.account = dt.debit_to
+
+			self.deleted_data.append(dt)
+			self.invoices.setdefault(dt.voucher_no, dt)
+			for row in dt.get("items"):
+				row = frappe._dict(row)
+				self.invoice_items.setdefault(row.parent, {}).setdefault(row.item_code, {"net_amount": 0.0})
+
+			for row in dt.get("taxes"):
+				row = frappe._dict(row)
+				self.tax_detail_on_deleted.append(
+					{
+						"parent":row.parent,
+						"account":row.account_head,
+						"item_wise_tax_detail":row.item_wise_tax_detail,
+						"parenttype":row.parenttype,
+						"posting_date":getdate(dt.posting_date)
+					}
+				)
+			
+	def get_journal_entry_data(self, doctype):
+		self.tax_detail_on_deleted = []
+		conditions = ""
+		for opts in (
+			("from_date", " and posting_date>=%(from_date)s"),
+			("to_date", " and posting_date<=%(to_date)s"),
+			("company", " and company=%(company)s"),
+		):
+			if self.filters.get(opts[0]):
+				conditions += opts[1]
+		data = frappe.db.sql("""
+			SELECT 
+				name, transaction_type, voucher_type, tax_template, total_debit, invoice_no, party_name, base_value, posting_date, is_tax_refund,
+				tax_template_, total_taxable_amount_debit, total_taxable_amount_credit, total_tax_amount_debit, total_tax_amount_credit
+			FROM
+				`tabJournal Entry`
+			WHERE
+				voucher_type in ("GST Input Tax", "Journal Entry with GST")
+				and docstatus = 1
+				and invoice_type = "{doctype}"
+				{where_conditions}
+					   
+		""".format(
+			where_conditions=conditions, doctype=doctype
+		), self.filters, as_dict=1)
+
+		for d in data:
+			dt = frappe._dict(d)
+
+			dt.voucher_no = dt.name
+			dt.docstatus = 1
+			dt.is_journal_entry = 1
+			dt.posting_date = getdate(d.posting_date)
+			dt.Invoice_No = dt.invoice_no
+			dt.party = dt.party_name
+			tax_amount = flt(dt.total_taxable_amount_debit) or flt(dt.total_taxable_amount_credit) *-1
+			if dt.voucher_type == "GST Input Tax":
+				# overide data
+				dt.taxes_and_charges = dt.tax_template
+				account_head = ''
+				if d.transaction_type == "Buying":
+					invoice_type = "Purchase Invoice"
+				else:
+					invoice_type = "Sales Invoice"
+					pass
+
+				item_name = "item"
+				temp = {}
+				total = dt.total_debit * (-1 if dt.is_tax_refund else 1)
+				temp[item_name] = [8, total]
+				tax_detail = json.dumps(temp)
+				self.invoices.setdefault(dt.voucher_no, dt)
+				self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": d.base_value})
+				self.tax_details.append(
+					{
+						"parent":dt.name,
+						"account":account_head,
+						"item_wise_tax_detail":tax_detail,
+						"parenttype":invoice_type,
+						"posting_date":getdate(dt.posting_date)
+					}
+				)
+
+			
+			# Old Journal Entry with GST style summary
+			elif dt.voucher_type == "Journal Entry with GST" and not tax_amount:
+				# overide data
+				# dt.voucher_type = "Journal Entry"
+				rows = frappe.db.get_list("Journal Entry Account", {"parent":dt.name}, "*", ignore_permissions=1, debug=0, order_by="idx")
+				base_row = None
+				total = 0
+				base_value = 0
+				item_name = "item"
+				tax_mapping = {}
+				base_value_map = {}
+				for row in rows:
+					if row.gst_option:
+						if not base_row:
+							frappe.msgprint("GST Option should be after transaction row, please check on Journal Entry<br> {}".format(get_link_to_form("Journal Entry", dt.name)))
+							continue
+						dt.taxes_and_charges = row.gst_template or dt.tax_template_
+						account_head = ''
+						invoice_type = "Purchase Invoice"
+						temp = {}
+						if row.credit:
+							if not base_row.credit:
+								frappe.msgprint("GST Option should be after transaction row, please check on Journal Entry<br> {}".format(get_link_to_form("Journal Entry", dt.name)))
+							base_value += base_row.credit * -1
+							total += row.credit * -1
+						else:
+							if not base_row.debit:
+								frappe.msgprint("GST Option should be after transaction row, please check on Journal Entry<br> {}".format(get_link_to_form("Journal Entry", dt.name)))
+							base_value += base_row.debit
+							total += row.debit
+						temp[item_name] = [8, total]
+						tax_detail = json.dumps(temp)
+
+						base_value_map[dt.name] = base_value
+						tax_mapping[dt.name] = {
+							"parent":dt.name,
+							"account":account_head,
+							"item_wise_tax_detail":tax_detail,
+							"parenttype":invoice_type,
+							"posting_date":getdate(dt.posting_date)
+						}
+						base_row = None
+					else:
+						base_row = row
+					
+				for key, val in tax_mapping.items():
+					self.tax_details.append(val)
+					base_value = base_value_map[dt.name]
+					self.invoices.setdefault(dt.voucher_no, dt)
+					self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": base_value})
+			
+			# New Journal Entry with GST
+			else:
+				dt.taxes_and_charges = dt.tax_template_
+				account_head = ''
+				if d.tax_type == "Buying":
+					invoice_type = "Purchase Invoice"
+				else:
+					invoice_type = "Sales Invoice"
+
+				item_name = "item"
+				temp = {}
+
+				if dt.total_taxable_amount_debit:
+					base_value = flt(dt.total_taxable_amount_debit)
+				else:
+					base_value = flt(dt.total_taxable_amount_credit) *-1
+
+				if dt.total_tax_amount_debit:
+					total = dt.total_tax_amount_debit
+				else:
+					total = dt.total_tax_amount_credit * -1
+
+				temp[item_name] = [8, total]
+				tax_detail = json.dumps(temp)
+				self.invoices.setdefault(dt.voucher_no, dt)
+				self.invoice_items.setdefault(dt.name, {}).setdefault(item_name, {"net_amount": base_value})
+				self.tax_details.append({
+					"parent":dt.name,
+					"account":account_head,
+					"item_wise_tax_detail":tax_detail,
+					"parenttype":invoice_type,
+					"posting_date":getdate(dt.posting_date)
+				})
+
+	def get_consolidated_data(self, doctype):
+		consolidated_data_map = {}
+		self.already_add = []
+		tax_doctype = (
+			"Purchase Taxes and Charges Template" if doctype == "Purchase Invoice" else "Sales Taxes and Charges Template"
+		)
+		default_for_zero_tax = frappe.get_value(tax_doctype, {"default_for_zero":1}) or ""
+		for inv, inv_data in self.invoices.items():
+			if inv_data.get("voucher_type") == 'Journal Entry with GST':
+				inv_data['voucher_type'] = 'Journal Entry'
+
+			data = self.items_based_on_tax_rate.get(inv) or {0: ['']}
+			for rate, items in data.items():
+				row = {"tax_amount": 0.0, "gross_amount": 0.0, "net_amount": 0.0}
+				docprefix = _("purchases ") if doctype == "Purchase Invoice" else _("sales ")
+				taxdata = default_for_zero_tax if inv_data.get("taxes_and_charges") is None else inv_data.get("taxes_and_charges")
+				taxType = docprefix + taxdata
+				consolidated_data_map.setdefault(taxType, {"data": []})
+				key = inv
+				if key not in self.already_add:
+					self.already_add.append(key)
+				else:
+					continue
+
+				for item in items:
+					detail = self.item_tax_rate.get(inv) or {}
+					item_details = detail.get(GLOBAL_ITEM)
+
+					row['inv_date'] = inv_data.get("posting_date")
+					row["account"] = inv_data.get("account")
+					row["Invoice_No"]= inv_data.get("Invoice_No")
+					row["posting_date"] = inv #formatdate(inv_data.get("posting_date"), "dd-mm-yyyy")
+
+					row["Date"] = formatdate(inv_data.get("posting_date"), "dd-mm-yyyy")
+					#row["voucher_type"] = ""
+					row["voucher_no"] = inv
+					row["voucher_type"] = inv_data.get("voucher_type")
+					row["party_type"] = "Customer" if doctype == "Sales Invoice" else "Supplier"
+					row["party"] = inv_data.get("party")
+					row["remarks"] = inv_data.get("remarks")
+
+					if inv_data.docstatus == 2:
+						row['posting_date'] = f"{inv} - Cancelled"
+						continue
+
+					if inv_data.docstatus == 3:
+						row['posting_date'] = f"{inv} - Deleted"
+						continue
+
+					if inv_data.get("debit_note_transaction"):
+						row['posting_date'] = f"{inv} - Debit Note"
+						# continue
+					
+					if inv_data.get("is_journal_entry"):
+						row['posting_date'] = f"{inv} - Journal Entry"
+
+					if inv_data.get("is_tax_refund"):
+						row['posting_date'] += " (refund)"
+
+					if not item_details:
+						continue
+					
+					rowgross_amount = 0.0 if item_details.get("gross_amount") =="" else item_details.get("gross_amount")
+
+					if len(items) == len(detail.keys()):
+						row["gross_amount"] += item_details.get("gross_amount")
+					else:
+						row["gross_amount"] = item_details.get("gross_amount")
+						
+					key = (inv_data.get("voucher_type"), inv)
+					gl_tax_amount = self.tax_amount_map.get(key)
+
+					if gl_tax_amount is not None:
+						row["tax_amount"] = flt(gl_tax_amount)
+					else:
+						row["tax_amount"] += flt(item_details.get("tax_amount"))
+					row["tax_charge"] = inv_data.get("taxes_and_charges")
+
+				row["net_amount"] = fmt_money( flt2(flt2(row["gross_amount"]) - flt2(row["tax_amount"])) )
+				row["tax_amount"] = fmt_money( flt2(row["tax_amount"]) )
+				row["gross_amount"] = fmt_money( flt2(row["gross_amount"]) )
+				# if row["voucher_no"] == "CN161/2025":
+				# 	print(731)
+				consolidated_data_map[taxType]["data"].append(row)
+
+		get_tax_type = self.get_tax_types(doctype)
+		
+		for tax_type in get_tax_type:
+			docprefix = _("purchases ") if doctype == "Purchase Invoice" else _("sales ")
+			taxtype =docprefix +  tax_type.get("parent")
+			 
+			if (taxtype in consolidated_data_map):
+				continue
+			else:
+				row = {"tax_amount": 0.0, "gross_amount": 0.0, "net_amount": 0.0}	 
+				consolidated_data_map.setdefault(taxtype, {"data": []})
+				row["account"] = ""
+				row["posting_date"] =""
+				row["voucher_type"] = ""
+				row["voucher_no"] = ""
+				row["party_type"] = "Customer" if doctype == "Sales Invoice" else "Supplier"
+				row["party"] = ""
+				row["remarks"] = ""
+				row["gross_amount"] = ""
+				row["tax_amount"] = ""
+				row["net_amount"] = ""
+				row["tax_charge"] = tax_type.get("parent")
+				consolidated_data_map[taxtype]["data"].append(row)
+		 
+		return consolidated_data_map
+
+	def get_columns(self):
+		if (self.filters.show_details):
+						self.columns +=[ 	{"fieldname": "party",
+								"label": "Company",
+								"fieldtype": "Data",
+								"width": 140}]
+		if (self.filters.show_details):
+							self.columns +=[ {"fieldname": "Invoice_No",
+							"label": "Invoice",
+							"fieldtype": "Data",
+							"width": 140}]
+		if (self.filters.show_details):	
+							self.columns +=[ {"fieldname": "Date",
+							"label": "Date",
+							"fieldtype": "Data",
+							"width": 140}]
+		self.columns += [
+						
+
+			{"fieldname": "posting_date", "label": " ", "fieldtype": "Link","options": "Account", "width": 350},
+			{
+				"fieldname": "account",
+				"label": "Account",
+				"fieldtype": "Link",
+				"options": "Account",
+				"width": 180,
+				"hidden": 1
+			},
+			{
+				"fieldname": "voucher_type",
+				"label": "Voucher Type",
+				"fieldtype": "Data",
+				"width": 140,
+				"hidden": 1
+			},
+			{
+				"fieldname": "voucher_no",
+				"label": "Reference",
+				"fieldtype": "Dynamic Link",
+				"options": "voucher_type",
+				"width": 150,
+				"hidden": 1
+			},
+			{
+				"fieldname": "party_type",
+				"label": "Party Type",
+				"fieldtype": "Data",
+				"width": 140,
+				"hidden": 1
+				 
+			},
+			{
+				"fieldname": "party",
+				"label": "Party",
+				"fieldtype": "Dynamic Link",
+				"options": "party_type",
+				"width": 150,
+				"hidden": 1
+			},
+			{"fieldname": "remarks", "label": "Details", "fieldtype": "Data", "width": 150,"hidden": 1},
+			{"fieldname": "net_amount", "label": "Taxable Amount", "fieldtype": "Currency","options":"Company:company:default_currency", "width": 150},
+			{"fieldname": "tax_amount", "label": "GST Amount", "fieldtype": "Currency","options":"Company:company:default_currency", "width": 150},
+			{"fieldname": "gross_amount", "label": "Total", "fieldtype": "Currency","options":"Company:company:default_currency", "width": 150},
+		]

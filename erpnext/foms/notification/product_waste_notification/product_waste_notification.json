@@ -1,0 +1,31 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "doc.system_generated == 1 and doc.request_no == \"Expired Product\" and doc.purpose == \"Material Issue\" and doc.docstatus == 1",
+ "creation": "2024-12-19 15:28:45.456215",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Stock Entry",
+ "enabled": 1,
+ "event": "Submit",
+ "exclude_recipients": "doreen@greenphyto.com",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "{% set today = frappe.utils.format_date(frappe.utils.add_days(frappe.utils.today(), -1)) %}\n\n<H3>Product Waste ({{today}})</H3>\n\n<p>Please note that the following products in our inventory have been disposed of as they have reached their expiration date as of <strong>{{ today }}</strong>:</p>\n\n<table style=\"border-collapse: collapse; width: 100%;\">\n    <thead>\n        <tr>\n            <th style=\"border: 1px solid #ddd; padding: 8px; text-align: left;\">Product Name</th>\n            <th style=\"border: 1px solid #ddd; padding: 8px; text-align: left;\">Batch Number</th>\n            <th style=\"border: 1px solid #ddd; padding: 8px; text-align: left;\">Warehouse</th>\n            <th style=\"border: 1px solid #ddd; padding: 8px; text-align: left;\">Qty</th>\n            <th style=\"border: 1px solid #ddd; padding: 8px; text-align: left;\">UOM</th>\n        </tr>\n    </thead>\n    <tbody>\n        {% for d in doc.items %}\n        <tr>\n            <td style=\"border: 1px solid #ddd; padding: 8px;\">{{ d.item_code }}</td>\n            <td style=\"border: 1px solid #ddd; padding: 8px;\">{{ d.batch_no }}</td>\n            <td style=\"border: 1px solid #ddd; padding: 8px;\">{{ d.s_warehouse }}</td>\n            <td style=\"border: 1px solid #ddd; padding: 8px;\">{{ d.qty }}</td>\n            <td style=\"border: 1px solid #ddd; padding: 8px;\">{{ d.uom }}</td>\n        </tr>\n        {% endfor %}\n    </tbody>\n</table>\n\n<p>These items have been removed from our inventory as per our disposal policy for expired products.</p>\n<p>Thank you</p>",
+ "modified": "2025-01-22 21:10:16.880438",
+ "modified_by": "Administrator",
+ "module": "FOMS",
+ "name": "Product Waste Notification",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_role": "Waste Manager"
+  }
+ ],
+ "send_system_notification": 1,
+ "send_to_all_assignees": 0,
+ "sender": "ERP",
+ "sender_email": "erp@greenphyto.com",
+ "subject": "Product Waste {{ frappe.utils.format_date(doc.posting_date) }}"
+}

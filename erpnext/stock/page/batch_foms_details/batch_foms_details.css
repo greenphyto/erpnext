@@ -1,0 +1,23 @@
+
+div[data-fieldname="sr_wrapper"]{
+    margin-left: auto;
+}
+.draft-recon{
+    a{
+        color: blue;
+    }
+}
+
+.loading-area{
+    text-align: center;
+    margin-top: 2.1rem;
+}
+button:disabled.btn-add{
+    background-color: unset;
+    color: #4e4e4e;
+    border: 0.5px solid #8b8b8b;
+}
+
+.row-onupdate{
+    opacity: 0.5;
+}
