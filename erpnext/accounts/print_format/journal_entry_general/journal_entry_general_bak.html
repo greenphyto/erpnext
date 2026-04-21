@@ -1,0 +1,290 @@
+<div
+  class="page-break"
+  style="display: flex; flex-direction: column; flex: 1 1 0%"
+>
+  {% set company_currency = frappe.db.get_value("Company", doc.company,
+  "default_currency") %}
+  <div id="header-html" class="hidden-pdf">
+    <div class="letter-head">
+      <div style="text-align: left">
+        <img
+          alt="Greenphyto"
+          src="https://s3.ap-southeast-1.amazonaws.com/www.greenphyto.com/gplogo.jpg"
+          style="width: 126px"
+          width="126.0"
+        />
+      </div>
+    </div>
+
+    <div class="print-heading">
+      <h2>
+        <div>Journal Entry</div>
+        <small class="sub-heading">{{doc.name}}</small>
+      </h2>
+    </div>
+  </div>
+
+  <div
+    id="footer-html"
+    class="visible-pdf"
+    style="
+      display: block !important;
+      order: 1;
+      margin-top: auto;
+      padding-top: var(--padding-xl);
+    "
+  >
+    {% if print_settings.letter_head and print_settings.letter_head.footer %}
+    <div class="letter-head-footer">
+      {{ print_settings.letter_head.footer }}
+    </div>
+    {% endif %}
+
+    <p class="text-center small page-number visible-pdf">
+      Page <span class="page"></span> of <span class="topage"></span>
+    </p>
+  </div>
+
+  <div class="row section-break" data-label="">
+    <div class="col-xs-6 column-break">
+      <div
+        class="row data-field"
+        data-fieldname="voucher_type"
+        data-fieldtype="Select"
+      >
+        <div class="col-xs-5">
+          <label>Entry Type: </label>
+        </div>
+        <div class="col-xs-7 value">{{doc.voucher_type}}</div>
+      </div>
+    </div>
+
+    <div class="col-xs-6 column-break">
+      <div
+        class="row data-field"
+        data-fieldname="posting_date"
+        data-fieldtype="Date"
+      >
+        <div class="col-xs-5">
+          <label>Posting Date: </label>
+        </div>
+        <div class="col-xs-7 value">{{doc.get_formatted("posting_date")}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row section-break" data-label="">
+    <div class="col-xs-12 column-break">
+      <div data-fieldname="accounts" data-fieldtype="Table">
+        <table class="table table-bordered table-condensed">
+          <thead>
+            <tr>
+              <th style="width: 3%" class="table-sr">No.</th>
+
+              <th
+                style="width: 30%"
+                class=""
+                data-fieldname="accounts"
+                data-fieldtype="Table"
+              >
+                Account Name
+              </th>
+
+              <th
+                style="width: 10%"
+                class=""
+                data-fieldname="accounts"
+                data-fieldtype="Table"
+              >
+                Acc. Code
+              </th>
+
+              <th
+                style="width: 12%"
+                data-fieldname="accounts"
+                data-fieldtype="Table"
+              >
+                Party Type
+              </th>
+
+              <th
+                style="width: 15%"
+                data-fieldname="accounts"
+                data-fieldtype="Table"
+              >
+                Party
+              </th>
+
+              <th
+                style="width: 15%"
+                class="text-right"
+                data-fieldname="accounts"
+                data-fieldtype="Table"
+              >
+                Debit <br />({{ doc.currency_base if doc.multi_currency else
+                company_currency }})
+              </th>
+
+              <th
+                style="width: 15%"
+                class="text-right"
+                data-fieldname="accounts"
+                data-fieldtype="Table"
+              >
+                Credit <br />({{ doc.currency_base if doc.multi_currency else
+                company_currency }})
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in doc.get("accounts") %}
+            <tr>
+              <td class="table-sr">{{ row.idx }}</td>
+
+              <td class="" data-fieldname="accounts" data-fieldtype="Table">
+                <div class="value">{{ row.account_name }}</div>
+              </td>
+
+              <td class="" data-fieldname="accounts" data-fieldtype="Table">
+                <div class="value">{{ row.account_code }}</div>
+              </td>
+
+              <td
+                class="text-right"
+                data-fieldname="accounts"
+                data-fieldtype="Table"
+              >
+                <div class="value">{{ row.party_type }}</div>
+              </td>
+
+              <td
+                class="text-right"
+                data-fieldname="accounts"
+                data-fieldtype="Table"
+              >
+                <div class="value">{{ row.party }}</div>
+              </td>
+
+              <td
+                class="text-right"
+                data-fieldname="accounts"
+                data-fieldtype="Table"
+              >
+                <div class="value">{{ row.get_formatted("debit") }}</div>
+              </td>
+
+              <td
+                class="text-right"
+                data-fieldname="accounts"
+                data-fieldtype="Table"
+              >
+                <div class="value">{{ row.get_formatted("credit") }}</div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="row section-break" data-label="">
+    <div class="col-xs-6 column-break">
+      <div
+        class="row data-field"
+        data-fieldname="cheque_no"
+        data-fieldtype="Data"
+      >
+        <div class="col-xs-5">
+          <label>Reference Number: </label>
+        </div>
+        <div class="col-xs-7 value">Tfr bal-UOB USD 161080-161024</div>
+      </div>
+
+      <div
+        class="row data-field"
+        data-fieldname="cheque_date"
+        data-fieldtype="Date"
+      >
+        <div class="col-xs-5">
+          <label>Reference Date: </label>
+        </div>
+        <div class="col-xs-7 value">01-04-2024</div>
+      </div>
+    </div>
+
+    <div class="col-xs-6 column-break">
+      {% if doc.multi_currency %}
+      <div
+        class="row data-field"
+        data-fieldname="cheque_no"
+        data-fieldtype="Data"
+      >
+        <div class="col-xs-5">
+          <label>Multi Currency:</label>
+        </div>
+        <div class="col-xs-7 value"> 
+          <input type="checkbox" disabled="disabled" checked="checked">
+        </div>
+      </div>
+      {% endif %}
+      <div
+        class="row data-field"
+        data-fieldname="cheque_no"
+        data-fieldtype="Data"
+      >
+        <div class="col-xs-5">
+          <label>Currency:</label>
+        </div>
+        <div class="col-xs-7 value"> 
+          {{ doc.currency_base if doc.multi_currency else
+            company_currency }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row section-break" data-label="Reference">
+    <div class="col-xs-6 column-break">
+      <div
+        class="row data-field"
+        data-fieldname="remark"
+        data-fieldtype="Small Text"
+      >
+        <div class="col-xs-5">
+          <label>Remark: </label>
+        </div>
+        <div class="col-xs-7 value">
+          Note: Being transfer UOB-USD (SGD currency) to UOB-USD <br />Reference
+          #Tfr bal-UOB USD 161080-161024 dated 01-04-2024
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xs-6 column-break">
+    </div>
+  </div>
+
+  <div class="row section-break" data-label="Printing Settings">
+    <div class="col-xs-6 column-break"></div>
+
+    <div class="col-xs-6 column-break">
+      <div
+        class="row data-field"
+        data-fieldname="letter_head"
+        data-fieldtype="Link"
+      >
+        <div class="col-xs-5">
+          <label>Letter Head: </label>
+        </div>
+        <div class="col-xs-7 value">Greenphyto</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row section-break" data-label="More Information">
+    <div class="col-xs-6 column-break"></div>
+
+    <div class="col-xs-6 column-break"></div>
+  </div>
+</div>

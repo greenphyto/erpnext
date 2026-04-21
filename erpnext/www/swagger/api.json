@@ -1,0 +1,1642 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Swagger ERP API enpoint for FOMS",
+    "description": "this is to integrating between ERP Controller from FOMS action",
+    "termsOfService": "http://greenphyto.com/",
+    "contact": {
+      "email": "support@greenphyto.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api/method/"
+    }
+  ],
+  "paths": {
+    "/login": {
+      "post": {
+        "summary": "Login User",
+        "description": "Login to user",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "usr": {
+                    "type": "string"
+                  },
+                  "pwd": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "usr": "administrator",
+                  "pwd": "admin"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Wrong username/password"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.ping_data": {
+      "post": {
+        "summary": "To test push data dummy",
+        "description": "-",
+        "operationId": "test push data",
+        "requestBody": {
+          "description": "Test push data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "data1": "100",
+                    "data2": "200"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_bom": {
+      "post": {
+        "summary": "Create new Bill of Material (BOM) from recipe FOMS",
+        "description": "-",
+        "operationId": "create new BOM",
+        "requestBody": {
+          "description": "Use data request as data returned from FOMS <b>GetRecipeByProductId</b>",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "productID": "37",
+                    "productVersionName": "V1.6",
+                    "leadTimeDays": 30,
+                    "process": [
+                      {
+                        "processName": "Seeding",
+                        "productRawMaterial": [
+                          {
+                            "rawMaterialId": 38,
+                            "rawMaterialRefNo": "RM-IN-WW",
+                            "rawMaterialName": "Water",
+                            "uomrm": "L",
+                            "uomProduct": "Per Tray",
+                            "qtyrm": 36.0
+                          },
+                          {
+                            "rawMaterialId": 39,
+                            "rawMaterialRefNo": "RM-MS-SP",
+                            "rawMaterialName": "Sponge",
+                            "uomrm": "unit",
+                            "uomProduct": "Per Tray",
+                            "qtyrm": 180.0
+                          },
+                          {
+                            "rawMaterialId": 40,
+                            "rawMaterialRefNo": "RM-NS-NSA",
+                            "rawMaterialName": "Nutrient A",
+                            "uomrm": "ml",
+                            "uomProduct": "Per Tray",
+                            "qtyrm": 180.0
+                          },
+                          {
+                            "rawMaterialId": 41,
+                            "rawMaterialRefNo": "RM-NS-NSB",
+                            "rawMaterialName": "Nutrient B",
+                            "uomrm": "ml",
+                            "uomProduct": "Per Tray",
+                            "qtyrm": 180.0
+                          },
+                          {
+                            "rawMaterialId": 57,
+                            "rawMaterialRefNo": "RM-SD-SPC",
+                            "rawMaterialName": "Small Size Pak Choy Seeds",
+                            "uomrm": "g",
+                            "uomProduct": "Per Tray",
+                            "qtyrm": 0.75
+                          }
+                        ],
+                        "productTask": [
+                          {
+                            "taskID": "T-0289",
+                            "taskSequence": 1,
+                            "taskName": "Check in RM & Equipment",
+                            "details": "Check in all the required RM",
+                            "taskType": "Check in Raw Materials/Equipment"
+                          },
+                          {
+                            "taskID": "T-0290",
+                            "taskSequence": 2,
+                            "taskName": "Get location from ASRS",
+                            "details": "Location obtained from ASRS",
+                            "taskType": "ASRS Storage"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "ERPBomId": "BOM-PR-AV-KL-0001"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_work_order": {
+      "post": {
+        "summary": "Create new Work Order in ERP",
+        "description": "-",
+        "operationId": "create new Work Order",
+        "requestBody": {
+          "description": "Create new Work Order in ERP",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "fomsWorkOrderID": "FOMS-001",
+                  "fomsLotID": "LOT12",
+                  "productID": "37",
+                  "salesOrderNo": [
+                    "SO056/2024"
+                  ],
+                  "submit": true,
+                  "qty": 2,
+                  "gross_weight": 4,
+                  "uom": "Kg",
+                  "company": "Greenphyto Pte Ltd"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "ERPWorkOrderID": "workOrderName",
+                      "ERPBOMId": "bomId"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.update_work_order_operation_status": {
+      "post": {
+        "summary": "Update current Work Order status based on FOMS Process",
+        "description": "This endpoint is used to update operation process start/end information. So ERPNext can initiate job card, stock entry, start, and end job card logic based on the provided data. Completion of job card logic depends on FOMS's operation process start and end statuses.<br>Set <b>percentage</b> to <b>100</b> to complete the Operation",
+        "operationId": "update Work Order status",
+        "requestBody": {
+          "description": "Update Work Order Status",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "ERPWorkOrderID": "LOT135-001",
+                  "operationNo": 1,
+                  "percentage": 100,
+                  "rawMaterials": [
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "41",
+                      "rawMaterialRefNo": "RM-NS-NSB",
+                      "rawMaterialBatchRefNo": "",
+                      "qty": 1520,
+                      "uom": "ml"
+                    },
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "40",
+                      "rawMaterialRefNo": "RM-NS-NSA",
+                      "rawMaterialBatchRefNo": "",
+                      "qty": 1900,
+                      "uom": "ml"
+                    },
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "57",
+                      "rawMaterialRefNo": "RM-SD-SPC",
+                      "rawMaterialBatchRefNo": "",
+                      "qty": 1.5,
+                      "uom": "g"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "result": true,
+                      "percentage": 10
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.submit_work_order_finish_goods": {
+      "post": {
+        "summary": "Submit Finish Goods and completing Work Order",
+        "description": "This endpoint updates the finished goods quantity from FOMS to ERPNext.<br>Please make sure all operation it has been completed before finish work order",
+        "operationId": "submit finish goods",
+        "requestBody": {
+          "description": "Submit Finish Goods",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "erpWorkOrderID": "FOMS-001-005",
+                  "qty": 1,
+                  "packets": 20,
+                  "expiryDate": "2025-01-01"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "ERPStockEntry": "stockEntryName"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.update_qty_after_finish": {
+      "post": {
+        "summary": "Update Finished Goods Qty",
+        "description": "Adjust finished goods batch quantity using Stock Reconciliation.",
+        "operationId": "update qty after finish",
+        "requestBody": {
+          "description": "Update finished goods quantity",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "erpWorkOrderID": "25-0814-001",
+                  "batch_id": "PR-LV-CO-BN00133",
+                  "new_qty": 32,
+                  "submit": 1,
+                  "posting_date": "2025-01-01",
+                  "posting_time": "10:00",
+                  "remark": "Adjust Stock"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "result": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "result": false,
+                      "error": "Batch ID Not Found!"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_raw_material": {
+      "post": {
+        "summary": "Create/update raw material",
+        "description": "Create raw material from FOMS to ERP.<br>ID should be <b>unique</b> every item",
+        "operationId": "create raw material",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "farmId": 15,
+                    "rawMaterialType": {
+                      "rawMaterialTypeName": "Water",
+                      "rawMaterialTypeShortForm": "IN",
+                      "rawMaterialVariantTypes": null,
+                      "id": 16
+                    },
+                    "rawMaterialVariantType": {
+                      "rawMaterialTypeId": 16,
+                      "variantTypeName": "Water",
+                      "variantTypeShortForm": "WW",
+                      "id": 41
+                    },
+                    "rawMaterialRefNo": "RM-IN-WW",
+                    "rawMaterialName": "Water",
+                    "rawMaterialDescription": "Water Raw Material",
+                    "unitOfMeasurement": "L",
+                    "safetyLevel": 0,
+                    "maximumLevel": 0,
+                    "requestLeadTime": 0,
+                    "currentQty": 0,
+                    "isDraft": false,
+                    "isInfinityQty": true,
+                    "isSeed": false,
+                    "minimumOrderQuantity": 0,
+                    "isNutrient": false,
+                    "rawMaterialMapping": null,
+                    "batches": null,
+                    "id": 38
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": true
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_raw_material_reserve": {
+      "post": {
+        "summary": "Create raw material reserve",
+        "description": "This endpoint is to reserve raw material to ERP side, before starting the Work Order",
+        "operationId": "work order reserve api",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "ERPWorkOrderID": "FOMS-123-001",
+                  "items": [
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "38",
+                      "rawMaterialRefNo": "RM-IN-WW",
+                      "rawMaterialBatchRefNo": "",
+                      "qtyReserve": 196,
+                      "uom": "L"
+                    },
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "41",
+                      "rawMaterialRefNo": "RM-NS-NSB",
+                      "rawMaterialBatchRefNo": "",
+                      "qtyReserve": 1980,
+                      "uom": "ml"
+                    },
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "72",
+                      "rawMaterialRefNo": "RM-NS-NSB",
+                      "rawMaterialBatchRefNo": "",
+                      "qtyReserve": 2.57,
+                      "uom": "g"
+                    },
+                    {
+                      "sourceWarehouseId": "48",
+                      "sourceWarehouseRefNo": "Raw Materials - GPL",
+                      "rawMaterialId": "40",
+                      "rawMaterialRefNo": "RM-NS-NSA",
+                      "rawMaterialBatchRefNo": "",
+                      "qtyReserve": 2480,
+                      "uom": "ml"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "ERPStockEntry": "StockEntryName"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_material_request": {
+      "post": {
+        "summary": "Create raw material request",
+        "description": "This endpoint is to request to buy new items stock ",
+        "operationId": "create material request",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "transactionDate": "2025-12-26",
+                  "requiredBy": "2025-12-26",
+                  "requestedBy": "adeline",
+                  "cancel": false,
+                  "items": [
+                    {
+                      "rawMaterialName": "Nutrient A Powder",
+                      "rawMaterialRefNo": "RM-NS-NPA",
+                      "po": "",
+                      "status": "Received",
+                      "rawMaterialId": 55,
+                      "purchaseOrderId": 0,
+                      "requestDate": "2025-12-26",
+                      "requestByUserId": 15,
+                      "requestByUserName": "jeraldine",
+                      "estDeliveryDate": "2025-12-26T00:00:00",
+                      "receiptDate": "0001-01-01T00:00:00",
+                      "qtyRequest": 2000,
+                      "uom": "unit",
+                      "id": 59
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "materialRequestNo": "materialRequestName"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_material_return": {
+      "post": {
+        "summary": "Create material return",
+        "description": "This endpoint is to return material from related purchase record",
+        "operationId": "create material return",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "return_against": "GRN00003/2024",
+                    "items": [
+                      {
+                        "return_qty": 2,
+                        "item_code": "F1 HK Kailan seeds",
+                        "uom": "g",
+                        "batch_no": ""
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "purchaseReturnNo": "purchaseReturnName"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_product": {
+      "post": {
+        "summary": "Create Product (item)",
+        "description": "This endpoint is to create item in ERP from FOMS Product",
+        "operationId": "create product",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "productID": "FD-VG-01",
+                    "productName": "Red Bean",
+                    "productDetail": "Read bean F1 quality",
+                    "productDesc": "Read bean F1 quality from Taiwan",
+                    "unitOfMeasurement": "kg",
+                    "id": 101,
+                    "defaultExpiryDays": 30
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "ProductNo": "item-001"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_delivery_order": {
+      "post": {
+        "summary": "Create Delivery Order",
+        "description": "This endpoint is to create Delivery Order in ERP",
+        "operationId": "create delivery order",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "id": "12",
+                    "CustomerName": "NTUC Fairprice Co-Operative Limited",
+                    "items": [
+                      {
+                        "Product_Id": "PR-AV-KL",
+                        "ProductName": "F1 Hybrid Kailan",
+                        "uom": "Nos",
+                        "DONumberOfPacket": 2,
+                        "Price": 10,
+                        "amount": 20,
+                        "SOnumber": ""
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "DeliveryOrderNo": ""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.update_delivery_note_signature": {
+      "post": {
+        "summary": "Update signature and attachment",
+        "description": "Update signature and attahcment to Delivery Note, image and signature is base64 string ",
+        "operationId": "update delivery signature",
+        "requestBody": {
+          "description": {
+            "test": 123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "doNumber": "DO-2024-003-1",
+                    "attachments": [
+                      {
+                        "filename": "test-image.png",
+                        "image": "/9j/4AAQSkZJRgABAQEASwBLAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAw....",
+                        "imageUrl": "should have 'http' string"
+                      }
+                    ],
+                    "signature_by": "Jing Wei",
+                    "taken_at": "2024-08-20 12:24",
+                    "signature": "iVBORw0KGgoAAAANSUhEUgAAApsAAAEUCAYAAABknP30AAAAAXNSR0IArs4c6QAA...",
+                    "completed_at": "2024-09-21 12:24",
+                    "completed_by": "Alex"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": true
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.remove_expired_stock": {
+      "post": {
+        "summary": "Remove Expired Stock",
+        "description": "When stock is expired on FOMS, and after real item is removed in the farm, You can call this endpoint to remove stock in ERP.",
+        "operationId": "remove expired stock",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "posting_date": "2024-02-24",
+                    "posting_time": "08:12",
+                    "from_warehouse": "Raw Materials - GPL",
+                    "company": "Greenphyto Pte Ltd",
+                    "items": [
+                      {
+                        "item": "RM-MS-SP",
+                        "qty": "2",
+                        "uom": "Unit",
+                        "serial_no": "",
+                        "batch_no": "",
+                        "rate": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "StockEntryNo": ""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_stock_issue": {
+      "post": {
+        "summary": "Create Stock Issue",
+        "description": "This endpoint is to issuing stock material from warehouse",
+        "operationId": "create stock issue",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "posting_date": "2024-02-24",
+                    "posting_time": "08:12",
+                    "from_warehouse": "Raw Materials - GPL",
+                    "company": "Greenphyto Pte Ltd",
+                    "items": [
+                      {
+                        "item": "RM-MS-SP",
+                        "qty": "2",
+                        "uom": "Unit",
+                        "serial_no": "",
+                        "batch_no": "",
+                        "rate": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "StockEntryNo": ""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_material_consume": {
+      "post": {
+        "summary": "Create Material Consume",
+        "description": "Material consumed is stock transaction for consume material inside process of Work Order",
+        "operationId": "create material consume",
+        "requestBody": {
+          "description": "-",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "posting_date": "2024-02-24",
+                    "posting_time": "08:12",
+                    "from_warehouse": "Raw Materials - GPL",
+                    "company": "Greenphyto Pte Ltd",
+                    "work_order": "",
+                    "operation_no": 2,
+                    "items": [
+                      {
+                        "item": "RM-MS-SP",
+                        "qty": "2",
+                        "uom": "Unit",
+                        "serial_no": "",
+                        "batch_no": "",
+                        "rate": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "StockEntryNo": ""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_request_form": {
+      "post": {
+        "summary": "Create Request Form",
+        "description": "Create request from FOMS's order, internal transaction",
+        "operationId": "create request form",
+        "requestBody": {
+          "description": {
+            "test": 123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "department": "Sales",
+                    "posting_date": "2024-05-26",
+                    "delivery_date": "2024-05-30",
+                    "foms_order_id": "12",
+                    "company": "Greenphyto Pte Ltd",
+                    "items": [
+                      {
+                        "item_code": "PR-AV-KLL",
+                        "qty": 2,
+                        "uom": "Package",
+                        "packaging": "Package (200g) - GP Type A",
+                        "rate": 1.2,
+                        "unit_qty": 200,
+                        "unit_uom": "g",
+                        "unit_weight": 0.20,
+                        "weight": 0.40
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "RequestNo": ""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_finish_goods_stock": {
+      "post": {
+        "summary": "Create Finish Goods Stock",
+        "description": "Submit finish goods stock without use BOM-Work Order process, so it will directly submit new stock to warehouse by stock entry.",
+        "operationId": "create finish goods stock",
+        "requestBody": {
+          "description": {
+            "test": 123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "work_order_id": "",
+                    "lot_id": "",
+                    "rack_no": "",
+                    "customer_order_no:": "",
+                    "posting_date": "2024-07-02 08:12:32",
+                    "company": "optional",
+                    "item_code": "PR-AV-KL",
+                    "bom": "optional or u can also refer to existing BOM",
+                    "qty": 2,
+                    "uom": "kg",
+                    "batch": "optional | if not set it will generated from ERP side",
+                    "batch_exp": "optional",
+                    "batch_mfg": "optional",
+                    "warehouse": "Finished Goods - GPL",
+                    "id": 1
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "RequestNo": ""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.update_request_data": {
+      "post": {
+        "summary": "Update Request Data",
+        "description": "Update selected Request to new qty or delivery date",
+        "operationId": "Update request data",
+        "requestBody": {
+          "description": {
+            "test": 123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "request_no": "REQ0001/2024",
+                    "items": [
+                      {
+                        "item_code": "PR-AV-KLL",
+                        "qty": 6
+                      }
+                    ],
+                    "delivery_date": "2024-08-25"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "RequestNo": ""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.create_update_packaging": {
+      "post": {
+        "summary": "Create/Update master Packaging data",
+        "description": "Update/create packaging referring to this endpoint /userportal/CustomerOrder/GetPackageList",
+        "operationId": "create packaging data",
+        "requestBody": {
+          "description": {
+            "test": 123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "data": {
+                    "itemCode": "PR-AV-KOM",
+                    "packageName": "Package (120g) - GP Type A",
+                    "packageType": "GP Type A",
+                    "packageWeight": 120,
+                    "uom": "g",
+                    "id": "foms id"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "PackageID": ""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.delete_item": {
+      "delete": {
+        "summary": "Delete item on erp",
+        "description": "Delete item on ERP, and will return <b>true</b> if clearly deleted and return <b>false</b> if can only disable",
+        "operationId": "delete item erp",
+        "requestBody": {
+          "description": {
+            "test": 123
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "type": "object"
+                  }
+                },
+                "example": {
+                  "itemCode": ""
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": true
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.update_item_safety_stock": {
+      "post": {
+        "summary": "Update item safety stock + reorder",
+        "description": "Updates Item.safety_stock, then syncs reorder settings. If any Item Reorder rows exist, their warehouse_reorder_level is updated; otherwise, a new Item Reorder row is created with warehouse_reorder_level = safety_stock and warehouse_reorder_qty = 100.",
+        "operationId": "update item safety stock",
+        "requestBody": {
+          "description": "Set safety stock and sync reorder",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "item_code": {
+                    "type": "string"
+                  },
+                  "safety_stock": {
+                    "type": "number"
+                  },
+                  "company": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "item_code": "RM-NS-NSA",
+                  "safety_stock": 50,
+                  "company": "Greenphyto Pte Ltd"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "item_code": "RM-NS-NSA",
+                      "safety_stock": 50,
+                      "reorder_rows_updated": 1,
+                      "reorder_row_created": false,
+                      "updated": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Item not found or invalid input"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.get_document_lotid": {
+      "get": {
+        "summary": "Retrieve Batch details and associated Stock Transactions by external Lot ID",
+        "description": "Fetches details of a specific Batch using its external 'foms_lot_id', and retrieves the 10 most recent associated Stock Ledger Entries. For each ledger entry, it fetches the full document details (e.g., Delivery Note, Purchase Receipt).",
+        "operationId": "get_batch_transactions_by_lot_id",
+        "parameters": [
+          {
+            "name": "lotid",
+            "in": "query",
+            "description": "The external FOMS Lot ID to search for.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "LOT-ABC-12345"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "batch": {
+                      "type": "object",
+                      "description": "The full Batch document details.",
+                      "example": {
+                        "name": "BAT00001",
+                        "batch_id": "LOT-ABC-12345",
+                        "item_code": "RM-NS-NSA",
+                        "expiry_date": "2026-12-31",
+                        "foms_lot_id": "LOT-ABC-12345"
+                      }
+                    },
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "description": "Full document details of associated transactions (e.g., Delivery Note, Stock Entry)."
+                      },
+                      "example": [
+                        {
+                          "name": "DN-00045",
+                          "doctype": "Delivery Note",
+                          "posting_date": "2026-01-20",
+                          "customer": "Customer A",
+                          "items": [
+                            {
+                              "item_code": "...",
+                              "batch_no": "BAT00001",
+                              "qty": 10
+                            }
+                          ]
+                        },
+                        {
+                          "name": "STE-00099",
+                          "doctype": "Stock Entry",
+                          "posting_date": "2026-01-15",
+                          "purpose": "Material Issue"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "example": {
+                  "batch": {
+                    "name": "BAT00001",
+                    "foms_lot_id": "LOT-ABC-12345",
+                    "item_code": "RM-NS-NSA",
+                    "expiry_date": "2026-12-31"
+                  },
+                  "transactions": [
+                    {
+                      "name": "DN-00045",
+                      "doctype": "Delivery Note",
+                      "customer": "Customer A"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lot ID not found or no associated transactions found."
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.get_delivery_by_lotid": {
+      "get": {
+        "summary": "Retrieve Delivery Note details by Lot IDs",
+        "description": "Fetches Batch info and Delivery Notes. Note: 'lotid' parameter must be a JSON formatted string array.",
+        "operationId": "get_delivery_note_by_lot_id",
+        "parameters": [
+          {
+            "name": "lotid",
+            "in": "query",
+            "description": "A JSON string array of Lot IDs. Example: [\"LOT-001\", \"LOT-002\"]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "[\"25-1006\", \"25-0998\"]"
+          },
+          {
+            "name": "delivery_date",
+            "in": "query",
+            "description": "Target delivery date (YYYY-MM-DD).",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "example": "2026-01-26"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "batch": {
+                        "type": "object"
+                      },
+                      "transactions": {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON format in lotid parameter"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.update_package_size": {
+      "post": {
+        "summary": "Update package size for work order",
+        "description": "Update the packaging size for a work order based on Lot ID. Changes the packet size, conversion factor, and required packaging item quantities.",
+        "operationId": "update package size",
+        "requestBody": {
+          "description": "Update package size",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "lotID": {
+                    "type": "string",
+                    "description": "The FOMS Lot ID of the work order"
+                  },
+                  "newSize": {
+                    "type": "number",
+                    "description": "New package size in grams"
+                  }
+                },
+                "example": {
+                  "lotID": "25-1097",
+                  "newSize": 240
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": true
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Work Order not found or Packaging Size not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {}
+  },
+  "security": [
+    {
+      "BasicAuth": []
+    }
+  ],
+  "securityDefinitions": {
+    "BasicAuth": {
+      "type": "basic"
+    }
+  }
+}
