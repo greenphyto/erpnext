@@ -1,0 +1,97 @@
+{% extends "frappe/www/message.html" %}
+{% block message_body %}
+  <p>
+    {{ _("Please confirm your action to {0} this document.").format(action) }}
+  </p>
+  
+  {% if alert_doc_change %}
+  <p>
+    <b>{{ _("Note:")}}</b> {{ _("This document has been modified after the email was sent.")}}
+  </p>
+  {% endif %}
+  
+  <!-- Company mismatch warning -->
+  {% if company_mismatch %}
+  <div class="alert alert-warning" role="alert">
+    <h4 class="alert-heading">{{ _("Company Mismatch") }}</h4>
+    <p>
+      {{ _("This document belongs to company") }} <strong>{{ doc_company }}</strong>, 
+      {{ _("but you are currently viewing") }} <strong>{{ user_company }}</strong>.
+    </p>
+    <p>{{ _("Please switch to the correct company before taking action.") }}</p>
+    <hr>
+    <button 
+      id="switch-company-btn" 
+      class="btn btn-primary" 
+      onclick="switchCompany()">
+      {{ _("Switch to {0}").format(doc_company) }}
+    </button>
+  </div>
+  {% endif %}
+  
+  <!-- Action section - disabled if company mismatch -->
+  <div id="action-section" {% if company_mismatch %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+    <p>
+      <a target="_blank" class="underline" href="{{ pdf_link }}">{{ _('View document') }}</a>
+    </p>
+    <a href="{{ action_link }}" class="btn btn-primary btn-action" id="action-btn">{{ action }}</a>
+    <a href="/" class="btn btn-secondary btn-action">{{ _("Cancel") }}</a>
+  </div>
+
+  <script>
+    function switchCompany() {
+      const btn = document.getElementById('switch-company-btn');
+      const actionSection = document.getElementById('action-section');
+      
+      // Disable button and show loading
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> {{ _("Switching...") }}';
+      
+      // Call switch_company_web endpoint
+      fetch('{{ switch_company_url }}', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Frappe-CSRF-Token': frappe.csrf_token || ''
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.message && data.message.result) {
+          // Success - enable action section
+          btn.innerHTML = '{{ _("Success! You can now proceed.") }}';
+          btn.classList.remove('btn-primary');
+          btn.classList.add('btn-success');
+          
+          // Enable action section
+          actionSection.style.opacity = '1';
+          actionSection.style.pointerEvents = 'auto';
+          
+          // Hide warning after 2 seconds
+          setTimeout(() => {
+            document.querySelector('.alert-warning').style.display = 'none';
+          }, 2000);
+        } else {
+          // Error
+          btn.disabled = false;
+          btn.innerHTML = '{{ _("Switch to {0}").format(doc_company) }}';
+          frappe.msgprint({
+            title: '{{ _("Error") }}',
+            indicator: 'red',
+            message: data.message && data.message.error || '{{ _("Failed to switch company. Please try again.") }}'
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        btn.disabled = false;
+        btn.innerHTML = '{{ _("Switch to {0}").format(doc_company) }}';
+        frappe.msgprint({
+          title: '{{ _("Error") }}',
+          indicator: 'red',
+          message: '{{ _("An error occurred. Please try again.") }}'
+        });
+      });
+    }
+  </script>
+{% endblock %}

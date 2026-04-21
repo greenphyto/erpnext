@@ -5,6 +5,7 @@ import copy
 
 import frappe
 from frappe import _
+from frappe.utils import safe_abs as abs
 
 from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
 

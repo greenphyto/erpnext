@@ -17,7 +17,7 @@
         <div class="col-xs-6">
             <table>
                 <tr><td><strong>Voucher No: </strong></td><td>{{ doc.name }}</td></tr>
-                <tr><td><strong>Date: </strong></td><td>{{ frappe.utils.format_date(doc.creation) }}</td></tr>
+                <tr><td><strong>Date: </strong></td><td>{{ frappe.utils.format_date(doc.posting_date) }}</td></tr>
             </table>
         </div>
     </div>
@@ -28,8 +28,6 @@
                 <th>Item Code</th>
                 <th>Item Name</th>
                 <th>UOM</th>
-                <th>Received Qty.</th>
-                <th>Rejected Qty</th>
                 <th>Qty</th>
                 <th>Basic Rate</th>
                 <th>Amount</th>
@@ -40,11 +38,9 @@
                 <td>{{ item.item_code }}</td>
                 <td>{{ item.item_name }}</td>
                 <td>{{ item.uom }}</td>
-                <td>{{ item.received_qty }}</td>
-                <td>{{ item.rejected_qty }}</td>
                 <td>{{ item.qty}}</td>
                 <td>{{ item.rate }}</td>
-                <td>{{ item.amount }}</td>
+                <td>{{ item.get_formatted("amount", hide_symbol=1) }}</td>
             </tr>
             {% endfor %}
         </table>
@@ -53,7 +49,7 @@
         <div class="col-xs-6">
             <table>
             <tr><td><strong>Total Quantity: </strong></td><td>{{ doc.total_qty }}</td></tr>
-            <tr><td><strong>Total: </strong></td><td>{{doc.total}}</td></tr>
+            <tr><td><strong>Total: </strong></td><td>{{ doc.get_formatted("total", hide_symbol=1) }}</td></tr>
             <tr><td><strong>Net Weight: </strong></td><td>{{ doc.total_net_weight }}</td></tr>
         </table>
     </div>

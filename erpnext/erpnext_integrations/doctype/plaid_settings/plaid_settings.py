@@ -9,6 +9,7 @@ from frappe.desk.doctype.tag.tag import add_tag
 from frappe.model.document import Document
 from frappe.utils import add_months, formatdate, getdate, sbool, today
 from plaid.errors import ItemError
+from frappe.utils import safe_abs as abs
 
 from erpnext.erpnext_integrations.doctype.plaid_settings.plaid_connector import PlaidConnector
 

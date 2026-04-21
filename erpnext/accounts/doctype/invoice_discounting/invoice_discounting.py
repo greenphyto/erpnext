@@ -201,7 +201,7 @@ class InvoiceDiscounting(AccountsController):
 			{
 				"account": self.bank_account,
 				"debit_in_account_currency": flt(self.total_amount) - flt(self.bank_charges),
-				"cost_center": erpnext.get_default_cost_center(self.company),
+				"cost_center": erpnext.get_default_cost_center(self.company, self.bank_account),
 			},
 		)
 
@@ -211,7 +211,7 @@ class InvoiceDiscounting(AccountsController):
 				{
 					"account": self.bank_charges_account,
 					"debit_in_account_currency": flt(self.bank_charges),
-					"cost_center": erpnext.get_default_cost_center(self.company),
+					"cost_center": erpnext.get_default_cost_center(self.company, self.bank_charges_account),
 				},
 			)
 
@@ -220,7 +220,7 @@ class InvoiceDiscounting(AccountsController):
 			{
 				"account": self.short_term_loan,
 				"credit_in_account_currency": flt(self.total_amount),
-				"cost_center": erpnext.get_default_cost_center(self.company),
+				"cost_center": erpnext.get_default_cost_center(self.company, self.short_term_loan),
 				"reference_type": "Invoice Discounting",
 				"reference_name": self.name,
 			},
@@ -231,7 +231,7 @@ class InvoiceDiscounting(AccountsController):
 				{
 					"account": self.accounts_receivable_discounted,
 					"debit_in_account_currency": flt(d.outstanding_amount),
-					"cost_center": erpnext.get_default_cost_center(self.company),
+					"cost_center": erpnext.get_default_cost_center(self.company, self.accounts_receivable_discounted),
 					"reference_type": "Invoice Discounting",
 					"reference_name": self.name,
 					"party_type": "Customer",
@@ -244,7 +244,7 @@ class InvoiceDiscounting(AccountsController):
 				{
 					"account": self.accounts_receivable_credit,
 					"credit_in_account_currency": flt(d.outstanding_amount),
-					"cost_center": erpnext.get_default_cost_center(self.company),
+					"cost_center": erpnext.get_default_cost_center(self.company, self.accounts_receivable_credit),
 					"reference_type": "Invoice Discounting",
 					"reference_name": self.name,
 					"party_type": "Customer",
@@ -266,7 +266,7 @@ class InvoiceDiscounting(AccountsController):
 			{
 				"account": self.short_term_loan,
 				"debit_in_account_currency": flt(self.total_amount),
-				"cost_center": erpnext.get_default_cost_center(self.company),
+				"cost_center": erpnext.get_default_cost_center(self.company, self.short_term_loan),
 				"reference_type": "Invoice Discounting",
 				"reference_name": self.name,
 			},
@@ -277,7 +277,7 @@ class InvoiceDiscounting(AccountsController):
 			{
 				"account": self.bank_account,
 				"credit_in_account_currency": flt(self.total_amount),
-				"cost_center": erpnext.get_default_cost_center(self.company),
+				"cost_center": erpnext.get_default_cost_center(self.company, self.bank_account),
 			},
 		)
 
@@ -292,7 +292,7 @@ class InvoiceDiscounting(AccountsController):
 						{
 							"account": self.accounts_receivable_discounted,
 							"credit_in_account_currency": flt(outstanding_amount),
-							"cost_center": erpnext.get_default_cost_center(self.company),
+							"cost_center": erpnext.get_default_cost_center(self.company, self.accounts_receivable_discounted),
 							"reference_type": "Invoice Discounting",
 							"reference_name": self.name,
 							"party_type": "Customer",
@@ -305,7 +305,7 @@ class InvoiceDiscounting(AccountsController):
 						{
 							"account": self.accounts_receivable_unpaid,
 							"debit_in_account_currency": flt(outstanding_amount),
-							"cost_center": erpnext.get_default_cost_center(self.company),
+							"cost_center": erpnext.get_default_cost_center(self.company, self.accounts_receivable_unpaid),
 							"reference_type": "Invoice Discounting",
 							"reference_name": self.name,
 							"party_type": "Customer",

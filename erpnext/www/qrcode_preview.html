@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html{
+            height: -webkit-fit-content;
+            height: -moz-fit-content;
+            height: fit-content;
+        }
+        body{
+            width: 15cm;
+            height: -webkit-fit-content;
+            height: -moz-fit-content;
+            height: fit-content;
+            padding: 10px;
+            margin: auto;
+            font-size: 0.9em;
+            font-family: Inter, "Helvetica Neue", Helvetica, Arial, "Open Sans", sans-serif;
+        }
+        .column-image{
+            width: 5cm;
+            border-right: 1px solid black;
+        }
+        .column-top{
+            height: 1cm;
+            padding: 5px;
+        }
+        .column-middle{
+            min-height: 4cm;
+            padding: 5px;
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+        }
+        .column-bottom{
+            max-height: 1.5cm;
+        }
+        .qrcode-table{
+            width: 100%;
+        }
+        .qr-code-wrapper{
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+        }
+        .img-qrcode{
+            width: 8cm;
+            height: 8cm;
+        }
+        .img-qrcode img{
+            width: 100%;
+            height: auto;
+        }
+        .qr-data{
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+                -ms-flex-direction: column;
+                    flex-direction: column;
+            -webkit-box-flex: 1;
+                -ms-flex: 1;
+                    flex: 1;
+        }
+        .doctype{
+            font-size: 0.8em;
+            font-style: italic;
+        }
+        .docname{
+            text-align: center;
+        }
+        .top-info{
+            -webkit-box-flex: 2;
+                -ms-flex: 2;
+                    flex: 2;
+            padding: 6px 8px 3px;
+            font-size: 1.3em;
+        }
+        .asset-name{
+            font-size: {{ font_size }};
+            font-weight: 600;
+            -webkit-box-flex: 4;
+                -ms-flex: 4;
+                    flex: 4; 
+            text-align: center;
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+            margin-right: 6px;
+        }
+        .asset-category{
+            -webkit-box-flex: 4;
+                -ms-flex: 4;
+                    flex: 4;
+        }
+        .asset-category-div{
+            font-style: italic;
+            font-size: 1.4em;
+            color: #333333;
+            text-align: center;
+        }
+        .flex-center{
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+                -ms-flex-direction: column;
+                    flex-direction: column;
+            -webkit-box-pack: center;
+                -ms-flex-pack: center;
+                    justify-content: center;
+        }
+        .border-all{
+            border: 1px solid black;
+        }
+        .no-data{
+            height: 5cm;
+            width: 100%;
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+                -ms-flex-direction: column;
+                    flex-direction: column;
+            -webkit-box-pack: center;
+                -ms-flex-pack: center;
+                    justify-content: center;
+            -webkit-box-align: center;
+                -ms-flex-align: center;
+                    align-items: center;
+        }
+        
+
+
+        .container{
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            border: 1px solid black;
+            overflow-wrap: break-word;
+        }
+        .right-side{
+            width: 7cm;
+            padding: 2px;
+            border-left: 1px solid black;
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+                -ms-flex-direction: column;
+                    flex-direction: column; 
+                    overflow-wrap: break-word;
+        }
+        .top-info{
+            -webkit-box-flex: 1;
+                -ms-flex: 1;
+                    flex: 1;
+        }
+        .asset-category{
+            max-height: 1.5cm;
+        }
+
+        .asset-name-div{
+            overflow-wrap: break-word;
+        }
+        .table-all{
+            width: 100%;
+        }
+        .center{
+            width: 100%;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+    {% if doc %}
+    <div class="container">
+        <div class="img-qrcode">
+            <img src="data:image/svg+xml;base64,{{ get_qrcode(doctype=doc.doctype, docname=doc.name, commit=1)}}"> 
+        </div>
+        <div class="right-side">
+            <div class="top-info">
+                <div class="doctype">{{doc.doctype}}</div>
+                <div class="docname">
+                    <table class="table-all">
+                        <tr><td class="center" >{{doc.name}}</td></tr>
+                    </table>
+                </div>
+            </div>   
+            <div class="asset-name flex-center">
+                <div class="asset-name-div text-center">
+                    <table class="table-all">
+                        <tr><td class="center" >{{doc.asset_name}}</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="asset-category flex-center">
+                <div class="asset-category-div text-center">
+                    <table class="table-all">
+                        <tr><td class="center" >{{doc.asset_category}}</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="qr-code-wrapper border-all">
+        <div class="no-data">No Data</div>
+    </div>
+    {% endif %}
+</body>
+</html>

@@ -50,6 +50,8 @@ class FiscalYear(Document):
 							"Cannot change Fiscal Year Start Date and Fiscal Year End Date once the Fiscal Year is saved."
 						)
 					)
+	
+		self.add_company_default()
 
 	def validate_dates(self):
 		self.validate_from_to_dates("year_start_date", "year_end_date")
@@ -113,6 +115,25 @@ class FiscalYear(Document):
 						).format(existing.name),
 						frappe.NameError,
 					)
+
+	def add_company_default(self):
+		if self.get("companies"):
+			return
+
+		company_list = frappe.db.get_all("Company")
+		for c in company_list:
+			company = c['name']
+			add = True
+			for d in self.get("companies"):
+				if d.company == company:
+					add = False
+					break
+			
+			if add:
+				row = self.append("companies")
+				row.company = company
+
+			print(company)
 
 
 @frappe.whitelist()

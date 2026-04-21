@@ -57,6 +57,9 @@ def get_context(context):
 		# show Make Purchase Invoice button based on permission
 		context.show_make_pi_button = frappe.has_permission("Purchase Invoice", "create")
 
+	# show Make Purchase Invoice button based on permission
+	context.show_make_pi_button = frappe.has_permission("Purchase Invoice", "create")
+
 
 def get_attachments(dt, dn):
 	return frappe.get_all(

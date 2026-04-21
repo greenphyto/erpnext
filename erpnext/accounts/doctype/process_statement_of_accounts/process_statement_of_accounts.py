@@ -8,7 +8,7 @@ import frappe
 from frappe import _
 from frappe.desk.reportview import get_match_cond
 from frappe.model.document import Document
-from frappe.utils import add_days, add_months, format_date, getdate, today
+from frappe.utils import add_days, add_months, format_date, getdate, today,get_last_day,add_to_date
 from frappe.utils.jinja import validate_template
 from frappe.utils.pdf import get_pdf
 from frappe.www.printview import get_print_style
@@ -147,7 +147,111 @@ class ProcessStatementOfAccounts(Document):
 
 
 def get_report_pdf(doc, consolidated=True):
-	statement_dict = get_statement_dict(doc)
+	statement_dict = {}
+	ageing = ""
+	base_template_path = "frappe/www/printview.html"
+	objcompany = frappe.get_doc("Company", doc.company)
+	lstAddress = frappe.db.get_list('Address', filters=[[
+    "Dynamic Link","link_name","=",doc.company
+		]],fields=['address_line1','city','pincode'])
+	 
+	template = "process_statement_of_accounts"
+	if doc.get("pdf_template") == "Simple":
+		template = "process_statement_of_accounts_simple"
+		
+	template_path = (
+		"erpnext/accounts/doctype/process_statement_of_accounts/{}.html".format(template)
+	)
+	
+	for entry in doc.customers:
+		if doc.include_ageing:
+			ageing_filters = frappe._dict(
+				{
+					"company": doc.company,
+					"report_date": doc.to_date,
+					"ageing_based_on": doc.ageing_based_on,
+					"range1": 30,
+					"range2": 60,
+					"range3": 90,
+					"range4": 120,
+					"customer": entry.customer,
+				}
+			)
+			col1, ageing = get_ageing(ageing_filters)
+
+			if ageing:
+				ageing[0]["ageing_based_on"] = doc.ageing_based_on
+		cust = frappe.get_doc("Customer", entry.customer)
+		tax_id = cust.tax_id
+		presentation_currency = (
+			get_party_account_currency("Customer", entry.customer, doc.company)
+			or doc.currency
+			or get_company_currency(doc.company)
+		)
+		lastdayofmonth= get_last_day(add_to_date(today(), months=-1))
+		if doc.letter_head:
+			from frappe.www.printview import get_letter_head
+
+			letter_head = get_letter_head(doc, 0)
+		filters = frappe._dict(
+			{
+				"from_date": doc.from_date,
+				"to_date": doc.to_date,
+				"company": doc.company,
+				"finance_book": doc.finance_book if doc.finance_book else None,
+				"account": [doc.account] if doc.account else None,
+				"party_type": "Customer",
+				"party": [entry.customer],
+				"party_name": [entry.customer_name],
+				"presentation_currency": presentation_currency,
+				"group_by": doc.group_by,
+				"currency": doc.currency,
+				"cost_center": [cc.cost_center_name for cc in doc.cost_center],
+				"project": [p.project_name for p in doc.project],
+				"show_opening_entries": 0,
+				"include_default_book_entries": 0,
+				"tax_id": tax_id if tax_id else None,
+				"StatementDate": today(),
+				"LastDay": lastdayofmonth,
+				"phone": objcompany.phone_no,
+				"email": objcompany.email,
+				"fax": objcompany.fax,
+				"address": lstAddress[0].address_line1 if lstAddress else None,
+				"zipcode":  lstAddress[0].pincode if lstAddress else None ,
+				"city": lstAddress[0].city if lstAddress else None ,
+				"custAddress": cust.primary_address,
+			}
+		)
+		col, res = get_soa(filters)
+		 
+		for x in [0, -2, -1]:
+			res[x]["account"] = res[x]["account"].replace("'", "")
+			 
+
+		if len(res) == 3:
+			continue
+
+		html = frappe.render_template(
+			template_path,
+			{
+				"filters": filters,
+				"data": res,
+				"ageing": ageing[0] if (doc.include_ageing and ageing) else None,
+				"letter_head": letter_head if doc.letter_head else None,
+				"terms_and_conditions": frappe.db.get_value(
+					"Terms and Conditions", doc.terms_and_conditions, "terms"
+				)
+				if doc.terms_and_conditions
+				else None,
+			},
+		)
+
+		html = frappe.render_template(
+			base_template_path,
+			{"body": html, "css": get_print_style(), "title": "Statement For " + entry.customer},
+		)
+		statement_dict[entry.customer] = html
+
 	if not bool(statement_dict):
 		return False
 	elif consolidated:

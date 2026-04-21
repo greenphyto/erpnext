@@ -14,7 +14,11 @@ def get_default_company(user=None):
 	if not user:
 		user = frappe.session.user
 
-	companies = get_user_default_as_list("company", user)
+	def_comp = frappe.defaults.get_defaults().get("company")
+	if def_comp:
+		return def_comp
+
+	companies = get_user_default_as_list(user, "company")
 	if companies:
 		default_company = companies[0]
 	else:
@@ -30,10 +34,14 @@ def get_default_currency():
 		return frappe.get_cached_value("Company", company, "default_currency")
 
 
-def get_default_cost_center(company):
+def get_default_cost_center(company="", account=""):
 	"""Returns the default cost center of the company"""
 	if not company:
 		return None
+	
+	cost_center = frappe.get_value("Cost Center Mapping", {"company":company, "account":account}, "cost_center")
+	if cost_center:
+		return cost_center
 
 	if not frappe.flags.company_cost_center:
 		frappe.flags.company_cost_center = {}

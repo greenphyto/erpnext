@@ -186,6 +186,8 @@ def prepare_chart_data(data, filters):
 		"Monthly",
 		company=filters.company,
 		ignore_fiscal_year=True,
+		month=filters.month,
+		to_month=filters.to_month,
 	)
 
 	for d in period_list:

@@ -3,6 +3,7 @@ from collections.abc import Callable
 from typing import NewType
 
 from frappe.utils import flt
+from frappe.utils import safe_abs as abs
 
 StockBin = NewType("StockBin", list[float])  # [[qty, rate], ...]
 

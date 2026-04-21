@@ -1,0 +1,29 @@
+@import "node_modules/@splidejs/splide/src/css/core/index.scss";
+// @import "node_modules/@splidejs/splide/src/css/themes/default/index.scss";
+// @import "node_modules/@splidejs/splide/src/css/template/default/index.scss";
+
+
+
+.custom-arrows button {
+    background: rgb(83 83 83 / 35%);
+    color: #ffffff;
+    border: none;
+    padding: 12px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-left: 14px;
+    margin-right: 14px;
+}
+
+.custom-arrows {
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    transform: translateY(-50%);
+}
+
+button#prev-slide:focus, button#next-slide:focus {
+    outline-color: gray;
+}

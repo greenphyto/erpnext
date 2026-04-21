@@ -22,6 +22,16 @@ dependencies = [
 
     # Not used directly - required by PyQRCode for PNG generation
     "pypng~=0.20220715.0",
+    "taxjar~=1.9.2",
+    "tweepy~=3.10.0",
+    "imgkit",
+    "minio",
+    "python-barcode",
+    "iso3166",
+    "xmltodict",
+    "pypdf",
+    "reportlab",
+    "pandas"
 ]
 
 [build-system]

@@ -19,3 +19,9 @@ Telephony
 Bulk Transaction
 Subcontracting
 EDI
+E-commerce
+Subcontracting
+FOMS
+AI Agent
+GP ERP
+UOB
