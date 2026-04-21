@@ -6,3 +6,32 @@ onscan.js@^1.5.2:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/onscan.js/-/onscan.js-1.5.2.tgz#14ed636e5f4c3f0a78bacbf9a505dad3140ee341"
   integrity sha512-9oGYy2gXYRjvXO9GYqqVca0VuCTAmWhbmX3egBSBP13rXiMNb+dKPJzKFEeECGqPBpf0m40Zoo+GUQ7eCackdw==
+  
+"@splidejs/splide@^4.1.4":
+  "integrity" "sha512-5I30evTJcAJQXt6vJ26g2xEkG+l1nXcpEw4xpKh0/FWQ8ozmAeTbtniVtVmz2sH1Es3vgfC4SS8B2X4o5JMptA=="
+  "resolved" "https://registry.npmjs.org/@splidejs/splide/-/splide-4.1.4.tgz"
+  "version" "4.1.4"
+
+"base64-arraybuffer@^0.2.0":
+  "integrity" "sha512-7emyCsu1/xiBXgQZrscw/8KPRT44I4Yq9Pe6EGs3aPRTsWuggML1/1DTuZUuIaJPIm1FTDUVXl4x/yW8s0kQDQ=="
+  "resolved" "https://registry.npmjs.org/base64-arraybuffer/-/base64-arraybuffer-0.2.0.tgz"
+  "version" "0.2.0"
+
+"css-line-break@1.1.1":
+  "integrity" "sha512-1feNVaM4Fyzdj4mKPIQNL2n70MmuYzAXZ1aytlROFX1JsOo070OsugwGjj7nl6jnDJWHDM8zRZswkmeYVWZJQA=="
+  "resolved" "https://registry.npmjs.org/css-line-break/-/css-line-break-1.1.1.tgz"
+  "version" "1.1.1"
+  dependencies:
+    "base64-arraybuffer" "^0.2.0"
+
+"html2canvas@^1.1.4":
+  "integrity" "sha512-uHgQDwrXsRmFdnlOVFvHin9R7mdjjZvoBoXxicPR+NnucngkaLa5zIDW9fzMkiip0jSffyTyWedE8iVogYOeWg=="
+  "resolved" "https://registry.npmjs.org/html2canvas/-/html2canvas-1.1.4.tgz"
+  "version" "1.1.4"
+  dependencies:
+    "css-line-break" "1.1.1"
+
+"onscan.js@^1.5.2":
+  "integrity" "sha512-9oGYy2gXYRjvXO9GYqqVca0VuCTAmWhbmX3egBSBP13rXiMNb+dKPJzKFEeECGqPBpf0m40Zoo+GUQ7eCackdw=="
+  "resolved" "https://registry.npmjs.org/onscan.js/-/onscan.js-1.5.2.tgz"
+  "version" "1.5.2"
