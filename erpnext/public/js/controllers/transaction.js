@@ -2462,7 +2462,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 	}
 
 	change_item_preview(){
-		if (!['Purchase Invoice', 'Purchase Order', 'Purchase Receipt', 'Material Request', "Sales Invoice", "Delivery Note", "Sales Order"].includes(this.frm.doctype)) return;
+		if (!['Purchase Invoice', 'Purchase Order', 'Purchase Receipt', 'Material Request', "Sales Invoice", "Delivery Note", "Sales Order", "Quotation"].includes(this.frm.doctype)) return;
 		const item_table = "items";
 		var table = this.frm.fields_dict[item_table];
 		var field_item_code = table.grid.fields_map.item_code;

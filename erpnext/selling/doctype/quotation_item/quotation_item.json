@@ -10,6 +10,7 @@
   "customer_item_code",
   "col_break1",
   "item_name",
+  "item_name_view",
   "section_break_5",
   "description",
   "item_group",
@@ -190,9 +191,9 @@
   },
   {
    "fieldname": "conversion_factor",
-   "precision": "7",
    "fieldtype": "Float",
    "label": "UOM Conversion Factor",
+   "precision": "7",
    "print_hide": 1,
    "read_only": 1,
    "reqd": 1
@@ -645,12 +646,17 @@
    "no_copy": 1,
    "options": "currency",
    "read_only": 1
+  },
+  {
+   "fieldname": "item_name_view",
+   "fieldtype": "Data",
+   "label": "Item Name"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-07-15 12:40:51.074822",
+ "modified": "2026-04-22 12:44:50.068412",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Quotation Item",
@@ -658,5 +664,6 @@
  "permissions": [],
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

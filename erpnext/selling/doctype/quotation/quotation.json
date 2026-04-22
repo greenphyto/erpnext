@@ -32,6 +32,7 @@
   "ignore_pricing_rule",
   "items_section",
   "scan_barcode",
+  "non_stock_item",
   "items",
   "sec_break23",
   "total_qty",
@@ -1053,13 +1054,19 @@
   {
    "fieldname": "column_break_108",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_stock_item",
+   "fieldtype": "Check",
+   "label": "Non-Stock Item"
   }
  ],
  "icon": "fa fa-shopping-cart",
  "idx": 82,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-15 11:09:29.041286",
+ "modified": "2026-04-22 12:40:57.650697",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Quotation",
