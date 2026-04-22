@@ -1294,11 +1294,13 @@ def change_naming_series(doc, method=""):
 		return
 
 	abbr = abbr.strip().upper()
-	current_name = (doc.name or "").strip()
 
-	# Check if the current name already starts with the abbreviation
-	if not current_name.startswith(abbr):
-		doc.name = f"{abbr}{current_name}"
+	if doc.meta.has_field("naming_series") and doc.naming_series:
+		current_name = (doc.naming_series or "").strip()
+		# Check if the current name already starts with the abbreviation
+		if not current_name.startswith(abbr):
+			doc.naming_series = f"{abbr}{current_name}"
+
 
 from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_inter_company_transaction
 def auto_create_selling_from_internal(doc, method=""):

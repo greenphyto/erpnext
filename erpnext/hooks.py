@@ -294,7 +294,7 @@ doc_events = {
 			"erpnext.support.doctype.service_level_agreement.service_level_agreement.apply",
             "erpnext.controllers.erp.validate_company_selected",
 		],
-        "after_naming": "erpnext.controllers.erp.change_naming_series"
+        "before_naming": "erpnext.controllers.erp.change_naming_series"
 	},
 	"User": {
 		"after_insert": "frappe.contacts.doctype.contact.contact.update_contact",
