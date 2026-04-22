@@ -12,6 +12,10 @@ source_link = "https://github.com/frappe/erpnext"
 app_logo_url = "/assets/erpnext/images/erpnext-logo.svg"
 required_apps = ["payments"]
 
+# Custom bench commands
+commands = [
+	"erpnext.commands.create_custom.create_custom"
+]
 
 develop_version = "14.x.x-develop"
 
@@ -828,6 +832,12 @@ confirm_workflow_action_page = {
 }
 
 override_doctype_class = {
+
+
+
     "Address": "erpnext.accounts.custom.address.ERPNextAddress",
     "Sales Invoice": "erpnext.accounts.doctype.sales_invoice.sales_invoice_custom.SalesInvoiceCustom",
+    "Purchase Invoice": "erpnext.accounts.doctype.purchase_invoice.purchase_invoice_custom.PurchaseInvoiceCustom",
+    "Delivery Note": "erpnext.stock.doctype.delivery_note.delivery_note_custom.DeliveryNoteCustom",
+    "Material Request": "erpnext.stock.doctype.material_request.material_request_custom.MaterialRequestCustom",
 }
