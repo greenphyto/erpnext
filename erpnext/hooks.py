@@ -31,8 +31,6 @@ doctype_js = {
 	"Contact": "public/js/contact.js",
 }
 
-override_doctype_class = {"Address": "erpnext.accounts.custom.address.ERPNextAddress"}
-
 welcome_email = "erpnext.setup.utils.welcome_email"
 
 # setup wizard
@@ -827,4 +825,9 @@ bypass_workflow_permission = {
 
 confirm_workflow_action_page = {
     "Material Request": "erpnext.stock.doctype.material_request.material_request.confirm_workflow_action_page"
+}
+
+override_doctype_class = {
+    "Address": "erpnext.accounts.custom.address.ERPNextAddress",
+    "Sales Invoice": "erpnext.accounts.doctype.sales_invoice.sales_invoice_custom.SalesInvoiceCustom",
 }
