@@ -76,12 +76,13 @@ def execute(filters=None):
 		budget_map = get_budget_data(filters)
 		
 		# Add budget amounts to data rows
+		# First pass: add budget to leaf accounts
 		for row in data:
 			# Skip profit/loss row
 			if row.get("profit_data"):
 				continue
 			
-			# Skip group accounts
+			# Skip group accounts in first pass
 			if row.get("is_group"):
 				continue
 				
@@ -103,6 +104,35 @@ def execute(filters=None):
 					if account in budget_map:
 						budget_value = budget_map.get(account, {}).get(month_num, 0)
 					row[budget_key] = budget_value
+		
+		# Second pass: calculate budget subtotals for group accounts
+		# Process in reverse to calculate from bottom up (children before parents)
+		for row in reversed(data):
+			if row.get("profit_data"):
+				continue
+			
+			if row.get("is_group"):
+				account = row.get("account_origin") or row.get("account")
+				if not account:
+					continue
+				
+				# Initialize budget totals for this group
+				for period in period_list:
+					budget_key = period.key + "_budget"
+					row[budget_key] = 0
+				
+				# Sum up budget from child accounts
+				for child_row in data:
+					if child_row.get("profit_data"):
+						continue
+					
+					child_parent = child_row.get("parent_account")
+					if child_parent == account:
+						# This is a child of current group
+						for period in period_list:
+							budget_key = period.key + "_budget"
+							child_budget = flt(child_row.get(budget_key, 0))
+							row[budget_key] = flt(row.get(budget_key, 0)) + child_budget
 
 	new_data = []
 	if filters.show_number_group:
