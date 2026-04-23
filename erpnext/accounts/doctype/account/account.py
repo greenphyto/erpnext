@@ -134,7 +134,7 @@ class Account(NestedSet):
 			):
 				frappe.throw(_("Please add the account to root level Company - {}").format(ancestors[0]))
 		elif self.parent_account:
-			descendants = get_descendants_of("Company", self.company)
+			descendants = get_descendants_of("Company", self.company, ignore_permissions=True)
 			if not descendants:
 				return
 			parent_acc_name_map = {}
@@ -223,7 +223,7 @@ class Account(NestedSet):
 				)
 
 			# validate if parent of child company account to be added is a group
-			if frappe.db.get_value("Account", self.parent_account, "is_group") and not frappe.db.get_value(
+			if frappe.db.get_value("Account", self.parent_account, "is_group" ) and not frappe.db.get_value(
 				"Account", parent_acc_name_map[company], "is_group"
 			):
 				msg = _(
@@ -253,7 +253,7 @@ class Account(NestedSet):
 						"parent_account": parent_acc_name_map[company],
 					}
 				)
-
+				doc.flags.ignore_permissions = True
 				doc.save()
 				frappe.msgprint(_("Account {0} is added in the child company {1}").format(doc.name, company))
 			elif child_account:
@@ -266,6 +266,7 @@ class Account(NestedSet):
 						doc.set(field, self.get(field))
 
 				if parent_value_changed:
+					doc.flags.ignore_permissions = True
 					doc.save()
 
 	@frappe.whitelist()
@@ -423,7 +424,7 @@ def update_account_number(name, account_name, account_number=None, from_descenda
 
 	if not from_descendant:
 		# Update and rename in child company accounts as well
-		descendants = get_descendants_of("Company", account.company)
+		descendants = get_descendants_of("Company", account.company, ignore_permissions=True)
 		if descendants:
 			sync_update_account_number_in_child(
 				descendants, old_acc_name, account_name, account_number, old_acc_number
