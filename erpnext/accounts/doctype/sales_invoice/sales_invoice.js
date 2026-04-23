@@ -1151,17 +1151,6 @@ cur_frm.cscript['set_cost_center'] = function(frm, cdt, cdn, field_account="expe
 frappe.ui.form.on("Sales Invoice Item", {
 	expense_account: function(frm,cdt,cdn){
 		frm.cscript.set_cost_center(frm, cdt,cdn);
-	},
-	rate: function(frm,cdt,cdn){
-		var row = locals[cdt][cdn];
-		frappe.db.get_value("Item", row.item_code, "disable_discount_amount").then(r=>{
-			if (r.message.disable_discount_amount){
-				frappe.model.set_value(cdt, cdn, "price_list_rate", 0);
-				if (flt(row.total_discount_amount) > 0){
-					frappe.model.set_value(cdt, cdn, "total_discount_amount", 0);
-				}
-			}
-		})
 	}
 })
 

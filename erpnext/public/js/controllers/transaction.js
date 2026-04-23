@@ -446,6 +446,36 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		var sms_man = new erpnext.SMSManager(this.frm.doc);
 	}
 
+	rate(doc, cdt, cdn) {
+		console.log("Rate changed");
+		var row = locals[cdt][cdn];
+
+		function set_rate(){
+			
+			frappe.model.set_value(cdt, cdn, "price_list_rate", row.rate);
+			if (flt(row.total_discount_amount) > 0){
+				frappe.model.set_value(cdt, cdn, "total_discount_amount", 0);
+			}
+		}
+
+		frappe.provide("frappe.disable_item_discount");
+
+		if (frappe.disable_item_discount[row.item_code] === undefined) {
+			frappe.db.get_value("Item", row.item_code, "disable_discount_amount").then(r => {
+				const is_disabled = r.message.disable_discount_amount;
+				frappe.disable_item_discount[row.item_code] = !!is_disabled;
+
+				if (frappe.disable_item_discount[row.item_code]) {
+					set_rate();
+				}
+			});
+		} else {
+			if (frappe.disable_item_discount[row.item_code]) {
+				set_rate();
+			}
+		}
+	}
+
 	item_name_old(doc, cdt, cdn) {
 		var me = this;
 		var item = frappe.get_doc(cdt, cdn);
