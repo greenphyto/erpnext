@@ -2086,8 +2086,8 @@ def get_permission_query_conditions(user):
 
 	if user == "Administrator":
 		return ''
-	
-	if "Navix Personnel" in roles:
+	is_navix = frappe.db.get_value("User", user, "navix_personnel")
+	if is_navix:
 		return "(`tabAsset`.`asset_category`='Navix')"
 	else:
 		return "(`tabAsset`.`asset_category`!='Navix')"
