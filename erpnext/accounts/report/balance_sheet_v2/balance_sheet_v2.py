@@ -302,7 +302,7 @@ def add_formulas(report_name, xlsx_file, return_wb=False, column_widths=None):
 	wb = load_workbook(stream)
 
 	def apply_on_sheet(ws):
-		group_col = "Z"
+		group_col = "ZZ"
 		ws.column_dimensions[group_col].hidden = True
 
 		# Build list of column letters reliably
