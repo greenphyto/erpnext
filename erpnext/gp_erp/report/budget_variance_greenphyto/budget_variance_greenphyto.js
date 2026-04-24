@@ -1,97 +1,64 @@
-// Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
-// For license information, please see license.txt
-/* eslint-disable */
+// Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
+// License: GNU General Public License v3. See license.txt
 
-// Extended Budget Variance Report with YTD filtering
-frappe.query_reports["Budget Variance Greenphyto"] = {
-	"filters": [
-		{
-			fieldname: "from_fiscal_year",
-			label: __("From Fiscal Year"),
-			fieldtype: "Link",
-			options: "Fiscal Year",
-			default: frappe.sys_defaults.fiscal_year,
-			reqd: 1
-		},
-		{
-			fieldname: "to_fiscal_year",
-			label: __("To Fiscal Year"),
-			fieldtype: "Link",
-			options: "Fiscal Year",
-			default: frappe.sys_defaults.fiscal_year,
-			reqd: 1
-		},
-		{
-			fieldname: "period",
-			label: __("Period"),
-			fieldtype: "Select",
-			options: [
-				{ "value": "Monthly", "label": __("Monthly") },
-				{ "value": "Quarterly", "label": __("Quarterly") },
-				{ "value": "Half-Yearly", "label": __("Half-Yearly") },
-				{ "value": "Yearly", "label": __("Yearly") }
-			],
-			default: "Yearly",
-			reqd: 1
-		},
-		{
-			fieldname: "company",
-			label: __("Company"),
-			fieldtype: "Link",
-			options: "Company",
-			default: frappe.defaults.get_user_default("Company"),
-			reqd: 1
-		},
-		{
-			fieldname: "budget_against",
-			label: __("Budget Against"),
-			fieldtype: "Select",
-			options: ["Cost Center", "Project"],
-			default: "Cost Center",
-			reqd: 1,
-			on_change: function() {
-				frappe.query_report.set_filter_value("budget_against_filter", []);
-				frappe.query_report.refresh();
-			}
-		},
-		{
-			fieldname:"budget_against_filter",
-			label: __('Dimension Filter'),
-			fieldtype: "MultiSelectList",
-			get_data: function(txt) {
-				if (!frappe.query_report.filters) return;
 
-				let budget_against = frappe.query_report.get_filter_value('budget_against');
-				if (!budget_against) return;
+frappe.require("assets/erpnext/js/financial_statements.js", function() {
+	frappe.query_reports["Budget Variance Greenphyto"] = $.extend({},
+		erpnext.financial_statements);
 
-				return frappe.db.get_link_options(budget_against, txt);
-			}
-		},
+	erpnext.utils.add_dimensions('Budget Variance Greenphyto', 10);
+
+	// Add Accumulated Values toggle
+	frappe.query_reports["Budget Variance Greenphyto"]["filters"].push({
+		"fieldname": "accumulated_values",
+		"label": __("Accumulated Values"),
+		"fieldtype": "Check",
+		"default": 1
+	});
+
+	frappe.query_reports["Budget Variance Greenphyto"]["filters"].push(
 		// {
-		// 	fieldname:"show_cumulative",
-		// 	label: __("Show Cumulative Amount"),
-		// 	fieldtype: "Check",
-		// 	default: 0,
+		// 	"fieldname": "project",
+		// 	"label": __("Project"),
+		// 	"fieldtype": "MultiSelectList",
+		// 	get_data: function(txt) {
+		// 		return frappe.db.get_link_options('Project', txt);
+		// 	}
 		// },
-	],
-	"formatter": function (value, row, column, data, default_formatter) {
-		value = default_formatter(value, row, column, data);
-
-		// Color variance columns: red for negative (over budget), green for positive (under budget)
-		if (column.fieldname == "variance_amount" || column.fieldname == "variance_percent") {
-			if (data[column.fieldname] < 0) {
-				value = "<span style='color:red'>" + value + "</span>";
-			}
-			else if (data[column.fieldname] > 0) {
-				value = "<span style='color:green'>" + value + "</span>";
-			}
+		{
+			"fieldname": "include_default_book_entries",
+			"label": __("Include Default Book Entries"),
+			"fieldtype": "Check",
+			"default": 1
+		},
+		{
+			"fieldname": "show_number_group",
+			"label": __("Show Number Group"),
+			"fieldtype": "Check",
+			"default": 0
+		},
+		{
+			"fieldname": "show_all_cost_centers",
+			"label": __("Show on Cost Centers"),
+			"fieldtype": "Check",
+			"default": 0,
+			"description": __("When enabled, columns are generated per Cost Center for the selected period(s).")
 		}
+	);
 
-		return value;
-	}
-};
-
-// Add dimension filters support
-erpnext.dimension_filters.forEach((dimension) => {
-	frappe.query_reports["Budget Variance Greenphyto"].filters[4].options.push(dimension["document_type"]);
+    frappe.query_reports["Profit and Loss Statement"]["onload"] = function(report){
+        report.page.add_inner_button("Export with Cost Centers", function() {
+            frappe.call({
+                method: "erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement.get_export_with_cost_centers_url",
+                args: {
+                    filters: report.get_values()
+                },
+                callback: function(r) {
+                    if (r.message && r.message.url) {
+                        window.open(r.message.url);
+                    }
+                }
+            });
+        });
+    }
 });

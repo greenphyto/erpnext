@@ -703,11 +703,21 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None, co
 		columns += get_cost_center_columns(company, filters.get("cost_center"))
 	
 	show_budget = filters.get("show_budget_amount")
+	ytd_column = filters.get("ytd_column")
+	from frappe.utils import today, getdate
+	current_date = getdate(today())
 	
 	if not cost_center_all_show or len(period_list)==1:
-
-
 		for period in period_list:
+
+			if ytd_column:
+				# Filter periods: only show periods that have started (YTD)
+				period_from_date = getdate(period.from_date) if period.from_date else None
+				
+				# Skip future periods (periods that haven't started yet)
+				if period_from_date and period_from_date > current_date:
+					continue
+			
 			label = period.label
 			if cost_center_all_show:
 				label = 'Total'
@@ -724,9 +734,9 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None, co
 			)
 			
 			# Add budget column right after each period column
-			if show_budget and periodicity == "Monthly":
+			if show_budget and periodicity in ["Monthly", "Yearly"]:
 				budget_key = period.key + "_budget"
-				# Extract month name from label (e.g., "Jan 2024" -> "Jan")
+				# Extract month/year name from label (e.g., "Jan 2024" -> "Jan")
 				month_label = label.split()[0] if label else ""
 				budget_label = month_label + " Budget" if month_label else "Budget"
 				
@@ -738,13 +748,55 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None, co
 						"options": "currency",
 						"width": 110,
 						"align": "right",
-					}
-				)
-		if periodicity != "Yearly":
-			if not accumulated_values:
+						}
+					)
+	else:
+		# When showing multiple cost centers with multiple periods
+		# Add period columns with budget columns
+		for period in period_list:
+			# Filter periods: only show periods that have started (YTD)
+			period_from_date = getdate(period.from_date) if period.from_date else None
+			
+			# Skip future periods (periods that haven't started yet)
+			if period_from_date and period_from_date > current_date:
+				continue
+			
+			label = period.label
+
+			columns.append(
+				{
+					"fieldname": period.key,
+					"label": label,
+					"fieldtype": "Currency",
+					"options": "currency",
+					"width": 150,
+					"align": "right",
+				}
+			)
+			
+			# Add budget column right after each period column
+			if show_budget and periodicity in ["Monthly", "Yearly"]:
+				budget_key = period.key + "_budget"
+				# Extract month/year name from label (e.g., "Jan 2024" -> "Jan")
+				month_label = label.split()[0] if label else ""
+				budget_label = month_label + " Budget" if month_label else "Budget"
+				
 				columns.append(
-					{"fieldname": "total", "label": _("Total"), "fieldtype": "Currency", "width": 150, "align": "right"}
-				)
+					{
+						"fieldname": budget_key,
+						"label": _(budget_label),
+						"fieldtype": "Currency",
+						"options": "currency",
+						"width": 110,
+						"align": "right",
+						}
+					)
+	
+	# Add Total column
+	if periodicity != "Yearly" and not accumulated_values:
+		columns.append(
+			{"fieldname": "total", "label": _("Total"), "fieldtype": "Currency", "width": 150, "align": "right"}
+		)
 
 	return columns
 
