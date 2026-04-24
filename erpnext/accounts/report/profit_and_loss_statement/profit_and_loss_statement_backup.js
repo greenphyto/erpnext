@@ -49,7 +49,7 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 			"label": __("Show Budget Amount"),
 			"fieldtype": "Check",
 			"default": 0,
-			"depends_on": "",
+			"depends_on": "eval:doc.periodicity == 'Monthly'",
 			"description": __("When enabled, budget amounts are displayed in the report.")
 		}
 	);

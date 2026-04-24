@@ -60,34 +60,79 @@ def execute(filters=None):
 		ignore_accumulated_values_for_fy=True,
 	)
 
-	# Fetch budget data and calculate YTD (Year-to-Date) BEFORE extending to data
-	budget_map = {}
-	# ALWAYS fetch monthly budget data (even for Yearly periodicity)
-	# This allows Budget YTD to calculate from raw monthly values
-	budget_map = get_budget_data(filters, "Monthly")
-	
-	# Get current date for YTD limit
-	from frappe.utils import today, getdate, add_months
-	current_date = getdate(today())
-	
-	# Add budget to income rows
-	if income:
-		add_budget_to_rows(income, budget_map, period_list, current_date, filters)
-	
-	# Add budget to expense rows
-	if expense:
-		add_budget_to_rows(expense, budget_map, period_list, current_date, filters)
-	
-	# Calculate net profit/loss AFTER budget is added
 	net_profit_loss = get_net_profit_loss(
 		income, expense, period_list, filters.company, filters.presentation_currency
 	)
-	
+
 	data = []
 	data.extend(income or [])
 	data.extend(expense or [])
 	if net_profit_loss:
 		data.append(net_profit_loss)
+
+	# Fetch budget data if show_budget_amount is enabled
+	budget_map = {}
+	if filters.show_budget_amount and filters.periodicity == "Monthly":
+		budget_map = get_budget_data(filters)
+		
+		# Add budget amounts to data rows
+		# First pass: add budget to leaf accounts
+		for row in data:
+			# Skip profit/loss row
+			if row.get("profit_data"):
+				continue
+			
+			# Skip group accounts in first pass
+			if row.get("is_group"):
+				continue
+				
+			account = row.get("account_origin") or row.get("account")
+			if not account:
+				continue
+			
+			# Add budget for each period
+			for period in period_list:
+				# Extract month number from period (1-12)
+				from frappe.utils import getdate
+				period_date = getdate(period.from_date) if period.from_date else None
+				month_num = period_date.month if period_date else None
+				
+				if month_num:
+					budget_key = period.key + "_budget"
+					# Get budget value from map, default to 0 if not found
+					budget_value = 0
+					if account in budget_map:
+						budget_value = budget_map.get(account, {}).get(month_num, 0)
+					row[budget_key] = budget_value
+		
+		# Second pass: calculate budget subtotals for group accounts
+		# Process in reverse to calculate from bottom up (children before parents)
+		for row in reversed(data):
+			if row.get("profit_data"):
+				continue
+			
+			if row.get("is_group"):
+				account = row.get("account_origin") or row.get("account")
+				if not account:
+					continue
+				
+				# Initialize budget totals for this group
+				for period in period_list:
+					budget_key = period.key + "_budget"
+					row[budget_key] = 0
+				
+				# Sum up budget from child accounts
+				for child_row in data:
+					if child_row.get("profit_data"):
+						continue
+					
+					child_parent = child_row.get("parent_account")
+					if child_parent == account:
+						# This is a child of current group
+						for period in period_list:
+							budget_key = period.key + "_budget"
+							child_budget = flt(child_row.get(budget_key, 0))
+							row[budget_key] = flt(row.get(budget_key, 0)) + child_budget
 
 	new_data = []
 	if filters.show_number_group:
@@ -106,8 +151,7 @@ def execute(filters=None):
 			new_data.append(d)
 
 	columns = get_columns(
-		filters.periodicity, period_list, filters.accumulated_values, filters.company, 
-		cost_center_all_show=filters.get("show_all_cost_centers", 0), filters=filters
+		filters.periodicity, period_list, filters.accumulated_values, filters.company, cost_center_all_show=filters.show_all_cost_centers, filters=filters
 	)
 
 	chart = get_chart_data(filters, columns, income, expense, net_profit_loss)
@@ -123,6 +167,7 @@ def execute(filters=None):
 	# 	convert_wrap_report_data(columns, data, precision=2)
 
 	return columns, new_data, None, chart, report_summary
+
 
 def get_report_summary(
 	period_list, periodicity, income, expense, net_profit_loss, currency, filters, consolidated=False
@@ -184,13 +229,6 @@ def get_net_profit_loss(income, expense, period_list, company, currency=None, co
 		total_expense = flt(expense[-2][key], 3) if expense else 0
 
 		net_profit_loss[key] = total_income - total_expense
-		
-		# Also calculate budget for net profit/loss (income budget - expense budget)
-		budget_key = (period if consolidated else period.key) + "_budget" if not consolidated else None
-		if budget_key:
-			income_budget = flt(income[-2].get(budget_key, 0), 3) if income else 0
-			expense_budget = flt(expense[-2].get(budget_key, 0), 3) if expense else 0
-			net_profit_loss[budget_key] = income_budget - expense_budget
 
 		if net_profit_loss[key]:
 			has_value = True
@@ -433,59 +471,58 @@ def get_export_with_cost_centers_url(filters=None):
 	return {"url": url}
 
 
-def get_budget_data(filters, periodicity="Monthly"):
+def get_budget_data(filters):
 	"""
 	Fetch budget data for accounts based on fiscal year, company, and cost center.
-	Budget is fetched directly from monthly fields (january, february, etc.) in Budget Account child table.
-	
-	Returns:
-		- If periodicity is "Monthly": dict mapping account -> month_number -> budget_amount
-		- If periodicity is "Yearly": dict mapping account -> fiscal_year -> total_budget_amount
+	Returns a dict mapping account -> month_number -> budget_amount
 	"""
+	if not filters.get("show_budget_amount"):
+		return {}
 	
-	budget_against = frappe.scrub(filters.get("budget_against", "Cost Center"))
+	budget_against = "cost_center"
 	cost_centers = filters.get("cost_center") or []
 	
 	# Build condition for cost centers
-	cond = ""
+	cost_center_cond = ""
 	if cost_centers:
-		cond += """ and b.{budget_against} in (%s)""".format(budget_against=budget_against) % ", ".join(
-			["%s"] * len(cost_centers)
-		)
+		cost_center_list = ", ".join([f"'{cc}'" for cc in cost_centers])
+		cost_center_cond = f"and b.cost_center in ({cost_center_list})"
 	
-	# Fetch budget details directly from Budget Account with monthly fields
+	# Fetch budget details with monthly columns
 	budget_details = frappe.db.sql(
-		"""
+		f"""
 			select
 				ba.account,
-				ba.january, ba.february, ba.march, ba.april, ba.may, ba.june,
-				ba.july, ba.august, ba.september, ba.october, ba.november, ba.december,
+				ba.january,
+				ba.february,
+				ba.march,
+				ba.april,
+				ba.may,
+				ba.june,
+				ba.july,
+				ba.august,
+				ba.september,
+				ba.october,
+				ba.november,
+				ba.december,
 				b.fiscal_year,
-				b.{budget_against} as budget_against
+				b.cost_center
 			from
 				`tabBudget` b,
 				`tabBudget Account` ba
 			where
 				b.name = ba.parent
 				and b.docstatus = 1
-				and b.company = %s
-				and b.fiscal_year = %s
-				and b.budget_against = %s
-				{cond}
+				and b.company = %(company)s
+				and b.fiscal_year = %(fiscal_year)s
+				{cost_center_cond}
 			order by
 				ba.account
-		""".format(
-			budget_against=budget_against,
-			cond=cond,
-		),
-		tuple(
-			[
-				filters.get("company"),
-				filters.get("from_fiscal_year"),
-				filters.get("budget_against", "Cost Center"),
-			]
-			+ cost_centers
-		),
+		""",
+		{
+			"company": filters.get("company"),
+			"fiscal_year": filters.get("from_fiscal_year"),
+		},
 		as_dict=True,
 	)
 	
@@ -505,178 +542,20 @@ def get_budget_data(filters, periodicity="Monthly"):
 		12: "december"
 	}
 	
+	# Build account -> month_number -> budget mapping
 	budget_map = {}
-	
-	if periodicity == "Yearly":
-		# Build account -> fiscal_year -> total_budget mapping
-		for bd in budget_details:
-			account = bd.account
-			fiscal_year = bd.fiscal_year
+	for bd in budget_details:
+		account = bd.account
+		if account not in budget_map:
+			budget_map[account] = {}
+		
+		# Map each month's budget value
+		for month_num, field_name in month_fields.items():
+			monthly_budget = flt(bd.get(field_name, 0))
 			
-			if account not in budget_map:
-				budget_map[account] = {}
-			
-			# Sum all monthly budgets for yearly total
-			yearly_total = 0
-			for month_num in range(1, 13):
-				month_field = month_fields[month_num]
-				yearly_total += flt(bd.get(month_field, 0))
-			
-			# Add to existing budget for this account-year (in case multiple budgets exist)
-			if fiscal_year not in budget_map[account]:
-				budget_map[account][fiscal_year] = 0
-			budget_map[account][fiscal_year] += yearly_total
-	else:
-		# Build account -> month_number -> budget mapping (Monthly)
-		# Get budget for each month directly from monthly fields
-		for bd in budget_details:
-			account = bd.account
-			if account not in budget_map:
-				budget_map[account] = {}
-			
-			for month_num in range(1, 13):
-				month_field = month_fields[month_num]
-				monthly_budget = flt(bd.get(month_field, 0))
-				
-				# Add to existing budget for this account-month (in case multiple budgets exist)
-				if month_num not in budget_map[account]:
-					budget_map[account][month_num] = 0
-				budget_map[account][month_num] += monthly_budget
+			# Add to existing budget for this account-month (in case multiple budgets exist)
+			if month_num not in budget_map[account]:
+				budget_map[account][month_num] = 0
+			budget_map[account][month_num] += monthly_budget
 	
 	return budget_map
-
-
-def add_budget_to_rows(rows, budget_map, period_list, current_date, filters):
-	"""Add budget amounts to all rows including totals
-	
-	Args:
-		rows: List of account rows (income or expense)
-		budget_map: Dict mapping account -> period -> budget_amount
-		period_list: List of periods to add budget for
-		current_date: Current date for YTD limit
-		filters: Report filters
-	"""
-	from frappe.utils import getdate, add_months, flt
-	
-	# First pass: Add budget to leaf accounts (non-group, non-total)
-	for row in rows:
-		# Skip total rows (they'll be calculated later)
-		account_name = row.get("account_name", "").lower()
-		is_total_row = "total" in account_name and ("income" in account_name or "expense" in account_name)
-		
-		if is_total_row:
-			continue
-		
-		# Skip group accounts in first pass
-		if row.get("is_group"):
-			continue
-			
-		account = row.get("account_origin") or row.get("account")
-		if not account:
-			continue
-		
-		# Add budget for each period
-		for period in period_list:
-			budget_key = period.key + "_budget"
-			budget_value = 0
-			
-			period_to_date = getdate(period.to_date) if period.to_date else None
-			
-			if filters.periodicity == "Yearly":
-				# For yearly budget, sum all 12 months from budget_map
-				# budget_map is now always monthly: account -> month_number -> budget_amount
-				if account in budget_map:
-					for month_num in range(1, 13):
-						budget_value += flt(budget_map.get(account, {}).get(month_num, 0))
-			else:
-				# Monthly budget
-				if account in budget_map and period_to_date:
-					if filters.accumulated_values:
-						# Accumulated mode: Calculate YTD
-						fiscal_year_start = getdate(period.year_start_date) if period.year_start_date else None
-						
-						if fiscal_year_start:
-							ytd_budget = 0
-							current_month_date = fiscal_year_start
-							
-							# Iterate month by month from fiscal year start to period end
-							while current_month_date <= period_to_date:
-								month_num = current_month_date.month
-								ytd_budget += budget_map.get(account, {}).get(month_num, 0)
-								
-								# Move to next month
-								current_month_date = add_months(current_month_date, 1)
-								
-								# Safety check
-								if current_month_date.year > period_to_date.year or \
-								   (current_month_date.year == period_to_date.year and current_month_date.month > period_to_date.month):
-									break
-							
-							budget_value = ytd_budget
-					else:
-						# Non-accumulated mode: Show budget for this month only
-						month_num = period_to_date.month
-						budget_value = budget_map.get(account, {}).get(month_num, 0)
-			
-			row[budget_key] = budget_value
-	
-	# Second pass: Calculate budget for group accounts (bottom-up)
-	for row in reversed(rows):
-		account_name = row.get("account_name", "").lower()
-		is_total_row = "total" in account_name and ("income" in account_name or "expense" in account_name)
-		
-		if is_total_row:
-			continue
-		
-		if row.get("is_group"):
-			account = row.get("account_origin") or row.get("account")
-			if not account:
-				continue
-			
-			# Initialize budget totals for this group
-			for period in period_list:
-				budget_key = period.key + "_budget"
-				row[budget_key] = 0
-			
-			# Sum budget from child accounts
-			for child_row in rows:
-				child_account_name = child_row.get("account_name", "").lower()
-				child_is_total = "total" in child_account_name and ("income" in child_account_name or "expense" in child_account_name)
-				
-				if child_is_total:
-					continue
-				
-				child_parent = child_row.get("parent_account")
-				if child_parent == account:
-					for period in period_list:
-						budget_key = period.key + "_budget"
-						child_budget = flt(child_row.get(budget_key, 0))
-						row[budget_key] = flt(row.get(budget_key, 0)) + child_budget
-	
-	# Third pass: Calculate budget for total row (it's the second to last row, -2)
-	if len(rows) >= 2:
-		total_row = rows[-2]
-		account_name = total_row.get("account_name", "").lower()
-		is_total_row = "total" in account_name and ("income" in account_name or "expense" in account_name)
-		
-		if is_total_row:
-			# Initialize all budget periods
-			for period in period_list:
-				budget_key = period.key + "_budget"
-				total_row[budget_key] = 0
-			
-			# Sum budget from all top-level accounts (accounts with no parent or root parent)
-			for row in rows[:-2]:  # Exclude last 2 rows (total and separator)
-				row_account_name = row.get("account_name", "").lower()
-				row_is_total = "total" in row_account_name and ("income" in row_account_name or "expense" in row_account_name)
-				
-				if row_is_total:
-					continue
-				
-				parent = row.get("parent_account")
-				# Only sum top-level accounts (no parent, or parent is root like "Income" or "Expense")
-				if not parent or parent in ["Income", "Expenses", "Expense"]:
-					for period in period_list:
-						budget_key = period.key + "_budget"
-						row_budget = flt(row.get(budget_key, 0))
-						total_row[budget_key] = flt(total_row.get(budget_key, 0)) + row_budget
