@@ -22,7 +22,7 @@ from erpnext.accounts.report.financial_statements import (
 )
 from erpnext.accounts.utils import remove_account_number
 from erpnext.accounts.report.utils import convert_wrap_report_data
-
+from erpnext.gp_erp.report.budget_variance_greenphyto.budget_variance_greenphyto import get_budget_data
 
 def execute(filters=None):
 	filters = frappe._dict(filters)
@@ -64,7 +64,7 @@ def execute(filters=None):
 	budget_map = {}
 	# ALWAYS fetch monthly budget data (even for Yearly periodicity)
 	# This allows Budget YTD to calculate from raw monthly values
-	budget_map = get_budget_data(filters, "Monthly")
+	budget_map = get_budget_data(filters)
 	
 	# Get current date for YTD limit
 	from frappe.utils import today, getdate, add_months
@@ -239,7 +239,7 @@ def get_chart_data(filters, columns, income, expense, net_profit_loss):
 
 from frappe.desk.query_report import add_title_report, get_filters_data, build_xlsx_data
 from openpyxl.utils import get_column_letter
-def get_export_cost_center(filters):
+def get_export_cost_center(report_name, filters):
 	"""
 	Generate grouped Profit & Loss data per non-group Cost Center.
 
@@ -268,9 +268,14 @@ def get_export_cost_center(filters):
 	# add detail
 	export_date = now()
 	date_str = " "+get_datetime(export_date).strftime("%-d %B %y %H:%M:%S")
-	report_name = "Profit and Loass Statement"
 	title_report = add_title_report(report_name) 
 	filter_report = get_filters_data(filters)
+
+	print("========>>>", report_name, filters)
+	if report_name == "Budget Variance Greenphyto":
+		from erpnext.gp_erp.report.budget_variance_greenphyto.budget_variance_greenphyto import execute
+	else:
+		from erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement import execute
 
 	for cc in cost_centers:
 		# Prepare per-CC filters without mutating caller filters
@@ -306,7 +311,7 @@ def _sanitize_sheet_name(name):
 
 
 @frappe.whitelist()
-def export_with_cost_centers(filters=None):
+def export_with_cost_centers(report_name, filters=None):
 	"""
 	Build an XLSX where each Cost Center is a sheet containing its P&L data.
 
@@ -319,7 +324,7 @@ def export_with_cost_centers(filters=None):
 			filters = {}
 
 	filters['show_all_cost_centers'] = 0
-	group_data  = get_export_cost_center(filters)
+	group_data  = get_export_cost_center(report_name, filters)
 
 	if not openpyxl:
 		frappe.throw("openpyxl is required to export XLSX")
@@ -402,7 +407,7 @@ def export_with_cost_centers(filters=None):
 					width_chars = max(8, min(50, len(str(label)) + 5))
 				column_widths.append(width_chars)
 
-		return add_formulas("Profit and Loss Statement", bio, column_widths=column_widths)
+		return add_formulas(report_name, bio, column_widths=column_widths)
 
 	except Exception:
 		# Fallback: plain export if add_formulas unavailable
@@ -428,123 +433,9 @@ def get_export_with_cost_centers_url(filters=None):
 	payload = quote(json.dumps(filters or {}))
 	url = (
 		"/api/method/erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement.export_with_cost_centers"
-		f"?filters={payload}"
+		f"?filters={payload}&report_name=Profit%20and%20Loss%20Statement"
 	)
 	return {"url": url}
-
-
-def get_budget_data(filters, periodicity="Monthly"):
-	"""
-	Fetch budget data for accounts based on fiscal year, company, and cost center.
-	Budget is fetched directly from monthly fields (january, february, etc.) in Budget Account child table.
-	
-	Returns:
-		- If periodicity is "Monthly": dict mapping account -> month_number -> budget_amount
-		- If periodicity is "Yearly": dict mapping account -> fiscal_year -> total_budget_amount
-	"""
-	
-	budget_against = frappe.scrub(filters.get("budget_against", "Cost Center"))
-	cost_centers = filters.get("cost_center") or []
-	
-	# Build condition for cost centers
-	cond = ""
-	if cost_centers:
-		cond += """ and b.{budget_against} in (%s)""".format(budget_against=budget_against) % ", ".join(
-			["%s"] * len(cost_centers)
-		)
-	
-	# Fetch budget details directly from Budget Account with monthly fields
-	budget_details = frappe.db.sql(
-		"""
-			select
-				ba.account,
-				ba.january, ba.february, ba.march, ba.april, ba.may, ba.june,
-				ba.july, ba.august, ba.september, ba.october, ba.november, ba.december,
-				b.fiscal_year,
-				b.{budget_against} as budget_against
-			from
-				`tabBudget` b,
-				`tabBudget Account` ba
-			where
-				b.name = ba.parent
-				and b.docstatus = 1
-				and b.company = %s
-				and b.fiscal_year = %s
-				and b.budget_against = %s
-				{cond}
-			order by
-				ba.account
-		""".format(
-			budget_against=budget_against,
-			cond=cond,
-		),
-		tuple(
-			[
-				filters.get("company"),
-				filters.get("from_fiscal_year"),
-				filters.get("budget_against", "Cost Center"),
-			]
-			+ cost_centers
-		),
-		as_dict=True,
-	)
-	
-	# Month mapping: month_number -> field_name
-	month_fields = {
-		1: "january",
-		2: "february",
-		3: "march",
-		4: "april",
-		5: "may",
-		6: "june",
-		7: "july",
-		8: "august",
-		9: "september",
-		10: "october",
-		11: "november",
-		12: "december"
-	}
-	
-	budget_map = {}
-	
-	if periodicity == "Yearly":
-		# Build account -> fiscal_year -> total_budget mapping
-		for bd in budget_details:
-			account = bd.account
-			fiscal_year = bd.fiscal_year
-			
-			if account not in budget_map:
-				budget_map[account] = {}
-			
-			# Sum all monthly budgets for yearly total
-			yearly_total = 0
-			for month_num in range(1, 13):
-				month_field = month_fields[month_num]
-				yearly_total += flt(bd.get(month_field, 0))
-			
-			# Add to existing budget for this account-year (in case multiple budgets exist)
-			if fiscal_year not in budget_map[account]:
-				budget_map[account][fiscal_year] = 0
-			budget_map[account][fiscal_year] += yearly_total
-	else:
-		# Build account -> month_number -> budget mapping (Monthly)
-		# Get budget for each month directly from monthly fields
-		for bd in budget_details:
-			account = bd.account
-			if account not in budget_map:
-				budget_map[account] = {}
-			
-			for month_num in range(1, 13):
-				month_field = month_fields[month_num]
-				monthly_budget = flt(bd.get(month_field, 0))
-				
-				# Add to existing budget for this account-month (in case multiple budgets exist)
-				if month_num not in budget_map[account]:
-					budget_map[account][month_num] = 0
-				budget_map[account][month_num] += monthly_budget
-	
-	return budget_map
-
 
 def add_budget_to_rows(rows, budget_map, period_list, current_date, filters):
 	"""Add budget amounts to all rows including totals

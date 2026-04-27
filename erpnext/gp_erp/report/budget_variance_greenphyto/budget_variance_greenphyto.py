@@ -798,3 +798,22 @@ def add_summary_columns(rows, budget_map, period_list, current_date, filters):
 			variance_percent = 0
 		
 		row["variance_percent"] = variance_percent
+
+@frappe.whitelist()
+def get_export_with_cost_centers_url(filters=None):
+	"""
+	Helper to generate a URL for binary export so that the client
+	can use frappe.call() first, then window.open() the returned URL.
+	"""
+	if isinstance(filters, str):
+		try:
+			filters = frappe.parse_json(filters)
+		except Exception:
+			filters = {}
+
+	payload = quote(json.dumps(filters or {}))
+	url = (
+		"/api/method/erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement.export_with_cost_centers"
+		f"?filters={payload}&report_name=Budget%20Variance%20Greenphyto"
+	)
+	return {"url": url}
