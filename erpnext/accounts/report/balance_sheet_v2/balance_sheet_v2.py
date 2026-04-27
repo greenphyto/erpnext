@@ -353,6 +353,7 @@ def add_formulas(report_name, xlsx_file, return_wb=False, column_widths=None):
 			elif account == "Total Expense (Debit)":
 				total_row.setdefault("Expenses", row)
 
+		profit_loss_row = None
 		for d in flat_list:
 			is_group = d.get("group_flag")
 			account = d['account']
@@ -381,10 +382,14 @@ def add_formulas(report_name, xlsx_file, return_wb=False, column_widths=None):
 							equity_total_row = total_row.get("Equity")
 							liability_total_row = total_row.get("Liabilities")
 							assets_total_row = total_row.get("Assets")
+							if total_row.get("'Profit / (Loss) for the Year'") and profit_loss_row is None:
+								profit_loss_row = total_row.get("'Profit / (Loss) for the Year'")
+
 							if account == "'Profit / (Loss) for the Year'":
+								profit_loss_row = row
 								ws[f"{col}{row}"] = f"={col}{assets_total_row} - ({col}{liability_total_row} + {col}{equity_total_row})"
 							elif account == "'Total (Credit)'":
-								ws[f"{col}{row}"] = f"={col}{liability_total_row} + {col}{equity_total_row}"
+								ws[f"{col}{row}"] = f"=({col}{liability_total_row} + {col}{equity_total_row})+{col}{profit_loss_row}"
 
 						# Profit & Loss
 						required_keys = ["Income", "Expenses"]
