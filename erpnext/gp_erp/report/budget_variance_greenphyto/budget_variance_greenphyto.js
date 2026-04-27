@@ -46,10 +46,10 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 		}
 	);
 
-    frappe.query_reports["Profit and Loss Statement"]["onload"] = function(report){
+	frappe.query_reports["Budget Variance Greenphyto"]["onload"] = function(report){
         report.page.add_inner_button("Export with Cost Centers", function() {
             frappe.call({
-                method: "erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement.get_export_with_cost_centers_url",
+                method: "erpnext.gp_erp.report.budget_variance_greenphyto.budget_variance_greenphyto.get_export_with_cost_centers_url",
                 args: {
                     filters: report.get_values()
                 },

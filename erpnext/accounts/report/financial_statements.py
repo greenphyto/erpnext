@@ -31,7 +31,8 @@ def get_period_list(
 	reset_period_on_fy_change=True,
 	ignore_fiscal_year=False,
 	month=None,
-	to_month=None
+	to_month=None,
+	ytd=False
 ):
 	"""Get a list of dict {"from_date": from_date, "to_date": to_date, "key": key, "label": label}
 	Periodicity can be (Yearly, Quarterly, Monthly)"""
@@ -126,6 +127,14 @@ def get_period_list(
 				"year_end_date": year_end_date,
 			}
 		)
+	
+	if ytd:
+		new_list = []
+		current_date = getdate()
+		for period in period_list:
+			if period.from_date <= current_date:
+				new_list.append(period)
+		return new_list
 
 	return period_list
 
