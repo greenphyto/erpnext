@@ -36,6 +36,7 @@ def execute(filters=None):
 		company=filters.company,
 		month=filters.month,
 		to_month=filters.to_month,
+		ytd=1
 	)
 
 	income = get_data(
@@ -64,7 +65,7 @@ def execute(filters=None):
 	budget_map = {}
 	# ALWAYS fetch monthly budget data (even for Yearly periodicity)
 	# This allows Budget YTD to calculate from raw monthly values
-	budget_map = get_budget_data(filters, "Monthly")
+	budget_map = get_budget_data(filters, ytd=True)
 	
 	# Get current date for YTD limit
 	from frappe.utils import today, getdate, add_months
@@ -84,27 +85,7 @@ def execute(filters=None):
 	net_profit_loss = get_net_profit_loss(
 		income, expense, period_list, filters.company, filters.presentation_currency
 	)
-	
-	# Add summary columns to net profit/loss row
-	if net_profit_loss and income and expense:
-		# Calculate total_actual, budget_ytd, variance for net profit/loss
-		income_total = income[-2] if income else {}
-		expense_total = expense[-2] if expense else {}
-		
-		# Total Actual = Income Total Actual - Expense Total Actual
-		net_profit_loss["total_actual"] = flt(income_total.get("total_actual", 0)) - flt(expense_total.get("total_actual", 0))
-		
-		# Budget YTD = Income Budget YTD - Expense Budget YTD (only periods up to current date)
-		net_profit_loss["budget_ytd"] = flt(income_total.get("budget_ytd", 0)) - flt(expense_total.get("budget_ytd", 0))
-		
-		# Variance Amount = Total Actual - Budget YTD
-		net_profit_loss["variance_amount"] = net_profit_loss["total_actual"] - net_profit_loss["budget_ytd"]
-		
-		# Variance % = (Variance Amount / Budget YTD) × 100
-		if net_profit_loss["budget_ytd"] != 0:
-			net_profit_loss["variance_percent"] = (net_profit_loss["variance_amount"] / net_profit_loss["budget_ytd"]) * 100
-		else:
-			net_profit_loss["variance_percent"] = 0
+
 	
 	data = []
 	data.extend(income or [])
@@ -132,7 +113,7 @@ def execute(filters=None):
 	filters.ytd_column = 1
 	columns = get_report_column(filters, period_list)
 
-	chart = get_chart_data(filters, columns, income, expense, net_profit_loss)
+	chart = None #get_chart_data(filters, columns, income, expense, net_profit_loss)
 
 	currency = filters.presentation_currency or frappe.get_cached_value(
 		"Company", filters.company, "default_currency"
@@ -141,57 +122,59 @@ def execute(filters=None):
 		period_list, filters.periodicity, income, expense, net_profit_loss, currency, filters
 	)
 
-	# if frappe.flags.in_export:
-	# 	convert_wrap_report_data(columns, data, precision=2)
-
 	return columns, new_data, None, chart, report_summary
 
 def get_report_column(filters, period_list):
-	columns = get_columns(
+	temp_columns = get_columns(
 		filters.periodicity, period_list, filters.accumulated_values, filters.company, cost_center_all_show=filters.show_all_cost_centers, filters=filters
 	)
 
-	# Add summary columns specific to this report: Total Actual, Budget YTD, Variance $, Variance %
-	show_budget = filters.get("show_budget_amount")
-	if show_budget and filters.periodicity in ["Monthly", "Yearly"]:
-		# Total Actual column
-		columns.append({
-			"fieldname": "total_actual",
-			"label": _("Total Actual"),
-			"fieldtype": "Currency",
-			"options": "currency",
-			"width": 150,
-			"align": "right",
-		})
-		
-		# Budget YTD column
-		columns.append({
-			"fieldname": "budget_ytd",
-			"label": _("Budget YTD"),
-			"fieldtype": "Currency",
-			"options": "currency",
-			"width": 150,
-			"align": "right",
-		})
-		
-		# Variance $ column
-		columns.append({
-			"fieldname": "variance_amount",
-			"label": _("Variance $"),
-			"fieldtype": "Currency",
-			"options": "currency",
-			"width": 150,
-			"align": "right",
-		})
-		
-		# Variance % column
-		columns.append({
-			"fieldname": "variance_percent",
-			"label": _("Variance %"),
-			"fieldtype": "Percent",
-			"width": 150,
-			"align": "right",
-		})
+	# skip total column bcs use total actual
+	columns = []
+	for col in temp_columns:
+		if col.get("fieldname", "") == "total":
+			continue
+		else:
+			columns.append(col)
+
+	# Total Actual column
+	columns.append({
+		"fieldname": "total_actual",
+		"label": _("Total Actual"),
+		"fieldtype": "Currency",
+		"options": "currency",
+		"width": 150,
+		"align": "right",
+	})
+	
+	# Budget YTD column
+	columns.append({
+		"fieldname": "budget_ytd",
+		"label": _("Budget YTD"),
+		"fieldtype": "Currency",
+		"options": "currency",
+		"width": 150,
+		"align": "right",
+	})
+	
+	# Variance $ column
+	columns.append({
+		"fieldname": "variance_amount",
+		"label": _("Variance $"),
+		"fieldtype": "Currency",
+		"options": "currency",
+		"width": 150,
+		"align": "right",
+	})
+	
+	# Variance % column
+	columns.append({
+		"fieldname": "variance_percent",
+		"label": _("Variance %"),
+		"fieldtype": "Percent",
+		"width": 150,
+		"align": "right",
+	})
 
 	return columns
 
@@ -268,6 +251,27 @@ def get_net_profit_loss(income, expense, period_list, company, currency=None, co
 
 		total += flt(net_profit_loss[key])
 		net_profit_loss["total"] = total
+
+	# Add summary columns to net profit/loss row
+	if net_profit_loss and income and expense:
+		# Calculate total_actual, budget_ytd, variance for net profit/loss
+		income_total = income[-2] if income else {}
+		expense_total = expense[-2] if expense else {}
+		
+		# Total Actual = Income Total Actual - Expense Total Actual
+		net_profit_loss["total_actual"] = flt(income_total.get("total_actual", 0)) - flt(expense_total.get("total_actual", 0))
+		
+		# Budget YTD = Income Budget YTD - Expense Budget YTD (only periods up to current date)
+		net_profit_loss["budget_ytd"] = flt(income_total.get("budget_ytd", 0)) - flt(expense_total.get("budget_ytd", 0))
+		
+		# Variance Amount = Total Actual - Budget YTD
+		net_profit_loss["variance_amount"] = net_profit_loss["total_actual"] - net_profit_loss["budget_ytd"]
+		
+		# Variance % = (Variance Amount / Budget YTD) × 100
+		if net_profit_loss["budget_ytd"] != 0:
+			net_profit_loss["variance_percent"] = (net_profit_loss["variance_amount"] / net_profit_loss["budget_ytd"]) * 100
+		else:
+			net_profit_loss["variance_percent"] = 0
 
 	if has_value:
 		return net_profit_loss
@@ -504,7 +508,7 @@ def get_export_with_cost_centers_url(filters=None):
 	return {"url": url}
 
 
-def get_budget_data(filters, periodicity="Monthly"):
+def get_budget_data(filters, ytd=False):
 	"""
 	Fetch budget data for accounts based on fiscal year, company, and cost center.
 	Budget is fetched directly from monthly fields (january, february, etc.) in Budget Account child table.
@@ -513,6 +517,8 @@ def get_budget_data(filters, periodicity="Monthly"):
 		- If periodicity is "Monthly": dict mapping account -> month_number -> budget_amount
 		- If periodicity is "Yearly": dict mapping account -> fiscal_year -> total_budget_amount
 	"""
+
+	periodicity = filters.get("periodicity")
 	
 	budget_against = frappe.scrub(filters.get("budget_against", "Cost Center"))
 	cost_centers = filters.get("cost_center") or []
@@ -577,42 +583,27 @@ def get_budget_data(filters, periodicity="Monthly"):
 	}
 	
 	budget_map = {}
-	
-	if periodicity == "Yearly":
-		# Build account -> fiscal_year -> total_budget mapping
-		for bd in budget_details:
-			account = bd.account
-			fiscal_year = bd.fiscal_year
+	current_month = None
+	if ytd:
+		current_month = get_datetime().month
+		
+	for bd in budget_details:
+		account = bd.account
+		if account not in budget_map:
+			budget_map[account] = {}
+		
+		for month_num in range(1, 13):
+			if ytd and month_num > current_month:
+				break
+
+			month_field = month_fields[month_num]
+			monthly_budget = flt(bd.get(month_field, 0))
 			
-			if account not in budget_map:
-				budget_map[account] = {}
+			key = month_num
 			
-			# Sum all monthly budgets for yearly total
-			yearly_total = 0
-			for month_num in range(1, 13):
-				month_field = month_fields[month_num]
-				yearly_total += flt(bd.get(month_field, 0))
-			
-			# Add to existing budget for this account-year (in case multiple budgets exist)
-			if fiscal_year not in budget_map[account]:
-				budget_map[account][fiscal_year] = 0
-			budget_map[account][fiscal_year] += yearly_total
-	else:
-		# Build account -> month_number -> budget mapping (Monthly)
-		# Get budget for each month directly from monthly fields
-		for bd in budget_details:
-			account = bd.account
-			if account not in budget_map:
-				budget_map[account] = {}
-			
-			for month_num in range(1, 13):
-				month_field = month_fields[month_num]
-				monthly_budget = flt(bd.get(month_field, 0))
-				
-				# Add to existing budget for this account-month (in case multiple budgets exist)
-				if month_num not in budget_map[account]:
-					budget_map[account][month_num] = 0
-				budget_map[account][month_num] += monthly_budget
+			if key not in budget_map[account]:
+				budget_map[account][key] = 0
+			budget_map[account][key] += monthly_budget
 	
 	return budget_map
 
@@ -790,31 +781,9 @@ def add_summary_columns(rows, budget_map, period_list, current_date, filters):
 		budget_ytd = 0
 		account = row.get("account_origin") or row.get("account")
 		
-		if account and account in budget_map:
-			# Get fiscal year start from first period
-			if period_list:
-				first_period = period_list[0]
-				fiscal_year_start = getdate(first_period.year_start_date) if first_period.year_start_date else None
-				
-				if fiscal_year_start:
-					# Calculate YTD: sum monthly budgets from fiscal year start to current month
-					current_month_date = fiscal_year_start
-					
-					while current_month_date <= current_date:
-						month_num = current_month_date.month
-						
-						# Get budget for this month from raw budget_map
-						# budget_map structure: account -> month_number -> budget_amount
-						monthly_budget = budget_map.get(account, {}).get(month_num, 0)
-						budget_ytd += flt(monthly_budget)
-						
-						# Move to next month
-						current_month_date = add_months(current_month_date, 1)
-						
-						# Safety check to prevent infinite loop
-						if current_month_date.year > current_date.year or \
-						   (current_month_date.year == current_date.year and current_month_date.month > current_date.month):
-							break
+		for period in period_list:
+			key_budget = period.key + "_budget"
+			budget_ytd += flt(row.get(key_budget, 0))
 		
 		row["budget_ytd"] = budget_ytd
 		
@@ -829,29 +798,3 @@ def add_summary_columns(rows, budget_map, period_list, current_date, filters):
 			variance_percent = 0
 		
 		row["variance_percent"] = variance_percent
-
-
-def get_target_distribution_details(filters):
-	"""Get target distribution details (percentage allocation per month)"""
-	target_details = {}
-	for d in frappe.db.sql(
-		"""
-			select
-				md.name,
-				mdp.month,
-				mdp.percentage_allocation
-			from
-				`tabMonthly Distribution Percentage` mdp,
-				`tabMonthly Distribution` md
-			where
-				mdp.parent = md.name
-				and md.fiscal_year = %s
-			order by
-				md.fiscal_year
-		""",
-		(filters.get("from_fiscal_year")),
-		as_dict=1,
-	):
-		target_details.setdefault(d.name, {}).setdefault(d.month, flt(d.percentage_allocation))
-
-	return target_details

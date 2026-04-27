@@ -45,20 +45,4 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 			"description": __("When enabled, columns are generated per Cost Center for the selected period(s).")
 		}
 	);
-
-    frappe.query_reports["Profit and Loss Statement"]["onload"] = function(report){
-        report.page.add_inner_button("Export with Cost Centers", function() {
-            frappe.call({
-                method: "erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement.get_export_with_cost_centers_url",
-                args: {
-                    filters: report.get_values()
-                },
-                callback: function(r) {
-                    if (r.message && r.message.url) {
-                        window.open(r.message.url);
-                    }
-                }
-            });
-        });
-    }
 });
