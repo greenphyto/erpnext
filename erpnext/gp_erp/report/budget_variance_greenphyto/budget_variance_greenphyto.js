@@ -7,42 +7,19 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 		erpnext.financial_statements);
 
 	erpnext.utils.add_dimensions('Budget Variance Greenphyto', 10);
-
-	// Add Accumulated Values toggle
-	frappe.query_reports["Budget Variance Greenphyto"]["filters"].push({
-		"fieldname": "accumulated_values",
-		"label": __("Accumulated Values"),
-		"fieldtype": "Check",
-		"default": 1
-	});
-
+	
 	frappe.query_reports["Budget Variance Greenphyto"]["filters"].push(
-		// {
-		// 	"fieldname": "project",
-		// 	"label": __("Project"),
-		// 	"fieldtype": "MultiSelectList",
-		// 	get_data: function(txt) {
-		// 		return frappe.db.get_link_options('Project', txt);
-		// 	}
-		// },
 		{
-			"fieldname": "include_default_book_entries",
-			"label": __("Include Default Book Entries"),
+			"fieldname": "accumulated_values",
+			"label": __("Accumulated Values"),
 			"fieldtype": "Check",
 			"default": 1
 		},
 		{
-			"fieldname": "show_number_group",
-			"label": __("Show Number Group"),
+			"fieldname": "hide_zero_balance",
+			"label": __("Hide Zero Balance"),
 			"fieldtype": "Check",
 			"default": 0
-		},
-		{
-			"fieldname": "show_all_cost_centers",
-			"label": __("Show on Cost Centers"),
-			"fieldtype": "Check",
-			"default": 0,
-			"description": __("When enabled, columns are generated per Cost Center for the selected period(s).")
 		}
 	);
 

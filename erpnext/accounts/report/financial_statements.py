@@ -197,6 +197,8 @@ def get_data(
 	ignore_closing_entries=False,
 	ignore_accumulated_values_for_fy=False,
 	total=True,
+	filter_zero_value=True,
+	accounts_to_show=[]
 ):
 
 	accounts = get_accounts(company, root_type)
@@ -250,7 +252,13 @@ def get_data(
 		recompute_monthly_net(accounts_by_name, gl_entries_by_account, period_list)
 	accumulate_values_into_parents(accounts, accounts_by_name, period_list)
 	out = prepare_data(accounts, balance_must_be, period_list, company_currency)
-	out = filter_out_zero_value_rows(out, parent_children_map)
+	if filter_zero_value:
+		out = filter_out_zero_value_rows(out, parent_children_map)
+
+	# Only show based on the budget list
+	elif accounts_to_show:
+		out = filter_out_accounts_except(out, parent_children_map, accounts_to_show)
+
 
 	#smooth result
 	out = validate_report_result(out, period_list)
@@ -259,6 +267,31 @@ def get_data(
 		add_total_row(out, root_type, balance_must_be, period_list, company_currency)
 
 	return out
+
+def filter_out_accounts_except(data, parent_children_map, accounts_to_show):
+	"""Filter out accounts except the ones in accounts_to_show list"""
+	data_with_value = []
+	for d in data:
+		if d.get("has_value"):
+			data_with_value.append(d)
+		else:
+			# show group with zero balance, if there are balances against child
+			children = [child.name for child in parent_children_map.get(d.get("account")) or []]
+			if children:
+				for row in data:
+					if row.get("account") in children:
+						if row.get("has_value"):
+							data_with_value.append(d)
+							break
+						else:
+							# if there is no balance against child, check if account is in accounts_to_show list
+							if d.get("account") in accounts_to_show:
+								data_with_value.append(d)
+								break
+			elif d.get("account") in accounts_to_show:
+				data_with_value.append(d)
+
+	return data_with_value
 
 def validate_report_result(data, period_list):
 	# Skip smoothing if explicitly in monthly net mode

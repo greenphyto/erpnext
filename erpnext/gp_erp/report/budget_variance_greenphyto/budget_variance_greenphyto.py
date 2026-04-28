@@ -39,6 +39,10 @@ def execute(filters=None):
 		ytd=1
 	)
 
+	accounts_list = []
+	if cint(filters.hide_zero_balance):
+		accounts_list = get_budget_account(filters.get("cost_center"), filters.get("company"))
+
 	income = get_data(
 		filters.company,
 		"Income",
@@ -48,6 +52,8 @@ def execute(filters=None):
 		accumulated_values=filters.accumulated_values,
 		ignore_closing_entries=True,
 		ignore_accumulated_values_for_fy=True,
+		filter_zero_value=0,
+		accounts_to_show=accounts_list
 	)
 
 	expense = get_data(
@@ -59,6 +65,8 @@ def execute(filters=None):
 		accumulated_values=filters.accumulated_values,
 		ignore_closing_entries=True,
 		ignore_accumulated_values_for_fy=True,
+		filter_zero_value=0,
+		accounts_to_show=accounts_list
 	)
 
 	# Fetch budget data and calculate YTD (Year-to-Date) BEFORE extending to data
@@ -115,14 +123,46 @@ def execute(filters=None):
 
 	chart = None #get_chart_data(filters, columns, income, expense, net_profit_loss)
 
-	currency = filters.presentation_currency or frappe.get_cached_value(
-		"Company", filters.company, "default_currency"
-	)
-	report_summary = get_report_summary(
-		period_list, filters.periodicity, income, expense, net_profit_loss, currency, filters
-	)
+	report_summary = None
 
 	return columns, new_data, None, chart, report_summary
+
+def get_budget_account(cost_center=None, company=None):
+	"""
+	Get unique accounts from Budget Account that match the cost center and company filters.
+	
+	Args:
+		cost_center: List of cost centers or None
+		company: Company name or None
+	
+	Returns:
+		List of unique account names
+	"""
+	conditions = ""
+	filters = frappe._dict({})
+	
+	# Handle cost_center as a list
+	if cost_center:
+		if isinstance(cost_center, str):
+			cost_center = json.loads(cost_center)
+		conditions += " AND b.cost_center in %(cost_center)s "
+		filters.cost_center = cost_center
+
+	if company:
+		conditions += " AND b.company = %(company)s "
+		filters.company = company
+	
+	# Query with JOIN to Budget parent table
+	query = f"""
+		SELECT DISTINCT ba.account 
+		FROM `tabBudget Account` ba
+		INNER JOIN `tabBudget` b ON ba.parent = b.name
+		AND b.docstatus = 1
+		{conditions}
+		ORDER BY ba.account
+	"""
+	
+	return frappe.db.sql(query, filters, pluck="account")
 
 def get_report_column(filters, period_list):
 	temp_columns = get_columns(
