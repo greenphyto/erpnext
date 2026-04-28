@@ -152,6 +152,13 @@ def get_columns(filters):
 				"precision":7
 			},
 			{
+				"label": _("Warehouse"),
+				"fieldname": "warehouse",
+				"fieldtype": "Link",
+				"options": "Warehouse",
+				"width": 150,
+			},
+			{
 				"label": _("Voucher #"),
 				"fieldname": "voucher_no",
 				"fieldtype": "Dynamic Link",
@@ -159,11 +166,16 @@ def get_columns(filters):
 				"width": 150,
 			},
 			{
-				"label": _("Warehouse"),
-				"fieldname": "warehouse",
-				"fieldtype": "Link",
-				"options": "Warehouse",
-				"width": 150,
+				"label": _("Account"),
+				"fieldname": "account_name",
+				"fieldtype": "Data",
+				"width": 200,
+			},
+			{
+				"label": _("Acc. Code"),
+				"fieldname": "account_number",
+				"fieldtype": "Data",
+				"width": 100,
 			},
 			{
 				"label": _("Item Group"),
@@ -255,10 +267,20 @@ def get_columns(filters):
 
 def get_stock_ledger_entries(filters, items):
 	sle = frappe.qb.DocType("Stock Ledger Entry")
+	pnd = frappe.qb.DocType("Part Number Details")
+	acc = frappe.qb.DocType("Account")
+	
 	query = (
 		frappe.qb.from_(sle)
+		.left_join(pnd)
+		.on((pnd.code == sle.item_code) & (pnd.parent == filters.get("company")))
+		.left_join(acc)
+		.on(acc.name == pnd.account_code)
 		.select(
 			sle.item_code,
+			pnd.account_code,
+			acc.account_name,
+			acc.account_number,
 			CombineDatetime(sle.posting_date, sle.posting_time).as_("date"),
 			sle.warehouse,
 			sle.posting_date,
