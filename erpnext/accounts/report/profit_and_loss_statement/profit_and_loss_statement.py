@@ -269,9 +269,7 @@ def get_export_cost_center(report_name, filters):
 	export_date = now()
 	date_str = " "+get_datetime(export_date).strftime("%-d %B %y %H:%M:%S")
 	title_report = add_title_report(report_name) 
-	filter_report = get_filters_data(filters)
 
-	print("========>>>", report_name, filters)
 	if report_name == "Budget Variance Greenphyto":
 		from erpnext.gp_erp.report.budget_variance_greenphyto.budget_variance_greenphyto import execute
 	else:
@@ -282,6 +280,7 @@ def get_export_cost_center(report_name, filters):
 		per_cc_filters = frappe._dict(base_filters.copy())
 		per_cc_filters["cost_center"] = [cc.name]
 
+		filter_report = get_filters_data(per_cc_filters)
 		columns, data, _, _, report_summary = execute(per_cc_filters)
 		temp = frappe._dict({
 			"columns":columns,
@@ -297,6 +296,7 @@ def get_export_cost_center(report_name, filters):
 			"summary": report_summary,
 			"column_widths":column_widths
 		}
+		# break
 
 	return group_data
 
@@ -311,7 +311,7 @@ def _sanitize_sheet_name(name):
 
 
 @frappe.whitelist()
-def export_with_cost_centers(report_name, filters=None):
+def export_with_cost_centers(report_name, filters=None, formula=True):
 	"""
 	Build an XLSX where each Cost Center is a sheet containing its P&L data.
 
@@ -323,6 +323,8 @@ def export_with_cost_centers(report_name, filters=None):
 		except Exception:
 			filters = {}
 
+	formula = cint(formula)
+	print(327, "=======>>>", formula)
 	filters['show_all_cost_centers'] = 0
 	group_data  = get_export_cost_center(report_name, filters)
 
@@ -407,7 +409,7 @@ def export_with_cost_centers(report_name, filters=None):
 					width_chars = max(8, min(50, len(str(label)) + 5))
 				column_widths.append(width_chars)
 
-		return add_formulas(report_name, bio, column_widths=column_widths)
+		return add_formulas(report_name, bio, column_widths=column_widths, formula=formula)
 
 	except Exception:
 		# Fallback: plain export if add_formulas unavailable
@@ -419,7 +421,7 @@ def export_with_cost_centers(report_name, filters=None):
 
 
 @frappe.whitelist()
-def get_export_with_cost_centers_url(filters=None):
+def get_export_with_cost_centers_url(filters=None, formula=True):
 	"""
 	Helper to generate a URL for binary export so that the client
 	can use frappe.call() first, then window.open() the returned URL.
@@ -433,7 +435,7 @@ def get_export_with_cost_centers_url(filters=None):
 	payload = quote(json.dumps(filters or {}))
 	url = (
 		"/api/method/erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement.export_with_cost_centers"
-		f"?filters={payload}&report_name=Profit%20and%20Loss%20Statement"
+		f"?filters={payload}&report_name=Profit%20and%20Loss%20Statement&formula={cint(formula)}"
 	)
 	return {"url": url}
 

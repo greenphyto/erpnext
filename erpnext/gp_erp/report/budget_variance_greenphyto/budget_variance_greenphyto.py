@@ -90,16 +90,16 @@ def execute(filters=None):
 		add_summary_columns(expense, budget_map, period_list, current_date, filters)
 	
 	# Calculate net profit/loss AFTER budget is added so we can include budget columns
-	net_profit_loss = get_net_profit_loss(
-		income, expense, period_list, filters.company, filters.presentation_currency
-	)
+	# net_profit_loss = get_net_profit_loss(
+	# 	income, expense, period_list, filters.company, filters.presentation_currency
+	# )
 
 	
 	data = []
 	data.extend(income or [])
 	data.extend(expense or [])
-	if net_profit_loss:
-		data.append(net_profit_loss)
+	# if net_profit_loss:
+	# 	data.append(net_profit_loss)
 
 	new_data = []
 	if filters.show_number_group:
@@ -116,7 +116,7 @@ def execute(filters=None):
 								d[key] = None
 
 			new_data.append(d)
-
+	new_data.pop()
 	filters.show_budget_amount = 1
 	filters.ytd_column = 1
 	columns = get_report_column(filters, period_list)
@@ -528,26 +528,6 @@ def export_with_cost_centers(filters=None):
 		frappe.response["type"] = "binary"
 
 
-@frappe.whitelist()
-def get_export_with_cost_centers_url(filters=None):
-	"""
-	Helper to generate a URL for binary export so that the client
-	can use frappe.call() first, then window.open() the returned URL.
-	"""
-	if isinstance(filters, str):
-		try:
-			filters = frappe.parse_json(filters)
-		except Exception:
-			filters = {}
-
-	payload = quote(json.dumps(filters or {}))
-	url = (
-		"/api/method/erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement.export_with_cost_centers"
-		f"?filters={payload}"
-	)
-	return {"url": url}
-
-
 def get_budget_data(filters, ytd=False):
 	"""
 	Fetch budget data for accounts based on fiscal year, company, and cost center.
@@ -854,6 +834,6 @@ def get_export_with_cost_centers_url(filters=None):
 	payload = quote(json.dumps(filters or {}))
 	url = (
 		"/api/method/erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement.export_with_cost_centers"
-		f"?filters={payload}&report_name=Budget%20Variance%20Greenphyto"
+		f"?filters={payload}&report_name=Budget%20Variance%20Greenphyto&formula=0"
 	)
 	return {"url": url}
