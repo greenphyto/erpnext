@@ -22,7 +22,7 @@ from erpnext.accounts.report.financial_statements import (
 )
 from erpnext.accounts.utils import remove_account_number
 from erpnext.accounts.report.utils import convert_wrap_report_data
-from erpnext.gp_erp.report.budget_variance_greenphyto.budget_variance_greenphyto import get_budget_data
+from erpnext.gp_erp.report.budget_variance_greenphyto.budget_variance_greenphyto import get_budget_account, get_budget_data
 
 def execute(filters=None):
 	filters = frappe._dict(filters)
@@ -38,6 +38,14 @@ def execute(filters=None):
 		to_month=filters.to_month,
 	)
 
+	filter_zero_value = 1
+	accounts_list = []
+	if filters.get("show_budget_amount"):
+		filter_zero_value = 0
+		if cint(filters.hide_zero_balance):
+			accounts_list = get_budget_account(filters.get("cost_center"), filters.get("company"))
+
+
 	income = get_data(
 		filters.company,
 		"Income",
@@ -47,6 +55,8 @@ def execute(filters=None):
 		accumulated_values=filters.accumulated_values,
 		ignore_closing_entries=True,
 		ignore_accumulated_values_for_fy=True,
+		filter_zero_value=filter_zero_value,
+		accounts_to_show=accounts_list
 	)
 
 	expense = get_data(
@@ -58,6 +68,8 @@ def execute(filters=None):
 		accumulated_values=filters.accumulated_values,
 		ignore_closing_entries=True,
 		ignore_accumulated_values_for_fy=True,
+		filter_zero_value=filter_zero_value,
+		accounts_to_show=accounts_list
 	)
 
 	# Fetch budget data and calculate YTD (Year-to-Date) BEFORE extending to data
@@ -311,7 +323,7 @@ def _sanitize_sheet_name(name):
 
 
 @frappe.whitelist()
-def export_with_cost_centers(report_name, filters=None, formula=True):
+def export_with_cost_centers(report_name, filters=None, formula=False):
 	"""
 	Build an XLSX where each Cost Center is a sheet containing its P&L data.
 
@@ -324,7 +336,6 @@ def export_with_cost_centers(report_name, filters=None, formula=True):
 			filters = {}
 
 	formula = cint(formula)
-	print(327, "=======>>>", formula)
 	filters['show_all_cost_centers'] = 0
 	group_data  = get_export_cost_center(report_name, filters)
 

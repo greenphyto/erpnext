@@ -464,7 +464,6 @@ def build_rows(ws, start_row=2, start_after_label=None, spaces_per_level=4):
 		level = get_level(raw, spaces_per_level)
 		account = raw.strip()
 		group_flag = 0 if is_child(account) else 1  # 1=group, 0=child
-		print(466, account, group_flag)
 		rows.append((r, account, level, group_flag))
 
 	return rows
