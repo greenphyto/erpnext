@@ -1624,6 +1624,105 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.get_item_order": {
+      "get": {
+        "summary": "Get Purchase Orders for Item",
+        "description": "Retrieve all in-progress Purchase Orders for a specific item and company. Returns order details including quantities, schedule dates, and status.",
+        "operationId": "get_item_order",
+        "parameters": [
+          {
+            "name": "item_code",
+            "in": "query",
+            "description": "The item code to search for in Purchase Orders",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "RM-NS-NPA"
+          },
+          {
+            "name": "company",
+            "in": "query",
+            "description": "The company name to filter Purchase Orders",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Greenphyto Pte Ltd"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "Purchase Order number"
+                      },
+                      "status": {
+                        "type": "string",
+                        "description": "Current status of the Purchase Order"
+                      },
+                      "transaction_date": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Date when the PO was created"
+                      },
+                      "required_date": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Expected delivery date for this item"
+                      },
+                      "item_code": {
+                        "type": "string",
+                        "description": "Item code"
+                      },
+                      "stock_qty": {
+                        "type": "number",
+                        "description": "Quantity in stock UOM"
+                      },
+                      "stock_uom": {
+                        "type": "string",
+                        "description": "Stock Unit of Measure"
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "name": "PO-2026-00123",
+                    "status": "To Receive and Bill",
+                    "transaction_date": "2026-04-15",
+                    "required_date": "2026-05-10",
+                    "item_code": "RM-NS-NPA",
+                    "stock_qty": 100.0,
+                    "stock_uom": "Kg"
+                  },
+                  {
+                    "name": "PO-2026-00145",
+                    "status": "To Receive",
+                    "transaction_date": "2026-04-20",
+                    "required_date": "2026-05-15",
+                    "item_code": "RM-NS-NPA",
+                    "stock_qty": 50.0,
+                    "stock_uom": "Kg"
+                  }
+                ]
+              }
+            }
+          },
+          "404": {
+            "description": "Item not found"
+          }
+        }
+      }
     }
   },
   "components": {

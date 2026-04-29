@@ -1514,3 +1514,37 @@ def update_package_size(lotID, newSize):
 	# add comment
 	wo_doc.add_comment("Comment", f"Packet size updated from {old_size} to <b>{uompack}</b>")	
 	return True
+
+@frappe.whitelist()
+def get_item_order(item_code, company):
+	# check exists
+	item = frappe.db.get_value("Item", item_code)
+	if not item:
+		frappe.throw(_(f"Item {item_code} not found"), frappe.DoesNotExistError)
+	
+	# get all onprogress POs 
+	# and fetch the qty (stock uom), and required date
+	pos = frappe.db.sql("""
+		SELECT 
+			po.name,
+			po.status,
+			po.transaction_date,
+			MIN(poi.schedule_date) AS required_date,
+			poi.item_code,
+			SUM(poi.stock_qty) AS stock_qty,
+			poi.stock_uom
+		FROM
+			`tabPurchase Order` po
+				JOIN
+			`tabPurchase Order Item` poi ON poi.parent = po.name
+		WHERE
+			po.docstatus = 1
+				AND po.status NOT IN ('Closed' , 'Completed', 'To Bill')
+				AND poi.item_code = %s
+				AND po.company = %s
+		GROUP BY po.name
+		ORDER BY po.schedule_date ASC
+
+	""", (item_code, company), as_dict=1)
+
+	return pos
