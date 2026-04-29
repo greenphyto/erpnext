@@ -147,12 +147,20 @@ def get_report_summary(
 
 	for period in period_list:
 		key = period if consolidated else period.key
-		if income:
-			net_income += income[-2].get(key)
-		if expense:
-			net_expense += expense[-2].get(key)
-		if net_profit_loss:
-			net_profit += net_profit_loss.get(key)
+		if filters.get("accumulated_values"):
+			if income:
+				net_income = income[-2].get(key)
+			if expense:
+				net_expense = expense[-2].get(key)
+			if net_profit_loss:
+				net_profit = net_profit_loss.get(key)
+		else:
+			if income:
+				net_income += income[-2].get(key)
+			if expense:
+				net_expense += expense[-2].get(key)
+			if net_profit_loss:
+				net_profit += net_profit_loss.get(key)
 
 	if len(period_list) == 1 and periodicity == "Yearly":
 		profit_label = _("Profit This Year")
