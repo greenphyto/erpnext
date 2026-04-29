@@ -5,6 +5,7 @@ from frappe.utils import cint, flt, getdate, cstr, safe_abs, add_months
 from six import string_types
 from frappe.contacts.doctype.address.address import get_default_address
 from erpnext.stock.stock_ledger import get_valuation_rate
+from erpnext.gp_erp.doctype.user_session_log.user_session_log import set_default_value 
 
 # util: sanitize description by removing editor wrapper tags
 def _sanitize_desc(desc):
@@ -1137,6 +1138,7 @@ def switch_company(company, force=False, user=""):
 	# if administrator, always set to all
 	frappe.db.set_value("User", user, "company_selected", company)
 	frappe.db.set_value("User", user, "company", company)
+	set_default_value("company", company, frappe.session.sid)
 	# change role
 	filters = {
 		"user":user,
