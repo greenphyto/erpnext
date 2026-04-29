@@ -1212,9 +1212,9 @@
    "fieldname": "is_internal_supplier",
    "fieldtype": "Check",
    "ignore_user_permissions": 1,
+   "in_standard_filter": 1,
    "label": "Is Internal Supplier",
-   "read_only": 1,
-   "in_standard_filter": 1
+   "read_only": 1
   },
   {
    "fieldname": "credit_to",
@@ -1384,6 +1384,7 @@
    "fetch_from": "supplier.represents_company",
    "fieldname": "represents_company",
    "fieldtype": "Link",
+   "ignore_user_permissions": 1,
    "label": "Represents Company",
    "options": "Company"
   },
@@ -1639,7 +1640,7 @@
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-09-10 12:17:14.033670",
+ "modified": "2026-04-29 18:46:45.024911",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",
@@ -1652,6 +1653,7 @@
    "cancel": 1,
    "create": 1,
    "email": 1,
+   "export": 1,
    "print": 1,
    "read": 1,
    "report": 1,
