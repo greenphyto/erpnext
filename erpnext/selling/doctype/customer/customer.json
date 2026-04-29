@@ -100,12 +100,14 @@
    "options": "fa fa-user"
   },
   {
+   "allow_in_quick_entry": 1,
    "default": "C.#####",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
    "no_copy": 1,
-   "options": "C.#####\nCUST-.YYYY.-",
+   "options": "C.#####\nMYC.#####",
+   "reqd": 1,
    "set_only_once": 1
   },
   {
@@ -218,7 +220,8 @@
    "default": "0",
    "fieldname": "disabled",
    "fieldtype": "Check",
-   "label": "Disabled"
+   "label": "Disabled",
+   "permlevel": 1
   },
   {
    "default": "0",
@@ -644,7 +647,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2026-01-22 18:18:36.673953",
+ "modified": "2026-04-29 14:17:42.695442",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",
