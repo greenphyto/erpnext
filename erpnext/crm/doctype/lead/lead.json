@@ -100,6 +100,7 @@
    "search_index": 1
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "company_name",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -110,6 +111,7 @@
    "oldfieldtype": "Data"
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "email_id",
    "fieldtype": "Data",
    "label": "Email",
@@ -193,6 +195,7 @@
    "print_hide": 1
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "contact_info_tab",
    "fieldtype": "Section Break",
    "label": "Contact Info"
@@ -222,6 +225,7 @@
    "options": "Phone"
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "mobile_no",
    "fieldtype": "Data",
    "label": "Mobile No",
@@ -237,6 +241,7 @@
    "oldfieldtype": "Data"
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "type",
    "fieldtype": "Select",
    "label": "Lead Type",
@@ -245,6 +250,7 @@
    "options": "\nClient\nChannel Partner\nConsultant"
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "market_segment",
    "fieldtype": "Link",
    "label": "Market Segment",
@@ -253,6 +259,7 @@
    "options": "Market Segment"
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "industry",
    "fieldtype": "Link",
    "label": "Industry",
@@ -321,6 +328,7 @@
    "options": "Language"
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "first_name",
    "fieldtype": "Data",
    "label": "First Name",
@@ -332,6 +340,7 @@
    "label": "Middle Name"
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "last_name",
    "fieldtype": "Data",
    "label": "Last Name"
@@ -347,6 +356,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "whatsapp_no",
    "fieldtype": "Data",
    "label": "WhatsApp",
@@ -488,6 +498,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "city",
    "fieldtype": "Data",
    "label": "City"
@@ -498,6 +509,7 @@
    "label": "State"
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "country",
    "fieldtype": "Link",
    "label": "Country",
@@ -514,7 +526,7 @@
  "idx": 5,
  "image_field": "image",
  "links": [],
- "modified": "2022-10-13 12:42:04.277879",
+ "modified": "2026-04-29 16:08:29.965069",
  "modified_by": "Administrator",
  "module": "CRM",
  "name": "Lead",
@@ -574,6 +586,7 @@
    "role": "Sales User"
   }
  ],
+ "quick_entry": 1,
  "search_fields": "lead_name,lead_owner,status",
  "sender_field": "email_id",
  "show_name_in_global_search": 1,
