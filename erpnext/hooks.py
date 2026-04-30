@@ -479,6 +479,9 @@ doc_events = {
 	},
     "Material Request":{
         "validate": "erpnext.controllers.erp.detection_incoming_rate_not_logic"
+	},
+    "Work Order":{
+        "on_submit":"erpnext.controllers.foms.check_missing_wo_rate"
 	}
 }
 

@@ -2404,3 +2404,14 @@ def get_cost_account(item_code, company):
 		data['Consumable Cost'] = res.expense_for_consumable
 	
 	return frappe._dict(data)
+
+def check_missing_wo_rate(doc, method=""):	
+	zero_rate = False
+	for d in doc.required_items:
+		if d.rate == 0:
+			zero_rate = True
+			break
+
+	if zero_rate:
+		notif = frappe.get_doc("Notification", "Missing Work Order Rate")
+		notif.send(doc)

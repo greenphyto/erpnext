@@ -1,0 +1,27 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "creation": "2026-04-30 11:03:00.838232",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Work Order",
+ "enabled": 1,
+ "event": "Custom",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "Found new zero rate for Work Order {{doc.name}}\n\n{% set zero_rate_items = [] %}\n{% for item in doc.required_items %}\n    {% if item.rate == 0 %}\n        {% set _ = zero_rate_items.append(item) %}\n    {% endif %}\n{% endfor %}\n\n{% if zero_rate_items %}\n<table border=\"1\" cellpadding=\"5\" cellspacing=\"0\">\n    <thead>\n        <tr>\n            <th>Item Code</th>\n            <th>Item Name</th>\n            <th>Required Qty</th>\n            <th>Rate</th>\n            <th>Amount</th>\n        </tr>\n    </thead>\n    <tbody>\n        {% for item in zero_rate_items %}\n        <tr>\n            <td>{{ item.item_code }}</td>\n            <td>{{ item.item_name }}</td>\n            <td>{{ item.required_qty }}</td>\n            <td>{{ item.rate }}</td>\n            <td>{{ item.amount }}</td>\n        </tr>\n        {% endfor %}\n    </tbody>\n</table>\n{% else %}\n<p>No zero rate items found.</p>\n{% endif %}",
+ "modified": "2026-04-30 11:58:18.088080",
+ "modified_by": "Administrator",
+ "module": "GP ERP",
+ "name": "Missing Work Order Rate",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "email": "rizky@greenphyto.com"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "subject": "\ud83d\udea8Missing rate new Work Order {{doc.name}}"
+}
