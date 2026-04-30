@@ -252,7 +252,7 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 	})
 
 	doc = _create_work_order(log, item_code, bom_no, qty, gross_weight, submit, return_doc=1, args={
-		"use_rate_from_bom":1
+		"use_rate_from_bom":0
 	}, company=company)
 	# seeding_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(1)})
 	# transplanting_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(2)})

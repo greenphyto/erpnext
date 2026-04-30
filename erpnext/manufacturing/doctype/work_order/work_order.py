@@ -1097,7 +1097,7 @@ class WorkOrder(Document):
 					if self.use_rate_from_bom:
 						rate = item.rate
 					else:
-						rate = get_valuation_rate(item.item_code, source_warehouse, "", "")
+						rate = get_valuation_rate(item.item_code, source_warehouse, "", "") or item.rate
 
 					self.append(
 						"required_items",
