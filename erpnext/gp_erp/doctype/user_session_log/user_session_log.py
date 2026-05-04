@@ -27,11 +27,15 @@ def create_user_session_log():
 			'sid': 'dd'
 		}
 	"""
+	if not frappe.local.conf.enable_user_session_log:
+		return
+
 	session = frappe.session
 	user = session.user
 	sid = session.sid
 	existing_log = frappe.db.exists("User Session Log", {"sid": sid, "is_active": 1})
 	last_update = get_datetime(session.data.get("last_updated"))
+	ctr = session.data.get("session_country") or {}
 	if existing_log:
 		frappe.db.set_value("User Session Log", existing_log, "last_update", last_update)
 		frappe.db.set_value("User Session Log", existing_log, "is_active", 1)
@@ -42,7 +46,7 @@ def create_user_session_log():
 			"user": user,
 			"ip_address": session.data.get("session_ip"),
 			"device": session.data.get("device"),
-			"country": session.data.get("session_country"),
+			"country": ctr.get("iso_code"),
 			"login_time": get_datetime(),
 			"last_update": last_update,
 			"sid": sid,
@@ -52,6 +56,9 @@ def create_user_session_log():
 		user_session_log.insert(ignore_permissions=True)
 
 def get_default_value(field, sid=None):
+	if not frappe.local.conf.enable_user_session_log:
+		return
+
 	if not sid:
 		sid = frappe.session.sid
 
@@ -62,6 +69,9 @@ def get_default_value(field, sid=None):
 	return value
 
 def set_default_value(field, value, sid=None):
+	if not frappe.local.conf.enable_user_session_log:
+		return
+	
 	if not sid:
 		sid = frappe.session.sid
 
