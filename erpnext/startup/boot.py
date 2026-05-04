@@ -4,11 +4,12 @@
 
 import frappe
 from frappe.utils import cint
+from erpnext.gp_erp.doctype.user_session_log.user_session_log import create_user_session_log, get_default_value
 
 
 def boot_session(bootinfo):
 	"""boot session - send website info if guest"""
-
+	create_user_session_log()
 	bootinfo.custom_css = frappe.db.get_value("Style Settings", None, "custom_css") or ""
 
 	if frappe.session["user"] != "Guest":
@@ -133,7 +134,10 @@ def multi_entity_enable():
 @frappe.whitelist()
 def get_company_selected():
 	if multi_entity_enable():
-		return frappe.db.get_value("User", frappe.session.user, "company_selected") or "ALL"
+		company = get_default_value("company")
+		if not company:
+			company = frappe.db.get_value("User", frappe.session.user, "company_selected") or "ALL"
+		return company
 	else:
 		return "Disabled"
 	
