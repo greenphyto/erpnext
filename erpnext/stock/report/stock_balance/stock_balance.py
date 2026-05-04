@@ -142,6 +142,18 @@ def get_columns(filters: StockBalanceFilter):
 			"options": "Warehouse",
 			"width": 100,
 		},
+		{
+			"label": _("Account"),
+			"fieldname": "account_name",
+			"fieldtype": "Data",
+			"width": 200,
+		},
+		{
+			"label": _("Acc. Code"),
+			"fieldname": "account_number",
+			"fieldtype": "Data",
+			"width": 100,
+		},
 	]
 
 	for dimension in get_inventory_dimensions():
@@ -447,9 +459,15 @@ def get_item_details(items: List[str], sle: List[SLEntry], filters: StockBalance
 		return item_details
 
 	item_table = frappe.qb.DocType("Item")
+	pnd = frappe.qb.DocType("Part Number Details")
+	acc = frappe.qb.DocType("Account")
 
 	query = (
 		frappe.qb.from_(item_table)
+		.left_join(pnd)
+		.on((pnd.code == item_table.name) & (pnd.parent == filters.get("company")))
+		.left_join(acc)
+		.on(acc.name == pnd.account_code)
 		.select(
 			item_table.name,
 			item_table.item_name,
@@ -457,6 +475,9 @@ def get_item_details(items: List[str], sle: List[SLEntry], filters: StockBalance
 			item_table.item_group,
 			item_table.brand,
 			item_table.stock_uom,
+			pnd.account_code,
+			acc.account_name,
+			acc.account_number,
 		)
 		.where(item_table.name.isin(items))
 	)
