@@ -365,12 +365,31 @@ def get_party_account(party_type, party=None, company=None):
 	if not company:
 		frappe.throw(_("Please select a Company"))
 
+	party_account = frappe.db.get_value(
+		"Party Account", {"parenttype": party_type, "parent": party, "company": company}, "account"
+	)
+
+	if not party_account and party_type in ["Customer", "Supplier"]:
+		party_group_doctype = "Customer Group" if party_type == "Customer" else "Supplier Group"
+		group = frappe.get_cached_value(party_type, party, scrub(party_group_doctype))
+		party_account = frappe.db.get_value(
+			"Party Account",
+			{"parenttype": party_group_doctype, "parent": group, "company": company},
+			"account",
+		)
+	
+	# take from Party Account if mapping exists for supplier code in case of Supplier
+	if party_account:
+		return party_account
+
+	# ifnot take from supplier code mapping in case
 	if party_type == "Supplier":
 		supp_code = frappe.get_value("Supplier", party, "supplier_code")
 		map_acc = supplier_mapping_account(company)
 		for code, account in map_acc.items():
 			if supp_code and code in supp_code:
 				return account
+
 
 	if not party and party_type in ["Customer", "Supplier"]:
 		default_account_name = (
@@ -379,18 +398,6 @@ def get_party_account(party_type, party=None, company=None):
 
 		return frappe.get_cached_value("Company", company, default_account_name)
 
-	account = frappe.db.get_value(
-		"Party Account", {"parenttype": party_type, "parent": party, "company": company}, "account"
-	)
-
-	if not account and party_type in ["Customer", "Supplier"]:
-		party_group_doctype = "Customer Group" if party_type == "Customer" else "Supplier Group"
-		group = frappe.get_cached_value(party_type, party, scrub(party_group_doctype))
-		account = frappe.db.get_value(
-			"Party Account",
-			{"parenttype": party_group_doctype, "parent": group, "company": company},
-			"account",
-		)
 
 	if not account and party_type in ["Customer", "Supplier"]:
 		default_account_name = (
