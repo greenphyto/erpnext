@@ -260,7 +260,7 @@ class Account(NestedSet):
 				# update the parent company's value in child companies
 				doc = frappe.get_doc("Account", child_account)
 				parent_value_changed = False
-				for field in ["account_type", "freeze_account", "balance_must_be"]:
+				for field in ["account_type", "freeze_account", "balance_must_be", "is_trade_related"]:
 					if doc.get(field) != self.get(field):
 						parent_value_changed = True
 						doc.set(field, self.get(field))
