@@ -1542,6 +1542,7 @@ def get_item_order(item_code, company):
 				AND po.status NOT IN ('Closed' , 'Completed', 'To Bill')
 				AND poi.item_code = %s
 				AND po.company = %s
+				AND po.transaction_date >= "2025-01-01"
 		GROUP BY po.name
 		ORDER BY po.schedule_date ASC
 
