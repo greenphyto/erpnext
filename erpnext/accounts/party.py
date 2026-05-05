@@ -398,6 +398,7 @@ def get_party_account(party_type, party=None, company=None):
 
 		return frappe.get_cached_value("Company", company, default_account_name)
 
+	account = party_account
 
 	if not account and party_type in ["Customer", "Supplier"]:
 		default_account_name = (
