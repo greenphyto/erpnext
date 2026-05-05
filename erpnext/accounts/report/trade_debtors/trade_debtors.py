@@ -817,6 +817,7 @@ class DebtorCreditorReport(object):
 					"Account", filters={"is_trade_related":1,"root_type":root_type, "company": self.filters.company}
 				)
 			]
+			accounts = []
 			if gpaccounts:
 				accounts = [
 				d.name
