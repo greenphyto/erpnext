@@ -36,7 +36,7 @@ def execute(filters=None):
 		company=filters.company,
 		month=filters.month,
 		to_month=filters.to_month,
-		ytd=1
+		# ytd=1
 	)
 
 	accounts_list = []
@@ -73,11 +73,11 @@ def execute(filters=None):
 	budget_map = {}
 	# ALWAYS fetch monthly budget data (even for Yearly periodicity)
 	# This allows Budget YTD to calculate from raw monthly values
-	budget_map = get_budget_data(filters, ytd=True)
+	budget_map = get_budget_data(filters, ytd=False)
 	
 	# Get current date for YTD limit
 	from frappe.utils import today, getdate, add_months
-	current_date = getdate(today())
+	current_date = getdate(filters.get("period_end_date") or today())
 	
 	# Add budget to income rows (includes budget columns and summary columns)
 	if income:
@@ -118,7 +118,7 @@ def execute(filters=None):
 			new_data.append(d)
 	new_data.pop()
 	filters.show_budget_amount = 1
-	filters.ytd_column = 1
+	# filters.ytd_column = 1
 	columns = get_report_column(filters, period_list)
 
 	chart = None #get_chart_data(filters, columns, income, expense, net_profit_loss)
@@ -190,7 +190,7 @@ def get_report_column(filters, period_list):
 	# Budget YTD column
 	columns.append({
 		"fieldname": "budget_ytd",
-		"label": _("Budget YTD"),
+		"label": _("Total Budget"),
 		"fieldtype": "Currency",
 		"options": "currency",
 		"width": 150,
@@ -613,8 +613,8 @@ def get_budget_data(filters, ytd=False):
 			budget_map[account] = {}
 		
 		for month_num in range(1, 13):
-			if ytd and month_num > current_month:
-				break
+			# if ytd and month_num > current_month:
+			# 	break
 
 			month_field = month_fields[month_num]
 			monthly_budget = flt(bd.get(month_field, 0))
@@ -676,6 +676,8 @@ def add_budget_to_rows(rows, budget_map, period_list, current_date, filters):
 				# budget_map is now always monthly: account -> month_number -> budget_amount
 				if account in budget_map:
 					for month_num in range(1, 13):
+						if period_to_date and month_num > period_to_date.month:
+							break
 						budget_value += flt(budget_map.get(account, {}).get(month_num, 0))
 			else:
 				# Monthly budget
