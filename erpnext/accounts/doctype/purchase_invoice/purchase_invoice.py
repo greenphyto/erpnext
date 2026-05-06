@@ -138,6 +138,9 @@ class PurchaseInvoice(BuyingController):
 			return
 		
 		po_number = next((d.purchase_order for d in self.items if d.purchase_order), None)
+		if not po_number:
+			return
+		
 		inter_so_name = frappe.get_value("Purchase Order", po_number, "inter_company_order_reference")
 		if not inter_so_name:
 			# get from sub company
