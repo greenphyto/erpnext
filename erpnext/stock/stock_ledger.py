@@ -62,7 +62,13 @@ def make_sl_entries(sl_entries, allow_negative_stock=False, via_landed_cost_vouc
 
 				key = (sle.batch_no, sle.warehouse)
 				if key not in qty_map:
-					qty_map[key]=get_batch_qty(sle.batch_no, sle.warehouse)
+					temp = get_previous_sle({
+						"item_code": sle.item_code,
+						"warehouse": sle.warehouse,
+						"posting_date": sle.posting_date,
+						"posting_time": sle.posting_time,
+					}) or {}
+					qty_map[key]=flt(temp.get("qty_after_transaction"))
 				
 				cur_qty = -flt(sle.get("actual_qty"))
 				diff = qty_map[key]-cur_qty
