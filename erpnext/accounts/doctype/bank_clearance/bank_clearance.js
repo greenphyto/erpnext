@@ -17,6 +17,7 @@ frappe.ui.form.on("Bank Clearance", {
 		frm.set_query("bank_account", function () {
 			return {
 				filters: {
+					'company': frm.doc.company,
 					'is_company_account': 1
 				},
 			};
@@ -28,8 +29,7 @@ frappe.ui.form.on("Bank Clearance", {
 		let default_bank_account =  frappe.defaults.get_user_default("Company")?
 			locals[":Company"][frappe.defaults.get_user_default("Company")]["default_bank_account"]: "";
 		frm.set_value("account", default_bank_account);
-
-
+		frm.set_value("company", frappe.defaults.get_user_default("Company"));
 
 		frm.set_value("from_date", frappe.datetime.month_start());
 		frm.set_value("to_date", frappe.datetime.month_end());

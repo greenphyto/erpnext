@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "allow_copy": 1,
  "creation": "2013-01-10 16:34:05",
  "doctype": "DocType",
@@ -10,6 +11,7 @@
   "from_date",
   "to_date",
   "column_break_5",
+  "company",
   "bank_account",
   "include_reconciled_entries",
   "include_pos_transactions",
@@ -103,13 +105,20 @@
    "label": "Total Amount",
    "options": "account_currency",
    "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "hide_toolbar": 1,
  "icon": "fa fa-check",
  "idx": 1,
  "issingle": 1,
- "modified": "2020-04-06 16:12:06.628008",
+ "links": [],
+ "modified": "2026-05-06 16:41:38.196119",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Bank Clearance",
@@ -126,5 +135,6 @@
  "quick_entry": 1,
  "read_only": 1,
  "sort_field": "modified",
- "sort_order": "ASC"
+ "sort_order": "ASC",
+ "states": []
 }
