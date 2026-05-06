@@ -449,6 +449,7 @@ doc_events = {
         "on_submit":[
 			"erpnext.controllers.foms.sync_log",
             "erpnext.controllers.foms.detect_salad_items",
+            "erpnext.controllers.foms.check_missing_se_rate",
             "erpnext.controllers.erp.create_sample_after_work_order",
             "erpnext.controllers.erp.detect_work_order_different",
 			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",

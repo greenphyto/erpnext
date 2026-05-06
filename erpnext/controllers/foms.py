@@ -2415,3 +2415,14 @@ def check_missing_wo_rate(doc, method=""):
 	if zero_rate:
 		notif = frappe.get_doc("Notification", "Missing Work Order Rate")
 		notif.send(doc)
+
+def check_missing_se_rate(doc, method=""):	
+	zero_rate = False
+	for d in doc.items:
+		if d.basic_rate == 0:
+			zero_rate = True
+			break
+
+	if zero_rate:
+		notif = frappe.get_doc("Notification", "Missing rate Stock Entry")
+		notif.send(doc)
