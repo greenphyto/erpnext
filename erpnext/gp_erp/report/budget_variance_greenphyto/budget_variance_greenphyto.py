@@ -716,14 +716,18 @@ def add_budget_to_rows(rows, budget_map, period_list, filters):
 			row[budget_key] = budget_value
 	
 	# Second pass: Calculate budget for group accounts (bottom-up)
+	total_root_group = {}
 	for row in reversed(rows):
 		account_name = row.get("account_name", "").lower()
 		is_total_row = "total" in account_name and ("income" in account_name or "expense" in account_name)
 		
 		if is_total_row:
+			total_root_group = row
 			continue
-		
+
 		if row.get("is_group"):
+			idx = rows.index(row)
+		
 			account = row.get("account_origin") or row.get("account")
 			if not account:
 				continue
@@ -732,6 +736,10 @@ def add_budget_to_rows(rows, budget_map, period_list, filters):
 			for period in period_list:
 				budget_key = period.key + "_budget"
 				row[budget_key] = 0
+
+				if idx == 0 and total_root_group:
+					# If this is the top-level group, also initialize totals in total_root_group
+					total_root_group[budget_key] = 0
 			
 			# Sum budget from child accounts
 			for child_row in rows:
@@ -747,6 +755,9 @@ def add_budget_to_rows(rows, budget_map, period_list, filters):
 						budget_key = period.key + "_budget"
 						child_budget = flt(child_row.get(budget_key, 0))
 						row[budget_key] = flt(row.get(budget_key, 0)) + child_budget
+
+						if idx == 0 and total_root_group:
+							total_root_group[budget_key] = flt(total_root_group.get(budget_key, 0)) + child_budget
 
 def add_summary_columns(rows, period_list):
 	"""Add summary columns: Total Actual, Budget YTD, Variance $, Variance %
