@@ -49,12 +49,87 @@ frappe.ui.form.on('Quotation', {
 
 	set_label: function(frm) {
 		frm.fields_dict.customer_address.set_label(__(frm.doc.quotation_to + " Address"));
+	},
+
+	new_customer: function(frm) {
+		frm.trigger("get_existing_lead");
+	},
+
+	is_existing_customer: function(frm) {
+		if (!frm.doc.is_existing_customer) {
+			return;
+		}
+
+		frm.set_value("quotation_to", "Customer");
+		frm.set_value({
+			party_name: null,
+			new_customer: null,
+			manual_address_line: null,
+			manual_city: null,
+			manual_state: null,
+			manual_country: null,
+			manual_contact_person_name: null,
+			manual_tlp: null,
+			manual_mobile_no: null,
+			manual_email: null,
+			manual_fax: null,
+			customer_address: null,
+			shipping_address_name: null,
+			shipping_address: null,
+			address_display: null,
+			contact_person: null,
+			contact_display: null,
+			contact_mobile: null,
+			contact_email: null
+		});
+
+		frm.trigger("set_label");
+		frm.trigger("toggle_reqd_lead_customer");
+		frm.trigger("set_dynamic_field_label");
 	}
 });
 
 erpnext.selling.QuotationController = class QuotationController extends erpnext.selling.SellingController {
 	onload(doc, dt, dn) {
 		super.onload(doc, dt, dn);
+	}
+	get_existing_lead(doc, dt,dn) {
+		const frm = this.frm;
+
+		if (!frm.doc.new_customer) {
+			frm.set_value({
+				party_name: null,
+				manual_address_line: null,
+				manual_city: null,
+				manual_state: null,
+				manual_country: null,
+				manual_tlp: null,
+				manual_mobile_no: null,
+				manual_email: null,
+				manual_fax: null
+			});
+			return;
+		}
+
+		frm.call("get_existing_lead_from_new_customer").then((r) => {
+			const data = r.message || {};
+			if (!data.lead_name) {
+				return;
+			}
+
+			frm.set_value("quotation_to", "Lead");
+			frm.set_value({
+				party_name: data.lead_name || null,
+				manual_address_line: data.manual_address_line || null,
+				manual_city: data.manual_city || null,
+				manual_state: data.manual_state || null,
+				manual_country: data.manual_country || null,
+				manual_tlp: data.manual_tlp || null,
+				manual_mobile_no: data.manual_mobile_no || null,
+				manual_email: data.manual_email || null,
+				manual_fax: data.manual_fax || null
+			});
+		});
 	}
 	party_name() {
 		var me = this;
@@ -162,7 +237,9 @@ erpnext.selling.QuotationController = class QuotationController extends erpnext.
 		var me = this;
 
 		// to overwrite the customer_filter trigger from queries.js
-		this.frm.toggle_reqd("party_name", this.frm.doc.quotation_to);
+		if (this.frm.doc.is_existing_customer){
+			this.frm.toggle_reqd("party_name", this.frm.doc.quotation_to);
+		}
 		this.frm.set_query('customer_address', this.address_query);
 		this.frm.set_query('shipping_address_name', this.address_query);
 	}

@@ -11,15 +11,17 @@
  "field_order": [
   "customer_section",
   "title",
-  "naming_series",
+  "order_type",
+  "new_customer",
   "quotation_to",
   "party_name",
   "customer_name",
+  "is_existing_customer",
   "column_break_7",
   "transaction_date",
   "valid_till",
   "column_break1",
-  "order_type",
+  "naming_series",
   "company",
   "amended_from",
   "currency_and_price_list",
@@ -96,6 +98,17 @@
   "company_address",
   "column_break_87",
   "company_address_display",
+  "manual_address_section",
+  "manual_address_line",
+  "manual_city",
+  "manual_state",
+  "manual_country",
+  "manual_col_break_1",
+  "manual_contact_person_name",
+  "manual_tlp",
+  "manual_mobile_no",
+  "manual_email",
+  "manual_fax",
   "terms_tab",
   "payment_schedule_section",
   "payment_terms_template",
@@ -164,6 +177,7 @@
    "default": "Customer",
    "fieldname": "quotation_to",
    "fieldtype": "Link",
+   "hidden": 1,
    "in_standard_filter": 1,
    "label": "Quotation To",
    "oldfieldname": "quotation_to",
@@ -174,6 +188,7 @@
   },
   {
    "bold": 1,
+   "depends_on": "eval:doc.is_existing_customer==1",
    "fieldname": "party_name",
    "fieldtype": "Dynamic Link",
    "in_global_search": 1,
@@ -187,6 +202,7 @@
   },
   {
    "bold": 1,
+   "depends_on": "eval:doc.is_existing_customer==1",
    "fieldname": "customer_name",
    "fieldtype": "Data",
    "hidden": 1,
@@ -1008,12 +1024,14 @@
    "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval:doc.is_existing_customer==1",
    "fieldname": "billing_address_section",
    "fieldtype": "Section Break",
    "label": "Billing Address",
    "options": "fa fa-bullhorn"
   },
   {
+   "depends_on": "eval:doc.is_existing_customer==1",
    "fieldname": "shipping_address_section",
    "fieldtype": "Section Break",
    "label": "Shipping Address"
@@ -1023,6 +1041,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval:doc.is_existing_customer==1",
    "fieldname": "company_address_section",
    "fieldtype": "Section Break",
    "label": "Company Address"
@@ -1056,17 +1075,86 @@
    "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval:doc.is_existing_customer==0",
+   "fieldname": "manual_address_section",
+   "fieldtype": "Section Break",
+   "label": "Address & Contact",
+   "options": "fa fa-map-marker"
+  },
+  {
+   "fieldname": "manual_address_line",
+   "fieldtype": "Small Text",
+   "label": "Address Line"
+  },
+  {
+   "fieldname": "manual_city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "manual_state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "manual_country",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "fieldname": "manual_col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "manual_contact_person_name",
+   "fieldtype": "Data",
+   "label": "Contact Person Name"
+  },
+  {
+   "fieldname": "manual_tlp",
+   "fieldtype": "Data",
+   "label": "Tlp"
+  },
+  {
+   "fieldname": "manual_mobile_no",
+   "fieldtype": "Data",
+   "label": "Mobile No"
+  },
+  {
+   "fieldname": "manual_email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "manual_fax",
+   "fieldtype": "Data",
+   "label": "Fax"
+  },
+  {
    "default": "0",
    "fieldname": "non_stock_item",
    "fieldtype": "Check",
    "label": "Non-Stock Item"
+  },
+  {
+   "depends_on": "eval:doc.is_existing_customer==0",
+   "fieldname": "new_customer",
+   "fieldtype": "Data",
+   "label": "New Customer"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_existing_customer",
+   "fieldtype": "Check",
+   "label": "Is Existing Customer"
   }
  ],
  "icon": "fa fa-shopping-cart",
  "idx": 82,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-04-22 12:40:57.650697",
+ "modified": "2026-05-07 18:45:32.165947",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Quotation",
