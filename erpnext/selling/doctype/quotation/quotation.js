@@ -80,7 +80,8 @@ frappe.ui.form.on('Quotation', {
 			contact_person: null,
 			contact_display: null,
 			contact_mobile: null,
-			contact_email: null
+			contact_email: null,
+			customer_name: null
 		});
 
 		frm.trigger("set_label");
@@ -133,6 +134,10 @@ erpnext.selling.QuotationController = class QuotationController extends erpnext.
 	}
 	party_name() {
 		var me = this;
+		if (!this.frm.doc.party_name) {
+			return;
+		}
+
 		erpnext.utils.get_party_details(this.frm, null, null, function() {
 			me.apply_price_list();
 		});
@@ -141,6 +146,16 @@ erpnext.selling.QuotationController = class QuotationController extends erpnext.
 			me.frm.trigger("get_lead_details");
 		}
 	}
+
+	customer_address() {
+		if (this.frm.doc.quotation_to !== "Customer" || !this.frm.doc.party_name || !this.frm.doc.customer_address) {
+			return;
+		}
+
+		erpnext.utils.get_address_display(this.frm, "customer_address");
+		erpnext.utils.set_taxes_from_address(this.frm, "customer_address", "customer_address", "shipping_address_name");
+	}
+
 	refresh(doc, dt, dn) {
 		super.refresh(doc, dt, dn);
 		frappe.dynamic_link = {
@@ -313,3 +328,48 @@ frappe.ui.form.on("Quotation Item", "stock_balance", function(frm, cdt, cdn) {
 	frappe.route_options = {"item_code": d.item_code};
 	frappe.set_route("query-report", "Stock Balance");
 })
+
+
+erpnext.utils.set_taxes_from_address = function(frm, triggered_from_field, billing_address_field, shipping_address_field) {
+	if (frm.updating_party_details) return;
+
+	const party = frm.doc.customer || frm.doc.supplier || frm.doc.lead || frm.doc.party_name;
+	const posting_or_transaction_date = frm.doc.posting_date || frm.doc.transaction_date;
+
+	// For Quotation flow switches, skip hard mandatory throw and exit silently.
+	if (frm.doc.doctype === "Quotation" && (!party || !posting_or_transaction_date)) {
+		return;
+	}
+
+	if (frappe.meta.get_docfield(frm.doc.doctype, "taxes")) {
+		if (!erpnext.utils.validate_mandatory(frm, "Lead / Customer / Supplier",
+			party, triggered_from_field)) {
+			return;
+		}
+
+		if (!erpnext.utils.validate_mandatory(frm, "Posting / Transaction Date",
+			posting_or_transaction_date, triggered_from_field)) {
+			return;
+		}
+	} else {
+		return;
+	}
+
+	frappe.call({
+		method: "erpnext.accounts.party.get_address_tax_category",
+		args: {
+			"tax_category": frm.doc.tax_category,
+			"billing_address": frm.doc[billing_address_field],
+			"shipping_address": frm.doc[shipping_address_field]
+		},
+		callback: function(r) {
+			if (!r.exc){
+				if (frm.doc.tax_category != r.message) {
+					frm.set_value("tax_category", r.message);
+				} else {
+					erpnext.utils.set_taxes(frm, triggered_from_field);
+				}
+			}
+		}
+	});
+};
