@@ -514,6 +514,10 @@ class FomsAPI():
 		res = self.req("GET", f"/Product/GetProductById?id={product_id}&versionID={versionID}")
 		return res
 
+	def get_opeartion_tasks(self, product_id, foms_lot_id, farm_id):
+		res = self.req("GET", f"/userportal/Operation/GetOperationTaskDetail?FarmId={farm_id}&workOrderId={foms_lot_id}&productId={product_id}")
+		return res
+
 
 	
 """

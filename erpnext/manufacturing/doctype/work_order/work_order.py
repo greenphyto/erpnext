@@ -1925,3 +1925,60 @@ def get_current_operation(work_order):
 		ORDER BY creation desc
 	""", work_order)
 	return temp[0][0]
+
+@frappe.whitelist()
+def get_foms_task_status(work_order, item_code, foms_work_order):
+	"""Return status of each FOMS operation (Seeding, Transplanting, Harvesting)
+	for the lot associated with the given work order."""
+	from erpnext.controllers.foms import OPERATION_MAP_NAME, get_operation_no
+	from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI
+
+	api = FomsAPI()
+	prodict_id = frappe.get_value("Item", item_code, "foms_product_id")
+	farm_id = frappe.db.get_single_value("FOMS Integration Settings", "farm_id")
+	foms_data = api.get_opeartion_tasks(prodict_id, foms_work_order, farm_id) 
+	tasks = []
+			
+	for op_no, op_name in OPERATION_MAP_NAME.items():
+		task = frappe._dict(
+			operation_no=op_no,
+			operation=op_name,
+			completed=0,
+			pending=0,
+			inprogress=0,
+			foms_status=0,
+			erp_status=0,
+		)
+
+		if foms_data:
+			for dt in foms_data.get("operationProcessList"):
+				foms_op_no = get_operation_no(dt.get("productGrowthProcessName"))
+				if foms_op_no == op_no:
+					complete_list = []
+					for x in dt.get("operationTaskList"):
+						status = x.get("operationTaskStatus")
+						if status == "Complete":
+							complete_list.append(1)
+					if complete_list:
+						per_complete = cint(sum(complete_list)/len(complete_list)*100)
+					else:
+						per_complete = 0
+
+					if per_complete == 100:
+						task.foms_status = 1
+		
+		se_name = frappe.db.get_value("Stock Entry", {"work_order":work_order, "docstatus":1, "operation":op_name}, "name")
+		if se_name:
+			task.erp_status = 1
+
+		if task.foms_status == 1 and task.erp_status == 1:
+			task.completed = 1
+		elif task.foms_status == 1 and task.erp_status == 0:
+			task.pending = 1
+		else:
+			task.pending = 1
+			task.inprogress = 1
+
+		tasks.append(task)
+
+	return tasks

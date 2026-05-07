@@ -119,6 +119,56 @@ frappe.ui.form.on("Work Order", {
 			});
 			erpnext.work_order.set_default_warehouse(frm);
 		}
+
+	},
+
+	show_foms_status: function(frm) {
+		frappe.call({
+			method: "erpnext.manufacturing.doctype.work_order.work_order.get_foms_task_status",
+			args: { 
+				work_order: frm.doc.name,
+				item_code: frm.doc.production_item, 
+				foms_work_order: frm.doc.foms_work_order
+			},
+			callback: function(r) {
+				if (!r.message) return;
+
+				const tasks = r.message;
+				const fomsTasksUrl = `https://foms.greenphyto.com/user/operations/overall-tasks?isYourTask=false&lotId=${frm.doc.foms_lot_name}&page=1`;
+				const checkIcon = '<span style="color:green;font-weight:bold;">&#10003;</span>';
+				const emptyBox = '<span style="color:#aaa;">&#9744;</span>';
+
+				let taskHtml = tasks.map(t => {
+					const icon = t.completed ? checkIcon : emptyBox;
+					return `<span style="margin-right:12px;">${__(t.operation)} ${icon}</span>`;
+				}).join('');
+
+				const warnings = tasks
+					.filter(t => cint(t.pending))
+					.map(t => `<div class="alert alert-warning" style="margin:4px 0;padding:6px 10px;">
+						<strong>${__("Warning!")}</strong> ${__(t.operation)} ${__("is not syncing yet to ERP!")}
+					</div>`).join('');
+
+				const hasWarning = tasks.some(t => cint(t.pending));
+				const warningLink = hasWarning
+					? `<div style="margin-top: 10px;margin-left: 10px;font-size: 0.94em;">
+						<a href="${fomsTasksUrl}" target="_blank" rel="noopener noreferrer"><u>${__("Open tasks to FOMS")}</u></a>
+					</div>`
+					: "";
+
+				const html = `
+					<div style="padding:8px 0;">
+						<div style="margin-bottom:6px;">
+							<strong>${__("FOMS Task")}:</strong>&nbsp;${taskHtml}
+						</div>
+						${warnings}
+						${warningLink}
+					</div>`;
+				
+				let section = frm.dashboard.add_section(html, __("Foms Status"));
+				frm.dashboard.progress_area.wrapper.after(section.parent());
+			}
+		});
 	},
 
 	source_warehouse: function(frm) {
@@ -136,6 +186,7 @@ frappe.ui.form.on("Work Order", {
 		} else {
 			frm.trigger("show_progress_for_items");
 			frm.trigger("show_progress_for_operations");
+			frm.trigger("show_foms_status");
 		}
 
 		if (frm.doc.status != "Closed") {
