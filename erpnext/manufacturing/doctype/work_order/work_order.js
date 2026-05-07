@@ -139,7 +139,7 @@ frappe.ui.form.on("Work Order", {
 				const emptyBox = '<span style="color:#aaa;">&#9744;</span>';
 
 				let taskHtml = tasks.map(t => {
-					const icon = t.completed ? checkIcon : emptyBox;
+					const icon = t.foms_status ? checkIcon : emptyBox;
 					return `<span style="margin-right:12px;">${__(t.operation)} ${icon}</span>`;
 				}).join('');
 

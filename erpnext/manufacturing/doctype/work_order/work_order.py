@@ -1976,7 +1976,6 @@ def get_foms_task_status(work_order, item_code, foms_work_order):
 		elif task.foms_status == 1 and task.erp_status == 0:
 			task.pending = 1
 		else:
-			task.pending = 1
 			task.inprogress = 1
 
 		tasks.append(task)
