@@ -2448,6 +2448,9 @@ def create_new_foms_item(item_code):
 	api = FomsAPI()
 	farm_id = get_farm_id()
 	item = frappe.get_doc("Item", item_code)
+	if item.foms_raw_id:
+		return "Already Exists"
+	
 	allowed_groups = [
 		"Miscellaneous",
 		"Accessories",
@@ -2475,20 +2478,114 @@ def create_new_foms_item(item_code):
 
 	exist_material = []
 	foms_category_id = 0
+	foms_variant_id = 0
+	item_variant_code = extract_variant(item.item_code)
 	for d in exist_group:
 		foms_category_id = d.get("id")
 		for x in d.get("rawMaterialVariantTypes"):
 			exist_material.append(x.get("variantTypeShortForm"))
+			if x.get("variantTypeShortForm") == item_variant_code:
+				foms_variant_id = x.get("id")
 	
-	# foms_uom = UOM_MAP_REV.get(item.stock_uom) or "unit"
 	# check product variance
-	item_variant_code = extract_variant(item.item_code)
 	if item_variant_code and item_variant_code not in exist_material:
 		temp = api.create_product_variant(item.foms_variant_id, foms_category_id, item.item_name, item_variant_code)
 		item.db_set("foms_variant_id", temp.get("id") or item.foms_variant_id)
-	pass
+		foms_variant_id = temp.get("id")
+	else:
+		if not item.foms_variant_id:
+			item.db_set("foms_variant_id", foms_variant_id)
 
 	# check product
-	# exist_product = api.get_product_by_item_code(farm_id, item.item_code)
-	# if exist_product:
-	# 	return item
+	default_safety_level = 100
+	default_min_level = 10
+	foms_uom = UOM_MAP_REV.get(item.stock_uom) or "unit"
+	data = {
+		"isDraft": False,
+		"isSeed": False,
+		"isNutrient": False,
+		"rawMaterialMapping": {},
+		"maximumLevel": 99999,
+		"minimumOrderQuantity": default_min_level,
+		"batches": [],
+		"rawMaterialRefNo": item.item_code,
+		"rawMaterialName": item.item_name,
+		"rawMaterialDescription": item.description,
+		"rawMaterialTypeId": foms_category_id,
+		"rawMaterialVariantTypeId": item.foms_variant_id,
+		"unitOfMeasurement": foms_uom,
+		"safetyLevel": default_safety_level,
+		"requestLeadTime": item.lead_time_days or 21,
+		"FarmId": farm_id
+	}
+
+	# get batch
+	# get warehouse id
+	# get total cost, batch value when purchase
+	batches_data = []
+	batch_rows = frappe.db.sql("""
+		SELECT
+			b.name AS batch_no,
+			sle.warehouse,
+			SUM(IFNULL(sle.actual_qty, 0)) AS qty,
+			MAX(sle.posting_date) AS posting_date,
+			MAX(b.manufacturing_date) AS manufacturing_date,
+			MAX(b.expiry_date) AS expiry_date
+		FROM
+			`tabBatch` b
+			LEFT JOIN `tabStock Ledger Entry` sle
+				ON sle.batch_no = b.name
+				AND sle.is_cancelled = 0
+				AND sle.item_code = b.item
+		WHERE
+			b.item = %s
+		GROUP BY b.name, sle.warehouse
+	""", (item.item_code), as_dict=1)
+
+	for d in batch_rows:
+		warehouse = d.warehouse
+		if not warehouse:
+			warehouse = frappe.get_value("Bin", {
+				"item_code": item.item_code,
+				"actual_qty": [">", 0]
+			}, "warehouse", order_by="actual_qty desc")
+
+		warehouse_id = cint(frappe.get_value("Warehouse", warehouse, "foms_id"))
+		if not warehouse_id:
+			continue
+
+		qty = flt(d.qty)
+		# if qty <= 0:
+		# 	continue
+
+		manufacturing_date = d.manufacturing_date or d.posting_date or getdate()
+		expiry_date = d.expiry_date
+		if not expiry_date:
+			shelf_life_in_days = cint(item.shelf_life_in_days) or 365*3
+			expiry_date = add_days(getdate(manufacturing_date), shelf_life_in_days)
+
+		valuation_rate = flt(frappe.get_value("Bin", {
+			"item_code": item.item_code,
+			"warehouse": warehouse
+		}, "valuation_rate"))
+		total_cost = flt(valuation_rate * qty)
+
+		batches_data.append({
+			"dateOfCreation": getdate(manufacturing_date),
+			"expiryDate": getdate(expiry_date),
+			"quantityUOM": foms_uom,
+			"qtyAdd": qty,
+			"totalCost": total_cost,
+			"warehouseId": warehouse_id,
+			"rackNumbers": []
+		})
+
+	data["batches"] = batches_data
+
+	# return
+
+	temp = api.create_raw_material_on_foms(data)
+	if temp:
+		item.db_set("foms_raw_id", temp.get("id"))
+
+	return item.name

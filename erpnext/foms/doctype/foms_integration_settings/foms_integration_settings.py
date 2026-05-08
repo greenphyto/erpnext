@@ -634,32 +634,62 @@ class FomsAPI():
 				"isSeed": false,
 				"isNutrient": false,
 				"rawMaterialMapping": {},
-				"maximumLevel": 0,
-				"minimumOrderQuantity": 0,
+				"maximumLevel": 99999,
+				"minimumOrderQuantity": 10,
 				"batches": [
 					{
 						"dateOfCreation": "2026-05-08",
 						"expiryDate": "2027-05-08",
 						"quantityUOM": "unit",
-						"qtyAdd": "100",
-						"totalCost": "100",
+						"qtyAdd": "1000",
+						"totalCost": "10",
 						"warehouseId": 2,
 						"rackNumbers": []
 					}
 				],
-				"rawMaterialName": "ZOT - Tape",
-				"rawMaterialDescription": "ZOT - Tape",
-				"rawMaterialRefNo": "RM-ZOT-BS",
-				"rawMaterialTypeId": 23,
-				"rawMaterialVariantTypeId": 83,
+				"rawMaterialRefNo": "RM-HV-EML",
+				"rawMaterialName": "(R&D) Basil Genovese (Emily)-2",
+				"rawMaterialDescription": "(R&D) Basil Genovese (Emily)-2",
+				"rawMaterialTypeId": 25,
+				"rawMaterialVariantTypeId": 88,
 				"unitOfMeasurement": "unit",
-				"requestLeadTime": 7,
-				"safetyLevel": 1000,
+				"safetyLevel": 100,
+				"requestLeadTime": 3,
 				"FarmId": 15
 			}
 		
 		Return like:
-
+			{
+				"farmId": 15,
+				"rawMaterialType": {
+					"rawMaterialTypeName": "Herbs",
+					"rawMaterialTypeShortForm": "HV",
+					"rawMaterialVariantTypes": null,
+					"id": 25
+				},
+				"rawMaterialVariantType": {
+					"rawMaterialTypeId": 25,
+					"variantTypeName": "(R&D) Basil Genovese (Emily)-2",
+					"variantTypeShortForm": "EML",
+					"id": 88
+				},
+				"rawMaterialRefNo": "RM-HV-EML",
+				"rawMaterialName": "(R&D) Basil Genovese (Emily)-2",
+				"rawMaterialDescription": "(R&D) Basil Genovese (Emily)-2",
+				"unitOfMeasurement": "unit",
+				"safetyLevel": 100,
+				"maximumLevel": 99999,
+				"requestLeadTime": 3,
+				"currentQty": 0,
+				"isDraft": false,
+				"isInfinityQty": false,
+				"isSeed": false,
+				"minimumOrderQuantity": 10,
+				"isNutrient": false,
+				"rawMaterialMapping": null,
+				"batches": [],
+				"id": 82
+			}
 		"""
 		data = self.convert_data(data)
 		res = self.req("POST", "/RawMaterial/CreateOrUpdateRawMaterial", data=data )
