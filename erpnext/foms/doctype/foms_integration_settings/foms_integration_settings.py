@@ -517,6 +517,153 @@ class FomsAPI():
 	def get_opeartion_tasks(self, product_id, foms_lot_id, farm_id):
 		res = self.req("GET", f"/userportal/Operation/GetOperationTaskDetail?FarmId={farm_id}&workOrderId={foms_lot_id}&productId={product_id}")
 		return res
+	
+	def get_item_category(self, farm_id, category_name=""):
+		"""
+		# Return like 
+			[{
+                "rawMaterialTypeName": "Water",
+                "rawMaterialTypeShortForm": "IN",
+                "rawMaterialVariantTypes": [
+                    {
+                        "rawMaterialTypeId": 16,
+                        "variantTypeName": "Water",
+                        "variantTypeShortForm": "WW",
+                        "id": 41
+                    }
+                ],
+                "id": 16
+            }]
+		"""
+		res = self.req("GET", f"/RawMaterial/GetAllRawMaterialType?FarmId={farm_id}")
+		result = []
+		if not res:
+			return result
+
+		for d in res.get("items") or []:
+			if category_name and d.get("rawMaterialTypeName") != category_name:
+				continue
+
+			result.append(d)
+		return result
+
+	def get_product_variant(self, farm_id, foms_category_id=""):
+		"""
+		Return Like:
+			[{
+                "rawMaterialTypeId": 19,
+                "variantTypeName": "Nai Bai",
+                "variantTypeShortForm": "NB",
+                "id": 45
+            },
+            {
+                "rawMaterialTypeId": 19,
+                "variantTypeName": "White Crown",
+                "variantTypeShortForm": "WC",
+                "id": 47
+            }]
+		"""
+		res = self.req("GET", f"/RawMaterial/GetAllRawMaterialVariantType?FarmId={farm_id}&rawMaterialTypeId={foms_category_id}&maxResultCount=999")
+		result = []
+		if not res:
+			return result
+		
+		return res.get("items", [])
+	
+	def create_item_category(self, farm_id, category_name, category_shortform):
+		"""
+		example data
+			{
+				"rawMaterialTypeName": "Other Packaging",
+				"rawMaterialTypeShortForm": "ZOT",
+				"id": 0,
+				"FarmId": 15
+			}
+		
+		Return data:
+			{
+				"rawMaterialTypeName": "Other Packaging",
+				"rawMaterialTypeShortForm": "ZOT",
+				"rawMaterialVariantTypes": [],
+				"id": 23
+			}
+		"""
+
+		data = self.convert_data({
+			"rawMaterialTypeName": category_name,
+			"rawMaterialTypeShortForm": category_shortform,
+			"id": 0,
+			"FarmId": farm_id
+		})
+		res = self.req("POST", "/RawMaterial/CreateOrUpdateRawMaterialType", data=data)
+
+		return res
+	
+	def create_product_variant(self, ids, foms_category_id, variant_name, shortform):
+		"""
+		example data
+			{
+				"rawMaterialTypeId": 23,
+				"variantTypeName": "Basic",
+				"variantTypeShortForm": "BSI",
+				"id": 83
+			}	
+
+		Return data:
+			{
+				"rawMaterialTypeId": 23,
+				"variantTypeName": "Basic",
+				"variantTypeShortForm": "BS",
+				"id": 83
+			}
+		"""
+		data = self.convert_data({
+			"rawMaterialTypeId": foms_category_id,
+			"variantTypeName": variant_name,
+			"variantTypeShortForm": shortform,
+			"id": ids
+		})
+		res = self.req("POST", "/RawMaterial/CreateOrUpdateRawMaterialVariantType", data=data )
+		return res
+
+	def create_raw_material_on_foms(self, data):
+		"""
+		 example data 
+			{
+				"isDraft": false,
+				"isSeed": false,
+				"isNutrient": false,
+				"rawMaterialMapping": {},
+				"maximumLevel": 0,
+				"minimumOrderQuantity": 0,
+				"batches": [
+					{
+						"dateOfCreation": "2026-05-08",
+						"expiryDate": "2027-05-08",
+						"quantityUOM": "unit",
+						"qtyAdd": "100",
+						"totalCost": "100",
+						"warehouseId": 2,
+						"rackNumbers": []
+					}
+				],
+				"rawMaterialName": "ZOT - Tape",
+				"rawMaterialDescription": "ZOT - Tape",
+				"rawMaterialRefNo": "RM-ZOT-BS",
+				"rawMaterialTypeId": 23,
+				"rawMaterialVariantTypeId": 83,
+				"unitOfMeasurement": "unit",
+				"requestLeadTime": 7,
+				"safetyLevel": 1000,
+				"FarmId": 15
+			}
+		
+		Return like:
+
+		"""
+		data = self.convert_data(data)
+		res = self.req("POST", "/RawMaterial/CreateOrUpdateRawMaterial", data=data )
+		return res
 
 
 	

@@ -9,7 +9,7 @@ from frappe import _
 from frappe.core.doctype.sync_log.sync_log import update_success, create_log, delete_log
 from frappe.utils import safe_abs as abs
 
-import json, math
+import json, math, re
 from erpnext import get_company_currency, get_default_company
 from bs4 import BeautifulSoup as bs
 from erpnext.stock import get_warehouse_account_map, get_item_account
@@ -2426,3 +2426,69 @@ def check_missing_se_rate(doc, method=""):
 	if zero_rate:
 		notif = frappe.get_doc("Notification", "Missing rate Stock Entry")
 		notif.send(doc)
+
+def extract_variant(item_code):
+	# extract variant from item code, example: ["ZOT12", "RM-NS-NPA", "PD-001"] => variant is 12, NPA, 001
+	parts = item_code.split("-")
+	if len(parts) > 1:
+		return parts[-1]
+
+	match = re.search(r"(\d+)$", item_code or "")
+	if match:
+		return match.group(1)
+
+	# Temporary
+
+	return item_code
+
+def create_new_foms_item(item_code):
+	"""
+		Create new item when receive new item from FOMS, to avoid issue with existing item that already link with other data in ERP
+	"""
+	api = FomsAPI()
+	farm_id = get_farm_id()
+	item = frappe.get_doc("Item", item_code)
+	allowed_groups = [
+		"Miscellaneous",
+		"Accessories",
+		"Tooling & Moulding",
+		"Trays & Boards",
+		"Power Connector",
+		"Dimmer Controller",
+		"Gataway",
+		"LED",
+		"Other Packaging",
+		"Nutrition",
+		"Seeds",
+		"Herbs"
+	]
+	# check item group
+	if item.material_group not in allowed_groups:
+		return "Not Allowed Group"
+	exist_group = api.get_item_category(farm_id, item.material_group)
+	if not exist_group:
+		# create
+		shortform = frappe.get_value("Material Group", item.material_group, "shortform")
+		temp = api.create_item_category(farm_id, item.material_group, shortform)
+		frappe.db.set_value("Material Group", item.material_group, "foms_id", temp.get("id"))
+		exist_group = api.get_item_category(farm_id, item.material_group)
+
+	exist_material = []
+	foms_category_id = 0
+	for d in exist_group:
+		foms_category_id = d.get("id")
+		for x in d.get("rawMaterialVariantTypes"):
+			exist_material.append(x.get("variantTypeShortForm"))
+	
+	# foms_uom = UOM_MAP_REV.get(item.stock_uom) or "unit"
+	# check product variance
+	item_variant_code = extract_variant(item.item_code)
+	if item_variant_code and item_variant_code not in exist_material:
+		temp = api.create_product_variant(item.foms_variant_id, foms_category_id, item.item_name, item_variant_code)
+		item.db_set("foms_variant_id", temp.get("id") or item.foms_variant_id)
+	pass
+
+	# check product
+	# exist_product = api.get_product_by_item_code(farm_id, item.item_code)
+	# if exist_product:
+	# 	return item

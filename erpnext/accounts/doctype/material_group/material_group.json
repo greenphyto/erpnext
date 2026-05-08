@@ -10,13 +10,16 @@
  "engine": "InnoDB",
  "field_order": [
   "material_type",
+  "shortform",
   "material_group_name",
   "column_break_3",
   "price_control",
   "number_range_section",
   "number_start",
   "column_break_7",
-  "number_end"
+  "number_end",
+  "foms_detail_section",
+  "foms_id"
  ],
  "fields": [
   {
@@ -69,11 +72,27 @@
   {
    "fieldname": "column_break_7",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "shortform",
+   "fieldtype": "Data",
+   "label": "Shortform"
+  },
+  {
+   "fieldname": "foms_detail_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS Detail"
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Int",
+   "label": "FOMS ID",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-25 15:02:26.427463",
+ "modified": "2026-05-08 16:33:13.103592",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Material Group",
