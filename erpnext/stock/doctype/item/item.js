@@ -155,6 +155,8 @@ frappe.ui.form.on("Item", {
 			}, __("View"));
 		}
 
+		erpnext.item.add_foms_sync_button(frm);
+
 		erpnext.item.edit_prices_button(frm);
 		erpnext.item.toggle_attributes(frm);
 
@@ -508,6 +510,45 @@ $.extend(erpnext.item, {
 				title: __("Note")
 			});
 		}
+	},
+
+	add_foms_sync_button: function(frm) {
+		if (frm.doc.__islocal) {
+			return;
+		}
+
+		frm.add_custom_button(__("Sync to FOMS"), function() {
+			frappe.confirm(
+				__("Sync this item to FOMS?"),
+				function() {
+					frappe.call({
+						method: "erpnext.controllers.foms.create_new_foms_item",
+						args: {
+							item_code: frm.doc.name
+						},
+						freeze: true,
+						freeze_message: __("Syncing item to FOMS..."),
+						callback: function(r) {
+							if (!r || r.exc) {
+								return;
+							}
+
+							const result = r.message || __("Completed");
+							const is_blocked = ["Not Allowed Group"].includes(result);
+
+							frappe.show_alert({
+								message: __("FOMS sync result: {0}", [result]),
+								indicator: is_blocked ? "orange" : "green"
+							});
+
+							if (!is_blocked) {
+								frm.reload_doc();
+							}
+						}
+					});
+				}
+			);
+		}, __("Actions"));
 	},
 
 	allow_uom_global_change: function(frm){

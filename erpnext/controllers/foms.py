@@ -14,6 +14,7 @@ from erpnext import get_company_currency, get_default_company
 from bs4 import BeautifulSoup as bs
 from erpnext.stock import get_warehouse_account_map, get_item_account
 from erpnext.stock.doctype.batch.batch import get_batch_qty, make_batch
+from frappe.utils import strip_html_tags
 
 
 """
@@ -2441,6 +2442,7 @@ def extract_variant(item_code):
 
 	return item_code
 
+@frappe.whitelist()
 def create_new_foms_item(item_code):
 	"""
 		Create new item when receive new item from FOMS, to avoid issue with existing item that already link with other data in ERP
@@ -2497,8 +2499,8 @@ def create_new_foms_item(item_code):
 			item.db_set("foms_variant_id", foms_variant_id)
 
 	# check product
-	default_safety_level = 100
-	default_min_level = 10
+	default_safety_level = 1000
+	default_min_level = 100
 	foms_uom = UOM_MAP_REV.get(item.stock_uom) or "unit"
 	data = {
 		"isDraft": False,
@@ -2510,7 +2512,7 @@ def create_new_foms_item(item_code):
 		"batches": [],
 		"rawMaterialRefNo": item.item_code,
 		"rawMaterialName": item.item_name,
-		"rawMaterialDescription": item.description,
+		"rawMaterialDescription": strip_html_tags(item.description),
 		"rawMaterialTypeId": foms_category_id,
 		"rawMaterialVariantTypeId": item.foms_variant_id,
 		"unitOfMeasurement": foms_uom,
@@ -2544,6 +2546,12 @@ def create_new_foms_item(item_code):
 
 	for d in batch_rows:
 		warehouse = d.warehouse
+		if not warehouse:
+			continue
+
+		if warehouse in ("Work In Progress - GPL"):
+			continue
+
 		if not warehouse:
 			warehouse = frappe.get_value("Bin", {
 				"item_code": item.item_code,
