@@ -406,7 +406,7 @@ def add_formulas(report_name, xlsx_file, return_wb=False, column_widths=None, fo
 				for row in range(start_row, ws.max_row + 1):
 					cell = ws[f"{col}{row}"]
 					if isinstance(cell.value, (int, float)) or cell.data_type == "f":
-						cell.number_format = '#,##0.00;(#,##0.00)'
+						cell.number_format = '#,##0.00'
 
 	# Apply to all worksheets
 	for ws in wb.worksheets:
