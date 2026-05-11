@@ -13,7 +13,7 @@ import json, math, re
 from erpnext import get_company_currency, get_default_company
 from bs4 import BeautifulSoup as bs
 from erpnext.stock import get_warehouse_account_map, get_item_account
-from erpnext.stock.doctype.batch.batch import get_batch_qty, make_batch
+from erpnext.stock.doctype.batch.batch import get_batch_qty, get_batches, make_batch
 from frappe.utils import strip_html_tags
 
 
@@ -634,6 +634,53 @@ def push_batch():
 		if res:
 			frappe.db.set_value("Batch", d.batch_no, "foms_id", res.get('id'))
 			frappe.db.set_value("Batch", d.batch_no, "foms_name", res.get('batchRefNo'))
+
+def create_foms_batch(batch_no, warehouse="", qty=0):
+	batch = frappe.get_doc("Batch", batch_no)
+	if cint(batch.foms_id):
+		return batch.foms_id
+	
+	api = FomsAPI()
+	# else sync batch
+	raw_id = frappe.get_value("Item", batch.item, "foms_raw_id")
+	if not warehouse:
+		batch_stock = get_batch_qty(batch.name)
+		wip_warehouse = get_foms_settings("wip_warehouse")
+		for d in batch_stock:
+			if d.warehouse == wip_warehouse:
+				continue
+			
+			_create_foms_batch(batch.name, d.warehouse, d.qty)
+	else:
+		_create_foms_batch(batch.name, warehouse, qty)
+
+def _create_foms_batch(batch_no, warehouse="", qty=0):
+	batch = frappe.get_doc("Batch", batch_no)
+	if cint(batch.foms_id):
+		return batch.foms_id
+	
+	api = FomsAPI()
+	# else sync batch
+	raw_id = frappe.get_value("Item", batch.item, "foms_raw_id")
+	supplier_id = frappe.get_value("Supplier", batch.supplier, "foms_id") 
+	expiry_date = batch.expiry_date
+	if not expiry_date:
+		expiry_date = add_days(getdate(), 365*3)
+
+	data = {
+		"id": cint(batch.foms_id),
+		"rawMaterialId": raw_id,
+		"batchRefNo": batch.name,
+		"dateOfCreation": getdate(batch.creation),
+		"expiryDate": add_days( getdate(expiry_date), -1),
+		"warehouseId": frappe.get_value("Warehouse", warehouse, "foms_id"),
+		"supplierId": supplier_id,
+		"quantity": qty
+	}
+	res = api.update_raw_material_receipt(data)
+	if res:
+		frappe.db.set_value("Batch", batch.name, "foms_id", res.get('id'))
+		frappe.db.set_value("Batch", batch.name, "foms_name", res.get('batchRefNo'))
 
 # STOCK ENTRY
 def update_stock_entry(log, api=""):
@@ -2524,79 +2571,14 @@ def create_new_foms_item(item_code):
 	if item.foms_raw_id:
 		data["id"] = item.foms_raw_id
 
-	# get batch
-	# get warehouse id
-	# get total cost, batch value when purchase
-	batches_data = []
-	batch_rows = frappe.db.sql("""
-		SELECT
-			b.name AS batch_no,
-			sle.warehouse,
-			SUM(IFNULL(sle.actual_qty, 0)) AS qty,
-			MAX(sle.posting_date) AS posting_date,
-			MAX(b.manufacturing_date) AS manufacturing_date,
-			MAX(b.expiry_date) AS expiry_date
-		FROM
-			`tabBatch` b
-			LEFT JOIN `tabStock Ledger Entry` sle
-				ON sle.batch_no = b.name
-				AND sle.is_cancelled = 0
-				AND sle.item_code = b.item
-		WHERE
-			b.item = %s
-		GROUP BY b.name, sle.warehouse
-	""", (item.item_code), as_dict=1)
-
-	for d in batch_rows:
-		warehouse = d.warehouse
-		if not warehouse:
-			continue
-
-		if warehouse in ("Work In Progress - GPL"):
-			continue
-
-		if not warehouse:
-			warehouse = frappe.get_value("Bin", {
-				"item_code": item.item_code,
-				"actual_qty": [">", 0]
-			}, "warehouse", order_by="actual_qty desc")
-
-		warehouse_id = cint(frappe.get_value("Warehouse", warehouse, "foms_id"))
-		if not warehouse_id:
-			continue
-
-		qty = flt(d.qty)
-		# if qty <= 0:
-		# 	continue
-
-		manufacturing_date = d.manufacturing_date or d.posting_date or getdate()
-		expiry_date = d.expiry_date
-		if not expiry_date:
-			shelf_life_in_days = cint(item.shelf_life_in_days) or 365*3
-			expiry_date = add_days(getdate(manufacturing_date), shelf_life_in_days)
-
-		valuation_rate = flt(frappe.get_value("Bin", {
-			"item_code": item.item_code,
-			"warehouse": warehouse
-		}, "valuation_rate"))
-		total_cost = flt(valuation_rate * qty)
-
-		batches_data.append({
-			"dateOfCreation": getdate(manufacturing_date),
-			"expiryDate": getdate(expiry_date),
-			"quantityUOM": foms_uom,
-			"qtyAdd": qty,
-			"totalCost": total_cost,
-			"warehouseId": warehouse_id,
-			"rackNumbers": []
-		})
-
-	data["batches"] = batches_data
-
-	# return
-
 	temp = api.create_raw_material_on_foms(data)
 	if temp:
 		item.db_set("foms_raw_id", temp.get("id"))
+		item.foms_raw_id = temp.get("id")
+
+	if item.foms_raw_id:
+		batches = get_available_batch(item.item_code, 0, True, company="Greenphyto Pte Ltd")
+		for d in batches:
+			create_foms_batch(d.batch_id, d.warehouse, d.qty)
 
 	return item.name
