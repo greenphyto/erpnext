@@ -309,7 +309,7 @@ def get_net_profit_loss(income, expense, period_list, company, currency=None, co
 		
 		# Variance % = (Variance Amount / Budget YTD) × 100
 		if net_profit_loss["budget_ytd"] != 0:
-			net_profit_loss["variance_percent"] = (net_profit_loss["variance_amount"] / net_profit_loss["budget_ytd"]) * 100
+			net_profit_loss["variance_percent"] = flt((net_profit_loss["variance_amount"] / net_profit_loss["budget_ytd"]) * 100, 2)
 		else:
 			net_profit_loss["variance_percent"] = 0
 
@@ -805,7 +805,7 @@ def add_summary_columns(rows, period_list):
 		else:
 			variance_percent = 0
 		
-		row["variance_percent"] = variance_percent
+		row["variance_percent"] = flt(variance_percent, 2)
 
 @frappe.whitelist()
 def get_export_with_cost_centers_url(filters=None):
