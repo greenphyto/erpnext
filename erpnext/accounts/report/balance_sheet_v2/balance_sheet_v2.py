@@ -297,11 +297,11 @@ from io import BytesIO
 import json
 from openpyxl.styles import Font
 from frappe.utils import now_datetime
-def add_formulas(report_name, xlsx_file, return_wb=False, column_widths=None, formula=0):
+def add_formulas(report_name, xlsx_file, return_wb=False, column_widths=None, formula=0, bold_list=None):
 	stream = BytesIO(xlsx_file.getvalue())
 	wb = load_workbook(stream)
 
-	def apply_on_sheet(ws):
+	def apply_on_sheet(ws, sheet_bold_rows=None):
 		group_col = "ZZ"
 		ws.column_dimensions[group_col].hidden = True
 
@@ -408,10 +408,23 @@ def add_formulas(report_name, xlsx_file, return_wb=False, column_widths=None, fo
 					if isinstance(cell.value, (int, float)) or cell.data_type == "f":
 						cell.number_format = '#,##0.00'
 
+		# Apply extra bold formatting from bold_list parameter
+		if sheet_bold_rows:
+			for row_num in sheet_bold_rows:
+				if row_num <= ws.max_row:
+					for cell in ws[row_num]:
+						cell.font = Font(bold=True)
+
 	# Apply to all worksheets
 	for ws in wb.worksheets:
 		try:
-			apply_on_sheet(ws)
+			sheet_bold_rows = None
+			if isinstance(bold_list, dict):
+				sheet_bold_rows = bold_list.get(ws.title) or []
+			elif isinstance(bold_list, (list, tuple, set)):
+				sheet_bold_rows = bold_list
+
+			apply_on_sheet(ws, sheet_bold_rows=sheet_bold_rows)
 		except Exception:
 			continue
 

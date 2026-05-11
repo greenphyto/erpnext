@@ -307,14 +307,25 @@ def get_export_cost_center(report_name, filters):
 			"result":data
 		})
 		xlsx_data, column_widths = build_xlsx_data(temp, [] , 1, ignore_visible_idx=1)
-		xlsx_data = title_report + filter_report + [["Export date", date_str]] + xlsx_data
+		header_data = title_report + filter_report + [["Export date", date_str]]
+		xlsx_data = header_data + xlsx_data
+
+		# xlsx_data layout: header_data + [table_header] + data rows
+		# so first data row starts after header_data and table_header
+		start_from = len(header_data) + 2
+		bold_list = []
+		for i, d in enumerate(data):
+			if d.get("is_group") or d.get("is_bold") or d.get("bold"):
+				idx = i + start_from
+				bold_list.append(idx)
 
 		group_data[cc.name] = {
 			"label": cc.cost_center_name or cc.name,
 			"columns": columns,
 			"data": xlsx_data,
 			"summary": report_summary,
-			"column_widths":column_widths
+			"column_widths":column_widths,
+			"bold_list": bold_list
 		}
 		# break
 
@@ -350,12 +361,11 @@ def export_with_cost_centers(report_name, filters=None, formula=False):
 	if not openpyxl:
 		frappe.throw("openpyxl is required to export XLSX")
 
-	from frappe.utils.xlsxutils import ILLEGAL_CHARACTERS_RE, handle_html
-
 	wb = openpyxl.Workbook(write_only=True)
 
 	used_names = set()
 	first_columns = None
+	sheet_bold_map = {}
 
 	for cc_name, payload in (group_data or {}).items():
 		label = payload.get("label") or cc_name
@@ -369,6 +379,7 @@ def export_with_cost_centers(report_name, filters=None, formula=False):
 			sheet_name = _sanitize_sheet_name((base[: (31 - len(suffix))]).rstrip() + suffix)
 			idx += 1
 		used_names.add(sheet_name)
+		sheet_bold_map[sheet_name] = payload.get("bold_list") or []
 
 		ws = wb.create_sheet(title=sheet_name)
 
@@ -377,10 +388,6 @@ def export_with_cost_centers(report_name, filters=None, formula=False):
 			first_columns = columns
 		data_rows = payload.get("data") or []
 
-		headers = [c.get("label") for c in columns]
-		fields = [c.get("fieldname") for c in columns]
-		ws.append(headers)
-
 		# Set column width if provided
 		column_widths = payload.get("column_widths")
 		for i, column_width in enumerate(column_widths):
@@ -388,22 +395,7 @@ def export_with_cost_centers(report_name, filters=None, formula=False):
 				ws.column_dimensions[get_column_letter(i + 1)].width = column_width
 
 		for row in data_rows:
-			out = []
-			if type(row) != list:
-				for f in fields:
-					val = (row or {}).get(f)
-					if isinstance(val, str):
-						try:
-							val = handle_html(val)
-							if isinstance(val, str):
-								val = re.sub(ILLEGAL_CHARACTERS_RE, "", val)
-						except Exception:
-							pass
-					out.append(val)
-			else:
-				out += row
-
-			ws.append(out)
+			ws.append(row)
 
 	bio = BytesIO()
 	wb.save(bio)
@@ -428,7 +420,13 @@ def export_with_cost_centers(report_name, filters=None, formula=False):
 					width_chars = max(8, min(50, len(str(label)) + 5))
 				column_widths.append(width_chars)
 
-		return add_formulas(report_name, bio, column_widths=column_widths, formula=formula)
+		return add_formulas(
+			report_name,
+			bio,
+			column_widths=column_widths,
+			formula=formula,
+			bold_list=sheet_bold_map,
+		)
 
 	except Exception:
 		# Fallback: plain export if add_formulas unavailable
