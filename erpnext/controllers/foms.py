@@ -2450,8 +2450,8 @@ def create_new_foms_item(item_code):
 	api = FomsAPI()
 	farm_id = get_farm_id()
 	item = frappe.get_doc("Item", item_code)
-	if item.foms_raw_id:
-		return "Already Exists"
+	# if item.foms_raw_id:
+	# 	return "Already Exists"
 	
 	allowed_groups = [
 		"Miscellaneous",
@@ -2508,7 +2508,7 @@ def create_new_foms_item(item_code):
 		"isNutrient": False,
 		"rawMaterialMapping": {},
 		"maximumLevel": 99999,
-		"minimumOrderQuantity": default_min_level,
+		"minimumOrderQuantity": item.min_order_qty or default_min_level,
 		"batches": [],
 		"rawMaterialRefNo": item.item_code,
 		"rawMaterialName": item.item_name,
@@ -2516,10 +2516,13 @@ def create_new_foms_item(item_code):
 		"rawMaterialTypeId": foms_category_id,
 		"rawMaterialVariantTypeId": item.foms_variant_id,
 		"unitOfMeasurement": foms_uom,
-		"safetyLevel": default_safety_level,
+		"safetyLevel": item.safety_stock or default_safety_level,
 		"requestLeadTime": item.lead_time_days or 21,
 		"FarmId": farm_id
 	}
+
+	if item.foms_raw_id:
+		data["id"] = item.foms_raw_id
 
 	# get batch
 	# get warehouse id
