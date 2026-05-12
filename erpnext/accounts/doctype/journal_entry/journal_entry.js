@@ -575,13 +575,17 @@ frappe.ui.form.on("Journal Entry Account", {
 
 	debit: function(frm, dt, dn) {
 		var d = locals[dt][dn];
-		if (!frm.doc.multi_currency) frappe.model.set_value(dt, dn, "debit_in_account_currency", d.debit);
+		if (!frm.doc.multi_currency && flt(d.debit_in_account_currency) !== flt(d.debit)) {
+			frappe.model.set_value(dt, dn, "debit_in_account_currency", d.debit);
+		}
 		cur_frm.cscript.update_totals(frm.doc);
 	},
 	
 	credit: function(frm, dt, dn) {
 		var d = locals[dt][dn];
-		if (!frm.doc.multi_currency) frappe.model.set_value(dt, dn, "credit_in_account_currency", d.credit);
+		if (!frm.doc.multi_currency && flt(d.credit_in_account_currency) !== flt(d.credit)) {
+			frappe.model.set_value(dt, dn, "credit_in_account_currency", d.credit);
+		}
 		cur_frm.cscript.update_totals(frm.doc);
 	},
 	
@@ -997,15 +1001,17 @@ $.extend(erpnext.journal_entry, {
 		return new Promise((resolve)=>{
 			if (d.account){
 				erpnext.utils.get_cost_center(d.account, frm.doc.company).then(r=>{
-					frappe.model.set_value(cdt,cdn,"cost_center", r.value);
-					frappe.model.set_value(cdt,cdn,"lock_cost_center", r.lock);
+					d.cost_center = r.value || "";
+					d.lock_cost_center = r.lock;
+					frm.refresh_field("accounts");
+					resolve();
 				})
 			}else{
-				frappe.model.set_value(cdt,cdn,"cost_center", "");
-				frappe.model.set_value(cdt,cdn,"lock_cost_center", 0);
+				d.cost_center = "";
+				d.lock_cost_center = 0;
+				frm.refresh_field("accounts");
+				resolve();
 			}
-			frm.refresh_field("items")
-			resolve()
 		})
 	}
 });
