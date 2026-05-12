@@ -7,7 +7,7 @@ from frappe import _, msgprint
 from frappe.model.document import Document
 from frappe.query_builder.custom import ConstantColumn
 from frappe.utils import flt, fmt_money, getdate
-from frappe.utils import safe_abs as abs
+from frappe.utils import safe_abs as abs, cstr
 
 import erpnext
 
@@ -184,6 +184,9 @@ class BankClearance(Document):
 		default_currency = erpnext.get_default_currency()
 
 		for d in entries:
+			against_account = cstr(d.get("against_account", ""))
+			d.against_account = ', '.join(against_account.split(', ')[:2])
+
 			row = self.append("payment_entries", {})
 
 			amount = flt(d.get("debit", 0)) - flt(d.get("credit", 0))
