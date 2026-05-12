@@ -8,6 +8,7 @@ frappe.ui.form.on("Bank Clearance", {
 		frm.set_query("account", function() {
 			return {
 				"filters": {
+					"company": frm.doc.company,
 					"account_type": ["in",["Bank","Cash"]],
 					"is_group": 0,
 				}
