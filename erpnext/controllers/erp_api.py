@@ -478,6 +478,7 @@ def make_stock_entry_with_materials(wo_doc, job_card_name, materials, wip_wareho
 				cost_row.cost_center = frappe.get_value("Company", company, "cost_center_for_packing")
 				cost_row.description = descriptions[field]
 
+	se.set_rate_for_outgoing_items()
 	se.set_expense_account()
 	return se
 

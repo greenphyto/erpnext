@@ -851,7 +851,9 @@ class StockEntry(StockEntryAsset, StockController):
 			d.basic_rate = flt(d.basic_rate)
 			# if d.is_process_loss:
 			# 	d.basic_rate = flt(0.0)
-			d.basic_amount = flt(flt(d.transfer_qty) * flt(d.basic_rate), d.precision("basic_amount"))
+			prec = d.precision("basic_amount")
+			basic_amount = flt(d.transfer_qty) * flt(d.basic_rate)
+			d.basic_amount = flt(basic_amount, prec)
 
 	def set_rate_for_outgoing_items(self, reset_outgoing_rate=True, raise_error_if_no_rate=True):
 		outgoing_items_cost = 0.0
@@ -864,7 +866,9 @@ class StockEntry(StockEntryAsset, StockController):
 						if not d.basic_rate:
 							d.basic_rate = rate
 
-				d.basic_amount = flt(flt(d.transfer_qty) * flt(d.basic_rate), d.precision("basic_amount"))
+				prec = d.precision("basic_amount")
+				basic_amount = flt(d.transfer_qty) * flt(d.basic_rate)
+				d.basic_amount = flt(basic_amount, prec)
 				if not d.t_warehouse:
 					outgoing_items_cost += flt(d.basic_amount)
 
