@@ -350,6 +350,15 @@ erpnext.accounts.JournalEntry = class JournalEntry extends frappe.ui.form.Contro
 			}
 		});
 
+		me.frm.set_query("cost_center", "accounts", function(doc, cdt, cdn) {
+			return {
+				filters:{
+					"company": doc.company,
+					"is_group": 0
+				}
+			}
+		});
+
 		me.frm.set_query("reference_name", "accounts", function(doc, cdt, cdn) {
 			var jvd = frappe.get_doc(cdt, cdn);
 
