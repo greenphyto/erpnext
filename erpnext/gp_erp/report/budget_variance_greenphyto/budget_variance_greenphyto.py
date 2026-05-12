@@ -90,16 +90,16 @@ def execute(filters=None):
 		add_summary_columns(expense, period_list)
 	
 	# Calculate net profit/loss AFTER budget is added so we can include budget columns
-	# net_profit_loss = get_net_profit_loss(
-	# 	income, expense, period_list, filters.company, filters.presentation_currency
-	# )
+	net_profit_loss = get_net_profit_loss(
+		income, expense, period_list, filters.company, filters.presentation_currency
+	)
 
 	
 	data = []
 	data.extend(income or [])
 	data.extend(expense or [])
-	# if net_profit_loss:
-	# 	data.append(net_profit_loss)
+	if net_profit_loss:
+		data.append(net_profit_loss)
 
 	new_data = []
 	if filters.show_number_group:
@@ -116,7 +116,7 @@ def execute(filters=None):
 								d[key] = None
 
 			new_data.append(d)
-	new_data.pop()
+	# new_data.pop()
 	filters.show_budget_amount = 1
 	# filters.ytd_column = 1
 	columns = get_report_column(filters, period_list)
@@ -307,9 +307,11 @@ def get_net_profit_loss(income, expense, period_list, company, currency=None, co
 		# Variance Amount = Total Actual - Budget YTD
 		net_profit_loss["variance_amount"] = net_profit_loss["total_actual"] - net_profit_loss["budget_ytd"]
 		
-		# Variance % = (Variance Amount / Budget YTD) × 100
-		if net_profit_loss["budget_ytd"] != 0:
-			net_profit_loss["variance_percent"] = flt((net_profit_loss["variance_amount"] / net_profit_loss["budget_ytd"]) * 100, 2)
+		# Variance % = (Variance Amount / |Budget YTD|) × 100
+		# Use absolute value so that the sign is not reversed when the budget is negative (loss)
+		budget_ytd = net_profit_loss["budget_ytd"]
+		if budget_ytd != 0:
+			net_profit_loss["variance_percent"] = flt((net_profit_loss["variance_amount"] / flt(budget_ytd)) * 100, 2)
 		else:
 			net_profit_loss["variance_percent"] = 0
 
