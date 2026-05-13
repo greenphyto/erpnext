@@ -74,20 +74,21 @@ def execute(filters=None):
 	# ALWAYS fetch monthly budget data (even for Yearly periodicity)
 	# This allows Budget YTD to calculate from raw monthly values
 	budget_map = get_budget_data(filters, ytd=False)
-	
-	# Get current date for YTD limit
-	from frappe.utils import today, getdate, add_months
-	current_date = getdate(filters.get("period_end_date") or today())
+
+	# Build total company map (same report scope but without cost center filter)
+	total_company_map = get_total_company_map(filters, period_list, accounts_list)
 	
 	# Add budget to income rows (includes budget columns and summary columns)
 	if income:
 		add_budget_to_rows(income, budget_map, period_list, filters)
 		add_summary_columns(income, period_list)
+		add_total_company_column(income, total_company_map)
 	
 	# Add budget to expense rows (includes budget columns and summary columns)
 	if expense:
 		add_budget_to_rows(expense, budget_map, period_list, filters)
 		add_summary_columns(expense, period_list)
+		add_total_company_column(expense, total_company_map)
 	
 	# Calculate net profit/loss AFTER budget is added so we can include budget columns
 	net_profit_loss = get_net_profit_loss(
@@ -181,6 +182,16 @@ def get_report_column(filters, period_list):
 	columns.append({
 		"fieldname": "total_actual",
 		"label": _("Total Actual"),
+		"fieldtype": "Currency",
+		"options": "currency",
+		"width": 150,
+		"align": "right",
+	})
+
+	# Total Company column (without cost center filter)
+	columns.append({
+		"fieldname": "total_company",
+		"label": _("Total Company"),
 		"fieldtype": "Currency",
 		"options": "currency",
 		"width": 150,
@@ -300,6 +311,9 @@ def get_net_profit_loss(income, expense, period_list, company, currency=None, co
 		
 		# Total Actual = Income Total Actual - Expense Total Actual
 		net_profit_loss["total_actual"] = flt(income_total.get("total_actual", 0)) - flt(expense_total.get("total_actual", 0))
+
+		# Total Company = Income Total Company - Expense Total Company
+		net_profit_loss["total_company"] = flt(income_total.get("total_company", 0)) - flt(expense_total.get("total_company", 0))
 		
 		# Budget YTD = Income Budget YTD - Expense Budget YTD (only periods up to current date)
 		net_profit_loss["budget_ytd"] = flt(income_total.get("budget_ytd", 0)) - flt(expense_total.get("budget_ytd", 0))
@@ -808,6 +822,65 @@ def add_summary_columns(rows, period_list):
 			variance_percent = 0
 		
 		row["variance_percent"] = flt(variance_percent, 2)
+
+def get_total_company_map(filters, period_list, accounts_list=None):
+	"""Get total actual per account without cost center filter.
+
+	Returns:
+		dict: account -> total amount across selected periods
+	"""
+	accounts_list = accounts_list or []
+	total_company_map = {}
+
+	# If report is already not filtered by cost center, total company equals current total actual.
+	if not filters.get("cost_center"):
+		return total_company_map
+
+	filters_no_cost_center = frappe._dict(filters.copy())
+	filters_no_cost_center.cost_center = []
+
+	for root_type, balance_must_be in (("Income", "Credit"), ("Expense", "Debit")):
+		rows = get_data(
+			filters_no_cost_center.company,
+			root_type,
+			balance_must_be,
+			period_list,
+			filters=filters_no_cost_center,
+			accumulated_values=filters_no_cost_center.accumulated_values,
+			ignore_closing_entries=True,
+			ignore_accumulated_values_for_fy=True,
+			filter_zero_value=0,
+			accounts_to_show=accounts_list,
+		)
+
+		for row in rows or []:
+			account = row.get("account_origin") or row.get("account")
+			if not account:
+				continue
+
+			total_actual = 0
+			for period in period_list:
+				total_actual += flt(row.get(period.key, 0))
+
+			total_company_map[account] = total_actual
+
+	return total_company_map
+
+
+def add_total_company_column(rows, total_company_map=None):
+	# add total amount account balance under company on new column
+	# column = total_company
+	# this total is account's balance without cost center filter,
+	# so it shows total balance of the account for the company
+	total_company_map = total_company_map or {}
+
+	for row in rows or []:
+		account = row.get("account_origin") or row.get("account")
+		if account and total_company_map:
+			row["total_company"] = flt(total_company_map.get(account, 0))
+		else:
+			# Fallback: when no cost center filter is applied, this equals current total actual
+			row["total_company"] = flt(row.get("total_actual", 0))
 
 @frappe.whitelist()
 def get_export_with_cost_centers_url(filters=None):
