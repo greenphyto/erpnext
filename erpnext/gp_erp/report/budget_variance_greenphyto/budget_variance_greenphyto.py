@@ -76,19 +76,19 @@ def execute(filters=None):
 	budget_map = get_budget_data(filters, ytd=False)
 
 	# Build total company map (same report scope but without cost center filter)
-	total_company_map = get_total_company_map(filters, period_list, accounts_list)
+	# total_company_map = get_total_company_map(filters, period_list, accounts_list)
 	
 	# Add budget to income rows (includes budget columns and summary columns)
 	if income:
 		add_budget_to_rows(income, budget_map, period_list, filters)
 		add_summary_columns(income, period_list)
-		add_total_company_column(income, total_company_map)
+		# add_total_company_column(income, total_company_map)
 	
 	# Add budget to expense rows (includes budget columns and summary columns)
 	if expense:
 		add_budget_to_rows(expense, budget_map, period_list, filters)
 		add_summary_columns(expense, period_list)
-		add_total_company_column(expense, total_company_map)
+		# add_total_company_column(expense, total_company_map)
 	
 	# Calculate net profit/loss AFTER budget is added so we can include budget columns
 	net_profit_loss = get_net_profit_loss(
@@ -189,14 +189,14 @@ def get_report_column(filters, period_list):
 	})
 
 	# Total Company column (without cost center filter)
-	columns.append({
-		"fieldname": "total_company",
-		"label": _("Total Company"),
-		"fieldtype": "Currency",
-		"options": "currency",
-		"width": 150,
-		"align": "right",
-	})
+	# columns.append({
+	# 	"fieldname": "total_company",
+	# 	"label": _("Total Company"),
+	# 	"fieldtype": "Currency",
+	# 	"options": "currency",
+	# 	"width": 150,
+	# 	"align": "right",
+	# })
 	
 	# Budget YTD column
 	columns.append({
@@ -399,14 +399,18 @@ def get_export_cost_center(filters):
 	# add detail
 	export_date = now()
 	date_str = " "+get_datetime(export_date).strftime("%-d %B %y %H:%M:%S")
-	report_name = "Profit and Loass Statement"
+	report_name = "Profit and Loss Statement"
 	title_report = add_title_report(report_name) 
 	filter_report = get_filters_data(filters)
 
-	for cc in cost_centers:
+	for idx, cc in enumerate(cost_centers):
 		# Prepare per-CC filters without mutating caller filters
 		per_cc_filters = frappe._dict(base_filters.copy())
-		per_cc_filters["cost_center"] = [cc.name]
+		# empty cost center at first time
+		if idx == 0:
+			per_cc_filters["cost_center"] = []
+		else:
+			per_cc_filters["cost_center"] = [cc.name]
 
 		columns, data, _, _, report_summary = execute(per_cc_filters)
 		temp = frappe._dict({

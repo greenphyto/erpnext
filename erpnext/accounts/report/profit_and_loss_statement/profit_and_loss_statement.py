@@ -276,12 +276,15 @@ def get_export_cost_center(report_name, filters):
 	if base_filters.get("company"):
 		cc_filters["company"] = base_filters.company
 
-	cost_centers = frappe.get_all(
+	cost_centers = [
+		frappe._dict({"name": "All Cost Centers", "cost_center_name": "All Cost Centers"})
+	]
+	cost_centers += frappe.get_all(
 		"Cost Center",
 		filters=cc_filters,
 		fields=["name", "cost_center_name"],
 		order_by="name asc",
-	)
+	) or []
 
 	group_data = {}
 
@@ -295,10 +298,14 @@ def get_export_cost_center(report_name, filters):
 	else:
 		from erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement import execute
 
-	for cc in cost_centers:
+	for idx, cc in enumerate(cost_centers):
 		# Prepare per-CC filters without mutating caller filters
 		per_cc_filters = frappe._dict(base_filters.copy())
-		per_cc_filters["cost_center"] = [cc.name]
+		# empty cost center at first time
+		if idx == 0:
+			per_cc_filters["cost_center"] = []
+		else:
+			per_cc_filters["cost_center"] = [cc.name]
 
 		filter_report = get_filters_data(per_cc_filters)
 		columns, data, _, _, report_summary = execute(per_cc_filters)
