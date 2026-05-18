@@ -59,6 +59,9 @@
   "section_break_42",
   "non_package_item",
   "non_stock_item",
+  "col_break_46",
+  "is_carton_order",
+  "sec_break_48",
   "items",
   "section_break_30",
   "total_qty",
@@ -2184,6 +2187,21 @@
    "label": "Non Stock Item"
   },
   {
+   "fieldname": "col_break_46",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.non_stock_item == 0 && doc.non_package_item == 0",
+   "fieldname": "is_carton_order",
+   "fieldtype": "Check",
+   "label": "Is Carton Order"
+  },
+  {
+   "fieldname": "sec_break_48",
+   "fieldtype": "Section Break"
+  },
+  {
    "allow_on_submit": 1,
    "fetch_from": "shipping_address_name.outlet_name",
    "fieldname": "outlet_name",
@@ -2202,7 +2220,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2026-04-20 10:34:02.799174",
+ "modified": "2026-05-18 16:13:22.000000",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",
