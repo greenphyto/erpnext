@@ -357,6 +357,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		this.setup_quality_inspection();
 		this.validate_has_items();
 		this.change_item_preview();
+		this.change_package_display();
 	}
 
 	scan_barcode() {
@@ -2470,15 +2471,48 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		table.grid.reset_grid();
 	}
 
-	change_package_label(change=false){
+	non_package_item (){
+		this.confirm_reset_item("non_package_item").then(r=>{
+			if (r){
+				this.change_package_display();
+			}
+		});
+	}
+	
+	is_carton_order (){
+		this.change_package_display();
+	}
+
+	change_package_display(){
+		if (cint(this.frm.doc.non_package_item)==0){
+			if (this.frm.doc.is_carton_order){
+				this.change_package_label(2);
+			}else{
+				this.change_package_label(1);
+			}
+		}else{
+			this.change_package_label(0);
+		}
+	}
+
+	change_package_label(type_change=0){
 		const item_table = "items";
 		var table = this.frm.fields_dict[item_table];
 		if (!table) return;
 		var uom_field = table.grid.fields_map.uom;
 		if (!uom_field) return;
-		if (change){
+		var carton_field = table.grid.fields_map.uom_carton;
+		if (!carton_field) return;
+
+		uom_field.in_list_view = 1;
+		carton_field.in_list_view = 0;
+		if (type_change==1){
 			uom_field.label = "Package"
-		}else{
+		} else if (type_change==2){
+			uom_field.label = "Package"
+			uom_field.in_list_view = 0;
+			carton_field.in_list_view = 1;
+		} else{
 			uom_field.label = "UOM"
 		}
 

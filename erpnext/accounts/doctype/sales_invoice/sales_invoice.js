@@ -173,8 +173,6 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 			}
 		}
 
-		this.frm.cscript.change_package_display();
-
 		this.frm.set_query("item_code", "items", function(doc, cdt, cdn) {
 			var row = locals[cdt][cdn];
 			var filters = {"is_fixed_asset": 0}
@@ -184,23 +182,6 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 			}
 			return erpnext.queries.item(filters);
 		})
-	}
-
-	non_package_item(){
-		var me = this;
-		this.frm.cscript.confirm_reset_item("non_package_item").then(r=>{
-			if (r){
-				me.frm.cscript.change_package_display();
-			}
-		});
-	}
-
-	change_package_display(){
-		if (!this.frm.doc.non_package_item){
-			this.frm.cscript.change_package_label(1);
-		}else{
-			this.frm.cscript.change_package_label(0);
-		}
 	}
 
 	make_maintenance_schedule() {
