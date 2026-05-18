@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "company",
+  "proposed_customer",
   "department",
   "foms_id",
   "column_break_3",
@@ -168,12 +169,27 @@
    "label": "Company",
    "options": "Company",
    "reqd": 1
+  },
+  {
+   "description": "Days from posting date to delivery date",
+   "fieldname": "duration_days",
+   "fieldtype": "Data",
+   "label": "Duration (days)",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "proposed_customer",
+   "fieldtype": "Link",
+   "label": "Proposed Customer",
+   "options": "Customer"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-12-23 16:06:06.212501",
+ "modified": "2026-05-18 17:37:28.312077",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request",

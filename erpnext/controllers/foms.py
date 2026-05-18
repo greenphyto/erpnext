@@ -1312,7 +1312,7 @@ def _update_foms_forecast(log, api=None):
 		delivery_date = getdate(doc.delivery_date)
 		end_delivery_date = add_days(delivery_date, 1)
 		use_weight_order = cint(doc.non_package_item) == 1
-
+		proposed_customer = frappe.get_value("Customer", doc.get("proposed_customer"), "foms_id") or ""
 		products = []
 		
 		for d in doc.get("items") + doc.get("salad_items"):
@@ -1354,6 +1354,7 @@ def _update_foms_forecast(log, api=None):
 			"startDeliveryDate": delivery_date,
 			"endDeliveryDate": end_delivery_date,
 			"departmentId": department_foms_id or "",
+			"proposedCustomerId": proposed_customer,
 			"saleOrder": {
 				"saleOrderNumber":doc.name, 
 				"farmId": farm_id,
