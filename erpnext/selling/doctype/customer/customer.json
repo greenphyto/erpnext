@@ -90,7 +90,10 @@
   "disabled",
   "sku_tab",
   "customer_sku",
-  "total_item"
+  "total_item",
+  "packaging_tab",
+  "get_all_product",
+  "customer_packaging"
  ],
  "fields": [
   {
@@ -634,6 +637,22 @@
    "mandatory_depends_on": "eval:!doc.is_internal_customer",
    "options": "Company",
    "reqd": 1
+  },
+  {
+   "fieldname": "packaging_tab",
+   "fieldtype": "Tab Break",
+   "label": "Packaging"
+  },
+  {
+   "fieldname": "customer_packaging",
+   "fieldtype": "Table",
+   "label": "Customer Packaging",
+   "options": "Customer Packaging Detail"
+  },
+  {
+   "fieldname": "get_all_product",
+   "fieldtype": "Button",
+   "label": "Get all Product"
   }
  ],
  "icon": "fa fa-user",
@@ -647,7 +666,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2026-04-29 14:17:42.695442",
+ "modified": "2026-05-18 18:51:05.139227",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

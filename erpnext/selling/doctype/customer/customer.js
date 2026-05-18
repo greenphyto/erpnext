@@ -162,6 +162,39 @@ frappe.ui.form.on("Customer", {
 		var grid = cur_frm.get_field("sales_team").grid;
 		grid.set_column_disp("allocated_amount", false);
 		grid.set_column_disp("incentives", false);
+
+		frm.set_query("item_code", "customer_packaging", function() {
+			return {
+				filters: {
+					"item_group": "Products",
+					"disabled": 0
+				}
+			}
+		})
+		frm.set_query("package", "customer_packaging", function() {
+			return {
+				filters: {
+					"is_packaging": 1,
+					"enabled": 1
+				}
+			}
+		})
+		frm.set_query("carton_uom", "customer_packaging", function() {
+			return {
+				filters: {
+					"is_carton": 1,
+					"enabled": 1
+				}
+			}
+		})
+		frm.set_query("packaging", "customer_packaging", function() {
+			return {
+				filters: {
+					"material_group": "Other Packaging",
+					"disabled": 0
+				}
+			}
+		})
 	},
 	validate: function(frm) {
 		if(frm.doc.lead_name) frappe.model.clear_doc("Lead", frm.doc.lead_name);
