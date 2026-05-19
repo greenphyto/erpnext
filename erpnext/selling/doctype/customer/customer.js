@@ -189,14 +189,12 @@ frappe.ui.form.on("Customer", {
 		})
 
 		frm.set_query("package", "customer_packaging", function(doc, cdt, cdn) {
-			var row = locals[cdt][cdn];
-			if (!row.item_code) frappe.throw(__("Please select Item"));
-			var args =  erpnext.queries.uom({
-				"parent": row.item_code,
-				"is_packaging": 1
-			})
-
-			return args;
+			return {
+				filters: {
+					"is_packaging": 1,
+					"enabled": 1
+				}
+			}
 		});
 	},
 	validate: function(frm) {

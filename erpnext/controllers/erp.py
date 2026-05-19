@@ -1555,3 +1555,29 @@ def get_parent_copy_cost_center(parent_name, source_company, target_company):
 	print(f"Created parent Cost Center: {new_parent.name}")
 	
 	return new_parent.name
+
+def update_item_packaging_and_uom(doc, method=""):
+	# trigger from Customer save
+	# get detail on item selected in each customer.customer_packaging.item_code
+	# find unique customer.customer_packaging.package in tabel item.packaging.packaging
+	# if not have added it
+	# if deleted from customer, keep it if other customer have it, if not delete from item
+	# and save (ignore permission)
+	if not doc or doc.doctype != "Customer":
+		return
+
+	# Sync new packaging to item
+	for d in doc.get("customer_packaging") or []:
+		if d.item_code and d.package:
+			package_name = d.package.strip()
+			available_package = frappe.db.get_list("Packaging List Available", filters={"parent": d.item_code}, pluck="packaging")
+			if d.package not in available_package:
+				item_doc = frappe.get_doc("Item", d.item_code)
+				row = item_doc.append("packaging")
+				row.packaging = package_name
+				row.package_item = d.packaging
+				row.quantity = frappe.db.get_value("Packaging", package_name, "quantity") or 0
+				row.weight = frappe.db.get_value("Packaging", package_name, "total_weight") or 0
+				row.uom = frappe.db.get_value("Packaging", package_name, "uom")
+				item_doc.flags.ignore_permissions = True
+				item_doc.save()
