@@ -107,6 +107,24 @@ class PartNumberSettings(Document):
 		# self.validate_account_change()
 		self.update_item_name()
 		self.update_company_item()
+		self.validate_account_currency()
+
+	def validate_account_currency(self):
+		account_codes = {d.account_code for d in self.data_mapping if d.account_code}
+		if not account_codes:
+			return
+
+		account_currency_map = {
+			row.name: row.account_currency
+			for row in frappe.get_all(
+				"Account",
+				filters={"name": ["in", list(account_codes)]},
+				fields=["name", "account_currency"],
+			)
+		}
+
+		for d in self.data_mapping:
+			d.account_currency = account_currency_map.get(d.account_code)
 
 	def update_item_name(self):
 		if self.is_parent and self.data_mapping:
