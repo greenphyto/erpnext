@@ -314,6 +314,9 @@ doc_events = {
 		],
 		"after_insert": "erpnext.crm.utils.link_communications_with_prospect",
 	},
+	"Customer": {
+		"validate": "erpnext.controllers.erp.update_item_packaging_and_uom",
+	},
 	"Event": {
 		"after_insert": "erpnext.crm.utils.link_events_with_prospect",
 	},

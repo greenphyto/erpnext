@@ -1186,3 +1186,161 @@ def control_bypass_workflow(user, doc):
 		return True
 	else:
 		return False
+
+def copy_cost_center(source_company, target_company):
+	"""
+		- Get all cost centers from source company
+		- copy the name
+		- and use the abbreviation from target company
+	"""
+	source_abbr = frappe.get_value("Company", source_company, "abbr")
+	target_abbr = frappe.get_value("Company", target_company, "abbr")
+	
+	if not source_abbr or not target_abbr:
+		frappe.throw("Invalid company abbreviation")
+	
+	# Get all cost centers from source company, ordered by lft to maintain hierarchy
+	cost_centers = frappe.get_all("Cost Center", 
+		filters={"company": source_company},
+		fields=["name", "cost_center_name", "parent_cost_center", "is_group", "disabled"],
+		order_by="lft asc"
+	)
+	
+	# Map old cost center names to new ones
+	cost_center_map = {}
+	
+	for cc in cost_centers:
+		if cc.cost_center_name == source_company:
+			# skip root
+			continue
+
+		# Get the full doc to copy all fields
+		source_cc = frappe.get_doc("Cost Center", cc.name)
+		
+		cost_center_name = source_cc.cost_center_name
+		if source_abbr in cost_center_name:
+			cost_center_name = cost_center_name.replace(source_abbr, target_abbr)
+
+			name = frappe.db.exists("Cost Center", {"cost_center_name": cost_center_name})
+			if name:
+				cost_center_map[cc.name] = name
+				continue
+
+		# Create new cost center name with target abbreviation
+		if source_cc.cost_center_number:
+			new_name = f"{source_cc.cost_center_number} - {source_cc.cost_center_name} - {target_abbr}"
+		else: 
+			new_name = f"{source_cc.cost_center_name} - {target_abbr}"
+		
+		# Check if cost center already exists
+		if frappe.db.exists("Cost Center", new_name):
+			cost_center_map[cc.name] = new_name
+			continue
+
+		
+		# Create new cost center
+		new_cc = frappe.new_doc("Cost Center")
+		new_cc.cost_center_name = cost_center_name
+		new_cc.cost_center_number = source_cc.cost_center_number
+		new_cc.company = target_company
+		new_cc.is_group = source_cc.is_group
+		new_cc.disabled = source_cc.disabled
+		new_cc.parent_cost_center = get_parent_copy_cost_center(
+			source_cc.parent_cost_center, 
+			source_company, 
+			target_company
+		)
+		
+		# Handle parent cost center - use mapped parent if exists
+		if source_cc.parent_cost_center and source_cc.parent_cost_center in cost_center_map:
+			new_cc.parent_cost_center = cost_center_map[source_cc.parent_cost_center]
+		
+		new_cc.insert(ignore_permissions=True)
+		cost_center_map[cc.name] = new_cc.name
+		print(f"Created Cost Center: {new_cc.name}")
+	
+	return cost_center_map
+
+def get_parent_copy_cost_center(parent_name, source_company, target_company):
+	"""
+		- when we say parent cost center, we should make sure in target company have the same cost center with source company, if not we should create it first
+		- then we should return the new parent cost center name
+		- but if the parent = "{company} - {abbr}" which is the root, we should return the root target company version which is "{target_company} - {target_abbr}"
+		- recursively ensures all parent hierarchy (grandparent, great-grandparent, etc.) exists before creating
+	"""
+	if not parent_name:
+		return None
+	
+	source_abbr = frappe.get_value("Company", source_company, "abbr")
+	target_abbr = frappe.get_value("Company", target_company, "abbr")
+	
+	# Check if parent is the root (company itself)
+	if parent_name == f"{source_company} - {source_abbr}":
+		return f"{target_company} - {target_abbr}"
+	
+	# Get the parent cost center from source
+	source_parent = frappe.get_doc("Cost Center", parent_name)
+	
+	# Build the target parent name
+	target_parent_name = f"{source_parent.cost_center_name} - {target_abbr}"
+	
+	# Check if it already exists in target company
+	if frappe.db.exists("Cost Center", target_parent_name):
+		return target_parent_name
+
+	target_cost_center_name = source_parent.cost_center_name
+	if source_abbr in target_cost_center_name:
+		target_cost_center_name = target_cost_center_name.replace(source_abbr, target_abbr)
+
+	if frappe.db.exists("Cost Center", f"{target_cost_center_name} - {target_abbr}"):
+		return f"{target_cost_center_name} - {target_abbr}"
+	
+	# Before creating this cost center, ensure its parent exists first (recursive)
+	# This ensures the entire hierarchy from root down is created in order
+	grandparent_name = None
+	if source_parent.parent_cost_center:
+		grandparent_name = get_parent_copy_cost_center(
+			source_parent.parent_cost_center, 
+			source_company, 
+			target_company
+		)
+	
+	# Now create this cost center with the ensured parent
+	new_parent = frappe.new_doc("Cost Center")
+	new_parent.cost_center_number = source_parent.cost_center_number
+	new_parent.cost_center_name = target_cost_center_name
+	new_parent.company = target_company
+	new_parent.is_group = source_parent.is_group
+	new_parent.disabled = source_parent.disabled
+	new_parent.parent_cost_center = grandparent_name
+	
+	new_parent.insert(ignore_permissions=True)
+	print(f"Created parent Cost Center: {new_parent.name}")
+	
+	return new_parent.name
+
+def update_item_packaging_and_uom(doc, method=""):
+	# trigger from Customer save
+	# get detail on item selected in each customer.customer_packaging.item_code
+	# find unique customer.customer_packaging.package in tabel item.packaging.packaging
+	# if not have added it
+	# if deleted from customer, keep it if other customer have it, if not delete from item
+	# and save (ignore permission)
+	if not doc or doc.doctype != "Customer":
+		return
+
+	# Sync new packaging to item
+	for d in doc.get("customer_packaging") or []:
+		if d.item_code and d.package:
+			package_name = d.package.strip()
+			available_package = frappe.db.get_list("Packaging List Available", filters={"parent": d.item_code}, pluck="packaging")
+			if d.package not in available_package:
+				item_doc = frappe.get_doc("Item", d.item_code)
+				row = item_doc.append("packaging")
+				row.packaging = package_name
+				row.package_item = d.packaging
+				row.quantity = frappe.db.get_value("Packaging", package_name, "quantity") or 0
+				row.weight = frappe.db.get_value("Packaging", package_name, "total_weight") or 0
+				row.uom = frappe.db.get_value("Packaging", package_name, "uom")
+				item_doc.flags.ignore_permissions = True
+				item_doc.save()

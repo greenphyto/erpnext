@@ -304,6 +304,7 @@ class Item(Document):
 			else:
 				row = self.append("uoms")
 				row.uom = d.packaging
+				row.to_uom = self.stock_uom
 				row.conversion_factor = flt(d.weight)
 				row.is_packaging = 1
 				row.cf_view = flt(d.weight)
