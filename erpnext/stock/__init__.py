@@ -24,6 +24,7 @@ def get_warehouse_account_map(company=None):
 
 	if not warehouse_account_map or not company_warehouse_account_map or frappe.flags.in_test:
 		warehouse_account = frappe._dict()
+		account_currency_cache = {}  # Cache untuk account currencies
 
 		filters = {}
 		if company:
@@ -40,7 +41,10 @@ def get_warehouse_account_map(company=None):
 				d.account = get_warehouse_account(d, warehouse_account)
 
 			if d.account:
-				d.account_currency = frappe.db.get_value("Account", d.account, "account_currency", cache=True)
+				# Gunakan cache, jika belum ada fetch dan simpan ke cache
+				if d.account not in account_currency_cache:
+					account_currency_cache[d.account] = frappe.db.get_value("Account", d.account, "account_currency")
+				d.account_currency = account_currency_cache[d.account]
 				warehouse_account.setdefault(d.name, d)
 
 		# add part number settings account
@@ -57,7 +61,10 @@ def get_warehouse_account_map(company=None):
 			warehouse_account["WIP"]['account'] = frappe.get_value("Warehouse", warehouse_account["WIP"]['wip_warehouse'], "account")
 			warehouse_account["WIP"]['account_currency'] = ""
 			if warehouse_account["WIP"]['account']:
-				warehouse_account["WIP"]['account_currency'] = frappe.db.get_value("Account", warehouse_account["WIP"]['account'], "account_currency", cache=True)
+				# Gunakan cache untuk WIP account currency
+				if warehouse_account["WIP"]['account'] not in account_currency_cache:
+					account_currency_cache[warehouse_account["WIP"]['account']] = frappe.db.get_value("Account", warehouse_account["WIP"]['account'], "account_currency")
+				warehouse_account["WIP"]['account_currency'] = account_currency_cache[warehouse_account["WIP"]['account']]
 		
 		# add WIP based on operation 
 		wip_operations = frappe.db.get_all("Operation WIP Account", {
@@ -66,10 +73,14 @@ def get_warehouse_account_map(company=None):
 			"parentfield":"operation_wip_account"
 		}, ['operation', 'wip_account'])
 		for d in wip_operations:
-			warehouse_account["WIP"][d.operation] = {
-				"account": d.wip_account,
-				"account_currency": frappe.db.get_value("Account", d.wip_account, "account_currency", cache=True)
-			}
+			# Gunakan cache untuk operation WIP account currency
+			if d.wip_account:  # Null-safe check
+				if d.wip_account not in account_currency_cache:
+					account_currency_cache[d.wip_account] = frappe.db.get_value("Account", d.wip_account, "account_currency")
+				warehouse_account["WIP"][d.operation] = {
+					"account": d.wip_account,
+					"account_currency": account_currency_cache[d.wip_account]
+				}
 
 		if company:
 			frappe.flags.warehouse_account_map[company] = warehouse_account
@@ -80,16 +91,27 @@ def get_warehouse_account_map(company=None):
 
 def get_part_number_account_settings(company):
 	item_account = frappe._dict()
+	account_currency_cache = {}
 	doc = frappe.get_doc("Part Number Settings", company)
 	for d in doc.get("data_mapping"):
+		account_currency = None
+		if d.account_code:
+			if d.account_code not in account_currency_cache:
+				account_currency_cache[d.account_code] = frappe.db.get_value(
+					"Account", d.account_code, "account_currency"
+				)
+			account_currency = account_currency_cache[d.account_code]
+		if not account_currency:
+			account_currency = d.account_currency
+
 		item_account.setdefault(d.code, frappe._dict({
 			"account":d.account_code,
-			"account_currency":d.account_currency
+			"account_currency":account_currency
 		}))
 		if d.part_number not in item_account:
 			item_account.setdefault(d.part_number, frappe._dict({
 				"account":d.account_code,
-				"account_currency":d.account_currency
+				"account_currency":account_currency
 			}))
 	
 	return item_account

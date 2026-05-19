@@ -259,6 +259,7 @@ def collect_expired_product(date=""):
 		stock_entry.set_stock_entry_type()
 		stock_entry.request_no = "Expired Product"
 		expense_account = frappe.db.get_value("Company", company, "account_for_product_scrap")
+		cost_center = frappe.db.get_value("Company", company, "cost_center")
 
 		for d in data:
 			if d.company != company:
@@ -272,15 +273,36 @@ def collect_expired_product(date=""):
 			row.conversion_factor = 1
 			row.s_warehouse = d.get("warehouse")
 			row.expense_account = expense_account
+			row.cost_center = cost_center
 		
 		stock_entry.system_generated = 1
 		stock_entry.remarks = "Expired products (system)"
 		stock_entry.set_missing_values()
 		stock_entry.insert(ignore_permissions=1)
-		try:
-			stock_entry.submit()
-		except Exception as e:
-			frappe.log_error(frappe.get_traceback(), "Submit Stock Entry Failed for expired product")
+		stock_entry.submit()
+		# try:
+		# except Exception as e:
+		# 	frappe.log_error(frappe.get_traceback(), "Submit Stock Entry Failed for expired product")
+		# gl_entries = frappe.db.get_list(
+		# 	"GL Entry",
+		# 	filters={
+		# 		"voucher_type": "Stock Entry",
+		# 		"voucher_no": stock_entry.name
+		# 	},
+		# 	fields=[
+		# 		"name",
+		# 		"posting_date",
+		# 		"account",
+		# 		"debit",
+		# 		"credit",
+		# 		"voucher_type",
+		# 		"voucher_no",
+		# 		"remarks",
+		# 		"company",
+		# 		"cost_center"
+		# 	],
+		# 	order_by="posting_date asc, creation asc"
+		# )
 		result[company] = stock_entry.name
 
 	return result
