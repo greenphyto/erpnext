@@ -112,6 +112,7 @@ class Customer(TransactionBase):
 		self.set_code()
 		self.set_default_customer_address()
 		self.validate_sku()
+		self.validate_customer_packaging()
 
 		# set loyalty program tier
 		if frappe.db.exists("Customer", self.name):
@@ -400,7 +401,31 @@ class Customer(TransactionBase):
 			self.customer_primary_address = data['name']
 			self.primary_address = data['address']
 
+	def validate_customer_packaging(self):
+		seen = {}
+		error_list = []
 
+		for row in self.get("customer_packaging") or []:
+			item_code = cstr(row.item_code).strip()
+			package = cstr(row.package).strip()
+			key = (item_code, package)
+
+			if key not in seen:
+				seen[key] = row.idx
+				continue
+
+			error_list.append(
+				"<li>Row {0}, Item <b>{1}</b>, Package <b>{2}</b> (already used in Row {3})</li>".format(
+					row.idx,
+					frappe.bold(item_code or "-"),
+					frappe.bold(package or "-"),
+					seen[key],
+				)
+			)
+
+		if error_list:
+			error = "".join(error_list)
+			frappe.throw(_("<p>Found duplicate item and package combinations in Customer Packaging:</p><ol>{0}</ol>").format(error))
 
 def create_contact(contact, party_type, party, email):
 	"""Create contact based on given contact name"""
@@ -836,3 +861,33 @@ def has_permission(doc, user):
 
 	if doc.is_internal_customer:
 		return True
+
+
+@frappe.whitelist()
+def get_all_product(customer):
+	rows = frappe.db.sql("""
+		SELECT
+			item.name AS item_code,
+			item.item_name AS item_name,
+			item.default_packaging AS package,
+			pla.package_item AS packaging
+		FROM `tabItem` item
+		LEFT JOIN `tabPackaging List Available` pla
+			ON pla.packaging = item.default_packaging
+			AND pla.parent = item.name
+		WHERE
+			item.item_group = 'Products'
+			AND item.disabled = 0
+			AND item.material_group IN (
+				'Vegetables (Lettuce)',
+				'Vegetables (Asian Vegetables)',
+				'Herbs'
+			)
+		ORDER BY item.name
+	""", as_dict=True)
+	default_packaging = frappe.db.get_single_value("Manufacturing Settings", "default_packaging")
+	for d in rows:
+		if not d.packaging:
+			d.packaging = default_packaging
+
+	return rows

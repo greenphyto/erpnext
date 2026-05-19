@@ -92,6 +92,8 @@
   "customer_sku",
   "total_item",
   "packaging_tab",
+  "default_carton_size",
+  "update_carton_size",
   "get_all_product",
   "customer_packaging"
  ],
@@ -641,6 +643,7 @@
    "label": "Packaging"
   },
   {
+   "allow_bulk_edit": 1,
    "fieldname": "customer_packaging",
    "fieldtype": "Table",
    "label": "Customer Packaging",
@@ -650,6 +653,17 @@
    "fieldname": "get_all_product",
    "fieldtype": "Button",
    "label": "Get all Product"
+  },
+  {
+   "default": "12",
+   "fieldname": "default_carton_size",
+   "fieldtype": "Int",
+   "label": "Default Carton Size"
+  },
+  {
+   "fieldname": "update_carton_size",
+   "fieldtype": "Button",
+   "label": "Update Carton Size"
   }
  ],
  "icon": "fa fa-user",
@@ -663,7 +677,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2026-05-18 18:51:05.139227",
+ "modified": "2026-05-19 11:54:19.166886",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

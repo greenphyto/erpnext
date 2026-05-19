@@ -166,14 +166,6 @@ frappe.ui.form.on("Customer", {
 				}
 			}
 		})
-		frm.set_query("package", "customer_packaging", function() {
-			return {
-				filters: {
-					"is_packaging": 1,
-					"enabled": 1
-				}
-			}
-		})
 		frm.set_query("carton_uom", "customer_packaging", function() {
 			return {
 				filters: {
@@ -190,6 +182,17 @@ frappe.ui.form.on("Customer", {
 				}
 			}
 		})
+
+		frm.set_query("package", "customer_packaging", function(doc, cdt, cdn) {
+			var row = locals[cdt][cdn];
+			if (!row.item_code) frappe.throw(__("Please select Item"));
+			var args =  erpnext.queries.uom({
+				"parent": row.item_code,
+				"is_packaging": 1
+			})
+
+			return args;
+		});
 	},
 	validate: function(frm) {
 		if(frm.doc.lead_name) frappe.model.clear_doc("Lead", frm.doc.lead_name);
@@ -241,5 +244,221 @@ frappe.ui.form.on("Customer", {
 			primary_action_label: __('Create Link')
 		});
 		dialog.show();
+	},
+	get_all_product: function(frm) {
+		frappe.call({
+			method: 'erpnext.selling.doctype.customer.customer.get_all_product',
+			args: {
+				customer: frm.doc.name
+			},
+			callback: function(r) {
+				const rows = r.message || [];
+				const existing_rows = frm.doc.customer_packaging || [];
+				const row_key = d => `${d.item_code || ''}::${d.package || ''}`;
+
+				const existing_map = new Map();
+				existing_rows.forEach(row => {
+					const key = row_key(row);
+					if (!existing_map.has(key)) {
+						existing_map.set(key, []);
+					}
+					existing_map.get(key).push(row);
+				});
+
+				if (!rows.length) {
+					frappe.msgprint(__('No product rows found.'));
+					return;
+				}
+
+				const rows_html = rows.map((d, idx) => {
+					const key = row_key(d);
+					const is_existing = existing_map.has(key);
+					const item_code = frappe.utils.escape_html(d.item_code || '');
+					const item_name = frappe.utils.escape_html(d.item_name || '');
+					const package_name = frappe.utils.escape_html(d.package || '');
+					const packaging = frappe.utils.escape_html(d.packaging || '');
+					return `
+						<tr class="customer-packaging-row ${is_existing ? 'table-active' : ''}" data-index="${idx}" data-key="${frappe.utils.escape_html(key)}" style="cursor:pointer;">
+							<td class="text-center" style="width: 48px;">
+								<input type="checkbox" class="customer-packaging-row-check" ${is_existing ? 'checked' : ''}>
+							</td>
+							<td>${item_code}</td>
+							<td>${item_name}</td>
+							<td>${package_name}</td>
+							<td>${packaging}</td>
+						</tr>`;
+				}).join('');
+
+				const dialog = new frappe.ui.Dialog({
+					title: __('Select Products for Customer Packaging'),
+					fields: [
+						{
+							fieldname: 'items_html',
+							fieldtype: 'HTML'
+						}
+					],
+					size: "large",
+					primary_action_label: __('Save Selection'),
+					primary_action(values) {
+						const selected_keys = new Set();
+						dialog.$wrapper.find('.customer-packaging-row-check:checked').each(function() {
+							const key = $(this).closest('tr').attr('data-key');
+							if (key) {
+								selected_keys.add(key);
+							}
+						});
+
+						const rows_to_add = rows.filter(row => !existing_map.has(row_key(row)) && selected_keys.has(row_key(row)));
+						const rows_to_delete = existing_rows.filter(row => !selected_keys.has(row_key(row)));
+
+						rows_to_add.forEach(parsed => {
+							const child = frm.add_child('customer_packaging');
+							child.item_code = parsed.item_code;
+							child.item_name = parsed.item_name;
+							child.package = parsed.package;
+							child.packaging = parsed.packaging;
+							child.carton_uom = 'Carton';
+							child.carton_size = frm.doc.default_carton_size || 12;
+						});
+
+						if (rows_to_add.length) {
+							frm.refresh_field('customer_packaging');
+						}
+
+						if (!rows_to_delete.length) {
+							dialog.hide();
+							return;
+						}
+
+						dialog.hide();
+
+						const delete_list_html = rows_to_delete.map(row => {
+							const parts = [
+								frappe.utils.escape_html(row.item_code || ''),
+								frappe.utils.escape_html(row.item_name || ''),
+								frappe.utils.escape_html(row.package || ''),
+								frappe.utils.escape_html(row.packaging || '')
+							];
+							var deleted_text = `Item ${parts[0]} with Package ${parts[2]}`;
+							return `<li>${deleted_text}</li>`;
+						}).join('');
+
+						frappe.confirm(
+							`${__('The following rows will be deleted from table:')}<br><ul>${delete_list_html}</ul>`,
+							() => {
+								const delete_keys = new Set(rows_to_delete.map(row_key));
+								(frm.doc.customer_packaging || []).slice().forEach(row => {
+									if (delete_keys.has(row_key(row))) {
+										frappe.model.clear_doc(row.doctype, row.name);
+									}
+								});
+
+								frm.doc.customer_packaging = (frm.doc.customer_packaging || []).filter(row => !delete_keys.has(row_key(row)));
+								frm.refresh_field('customer_packaging');
+								dialog.hide();
+							}
+						);
+					}
+				});
+
+				const html = `
+					<div class="table-responsive">
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr>
+									<th style="width:20px;">${__('Select')}</th>
+									<th style="width:15%;">${__('Item Code')}</th>
+									<th style="width:30%;">${__('Item Name')}</th>
+									<th style="width:30%;">${__('Package')}</th>
+									<th style="width:16%;">${__('Packaging')}</th>
+								</tr>
+							</thead>
+							<tbody>
+								${rows_html}
+							</tbody>
+						</table>
+					</div>`;
+
+				const field = dialog.fields_dict.items_html;
+				field.$wrapper.html(html);
+
+				const sync_row_state = row => {
+					const checkbox = row.find('.customer-packaging-row-check');
+					row.toggleClass('table-active', checkbox.is(':checked'));
+				};
+
+				dialog.show();
+
+				dialog.$wrapper.on('click', '.customer-packaging-row', function(e) {
+					if ($(e.target).is('input, button, a, label')) {
+						return;
+					}
+					const row = $(this);
+					const checkbox = row.find('.customer-packaging-row-check');
+					checkbox.prop('checked', !checkbox.is(':checked'));
+					sync_row_state(row);
+				});
+
+				dialog.$wrapper.on('click', '.customer-packaging-row-check', function(e) {
+					e.stopPropagation();
+					const row = $(this).closest('tr');
+					sync_row_state(row);
+				});
+
+				dialog.$wrapper.find('.customer-packaging-row').each(function() {
+					sync_row_state($(this));
+				});
+
+			}
+		});
+	},
+	update_carton_size: function(frm) {
+		const rows = frm.doc.customer_packaging || [];
+		if (!rows.length) {
+			frappe.msgprint(__('No Customer Packaging rows to update.'));
+			return;
+		}
+
+		const new_carton_size = frm.doc.default_carton_size;
+		frappe.confirm(
+			__('Update carton size to <b>{0}</b> for {1} row(s)?', [new_carton_size, rows.length]),
+			() => {
+				rows.forEach(row => {
+					row.carton_size = new_carton_size;
+				});
+				frm.refresh_field('customer_packaging');
+			}
+		);
 	}
 });
+
+frappe.ui.form.on("Customer Packaging Detail", {
+	customer_packaging_add: function(frm, cdt, cdn) {	
+		frappe.model.set_value(cdt, cdn, "carton_uom", "Carton");
+		frappe.model.set_value(cdt, cdn, "carton_size", frm.doc.default_carton_size || 12);
+	},
+	item_code: function(frm, cdt, cdn) {
+		frm.cscript.validate_package_unique(frm, cdt, cdn);
+	},
+	package: function(frm, cdt, cdn) {
+		frm.cscript.validate_package_unique(frm, cdt, cdn);
+	},
+})
+
+$.extend(cur_frm.cscript, {
+	validate_package_unique: function(frm, cdt, cdn) {
+		const row = locals[cdt][cdn];
+		if (!row.item_code || !row.package) {
+			return;
+		}
+
+		const duplicate = (frm.doc.customer_packaging || []).find(d => {
+			return d.name !== row.name && d.item_code === row.item_code && d.package === row.package;
+		});
+
+		if (duplicate) {
+			frappe.msgprint(__('Item ${0} with package ${1} already added', [row.item_code, row.package]));
+			frappe.model.set_value(cdt, cdn, "package", null);
+		}
+	}
+})
