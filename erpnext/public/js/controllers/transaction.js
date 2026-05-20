@@ -1316,6 +1316,18 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		this.apply_pricing_rule(item, true);
 	}
 
+	sync_carton_qty_from_qty(doc, cdt, cdn) {
+		let item = frappe.get_doc(cdt, cdn);
+		if (!doc.is_carton_order || !cint(item.is_carton)) return;
+
+		let conversion = flt(item.carton_conversion);
+		if (!conversion) return;
+
+		item.carton_qty = Math.ceil(flt(item.qty) / conversion);
+
+		refresh_field("items");
+	}
+
 	calculate_stock_uom_rate(doc, cdt, cdn) {
 		let item = frappe.get_doc(cdt, cdn);
 		item.stock_uom_rate = flt(item.rate)/flt(item.conversion_factor);
