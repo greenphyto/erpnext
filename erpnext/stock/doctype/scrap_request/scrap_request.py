@@ -4,7 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from frappe.desk.reportview import get_filters_cond, get_match_cond
-from frappe.utils import getdate, add_days
+from frappe.utils import getdate, add_days, cint
 from erpnext.stock.doctype.batch.batch import get_batch_qty
 from erpnext.stock.get_item_details import get_conversion_factor
 from erpnext.controllers.foms import get_wip_warehouse
@@ -177,13 +177,14 @@ def collect_expired_items():
 	doc.save(ignore_permissions=1)
 	return doc.name
 
-def collect_expired_product(date=""):
-	enable = frappe.db.get_value("Stock Settings","Stock Settings", 'enable_auto_collect_expired_products') or 0
 
-	if not enable:
+def collect_expired_product(date=""):
+	enable, within_days = frappe.db.get_value("Stock Settings","Stock Settings", ['enable_auto_collect_expired_products', 'expiry_days_product']) or (0,0)
+
+	if not cint(enable):
 		return
 	
-	use_date = getdate(date)
+	use_date = add_days(getdate(date), cint(within_days))
 	wip_warehouse = get_wip_warehouse()
 
 	# get data
@@ -197,6 +198,7 @@ def collect_expired_product(date=""):
 					sle.warehouse,
 					SUM(sle.actual_qty) AS batch_qty,
 					b.expiry_date,
+					sle.company,
 					sle.stock_uom as uom
 			FROM
 				`tabStock Ledger Entry` sle
@@ -209,37 +211,70 @@ def collect_expired_product(date=""):
 					AND b.expiry_date <= %(exp)s
 					AND b.item_group = 'Products'
 			GROUP BY sle.batch_no , sle.warehouse
-			ORDER BY sle.modified ASC) a
+			ORDER BY sle.company, b.expiry_date ASC) a
 		WHERE
-			a.batch_qty != 0
-	""", {"wh":wip_warehouse, "exp":use_date}, as_dict=1)
+			a.batch_qty > 0
+	""", {"wh":wip_warehouse, "exp":use_date}, as_dict=1, debug=0)
 
 	if not data:
 		return
+	companys = list(set([d.company for d in data]))
+	result = {}
+	for company in companys:
+		switch_to_company_admin(company)
 
-	# create SE directly
-	stock_entry = frappe.new_doc("Stock Entry")
-	stock_entry.stock_entry_type_view = "Waste Materials"
-	stock_entry.purpose = "Material Issue"
-	stock_entry.set_stock_entry_type()
-	stock_entry.request_no = "Expired Product"
-	expense_account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
+		# create SE directly
+		stock_entry = frappe.new_doc("Stock Entry")
+		stock_entry.company = company
+		stock_entry.stock_entry_type_view = "Waste Materials"
+		stock_entry.purpose = "Material Issue"
+		stock_entry.set_stock_entry_type()
+		stock_entry.request_no = "Expired Product"
+		expense_account = frappe.db.get_value("Company", company, "account_for_product_scrap")
+		cost_center = frappe.db.get_value("Company", company, "cost_center")
 
-	for d in data:
-		row = stock_entry.append("items")
-		row.item_code = d.item
-		row.qty = d.batch_qty
-		row.uom = d.uom
-		row.batch_no = d.batch
-		row.is_scrap_item = 1
-		row.conversion_factor = 1
-		row.s_warehouse = d.get("warehouse")
-		row.expense_account = expense_account
-	
-	stock_entry.system_generated = 1
-	stock_entry.remarks = "Expired products (system)"
-	stock_entry.set_missing_values()
-	stock_entry.insert(ignore_permissions=1)
-	stock_entry.submit()
+		for d in data:
+			if d.company != company:
+				continue
+			row = stock_entry.append("items")
+			row.item_code = d.item
+			row.qty = d.batch_qty
+			row.uom = d.uom
+			row.batch_no = d.batch
+			row.is_scrap_item = 1
+			row.conversion_factor = 1
+			row.s_warehouse = d.get("warehouse")
+			row.expense_account = expense_account
+			row.cost_center = cost_center
+		
+		stock_entry.system_generated = 1
+		stock_entry.remarks = "Expired products (system)"
+		stock_entry.set_missing_values()
+		stock_entry.insert(ignore_permissions=1)
+		stock_entry.submit()
+		# try:
+		# except Exception as e:
+		# 	frappe.log_error(frappe.get_traceback(), "Submit Stock Entry Failed for expired product")
+		# gl_entries = frappe.db.get_list(
+		# 	"GL Entry",
+		# 	filters={
+		# 		"voucher_type": "Stock Entry",
+		# 		"voucher_no": stock_entry.name
+		# 	},
+		# 	fields=[
+		# 		"name",
+		# 		"posting_date",
+		# 		"account",
+		# 		"debit",
+		# 		"credit",
+		# 		"voucher_type",
+		# 		"voucher_no",
+		# 		"remarks",
+		# 		"company",
+		# 		"cost_center"
+		# 	],
+		# 	order_by="posting_date asc, creation asc"
+		# )
+		result[company] = stock_entry.name
 
-	return stock_entry.name
+	return result
