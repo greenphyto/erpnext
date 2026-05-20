@@ -1621,7 +1621,7 @@ def get_carton_detail(args):
 		SELECT
 			cpd.item_code,
 			cpd.package,
-			cpd.packaging,
+			cpd.packaging as packaging_item,
 			cpd.carton_uom as carton_uom,
 			cpd.carton_size as carton_conversion
 		FROM

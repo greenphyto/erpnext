@@ -76,7 +76,7 @@
     "depends_on": "eval:doc.is_carton",
     "fieldname": "carton_uom",
     "fieldtype": "Link",
-    "label": "UOM Carton",
+    "label": "Carton UOM",
     "options": "UOM"
   },
   {

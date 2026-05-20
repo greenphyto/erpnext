@@ -380,6 +380,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		this.validate_has_items();
 		this.change_item_preview();
 		this.change_package_display();
+		this.set_filter_on_refresh()
 	}
 
 	scan_barcode() {
@@ -2548,6 +2549,21 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 			}
 		});
 	}
+
+	set_filter_on_refresh(){
+		if (this.frm.fields_dict.items){
+			var table = this.frm.fields_dict.items;
+			if (table.grid.fields_map.packaging_item) {
+				this.frm.set_query("packaging_item", "items", function() {
+					return {
+						filters: {
+							material_group: "Other Packaging"
+						}
+					};
+				});
+			}
+		}
+	}
 	
 	is_carton_order (){
 		this.change_package_display();
@@ -2580,12 +2596,20 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		if (!carton_qty) return;
 		var carton_conversion = table.grid.fields_map.carton_conversion;
 		if (!carton_conversion) return;
+		var rate_field = table.grid.fields_map.rate;
+		if (!rate_field) return;
+		var packaging_item_field = table.grid.fields_map.packaging_item;
 
 		uom_field.in_list_view = 1;
 		uom_field.columns = 2;
+		rate_field.columns = 1;
 		carton_qty.in_list_view = 0;
 		carton_conversion.in_list_view = 0;
 		carton_uom.in_list_view = 0;
+		if (packaging_item_field) {
+			packaging_item_field.in_list_view = 0;
+		}
+
 		if (type_change==1){
 			// Package View
 			uom_field.label = "Package"
@@ -2596,7 +2620,11 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 			uom_field.in_list_view = 1;
 			carton_uom.in_list_view = 1;
 			carton_qty.in_list_view = 1;
+			rate_field.columns = 2;
 			carton_conversion.in_list_view = 1;
+			if (packaging_item_field) {
+				packaging_item_field.in_list_view = 1;
+			}
 		} else{
 			// UOM View
 			uom_field.label = "UOM"
@@ -2643,6 +2671,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 						item.is_carton = cint(me.frm.doc.is_carton_order);
 						item.carton_qty = conversion ? cint((flt(item.qty) / conversion)) || 1 : 0;
 						item.carton_conversion = conversion;
+						item.packaging_item = detail.packaging_item || "";
 						item.carton_uom = detail.carton_uom || "Carton";
 						me.frm.refresh_field("items");
 					}
@@ -2651,6 +2680,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 				item.is_carton = 1;
 				item.carton_qty = 1;
 				item.carton_conversion = 12;
+				item.packaging_item = "";
 				item.carton_uom = "Carton";
 				me.frm.refresh_field("items");
 			}
@@ -2658,6 +2688,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 			item.is_carton = 0;
 			item.carton_qty = 0;
 			item.carton_conversion = 0;
+			item.packaging_item = "";
 			item.carton_uom = "";
 			me.frm.refresh_field("items");
 		}
