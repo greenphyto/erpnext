@@ -1295,10 +1295,12 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 				callback: function(r) {
 					if(!r.exc) {
 						frappe.model.set_value(cdt, cdn, 'conversion_factor', r.message.conversion_factor);
+						me.get_carton_detail(doc, cdt, cdn);
 					}
 				}
 			});
 		}
+		me.get_carton_detail(doc, cdt, cdn);
 		me.calculate_stock_uom_rate(doc, cdt, cdn);
 	}
 
@@ -1363,8 +1365,20 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		let item = frappe.get_doc(cdt, cdn);
 		item.pricing_rules = ''
 		this.conversion_factor(doc, cdt, cdn, true);
+		this.sync_carton_qty_from_qty(doc, cdt, cdn);
 		this.calculate_stock_uom_rate(doc, cdt, cdn);
 		this.apply_pricing_rule(item, true);
+	}
+
+	sync_carton_qty_from_qty(doc, cdt, cdn) {
+		let item = frappe.get_doc(cdt, cdn);
+		if (!doc.is_carton_order || !cint(item.is_carton)) return;
+
+		let conversion = flt(item.carton_conversion);
+		if (!conversion) return;
+
+		item.carton_qty = flt(item.qty) / conversion;
+		refresh_field("items");
 	}
 
 	calculate_stock_uom_rate(doc, cdt, cdn) {
@@ -2537,6 +2551,9 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 	
 	is_carton_order (){
 		this.change_package_display();
+		(this.frm.doc.items || []).forEach((row) => {
+			this.get_carton_detail(this.frm.doc, row.doctype, row.name);
+		});
 	}
 
 	change_package_display(){
@@ -2557,22 +2574,93 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		if (!table) return;
 		var uom_field = table.grid.fields_map.uom;
 		if (!uom_field) return;
-		var carton_field = table.grid.fields_map.uom_carton;
-		if (!carton_field) return;
+		var carton_uom = table.grid.fields_map.uom_carton || table.grid.fields_map.carton_uom;
+		if (!carton_uom) return;
+		var carton_qty = table.grid.fields_map.carton_qty;
+		if (!carton_qty) return;
+		var carton_conversion = table.grid.fields_map.carton_conversion;
+		if (!carton_conversion) return;
 
 		uom_field.in_list_view = 1;
-		carton_field.in_list_view = 0;
+		uom_field.columns = 2;
+		carton_qty.in_list_view = 0;
+		carton_conversion.in_list_view = 0;
+		carton_uom.in_list_view = 0;
 		if (type_change==1){
+			// Package View
 			uom_field.label = "Package"
 		} else if (type_change==2){
+			// Carton View
 			uom_field.label = "Package"
-			uom_field.in_list_view = 0;
-			carton_field.in_list_view = 1;
+			uom_field.columns = 3;
+			uom_field.in_list_view = 1;
+			carton_uom.in_list_view = 1;
+			carton_qty.in_list_view = 1;
+			carton_conversion.in_list_view = 1;
 		} else{
+			// UOM View
 			uom_field.label = "UOM"
 		}
 
 		table.grid.reset_grid();
+	}
+
+	
+	carton_qty(doc, cdt, cdn) {
+		this.calculate_carton_and_pack(doc, cdt, cdn);
+	}
+
+	carton_conversion(doc, cdt, cdn) {
+		this.calculate_carton_and_pack(doc, cdt, cdn);
+	}
+
+	calculate_carton_and_pack(doc, cdt, cdn) {
+		let item = frappe.get_doc(cdt, cdn);
+		var qty = flt(item.carton_qty) * flt(item.carton_conversion);
+		frappe.model.set_value(item.doctype, item.name, "qty", qty);
+	}
+
+	get_carton_detail(doc, cdt, cdn) {
+		var me = this;
+		// trigger from item_code, is_carton_order, uom, customer
+		var item = frappe.get_doc(cdt, cdn);
+		if (me.frm.doc.is_carton_order){
+			if (item.item_code && item.uom && (me.frm.doc.customer || me.frm.doc.party_name)) {
+				frappe.call({
+					method: "erpnext.stock.get_item_details.get_carton_detail",
+					args: {
+						args: {
+							customer: me.frm.doc.customer || me.frm.doc.party_name,
+							item_code: item.item_code,
+							uom: item.uom
+						}
+					},
+					callback: (r) => {
+						if (r.exc) return;
+
+						let detail = r.message || {};
+						let conversion = flt(detail.carton_conversion);
+						item.is_carton = cint(me.frm.doc.is_carton_order);
+						item.carton_qty = conversion ? cint((flt(item.qty) / conversion)) || 1 : 0;
+						item.carton_conversion = conversion;
+						item.carton_uom = detail.carton_uom || "Carton";
+						me.frm.refresh_field("items");
+					}
+				});
+			} else {
+				item.is_carton = 1;
+				item.carton_qty = 1;
+				item.carton_conversion = 12;
+				item.carton_uom = "Carton";
+				me.frm.refresh_field("items");
+			}
+		}else{
+			item.is_carton = 0;
+			item.carton_qty = 0;
+			item.carton_conversion = 0;
+			item.carton_uom = "";
+			me.frm.refresh_field("items");
+		}
 	}
 
 	confirm_reset_item(field_reff){
