@@ -314,9 +314,6 @@ doc_events = {
 		],
 		"after_insert": "erpnext.crm.utils.link_communications_with_prospect",
 	},
-	"Customer": {
-		"validate": "erpnext.controllers.erp.update_item_packaging_and_uom",
-	},
 	"Event": {
 		"after_insert": "erpnext.crm.utils.link_events_with_prospect",
 	},
@@ -397,7 +394,10 @@ doc_events = {
         "after_delete":"erpnext.controllers.foms.sync_log",
 	},
     "Customer":{
-        "on_update":"erpnext.controllers.foms.sync_log",
+        "on_update":[
+			"erpnext.controllers.foms.sync_log",
+			"erpnext.controllers.erp.update_item_packaging_and_uom",
+		],
         "after_delete":"erpnext.controllers.foms.sync_log",
 	},
     "Warehouse":{
