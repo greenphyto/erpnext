@@ -1554,7 +1554,7 @@
   },
   {
    "default": "0",
-   "depends_on": "eval:doc.non_stock_item == 0 && doc.non_package_item == 0",
+   "depends_on": "eval:cint(doc.non_stock_item) == 0 && doc.non_package_item == 0",
    "fieldname": "is_carton_order",
    "fieldtype": "Check",
    "label": "Is Carton Order"
@@ -1743,7 +1743,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-18 16:13:22.000000",
+ "modified": "2026-05-20 16:28:29.563449",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
