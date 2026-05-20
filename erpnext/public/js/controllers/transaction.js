@@ -1378,7 +1378,8 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		let conversion = flt(item.carton_conversion);
 		if (!conversion) return;
 
-		item.carton_qty = flt(item.qty) / conversion;
+		item.carton_qty = Math.ceil(flt(item.qty) / conversion);
+
 		refresh_field("items");
 	}
 

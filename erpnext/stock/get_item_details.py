@@ -2,7 +2,7 @@
 # License: GNU General Public License v3. See license.txt
 
 
-import json
+import json, math
 
 import frappe
 from frappe import _, throw
@@ -76,6 +76,7 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 
 	set_doc_transaction_type(args, doc)
 
+	args.non_package_item = doc.get("non_package_item") if doc else None
 	out = get_basic_details(args, item, overwrite_warehouse)
 	get_item_tax_template(args, item, out)
 	out["item_tax_rate"] = get_item_tax_map(
@@ -366,6 +367,9 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 			args.uom = item.purchase_uom if item.purchase_uom else item.stock_uom
 		else:
 			args.uom = item.stock_uom
+
+	if args.get("doctype") in sales_doctypes and args.get("non_package_item")==0:
+		args.uom = item.default_packaging
 
 	# Set stock UOM in args, so that it can be used while fetching item price
 	args.stock_uom = item.stock_uom
@@ -1635,4 +1639,8 @@ def get_carton_detail(args):
 			and cpd.item_code = %(item_code)s
 			and cpd.package = %(package)s
 	""", {"customer": args.customer, "item_code": args.item_code, "package": args.uom}, as_dict=1)
-	return temp[0] if temp else {}
+	res =  temp[0] if temp else {}
+	res.is_carton = 1
+	res.carton_qty = math.ceil(flt(args.qty) / flt(res.carton_conversion)) if res.carton_conversion else 0
+
+	return res
