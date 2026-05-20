@@ -203,6 +203,25 @@
    "label": "Is Carton"
   },
   {
+    "columns": 2,
+    "fieldname": "carton_qty",
+    "fieldtype": "Int",
+    "label": "Carton Qty"
+  },
+  {
+    "columns": 2,
+    "fieldname": "carton_conversion",
+    "fieldtype": "Int",
+    "label": "Carton Conversion"
+  },
+  {
+    "depends_on": "eval:doc.is_carton",
+    "fieldname": "carton_uom",
+    "fieldtype": "Link",
+    "label": "Carton UOM",
+    "options": "UOM"
+  },
+  {
    "fieldname": "conversion_factor",
    "precision": "7",
    "fieldtype": "Float",

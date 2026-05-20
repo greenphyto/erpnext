@@ -24,13 +24,16 @@
   "image_section",
   "image",
   "image_view",
+  "carton_section",
+  "is_carton",
+  "carton_qty",
+  "carton_conversion",
+  "carton_uom",
   "quantity_and_rate",
   "qty",
   "stock_uom",
   "col_break2",
   "uom",
-  "uom_carton",
-  "is_carton",
   "conversion_factor",
   "stock_qty",
   "section_break_17",
@@ -231,6 +234,25 @@
    "fieldname": "is_carton",
    "fieldtype": "Data",
    "label": "Is Carton"
+  },
+  {
+    "columns": 2,
+    "fieldname": "carton_qty",
+    "fieldtype": "Int",
+    "label": "Carton Qty"
+  },
+  {
+    "columns": 2,
+    "fieldname": "carton_conversion",
+    "fieldtype": "Int",
+    "label": "Carton Conversion"
+  },
+  {
+    "depends_on": "eval:doc.is_carton",
+    "fieldname": "carton_uom",
+    "fieldtype": "Link",
+    "label": "Carton UOM",
+    "options": "UOM"
   },
   {
    "depends_on": "eval:doc.uom != doc.stock_uom",

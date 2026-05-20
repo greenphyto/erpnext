@@ -1589,3 +1589,28 @@ def get_reserved_qty_for_so(sales_order, item_code):
 		return reserved_qty[0][0]
 	else:
 		return 0
+
+@frappe.whitelist()
+def get_carton_detail(args):
+	if isinstance(args, string_types):
+		args = frappe._dict(json.loads(args))
+
+	temp =  frappe.db.sql("""
+		SELECT
+			cpd.item_code,
+			cpd.package,
+			cpd.packaging as packaging_item,
+			cpd.carton_uom as carton_uom,
+			cpd.carton_size as carton_conversion
+		FROM
+			`tabCustomer Packaging Detail` cpd
+		LEFT JOIN
+			`tabCustomer` c
+		ON
+			cpd.parent = c.name
+		WHERE
+			c.name = %(customer)s
+			and cpd.item_code = %(item_code)s
+			and cpd.package = %(package)s
+	""", {"customer": args.customer, "item_code": args.item_code, "package": args.uom}, as_dict=1)
+	return temp[0] if temp else {}
