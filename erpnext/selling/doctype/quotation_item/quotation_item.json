@@ -199,7 +199,7 @@
   },
   {
    "fieldname": "is_carton",
-   "fieldtype": "Data",
+   "fieldtype": "Check",
    "label": "Is Carton"
   },
   {
