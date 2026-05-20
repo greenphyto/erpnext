@@ -454,7 +454,6 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 				erpnext.utils.make_subscription(doc.doctype, doc.name)
 			}, __('Create'))
 		}
-		me.frm.cscript.change_package_display();
 		me.frm.cscript.show_billed_amt();
 
 		me.frm.set_query("item_code", "items", function(doc, cdt, cdn) {
@@ -468,23 +467,6 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 		})
 	}
 
-	non_package_item(){
-		var me = this;
-		me.frm.cscript.confirm_reset_item("non_package_item").then(r=>{
-			if (r){
-				me.frm.cscript.change_package_display();
-			}
-		});
-	}
-
-	change_package_display(){
-		if (!this.frm.doc.non_package_item){
-			this.frm.cscript.change_package_label(1);
-		}else{
-			this.frm.cscript.change_package_label(0);
-		}
-	}
-	
 	show_billed_amt(){
 		const item_table = "items";
 		var change = cint(this.frm.doc.is_return)==1;
