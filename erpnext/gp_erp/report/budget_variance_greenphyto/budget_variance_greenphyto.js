@@ -88,6 +88,9 @@ erpnext.financial_statements = {
 };
 
 function get_filters() {
+	const month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+	const current_month = month_names[new Date().getMonth()];
+
 	let filters = [
 		{
 			"fieldname":"company",
@@ -111,6 +114,8 @@ function get_filters() {
 			"fieldtype": "Select",
 			"reqd": 0,
 			"options": "\nJanuary\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember",
+			"default":"January",
+			"reqd": 1
 		},
 		{
 			"fieldname":"to_month",
@@ -118,6 +123,8 @@ function get_filters() {
 			"fieldtype": "Select",
 			"reqd": 0,
 			"options": "\nJanuary\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember",
+			"default": current_month,
+			"reqd": 1
 		},
 		{
 			"fieldname": "periodicity",

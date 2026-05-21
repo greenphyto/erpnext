@@ -188,7 +188,6 @@ def get_report_column(filters, period_list):
 		if fieldname == "total":
 			continue
 		else:
-			print(fieldname) 
 			if filters.periodicity == "Yearly":
 				if fieldname in ['account', 'acc_code', 'currency']:
 					columns.append(col)
@@ -700,6 +699,28 @@ def add_budget_to_rows(rows, budget_map, period_list, filters):
 	"""
 	from frappe.utils import getdate, add_months, flt
 	
+	def get_selected_month_range(filters):
+		start_month = 1
+		end_month = 12
+
+		try:
+			if filters.get("month"):
+				start_month = list(calendar.month_name).index(filters.get("month"))
+			if filters.get("to_month"):
+				end_month = list(calendar.month_name).index(filters.get("to_month"))
+		except Exception:
+			start_month = 1
+			end_month = 12
+
+		if not start_month:
+			start_month = 1
+		if not end_month:
+			end_month = 12
+
+		return start_month, end_month
+
+	selected_start_month, selected_end_month = get_selected_month_range(filters)
+
 	# First pass: Add budget to leaf accounts (non-group, non-total)
 	for row in rows:
 		# Skip total rows (they'll be calculated later)
@@ -718,6 +739,7 @@ def add_budget_to_rows(rows, budget_map, period_list, filters):
 			continue
 		
 		# Add budget for each period
+		running_budget = 0
 		for period in period_list:
 			period_from_date = getdate(period.from_date) if period.from_date else None
 			period_to_date = getdate(period.to_date) if period.to_date else None
@@ -732,35 +754,24 @@ def add_budget_to_rows(rows, budget_map, period_list, filters):
 			budget_value = 0
 			
 			if filters.periodicity == "Yearly":
-				# For yearly budget, sum all 12 months from budget_map
-				# budget_map is now always monthly: account -> month_number -> budget_amount
+				# For yearly budget, sum only selected filter range (month..to_month)
 				if account in budget_map:
-					for month_num in range(1, 13):
+					if selected_start_month <= selected_end_month:
+						month_range = range(selected_start_month, selected_end_month + 1)
+					else:
+						# Handle wrapped range (e.g. Dec -> Feb)
+						month_range = list(range(selected_start_month, 13)) + list(range(1, selected_end_month + 1))
+
+					for month_num in month_range:
 						budget_value += flt(budget_map.get(account, {}).get(month_num, 0))
 			else:
 				# Monthly budget
 				if account in budget_map and period_to_date:
 					if filters.accumulated_values:
-						# Accumulated mode: Calculate YTD
-						fiscal_year_start = getdate(period.year_start_date) if period.year_start_date else None
-						
-						if fiscal_year_start:
-							ytd_budget = 0
-							current_month_date = fiscal_year_start
-							
-							# Iterate month by month from fiscal year start to period end
-							month_num = current_month_date.month
-							ytd_budget += budget_map.get(account, {}).get(month_num, 0)
-							
-							# Move to next month
-							current_month_date = add_months(current_month_date, 1)
-							
-							# Safety check
-							if current_month_date.year > period_to_date.year or \
-								(current_month_date.year == period_to_date.year and current_month_date.month > period_to_date.month):
-								break
-							
-							budget_value = ytd_budget
+						# Accumulated mode: running total only within selected filter range
+						month_num = period_to_date.month
+						running_budget += budget_map.get(account, {}).get(month_num, 0)
+						budget_value = running_budget
 					else:
 						# Non-accumulated mode: Show budget for this month only
 						month_num = period_to_date.month
