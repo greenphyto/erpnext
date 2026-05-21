@@ -199,7 +199,7 @@
    "fieldname": "qty",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "Quantity",
+   "label": "Qty",
    "oldfieldname": "qty",
    "oldfieldtype": "Currency"
   },
@@ -225,33 +225,34 @@
    "reqd": 1
   },
   {
-    "fieldname": "carton_section",
-    "fieldtype": "Section Break",
-    "label": "Carton"
+   "fieldname": "carton_section",
+   "fieldtype": "Section Break",
+   "label": "Carton"
   },
   {
+   "default": "0",
    "fieldname": "is_carton",
    "fieldtype": "Check",
    "label": "Is Carton"
   },
   {
-    "columns": 2,
-    "fieldname": "carton_qty",
-    "fieldtype": "Int",
-    "label": "Carton Qty"
+   "columns": 2,
+   "fieldname": "carton_qty",
+   "fieldtype": "Int",
+   "label": "Carton Qty"
   },
   {
-    "columns": 2,
-    "fieldname": "carton_conversion",
-    "fieldtype": "Int",
-    "label": "Carton Conversion"
+   "columns": 2,
+   "fieldname": "carton_conversion",
+   "fieldtype": "Int",
+   "label": "Carton Conversion"
   },
   {
-    "depends_on": "eval:doc.is_carton",
-    "fieldname": "carton_uom",
-    "fieldtype": "Link",
-    "label": "Carton UOM",
-    "options": "UOM"
+   "depends_on": "eval:doc.is_carton",
+   "fieldname": "carton_uom",
+   "fieldtype": "Link",
+   "label": "Carton UOM",
+   "options": "UOM"
   },
   {
    "depends_on": "eval:doc.uom != doc.stock_uom",
@@ -518,7 +519,7 @@
    "print_hide": 1
   },
   {
-   "columns": 1,
+   "columns": 2,
    "default": ":Company",
    "fieldname": "cost_center",
    "fieldtype": "Link",
@@ -622,7 +623,6 @@
   {
    "fieldname": "warehouse",
    "fieldtype": "Link",
-   "in_list_view": 1,
    "label": "Warehouse",
    "oldfieldname": "warehouse",
    "oldfieldtype": "Link",
@@ -670,7 +670,6 @@
   {
    "fieldname": "serial_no",
    "fieldtype": "Small Text",
-   "in_list_view": 1,
    "label": "Serial No",
    "oldfieldname": "serial_no",
    "oldfieldtype": "Small Text"
@@ -991,7 +990,7 @@
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-05-19 16:20:00.000000",
+ "modified": "2026-05-21 23:11:51.230048",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice Item",
