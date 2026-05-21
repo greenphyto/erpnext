@@ -24,12 +24,17 @@ jobs:
         command_timeout: 30m
         script_stop: true
         script: |
+          ERPNEXT_VERSION=gpprod.v14.3.1
+          PAYMENTS_BRANCH=version-14
+
           cd greenphyto_docker/frappe_docker/
           docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto.yaml down
           docker ps
           docker builder prune -a -f
           docker image prune -a -f
-          docker buildx bake --load
+          docker buildx bake --load \
+            --set "*.args.ERPNEXT_VERSION=${ERPNEXT_VERSION}" \
+            --set "*.args.PAYMENTS_BRANCH=${PAYMENTS_BRANCH}"
           docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto.yaml up -d
           docker ps
           echo 'finished deployment'
