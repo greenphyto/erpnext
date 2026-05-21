@@ -33,11 +33,10 @@ jobs:
           docker ps
           docker builder prune -a -f
           docker image prune -a -f
-          docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto.yaml build \
+          ERPNEXT_VERSION=${ERPNEXT_VERSION} PAYMENTS_VERSION=${PAYMENTS_VERSION} PAYMENTS_REPO=${PAYMENTS_REPO} \
+          docker compose --project-name erpnext-greenphyto build \
             --pull \
-            --build-arg ERPNEXT_VERSION=${ERPNEXT_VERSION} \
-            --build-arg PAYMENTS_VERSION=${PAYMENTS_VERSION} \
-            --build-arg PAYMENTS_REPO=${PAYMENTS_REPO}
+            --no-cache
           docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto.yaml up -d
           docker ps
           echo 'finished deployment'
