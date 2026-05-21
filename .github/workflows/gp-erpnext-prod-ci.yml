@@ -25,8 +25,8 @@ jobs:
         script_stop: true
         script: |
           ERPNEXT_VERSION=gpprod.v14.3.1
-          PAYMENTS_VERSION=version-14
-          PAYMENTS_REPO=https://github.com/frappe/payments
+          PAYMENTS_VERSION=gp-version-14
+          PAYMENTS_REPO=https://github.com/greenphyto/payments
 
           cd greenphyto_docker/frappe_docker/
           docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto.yaml down
