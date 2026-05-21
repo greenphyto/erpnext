@@ -26,15 +26,18 @@ jobs:
         script: |
           ERPNEXT_VERSION=gpprod.v14.3.1
           PAYMENTS_VERSION=version-14
+          PAYMENTS_REPO=https://github.com/frappe/payments
 
           cd greenphyto_docker/frappe_docker/
           docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto.yaml down
           docker ps
           docker builder prune -a -f
           docker image prune -a -f
-          docker buildx bake --load \
-            --set "*.args.ERPNEXT_VERSION=${ERPNEXT_VERSION}" \
-            --set "*.args.PAYMENTS_VERSION=${PAYMENTS_VERSION}"
+          docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto.yaml build \
+            --pull \
+            --build-arg ERPNEXT_VERSION=${ERPNEXT_VERSION} \
+            --build-arg PAYMENTS_VERSION=${PAYMENTS_VERSION} \
+            --build-arg PAYMENTS_REPO=${PAYMENTS_REPO}
           docker compose --project-name erpnext-greenphyto -f ~/gitops/erpnext-greenphyto.yaml up -d
           docker ps
           echo 'finished deployment'
