@@ -3,6 +3,7 @@
 
 
 import frappe
+import calendar
 import re
 import json
 from urllib.parse import quote
@@ -12,7 +13,7 @@ try:
 except Exception:
 	openpyxl = None
 from frappe import _
-from frappe.utils import flt, now_datetime, get_datetime, now, cint
+from frappe.utils import flt, now_datetime, get_datetime, now, cint, get_first_day, get_last_day, getdate
 
 from erpnext.accounts.report.financial_statements import (
 	get_columns,
@@ -25,7 +26,7 @@ from erpnext.accounts.report.utils import convert_wrap_report_data
 
 
 def execute(filters=None):
-	filters = frappe._dict(filters)
+	filters = control_filters(filters)
 	period_list = get_period_list(
 		filters.from_fiscal_year,
 		filters.to_fiscal_year,
@@ -128,6 +129,16 @@ def execute(filters=None):
 
 	return columns, new_data, None, chart, report_summary
 
+def control_filters(filters):
+	start_date = getdate("{}-{}-01".format(filters.year, filters.month))
+	end_date = getdate("{}-{}-01".format(filters.year, filters.to_month))
+	filters = frappe._dict(filters)
+	filters.from_fiscal_year = filters.year
+	filters.to_fiscal_year = filters.year
+	filters.period_start_date = get_first_day(start_date)
+	filters.period_end_date = get_last_day(end_date)
+	return filters
+
 def get_budget_account(cost_center=None, company=None):
 	"""
 	Get unique accounts from Budget Account that match the cost center and company filters.
@@ -173,18 +184,40 @@ def get_report_column(filters, period_list):
 	# skip total column bcs use total actual
 	columns = []
 	for col in temp_columns:
-		if col.get("fieldname", "") == "total":
+		fieldname = col.get("fieldname", "")
+		if fieldname == "total":
 			continue
 		else:
-			columns.append(col)
+			print(fieldname) 
+			if filters.periodicity == "Yearly":
+				if fieldname in ['account', 'acc_code', 'currency']:
+					columns.append(col)
+			else:
+				columns.append(col)
+
 
 	# Total Actual column
+	# Convert full month names to abbreviated names (e.g., 'January' -> 'Jan')
+	def month_abbr(month_name):
+		if not month_name:
+			return ""
+		try:
+			month_num = list(calendar.month_name).index(month_name)
+			if month_num == 0:
+				return month_name[:3]
+			return calendar.month_abbr[month_num]
+		except Exception:
+			return month_name[:3]
+
+	from_month_abbr = month_abbr(getattr(filters, 'month', None))
+	to_month_abbr = month_abbr(getattr(filters, 'to_month', None))
+	period_word = f"{from_month_abbr} - {to_month_abbr} {getattr(filters, 'year', '')}"
 	columns.append({
 		"fieldname": "total_actual",
-		"label": _("Total Actual"),
+		"label": _(period_word+ " (Actual)"),
 		"fieldtype": "Currency",
 		"options": "currency",
-		"width": 150,
+		"width": 200,
 		"align": "right",
 	})
 
@@ -201,29 +234,29 @@ def get_report_column(filters, period_list):
 	# Budget YTD column
 	columns.append({
 		"fieldname": "budget_ytd",
-		"label": _("Total Budget"),
+		"label": _(period_word+ " (Budget)"),
 		"fieldtype": "Currency",
 		"options": "currency",
-		"width": 150,
+		"width": 200,
 		"align": "right",
 	})
 	
 	# Variance $ column
 	columns.append({
 		"fieldname": "variance_amount",
-		"label": _("Variance $"),
+		"label": _(period_word+ " (Variance $)"),
 		"fieldtype": "Currency",
 		"options": "currency",
-		"width": 150,
+		"width": 200,
 		"align": "right",
 	})
 	
 	# Variance % column
 	columns.append({
 		"fieldname": "variance_percent",
-		"label": _("Variance %"),
+		"label": _(period_word+ " (Variance %)"),
 		"fieldtype": "Percent",
-		"width": 150,
+		"width": 210,
 		"align": "right",
 	})
 
