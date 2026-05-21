@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "company",
+  "proposed_customer",
   "department",
   "foms_id",
   "column_break_3",
@@ -160,12 +161,18 @@
    "no_amend_copy": 1,
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "proposed_customer",
+   "fieldtype": "Link",
+   "label": "Proposed Customer",
+   "options": "Customer"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-03 16:10:59.870317",
+ "modified": "2026-05-18 17:37:28.312077",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request",

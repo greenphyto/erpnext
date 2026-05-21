@@ -2,7 +2,7 @@
 # License: GNU General Public License v3. See license.txt
 
 
-import json
+import json, math
 
 import frappe
 from frappe import _, throw
@@ -24,6 +24,7 @@ from erpnext.stock.doctype.item.item import get_item_defaults, get_uom_conv_fact
 from erpnext.stock.doctype.item_manufacturer.item_manufacturer import get_item_manufacturer_part_no
 from erpnext.stock.doctype.price_list.price_list import get_price_list_details
 from erpnext.accounts.utils import get_company_default, get_cost_center_from_account
+from six import string_types
 
 sales_doctypes = ["Quotation", "Sales Order", "Delivery Note", "Sales Invoice", "POS Invoice"]
 purchase_doctypes = [
@@ -58,6 +59,7 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 	        "set_warehouse": ""
 	}
 	"""
+	print(args)
 	args = process_args(args)
 	for_validate = process_string_args(for_validate)
 	overwrite_warehouse = process_string_args(overwrite_warehouse)
@@ -74,6 +76,7 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 
 	set_doc_transaction_type(args, doc)
 
+	args.non_package_item = doc.get("non_package_item") if doc else None
 	out = get_basic_details(args, item, overwrite_warehouse)
 	get_item_tax_template(args, item, out)
 	out["item_tax_rate"] = get_item_tax_map(
@@ -147,6 +150,9 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 						if d.get(k):
 							out[k] = d.get(k)
 	
+	if doc.get("is_carton_order"):
+		out.update(get_carton_detail(args))
+
 	return out
 
 def set_doc_transaction_type(args, doc):
@@ -361,6 +367,9 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 			args.uom = item.purchase_uom if item.purchase_uom else item.stock_uom
 		else:
 			args.uom = item.stock_uom
+
+	if args.get("doctype") in sales_doctypes and args.get("non_package_item")==0:
+		args.uom = item.default_packaging
 
 	# Set stock UOM in args, so that it can be used while fetching item price
 	args.stock_uom = item.stock_uom
@@ -1606,3 +1615,32 @@ def get_reserved_qty_for_so(sales_order, item_code):
 		return reserved_qty[0][0]
 	else:
 		return 0
+
+@frappe.whitelist()
+def get_carton_detail(args):
+	if isinstance(args, string_types):
+		args = frappe._dict(json.loads(args))
+
+	temp =  frappe.db.sql("""
+		SELECT
+			cpd.item_code,
+			cpd.package,
+			cpd.packaging as packaging_item,
+			cpd.carton_uom as carton_uom,
+			cpd.carton_size as carton_conversion
+		FROM
+			`tabCustomer Packaging Detail` cpd
+		LEFT JOIN
+			`tabCustomer` c
+		ON
+			cpd.parent = c.name
+		WHERE
+			c.name = %(customer)s
+			and cpd.item_code = %(item_code)s
+			and cpd.package = %(package)s
+	""", {"customer": args.customer, "item_code": args.item_code, "package": args.uom}, as_dict=1)
+	res =  temp[0] if temp else {}
+	res.is_carton = 1
+	res.carton_qty = math.ceil(flt(args.qty) / flt(res.carton_conversion)) if res.carton_conversion else 0
+
+	return res

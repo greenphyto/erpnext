@@ -371,6 +371,15 @@ def uom(doctype, txt, searchfield, start, page_len, filters):
 	doctype = "UOM Conversion Detail"
 	conditions = []
 
+	# When is_packaging=1, also include is_carton rows (packaging OR carton)
+	packaging_cond = ""
+	if filters and filters.get("is_packaging"):
+		filters.pop("is_packaging")
+		packaging_cond = (
+			"AND (`tabUOM Conversion Detail`.is_packaging = 1"
+			" OR `tabUOM Conversion Detail`.is_carton = 1)"
+		)
+
 	return frappe.db.sql(
 		"""
 		SELECT 
@@ -382,10 +391,12 @@ def uom(doctype, txt, searchfield, start, page_len, filters):
 		where (`tabUOM Conversion Detail`.parent is not null
 			or `tabUOM`.name like %(txt)s)
 			{fcond}
+			{packaging_cond}
 		group by `tabUOM`.name
 		""".format(
 			key=searchfield,
 			fcond=get_filters_cond(doctype, filters, conditions, ignore_permissions=1).replace("%", "%%"),
+			packaging_cond=packaging_cond,
 		), {
 			"txt": "%(txt)s",
 		}

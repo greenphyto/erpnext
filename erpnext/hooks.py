@@ -394,7 +394,10 @@ doc_events = {
         "after_delete":"erpnext.controllers.foms.sync_log",
 	},
     "Customer":{
-        "on_update":"erpnext.controllers.foms.sync_log",
+        "on_update":[
+			"erpnext.controllers.foms.sync_log",
+			"erpnext.controllers.erp.update_item_packaging_and_uom",
+		],
         "after_delete":"erpnext.controllers.foms.sync_log",
 	},
     "Warehouse":{

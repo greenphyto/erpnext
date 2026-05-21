@@ -123,7 +123,6 @@ frappe.ui.form.on("Sales Order", {
 			return erpnext.queries.item(filters);
 		})
 
-		frm.cscript.change_package_display();
 		if (frm.doc.docstatus == 1 && frm.doc.status=="To Deliver and Bill"){
 			frm.cscript.add_button_make_salad(frm.doc);
 		}
@@ -206,13 +205,7 @@ frappe.ui.form.on("Sales Order", {
 		frm.ignore_doctypes_on_cancel_all = ['Purchase Order'];
 	},
 
-	non_package_item: function(frm){
-		frm.cscript.confirm_reset_item("non_package_item").then(r=>{
-			if (r){
-				frm.cscript.change_package_display();
-			}
-		});
-	},
+
 
 	delivery_date: function(frm) {
 		$.each(frm.doc.items || [], function(i, d) {
@@ -423,13 +416,7 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 		}
 	}
 
-	change_package_display(){
-		if (!this.frm.doc.non_package_item){
-			this.frm.cscript.change_package_label(1);
-		}else{
-			this.frm.cscript.change_package_label(0);
-		}
-	}
+
 
 	create_pick_list() {
 		frappe.model.open_mapped_doc({

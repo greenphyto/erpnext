@@ -312,6 +312,7 @@ class Item(Document):
 			else:
 				row = self.append("uoms")
 				row.uom = d.packaging
+				row.to_uom = self.stock_uom
 				row.conversion_factor = flt(d.weight)
 				row.is_packaging = 1
 				row.cf_view = flt(d.weight)
@@ -999,29 +1000,72 @@ class Item(Document):
 				)
 
 	def validate_uom_conversion_factor(self):
-		if self.uoms:
-			for d in self.uoms:
-				value = get_uom_conv_factor(d.uom, self.stock_uom)
-				if value:
-					d.conversion_factor = value
+		if not self.uoms:
+			return
 
-				if d.idx == 1:
-					d.description = "Stock UOM Value"
-					d.conversion_factor = 1
-					d.cf_view = 1
+		# resolved: uom -> conversion_factor relative to stock_uom
+		resolved = {self.stock_uom: 1.0}
+
+		# Pass 1: rows WITHOUT to_uom (direct relation to stock_uom)
+		for d in self.uoms:
+			if d.idx == 1:
+				d.description = "Stock UOM Value"
+				d.conversion_factor = 1
+				d.cf_view = 1
+				resolved[d.uom] = 1.0
+				continue
+
+			if d.to_uom:
+				continue  # handled in pass 2
+
+			value = get_uom_conv_factor(d.uom, self.stock_uom)
+			if value:
+				d.conversion_factor = value
+				resolved[d.uom] = flt(value)
+				d.description = f"1 {d.uom} equal to {d.cf_view} {self.stock_uom}"
+				continue
+
+			d.description = f"1 {d.uom} equal to {d.cf_view} {self.stock_uom}"
+			d.conversion_factor = flt(d.cf_view)
+			resolved[d.uom] = flt(d.conversion_factor)
+
+		# Pass 2: iteratively resolve rows WITH to_uom (handles chains)
+		for _pass in range(len(self.uoms) + 1):
+			any_resolved = False
+			for d in self.uoms:
+				if d.idx == 1 or not d.to_uom or d.uom in resolved:
 					continue
 
-				if d.reverse:
-					conf = 1
-					if d.cf_view:
-						conf = 1/flt(d.cf_view, 7)
-					desc = f"1 {self.stock_uom} equal to {d.cf_view} {d.uom}"
-					d.conversion_factor = conf
-				else:
-					desc = f"1 {d.uom} equal to {d.cf_view} {self.stock_uom}"
-					d.conversion_factor = flt(d.cf_view)
+				if d.to_uom not in resolved:
+					continue  # to_uom not yet resolved; retry next iteration
 
-				d.description = desc
+				to_cf = resolved[d.to_uom]
+
+				# 1 uom = cf_view * to_uom
+				cf = flt(d.cf_view) * to_cf
+				d.description = (
+					f"1 {d.uom} equal to {d.cf_view} {d.to_uom}"
+					f" (={flt(cf, 7)} {self.stock_uom})"
+				)
+
+				d.conversion_factor = flt(cf)
+				resolved[d.uom] = flt(cf)
+				any_resolved = True
+
+			if not any_resolved:
+				break
+
+		# Validation: every row that uses to_uom must be resolvable to stock_uom
+		for d in self.uoms:
+			if d.idx == 1 or not d.to_uom:
+				continue
+			if d.uom not in resolved:
+				frappe.throw(
+					_(
+						"Row {0}: UOM '{1}' → '{2}' cannot be traced back to Stock UOM '{3}'. "
+						"Ensure all UOMs in the chain are defined in the conversion table."
+					).format(d.idx, d.uom, d.to_uom, self.stock_uom)
+				)
 
 	def validate_attributes(self):
 		if not (self.has_variants or self.variant_of):

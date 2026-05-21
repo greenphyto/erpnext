@@ -77,19 +77,10 @@ frappe.ui.form.on("Request", {
 		// 	});
 		// }
 
-		frm.cscript.change_package_display();
 		frm.cscript.add_button_make_salad(frm.doc);
 
 	},
-	non_package_item: function(frm){
-		frm.cscript.confirm_reset_item("non_package_item").then(r=>{
-			if (r){
-				frm.cscript.change_package_display();
-				frm.cscript.calculate_rate();
 
-			}
-		});
-	},
 	posting_date:function(frm){
 		frm.cscript.calculate_duration_days();
 	},
@@ -127,14 +118,6 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 		if (this.frm.doc.delivery_date && this.frm.doc.posting_date){
 			let duration_days = frappe.datetime.get_day_diff(this.frm.doc.delivery_date, this.frm.doc.posting_date);
 			this.frm.set_value("duration_days", duration_days);
-		}
-	}
-
-	change_package_display(){
-		if (!this.frm.doc.non_package_item){
-			this.frm.cscript.change_package_label(1);
-		}else{
-			this.frm.cscript.change_package_label(0);
 		}
 	}
 
