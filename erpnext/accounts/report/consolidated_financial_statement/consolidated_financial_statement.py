@@ -572,6 +572,7 @@ def prepare_data(
 					else _(d.account_name)
 				),
 				"account": _(d.name),
+				"is_group": cint(d.is_group),
 				"parent_account": _(d.parent_account),
 				"indent": flt(d.indent),
 				"year_start_date": start_date,
