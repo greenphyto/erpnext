@@ -2605,8 +2605,8 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		uom_field.columns = 2;
 		rate_field.columns = 1;
 		carton_qty.in_list_view = 0;
-		carton_conversion.in_list_view = 0;
-		carton_uom.in_list_view = 0;
+		// carton_conversion.in_list_view = 0;
+		// carton_uom.in_list_view = 0;
 		if (packaging_item_field) {
 			packaging_item_field.in_list_view = 0;
 		}
@@ -2619,10 +2619,10 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 			uom_field.label = "Package"
 			uom_field.columns = 3;
 			uom_field.in_list_view = 1;
-			carton_uom.in_list_view = 1;
+			// carton_uom.in_list_view = 1;
 			carton_qty.in_list_view = 1;
 			rate_field.columns = 2;
-			carton_conversion.in_list_view = 1;
+			// carton_conversion.in_list_view = 1;
 			if (packaging_item_field) {
 				packaging_item_field.in_list_view = 1;
 			}
