@@ -1639,8 +1639,9 @@ def get_carton_detail(args):
 			and cpd.item_code = %(item_code)s
 			and cpd.package = %(package)s
 	""", {"customer": args.customer, "item_code": args.item_code, "package": args.uom}, as_dict=1)
-	res =  temp[0] if temp else {}
+	res =  temp[0] if temp else frappe._dict({})
 	res.is_carton = 1
+	res.carton_conversion = res.carton_conversion or 12
 	res.carton_qty = math.ceil(flt(args.qty) / flt(res.carton_conversion)) if res.carton_conversion else 0
 
 	return res

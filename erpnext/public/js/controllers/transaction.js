@@ -123,6 +123,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 
 				me.add_default_non_stock_item(frm, cdt, cdn);
 				me.add_default_debit_note_item(frm, cdt, cdn);
+				me.add_default_carton_order_item(frm, cdt, cdn);
 			},
 			item_name_view: function(frm,cdt,cdn){
 				var d = locals[cdt][cdn]
@@ -2591,12 +2592,12 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		if (!table) return;
 		var uom_field = table.grid.fields_map.uom;
 		if (!uom_field) return;
-		var carton_uom = table.grid.fields_map.uom_carton || table.grid.fields_map.carton_uom;
-		if (!carton_uom) return;
+		// var carton_uom = table.grid.fields_map.uom_carton || table.grid.fields_map.carton_uom;
+		// if (!carton_uom) return;
 		var carton_qty = table.grid.fields_map.carton_qty;
 		if (!carton_qty) return;
-		var carton_conversion = table.grid.fields_map.carton_conversion;
-		if (!carton_conversion) return;
+		// var carton_conversion = table.grid.fields_map.carton_conversion;
+		// if (!carton_conversion) return;
 		var rate_field = table.grid.fields_map.rate;
 		if (!rate_field) return;
 		var packaging_item_field = table.grid.fields_map.packaging_item;
@@ -2668,9 +2669,9 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 						if (r.exc) return;
 
 						let detail = r.message || {};
-						let conversion = flt(detail.carton_conversion);
+						let conversion = flt(detail.carton_conversion) || 12;
 						item.is_carton = cint(me.frm.doc.is_carton_order);
-						item.carton_qty = conversion ? cint((flt(item.qty) / conversion)) || 1 : 0;
+						item.carton_qty = cint((flt(item.qty) / conversion)) || 1;
 						item.carton_conversion = conversion;
 						item.packaging_item = detail.packaging_item || "";
 						item.carton_uom = detail.carton_uom || "Carton";
@@ -2746,6 +2747,16 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 			frappe.model.set_value(cdt, cdn, "item_code", default_item);
 			frappe.model.set_value(cdt, cdn, "item_name_view", default_item);
 			frappe.model.set_value(cdt, cdn, "item_name", default_item);
+		}
+	}
+
+	add_default_carton_order_item(frm, cdt, cdn){
+		if (this.frm.doc.is_carton_order){
+			var row = locals[cdt][cdn];
+			row.carton_qty = 1;
+			row.carton_conversion = 12;
+			row.carton_uom = "Carton";
+			refresh_field("items");
 		}
 	}
 };
