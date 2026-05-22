@@ -191,6 +191,7 @@
    "read_only": 1
   },
   {
+   "columns": 2,
    "fieldname": "packaging_item",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -201,7 +202,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-05-20 15:46:09.105261",
+ "modified": "2026-05-22 18:26:47.494160",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request Items",

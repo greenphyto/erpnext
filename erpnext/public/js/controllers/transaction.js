@@ -2600,7 +2600,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		// if (!carton_conversion) return;
 		var rate_field = table.grid.fields_map.rate;
 		if (!rate_field) return;
-		var packaging_item_field = table.grid.fields_map.packaging_item;
+		// var packaging_item_field = table.grid.fields_map.packaging_item;
 
 		uom_field.in_list_view = 1;
 		uom_field.columns = 2;
@@ -2608,9 +2608,9 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		carton_qty.in_list_view = 0;
 		// carton_conversion.in_list_view = 0;
 		// carton_uom.in_list_view = 0;
-		if (packaging_item_field) {
-			packaging_item_field.in_list_view = 0;
-		}
+		// if (packaging_item_field) {
+		// 	packaging_item_field.in_list_view = 0;
+		// }
 
 		if (type_change==1){
 			// Package View
@@ -2624,9 +2624,9 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 			carton_qty.in_list_view = 1;
 			rate_field.columns = 2;
 			// carton_conversion.in_list_view = 1;
-			if (packaging_item_field) {
-				packaging_item_field.in_list_view = 1;
-			}
+			// if (packaging_item_field) {
+			// 	packaging_item_field.in_list_view = 1;
+			// }
 		} else{
 			// UOM View
 			uom_field.label = "UOM"
@@ -2650,17 +2650,21 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		frappe.model.set_value(item.doctype, item.name, "qty", qty);
 	}
 
-	get_carton_detail(doc, cdt, cdn) {
+	get_carton_detail(doc, cdt, cdn, allow_change=false) {
 		var me = this;
 		// trigger from item_code, is_carton_order, uom, customer
+		var customer = me.frm.doc.customer || me.frm.doc.party_name || me.frm.doc.proposed_customer;
 		var item = frappe.get_doc(cdt, cdn);
-		if (me.frm.doc.is_carton_order){
-			if (item.item_code && item.uom && (me.frm.doc.customer || me.frm.doc.party_name)) {
+		if (in_list(['Request'], this.frm.doc.doctype)){
+			allow_change = true;
+		}
+		if (me.frm.doc.is_carton_order || allow_change){
+			if (item.item_code && customer) {
 				frappe.call({
 					method: "erpnext.stock.get_item_details.get_carton_detail",
 					args: {
 						args: {
-							customer: me.frm.doc.customer || me.frm.doc.party_name,
+							customer: customer,
 							item_code: item.item_code,
 							uom: item.uom
 						}
@@ -2675,6 +2679,9 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 						item.carton_conversion = conversion;
 						item.packaging_item = detail.packaging_item || "";
 						item.carton_uom = detail.carton_uom || "Carton";
+						if (!item.uom){
+							item.uom = detail.uom || "";
+						}
 						me.frm.refresh_field("items");
 					}
 				});

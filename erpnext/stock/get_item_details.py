@@ -1625,6 +1625,7 @@ def get_carton_detail(args):
 		SELECT
 			cpd.item_code,
 			cpd.package,
+			cpd.package as uom,
 			cpd.packaging as packaging_item,
 			cpd.carton_uom as carton_uom,
 			cpd.carton_size as carton_conversion
@@ -1637,11 +1638,14 @@ def get_carton_detail(args):
 		WHERE
 			c.name = %(customer)s
 			and cpd.item_code = %(item_code)s
-			and cpd.package = %(package)s
+			and (%(package)s is null or %(package)s = '' or cpd.package = %(package)s)
+		ORDER BY cpd.package
 	""", {"customer": args.customer, "item_code": args.item_code, "package": args.uom}, as_dict=1)
 	res =  temp[0] if temp else frappe._dict({})
 	res.is_carton = 1
 	res.carton_conversion = res.carton_conversion or 12
 	res.carton_qty = math.ceil(flt(args.qty) / flt(res.carton_conversion)) if res.carton_conversion else 0
+	if not res.packaging_item:
+		res.packaging_item = frappe.get_value("Packaging List Available", {"parent": args.item_code, "packaging": args.uom}, "package_item")
 
 	return res

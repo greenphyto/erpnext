@@ -123,10 +123,12 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 
 	item_code(doc,cdt,cdn){
 		this.add_uom_default(doc,cdt,cdn)
+		this.frm.cscript.get_carton_detail(doc, cdt, cdn);
 	}
 	
 	uom(doc,cdt,cdn){
 		this.fetch_weight(cdt,cdn);
+		this.frm.cscript.get_carton_detail(doc, cdt, cdn);
 	}
 
 	fetch_weight(cdt,cdn){
@@ -141,7 +143,6 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 				frappe.model.set_value(cdt,cdn, "unit_weight", d.qty);
 			}
 		}
-
 	}
 
 	qty(){
