@@ -31,7 +31,6 @@ if (!window.__consignment_order_script_loaded) {
 	"organization_name",
 	"organization_address",
 	"rpl_creator",
-	"set_warehouse",
 	"set_posting_time",
 	"delivery_completed_at",
 	"delivery_completed_by",
