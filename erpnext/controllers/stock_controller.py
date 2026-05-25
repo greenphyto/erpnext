@@ -149,7 +149,7 @@ class StockController(AccountsController):
 		warehouse_with_no_account = []
 		precision = self.get_debit_field_precision()
 		operation = self.get("operation")
-		if self.doctype == "Stock Entry" and self.purpose == "Manufacture":
+		if self.doctype == "Stock Entry" and self.get("purpose") == "Manufacture":
 			operation = "Harvesting"
 
 		for item_row in voucher_details:
@@ -254,7 +254,7 @@ class StockController(AccountsController):
 				)
 
 		# process loss
-		if self.purpose == "Manufacture":
+		if self.get("purpose") == "Manufacture":
 			for d in self.get("items", {"is_process_loss":1}):
 				stock_value = d.basic_amount
 				remarks_expense = "Attrition cost"
