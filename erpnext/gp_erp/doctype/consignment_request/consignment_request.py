@@ -78,7 +78,6 @@ class ConsignmentRequest(SellingController):
 		self.repack_warehouse = self.set_warehouse
 		# self.taxes_and_charges = frappe.get_value("Sales Taxes and Charges Template", {"company": self.company, "is_default": 1}, "name")
 		# self.missing_values()
-		print("Customer set:", self.customer)
 
 	def update_prevdoc_status(self, action):
 		pass
@@ -372,7 +371,6 @@ def make_stock_return(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_salvage_process(source_name, target_doc=None):
-	print(9000, source_name, target_doc)
 	se_type = "Salvage Process (Repack)"
 	se_series = frappe.get_value("Stock Entry Type", {"name": se_type}, "series")
 	return_map = get_qty_from_transfer_batch(source_name, "Consignment Return")
@@ -462,6 +460,7 @@ def make_consignment_order(source_name, target_doc=None):
 		return None
 
 	def postprocess(source, target):
+		target.naming_series = "CO-.YYYY.-.#####"
 		target.set_target_warehouse = source.con_warehouse
 		target.set_warehouse = source.set_warehouse
 		target.consignment_request = source.name
@@ -496,7 +495,7 @@ def make_consignment_order(source_name, target_doc=None):
 				"validation": {"docstatus": ["=", 1]},
 			},
 			"Consignment Request Item": {
-				"doctype": "Delivery Note Item",
+				"doctype": "Consignment Order Item",
 				"field_map": {
 					"name": "cr_detail",
 					"parent": "against_consignment_request",
