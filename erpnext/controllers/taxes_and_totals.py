@@ -564,6 +564,7 @@ class calculate_taxes_and_totals(object):
 			"Sales Order",
 			"Consignment Request",
 			"Delivery Note",
+			"Consignment Order",
 			"Sales Invoice",
 			"POS Invoice",
 		]:
