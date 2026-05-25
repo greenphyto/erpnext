@@ -63,8 +63,6 @@
   "total_return_qty",
   "column_break_52",
   "total_sold_qty",
-  "column_break_55",
-  "total_delivered_qty",
   "column_break_57",
   "total_billed_qty",
   "taxes_section",
@@ -1638,20 +1636,8 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "column_break_55",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "column_break_53",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "total_delivered_qty",
-   "fieldtype": "Float",
-   "label": "Total Delivered Qty",
-   "no_amend_copy": 1,
-   "no_copy": 1,
-   "read_only": 1
   },
   {
    "fieldname": "per_delivered",
@@ -1694,7 +1680,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-25 17:41:53.254667",
+ "modified": "2026-05-25 18:25:22.241819",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Request",
