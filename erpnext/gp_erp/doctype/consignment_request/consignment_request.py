@@ -4,7 +4,7 @@
 
 import json
 
-import frappe
+import frappe, erpnext
 import frappe.utils
 from frappe import _
 from frappe.contacts.doctype.address.address import get_company_address
@@ -29,7 +29,7 @@ from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.doctype.item.item import get_item_defaults
 from erpnext.stock.get_item_details import get_default_bom
 from erpnext.stock.stock_balance import get_reserved_qty, update_bin_qty
-from erpnext.stock.doctype.batch.batch import get_batch_no
+from erpnext.stock.doctype.batch.batch import get_batch_no, get_batches
 
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
@@ -447,29 +447,50 @@ def make_salvage_process(source_name, target_doc=None):
 	return doclist
 
 @frappe.whitelist()
-def make_delivery_note(source_name, target_doc=None):
-	# take from Consignment Transfer for batching
+def make_consignment_order(source_name, target_doc=None):
+	
+	# Follow stock-transfer style mapping for CO: move pending request qty
+	def get_fifo_batch_no_from_target(item_code, warehouse):
+		if not warehouse:
+			return None
+
+		batches = get_batches(item_code, warehouse, qty=1) or []
+		for batch in batches:
+			if flt(batch.qty) > 0:
+				return batch.batch_id
+
+		return None
+
 	def postprocess(source, target):
-
-		def post_process_item(row, batch):
-			row.cr_detail = batch.get("consignment_item")
-			row.against_consignment_request = batch.get("consignment_request")
-			row.warehouse = source.con_warehouse
-
-		target.set_warehouse = source.con_warehouse
+		target.set_target_warehouse = source.con_warehouse
+		target.set_warehouse = source.set_warehouse
 		target.consignment_request = source.name
-		add_item_from_transfer(target, source.name, post_process_item, with_return=True)
+		target.cost_center = erpnext.get_default_cost_center(target.company)
+		for row in target.get("items"):
+			row.target_warehouse = source.con_warehouse
+			row.warehouse = ""
+			row.cost_center = target.cost_center
+			row.against_consignment_request = source.name
+			row.batch_no = get_fifo_batch_no_from_target(
+				row.item_code, source.set_warehouse
+			)
+			pass
+
+		target.items = [d for d in target.items if flt(d.qty) > 0]
+
 		target.set_missing_values()
 
 	def update_item(source_doc, target_doc, source_parent):
-		target_doc.qty = source_doc.sold_qty - source_doc.delivered_qty
+		target_doc.qty = max(flt(source_doc.qty) - flt(source_doc.transfer_qty), 0)
+		target_doc.target_warehouse = source_parent.con_warehouse
+		target_doc.warehouse = ""
 	
 	doclist = get_mapped_doc(
 		"Consignment Request",
 		source_name,
 		{
 			"Consignment Request": {
-				"doctype": "Delivery Note",
+				"doctype": "Consignment Order",
 				"field_map": {},
 				"field_no_map": [""],
 				"validation": {"docstatus": ["=", 1]},
@@ -481,7 +502,7 @@ def make_delivery_note(source_name, target_doc=None):
 					"parent": "against_consignment_request",
 				},
 				"postprocess": update_item,
-				"condition": lambda doc: doc.sold_qty > 0,
+				"condition": lambda doc: flt(doc.qty) > flt(doc.transfer_qty),
 			},
 		},
 		target_doc,

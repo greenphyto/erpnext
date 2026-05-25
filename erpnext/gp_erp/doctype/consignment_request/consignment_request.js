@@ -166,8 +166,8 @@ erpnext.selling.ConsignmentRequestController = class ConsignmentRequestControlle
 	setup_button() {
 		var me = this;
 		if(this.frm.doc.docstatus==1) {
-			this.frm.add_custom_button(__('Stock Transfer'), function() {
-				me.make_stock_transfer();
+			this.frm.add_custom_button(__('Consignment Order (Stock Transfer)'), function() {
+				me.make_consignment_order();
 			}, __('Create'));
 
 			this.frm.add_custom_button(__('Stock Return'), function() {
@@ -178,9 +178,6 @@ erpnext.selling.ConsignmentRequestController = class ConsignmentRequestControlle
 				me.make_salvage_process();
 			}, __('Create'));
 
-			this.frm.add_custom_button(__('Delivery Note'), function() {
-				me.make_delivery_note();
-			}, __('Create'));
 			
 			this.frm.add_custom_button(__('Sales Invoice'), function() {
 				me.make_sales_invoice();
@@ -188,12 +185,12 @@ erpnext.selling.ConsignmentRequestController = class ConsignmentRequestControlle
 		}
 	}
 
-	make_stock_transfer() {
-		frappe.model.open_mapped_doc({
-			method: "erpnext.gp_erp.doctype.consignment_request.consignment_request.make_stock_transfer",
-			frm: this.frm,
-		})
-	}
+	// make_stock_transfer() {
+	// 	frappe.model.open_mapped_doc({
+	// 		method: "erpnext.gp_erp.doctype.consignment_request.consignment_request.make_stock_transfer",
+	// 		frm: this.frm,
+	// 	})
+	// }
 
 	make_stock_return() {
 		frappe.model.open_mapped_doc({
@@ -210,9 +207,9 @@ erpnext.selling.ConsignmentRequestController = class ConsignmentRequestControlle
 	}
 
 
-	make_delivery_note(delivery_dates) {
+	make_consignment_order(delivery_dates) {
 		frappe.model.open_mapped_doc({
-			method: "erpnext.gp_erp.doctype.consignment_request.consignment_request.make_delivery_note",
+			method: "erpnext.gp_erp.doctype.consignment_request.consignment_request.make_consignment_order",
 			frm: this.frm,
 			args: {
 				delivery_dates
