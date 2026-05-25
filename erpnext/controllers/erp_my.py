@@ -9,8 +9,8 @@ ERP Controller specific to Malaysia Company
 COMPANY = "Greenphyto Tech Sdn Bhd"
 
 def overide_exp_date_grn(doc, method=""):
-    # increase 2 weeks
-    DAYS_ADD = 14
+    # increase 5 weeks
+    DAYS_ADD = 35
     if doc.doctype == "Purchase Receipt" and doc.company == COMPANY:
         for item in doc.items:
             if item.batch_no:
