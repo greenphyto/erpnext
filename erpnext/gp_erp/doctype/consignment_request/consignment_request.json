@@ -1605,24 +1605,32 @@
    "fieldname": "total_return_qty",
    "fieldtype": "Float",
    "label": "Total Return Qty",
+   "no_amend_copy": 1,
+   "no_copy": 1,
    "read_only": 1
   },
   {
    "fieldname": "total_sold_qty",
    "fieldtype": "Float",
    "label": "Total Sold Qty",
+   "no_amend_copy": 1,
+   "no_copy": 1,
    "read_only": 1
   },
   {
    "fieldname": "total_transfer_qty",
    "fieldtype": "Float",
    "label": "Total Transfer Qty",
+   "no_amend_copy": 1,
+   "no_copy": 1,
    "read_only": 1
   },
   {
    "fieldname": "total_billed_qty",
    "fieldtype": "Float",
    "label": "Total Billed Qty",
+   "no_amend_copy": 1,
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -1641,6 +1649,8 @@
    "fieldname": "total_delivered_qty",
    "fieldtype": "Float",
    "label": "Total Delivered Qty",
+   "no_amend_copy": 1,
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -1684,7 +1694,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-12 15:33:22.789506",
+ "modified": "2026-05-25 17:41:53.254667",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Request",

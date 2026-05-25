@@ -84,7 +84,7 @@
   "so_detail",
   "against_sales_invoice",
   "si_detail",
-  "dn_detail",
+  "co_detail",
   "against_consignment_request",
   "cr_detail",
   "pick_list_item",
@@ -776,10 +776,10 @@
    "options": "Project"
   },
   {
-   "fieldname": "dn_detail",
+   "fieldname": "co_detail",
    "fieldtype": "Data",
    "hidden": 1,
-   "label": "Against Delivery Note Item",
+   "label": "Against Consignment Order Item",
    "no_copy": 1,
    "print_hide": 1,
    "read_only": 1
@@ -948,8 +948,8 @@
  "links": [],
  "modified": "2026-05-22 18:56:46.872021",
  "modified_by": "Administrator",
- "module": "Stock",
- "name": "Delivery Note Item",
+ "module": "GP ERP",
+ "name": "Consignment Order Item",
  "naming_rule": "Random",
  "owner": "Administrator",
  "permissions": [],
