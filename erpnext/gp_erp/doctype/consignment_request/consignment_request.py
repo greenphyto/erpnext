@@ -515,17 +515,59 @@ def make_consignment_order(source_name, target_doc=None):
 def make_sales_invoice(source_name, target_doc=None):
 	# take from delivery note for billing
 
+	def get_fifo_batch_no_from_co(item_code, source_warehouse, consignment_request):
+		if not (item_code and source_warehouse and consignment_request):
+			return None
+
+		co_batches = frappe.db.sql(
+			"""
+			select distinct coi.batch_no
+			from `tabConsignment Order Item` coi
+			inner join `tabConsignment Order` co on co.name = coi.parent
+			where co.docstatus = 1
+				and co.consignment_request = %s
+				and coi.item_code = %s
+				and ifnull(coi.batch_no, '') != ''
+			""",
+			(consignment_request, item_code),
+			as_dict=1,
+		)
+
+		if not co_batches:
+			return None
+
+		allowed_batches = {d.batch_no for d in co_batches}
+		fifo_batches = get_batches(item_code, source_warehouse, qty=1) or []
+		for batch in fifo_batches:
+			if flt(batch.qty) > 0 and batch.batch_id in allowed_batches:
+				return batch.batch_id
+
+		return None
+
 	def postprocess(source, target):
+		target.non_package_item = 0
+		target.update_stock = 1
+		target.source_warehouse = source.con_warehouse
 		target.consignment_request = source.name
-		target.total_net_weight = source.total_delivered_qty
+		target.total_net_weight = source.total_transfer_qty-source.total_return_qty-source.total_billed_qty
+		target.cost_center = erpnext.get_default_cost_center(target.company)
+		for row in target.get("items"):
+			row.warehouse = target.source_warehouse
+			row.cost_center = target.cost_center
+			row.against_consignment_request = source.name
+			row.batch_no = get_fifo_batch_no_from_co(
+				row.item_code,
+				target.source_warehouse,
+				source.name,
+			)
+			pass
 		target.set_missing_values()
 
+
 	def update_item(source_doc, target_doc, source_parent):
-		temp = frappe.get_value("Delivery Note Item", {"cr_detail": source_doc.name, "docstatus": 1}, ["name", "parent", "rate"], as_dict=1)
-		target_doc.delivery_note = temp.get("parent")
-		target_doc.dn_detail = temp.get("name")
-		target_doc.rate = temp.get("rate")
-		target_doc.qty = source_doc.delivered_qty
+		# from get_item_details
+		# # target_doc.rate = 
+		target_doc.qty = source_doc.transfer_qty - source_doc.returned_qty - source_doc.billed_qty
 	
 	doclist = get_mapped_doc(
 		"Consignment Request",
@@ -544,7 +586,7 @@ def make_sales_invoice(source_name, target_doc=None):
 					"parent": "consignment_request",
 				},
 				"postprocess": update_item,
-				"condition": lambda doc: doc.delivered_qty > 0,
+				"condition": lambda doc: doc.qty > 0,
 			},
 		},
 		target_doc,
