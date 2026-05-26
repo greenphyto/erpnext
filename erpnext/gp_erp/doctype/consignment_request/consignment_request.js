@@ -37,7 +37,6 @@ frappe.ui.form.on("Consignment Request", {
 		})
 	},
 	refresh: function(frm) {
-		console.log(90000)
 		frm.set_query("item_code", "items", function(doc, cdt, cdn) {
 			var filters = {"is_fixed_asset": 0, "item_group": "Products"};
 			if (!frm.doc.non_package_item){
@@ -182,6 +181,7 @@ erpnext.selling.ConsignmentRequestController = class ConsignmentRequestControlle
 			this.frm.add_custom_button(__('Sales Invoice'), function() {
 				me.make_sales_invoice();
 			}, __('Create'));
+			this.frm.page.set_inner_btn_group_as_primary(__('Create'));
 		}
 	}
 

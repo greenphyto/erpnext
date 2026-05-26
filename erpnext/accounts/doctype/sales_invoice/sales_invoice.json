@@ -18,6 +18,7 @@
   "tax_id",
   "company",
   "company_tax_id",
+  "consignment_request",
   "column_break1",
   "posting_date",
   "posting_time",
@@ -2208,6 +2209,13 @@
    "fieldtype": "Data",
    "label": "Outlet Name",
    "read_only": 1
+  },
+  {
+   "fieldname": "consignment_request",
+   "fieldtype": "Link",
+   "label": "Consignment Request",
+   "options": "Consignment Request",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -2220,7 +2228,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2026-05-18 16:13:22.000000",
+ "modified": "2026-05-26 13:12:13.458680",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

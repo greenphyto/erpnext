@@ -1591,6 +1591,7 @@
    "fieldname": "per_sold",
    "fieldtype": "Percent",
    "label": "% Sold",
+   "no_amend_copy": 1,
    "no_copy": 1,
    "read_only": 1
   },
@@ -1643,6 +1644,8 @@
    "fieldname": "per_delivered",
    "fieldtype": "Percent",
    "label": "% Delivered",
+   "no_amend_copy": 1,
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -1653,6 +1656,7 @@
    "hide_days": 1,
    "hide_seconds": 1,
    "label": "% Return",
+   "no_amend_copy": 1,
    "no_copy": 1,
    "oldfieldname": "per_billed",
    "oldfieldtype": "Currency",
@@ -1663,7 +1667,9 @@
   {
    "fieldname": "per_billed",
    "fieldtype": "Percent",
-   "label": "% Billed"
+   "label": "% Billed",
+   "no_amend_copy": 1,
+   "no_copy": 1
   },
   {
    "fieldname": "column_break_57",
@@ -1680,7 +1686,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-25 18:25:22.241819",
+ "modified": "2026-05-26 12:52:39.241701",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Request",

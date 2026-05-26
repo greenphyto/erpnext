@@ -553,22 +553,24 @@ def make_sales_invoice(source_name, target_doc=None):
 	def postprocess(source, target):
 		target.non_package_item = 0
 		target.update_stock = 1
-		target.source_warehouse = source.con_warehouse
+		target.set_warehouse = source.con_warehouse
 		target.consignment_request = source.name
 		target.total_net_weight = source.total_transfer_qty-source.total_return_qty-source.total_billed_qty
 		target.cost_center = erpnext.get_default_cost_center(target.company)
 		for row in target.get("items"):
-			row.warehouse = target.source_warehouse
-			row.cost_center = target.cost_center
+			row.warehouse = target.set_warehouse
 			row.against_consignment_request = source.name
 			row.batch_no = get_fifo_batch_no_from_co(
 				row.item_code,
-				target.source_warehouse,
+				target.set_warehouse,
 				source.name,
 			)
 			pass
 		target.set_missing_values()
 
+		# Keep child cost center aligned with parent after ERPNext defaulting logic runs.
+		for row in target.get("items"):
+			row.cost_center = target.cost_center
 
 	def update_item(source_doc, target_doc, source_parent):
 		# from get_item_details
