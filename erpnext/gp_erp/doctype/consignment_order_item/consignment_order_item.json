@@ -13,6 +13,7 @@
   "item_name",
   "item_name_view",
   "marketing_name",
+  "sku",
   "col_break1",
   "customer_item_code",
   "section_break_6",
@@ -32,6 +33,7 @@
   "stock_uom",
   "col_break2",
   "uom",
+  "uom_name",
   "conversion_factor",
   "packaging_item",
   "stock_qty_sec_break",
@@ -940,13 +942,24 @@
    "fieldtype": "Link",
    "label": "Packaging Item",
    "options": "Item"
+  },
+  {
+   "fieldname": "sku",
+   "fieldtype": "Data",
+   "label": "SKU"
+  },
+  {
+   "fetch_from": "uom.global_description",
+   "fieldname": "uom_name",
+   "fieldtype": "Data",
+   "label": "UOM Name"
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-05-22 18:56:46.872021",
+ "modified": "2026-05-26 11:17:09.742843",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Order Item",

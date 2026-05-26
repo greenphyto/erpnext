@@ -170,6 +170,8 @@ frappe.ui.form.on("Delivery Note Item", {
 });
 
 erpnext.stock.consignment_order.sync_target_warehouse = function (frm, force_update) {
+	if (!frm.is_dirty()) return;
+	
 	if (!frm.doc.items || !frm.doc.set_target_warehouse) return;
 
 	(frm.doc.items || []).forEach((row) => {
