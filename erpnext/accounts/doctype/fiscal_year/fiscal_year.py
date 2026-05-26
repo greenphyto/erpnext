@@ -146,7 +146,6 @@ class FiscalYear(Document):
 				row = self.append("companies")
 				row.company = company
 
-			print(company)
 
 
 @frappe.whitelist()
