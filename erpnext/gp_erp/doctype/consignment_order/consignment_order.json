@@ -1592,6 +1592,7 @@
    "set_only_once": 1
   },
   {
+   "default": "Today",
    "fieldname": "delivery_date",
    "fieldtype": "Date",
    "in_list_view": 1,
@@ -1751,7 +1752,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-25 17:19:40.309989",
+ "modified": "2026-05-26 12:34:35.910720",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Order",

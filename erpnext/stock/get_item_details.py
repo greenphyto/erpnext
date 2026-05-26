@@ -59,7 +59,6 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 	        "set_warehouse": ""
 	}
 	"""
-	print(args)
 	args = process_args(args)
 	for_validate = process_string_args(for_validate)
 	overwrite_warehouse = process_string_args(overwrite_warehouse)

@@ -155,7 +155,7 @@ frappe.ui.form.on("Delivery Note", {
 	},
 
 	refresh: function(frm) {
-		if (frm.doc.docstatus === 1 && frm.doc.is_return === 1) {
+		if (frm.doc.docstatus === 1 && frm.doc.is_return === 1 && frm.doc.doctype == "Delivery Note") {
 			frm.add_custom_button(__('Credit Note'), function() {
 				frappe.model.open_mapped_doc({
 					method: "erpnext.stock.doctype.delivery_note.delivery_note.make_sales_invoice",
@@ -165,7 +165,7 @@ frappe.ui.form.on("Delivery Note", {
 			frm.page.set_inner_btn_group_as_primary(__('Create'));
 		}
 
-		if (frm.doc.docstatus == 1 && !frm.doc.inter_company_reference) {
+		if (frm.doc.docstatus == 1 && !frm.doc.inter_company_reference && frm.doc.doctype == "Delivery Note") {
 			let internal = me.frm.doc.is_internal_customer;
 			if (internal) {
 				let button_label = (me.frm.doc.company === me.frm.doc.represents_company) ? "Internal Purchase Receipt" :
@@ -332,7 +332,7 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 			}
 		}
 
-		if (!doc.is_return && doc.status!="Closed") {
+		if (!doc.is_return && doc.status!="Closed" && frm.doc.doctype == "Delivery Note") {
 			if(doc.docstatus == 1) {
 				this.frm.add_custom_button(__('Shipment'), function() {
 					me.make_shipment() }, __('Create'));

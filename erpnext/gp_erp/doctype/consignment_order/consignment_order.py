@@ -42,7 +42,6 @@ class ConsignmentOrder(DeliveryNote):
 		self.validate_uom_is_integer("uom", "qty")
 		self.update_current_stock()
 		self.set_status()
-		self.reset_default_field_value("set_target_warehouse", "items", "target_warehouse")
 
 	def apply_target_warehouse_default(self):
 		default_source = self.get("set_warehouse")
@@ -62,6 +61,18 @@ class ConsignmentOrder(DeliveryNote):
 			if is_stock_item and not d.get("target_warehouse"):
 				frappe.throw(
 					_("Destination Warehouse required for stock Item {0}").format(d["item_code"])
+				)
+
+	def validate_target_warehouse(self):
+		items = self.get("items") + (self.get("packed_items") or [])
+
+		for d in items:
+			if d.get("target_warehouse") and d.get("warehouse") == d.get("target_warehouse"):
+				warehouse = frappe.bold(d.get("target_warehouse"))
+				frappe.throw(
+					_("Row {0}: Delivery Warehouse ({1}) and Customer Warehouse ({2}) can not be same").format(
+						d.idx, warehouse, warehouse
+					)
 				)
 
 	def update_current_stock(self):

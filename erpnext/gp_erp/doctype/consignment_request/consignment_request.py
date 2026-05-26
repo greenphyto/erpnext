@@ -73,7 +73,10 @@ class ConsignmentRequest(SellingController):
 	def on_customer_set(self):
 		# default warehouse based on customer
 		self.con_warehouse = frappe.db.get_value("Warehouse", {"customer": self.customer})
-		self.set_warehouse = frappe.get_value("Stock Settings", "Stock Settings", "default_warehouse")
+		if not self.set_warehouse:
+			self.set_warehouse = frappe.get_value("Company", self.company, "default_warehouse") or frappe.get_value(
+				"Stock Settings", "Stock Settings", "default_warehouse"
+			)
 		self.salvage_warehouse = frappe.get_value("Company", self.company, "default_salvage_warehouse")
 		self.repack_warehouse = self.set_warehouse
 		# self.taxes_and_charges = frappe.get_value("Sales Taxes and Charges Template", {"company": self.company, "is_default": 1}, "name")
@@ -177,6 +180,8 @@ class ConsignmentRequest(SellingController):
 		self.total_billed_qty = 0
 		self.total_delivered_qty = 0
 		for d in self.get("items"):
+			# Always derive sold from net transferred quantity to keep SI/DN sync consistent.
+			# d.sold_qty = max(flt(d.transfer_qty) - flt(d.returned_qty), 0)
 			self.total_transfer_qty += flt(d.transfer_qty)
 			self.total_sold_qty += flt(d.sold_qty)
 			self.total_return_qty += flt(d.returned_qty)
@@ -243,6 +248,7 @@ def billing_consignment_controller(doc, method=""):
 			for dt in cr.get("items"):
 				if dt.name == d.cr_detail:
 					if doc.doctype == "Sales Invoice":
+						dt.sold_qty = dt.transfer_qty - dt.returned_qty
 						if cancel:
 							dt.billed_qty = dt.billed_qty - d.qty
 						else:

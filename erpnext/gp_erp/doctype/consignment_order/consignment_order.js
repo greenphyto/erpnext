@@ -122,6 +122,8 @@ frappe.ui.form.on("Consignment Order", {
 		erpnext.stock.consignment_order.hide_unused_fields(frm);
 		erpnext.stock.consignment_order.sync_target_warehouse(frm, false);
 		erpnext.stock.consignment_order.set_print_hide(frm.doc);
+		erpnext.stock.consignment_order.remove_dn_buttons(frm);
+		erpnext.stock.consignment_order.add_back_consignment_button(frm);
 
 		if (frm.fields_dict.items && frm.fields_dict.items.grid) {
 			frm.fields_dict.items.grid.set_column_disp(["warehouse"], false);
@@ -217,6 +219,49 @@ erpnext.stock.consignment_order.set_print_hide = function (doc) {
 	if (item_map.discount_amount) item_map.discount_amount.print_hide = 1;
 };
 
+erpnext.stock.consignment_order.remove_dn_buttons = function (frm) {
+	const button_groups = {
+		Create: [
+			"Credit Note",
+			"Internal Purchase Receipt",
+			"Inter Company Purchase Receipt",
+			"Shipment",
+			"Installation Note",
+			"Sales Return",
+			"Packing Slip",
+			"Create Replacement Qty",
+			"Sales Invoice",
+			"Delivery Trip"
+		],
+		"Get Items From": ["Sales Order"],
+		"Update Items": ["Quantity", "Batch"],
+		Status: ["Close", "Reopen"]
+	};
+
+	Object.keys(button_groups).forEach((group) => {
+		(button_groups[group] || []).forEach((label) => {
+			frm.remove_custom_button(__(label), __(group));
+		});
+	});
+
+	frm.remove_custom_button(__("Subscription"));
+};
+
+erpnext.stock.consignment_order.add_back_consignment_button = function (frm) {
+	frm.remove_custom_button(__("Back to Consignment"));
+
+	const consignment_request =
+		frm.doc.consignment_request ||
+		((frm.doc.items || []).find((row) => row.against_consignment_request) || {}).against_consignment_request;
+
+	if (!consignment_request) return;
+
+	const btn = frm.add_custom_button(__("Back to Consignment"), function () {
+		frappe.set_route("form", "Consignment Request", consignment_request);
+	});
+	btn.removeClass("btn-default").addClass("btn-warning");
+};
+
 delete erpnext.stock.delivery_note.set_print_hide;
 
 function init_consignment_order_controller() {
@@ -246,6 +291,8 @@ function init_consignment_order_controller() {
 			erpnext.stock.consignment_order.hide_unused_fields(this.frm);
 			erpnext.stock.consignment_order.sync_target_warehouse(this.frm, false);
 			erpnext.stock.consignment_order.set_print_hide(this.frm.doc);
+			erpnext.stock.consignment_order.remove_dn_buttons(this.frm);
+			erpnext.stock.consignment_order.add_back_consignment_button(this.frm);
 
 			if (this.frm.fields_dict.items && this.frm.fields_dict.items.grid) {
 				this.frm.fields_dict.items.grid.set_column_disp(["warehouse"], false);

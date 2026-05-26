@@ -393,6 +393,7 @@
   {
    "fieldname": "amount",
    "fieldtype": "Currency",
+   "in_list_view": 1,
    "label": "Amount",
    "oldfieldname": "export_amount",
    "oldfieldtype": "Currency",
@@ -959,7 +960,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-05-26 11:17:09.742843",
+ "modified": "2026-05-26 12:21:13.887369",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Order Item",
