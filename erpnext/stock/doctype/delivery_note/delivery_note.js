@@ -802,6 +802,7 @@ frappe.tour['Delivery Note'] = [
 ]
 
 cur_frm.cscript['set_cost_center'] = function(frm, cdt, cdn, field_account="expense_account"){
+	if (frm.doc.doctype !== "Delivery Note") return Promise.resolve();
 	var d = locals[cdt][cdn];
 	return new Promise((resolve)=>{
 		if (d[field_account]){
@@ -817,12 +818,14 @@ cur_frm.cscript['set_cost_center'] = function(frm, cdt, cdn, field_account="expe
 
 frappe.ui.form.on("Delivery Note Item", {
 	expense_account: function(frm,cdt,cdn){
+		if (frm.doc.doctype !== "Delivery Note") return;
 		frm.cscript.set_cost_center(frm, cdt,cdn);
 	}
 })
 
 frappe.ui.form.on("Sales Taxes and Charges", {
 	account_head: function(frm,cdt,cdn){
+		if (frm.doc.doctype !== "Delivery Note") return;
 		frm.cscript.set_cost_center(frm, cdt,cdn,"account_head");
 	}
 })

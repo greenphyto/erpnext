@@ -64,7 +64,7 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 			return filters;
 		})
 
-		if (this.frm.is_new()){
+		if (this.frm.is_new() && !this.frm.doc.consignment_request) {
 			$.each(this.frm.doc.items, (i,r)=>{
 				frappe.model.set_value(r.doctype,r.name,"cost_center", "")
 			})
@@ -74,6 +74,7 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 	refresh(doc, dt, dn) {
 		const me = this;
 		super.refresh();
+		this.add_back_consignment_button();
 		if(cur_frm.msgbox && cur_frm.msgbox.$wrapper.is(":visible")) {
 			// hide new msgbox
 			cur_frm.msgbox.hide();
@@ -302,6 +303,23 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 	tc_name() {
 		this.get_terms();
 	}
+
+	add_back_consignment_button() {
+		this.frm.remove_custom_button(__("Back to Consignment"));
+
+		const consignment_request =
+			this.frm.doc.consignment_request ||
+			((this.frm.doc.items || []).find((row) => row.against_consignment_request) || {})
+				.against_consignment_request;
+
+		if (!consignment_request) return;
+
+		const btn = this.frm.add_custom_button(__("Back to Consignment"), function() {
+			frappe.set_route("form", "Consignment Request", consignment_request);
+		});
+		btn.removeClass("btn-default").addClass("btn-warning");
+	}
+
 	customer() {
 		if (this.frm.doc.is_pos){
 			var pos_profile = this.frm.doc.pos_profile;
