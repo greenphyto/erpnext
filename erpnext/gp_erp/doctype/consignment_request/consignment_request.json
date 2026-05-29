@@ -1590,6 +1590,7 @@
   {
    "fieldname": "per_sold",
    "fieldtype": "Percent",
+   "hidden": 1,
    "label": "% Sold",
    "no_amend_copy": 1,
    "no_copy": 1,
@@ -1611,6 +1612,7 @@
   {
    "fieldname": "total_sold_qty",
    "fieldtype": "Float",
+   "hidden": 1,
    "label": "Total Sold Qty",
    "no_amend_copy": 1,
    "no_copy": 1,
@@ -1643,6 +1645,7 @@
   {
    "fieldname": "per_delivered",
    "fieldtype": "Percent",
+   "hidden": 1,
    "label": "% Delivered",
    "no_amend_copy": 1,
    "no_copy": 1,
@@ -1686,7 +1689,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-26 12:52:39.241701",
+ "modified": "2026-05-29 17:40:20.975612",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Request",

@@ -115,6 +115,7 @@ class ConsignmentOrder(DeliveryNote):
 		# Internal transfer only: no accounting ledger.
 		self.repost_future_sle_and_gle()
 		self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry", "Repost Item Valuation")
+		self.update_consignment_request_status()
 
 	def update_consignment_request_status(self):
 		if not self.consignment_request:

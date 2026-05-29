@@ -155,14 +155,12 @@ class ConsignmentRequest(SellingController):
 	def set_status(self, update=False, status=None):
 		status = "Draft"
 
+		# Only got 4 params: Transfer, Return, Billed
+
 		if flt(self.per_billed) > 0:
 			status = "Completed"
-		elif flt(self.per_delivered) > 0:
-			status = "To Bill"
-		elif (flt(self.per_sold) > 0 or flt(self.per_return) > 0) and flt(self.per_delivered) == 0:
-			status = "Returned and To Bill"
 		elif flt(self.per_transfer) == 100:
-			status = "Transfered to Customer"
+			status = "Transfered and To Bill"
 		elif flt(self.per_transfer) > 0:
 			status = "Partially Transfered"
 		elif flt(self.per_transfer) == 0:
@@ -237,27 +235,14 @@ def stock_entry_controller(doc, method=""):
 
 def billing_consignment_controller(doc, method=""):
 	cancel = doc.docstatus == 2
-	if doc.doctype == "Delivery Note":
-		con_list = list(set(d.against_consignment_request for d in doc.items if d.against_consignment_request))
-	else:
-		con_list = list(set(d.consignment_request for d in doc.items if d.consignment_request))
+	con_list = list(set(d.consignment_request for d in doc.items if d.consignment_request))
 
 	for con in con_list:
 		cr = frappe.get_doc("Consignment Request", con)
 		for d in doc.items:
 			for dt in cr.get("items"):
 				if dt.name == d.cr_detail:
-					if doc.doctype == "Sales Invoice":
-						dt.sold_qty = dt.transfer_qty - dt.returned_qty
-						if cancel:
-							dt.billed_qty = dt.billed_qty - d.qty
-						else:
-							dt.billed_qty = dt.billed_qty + d.qty
-					if doc.doctype == "Delivery Note":
-						if cancel:
-							dt.delivered_qty = dt.delivered_qty - d.qty
-						else:
-							dt.delivered_qty = dt.delivered_qty + d.qty
+					dt.billed_qty = flt(frappe.db.get_value("Sales Invoice Item", {"item_code": dt.item_code, "cr_detail": dt.name, "docstatus": 1}, "sum(qty) as qty"))
 		cr.sync_qty()
 
 def get_list_context(context=None):
