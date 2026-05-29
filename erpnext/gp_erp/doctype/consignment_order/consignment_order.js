@@ -129,6 +129,10 @@ frappe.ui.form.on("Consignment Order", {
 			frm.fields_dict.items.grid.set_column_disp(["warehouse"], false);
 			frm.fields_dict.items.grid.set_column_disp(["target_warehouse"], true);
 		}
+
+		if (frm.doc.docstatus == 1){
+			frm.cscript.show_stock_ledger();
+		}
 	},
 
 	set_target_warehouse(frm) {
