@@ -469,7 +469,7 @@ class SellingController(StockController):
 				sales_order.update_reserved_qty(so_item_rows)
 
 	def set_incoming_rate(self):
-		if self.doctype not in ("Delivery Note", "Sales Invoice"):
+		if self.doctype not in ("Delivery Note", "Sales Invoice", "Consignment Order"):
 			return
 
 		items = self.get("items") + (self.get("packed_items") or [])
