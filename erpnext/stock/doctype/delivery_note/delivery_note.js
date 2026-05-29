@@ -93,15 +93,18 @@ frappe.ui.form.on("Delivery Note", {
 	},
 	onload: (frm)=>{
 		if (frm.is_new() && !frm.doc.set_warehouse){
-			frm.set_value("set_warehouse", frappe.sys_defaults.default_selling_warehouse)
+			frappe.db.get_value("Company", frm.doc.company, "default_warehouse").then(r=>{
+				frm.set_value("set_warehouse", r.message.default_warehouse || frappe.sys_defaults.default_selling_warehouse)
+			});
 		}
 	},
 
 	is_donation: function(frm){
 		if (cint(frm.doc.is_donation)==0) return;
 		frm.set_value("naming_series", 'DON-.YYYY.-.###');
-		frappe.db.get_value("Company", frm.doc.company, ["donation_customer", "donation_account"]).then(r=>{
+		frappe.db.get_value("Company", frm.doc.company, ["donation_customer", "donation_account", "donation_warehouse"]).then(r=>{
 			frm.set_value("customer", r.message.donation_customer);
+			frm.set_value("set_warehouse", r.message.donation_warehouse);
 			set_donation_expense(frm, r.message.donation_account);
 		});
 	},

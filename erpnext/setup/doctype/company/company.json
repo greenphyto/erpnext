@@ -83,6 +83,7 @@
   "production_delivery_account",
   "marketing_delivery_account",
   "donor_delivery_account",
+  "sales_replacement_account",
   "column_break_65",
   "internal_staff_customer",
   "donation_customer",
@@ -90,7 +91,7 @@
   "marketing_customer",
   "donor_customer",
   "column_break_68",
-  "sales_replacement_account",
+  "donation_warehouse",
   "auto_accounting_for_stock_settings",
   "enable_perpetual_inventory",
   "enable_provisional_accounting_for_non_stock_items",
@@ -1013,6 +1014,55 @@
    "fieldtype": "Link",
    "label": "Account for Raw Material Scrap",
    "options": "Account"
+  },
+  {
+   "fieldname": "production_delivery_account",
+   "fieldtype": "Link",
+   "label": "Production Delivery Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "marketing_delivery_account",
+   "fieldtype": "Link",
+   "label": "Marketing Delivery Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "marketing_customer",
+   "fieldtype": "Link",
+   "label": "Marketing Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "donation_warehouse",
+   "fieldtype": "Link",
+   "label": "Donation Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "account_for_product_scrap",
+   "fieldtype": "Link",
+   "label": "Account for Product Scrap",
+   "options": "Account"
+  },
+  {
+   "fieldname": "account_for_raw_material_scrap",
+   "fieldtype": "Link",
+   "label": "Account for Raw Material Scrap",
+   "options": "Account"
+  },
+  {
+   "description": "User from specific company to do automation",
+   "fieldname": "admin_user",
+   "fieldtype": "Link",
+   "label": "Admin User",
+   "options": "User"
+  },
+  {
+   "fieldname": "production_loss_account",
+   "fieldtype": "Link",
+   "label": "Production Variance Account",
+   "options": "Account"
   }
  ],
  "icon": "fa fa-building",
@@ -1020,7 +1070,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2026-03-16 17:32:25.073093",
+ "modified": "2026-05-29 17:51:13.049231",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",
