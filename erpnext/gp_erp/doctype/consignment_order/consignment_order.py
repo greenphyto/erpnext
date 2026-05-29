@@ -3,11 +3,12 @@
 
 import frappe
 from frappe import _
-from frappe.utils import flt
+from frappe.utils import cint, flt, nowtime
 
 from erpnext.controllers.stock_controller import StockController
 from erpnext.stock.doctype.delivery_note.delivery_note import DeliveryNote
 from erpnext.stock.get_item_details import get_conversion_factor
+from erpnext.stock.utils import get_incoming_rate
 
 
 class ConsignmentOrder(DeliveryNote):
