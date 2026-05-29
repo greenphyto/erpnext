@@ -1323,7 +1323,6 @@
    "read_only": 1
   },
   {
-   "depends_on": "eval:doc.docstatus==0",
    "fieldname": "set_target_warehouse",
    "fieldtype": "Link",
    "in_standard_filter": 1,
@@ -1752,7 +1751,7 @@
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-26 12:34:35.910720",
+ "modified": "2026-05-29 16:54:13.271736",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Order",
