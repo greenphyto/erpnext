@@ -85,7 +85,21 @@ UOM_KG_CONVERTION = {
 }
 
 TRANFER_AGAIN = 'Job Card'
-ITEM_NOT_SYNC = ['ZOT04']
+ITEM_GROUP_NOT_SYNC = ['Products', "Fixed Assets", "Services"]
+COMPANY_ALLOWED_WITH_FOMS = ["Greenphyto Pte Ltd"]
+
+def is_allowed_foms_company(company=None, doc=None):
+	if not COMPANY_ALLOWED_WITH_FOMS:
+		return True
+
+	company_name = company
+	if not company_name and doc:
+		company_name = doc.get("company")
+
+	if not company_name:
+		company_name = get_default_company()
+
+	return company_name in COMPANY_ALLOWED_WITH_FOMS
 
 def get_uom(uom_foms, default=""):
 	uom_foms = uom_foms or default or'kg'
@@ -373,6 +387,9 @@ def _update_warehouse(log, api=None):
 	if not api:
 		api = FomsAPI()
 
+	if not is_allowed_foms_company():
+		return
+
 	api.log = log
 
 	if log.update_type != "Delete":
@@ -462,10 +479,13 @@ def _update_stock_receipt(log, api=None):
 	api.log = log  # working with log
 	doc = frappe.get_doc("Purchase Receipt", log.docname)
 
+	if not is_allowed_foms_company(doc=doc):
+		return
+
 	is_cancel = doc.docstatus == 2
 
 	for d in doc.get("items"):
-		if d.item_code in ITEM_NOT_SYNC:
+		if d.item_group in ITEM_GROUP_NOT_SYNC:
 			continue
 
 		sle = get_ledger_info(doc, d.item_code, d.batch_no, cancel=is_cancel)
@@ -684,6 +704,10 @@ def _create_foms_batch(batch_no, warehouse="", qty=0):
 
 # STOCK ENTRY
 def update_stock_entry(log, api=""):
+	company = frappe.get_value("Stock Entry", log.docname, "company")
+	if not is_allowed_foms_company(company=company):
+		return
+
 	purpose = frappe.get_value("Stock Entry", log.docname, "purpose")
 	if purpose == "Material Transfer":
 		_update_material_transfer(log, api)
@@ -752,6 +776,9 @@ def update_foms_supplier():
 def _update_foms_supplier(log, api=None):
 	if not api:
 		api = FomsAPI()
+
+	if not is_allowed_foms_company():
+		return
 
 	api.log = log
 
@@ -835,6 +862,9 @@ def update_foms_customer():
 def _update_foms_customer(log, api=None):
 	if not api:
 		api = FomsAPI()
+
+	if not is_allowed_foms_company():
+		return
 	
 	api.log = log
 
@@ -1170,6 +1200,9 @@ def _update_foms_sales_order(log, api=None):
 		api = FomsAPI()
 
 	doc = frappe.get_doc("Sales Order", log.docname)
+	if not is_allowed_foms_company(doc=doc):
+		return
+
 	api.log = log
 
 	if doc.docstatus == 0:
@@ -1273,6 +1306,9 @@ def _sync_delivery_note2(log, api=None):
 		api = FomsAPI()
 
 	doc = frappe.get_doc("Delivery Note", log.docname)
+	if not is_allowed_foms_company(doc=doc):
+		return
+
 	api.log = log
 
 	if doc.docstatus == 0 :
@@ -1359,6 +1395,9 @@ def _update_foms_forecast(log, api=None):
 		api = FomsAPI()
 
 	doc = frappe.get_doc("Request", log.docname)
+	if not is_allowed_foms_company(doc=doc):
+		return
+
 	api.log = log
 
 	if doc.docstatus == 0:
@@ -1462,6 +1501,9 @@ def _update_foms_scrap_request(log, api=None):
 		api = FomsAPI()
 
 	doc = frappe.get_doc("Scrap Request", log.docname)
+	if not is_allowed_foms_company(doc=doc):
+		return
+
 	api.log = log
 	for d in doc.get("items"):
 		batch_id = frappe.get_value("Batch", d.batch, "foms_id")
@@ -1479,6 +1521,9 @@ def _update_foms_department(log, api=None):
 		api = FomsAPI()
 
 	doc = frappe.get_doc("Department", log.docname)
+	if not is_allowed_foms_company(doc=doc):
+		return
+
 	api.log = log
 	data = {
 		"name": doc.name,
@@ -1501,6 +1546,9 @@ def _update_foms_stock_recon(log, api=None):
 		api = FomsAPI()
 
 	doc = frappe.get_doc("Stock Reconciliation", log.docname)
+	if not is_allowed_foms_company(doc=doc):
+		return
+
 	if cint(doc.get("foms_sync_no")):
 		return
 	
