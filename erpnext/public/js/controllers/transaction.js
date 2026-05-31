@@ -453,15 +453,37 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		console.log("Rate changed");
 		var row = locals[cdt][cdn];
 
+		if (!row || row.__setting_rate_from_disable_discount) {
+			return;
+		}
+
 		function set_rate(){
-			
-			frappe.model.set_value(cdt, cdn, "price_list_rate", row.rate);
-			if (flt(row.total_discount_amount) > 0){
-				frappe.model.set_value(cdt, cdn, "total_discount_amount", 0);
+			const updates = [];
+
+			if (flt(row.price_list_rate) !== flt(row.rate)) {
+				updates.push(() => frappe.model.set_value(cdt, cdn, "price_list_rate", row.rate));
 			}
+
+			if (flt(row.total_discount_amount) > 0) {
+				updates.push(() => frappe.model.set_value(cdt, cdn, "total_discount_amount", 0));
+			}
+
+			if (!updates.length) {
+				return;
+			}
+
+			row.__setting_rate_from_disable_discount = true;
+			frappe.run_serially(updates)
+				.finally(() => {
+					delete row.__setting_rate_from_disable_discount;
+				});
 		}
 
 		frappe.provide("frappe.disable_item_discount");
+
+		if (!row.item_code) {
+			return;
+		}
 
 		if (frappe.disable_item_discount[row.item_code] === undefined) {
 			frappe.db.get_value("Item", row.item_code, "disable_discount_amount").then(r => {
@@ -801,6 +823,12 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 	}
 	price_list_rate(doc, cdt, cdn) {
 		var item = frappe.get_doc(cdt, cdn);
+
+		if (item && item.__setting_rate_from_disable_discount) {
+			this.calculate_taxes_and_totals();
+			return;
+		}
+
 		frappe.model.round_floats_in(item, ["price_list_rate", "discount_percentage"]);
 
 		// check if child doctype is Sales Order Item/Quotation Item and calculate the rate

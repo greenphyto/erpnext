@@ -651,6 +651,20 @@ class AccountsController(TransactionBase):
 		if not pricing_rule_args.get("validate_applied_rule", 0):
 			# if user changed the discount percentage then set user's discount percentage ?
 			if pricing_rule_args.get("price_or_product_discount") == "Price":
+				disable_discount_amount = frappe.get_cached_value(
+					"Item", item.item_code, "disable_discount_amount"
+				)
+
+				# Keep user-entered rate for items that explicitly disallow discount amount.
+				if disable_discount_amount:
+					item.set("pricing_rules", pricing_rule_args.get("pricing_rules"))
+					item.set("price_list_rate", item.rate)
+					item.set("discount_percentage", 0)
+					item.set("discount_amount", 0)
+					if item.meta.get_field("total_discount_amount"):
+						item.set("total_discount_amount", 0)
+					return
+
 				item.set("pricing_rules", pricing_rule_args.get("pricing_rules"))
 				if pricing_rule_args.get("apply_rule_on_other_items"):
 					other_items = json.loads(pricing_rule_args.get("apply_rule_on_other_items"))
