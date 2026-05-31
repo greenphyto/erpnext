@@ -15,7 +15,7 @@ frappe.listview_settings['Consignment Request'] = {
             status = "Returned and To Bill";
             color = "red";
         } else if (doc.per_transfer == 100) {
-            status = "Transfered and To Bill";
+            status = "Transfered to Customer";
             color = "blue";
         } else if (doc.per_transfer > 0) {
             status = "Partially Transfered";

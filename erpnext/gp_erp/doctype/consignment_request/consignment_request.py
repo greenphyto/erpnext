@@ -155,12 +155,14 @@ class ConsignmentRequest(SellingController):
 	def set_status(self, update=False, status=None):
 		status = "Draft"
 
-		# Only got 4 params: Transfer, Return, Billed
-
 		if flt(self.per_billed) > 0:
 			status = "Completed"
+		elif flt(self.per_delivered) > 0:
+			status = "To Bill"
+		elif (flt(self.per_sold) > 0 or flt(self.per_return) > 0) and flt(self.per_delivered) == 0:
+			status = "Returned and To Bill"
 		elif flt(self.per_transfer) == 100:
-			status = "Transfered and To Bill"
+			status = "Transfered to Customer"
 		elif flt(self.per_transfer) > 0:
 			status = "Partially Transfered"
 		elif flt(self.per_transfer) == 0:
