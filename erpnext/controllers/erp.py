@@ -1284,9 +1284,15 @@ def change_naming_series(doc, method=""):
 		"Landed Cost Voucher",
 		"Subcontracting Receipt",
 		"Subcontracting Order",
+
+		"Consignment Order",
+		"Consignment Request"
 	]
 
-	if doc.doctype not in doctypes:
+	if doc.get("doctype") not in doctypes:
+		return
+
+	if not doc.meta.get_field("naming_series") or not doc.meta.get_field("company"):
 		return
 	
 	"""Attach the company abbreviation (e.g., 'MY') to the document name if not already present."""
