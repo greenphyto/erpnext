@@ -261,7 +261,27 @@ erpnext.stock.consignment_order.add_back_consignment_button = function (frm) {
 	if (!consignment_request) return;
 
 	const btn = frm.add_custom_button(__("Back to Consignment"), function () {
-		frappe.set_route("form", "Consignment Request", consignment_request);
+		const route_to_consignment = frappe.set_route(
+			"Form",
+			"Consignment Request",
+			consignment_request
+		);
+
+		Promise.resolve(route_to_consignment).then(() => {
+			frappe.show_alert({
+				message: __("Opened Consignment Request {0}", [consignment_request]),
+				indicator: "green",
+			});
+
+			if (
+				cur_frm
+				&& cur_frm.doc
+				&& cur_frm.doc.doctype === "Consignment Request"
+				&& cur_frm.doc.name === consignment_request
+			) {
+				cur_frm.reload_doc();
+			}
+		});
 	});
 	btn.removeClass("btn-default").addClass("btn-warning");
 };
@@ -346,3 +366,11 @@ function init_consignment_order_controller() {
 init_consignment_order_controller();
 
 }
+
+
+frappe.set_route = function () {
+	return new Promise(resolve => {
+	frappe.router.set_route.apply(frappe.router, arguments);
+	resolve();
+	});
+};

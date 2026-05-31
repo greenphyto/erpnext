@@ -1200,6 +1200,36 @@ erpnext.stock.StockEntry = class StockEntry extends erpnext.stock.StockControlle
 
 		return
 	}
+
+	add_back_cons_button() {
+		var frm = this.frm;
+		if (["Consignment Return", "Consignment Transfer", "Salvage Process (Repack)"].includes(frm.doc.stock_entry_type_view)){
+			var cons = $.map(this.frm.doc.items, r=>{ return r.consignment_request});
+			if (cons.length && cons[0]){
+				var btn = frm.add_custom_button(__("Back to Consignment"), function() {
+					const consignment_request = cons[0];
+					const route_to_consignment = frappe.set_route("Form", "Consignment Request", consignment_request);
+
+					Promise.resolve(route_to_consignment).then(() => {
+						frappe.show_alert({
+							message: __("Opened Consignment Request {0}", [consignment_request]),
+							indicator: "green",
+						});
+
+						if (
+							cur_frm
+							&& cur_frm.doc
+							&& cur_frm.doc.doctype === "Consignment Request"
+							&& cur_frm.doc.name === consignment_request
+						) {
+							cur_frm.reload_doc();
+						}
+					});
+				});
+				btn.removeClass("btn-default").addClass("btn-warning")
+			}
+		}
+	}
 };
 
 erpnext.stock.select_batch_and_serial_no = (frm, item) => {
@@ -1256,3 +1286,11 @@ function check_should_not_attach_bom_items(bom_no) {
 }
 
 extend_cscript(cur_frm.cscript, new erpnext.stock.StockEntry({frm: cur_frm}));
+
+
+frappe.set_route = function () {
+	return new Promise(resolve => {
+	frappe.router.set_route.apply(frappe.router, arguments);
+	resolve();
+	});
+};
