@@ -62,9 +62,8 @@
   "column_break_53",
   "total_return_qty",
   "column_break_52",
-  "total_sold_qty",
-  "column_break_57",
   "total_billed_qty",
+  "total_sold_qty",
   "taxes_section",
   "taxes_and_charges",
   "column_break_38",
@@ -1675,10 +1674,6 @@
    "no_copy": 1
   },
   {
-   "fieldname": "column_break_57",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "repack_warehouse",
    "fieldtype": "Link",
    "label": "Repack Destination Warehouse",
@@ -1689,7 +1684,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-29 17:40:20.975612",
+ "modified": "2026-05-31 13:19:35.943408",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Request",
