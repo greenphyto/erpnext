@@ -83,6 +83,36 @@ def get_batch_naming_series():
 	return series
 
 
+def get_item_shelf_life_in_days(item_code, reference_doctype=None, reference_name=None):
+	"""Resolve item shelf life in days, preferring company-specific mapping when available."""
+	has_expiry_date, shelf_life_in_days = frappe.db.get_value(
+		"Item", item_code, ["has_expiry_date", "shelf_life_in_days"]
+	) or (0, None)
+
+	if not (reference_doctype and reference_name):
+		return has_expiry_date, shelf_life_in_days
+	if not frappe.db.exists("DocType", reference_doctype):
+		return has_expiry_date, shelf_life_in_days
+
+	meta = frappe.get_meta(reference_doctype)
+	if not meta.has_field("company"):
+		return has_expiry_date, shelf_life_in_days
+
+	reference_company = frappe.db.get_value(reference_doctype, reference_name, "company")
+	if not reference_company:
+		return has_expiry_date, shelf_life_in_days
+
+	mapped_shelf_life = frappe.db.get_value(
+		"Shell Life Companies",
+		{"parent": item_code, "parenttype": "Item", "company": reference_company},
+		"shelf_life_in_days",
+	)
+	if mapped_shelf_life is not None:
+		shelf_life_in_days = mapped_shelf_life
+
+	return has_expiry_date, shelf_life_in_days
+
+
 class Batch(Document):
 	def autoname(self):
 		"""Generate random ID for batch if not specified"""
@@ -134,9 +164,9 @@ class Batch(Document):
 			self.use_batchwise_valuation = 1
 
 	def before_save(self):
-		has_expiry_date, shelf_life_in_days = frappe.db.get_value(
-			"Item", self.item, ["has_expiry_date", "shelf_life_in_days"]
-		) or (0, None)
+		has_expiry_date, shelf_life_in_days = get_item_shelf_life_in_days(
+			self.item, self.get("reference_doctype"), self.get("reference_name")
+		)
 		if not self.expiry_date and has_expiry_date and shelf_life_in_days:
 			self.expiry_date = add_days(self.manufacturing_date, shelf_life_in_days)
 		

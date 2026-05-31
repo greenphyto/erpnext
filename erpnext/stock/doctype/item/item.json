@@ -48,10 +48,11 @@
   "inventory_section",
   "inventory_settings_section",
   "shelf_life_in_days",
+  "shelf_life_companies",
   "end_of_life",
+  "column_break1",
   "default_material_request_type",
   "valuation_method",
-  "column_break1",
   "warranty_period",
   "weight_per_unit",
   "weight_uom",
@@ -339,7 +340,7 @@
   {
    "fieldname": "shelf_life_in_days",
    "fieldtype": "Int",
-   "label": "Shelf Life In Days",
+   "label": "Default Shelf Life In Days",
    "mandatory_depends_on": "eval:doc.has_batch_no && doc.has_expiry_date"
   },
   {
@@ -1056,6 +1057,19 @@
    "fieldname": "disable_discount_amount",
    "fieldtype": "Check",
    "label": "Disable Discount Amount"
+  },
+  {
+   "fieldname": "foms_variant_id",
+   "fieldtype": "Int",
+   "label": "FOMS Variant ID",
+   "read_only": 1
+  },
+  {
+   "description": "This will overide default Shelf Life for specific company",
+   "fieldname": "shelf_life_companies",
+   "fieldtype": "Table",
+   "label": "Shelf Life Companies",
+   "options": "Shell Life Companies"
   }
  ],
  "icon": "fa fa-tag",
@@ -1064,7 +1078,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2026-04-14 17:26:58.101267",
+ "modified": "2026-05-31 12:36:51.306697",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",
