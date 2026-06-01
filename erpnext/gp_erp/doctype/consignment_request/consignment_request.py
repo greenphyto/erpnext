@@ -245,6 +245,7 @@ def billing_consignment_controller(doc, method=""):
 			for dt in cr.get("items"):
 				if dt.name == d.cr_detail:
 					dt.billed_qty = flt(frappe.db.get_value("Sales Invoice Item", {"item_code": dt.item_code, "cr_detail": dt.name, "docstatus": 1}, "sum(qty) as qty"))
+					dt.sold_qty = dt.transfer_qty - dt.returned_qty
 		cr.sync_qty()
 
 def get_list_context(context=None):
