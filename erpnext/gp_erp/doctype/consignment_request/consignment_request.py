@@ -370,6 +370,7 @@ def make_salvage_process(source_name, target_doc=None):
 		target.naming_series = se_series
 		target.from_warehouse = source.salvage_warehouse
 		target.to_warehouse = source.set_warehouse
+		cost_center = erpnext.get_default_cost_center(target.company)
 		def post_process_item(row, batch):
 			row.consignment_item = batch.get("consignment_item")
 			row.consignment_request = batch.get("consignment_request")
@@ -395,7 +396,7 @@ def make_salvage_process(source_name, target_doc=None):
 			row.conversion_factor = d.conversion_factor
 			row.consignment_item = d.consignment_item
 			row.consignment_request = d.consignment_request
-		
+			row.cost_center = cost_center
 
 	def update_item(source_doc, target_doc, source_parent):
 		target_doc.s_warehouse = source_parent.salvage_warehouse
