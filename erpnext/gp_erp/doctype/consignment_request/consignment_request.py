@@ -209,15 +209,6 @@ def stock_entry_controller(doc, method=""):
 	for con in con_list:
 		cr = frappe.get_doc("Consignment Request", con)
 
-		# sync for transfer qty
-		qty_map = get_qty_from_transfer(con, "Consignment Transfer")
-		for d in cr.get("items"):
-			key = (d.item_code, d.uom)
-			if key in qty_map:
-				d.transfer_qty = qty_map[key].get("qty")
-			else:
-				d.transfer_qty = 0
-
 		# sync for return	
 		qty_map = get_qty_from_transfer(con, "Consignment Return")
 		for d in cr.get("items"):
@@ -225,7 +216,7 @@ def stock_entry_controller(doc, method=""):
 			if qty_map:
 				if key in qty_map:
 					d.returned_qty = qty_map[key].get("qty")
-					d.sold_qty = d.transfer_qty - d.returned_qty
+					d.sold_qty = max(flt(d.transfer_qty) - flt(d.returned_qty), 0)
 				else:
 					d.returned_qty = 0
 					d.sold_qty = d.transfer_qty
@@ -248,7 +239,7 @@ def billing_consignment_controller(doc, method=""):
 			for dt in cr.get("items"):
 				if dt.name == d.cr_detail:
 					dt.billed_qty = flt(frappe.db.get_value("Sales Invoice Item", {"item_code": dt.item_code, "cr_detail": dt.name, "docstatus": 1}, "sum(qty) as qty"))
-					dt.sold_qty = dt.transfer_qty - dt.returned_qty
+					dt.sold_qty = max(flt(dt.transfer_qty) - flt(dt.returned_qty), 0)
 		cr.sync_qty()
 
 def get_list_context(context=None):
@@ -338,6 +329,7 @@ def make_stock_return(source_name, target_doc=None):
 	def update_item(source_doc, target_doc, source_parent):
 		target_doc.s_warehouse = source_parent.con_warehouse
 		target_doc.t_warehouse = source_parent.salvage_warehouse
+		target_doc.qty = flt(source_doc.transfer_qty) - flt(source_doc.returned_qty)
 
 	doclist = get_mapped_doc(
 		"Consignment Request",
@@ -356,7 +348,7 @@ def make_stock_return(source_name, target_doc=None):
 					"parent": "consignment_request",
 				},
 				"postprocess": update_item,
-				# "condition": lambda doc: doc.delivered_qty < doc.qty,
+				"condition": lambda doc: (doc.transfer_qty-doc.returned_qty) > 0,
 			},
 		},
 		target_doc,
