@@ -77,7 +77,7 @@ class ConsignmentRequest(SellingController):
 			self.set_warehouse = frappe.get_value("Company", self.company, "default_warehouse") or frappe.get_value(
 				"Stock Settings", "Stock Settings", "default_warehouse"
 			)
-		self.salvage_warehouse = frappe.get_value("Company", self.company, "default_salvage_warehouse")
+		self.salvage_warehouse = frappe.get_value("Company", self.company, "default_salvage_warehouse") or self.set_warehouse
 		self.repack_warehouse = self.set_warehouse
 		# self.taxes_and_charges = frappe.get_value("Sales Taxes and Charges Template", {"company": self.company, "is_default": 1}, "name")
 		# self.missing_values()
