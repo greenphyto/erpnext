@@ -307,7 +307,7 @@ def get_export_cost_center(filters):
 	export_date = now()
 	date_str = " "+get_datetime(export_date).strftime("%-d %B %y %H:%M:%S")
 	report_name = "Profit and Loass Statement"
-	title_report = add_title_report(report_name) 
+	title_report = add_title_report(report_name, filters) 
 	filter_report = get_filters_data(filters)
 
 	for cc in cost_centers:

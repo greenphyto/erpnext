@@ -291,7 +291,7 @@ def get_export_cost_center(report_name, filters):
 	# add detail
 	export_date = now()
 	date_str = " "+get_datetime(export_date).strftime("%-d %B %y %H:%M:%S")
-	title_report = add_title_report(report_name) 
+	title_report = add_title_report(report_name, filters) 
 
 	if report_name == "Budget Variance Greenphyto":
 		from erpnext.gp_erp.report.budget_variance_greenphyto.budget_variance_greenphyto import execute
