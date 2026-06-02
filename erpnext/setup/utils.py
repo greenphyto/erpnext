@@ -137,23 +137,25 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 		"bank_date":"",
 		"rate":0
 	}
+	cur_date = getdate(nowdate())
 	
 	# overide date if furture date
-	if getdate(transaction_date) > getdate(today()):
-		transaction_date = getdate(today())
+	if getdate(transaction_date) > cur_date:
+		transaction_date = cur_date
 
 	try:
-		# if any holiday and missing result, will be back -1 day
 		idx = 0
-		for i in range(5):
-			transaction_date=add_days(transaction_date, idx*-1)
+		for i in range(7):
+			transaction_date=add_days(cur_date, idx*-1)
 			settings = frappe.get_cached_doc("Currency Exchange Settings")
 			if settings.api_endpoint.find("mas.gov.sg") > -1:
 				weekday = getdate(transaction_date).strftime('%A')
 				if weekday=="Sunday":
-					transaction_date=add_days(transaction_date, -2)
+					idx += 2
+					transaction_date=add_days(cur_date, idx*-1)
 				elif weekday=="Saturday" :
-					transaction_date=add_days(transaction_date, -1)
+					idx += 1
+					transaction_date=add_days(cur_date, idx*-1)
 				else:
 					idx += 1
 
@@ -181,14 +183,18 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 					).lower()
 
 				if not dummy:
-					response = requests.get(format_ces_api(settings.api_endpoint, req_params), params=params, headers=headers)
+					url = format_ces_api(settings.api_endpoint, req_params)
+					response = requests.get(url, params=params, headers=headers)
 					# expire in 6 hours
-					response.raise_for_status()
+					if response.status_code != 200:
+						idx += 1
+						continue
 					result = response.json()
 				else:
 					result = dummy
 
 				if not result or not result['elements']:
+					idx += 1
 					continue
 
 				if not from_currency in req_params:
@@ -233,7 +239,9 @@ def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, se
 		
 		data["rate"] = flt(value)
 		return data
-	except:
+	except Exception as e:
+		frappe.log_error("Unable to fetch exchange rate from API")
+		frappe.log_error(e)
 		return data
 		
 # unused
