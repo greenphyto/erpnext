@@ -137,6 +137,8 @@ def get_cost_centers(filters):
 	if filters.get("budget_against") == "Cost Center":
 		order_by = "order by lft"
 
+	tab = frappe.scrub(filters.get("budget_against"))
+
 	if filters.get("budget_against") in ["Cost Center", "Project"]:
 		return frappe.db.sql_list(
 			"""
@@ -148,7 +150,7 @@ def get_cost_centers(filters):
 					company = %s
 				{order_by}
 			""".format(
-				tab=filters.get("budget_against"), order_by=order_by
+				tab=tab, order_by=order_by
 			),
 			filters.get("company"),
 		)
@@ -160,9 +162,9 @@ def get_cost_centers(filters):
 				from
 					`tab{tab}`
 			""".format(
-				tab=filters.get("budget_against")
+				tab=tab
 			)
-		)  # nosec
+		)  # nosec: B608
 
 
 # Get dimension & target details
@@ -240,16 +242,36 @@ def get_target_distribution_details(filters):
 # Get actual details from gl entry
 def get_actual_details(name, filters):
 	budget_against = frappe.scrub(filters.get("budget_against"))
-	cond = ""
+	cc_lft, cc_rgt = None, None
 
 	if filters.get("budget_against") == "Cost Center":
 		cc_lft, cc_rgt = frappe.db.get_value("Cost Center", name, ["lft", "rgt"])
-		cond = """
-				and lft >= "{lft}"
-				and rgt <= "{rgt}"
-			""".format(
-			lft=cc_lft, rgt=cc_rgt
-		)
+
+	params = [
+		filters.from_fiscal_year,
+		filters.to_fiscal_year,
+		filters.company,
+		name,
+		filters.from_fiscal_year,
+		filters.to_fiscal_year,
+		name,
+	]
+
+	exists_clause = ""
+	if filters.get("budget_against") == "Cost Center" and cc_lft and cc_rgt:
+		exists_clause = """
+				and exists(
+					select
+						name
+					from
+						`tab{tab}`
+					where
+						name = gl.{budget_against}
+						AND lft >= %s
+						AND rgt <= %s
+				)
+			""".format(tab=filters.budget_against, budget_against=budget_against)
+		params.extend([cc_lft, cc_rgt])
 
 	ac_details = frappe.db.sql(
 		"""
@@ -258,35 +280,27 @@ def get_actual_details(name, filters):
 				gl.debit,
 				gl.credit,
 				gl.fiscal_year,
-				MONTHNAME(gl.posting_date) as month_name,
-				b.{budget_against} as budget_against
+				MONTHNAME(gl.posting_date) as month_name
 			from
-				`tabGL Entry` gl,
-				`tabBudget Account` ba,
-				`tabBudget` b
-			where
-				b.name = ba.parent
+				`tabGL Entry` gl
+				inner join `tabBudget Account` ba on ba.account = gl.account
+				inner join `tabBudget` b on b.name = ba.parent
 				and b.docstatus = 1
-				and ba.account=gl.account
-				and b.{budget_against} = gl.{budget_against}
-				and gl.fiscal_year between %s and %s
-				and b.{budget_against} = %s
-				and exists(
-					select
-						name
-					from
-						`tab{tab}`
-					where
-						name = gl.{budget_against}
-						{cond}
-				)
-				group by
-					gl.name
-				order by gl.fiscal_year
+				and b.fiscal_year between %s and %s
+				and b.company = %s
+				and b.budget_against = gl.budget_against
+				and b.budget_against = %s
+			where
+				gl.fiscal_year between %s and %s
+				and b.budget_against = %s
+				{exists_clause}
+			group by
+				gl.name
+			order by gl.fiscal_year
 		""".format(
-			tab=filters.budget_against, budget_against=budget_against, cond=cond
+			exists_clause=exists_clause
 		),
-		(filters.from_fiscal_year, filters.to_fiscal_year, name),
+		tuple(params),
 		as_dict=1,
 	)
 
