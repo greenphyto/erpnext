@@ -28,7 +28,8 @@ dependencies = [
     "xmltodict",
     "pypdf",
     "reportlab",
-    "pandas"
+    "pandas",
+    "pymupdf"
 ]
 
 [build-system]
