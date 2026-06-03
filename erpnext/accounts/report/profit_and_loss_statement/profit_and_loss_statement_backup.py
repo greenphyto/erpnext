@@ -306,7 +306,7 @@ def get_export_cost_center(filters):
 	# add detail
 	export_date = now()
 	date_str = " "+get_datetime(export_date).strftime("%-d %B %y %H:%M:%S")
-	report_name = "Profit and Loass Statement"
+	report_name = "Profit and Loss Statement"
 	title_report = add_title_report(report_name, filters) 
 	filter_report = get_filters_data(filters)
 
@@ -401,7 +401,7 @@ def export_with_cost_centers(filters=None):
 
 		for row in data_rows:
 			out = []
-			if type(row) != list:
+			if not isinstance(row, list):
 				for f in fields:
 					val = (row or {}).get(f)
 					if isinstance(val, str):
@@ -444,8 +444,7 @@ def export_with_cost_centers(filters=None):
 
 	except Exception:
 		# Fallback: plain export if add_formulas unavailable
-		now = now_datetime()
-		date_str_title = now.strftime("%y%m%d_%H%M%S")
+		date_str_title = now_datetime().strftime("%y%m%d_%H%M%S")
 		frappe.response["filename"] = f"Profit and Loss by Cost Center_{date_str_title}.xlsx"
 		frappe.response["filecontent"] = bio.getvalue()
 		frappe.response["type"] = "binary"
