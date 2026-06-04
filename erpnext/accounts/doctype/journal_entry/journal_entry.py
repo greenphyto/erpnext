@@ -108,7 +108,7 @@ class JournalEntry(AccountsController):
 	
 	def validate_cost_center(self):
 		for d in self.get("accounts"):
-			cost_center = frappe.get_value("Cost Center Mapping", {"company": self.company, "account":d.account}, "cost_center")
+			cost_center = erpnext.get_default_cost_center(company=self.company, account=d.account)
 			if cost_center:
 				d.cost_center = cost_center
 			elif not d.cost_center:

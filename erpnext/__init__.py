@@ -37,8 +37,12 @@ def get_default_cost_center(company="", account=""):
 	if not company:
 		return None
 
-	cost_center = frappe.get_value("Cost Center Mapping", {"company":company, "account":account}, "cost_center")
+	cost_center = frappe.get_value("Account", account, "cost_center")
 	if cost_center:
+		return cost_center
+
+	if not cost_center:
+		cost_center = frappe.get_value("Cost Center Mapping", {"company":company, "account":account}, "cost_center")
 		return cost_center
 
 	return ""

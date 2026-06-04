@@ -291,8 +291,7 @@ class SalesInvoice(SellingController):
 						)
 					)
 			else:
-				cost_center = frappe.get_value("Cost Center Mapping",
-					{"company": self.company, "account": item.expense_account}, "cost_center")
+				cost_center = erpnext.get_default_cost_center(company=self.company, account=item.expense_account)
 				if cost_center:
 					item.cost_center = cost_center
 				else:
