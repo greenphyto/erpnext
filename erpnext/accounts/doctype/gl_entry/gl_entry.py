@@ -146,7 +146,7 @@ class GLEntry(Document):
 		self.account_number = frappe.get_value("Account", self.account, "account_number")
 
 	def force_cost_center_value(self):
-		cost_center = frappe.get_value("Cost Center Mapping", {"company":self.company, "account":self.account}, "cost_center")
+		cost_center = erpnext.get_default_cost_center(company=self.company, account=self.account)
 		if cost_center:
 			self.cost_center = cost_center
 
