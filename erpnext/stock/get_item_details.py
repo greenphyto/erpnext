@@ -149,7 +149,7 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 						if d.get(k):
 							out[k] = d.get(k)
 	
-	if doc.get("is_carton_order"):
+	if doc and doc.get("is_carton_order"):
 		out.update(get_carton_detail(args))
 
 	return out
@@ -821,7 +821,7 @@ def get_default_cost_center(args, item=None, item_group=None, brand=None, compan
 				or item_group.get("buying_cost_center")
 				or brand.get("buying_cost_center")
 			)
-	
+
 		if def_cost_center:
 			return res.get("value") or def_cost_center
 		else:
