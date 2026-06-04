@@ -111,6 +111,12 @@ class JournalEntry(AccountsController):
 			cost_center = frappe.get_value("Cost Center Mapping", {"company": self.company, "account":d.account}, "cost_center")
 			if cost_center:
 				d.cost_center = cost_center
+			elif not d.cost_center:
+				frappe.throw(
+					_("Row #{0}: Cost Center is required. No mapping found for account {1} in Cost Center Settings.").format(
+						frappe.bold(d.idx), frappe.bold(d.account)
+					)
+				)
 	
 	def validate_gst_input(self):
 		if self.voucher_type == "GST Input Tax":

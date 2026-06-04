@@ -106,8 +106,8 @@ def overide_user_defaults(bootinfo):
 	cc = doc.cost_center
 	if wh:
 		bootinfo.user.defaults.default_warehouse = wh
-	if cc:
-		bootinfo.user.defaults.cost_center = cc
+		
+	bootinfo.user.defaults.cost_center = ""
 
 
 

@@ -291,7 +291,16 @@ class SalesInvoice(SellingController):
 						)
 					)
 			else:
-				item.cost_center = erpnext.get_default_cost_center(self.company)
+				cost_center = frappe.get_value("Cost Center Mapping",
+					{"company": self.company, "account": item.expense_account}, "cost_center")
+				if cost_center:
+					item.cost_center = cost_center
+				else:
+					frappe.throw(
+						_("Row #{0}: Cost Center is required. No mapping found for account {1} in Cost Center Settings.").format(
+							frappe.bold(item.idx), frappe.bold(item.expense_account)
+						)
+					)
 
 	def validate_income_account(self):
 		for item in self.get("items"):

@@ -33,21 +33,15 @@ def get_default_currency():
 
 
 def get_default_cost_center(company="", account=""):
-	"""Returns the default cost center of the company"""
+	"""Returns the default cost center from Cost Center Mapping only."""
 	if not company:
 		return None
-	
+
 	cost_center = frappe.get_value("Cost Center Mapping", {"company":company, "account":account}, "cost_center")
 	if cost_center:
 		return cost_center
 
-	if not frappe.flags.company_cost_center:
-		frappe.flags.company_cost_center = {}
-	if not company in frappe.flags.company_cost_center:
-		frappe.flags.company_cost_center[company] = frappe.get_cached_value(
-			"Company", company, "cost_center"
-		)
-	return frappe.flags.company_cost_center[company]
+	return ""
 
 
 def get_company_currency(company):
