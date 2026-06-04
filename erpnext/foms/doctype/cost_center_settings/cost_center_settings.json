@@ -22,6 +22,7 @@
    "unique": 1
   },
   {
+   "allow_bulk_edit": 1,
    "fieldname": "cost_center",
    "fieldtype": "Table",
    "label": "Cost Center",
@@ -30,7 +31,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-24 17:46:51.004208",
+ "modified": "2026-06-04 17:36:44.075980",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Cost Center Settings",
