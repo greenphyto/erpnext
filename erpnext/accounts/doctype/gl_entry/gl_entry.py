@@ -146,9 +146,24 @@ class GLEntry(Document):
 		self.account_number = frappe.get_value("Account", self.account, "account_number")
 
 	def force_cost_center_value(self):
+		# only enforce on P&L accounts
+		report_type = frappe.db.get_value("Account", self.account, "report_type")
+		if report_type != "Profit and Loss":
+			return
+
+		# try auto-fill from mapping
 		cost_center = erpnext.get_default_cost_center(company=self.company, account=self.account)
 		if cost_center:
 			self.cost_center = cost_center
+			return
+
+		# if still empty after auto-fill attempt, throw error
+		if not self.cost_center:
+			frappe.throw(
+				_("Cost Center is required for P&L account {0}. No mapping found in Cost Center Settings.").format(
+					frappe.bold(self.account)
+				)
+			)
 
 	def check_mandatory(self):
 	 
