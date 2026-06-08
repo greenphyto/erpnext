@@ -516,8 +516,8 @@ cur_frm.cscript.update_totals = function(doc) {
 	for(var i in gst_entry) {
 		td += flt(gst_entry[i].debit, precision("debit", gst_entry[i]));
 		tc += flt(gst_entry[i].credit, precision("credit", gst_entry[i]));
-		tdb += flt(gst_entry[i].debit_in_currency_base, precision("debit_in_currency_base", gst_entry[i]));
-		tcb += flt(gst_entry[i].credit_in_currency_base, precision("credit_in_currency_base", gst_entry[i]));
+		tdb += flt(gst_entry[i].debit_in_account_currency, precision("debit_in_account_currency", gst_entry[i]));
+		tcb += flt(gst_entry[i].credit_in_account_currency, precision("credit_in_account_currency", gst_entry[i]));
 	}
 	var doc = locals[doc.doctype][doc.name];
 	doc.total_debit = td;
@@ -576,17 +576,21 @@ frappe.ui.form.on("Journal Entry Account", {
 	debit: function(frm, dt, dn) {
 		var d = locals[dt][dn];
 		if (!frm.doc.multi_currency && flt(d.debit_in_account_currency) !== flt(d.debit)) {
-			frappe.model.set_value(dt, dn, "debit_in_account_currency", d.debit);
+			d.debit_in_account_currency = d.debit;
+			refresh_field("accounts");
 		}
 		cur_frm.cscript.update_totals(frm.doc);
+		if (cint(d.gst_option)) erpnext.journal_entry.calculate_taxable_amount(frm);
 	},
 	
 	credit: function(frm, dt, dn) {
 		var d = locals[dt][dn];
 		if (!frm.doc.multi_currency && flt(d.credit_in_account_currency) !== flt(d.credit)) {
-			frappe.model.set_value(dt, dn, "credit_in_account_currency", d.credit);
+			d.credit_in_account_currency = d.credit;
+			refresh_field("accounts");
 		}
 		cur_frm.cscript.update_totals(frm.doc);
+		if (cint(d.gst_option)) erpnext.journal_entry.calculate_taxable_amount(frm);
 	},
 	
 	debit_in_currency_base: function(frm,cdt,cdn){
@@ -631,13 +635,19 @@ frappe.ui.form.on("GST for Journal Entry", {
 
 	debit: function(frm, dt, dn) {
 		var d = locals[dt][dn];
-		if (!frm.doc.multi_currency) frappe.model.set_value(dt, dn, "debit_in_account_currency", d.debit);
+		if (!frm.doc.multi_currency && flt(d.debit_in_account_currency) !== flt(d.debit)) {
+			d.debit_in_account_currency = d.debit;
+			refresh_field("gst_entry");
+		}
 		cur_frm.cscript.update_totals(frm.doc);
 	},
-	
+
 	credit: function(frm, dt, dn) {
 		var d = locals[dt][dn];
-		if (!frm.doc.multi_currency) frappe.model.set_value(dt, dn, "credit_in_account_currency", d.credit);
+		if (!frm.doc.multi_currency && flt(d.credit_in_account_currency) !== flt(d.credit)) {
+			d.credit_in_account_currency = d.credit;
+			refresh_field("gst_entry");
+		}
 		cur_frm.cscript.update_totals(frm.doc);
 	},
 
@@ -753,23 +763,27 @@ $.extend(erpnext.journal_entry, {
 		var total_tax_db = 0;
 		$.each(frm.doc.accounts, (i, d)=>{
 			if ( cint(d.gst_option)){
-				total_cr += d.credit;
-				total_db += d.debit;
+				total_cr += flt(d.credit);
+				total_db += flt(d.debit);
 			}
 		})
 		frm.set_value("total_taxable_amount_debit", total_db)
 		frm.set_value("total_taxable_amount_credit", total_cr)
 		$.each(frm.doc.gst_entry, (i, d)=>{
-			let value_cr = flt(d.tax_rate)/100*total_cr;
-			let value_db = flt(d.tax_rate)/100*total_db;
+			let value_cr = flt(d.tax_rate)/100*flt(total_cr);
+			let value_db = flt(d.tax_rate)/100*flt(total_db);
 
-			frappe.model.set_value(d.doctype, d.name, "debit_in_account_currency", value_db)
-			frappe.model.set_value(d.doctype, d.name, "credit_in_account_currency", value_cr)
+			d.debit_in_account_currency = value_db;
+			d.credit_in_account_currency = value_cr;
+
+			d.exchange_rate = flt(d.exchange_rate) || 1;
+			erpnext.journal_entry.set_debit_credit_in_company_currency(frm, d.doctype, d.name);
 
 			total_tax_cr += flt(value_cr)
 			total_tax_db += flt(value_db)
 			
 		})
+		refresh_field("gst_entry");
 		frm.set_value("total_tax_amount_debit", total_tax_db);
 		frm.set_value("total_tax_amount_credit", total_tax_cr);
 	},
@@ -794,12 +808,29 @@ $.extend(erpnext.journal_entry, {
 
 	set_debit_credit_in_company_currency: function(frm, cdt, cdn) {
 		var row = locals[cdt][cdn];
+		var exchange_rate = flt(row.exchange_rate);
+		if (!exchange_rate) exchange_rate = 1;
+		var debit = flt(flt(row.debit_in_account_currency) * exchange_rate, precision("debit", row));
+		var credit = flt(flt(row.credit_in_account_currency) * exchange_rate, precision("credit", row));
+		var changed = false;
 
-		frappe.model.set_value(cdt, cdn, "debit",
-			flt(flt(row.debit_in_account_currency)*row.exchange_rate, precision("debit", row)));
+		if (flt(row.debit, precision("debit", row)) !== debit) {
+			row.debit = debit;
+			changed = true;
+		}
 
-		frappe.model.set_value(cdt, cdn, "credit",
-			flt(flt(row.credit_in_account_currency)*row.exchange_rate, precision("credit", row)));
+		if (flt(row.credit, precision("credit", row)) !== credit) {
+			row.credit = credit;
+			changed = true;
+		}
+
+		if (changed) {
+			if (cdt === "GST for Journal Entry") {
+				refresh_field("gst_entry");
+			} else {
+				refresh_field("accounts");
+			}
+		}
 
 		cur_frm.cscript.update_totals(frm.doc);
 	},
