@@ -7,7 +7,7 @@ from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_i
 from frappe.utils import flt, getdate, get_time
 from erpnext.controllers.erp import get_supplier_context, is_doctype_exists, deep_get, get_supplier_payload
 import os, re
-from frappe.utils import get_traceback, cstr
+from frappe.utils import get_traceback, cstr, get_files_path
 from erpnext.ai_agent.doctype.ai_agent_settings.ai_invoice_converter import AIAgentClient
 from six import string_types
 from erpnext.accounts.party import get_due_date_from_template
@@ -185,10 +185,12 @@ class EmailInvoice(Document):
 			doc = frappe.get_doc("Communication", self.inbox)
 
 		# Collect attachments linked to this email
-		file_doc_name = frappe.db.get_list(
-			"File",
-			{"attached_to_doctype": "Communication", "attached_to_name": doc.name},
-		)
+		file_doc_name = frappe.db.get_list("File", {"attached_to_doctype": self.doctype, "attached_to_name": self.name})
+		if not file_doc_name:
+			file_doc_name = frappe.db.get_list(
+				"File",
+				{"attached_to_doctype": "Communication", "attached_to_name": doc.name},
+			)
 
 		# No attachments at all
 		if not file_doc_name:
@@ -215,9 +217,13 @@ class EmailInvoice(Document):
 		for file_name in file_doc_name:
 			fn = frappe.get_doc("File", file_name.get("name"))
 			full_path = fn.get_full_path()
+			if not os.path.exists(full_path):
+				full_path = self.find_alternative_file(fn)
 
 			# Check file exists
 			if not os.path.exists(full_path):
+				# alternative find same file with content hash same
+
 				self.add_reason(
 					category="attachment",
 					code="missing_file",
@@ -353,6 +359,24 @@ class EmailInvoice(Document):
 			self._finalize_reasons()
 		self.set_status()
 		return pi_created
+
+	def find_alternative_file(self, file_doc):
+		"""Find alternative file with same content hash — returns full_path or empty string."""
+		file_list = frappe.get_all(
+			"File",
+			filters={"content_hash": file_doc.content_hash},
+			fields=["name", "file_url", "is_private"],
+		)
+		file_map = {}
+		for f in file_list or []:
+			file_map[f.file_url] = f
+
+		for key, f in file_map.items():
+			alt_file = frappe.get_doc("File", f.name)
+			full_path = alt_file.get_full_path()
+			if os.path.exists(full_path):
+				return full_path
+		return ""
 
 	def get_sender_domain(self):
 		# exclude from home domain
@@ -1328,12 +1352,12 @@ def change_temporary_invoice(doc, method=""):
 	return new_name
 
 def save_dict_to_json(data: dict, filename="data.json"):
-    # cari direktori file ini (tempat fungsi didefinisikan)
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    filepath = os.path.join(current_dir, filename)
+	# cari direktori file ini (tempat fungsi didefinisikan)
+	current_dir = os.path.dirname(os.path.abspath(__file__))
+	filepath = os.path.join(current_dir, filename)
 
-    # tulis dict ke file JSON
-    with open(filepath, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+	# tulis dict ke file JSON
+	with open(filepath, "w", encoding="utf-8") as f:
+		json.dump(data, f, indent=4, ensure_ascii=False)
 
-    print(f"✅ JSON saved to: {filepath}")
+	print(f"✅ JSON saved to: {filepath}")

@@ -29,7 +29,8 @@ dependencies = [
     "pypdf",
     "reportlab",
     "pandas",
-    "pymupdf"
+    "pymupdf",
+    google-cloud-vision
 ]
 
 [build-system]

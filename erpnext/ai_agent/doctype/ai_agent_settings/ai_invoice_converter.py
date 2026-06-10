@@ -38,7 +38,7 @@ class AIAgentClient:
         path = path if path.startswith("/") else f"/{path}"
         return f"{base}{path}"
 
-    def extract_text(
+    def extract_text_old(
         self,
         invoice_path: str,
         email: str,
@@ -86,6 +86,36 @@ class AIAgentClient:
             self.text = resp.text
 
         return self.text
+    
+    def extract_text(
+        self,
+        invoice_path: str,
+        email: str,
+        lang: Optional[str] = None,
+    ):
+        return self.extract_text_via_google_vision(invoice_path, email, lang=lang)
+
+    def extract_text_via_google_vision(
+        self,
+        invoice_path: str,
+        email: str,
+        lang: Optional[str] = None,
+    ):
+        """
+        Alternative: extract text using Google Vision API directly (no AI server needed).
+
+        Supports both images and PDFs (via pdf2image).
+        Requires `google_vision_api_key` in site config.
+        """
+        from erpnext.controllers.google_vision import extarct_text_from_file
+
+        text = extarct_text_from_file(invoice_path)
+        if not text:
+            text = ""
+
+        text += f"\nSender: {email}"
+        self.text = text
+        return self.text
 
     def get_invoice_data(self, text: str, supplier_default:str):
         """
@@ -117,7 +147,7 @@ class AIAgentClient:
 
         Returns parsed invoice data dict.
         """
-        text = self.extract_text(invoice_path, email, lang=lang)
+        text = self.extract_text(invoice_path, email, lang=lang) or ""
 
         # check continue or not
         if not self.validate_text(text):
