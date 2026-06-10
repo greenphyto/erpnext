@@ -227,42 +227,34 @@ class AIAgentClient:
             }
 
     def validate_text(self, text):
-        # check is valid invoice or not
+        from erpnext.controllers.ai import chat_completion
 
-        # Stament of Account 
-        text = text.lower()
+        # AI-based validation
+        SYSTEM_PROMPT = """
+You are a document classifier. Your task is to determine whether the given OCR-extracted text is an invoice or not.
 
-        if "statement of account" in text or re.search(r"\bdebit\b.*\bcredit\b.*\bbalance\b", text):
-            return False
+An invoice is a document whose sole and primary purpose is to request payment from a recipient for goods or services rendered. It typically contains some combination of the following:
+- A specific amount due or balance due
+- Line items, quantities, or pricing for goods or services
+- Payment instructions, bank details, or account information
+- Tax amounts such as GST or VAT
+- An invoice number or reference tied to a financial transaction
 
-        # Delivery order
-        # Delivery Order (DO) exclusions
-        DELIVERY_PATTERNS = [
-            r"delivery order",
-            r"delivery note",
-            r"\bdo\b",
-            r"\bdo no\b",
-            r"goods delivery",
-            r"goods issue",
-            r"outbound",
-        ]
+If the primary purpose of the document is anything other than requesting payment, it is NOT an invoice. This includes but is not limited to letters, notices, certificates, legal documents, regulatory communications, administrative documents, reports, contracts, or any other document that merely mentions money, a reference number, or a financial context as a secondary detail.
 
-        for p in DELIVERY_PATTERNS:
-            if re.search(p, text):
-                return False
+Ask yourself one question: is the main reason this document exists to bill someone for payment? If no, return false.
 
-        # Purchase Order
-        # Purchase Order (PO) exclusions
-        # PURCHASE_ORDER_PATTERNS = [
-        #     r"purchase order",
-        #     r"\bpo\b",
-        #     r"\bpo no\b",
-        #     r"\bp/o\b",
-        #     r"order confirmation",
-        # ]
+Return ONLY a valid JSON object with no explanation, no markdown, no preamble:
+{"result": true}
+or
+{"result": false}
+"""
+        result = chat_completion(SYSTEM_PROMPT, text)
+        if not result:
+            return True  # fallback: treat as invoice if AI fails
 
-        # for p in PURCHASE_ORDER_PATTERNS:
-        #     if re.search(p, text):
-        #         return False
-
-        return True
+        try:
+            data = json.loads(result)
+            return data.get("result", True)
+        except (json.JSONDecodeError, TypeError):
+            return True
