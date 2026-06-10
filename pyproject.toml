@@ -30,7 +30,7 @@ dependencies = [
     "reportlab",
     "pandas",
     "pymupdf",
-    google-cloud-vision
+    "google-cloud-vision"
 ]
 
 [build-system]
