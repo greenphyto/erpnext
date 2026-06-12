@@ -443,6 +443,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
             $tr.data('detail-row', $detailTr);
             $tr.data('mobile-actions-row', $mobileActionsTr);
             $tr.data('doc', null);
+            $tr.data('row-data', row);
             $tr.data('detail-rendered', false);
 
             // Link opens Payment Approval in new tab via anchor href
@@ -591,15 +592,18 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                     </div>
                 `);
                 $body.append(mobile_html);
-                // Helper: update parent list row amount based on checked invoices
+                // Helper: update row's col-amount based on checked invoices (desktop only to avoid double-count)
                 function update_parent_row_amount() {
                     try {
                         const $amountCell = $tr.find('td.col-amount');
                         if (!$amountCell.length) return;
-                        const $checked = $body.find('.invoice-select:checked');
+                        // Only count from desktop table checkboxes to avoid double-counting mobile duplicates
+                        const $checked = $body.find('table.detail-table tbody .invoice-select:checked');
                         if (!$checked.length) {
                             const empty_html = `${frappe.utils.escape_html(format_amount(0, doc.currency))}<span class="mobile-only-currency"> ${frappe.utils.escape_html(doc.currency || '')}</span>`;
                             $amountCell.html(empty_html);
+                            // Still update global pending amount (all unchecked → 0 for this row)
+                            update_global_pending_amount();
                             return;
                         }
                         let sum = 0;
@@ -612,6 +616,8 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
                         });
                         const html = `${frappe.utils.escape_html(format_amount(sum, cur))}<span class="mobile-only-currency"> ${frappe.utils.escape_html(cur || '')}</span>`;
                         $amountCell.html(html);
+                        // Also update global pending amount
+                        update_global_pending_amount();
                     } catch (e) { /* silent */ }
                 }
 
@@ -906,6 +912,39 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
         $pendingAmount.text(format_amount(pendingTotal, pendingCurrency));
     }
 
+    function update_global_pending_amount() {
+        try {
+            if (!$tbody.length) return;
+            let total = 0;
+            let currency = null;
+            $tbody.find('tr.data-row').each(function() {
+                const $tr = $(this);
+                const $detail = $tr.data('detail-row');
+                const row = $tr.data('row-data');
+                if (!$detail || !$detail.length || !row) return;
+                const rendered = $tr.data('detail-rendered');
+                if (rendered) {
+                    // Detail has been rendered — sum only checked desktop checkboxes
+                    const $checked = $detail.find('table.detail-table tbody .invoice-select:checked');
+                    if (!$checked.length) return; // nothing checked in this row, skip
+                    $checked.each(function() {
+                        const amt = Number($(this).data('amount')) || 0;
+                        const c = $(this).data('currency');
+                        if (c) currency = c;
+                        total += amt;
+                    });
+                } else {
+                    // Not yet expanded — assume all invoices are selected (default)
+                    const amt = Number(row.total_amount) || 0;
+                    const c = row.currency || '';
+                    if (c) currency = c;
+                    total += amt;
+                }
+            });
+            set_pending_label(total, currency);
+        } catch (e) { /* silent */ }
+    }
+
     function recalc_stripes() {
         $tbody.find('tr.data-row').each(function (i) {
             const $row = $(this);
@@ -940,6 +979,8 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
             if (typeof payload.pending_total === 'number') {
                 set_pending_label(payload.pending_total, payload.pending_currency);
             }
+            // Recalculate from actual checked checkboxes
+            update_global_pending_amount();
             page.set_indicator(__('Loaded'), 'green');
             paging.loading = false;
         }).catch(() => {
@@ -970,6 +1011,7 @@ frappe.pages['payment-bulk-approval'].on_page_load = function (wrapper) {
             if (typeof payload.pending_total === 'number') {
                 set_pending_label(payload.pending_total, payload.pending_currency);
             }
+            update_global_pending_amount();
             paging.loading = false;
         }).catch(() => {
             paging.loading = false;
