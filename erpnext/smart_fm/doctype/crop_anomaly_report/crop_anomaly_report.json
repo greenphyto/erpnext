@@ -1,0 +1,257 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "CAR-.YYYY.-.####",
+ "creation": "2026-06-17 16:55:57.391923",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_basic_information",
+  "reported_by",
+  "date_reported",
+  "column_break_basic_1",
+  "product_name",
+  "lot_id",
+  "column_break_basic_2",
+  "item_affected",
+  "section_break_issues_symptoms",
+  "issues_symptoms",
+  "section_break_affected_quantity",
+  "num_cages_affected",
+  "num_trays_affected",
+  "column_break_qty_1",
+  "total_cages_in_lot",
+  "total_trays_in_lot",
+  "section_break_cage_tray_detail",
+  "affected_tray_details",
+  "section_break_whole_lot",
+  "cage_id_whole_lot",
+  "section_break_documentation_sample",
+  "photographs",
+  "column_break_doc_1",
+  "nutrient_sample_taken",
+  "nutrient_sample_date",
+  "nutrient_sample_submitted",
+  "section_break_investigation_outcome",
+  "investigation_outcome",
+  "column_break_invest_1",
+  "resolved_by",
+  "resolved_date",
+  "section_break_status_workflow",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_basic_information",
+   "fieldtype": "Section Break",
+   "label": "Basic Information"
+  },
+  {
+   "fieldname": "reported_by",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Reported By",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "date_reported",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date Reported",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_basic_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "product_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Product Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "lot_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Lot ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_basic_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item_affected",
+   "fieldtype": "Select",
+   "label": "Item Affected",
+   "options": "Seeds\nSeedlings\nHarvested Crops",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_issues_symptoms",
+   "fieldtype": "Section Break",
+   "label": "Issues / Symptoms"
+  },
+  {
+   "fieldname": "issues_symptoms",
+   "fieldtype": "Text Editor",
+   "label": "Issues / Symptoms",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_affected_quantity",
+   "fieldtype": "Section Break",
+   "label": "Affected Quantity"
+  },
+  {
+   "fieldname": "num_cages_affected",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Number of Cages Affected"
+  },
+  {
+   "fieldname": "num_trays_affected",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Number of Trays Affected"
+  },
+  {
+   "fieldname": "column_break_qty_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_cages_in_lot",
+   "fieldtype": "Int",
+   "label": "Total Cages in Lot"
+  },
+  {
+   "fieldname": "total_trays_in_lot",
+   "fieldtype": "Int",
+   "label": "Total Trays in Lot"
+  },
+  {
+   "fieldname": "section_break_cage_tray_detail",
+   "fieldtype": "Section Break",
+   "label": "Cage & Tray Detail"
+  },
+  {
+   "fieldname": "affected_tray_details",
+   "fieldtype": "Table",
+   "label": "Affected Tray Details",
+   "options": "Crop Anomaly Affected Tray"
+  },
+  {
+   "fieldname": "section_break_whole_lot",
+   "fieldtype": "Section Break",
+   "label": "Whole Lot"
+  },
+  {
+   "description": "List all cage IDs for the whole lot",
+   "fieldname": "cage_id_whole_lot",
+   "fieldtype": "Small Text",
+   "label": "Cage ID (Whole Lot)"
+  },
+  {
+   "fieldname": "section_break_documentation_sample",
+   "fieldtype": "Section Break",
+   "label": "Documentation & Sample"
+  },
+  {
+   "fieldname": "photographs",
+   "fieldtype": "Attach",
+   "label": "Photographs of Affected Tray(s)"
+  },
+  {
+   "fieldname": "column_break_doc_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "nutrient_sample_taken",
+   "fieldtype": "Select",
+   "label": "Nutrient Sample (1L) Taken?",
+   "options": "No\nYes"
+  },
+  {
+   "depends_on": "eval:doc.nutrient_sample_taken==\"Yes\"",
+   "fieldname": "nutrient_sample_date",
+   "fieldtype": "Date",
+   "label": "Date of Nutrient Taken"
+  },
+  {
+   "fieldname": "nutrient_sample_submitted",
+   "fieldtype": "Select",
+   "label": "Nutrient Sample Submitted to R&D?",
+   "options": "No\nYes"
+  },
+  {
+   "fieldname": "section_break_investigation_outcome",
+   "fieldtype": "Section Break",
+   "label": "Investigation Outcome (R&D Only)"
+  },
+  {
+   "fieldname": "investigation_outcome",
+   "fieldtype": "Text Editor",
+   "label": "Investigation Outcome"
+  },
+  {
+   "fieldname": "column_break_invest_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "resolved_by",
+   "fieldtype": "Link",
+   "label": "Resolved By",
+   "options": "User"
+  },
+  {
+   "fieldname": "resolved_date",
+   "fieldtype": "Date",
+   "label": "Date Resolved"
+  },
+  {
+   "fieldname": "section_break_status_workflow",
+   "fieldtype": "Section Break",
+   "label": "Status & Workflow"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Draft\nSubmitted\nAcknowledged\nResolved\nClosed"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-06-17 17:05:48.217664",
+ "modified_by": "Administrator",
+ "module": "Smart FM",
+ "name": "Crop Anomaly Report",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "lot_id",
+ "track_changes": 1
+}
