@@ -21,3 +21,5 @@ test_script.py
 CLAUDE.md
 .claude/
 PLAN.md
+*/patches/files/*.csv
+*/patches/files/*.xlsx
