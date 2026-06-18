@@ -381,8 +381,15 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 	custom_account = get_donation_expense_account(args)
 
 	account = custom_account or expense_account or get_default_expense_account(args, item_defaults, item_group_defaults, brand_defaults)
+
+	# For sales doctypes, use income_account for Cost Center Mapping lookup
+	income_account = get_default_income_account(args, item_defaults, item_group_defaults, brand_defaults)
+	cost_center_account = account
+	if args.get("doctype") in sales_doctypes and income_account:
+		cost_center_account = income_account
+
 	cost_center = get_default_cost_center(
-			args, item_defaults, item_group_defaults, brand_defaults, account=account
+			args, item_defaults, item_group_defaults, brand_defaults, account=cost_center_account
 		)
 	out = frappe._dict(
 		{
@@ -390,9 +397,7 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 			"item_name": item.item_name,
 			"image": cstr(item.image).strip(),
 			"warehouse": warehouse,
-			"income_account": get_default_income_account(
-				args, item_defaults, item_group_defaults, brand_defaults
-			),
+			"income_account": income_account,
 			"expense_account": account,
 			"discount_account": get_default_discount_account(args, item_defaults),
 			"provisional_expense_account": get_provisional_account(args, item_defaults),

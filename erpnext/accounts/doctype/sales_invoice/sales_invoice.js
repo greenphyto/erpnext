@@ -65,9 +65,13 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 		})
 
 		if (this.frm.is_new() && !this.frm.doc.consignment_request) {
-			$.each(this.frm.doc.items, (i,r)=>{
-				frappe.model.set_value(r.doctype,r.name,"cost_center", "")
-			})
+			var is_mapped = this.frm.doc.items && this.frm.doc.items.length > 0
+				&& this.frm.doc.items.some(r => r.delivery_note || r.sales_order);
+			if (!is_mapped) {
+				$.each(this.frm.doc.items, (i,r)=>{
+					frappe.model.set_value(r.doctype,r.name,"cost_center", "")
+				})
+			}
 		}
 	}
 
@@ -1170,6 +1174,9 @@ cur_frm.cscript['set_cost_center'] = function(frm, cdt, cdn, field_account="expe
 frappe.ui.form.on("Sales Invoice Item", {
 	expense_account: function(frm,cdt,cdn){
 		frm.cscript.set_cost_center(frm, cdt,cdn);
+	},
+	income_account: function(frm,cdt,cdn){
+		frm.cscript.set_cost_center(frm, cdt,cdn,"income_account");
 	}
 })
 

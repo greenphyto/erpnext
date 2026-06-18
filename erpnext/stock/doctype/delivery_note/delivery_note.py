@@ -1067,6 +1067,15 @@ def make_sales_invoice(source_name, target_doc=None):
 		if len(target.get("items")) == 0:
 			frappe.throw(_("All these items have already been Invoiced/Returned"))
 
+		# Override cost_center from Cost Center Mapping based on income_account
+		from erpnext.accounts.utils import get_cost_center_from_account
+		for item in target.get("items"):
+			account = item.income_account or item.expense_account
+			if account:
+				res = get_cost_center_from_account(account, target.company)
+				if res.get("lock"):
+					item.cost_center = res.get("value")
+
 		target.run_method("calculate_taxes_and_totals")
 
 		# set company address
