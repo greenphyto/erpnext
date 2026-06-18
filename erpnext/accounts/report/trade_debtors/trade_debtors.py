@@ -708,6 +708,11 @@ class DebtorCreditorReport(object):
 		acc_tab = qb.DocType("Account")
 		party_table = qb.DocType(self.party_type)
 		field_code = "customer_code"  if self.party_type == "Customer" else "supplier_code"
+
+		# For Journal Entry, only show entries that hit the receivable/payable account
+		# Use user-selected party_account filter if available, otherwise use company default
+		je_account_filter = self.filters.party_account or self.against_account
+
 		query = (
 			qb.from_(ple)
 			.select(
@@ -734,7 +739,7 @@ class DebtorCreditorReport(object):
 			.left_join(acc_tab).on(acc_tab.name == ple.account)
 			# .where(ple.delinked == 0)
 			.where(
-				((ple.voucher_type == "Journal Entry") & (ple.account == self.against_account)) |
+				((ple.voucher_type == "Journal Entry") & (ple.account == je_account_filter)) |
 				((ple.voucher_type != "Journal Entry"))
 			)
 			.where(Criterion.all(self.qb_selection_filter))
