@@ -64,11 +64,7 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 			return filters;
 		})
 
-		if (this.frm.is_new() && !this.frm.doc.consignment_request) {
-			$.each(this.frm.doc.items, (i,r)=>{
-				frappe.model.set_value(r.doctype,r.name,"cost_center", "")
-			})
-		}
+
 	}
 
 	refresh(doc, dt, dn) {
@@ -1168,6 +1164,9 @@ cur_frm.cscript['set_cost_center'] = function(frm, cdt, cdn, field_account="expe
 }
 
 frappe.ui.form.on("Sales Invoice Item", {
+	income_account: function(frm,cdt,cdn){
+		frm.cscript.set_cost_center(frm, cdt,cdn, "income_account");
+	},
 	expense_account: function(frm,cdt,cdn){
 		frm.cscript.set_cost_center(frm, cdt,cdn);
 	}

@@ -1069,6 +1069,10 @@ def make_sales_invoice(source_name, target_doc=None):
 
 		target.run_method("calculate_taxes_and_totals")
 
+		# Set cost_center on each item row based on its income_account
+		for d in target.get("items"):
+			d.cost_center = erpnext.get_default_cost_center(target.company, d.income_account) or d.cost_center
+
 		# set company address
 		if source.company_address:
 			target.update({"company_address": source.company_address})

@@ -5,6 +5,7 @@
 import json
 
 import frappe
+import erpnext
 import frappe.utils
 from frappe import _
 from frappe.contacts.doctype.address.address import get_company_address
@@ -891,6 +892,10 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 		if target.get("allocate_advances_automatically"):
 			target.set_advances()
 		
+		# Set cost_center on each item row based on its income_account
+		for d in target.get("items"):
+			d.cost_center = erpnext.get_default_cost_center(target.company, d.income_account) or d.cost_center
+
 		for d in target.get("items"):
 			dn_name = frappe.get_value("Delivery Note Item", {"so_detail":d.so_detail, "docstatus":1}, "parent")
 			if dn_name:
