@@ -3,6 +3,7 @@
 
 
 import frappe
+import erpnext
 from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt, getdate, nowdate
@@ -456,6 +457,10 @@ def _make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 		target.flags.ignore_permissions = ignore_permissions
 		target.run_method("set_missing_values")
 		target.run_method("calculate_taxes_and_totals")
+
+		# Set cost_center on each item row based on its income_account
+		for d in target.get("items"):
+			d.cost_center = erpnext.get_default_cost_center(target.company, d.income_account) or d.cost_center
 
 	def update_item(obj, target, source_parent):
 		target.cost_center = None

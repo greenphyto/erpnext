@@ -552,9 +552,10 @@ def make_sales_invoice(source_name, target_doc=None):
 			pass
 		target.set_missing_values()
 
-		# Keep child cost center aligned with parent after ERPNext defaulting logic runs.
+		# Set cost_center on each item row based on its income_account
+		# (since this is a Sales Invoice, cost_center should map from income account)
 		for row in target.get("items"):
-			row.cost_center = target.cost_center
+			row.cost_center = erpnext.get_default_cost_center(target.company, row.income_account) or target.cost_center
 
 	def update_item(source_doc, target_doc, source_parent):
 		# from get_item_details

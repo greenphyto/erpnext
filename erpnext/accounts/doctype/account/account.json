@@ -15,6 +15,7 @@
   "account_number",
   "is_group",
   "company",
+  "cost_center",
   "root_type",
   "report_type",
   "account_currency",
@@ -201,13 +202,22 @@
    "fieldtype": "Check",
    "hidden": 1,
    "label": "Is Trade Related?"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Cost Center",
+   "options": "Cost Center"
   }
  ],
  "icon": "fa fa-money",
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2023-02-07 13:47:23.244724",
+ "modified": "2026-06-04 13:12:12.007168",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Account",

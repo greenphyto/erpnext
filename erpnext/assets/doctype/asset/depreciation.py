@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 
-import frappe, json
+import frappe, json, erpnext
 from frappe import _
 from frappe.utils import add_months, cint, flt, getdate, nowdate, today
 from frappe.utils import safe_abs as abs
@@ -146,12 +146,15 @@ def make_depreciation_entry(assets, date=None):
 
 				total += flt(d.depreciation_amount)
 
+				cost_center_for_debit = erpnext.get_default_cost_center(je.company, debit_account ) or asset.cost_center or depreciation_cost_center
+				cost_center_for_credit = erpnext.get_default_cost_center(je.company, credit_account ) or asset.cost_center or depreciation_cost_center
+
 				credit_entry = {
 					"account": credit_account,
 					"credit_in_account_currency": d.depreciation_amount,
 					"reference_type": "Asset",
 					"reference_name": asset.name,
-					"cost_center": depreciation_cost_center,
+					"cost_center": cost_center_for_credit,
 					"user_remark": "Depreciation entry for Asset {}".format(asset.name)
 				}
 
@@ -160,7 +163,7 @@ def make_depreciation_entry(assets, date=None):
 					"debit_in_account_currency": d.depreciation_amount,
 					"reference_type": "Asset",
 					"reference_name": asset.name,
-					"cost_center": depreciation_cost_center,
+					"cost_center": cost_center_for_debit,
 					"user_remark": "Depreciation entry for Asset {}".format(asset.name)
 				}
 
