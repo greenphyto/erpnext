@@ -19,3 +19,8 @@ node_modules/
 .backportrc.json
 test_scripts.py
 test_script.py
+CLAUDE.md
+.claude/
+PLAN.md
+*/patches/files/*.csv
+*/patches/files/*.xlsx
