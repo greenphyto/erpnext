@@ -216,7 +216,7 @@ def get_report_column(filters, period_list):
 		"label": _(period_word+ " (Actual)"),
 		"fieldtype": "Currency",
 		"options": "currency",
-		"width": 200,
+		"width": 250,
 		"align": "right",
 	})
 
@@ -236,7 +236,7 @@ def get_report_column(filters, period_list):
 		"label": _(period_word+ " (Budget)"),
 		"fieldtype": "Currency",
 		"options": "currency",
-		"width": 200,
+		"width": 250,
 		"align": "right",
 	})
 	
@@ -246,7 +246,7 @@ def get_report_column(filters, period_list):
 		"label": _(period_word+ " (Variance $)"),
 		"fieldtype": "Currency",
 		"options": "currency",
-		"width": 200,
+		"width": 250,
 		"align": "right",
 	})
 	
@@ -255,7 +255,7 @@ def get_report_column(filters, period_list):
 		"fieldname": "variance_percent",
 		"label": _(period_word+ " (Variance %)"),
 		"fieldtype": "Percent",
-		"width": 210,
+		"width": 250,
 		"align": "right",
 	})
 
