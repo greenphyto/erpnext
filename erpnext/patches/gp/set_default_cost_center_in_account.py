@@ -57,7 +57,21 @@ def set_default_cost_center_in_account():
 		["650400 - Insurance - General - GPL", "1080 - Infrastructure & Maintenance - GPL"],
 		["800700 - Government Grants - GPL", "1020 - Finance - GPL"],
 		["650100 - Water & Utilities - GPL", "2020 - Production-WH - GPL"],
-		["680000 - Legal & Professional Fees - GPL", "1080 - Infrastructure & Maintenance - GPL"],
+
+		# --- New from Excel v2/v3 (consistent across all voucher types) ---
+		["500002 - COGS - Replacement Cost - GPL", "2020 - Production-WH - GPL"],
+		["622005 - Production Sample - GPL", "2020 - Production-WH - GPL"],
+		["650220 - Rental-Premises - GPL", "5010 - System - GPL"],
+		["660200 - Car Parking - GPL", "5010 - System - GPL"],
+		["670000 - Travelling & Accomodation - GPL", "1090 - CEO Office - GPL"],
+		["670200 - Meeting Expenses - GPL", "1090 - CEO Office - GPL"],
+		["700100 - Realised FX Gain/Loss - GPL", "2020 - Production-WH - GPL"],
+		["800500 - Miscellaneous Income - GPL", "1040 - Sales - GPL"],
+		["800600 - Export Electricity Income - GPL", "1040 - Sales - GPL"],
+
+		# --- Skipped (conflicting cost_center per voucher type) ---
+		# 680000 - Legal & Professional Fees: JE->1080, PI->5010
+		# 800710 - Amortisation Deferred Income: v2->1040, v3->1020 (conflicting)
 	]
 
 	updated_count = 0
