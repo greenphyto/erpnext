@@ -286,6 +286,9 @@ def get_export_cost_center(report_name, filters):
 		order_by="name asc",
 	) or []
 
+	# debug
+	# cost_centers = [frappe._dict({'name': '1020 - Finance - GPL', 'cost_center_name': 'Finance'})]
+
 	group_data = {}
 
 	# add detail
@@ -321,7 +324,17 @@ def get_export_cost_center(report_name, filters):
 		# so first data row starts after header_data and table_header
 		start_from = len(header_data) + 2
 		bold_list = []
+		for i, d in enumerate(header_data):
+			if d and d[0] == "cost_center":
+				bold_list.append(i+1)
+			
+			if d and d[0] == "Export date":
+				bold_list.append(i+1)
+
 		for i, d in enumerate(data):
+			if i == 0:
+				bold_list.append(start_from-1)
+
 			if d.get("is_group") or d.get("is_bold") or d.get("bold"):
 				idx = i + start_from
 				bold_list.append(idx)
