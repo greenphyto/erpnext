@@ -23,6 +23,12 @@ class ConsignmentOrder(DeliveryNote):
 		# CO is not meant to update Sales Order / Sales Invoice delivery status.
 		self.status_updater = []
 
+	def get_gl_entries(self, *args, **kwargs):
+		"""Consignment Order is an internal stock transfer only — no accounting entries.
+		Override prevents Repost Item Valuation from failing with
+		'Cost Center is mandatory' errors when it tries to regenerate GL entries."""
+		return []
+
 	def before_insert(self):
 		if not self.naming_series:
 			self.naming_series = "CON-.YYYY.-.#####"
