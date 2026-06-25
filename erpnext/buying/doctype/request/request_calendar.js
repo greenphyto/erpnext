@@ -158,7 +158,7 @@ class RequestCards {
 				<div class="card-list-wrapper" id="scrollableElement">
 					<div class="card-list" id="innerContent"></div>
 				</div>
-	1			<div class="list-controller hidden">
+				<div class="list-controller hidden">
 					<div class="btn btn-default icon-btn right-arrow">
 						<svg class="icon icon-sm" style="">
 							<use class="" href="#icon-right"></use>
