@@ -11,13 +11,12 @@ if (!document.getElementById('request-calendar-styles')) {
 		.card-list-wrapper::-webkit-scrollbar { height: 4px; }
 		.card-list-wrapper::-webkit-scrollbar-thumb { background: var(--gray-400); border-radius: 4px; }
 		.card-list { display: flex; gap: 8px; flex-shrink: 0; }
-		.facility-card { min-width: 200px; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); cursor: pointer; background: var(--card-bg); flex-shrink: 0; }
+		.facility-card { min-width: 220px; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); cursor: pointer; background: var(--card-bg); flex-shrink: 0; }
 		.facility-card:hover { box-shadow: var(--shadow-sm); }
-		.facility-card .top-detail { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-		.facility-card .top-detail .status { font-size: var(--text-xs); font-weight: 600; }
-		.facility-card .top-detail .facility-name { font-weight: 600; font-size: var(--text-sm); }
-		.facility-card .bottom-detail { display: flex; gap: 12px; font-size: var(--text-xs); color: var(--text-muted); }
-		.facility-card .bottom-detail .count { font-weight: 600; }
+		.facility-card .card-department { font-size: 10px; color: var(--text-muted); margin-bottom: 2px; }
+		.facility-card .card-item-name { font-weight: 700; font-size: var(--text-md); margin-bottom: 4px; }
+		.facility-card .card-req-count { font-size: var(--text-xs); color: var(--text-muted); }
+		.facility-card .card-req-count .count { font-weight: 600; }
 		.list-controller { display: flex; align-items: center; flex-shrink: 0; }
 		.list-controller.hidden { display: none; }
 		.list-controller .icon-btn { padding: 4px 8px; cursor: pointer; }
@@ -69,6 +68,36 @@ if (!frappe.views.Calendar._make_patched) {
 			args.item_code_filter = this._custom_filters.item_code || '';
 		}
 		return args;
+	};
+
+	// Patch prepare_colors to respect textColor from backend
+	const _original_prepare_colors = frappe.views.Calendar.prototype.prepare_colors;
+	frappe.views.Calendar.prototype.prepare_colors = function (d) {
+		var custom_text_color = d.textColor;
+		_original_prepare_colors.call(this, d);
+		// restore textColor if backend provided a valid hex color
+		if (custom_text_color && custom_text_color.startsWith("#")) {
+			d.textColor = custom_text_color;
+		}
+		return d;
+	};
+
+	// Patch eventRender to show department as second line
+	const _original_setup_options = frappe.views.Calendar.prototype.setup_options;
+	frappe.views.Calendar.prototype.setup_options = function (defaults) {
+		_original_setup_options.call(this, defaults);
+		var original_eventRender = this.cal_options.eventRender;
+		this.cal_options.eventRender = function (event, element) {
+			if (original_eventRender) {
+				original_eventRender(event, element);
+			}
+			if (event.tooltip && event.department) {
+				element.find(".fc-title").html(
+					`<div style="font-weight:600;">${event.title}</div>` +
+					`<div style="font-size:0.8em;opacity:0.85;">${event.department}</div>`
+				);
+			}
+		};
 	};
 
 	frappe.views.Calendar._make_patched = true;
@@ -168,16 +197,13 @@ class RequestCards {
 
 	get_card(data) {
 		var me = this;
+		var weight = data.total_weight ? `${data.total_weight} Kg` : '';
+		var border_color = me.get_card_color(data.item_code);
 		var card = $(`
-			<div class="facility-card frappe-card" data-item-code="${data.item_code}">
-				<div class="top-detail">
-					<div class="status" style="color: ${data.status_color};">${data.status}</div>
-					<div class="facility-name">${data.item_code}</div>
-				</div>
-				<div class="bottom-detail">
-					<div class="available">Draft: <span class="count">${data.draft_count || 0}</span></div>
-					<div class="rented">Submitted: <span class="count">${data.submit_count || 0}</span></div>
-				</div>
+			<div class="facility-card frappe-card" data-item-code="${data.item_code}" style="border-left: 4px solid ${border_color};">
+				<div class="card-department">${data.department || '-'}</div>
+				<div class="card-item-name">${data.item_code} @${weight}</div>
+				<div class="card-req-count">Req count: <span class="count">${data.req_count || 0}</span></div>
 			</div>
 		`);
 
@@ -191,6 +217,15 @@ class RequestCards {
 		});
 
 		return card;
+	}
+
+	get_card_color(item_code) {
+		if (!item_code) return 'var(--border-color)';
+		var prefix = item_code.toUpperCase();
+		if (prefix.startsWith('PR-AV')) return '#FFC107';
+		if (prefix.startsWith('PR-LV')) return '#28A745';
+		if (prefix.startsWith('PR-HV')) return '#007BFF';
+		return 'var(--border-color)';
 	}
 
 	setup_cards() {
@@ -218,7 +253,8 @@ class RequestCards {
 		var cal_toolbar = me.main.$cal.find(".fc-toolbar .fc-left");
 		cal_toolbar.find(".select-item-code").remove();
 		if (item_code && !remove) {
-			cal_toolbar.append(`<div class="select-item-code">${item_code}</div>`);
+			var tag_color = me.get_card_color(item_code);
+			cal_toolbar.append(`<div class="select-item-code" style="background:${tag_color};">${item_code}</div>`);
 			frappe.show_alert(__(`Filter: <b>${item_code}</b>`), 2);
 		} else {
 			frappe.show_alert(__("Filter cleared"), 2);
@@ -235,28 +271,9 @@ class RequestCards {
 				title: 'Select Item',
 				fields: [
 					{
-						label: 'Filters',
-						fieldname: 'sec_break',
-						fieldtype: 'Section Break'
-					},
-					{
 						label: 'Search',
 						fieldname: 'item_code',
 						fieldtype: 'Data',
-						onchange: () => {
-							me.update_dialog_list();
-						}
-					},
-					{
-						label: '',
-						fieldname: 'sec_break3',
-						fieldtype: 'Column Break'
-					},
-					{
-						label: 'Status',
-						fieldname: 'status',
-						fieldtype: 'Select',
-						options: "\nDraft\nSubmit",
 						onchange: () => {
 							me.update_dialog_list();
 						}
@@ -295,13 +312,7 @@ class RequestCards {
 			load = true;
 		}
 
-		var status_field = this.all_dialog.fields_dict.status;
-		if (status_field.old_value != status_field.value) {
-			status_field.old_value = status_field.value;
-			load = true;
-		}
-		if (status_field.value) filters.status = status_field.value;
-		if (item_field.value) filters.item_code = ['like', "%" + item_field.value + "%"];
+		if (item_field.value) filters.item_code = item_field.value;
 
 		if (load) {
 			this.render_dialog_list(filters, true);
