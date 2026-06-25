@@ -1,3 +1,32 @@
+// inject calendar card styles
+if (!document.getElementById('request-calendar-styles')) {
+	const style = document.createElement('style');
+	style.id = 'request-calendar-styles';
+	style.textContent = `
+		.custom-calendar-container { padding: 0 15px; }
+		.facility-cards { display: flex; align-items: center; gap: 8px; padding: 10px 0; }
+		.facility-cards .left-tools { display: flex; gap: 8px; flex-shrink: 0; }
+		.facility-cards .left-tools a { cursor: pointer; color: var(--text-color); font-size: var(--text-sm); text-decoration: underline; }
+		.card-list-wrapper { display: flex; overflow-x: auto; flex: 1; }
+		.card-list-wrapper::-webkit-scrollbar { height: 4px; }
+		.card-list-wrapper::-webkit-scrollbar-thumb { background: var(--gray-400); border-radius: 4px; }
+		.card-list { display: flex; gap: 8px; flex-shrink: 0; }
+		.facility-card { min-width: 200px; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); cursor: pointer; background: var(--card-bg); flex-shrink: 0; }
+		.facility-card:hover { box-shadow: var(--shadow-sm); }
+		.facility-card .top-detail { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+		.facility-card .top-detail .status { font-size: var(--text-xs); font-weight: 600; }
+		.facility-card .top-detail .facility-name { font-weight: 600; font-size: var(--text-sm); }
+		.facility-card .bottom-detail { display: flex; gap: 12px; font-size: var(--text-xs); color: var(--text-muted); }
+		.facility-card .bottom-detail .count { font-weight: 600; }
+		.list-controller { display: flex; align-items: center; flex-shrink: 0; }
+		.list-controller.hidden { display: none; }
+		.list-controller .icon-btn { padding: 4px 8px; cursor: pointer; }
+		.select-item-code { background: var(--bg-green); color: #fff; padding: 2px 10px; border-radius: var(--border-radius-sm); font-size: var(--text-sm); margin-left: 10px; }
+		.facilities-calendar-dialog .wrapper-list { display: flex; flex-wrap: wrap; gap: 8px; max-height: 400px; overflow-y: auto; }
+	`;
+	document.head.appendChild(style);
+}
+
 frappe.views.calendar["Request"] = {
 	field_map: {
 		start: "start",
@@ -21,13 +50,38 @@ frappe.views.calendar["Request"] = {
 	},
 	get_events_method: "erpnext.buying.doctype.request.request.get_events",
 	hide_sidebar: true,
-	before_render: (calendar) => {
-		calendar.custom = new RequestCards(calendar);
-	}
+};
+
+// Patch Calendar.prototype to support before_render and custom filters
+if (!frappe.views.Calendar._make_patched) {
+	const _original_make = frappe.views.Calendar.prototype.make;
+	frappe.views.Calendar.prototype.make = function () {
+		_original_make.call(this);
+		if (this.before_render) {
+			this.before_render(this);
+		}
+	};
+
+	const _original_get_args = frappe.views.Calendar.prototype.get_args;
+	frappe.views.Calendar.prototype.get_args = function (start, end) {
+		var args = _original_get_args.call(this, start, end);
+		if (this._custom_filters && this.doctype === "Request") {
+			args.item_code_filter = this._custom_filters.item_code || '';
+		}
+		return args;
+	};
+
+	frappe.views.Calendar._make_patched = true;
+}
+
+// Inject cards after calendar is ready
+frappe.views.calendar["Request"].before_render = (calendar) => {
+	calendar.custom = new RequestCards(calendar);
 };
 
 class RequestCards {
 	constructor(calendar) {
+		// this.main = the frappe.views.Calendar instance
 		this.main = calendar;
 		this.page = this.main.page;
 		this.setup_container();
@@ -80,28 +134,16 @@ class RequestCards {
 	setup_ui() {
 		var me = this;
 		var travel_size = 244;
-		if (this.card_list_wrapper.width() < this.card_list.width()) {
-			this.wrapper.find(".list-controller").removeClass("hidden");
-		}
-		// click arrow
+
 		this.wrapper.find(".left-arrow").click(() => {
-			me.card_list_wrapper.addClass("scroll-smooth");
-			me.card_list_wrapper.scrollLeft(me.card_list_wrapper.scrollLeft() + travel_size * -1);
-			setTimeout(() => {
-				me.card_list_wrapper.removeClass("scroll-smooth");
-			}, 200);
+			me.card_list_wrapper.scrollLeft(me.card_list_wrapper.scrollLeft() - travel_size);
 		});
 		this.wrapper.find(".right-arrow").click(() => {
-			me.card_list_wrapper.addClass("scroll-smooth");
-			me.card_list_wrapper.scrollLeft(me.card_list_wrapper.scrollLeft() + travel_size * 1);
-			setTimeout(() => {
-				me.card_list_wrapper.removeClass("scroll-smooth");
-			}, 200);
+			me.card_list_wrapper.scrollLeft(me.card_list_wrapper.scrollLeft() + travel_size);
 		});
 
 		this.wrapper.find(".clear-selected").click(() => {
 			me.filter_item_code("", true);
-			frappe.show_alert("Clear filter", 2);
 		});
 
 		this.wrapper.find(".show-all").click(() => {
@@ -115,12 +157,19 @@ class RequestCards {
 				me.wrapper.find(".left-arrow").show();
 			}
 		});
+
+		// show arrows if needed
+		setTimeout(() => {
+			if (me.card_list_wrapper[0].scrollWidth > me.card_list_wrapper[0].clientWidth) {
+				me.wrapper.find(".list-controller").removeClass("hidden");
+			}
+		}, 500);
 	}
 
 	get_card(data) {
 		var me = this;
 		var card = $(`
-			<div class="facility-card frappe-card" item_code="${data.item_code}">
+			<div class="facility-card frappe-card" data-item-code="${data.item_code}">
 				<div class="top-detail">
 					<div class="status" style="color: ${data.status_color};">${data.status}</div>
 					<div class="facility-name">${data.item_code}</div>
@@ -128,15 +177,13 @@ class RequestCards {
 				<div class="bottom-detail">
 					<div class="available">Draft: <span class="count">${data.draft_count || 0}</span></div>
 					<div class="rented">Submitted: <span class="count">${data.submit_count || 0}</span></div>
-					<div class="blank"></div>
 				</div>
 			</div>
 		`);
 
-		// setup controller: click etc
-		card.click(function (e) {
-			var el = $(this);
-			var item_code = el.attr("item_code");
+		card.on("click", function (e) {
+			e.stopPropagation();
+			var item_code = $(this).data("item-code");
 			me.filter_item_code(item_code);
 			if (me.all_dialog) {
 				me.all_dialog.hide();
@@ -152,29 +199,33 @@ class RequestCards {
 			var card = me.get_card(d);
 			me.card_list.append(card);
 		});
-
-		frappe.utils.make_dragable('scrollableElement', 'innerContent');
 	}
 
 	filter_item_code(item_code, remove = false) {
 		var me = this;
-		var filters = [['Request Items', 'item_code', '=', item_code]];
-		me.main.list_view.filter_area.remove_filters(filters);
-		if (!remove) {
-			me.main.list_view.filter_area.add(filters, true);
-			frappe.show_alert(__(`Set filter to <b>${item_code}</b>`), 2);
+
+		// store filter on calendar instance (this.main IS the calendar)
+		if (!me.main._custom_filters) {
+			me.main._custom_filters = {};
+		}
+		if (remove || !item_code) {
+			delete me.main._custom_filters.item_code;
+		} else {
+			me.main._custom_filters.item_code = item_code;
 		}
 
-		var cal_toolbar = this.main.$cal.find(".fc-toolbar .fc-left");
-		var title = cal_toolbar.find(cal_toolbar.find(".select-item-code"));
-		if (!item_code) {
-			title.remove();
-		}
-		if (!title.length) {
+		// update toolbar label
+		var cal_toolbar = me.main.$cal.find(".fc-toolbar .fc-left");
+		cal_toolbar.find(".select-item-code").remove();
+		if (item_code && !remove) {
 			cal_toolbar.append(`<div class="select-item-code">${item_code}</div>`);
+			frappe.show_alert(__(`Filter: <b>${item_code}</b>`), 2);
 		} else {
-			title.text(item_code);
+			frappe.show_alert(__("Filter cleared"), 2);
 		}
+
+		// refetch events
+		me.main.$cal.fullCalendar('refetchEvents');
 	}
 
 	show_all() {
