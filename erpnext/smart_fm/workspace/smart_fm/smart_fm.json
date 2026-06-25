@@ -38,54 +38,6 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Requests",
-   "link_count": 4,
-   "onboard": 0,
-   "type": "Card Break"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Maintenance Request",
-   "link_count": 0,
-   "link_to": "Maintenance Request",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Visitor Registration",
-   "link_count": 0,
-   "link_to": "Visitor Registration",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Key Control",
-   "link_count": 0,
-   "link_to": "Key Control",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Permit to Work",
-   "link_count": 0,
-   "link_to": "Permit to Work",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
    "label": "Reports",
    "link_count": 4,
    "onboard": 0,
@@ -210,15 +162,15 @@
    "type": "Link"
   },
   {
-    "hidden": 0,
-    "is_query_report": 0,
-    "label": "Cleaning Checklist",
-    "link_count": 0,
-    "link_to": "Cleaning Checklist",
-    "link_type": "DocType",
-    "onboard": 0,
-    "type": "Link"
-   },
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Cleaning Checklist",
+   "link_count": 0,
+   "link_to": "Cleaning Checklist",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
   {
    "hidden": 0,
    "is_query_report": 0,
@@ -246,9 +198,67 @@
    "link_type": "Page",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Requests",
+   "link_count": 5,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Maintenance Request",
+   "link_count": 0,
+   "link_to": "Maintenance Request",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Visitor Registration",
+   "link_count": 0,
+   "link_to": "Visitor Registration",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Key Control",
+   "link_count": 0,
+   "link_to": "Key Control",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Permit to Work",
+   "link_count": 0,
+   "link_to": "Permit to Work",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Crop Anomaly Report",
+   "link_count": 0,
+   "link_to": "Crop Anomaly Report",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2025-02-21 09:26:13.121534",
+ "modified": "2026-06-25 10:44:27.114947",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Smart FM",
