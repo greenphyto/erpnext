@@ -199,10 +199,11 @@ def get_events(start, end, user=None, filters=None, item_code_filter=None):
 			`tabRequest`.name,
 			`tabRequest`.company,
 			`tabRequest`.department,
+			ri.item_code,
+			ri.unit_weight,
 			`tabRequest`.posting_date as start,
-			DATE_ADD(`tabRequest`.posting_date, INTERVAL 1 DAY) as end,
+			`tabRequest`.posting_date as end,
 			`tabRequest`.workflow_state as status,
-			CONCAT(ri.item_code, ' - ', IFNULL(`tabRequest`.department, '')) as title,
 			1 as allDay
 		FROM `tabRequest`
 			INNER JOIN `tabRequest Items` ri ON ri.parent = `tabRequest`.name
@@ -212,23 +213,32 @@ def get_events(start, end, user=None, filters=None, item_code_filter=None):
 		ORDER BY `tabRequest`.posting_date
 	""".format(filter_condition=filter_condition, item_code_condition=item_code_condition), item_code_args, as_dict=1)
 
-	style_map = {
-		"Draft": {"color": "#FFC107", "textColor": "#212529"},
-		"Submit": {"color": "#28A745", "textColor": "#FFFFFF"},
-	}
+	def get_event_color(item_code):
+		if not item_code:
+			return {"color": "#6C757D", "textColor": "#FFFFFF"}
+		prefix = item_code.upper()
+		if prefix.startswith("PR-AV"):
+			return {"color": "#FFC107", "textColor": "#000000"}
+		if prefix.startswith("PR-LV"):
+			return {"color": "#28A745", "textColor": "#FFFFFF"}
+		if prefix.startswith("PR-HV"):
+			return {"color": "#007BFF", "textColor": "#FFFFFF"}
+		return {"color": "#6C757D", "textColor": "#FFFFFF"}
 
 	for d in events:
-		style = style_map.get(d.status)
-		if style:
-			d.color = style["color"]
-			d.textColor = style["textColor"]
+		weight = " @{} Kg".format(d.unit_weight) if d.unit_weight else ""
+		d.title = "{}{}".format(d.item_code or "", weight)
+		d.tooltip = "{}\n{}".format(d.title, d.department or "")
+		style = get_event_color(d.item_code)
+		d.color = style["color"]
+		d.textColor = style["textColor"]
 
 	return events
 
 
 @frappe.whitelist()
 def get_request_items(filters=None):
-	"""Get distinct item codes from Request Items with counts, for calendar card strip."""
+	"""Get distinct item codes from submitted Requests with counts, for calendar card strip."""
 	if isinstance(filters, str):
 		filters = json.loads(filters)
 
@@ -241,43 +251,19 @@ def get_request_items(filters=None):
 			conditions += " AND ri.item_code LIKE %(item_code)s"
 			args["item_code"] = "%" + item_code + "%"
 
-		status = filters.get("status")
-		if status and isinstance(status, str):
-			# Draft=0, Submit=1
-			if status == "Draft":
-				conditions += " AND r.docstatus = 0"
-			elif status == "Submit":
-				conditions += " AND r.docstatus = 1"
-
 	data = frappe.db.sql("""
 		SELECT
 			ri.item_code,
-			SUM(CASE WHEN r.docstatus = 0 THEN 1 ELSE 0 END) as draft_count,
-			SUM(CASE WHEN r.docstatus = 1 THEN 1 ELSE 0 END) as submit_count,
-			COUNT(*) as total
+			SUM(ri.unit_weight * ri.qty) as total_weight,
+			GROUP_CONCAT(DISTINCT r.department SEPARATOR ', ') as department,
+			COUNT(DISTINCT r.name) as req_count
 		FROM `tabRequest Items` ri
 			INNER JOIN `tabRequest` r ON r.name = ri.parent
-		WHERE r.docstatus != 2
+		WHERE r.docstatus = 1
 		{conditions}
 		GROUP BY ri.item_code
 		ORDER BY ri.item_code
 	""".format(conditions=conditions), args, as_dict=1)
-
-	color_map = {
-		"Draft": '#fd8f00',
-		"Submit": '#00bf00',
-	}
-
-	for d in data:
-		if d.submit_count > 0 and d.draft_count > 0:
-			d.status = "Mixed"
-			d.status_color = '#17A2B8'
-		elif d.submit_count > 0:
-			d.status = "Submit"
-			d.status_color = color_map["Submit"]
-		else:
-			d.status = "Draft"
-			d.status_color = color_map["Draft"]
 
 	return data
 
