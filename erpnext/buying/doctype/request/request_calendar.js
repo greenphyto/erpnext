@@ -4,9 +4,15 @@ if (!document.getElementById('request-calendar-styles')) {
 	style.id = 'request-calendar-styles';
 	style.textContent = `
 		.custom-calendar-container { padding: 0 15px; }
-		.facility-cards { display: flex; align-items: center; gap: 8px; padding: 10px 0; }
-		.facility-cards .left-tools { display: flex; gap: 8px; flex-shrink: 0; }
+		.facility-cards { padding: 10px 0; }
+		.facility-cards .left-tools { display: flex; gap: 8px; margin-bottom: 8px; }
 		.facility-cards .left-tools a { cursor: pointer; color: var(--text-color); font-size: var(--text-sm); text-decoration: underline; }
+		.card-scroll-row { display: flex; align-items: center; gap: 8px; }
+		.card-search-box { position: relative; display: inline-flex; align-items: center; margin-left: 8px; }
+		.card-search-input { padding: 3px 24px 3px 8px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: var(--text-sm); width: 180px; outline: none; }
+		.card-search-input:focus { border-color: var(--primary); }
+		.card-search-clear { position: absolute; right: 6px; cursor: pointer; font-size: 14px; font-weight: 700; color: var(--text-muted); line-height: 1; display: none; }
+		.card-search-input:not(:placeholder-shown) ~ .card-search-clear { display: block; }
 		.card-list-wrapper { display: flex; overflow-x: auto; flex: 1; }
 		.card-list-wrapper::-webkit-scrollbar { height: 4px; }
 		.card-list-wrapper::-webkit-scrollbar-thumb { background: var(--gray-400); border-radius: 4px; }
@@ -136,22 +142,28 @@ class RequestCards {
 			<div class="left-tools">
 				<a class="show-all">Show All</a>
 				<a class="clear-selected">clear</a>
-			</div>
-			<div class="list-controller hidden">
-				<div class="btn btn-default icon-btn left-arrow" style="display: none;">
-					<svg class="icon icon-sm" style="">
-						<use class="" href="#icon-left"></use>
-					</svg>
+				<div class="card-search-box">
+					<input type="text" class="card-search-input" placeholder="Search item..." />
+					<span class="card-search-clear">&times;</span>
 				</div>
 			</div>
-			<div class="card-list-wrapper" id="scrollableElement">
-				<div class="card-list" id="innerContent"></div>
-			</div>
-			<div class="list-controller hidden">
-				<div class="btn btn-default icon-btn right-arrow">
-					<svg class="icon icon-sm" style="">
-						<use class="" href="#icon-right"></use>
-					</svg>
+			<div class="card-scroll-row">
+				<div class="list-controller hidden">
+					<div class="btn btn-default icon-btn left-arrow" style="display: none;">
+						<svg class="icon icon-sm" style="">
+							<use class="" href="#icon-left"></use>
+						</svg>
+					</div>
+				</div>
+				<div class="card-list-wrapper" id="scrollableElement">
+					<div class="card-list" id="innerContent"></div>
+				</div>
+	1			<div class="list-controller hidden">
+					<div class="btn btn-default icon-btn right-arrow">
+						<svg class="icon icon-sm" style="">
+							<use class="" href="#icon-right"></use>
+						</svg>
+					</div>
 				</div>
 			</div>
 		</div>`);
@@ -181,6 +193,22 @@ class RequestCards {
 			me.show_all();
 		});
 
+		// card search: filter visible cards by item code or item name
+		var search_input = this.wrapper.find(".card-search-input");
+		search_input.on("input", function () {
+			var term = $(this).val().toLowerCase();
+			me.card_list.find(".facility-card").each(function () {
+				var code = ($(this).data("item-code") || "").toLowerCase();
+				var name = ($(this).data("item-name") || "").toLowerCase();
+				$(this).toggle(code.indexOf(term) > -1 || name.indexOf(term) > -1);
+			});
+		});
+
+		// clear search
+		this.wrapper.find(".card-search-clear").click(function () {
+			search_input.val("").trigger("input");
+		});
+
 		this.card_list_wrapper.on("scroll", () => {
 			if (me.card_list_wrapper.scrollLeft() < 10) {
 				me.wrapper.find(".left-arrow").hide();
@@ -202,7 +230,7 @@ class RequestCards {
 		var weight = data.total_weight ? `${data.total_weight} Kg` : '';
 		var border_color = me.get_card_color(data.item_code);
 		var card = $(`
-			<div class="facility-card frappe-card" data-item-code="${data.item_code}" style="border-left: 4px solid ${border_color};">
+			<div class="facility-card frappe-card" data-item-code="${data.item_code}" data-item-name="${data.item_name || ''}" style="border-left: 4px solid ${border_color};">
 				<div class="card-department">${data.department || '-'}</div>
 				<div class="card-item-name">${data.item_code} @${weight}</div>
 				<div class="card-req-count">Req count: <span class="count">${data.req_count || 0}</span></div>
