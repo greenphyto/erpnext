@@ -294,7 +294,7 @@ def get_export_cost_center(report_name, filters):
 	# add detail
 	export_date = now()
 	date_str = " "+get_datetime(export_date).strftime("%-d %B %y %H:%M:%S")
-	title_report = add_title_report(report_name, filters) 
+	title_report = add_title_report(report_name, filters)
 
 	if report_name == "Budget Variance Greenphyto":
 		from erpnext.gp_erp.report.budget_variance_greenphyto.budget_variance_greenphyto import execute
@@ -384,8 +384,8 @@ def export_with_cost_centers(report_name, filters=None, formula=False):
 	wb = openpyxl.Workbook(write_only=True)
 
 	used_names = set()
-	first_columns = None
 	sheet_bold_map = {}
+	right_cell = []
 
 	for cc_name, payload in (group_data or {}).items():
 		label = payload.get("label") or cc_name
@@ -404,9 +404,11 @@ def export_with_cost_centers(report_name, filters=None, formula=False):
 		ws = wb.create_sheet(title=sheet_name)
 
 		columns = payload.get("columns") or []
-		if first_columns is None:
-			first_columns = columns
 		data_rows = payload.get("data") or []
+
+		for col in columns:
+			if col.get("fieldtype") in ["Currency", "Float", "Int", "Percent"]:
+				right_cell.append(col.get("label"))
 
 		# Set column width if provided
 		column_widths = payload.get("column_widths")
@@ -422,39 +424,26 @@ def export_with_cost_centers(report_name, filters=None, formula=False):
 	bio.seek(0)
 
 	# Integrate with add_formulas to add formulas on all sheets
-	try:
-		from erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2 import add_formulas
-		# Build column_widths list from the first sheet's columns if available
-		column_widths = None
-		if first_columns:
-			column_widths = []
-			for col in first_columns:
-				w = col.get("width")
-				# Convert typical pixel widths to character widths approximation if needed
-				if isinstance(w, (int, float)):
-					# heuristic: 1 char ~ 8 px; clamp sensible range
-					width_chars = max(6, min(80, int(float(w) / 8)))
-				else:
-					# fall back to label length approx
-					label = col.get("label") or ""
-					width_chars = max(8, min(50, len(str(label)) + 5))
-				column_widths.append(width_chars)
+	from erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2 import add_formulas
+	# Use column_widths from build_xlsx_data (already correct: divisor 10, hidden columns skipped)
+	# to match the proportions of the direct export version
 
-		return add_formulas(
-			report_name,
-			bio,
-			column_widths=column_widths,
-			formula=formula,
-			bold_list=sheet_bold_map,
-		)
+	return add_formulas(
+		report_name,
+		bio,
+		column_widths=column_widths,
+		formula=formula,
+		bold_list=sheet_bold_map,
+		right_cell=right_cell
+	)
 
-	except Exception:
-		# Fallback: plain export if add_formulas unavailable
-		now = now_datetime()
-		date_str_title = now.strftime("%y%m%d_%H%M%S")
-		frappe.response["filename"] = f"Profit and Loss by Cost Center_{date_str_title}.xlsx"
-		frappe.response["filecontent"] = bio.getvalue()
-		frappe.response["type"] = "binary"
+	# except Exception:
+	# 	# Fallback: plain export if add_formulas unavailable
+	# now = now_datetime()
+	# date_str_title = now.strftime("%y%m%d_%H%M%S")
+	# frappe.response["filename"] = f"Profit and Loss by Cost Center_{date_str_title}.xlsx"
+	# frappe.response["filecontent"] = bio.getvalue()
+	# frappe.response["type"] = "binary"
 
 
 @frappe.whitelist()

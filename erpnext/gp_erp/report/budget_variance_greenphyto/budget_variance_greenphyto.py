@@ -185,6 +185,9 @@ def get_report_column(filters, period_list):
 	columns = []
 	for col in temp_columns:
 		fieldname = col.get("fieldname", "")
+		if col.get("fieldname") == "acc_code":
+			col['width'] = 200
+
 		if fieldname == "total":
 			continue
 		else:

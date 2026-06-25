@@ -295,9 +295,9 @@ from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 from io import BytesIO
 import json
-from openpyxl.styles import Font
+from openpyxl.styles import Font, Alignment
 from frappe.utils import now_datetime
-def add_formulas(report_name, xlsx_file, return_wb=False, column_widths=None, formula=0, bold_list=None):
+def add_formulas(report_name, xlsx_file, return_wb=False, column_widths=None, formula=0, bold_list=None, right_cell=None):
 	stream = BytesIO(xlsx_file.getvalue())
 	wb = load_workbook(stream)
 
@@ -329,10 +329,8 @@ def add_formulas(report_name, xlsx_file, return_wb=False, column_widths=None, fo
 				break
 
 		rows = build_rows(ws, start_row=start_row)
-		if not rows:
-			return
 
-		if formula:
+		if formula and rows:
 			hier = compute_child_range_rows(rows)
 			flat_list = extract_nodes(hier)
 
@@ -414,6 +412,9 @@ def add_formulas(report_name, xlsx_file, return_wb=False, column_widths=None, fo
 				if row_num <= ws.max_row:
 					for cell in ws[row_num]:
 						cell.font = Font(bold=True)
+
+						if cell.value in right_cell:
+							cell.alignment = Alignment(horizontal="right")
 
 	# Apply to all worksheets
 	for ws in wb.worksheets:

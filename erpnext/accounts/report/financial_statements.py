@@ -788,7 +788,7 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None, co
 						"label": _(budget_label),
 						"fieldtype": "Currency",
 						"options": "currency",
-						"width": 110,
+						"width": 150,
 						"align": "right",
 						}
 					)
