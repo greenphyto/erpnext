@@ -1687,7 +1687,7 @@ def get_payment_entry(
 	pe = frappe.new_doc("Payment Entry")
 	pe.payment_type = payment_type
 	pe.company = doc.company
-	pe.cost_center = doc.get("cost_center")
+	pe.cost_center = ""  # Leave blank - let user set manually
 	pe.posting_date = nowdate()
 	pe.mode_of_payment = doc.get("mode_of_payment")
 	pe.party_type = party_type
