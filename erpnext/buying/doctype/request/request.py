@@ -179,7 +179,7 @@ def create_sales_order(request_name):
 	return doc.name
 
 @frappe.whitelist()
-def get_events(start, end, user=None, filters=None):
+def get_events(start, end, user=None, filters=None, item_code_filter=None):
 	"""Fetch Request events for calendar view."""
 	from frappe.desk.reportview import get_filters_cond
 
@@ -188,22 +188,29 @@ def get_events(start, end, user=None, filters=None):
 
 	filter_condition = get_filters_cond("Request", filters or [], [])
 
+	item_code_condition = ""
+	item_code_args = {}
+	if item_code_filter:
+		item_code_condition = " AND ri.item_code = %(item_code_filter)s"
+		item_code_args["item_code_filter"] = item_code_filter
+
 	events = frappe.db.sql("""
 		SELECT
 			`tabRequest`.name,
 			`tabRequest`.company,
 			`tabRequest`.department,
 			`tabRequest`.posting_date as start,
-			`tabRequest`.posting_date as end,
+			DATE_ADD(`tabRequest`.posting_date, INTERVAL 1 DAY) as end,
 			`tabRequest`.workflow_state as status,
-			CONCAT(`tabRequest Items`.item_code, ' - ', IFNULL(`tabRequest`.department, '')) as title,
+			CONCAT(ri.item_code, ' - ', IFNULL(`tabRequest`.department, '')) as title,
 			1 as allDay
 		FROM `tabRequest`
-			LEFT JOIN `tabRequest Items` ON `tabRequest Items`.parent = `tabRequest`.name
+			INNER JOIN `tabRequest Items` ri ON ri.parent = `tabRequest`.name
 		WHERE `tabRequest`.docstatus != 2
-		{}
+		{filter_condition}
+		{item_code_condition}
 		ORDER BY `tabRequest`.posting_date
-	""".format(filter_condition), as_dict=1)
+	""".format(filter_condition=filter_condition, item_code_condition=item_code_condition), item_code_args, as_dict=1)
 
 	style_map = {
 		"Draft": {"color": "#FFC107", "textColor": "#212529"},
@@ -229,18 +236,24 @@ def get_request_items(filters=None):
 	args = {}
 
 	if filters:
-		if filters.get("item_code"):
+		item_code = filters.get("item_code")
+		if item_code and isinstance(item_code, str):
 			conditions += " AND ri.item_code LIKE %(item_code)s"
-			args["item_code"] = "%" + filters["item_code"] + "%"
-		if filters.get("status"):
-			conditions += " AND r.workflow_state = %(status)s"
-			args["status"] = filters["status"]
+			args["item_code"] = "%" + item_code + "%"
+
+		status = filters.get("status")
+		if status and isinstance(status, str):
+			# Draft=0, Submit=1
+			if status == "Draft":
+				conditions += " AND r.docstatus = 0"
+			elif status == "Submit":
+				conditions += " AND r.docstatus = 1"
 
 	data = frappe.db.sql("""
 		SELECT
 			ri.item_code,
-			SUM(CASE WHEN r.workflow_state = 'Draft' THEN 1 ELSE 0 END) as draft_count,
-			SUM(CASE WHEN r.workflow_state = 'Submit' THEN 1 ELSE 0 END) as submit_count,
+			SUM(CASE WHEN r.docstatus = 0 THEN 1 ELSE 0 END) as draft_count,
+			SUM(CASE WHEN r.docstatus = 1 THEN 1 ELSE 0 END) as submit_count,
 			COUNT(*) as total
 		FROM `tabRequest Items` ri
 			INNER JOIN `tabRequest` r ON r.name = ri.parent
