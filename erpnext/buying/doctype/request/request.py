@@ -179,6 +179,104 @@ def create_sales_order(request_name):
 	return doc.name
 
 @frappe.whitelist()
+def get_events(start, end, user=None, filters=None, item_codes=None):
+	"""Fetch Request events for calendar view."""
+	from frappe.desk.reportview import get_filters_cond
+
+	if isinstance(filters, str):
+		filters = json.loads(filters)
+
+	if isinstance(item_codes, str):
+		item_codes = json.loads(item_codes)
+
+	filter_condition = get_filters_cond("Request", filters or [], [])
+
+	item_code_condition = ""
+	item_code_args = {}
+	if item_codes:
+		placeholders = ", ".join(["%(ic{})s".format(i) for i in range(len(item_codes))])
+		item_code_condition = " AND ri.item_code IN ({})".format(placeholders)
+		for i, code in enumerate(item_codes):
+			item_code_args["ic{}".format(i)] = code
+
+	events = frappe.db.sql("""
+		SELECT
+			`tabRequest`.name,
+			`tabRequest`.company,
+			`tabRequest`.department,
+			ri.item_code,
+			ri.unit_weight,
+			`tabRequest`.posting_date as start,
+			`tabRequest`.posting_date as end,
+			`tabRequest`.workflow_state as status,
+			1 as allDay
+		FROM `tabRequest`
+			INNER JOIN `tabRequest Items` ri ON ri.parent = `tabRequest`.name
+		WHERE `tabRequest`.docstatus != 2
+		{filter_condition}
+		{item_code_condition}
+		ORDER BY `tabRequest`.posting_date
+	""".format(filter_condition=filter_condition, item_code_condition=item_code_condition), item_code_args, as_dict=1)
+
+	def get_event_color(item_code):
+		if not item_code:
+			return {"color": "#6C757D", "textColor": "#FFFFFF"}
+		prefix = item_code.upper()
+		if prefix.startswith("PR-AV"):
+			return {"color": "#FFC107", "textColor": "#000000"}
+		if prefix.startswith("PR-LV"):
+			return {"color": "#28A745", "textColor": "#FFFFFF"}
+		if prefix.startswith("PR-HV"):
+			return {"color": "#007BFF", "textColor": "#FFFFFF"}
+		return {"color": "#6C757D", "textColor": "#FFFFFF"}
+
+	for d in events:
+		weight = " @{} Kg".format(d.unit_weight) if d.unit_weight else ""
+		d.title = "{}{}".format(d.item_code or "", weight)
+		d.tooltip = "{}\n{}".format(d.title, d.department or "")
+		style = get_event_color(d.item_code)
+		d.color = style["color"]
+		d.textColor = style["textColor"]
+
+	return events
+
+
+@frappe.whitelist()
+def get_request_items(filters=None):
+	"""Get distinct item codes from submitted Requests with counts, for calendar card strip."""
+	if isinstance(filters, str):
+		filters = json.loads(filters)
+
+	conditions = ""
+	args = {}
+
+	if filters:
+		item_code = filters.get("item_code")
+		if item_code and isinstance(item_code, str):
+			conditions += " AND ri.item_code LIKE %(item_code)s"
+			args["item_code"] = "%" + item_code + "%"
+
+	data = frappe.db.sql("""
+		SELECT
+			ri.item_code,
+			i.item_name,
+			SUM(ri.unit_weight * ri.qty) as total_weight,
+			GROUP_CONCAT(DISTINCT r.department SEPARATOR ', ') as department,
+			COUNT(DISTINCT r.name) as req_count
+		FROM `tabRequest Items` ri
+			INNER JOIN `tabRequest` r ON r.name = ri.parent
+			LEFT JOIN `tabItem` i ON i.name = ri.item_code
+		WHERE r.docstatus = 1
+			AND YEAR(r.posting_date) = YEAR(CURDATE())
+		{conditions}
+		GROUP BY ri.item_code
+		ORDER BY ri.item_code
+	""".format(conditions=conditions), args, as_dict=1)
+
+	return data
+
+
+@frappe.whitelist()
 def update_request(request_no, items, delivery_date=""):
 	from erpnext.controllers.foms import sync_log
 	"""
