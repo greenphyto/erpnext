@@ -259,11 +259,13 @@ def get_request_items(filters=None):
 	data = frappe.db.sql("""
 		SELECT
 			ri.item_code,
+			i.item_name,
 			SUM(ri.unit_weight * ri.qty) as total_weight,
 			GROUP_CONCAT(DISTINCT r.department SEPARATOR ', ') as department,
 			COUNT(DISTINCT r.name) as req_count
 		FROM `tabRequest Items` ri
 			INNER JOIN `tabRequest` r ON r.name = ri.parent
+			LEFT JOIN `tabItem` i ON i.name = ri.item_code
 		WHERE r.docstatus = 1
 			AND YEAR(r.posting_date) = YEAR(CURDATE())
 		{conditions}
