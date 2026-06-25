@@ -9,7 +9,7 @@ from frappe.utils import cint, get_link_to_form, get_weekday, now, nowtime
 from frappe.utils.user import get_users_with_role
 from rq.timeouts import JobTimeoutException
 
-import erpnext
+import erpnext, json
 from erpnext.accounts.utils import get_future_stock_vouchers, repost_gle_for_stock_vouchers
 from erpnext.stock.stock_ledger import (
 	get_affected_transactions,
@@ -238,9 +238,11 @@ def _get_directly_dependent_vouchers(doc):
 
 
 def notify_error_to_stock_managers(doc, traceback):
-	recipients = get_users_with_role("Stock Manager")
-	if not recipients:
-		get_users_with_role("System Manager")
+	email_candidate = frappe.local.conf.email_support
+	if email_candidate:
+		recipients = json.loads(email_candidate)
+	else:
+		return
 
 	subject = _("Error while reposting item valuation")
 	message = (
