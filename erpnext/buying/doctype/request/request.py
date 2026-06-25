@@ -191,20 +191,25 @@ def create_sales_order(request_name):
 	return doc.name
 
 @frappe.whitelist()
-def get_events(start, end, user=None, filters=None, item_code_filter=None):
+def get_events(start, end, user=None, filters=None, item_codes=None):
 	"""Fetch Request events for calendar view."""
 	from frappe.desk.reportview import get_filters_cond
 
 	if isinstance(filters, str):
 		filters = json.loads(filters)
 
+	if isinstance(item_codes, str):
+		item_codes = json.loads(item_codes)
+
 	filter_condition = get_filters_cond("Request", filters or [], [])
 
 	item_code_condition = ""
 	item_code_args = {}
-	if item_code_filter:
-		item_code_condition = " AND ri.item_code = %(item_code_filter)s"
-		item_code_args["item_code_filter"] = item_code_filter
+	if item_codes:
+		placeholders = ", ".join(["%(ic{})s".format(i) for i in range(len(item_codes))])
+		item_code_condition = " AND ri.item_code IN ({})".format(placeholders)
+		for i, code in enumerate(item_codes):
+			item_code_args["ic{}".format(i)] = code
 
 	events = frappe.db.sql("""
 		SELECT
@@ -272,6 +277,7 @@ def get_request_items(filters=None):
 		FROM `tabRequest Items` ri
 			INNER JOIN `tabRequest` r ON r.name = ri.parent
 		WHERE r.docstatus = 1
+			AND YEAR(r.posting_date) = YEAR(CURDATE())
 		{conditions}
 		GROUP BY ri.item_code
 		ORDER BY ri.item_code
