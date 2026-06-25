@@ -20,7 +20,9 @@ if (!document.getElementById('request-calendar-styles')) {
 		.list-controller { display: flex; align-items: center; flex-shrink: 0; }
 		.list-controller.hidden { display: none; }
 		.list-controller .icon-btn { padding: 4px 8px; cursor: pointer; }
-		.select-item-code { background: var(--bg-green); color: #fff; padding: 2px 10px; border-radius: var(--border-radius-sm); font-size: var(--text-sm); margin-left: 10px; }
+		.select-item-code { display: inline-flex; align-items: center; gap: 6px; background: var(--bg-green); color: #fff; padding: 2px 10px; border-radius: var(--border-radius-sm); font-size: var(--text-sm); margin-left: 10px; cursor: default; }
+		.select-item-code .tag-close { cursor: pointer; font-weight: 700; font-size: 14px; line-height: 1; opacity: 0.7; }
+		.select-item-code .tag-close:hover { opacity: 1; }
 		.facilities-calendar-dialog .wrapper-list { display: flex; flex-wrap: wrap; gap: 8px; max-height: 400px; overflow-y: auto; }
 	`;
 	document.head.appendChild(style);
@@ -65,7 +67,7 @@ if (!frappe.views.Calendar._make_patched) {
 	frappe.views.Calendar.prototype.get_args = function (start, end) {
 		var args = _original_get_args.call(this, start, end);
 		if (this._custom_filters && this.doctype === "Request") {
-			args.item_code_filter = this._custom_filters.item_code || '';
+			args.item_codes = JSON.stringify(this._custom_filters.item_codes || []);
 		}
 		return args;
 	};
@@ -228,6 +230,13 @@ class RequestCards {
 		return 'var(--border-color)';
 	}
 
+	get_text_color(item_code) {
+		if (!item_code) return '#FFFFFF';
+		var prefix = item_code.toUpperCase();
+		if (prefix.startsWith('PR-AV')) return '#000000';
+		return '#FFFFFF';
+	}
+
 	setup_cards() {
 		var me = this;
 		$.each(this.data, (i, d) => {
@@ -239,29 +248,59 @@ class RequestCards {
 	filter_item_code(item_code, remove = false) {
 		var me = this;
 
-		// store filter on calendar instance (this.main IS the calendar)
+		// initialize selected items array
 		if (!me.main._custom_filters) {
-			me.main._custom_filters = {};
+			me.main._custom_filters = { item_codes: [] };
 		}
-		if (remove || !item_code) {
-			delete me.main._custom_filters.item_code;
-		} else {
-			me.main._custom_filters.item_code = item_code;
+		if (!me.main._custom_filters.item_codes) {
+			me.main._custom_filters.item_codes = [];
 		}
 
-		// update toolbar label
-		var cal_toolbar = me.main.$cal.find(".fc-toolbar .fc-left");
-		cal_toolbar.find(".select-item-code").remove();
-		if (item_code && !remove) {
-			var tag_color = me.get_card_color(item_code);
-			cal_toolbar.append(`<div class="select-item-code" style="background:${tag_color};">${item_code}</div>`);
-			frappe.show_alert(__(`Filter: <b>${item_code}</b>`), 2);
-		} else {
-			frappe.show_alert(__("Filter cleared"), 2);
+		if (remove && item_code) {
+			// remove specific item code
+			me.main._custom_filters.item_codes = me.main._custom_filters.item_codes.filter(c => c !== item_code);
+		} else if (remove || !item_code) {
+			// clear all
+			me.main._custom_filters.item_codes = [];
+		} else if (item_code) {
+			// toggle: add if not exists, remove if exists
+			var idx = me.main._custom_filters.item_codes.indexOf(item_code);
+			if (idx > -1) {
+				me.main._custom_filters.item_codes.splice(idx, 1);
+			} else {
+				me.main._custom_filters.item_codes.push(item_code);
+			}
 		}
+
+		// update toolbar tags
+		me.render_filter_tags();
 
 		// refetch events
 		me.main.$cal.fullCalendar('refetchEvents');
+	}
+
+	render_filter_tags() {
+		var me = this;
+		var cal_toolbar = me.main.$cal.find(".fc-toolbar .fc-left");
+		cal_toolbar.find(".select-item-code").remove();
+
+		var codes = me.main._custom_filters.item_codes || [];
+		$.each(codes, (i, code) => {
+			var tag_bg = me.get_card_color(code);
+			var tag_fg = me.get_text_color(code);
+			var tag = $(`<div class="select-item-code" style="background:${tag_bg};color:${tag_fg};">${code} <span class="tag-close" style="color:${tag_fg};">&times;</span></div>`);
+			tag.find(".tag-close").on("click", function (e) {
+				e.stopPropagation();
+				me.filter_item_code(code, true);
+			});
+			cal_toolbar.append(tag);
+		});
+
+		if (codes.length > 0) {
+			frappe.show_alert(__(`Filter: <b>${codes.join(", ")}</b>`), 2);
+		} else {
+			frappe.show_alert(__("Filter cleared"), 2);
+		}
 	}
 
 	show_all() {
