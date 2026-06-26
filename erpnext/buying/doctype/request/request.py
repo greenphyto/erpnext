@@ -313,3 +313,131 @@ def update_request(request_no, items, delivery_date=""):
 	doc.db_update()
 	sync_log(doc, method="on_update_after_submit")
 	return request_no
+
+
+@frappe.whitelist()
+def fetch_tray_data(item_codes):
+	"""Fetch tray config from FOMS for given item codes"""
+	from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI
+
+	if isinstance(item_codes, string_types):
+		item_codes = json.loads(item_codes)
+
+	api = FomsAPI()
+	tray_data_list = []
+
+	for item_code in item_codes:
+		foms_product_id = frappe.get_value("Item", item_code, "foms_product_id")
+		if not foms_product_id:
+			continue
+
+		config = api.get_max_cage_and_tray(foms_product_id)
+		if not config:
+			continue
+
+		config["item_code"] = item_code
+		tray_data_list.append(config)
+
+	return tray_data_list
+
+
+@frappe.whitelist()
+def generate_tray_data_html(tray_data_list):
+	"""Generate HTML table from tray data"""
+	if isinstance(tray_data_list, string_types):
+		tray_data_list = json.loads(tray_data_list)
+	if not tray_data_list:
+		return "<p>No tray data available</p>"
+
+	html = """
+	<style>
+		.tray-data-wrapper {
+			overflow-x: auto;
+			max-width: 100%;
+		}
+		.tray-data-table {
+			width: 100%;
+			min-width: 800px;
+			border-collapse: collapse;
+			font-size: 12px;
+		}
+		.tray-data-table th, .tray-data-table td {
+			border: 1px solid #d1d8dd;
+			padding: 6px 8px;
+			text-align: left;
+			white-space: nowrap;
+		}
+		.tray-data-table th {
+			background-color: #f5f7fa;
+			font-weight: 600;
+		}
+		.tray-data-table tr:nth-child(even) {
+			background-color: #fafbfc;
+		}
+		.tray-data-table th:first-child,
+		.tray-data-table td:first-child {
+			min-width: 100px;
+		}
+	</style>
+	<div class="tray-data-wrapper">
+	<table class="tray-data-table">
+		<thead>
+			<tr>
+				<th>Item Code</th>
+				<th>Product ID</th>
+				<th>Product Name</th>
+				<th>Weight/Plant (Kg)</th>
+				<th>Packet Size (g)</th>
+				<th>Seeding Plant/Tray</th>
+				<th>Seeding Tray/Cage</th>
+				<th>Max Pkt/Seeding Tray</th>
+				<th>Max Pkt/Seeding Cage</th>
+				<th>Transplant Plant/Tray</th>
+				<th>Transplant Tray/Cage</th>
+				<th>Max Pkt/Transplant Tray</th>
+				<th>Max Pkt/Transplant Cage</th>
+			</tr>
+		</thead>
+		<tbody>
+	"""
+
+	for data in tray_data_list:
+		html += """
+			<tr>
+				<td>{item_code}</td>
+				<td>{productId}</td>
+				<td>{productName}</td>
+				<td>{weightPerPlantKg}</td>
+				<td>{packetSizeGrams}</td>
+				<td>{seedingPlantPerTray}</td>
+				<td>{seedingTraysPerCage}</td>
+				<td>{maxPacketsPerSeedingTray}</td>
+				<td>{maxPacketsPerSeedingCage}</td>
+				<td>{transplantingPlantPerTray}</td>
+				<td>{transplantingTraysPerCage}</td>
+				<td>{maxPacketsPerTransplantingTray}</td>
+				<td>{maxPacketsPerTransplantingCage}</td>
+			</tr>
+		""".format(
+			item_code=data.get("item_code", ""),
+			productId=data.get("productId", ""),
+			productName=data.get("productName", ""),
+			weightPerPlantKg=data.get("weightPerPlantKg", ""),
+			packetSizeGrams=data.get("packetSizeGrams", ""),
+			seedingPlantPerTray=data.get("seedingPlantPerTray", ""),
+			seedingTraysPerCage=data.get("seedingTraysPerCage", ""),
+			maxPacketsPerSeedingTray=data.get("maxPacketsPerSeedingTray", ""),
+			maxPacketsPerSeedingCage=data.get("maxPacketsPerSeedingCage", ""),
+			transplantingPlantPerTray=data.get("transplantingPlantPerTray", ""),
+			transplantingTraysPerCage=data.get("transplantingTraysPerCage", ""),
+			maxPacketsPerTransplantingTray=data.get("maxPacketsPerTransplantingTray", ""),
+			maxPacketsPerTransplantingCage=data.get("maxPacketsPerTransplantingCage", "")
+		)
+
+	html += """
+		</tbody>
+	</table>
+	</div>
+	"""
+
+	return html

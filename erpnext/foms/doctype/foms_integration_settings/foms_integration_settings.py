@@ -506,12 +506,21 @@ class FomsAPI():
 		versionID = 0
 		if not versions:
 			return {}
-		
+
 		for d in versions:
 			if d.get("id") > versionID:
 				versionID = d.get("id")
 
 		res = self.req("GET", f"/Product/GetProductById?id={product_id}&versionID={versionID}")
+		return res
+
+	def get_max_cage_and_tray(self, product_id):
+		"""Get tray configuration for a product from FOMS"""
+		params = {
+			"productId": product_id,
+			"farmId": self.settings.farm_id
+		}
+		res = self.req("GET", "/userportal/Planning/GetMaxCageAndTrayByProduct", params=params)
 		return res
 
 	def get_opeartion_tasks(self, product_id, foms_lot_id, farm_id):

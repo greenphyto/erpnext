@@ -22,6 +22,10 @@
   "amount",
   "unit_weight",
   "weight",
+  "tray_cache_section",
+  "plant_per_tray",
+  "max_packets_per_tray",
+  "weight_per_plant_kg",
   "foms_id",
   "salad_product_section",
   "is_salad_product",
@@ -116,6 +120,34 @@
    "read_only": 1
   },
   {
+   "fieldname": "tray_cache_section",
+   "fieldtype": "Section Break",
+   "label": "Tray Cache",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "plant_per_tray",
+   "fieldtype": "Int",
+   "label": "Plant/Tray",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "max_packets_per_tray",
+   "fieldtype": "Int",
+   "label": "Max Packets/Tray",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "weight_per_plant_kg",
+   "fieldtype": "Float",
+   "label": "Weight/Plant (Kg)",
+   "precision": "3",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
    "fieldname": "column_break_6",
    "fieldtype": "Column Break"
   },
@@ -202,7 +234,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-05-22 18:26:47.494160",
+ "modified": "2026-06-26 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request Items",

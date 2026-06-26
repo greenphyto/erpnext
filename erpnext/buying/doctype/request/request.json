@@ -17,6 +17,9 @@
   "duration_days",
   "section_break_5",
   "non_package_item",
+  "tray_data_section",
+  "tray_data_html",
+  "get_tray_data",
   "items",
   "section_break_8",
   "total_price",
@@ -119,6 +122,22 @@
    "label": "Non Package Item"
   },
   {
+   "fieldname": "tray_data_section",
+   "fieldtype": "Section Break",
+   "label": "Tray Data"
+  },
+  {
+   "fieldname": "tray_data_html",
+   "fieldtype": "HTML",
+   "label": "Tray Data",
+   "read_only": 1
+  },
+  {
+   "fieldname": "get_tray_data",
+   "fieldtype": "Button",
+   "label": "Get Tray Data"
+  },
+  {
    "fieldname": "foms_id",
    "fieldtype": "Data",
    "label": "FOMS ID",
@@ -172,7 +191,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-06-25 10:00:00.000000",
+ "modified": "2026-06-26 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request",

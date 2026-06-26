@@ -79,6 +79,11 @@ frappe.ui.form.on("Request", {
 
 		frm.cscript.add_button_make_salad(frm.doc);
 
+		// Render tray data on load
+		if (frm.doc.tray_data_html) {
+			frm.get_field("tray_data_html").$wrapper.html(frm.doc.tray_data_html);
+		}
+
 	},
 
 	posting_date:function(frm){
@@ -90,9 +95,86 @@ frappe.ui.form.on("Request", {
 
 });
 
+frappe.ui.form.on("Request", {
+	get_tray_data: function(frm) {
+		var item_codes = [];
+		$.each(frm.doc.items || [], function(i, d) {
+			if (d.item_code) {
+				item_codes.push(d.item_code);
+			}
+		});
+
+		if (!item_codes.length) {
+			frappe.msgprint(__("Please add items first"));
+			return;
+		}
+
+		frappe.dom.freeze(__("Fetching tray data..."));
+
+		frappe.call({
+			method: "erpnext.buying.doctype.request.request.fetch_tray_data",
+			args: {
+				item_codes: item_codes
+			},
+			callback: function(r) {
+				frappe.dom.unfreeze();
+				if (r.message) {
+					frappe.call({
+						method: "erpnext.buying.doctype.request.request.generate_tray_data_html",
+						args: {
+							tray_data_list: r.message
+						},
+						callback: function(r) {
+							if (r.message) {
+								frm.get_field("tray_data_html").$wrapper.html(r.message);
+							}
+						}
+					});
+				}
+			},
+			error: function(r) {
+				frappe.dom.unfreeze();
+				frappe.msgprint(__("Error fetching tray data"));
+			}
+		});
+	}
+});
+
 frappe.ui.form.on("Request Items", {
 	item_code:function(doc, cdt, cdn){
 		frappe.model.set_value(cdt,cdn,"packaging", "");
+
+		// Auto-refresh tray data
+		var item_codes = [];
+		$.each(cur_frm.doc.items || [], function(i, d) {
+			if (d.item_code) {
+				item_codes.push(d.item_code);
+			}
+		});
+
+		if (item_codes.length) {
+			frappe.call({
+				method: "erpnext.buying.doctype.request.request.fetch_tray_data",
+				args: {
+					item_codes: item_codes
+				},
+				callback: function(r) {
+					if (r.message) {
+						frappe.call({
+							method: "erpnext.buying.doctype.request.request.generate_tray_data_html",
+							args: {
+								tray_data_list: r.message
+							},
+							callback: function(r) {
+								if (r.message) {
+									cur_frm.get_field("tray_data_html").$wrapper.html(r.message);
+								}
+							}
+						});
+					}
+				}
+			});
+		}
 	}
 })
 
