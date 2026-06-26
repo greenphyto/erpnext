@@ -1,7 +1,7 @@
 // Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('Crop Anomaly Report', {
+frappe.ui.form.on('Vegetable Issue Report', {
 	refresh: function(frm) {
 		// Set status indicator color based on current status
 		if (frm.doc.status) {
@@ -25,7 +25,7 @@ frappe.ui.form.on('Crop Anomaly Report', {
 				frappe.call({
 					method: 'frappe.client.set_value',
 					args: {
-						doctype: 'Crop Anomaly Report',
+						doctype: 'Vegetable Issue Report',
 						name: frm.doc.name,
 						fieldname: 'status',
 						value: 'Submitted'
@@ -42,7 +42,7 @@ frappe.ui.form.on('Crop Anomaly Report', {
 				frappe.call({
 					method: 'frappe.client.set_value',
 					args: {
-						doctype: 'Crop Anomaly Report',
+						doctype: 'Vegetable Issue Report',
 						name: frm.doc.name,
 						fieldname: 'status',
 						value: 'Acknowledged'
@@ -63,7 +63,7 @@ frappe.ui.form.on('Crop Anomaly Report', {
 				frappe.call({
 					method: 'frappe.client.set_value',
 					args: {
-						doctype: 'Crop Anomaly Report',
+						doctype: 'Vegetable Issue Report',
 						name: frm.doc.name,
 						fieldname: 'status',
 						value: 'Resolved'
@@ -80,7 +80,7 @@ frappe.ui.form.on('Crop Anomaly Report', {
 				frappe.call({
 					method: 'frappe.client.set_value',
 					args: {
-						doctype: 'Crop Anomaly Report',
+						doctype: 'Vegetable Issue Report',
 						name: frm.doc.name,
 						fieldname: 'status',
 						value: 'Closed'
@@ -102,7 +102,7 @@ frappe.ui.form.on('Crop Anomaly Report', {
 });
 
 // Child table events for Affected Tray Details
-frappe.ui.form.on('Crop Anomaly Affected Tray', {
+frappe.ui.form.on('Vegetable Issue Affected Tray', {
 	cage_id: function(frm, cdt, cdn) {
 		// Auto-populate location_sz or other logic if needed
 	}
