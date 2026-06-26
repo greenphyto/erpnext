@@ -5,7 +5,7 @@ import frappe
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestCropAnomalyReport(FrappeTestCase):
+class TestVegetableIssueReport(FrappeTestCase):
 	def setUp(self):
 		if not frappe.db.exists("User", "test_crop_reporter@example.com"):
 			user = frappe.get_doc(
@@ -23,10 +23,10 @@ class TestCropAnomalyReport(FrappeTestCase):
 	def _make_report(self, **kwargs):
 		doc = frappe.get_doc(
 			{
-				"doctype": "Crop Anomaly Report",
+				"doctype": "Vegetable Issue Report",
 				"reported_by": "test_crop_reporter@example.com",
 				"date_reported": frappe.utils.today(),
-				"product_name": "Test Item - Crop Anomaly",
+				"product_name": "Test Item - Vegetable Issue",
 				"lot_id": "LOT-TEST-001",
 				"item_affected": "Seeds",
 				"issues_symptoms": "Test symptom description",
@@ -37,9 +37,9 @@ class TestCropAnomalyReport(FrappeTestCase):
 		doc.insert(ignore_permissions=True)
 		return doc
 
-	def test_create_crop_anomaly_report(self):
+	def test_create_vegetable_issue_report(self):
 		doc = self._make_report()
-		self.assertTrue(doc.name.startswith("CAR-"))
+		self.assertTrue(doc.name.startswith("VIR-"))
 		self.assertEqual(doc.status, "Draft")
 
 	def test_affected_quantity_validation_cages(self):

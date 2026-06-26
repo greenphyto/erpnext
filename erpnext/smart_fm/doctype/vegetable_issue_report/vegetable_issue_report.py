@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 
 
-class CropAnomalyReport(Document):
+class VegetableIssueReport(Document):
 	def validate(self):
 		self.validate_affected_quantities()
 

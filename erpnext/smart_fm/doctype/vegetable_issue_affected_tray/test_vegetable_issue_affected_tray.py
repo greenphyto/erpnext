@@ -4,4 +4,4 @@
 # import frappe
 from frappe.tests import IntegrationTestCase
 
-# test_records = frappe.get_test_records('Crop Anomaly Affected Tray')
+# test_records = frappe.get_test_records('Vegetable Issue Affected Tray')

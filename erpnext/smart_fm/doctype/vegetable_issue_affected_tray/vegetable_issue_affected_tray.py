@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class CropAnomalyAffectedTray(Document):
+class VegetableIssueAffectedTray(Document):
 	pass
