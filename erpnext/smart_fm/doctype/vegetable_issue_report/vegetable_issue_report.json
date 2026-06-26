@@ -16,6 +16,17 @@
   "column_break_basic_2",
   "item_affected",
   "section_break_issues_symptoms",
+  "symptom_reduction_crop_size",
+  "symptom_yellowing_outer",
+  "symptom_yellowing_inner",
+  "symptom_yellowing_entire",
+  "column_break_symptoms_1",
+  "symptom_tipburn_edges",
+  "symptom_tipburn_entire",
+  "symptom_yellow_roots",
+  "symptom_foul_smell",
+  "column_break_symptoms_2",
+  "others_symptoms",
   "issues_symptoms",
   "section_break_affected_quantity",
   "num_cages_affected",
@@ -98,10 +109,72 @@
    "label": "Issues / Symptoms"
   },
   {
+   "default": "0",
+   "fieldname": "symptom_reduction_crop_size",
+   "fieldtype": "Check",
+   "label": "Reduction in crop size"
+  },
+  {
+   "default": "0",
+   "fieldname": "symptom_yellowing_outer",
+   "fieldtype": "Check",
+   "label": "Yellowing of leaves - Outer leaves"
+  },
+  {
+   "default": "0",
+   "fieldname": "symptom_yellowing_inner",
+   "fieldtype": "Check",
+   "label": "Yellowing of leaves - Inner leaves"
+  },
+  {
+   "default": "0",
+   "fieldname": "symptom_yellowing_entire",
+   "fieldtype": "Check",
+   "label": "Yellowing of leaves - Entire plant"
+  },
+  {
+   "fieldname": "column_break_symptoms_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "symptom_tipburn_edges",
+   "fieldtype": "Check",
+   "label": "Tip burn - Edges of inner leaves"
+  },
+  {
+   "default": "0",
+   "fieldname": "symptom_tipburn_entire",
+   "fieldtype": "Check",
+   "label": "Tip burn - Entire plant"
+  },
+  {
+   "default": "0",
+   "fieldname": "symptom_yellow_roots",
+   "fieldtype": "Check",
+   "label": "Yellow roots"
+  },
+  {
+   "default": "0",
+   "fieldname": "symptom_foul_smell",
+   "fieldtype": "Check",
+   "label": "Foul smell from remaining nutrient solution"
+  },
+  {
+   "fieldname": "column_break_symptoms_2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "others_symptoms",
+   "fieldtype": "Check",
+   "label": "Others"
+  },
+  {
+   "depends_on": "eval:doc.others_symptoms==1",
    "fieldname": "issues_symptoms",
    "fieldtype": "Text Editor",
-   "label": "Issues / Symptoms",
-   "reqd": 1
+   "label": "Description of Other Issues / Symptoms"
   },
   {
    "fieldname": "section_break_affected_quantity",
@@ -229,7 +302,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-06-26 10:30:00.000000",
+ "modified": "2026-06-26 18:53:50.309230",
  "modified_by": "Administrator",
  "module": "Smart FM",
  "name": "Vegetable Issue Report",
