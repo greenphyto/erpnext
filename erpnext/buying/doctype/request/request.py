@@ -206,8 +206,8 @@ def get_events(start, end, user=None, filters=None, item_codes=None):
 			`tabRequest`.department,
 			ri.item_code,
 			ri.unit_weight,
-			`tabRequest`.posting_date as start,
-			`tabRequest`.posting_date as end,
+			`tabRequest`.delivery_date as start,
+			`tabRequest`.delivery_date as end,
 			`tabRequest`.workflow_state as status,
 			1 as allDay
 		FROM `tabRequest`
