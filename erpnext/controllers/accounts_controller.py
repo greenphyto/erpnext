@@ -1304,12 +1304,17 @@ class AccountsController(TransactionBase):
 				)
 			)
 
-	def validate_multiple_billing(self, ref_dt, item_ref_dn, based_on, parentfield):
+	def validate_multiple_billing(self, ref_dt, item_ref_dn, based_on, parentfield, ref_item_field=None):
 		if cint(self.is_return):
 			# in future: should be able validate over return qty
 			return
-		
+
 		from erpnext.controllers.status_updater import get_allowance_for
+
+		# ref_item_field: field on reference doctype's items linking to order item
+		# defaults to item_ref_dn when field name is the same on both doctypes
+		# e.g. PI uses "po_detail" but PR Item uses "purchase_order_item"
+		filter_field = ref_item_field or item_ref_dn
 
 		item_allowance = {}
 		global_qty_allowance, global_amount_allowance = None, None
@@ -1326,7 +1331,7 @@ class AccountsController(TransactionBase):
 				continue
 
 			ref_amt = flt(
-				frappe.db.get_value(ref_dt + " Item", {"so_detail": item.get(item_ref_dn)}, f"sum({based_on})"),
+				frappe.db.get_value(ref_dt + " Item", {filter_field: item.get(item_ref_dn)}, f"sum({based_on})"),
 				self.precision(based_on, item),
 			)
 			if not ref_amt:
