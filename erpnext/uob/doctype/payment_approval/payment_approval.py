@@ -187,7 +187,7 @@ class PaymentApproval(Document):
 	def get_transfer_info(self, row, tr):
 		txt = f"""
 		Statement Date: { getdate(tr['reff_date']).strftime("%d-%m-%Y") }
-		Initiated Date: { self.posting_date.strftime("%d-%m-%Y") }
+		Initiated Date: { self.request_date.strftime("%d-%m-%Y") }
 		Payment No: { tr['remarks'] }
 		Invoice: { row.invoice_no }
 		"""
