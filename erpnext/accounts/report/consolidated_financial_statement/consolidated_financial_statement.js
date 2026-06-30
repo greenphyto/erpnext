@@ -4,6 +4,9 @@
 
 frappe.require("assets/erpnext/js/financial_statements.js", function() {
 	frappe.query_reports["Consolidated Financial Statement"] = {
+		"tree": true,
+		"parent_field": "parent_account",
+		"initial_depth": 3,
 		"filters": [
 			{
 				"fieldname":"company",

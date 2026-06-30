@@ -97,6 +97,7 @@ def get_balance_sheet_data(fiscal_year, companies, columns, filters):
 			"account": "'" + _("Unclosed Fiscal Years Profit / Loss (Credit)") + "'",
 			"warn_if_negative": True,
 			"currency": company_currency,
+			"is_bold": True,
 		}
 
 		for company in companies:
@@ -219,6 +220,7 @@ def get_cash_flow_data(fiscal_year, companies, filters):
 				"parent_account": None,
 				"indent": 0.0,
 				"account": cash_flow_account["section_header"],
+				"is_bold": True,
 			}
 		)
 
@@ -750,6 +752,7 @@ def add_total_row(out, root_type, balance_must_be, companies, company_currency):
 		"account_name": "'" + _("Total {0} ({1})").format(_(root_type), _(balance_must_be)) + "'",
 		"account": "'" + _("Total {0} ({1})").format(_(root_type), _(balance_must_be)) + "'",
 		"currency": company_currency,
+		"is_bold": True,
 	}
 
 	for row in out:
