@@ -74,6 +74,7 @@ def execute(filters=None):
 				"parent_account": None,
 				"indent": 0.0,
 				"account": cash_flow_account["section_header"],
+				"is_bold": True,
 			}
 		)
 
@@ -227,6 +228,7 @@ def add_total_row_account(
 		"account_name": "'" + _("{0}").format(label) + "'",
 		"account": "'" + _("{0}").format(label) + "'",
 		"currency": currency,
+		"is_bold": True,
 	}
 
 	summary_data[label] = 0

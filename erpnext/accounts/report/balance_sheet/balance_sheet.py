@@ -153,6 +153,7 @@ def get_provisional_profit_loss(
 			"account": "'" + _("Total (Credit)") + "'",
 			"warn_if_negative": True,
 			"currency": currency,
+			"is_bold": True,
 		}
 		has_value = False
 
@@ -191,6 +192,7 @@ def get_provisional_profit_loss(
 					"account": "'" + _("Profit / (Loss) for the Year") + "'",
 					"warn_if_negative": True,
 					"currency": currency,
+					"is_bold": True,
 				}
 			)
 

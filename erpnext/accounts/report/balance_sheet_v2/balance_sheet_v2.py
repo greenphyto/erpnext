@@ -102,7 +102,7 @@ def execute(filters=None):
 					d['account'] = d['account_name']
 					if not d.get('parent_account'):
 						for key, val in d.items():
-							if key not in ['account', 'account_name']:
+							if key not in ['account', 'account_name', 'is_group']:
 								d[key] = None
 
 			data.append(d)
@@ -156,6 +156,7 @@ def get_provisional_profit_loss(
 			"account": "'" + _("Total (Credit)") + "'",
 			"warn_if_negative": True,
 			"currency": currency,
+			"is_bold": True,
 		}
 		has_value = False
 
@@ -186,6 +187,7 @@ def get_provisional_profit_loss(
 					"account": "'" + _("Profit / (Loss) for the Year") + "'",
 					"warn_if_negative": True,
 					"currency": currency,
+					"is_bold": True,
 				}
 			)
 
