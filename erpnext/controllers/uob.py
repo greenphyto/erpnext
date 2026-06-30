@@ -212,7 +212,7 @@ def create_payment_xml(invoices, debtor_info, filepath=""):
 	initg_pty = ET.SubElement(grp_hdr, 'InitgPty')
 	initg_pty_id = ET.SubElement(initg_pty, 'Id')
 	comp_org_id = ET.SubElement(initg_pty_id, 'OrgId')
-	ET.SubElement(comp_org_id, 'BICOrBEI').text = debtor_info['dummy_bic']
+	ET.SubElement(comp_org_id, 'BICOrBEI').text = debtor_info['bic']
 	
 	# Create Payment Information
 	pmt_inf = ET.SubElement(cstmr_cdt_trf_initn, 'PmtInf')
