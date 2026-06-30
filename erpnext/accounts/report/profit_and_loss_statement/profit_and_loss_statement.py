@@ -116,7 +116,7 @@ def execute(filters=None):
 					d['account'] = d['account_name']
 					if not d.get('parent_account'):
 						for key, val in d.items():
-							if key not in ['account', 'account_name']:
+							if key not in ['account', 'account_name', 'is_group']:
 								d[key] = None
 
 			new_data.append(d)
@@ -188,6 +188,7 @@ def get_net_profit_loss(income, expense, period_list, company, currency=None, co
 		"account": "'" + _("Profit for the year") + "'",
 		"warn_if_negative": True,
 		"profit_data":1,
+		"is_bold": True,
 		"currency": currency or frappe.get_cached_value("Company", company, "default_currency"),
 	}
 
