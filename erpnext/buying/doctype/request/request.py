@@ -105,6 +105,40 @@ def _get_forecast_settings():
 	return settings
 
 
+def get_lead_time_by_custom_names(custom_names):
+	"""
+	Get lead time for items by custom names from Forecast Settings.
+
+	Args:
+		custom_names: List of custom names (e.g., ["Kai Lan", "Komatsuna"])
+
+	Returns:
+		dict with min_lead_time, max_lead_time, and detail
+	"""
+	if isinstance(custom_names, string_types):
+		custom_names = json.loads(custom_names)
+
+	settings = _get_forecast_settings()
+	detail = {}
+
+	for custom_name in custom_names:
+		item_code = _resolve_item(custom_name, settings)
+		if item_code:
+			lead_time = frappe.get_value("Item", item_code, "lead_time_days") or 0
+			detail[custom_name] = lead_time
+		else:
+			detail[custom_name] = None
+
+	# Calculate min/max from values that are not None
+	lead_times = [v for v in detail.values() if v is not None]
+
+	return {
+		"min_lead_time": min(lead_times) if lead_times else 0,
+		"max_lead_time": max(lead_times) if lead_times else 0,
+		"detail": detail
+	}
+
+
 def _resolve_item(veg_name, settings):
 	"""Map custom_name to item_code from Forecast Settings items table."""
 	for row in settings.items:

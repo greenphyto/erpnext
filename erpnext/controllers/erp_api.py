@@ -39,7 +39,8 @@ from erpnext.buying.doctype.request.request import (
 	_resolve_customer,
 	_resolve_packaging,
 	_get_item_price,
-	create_or_update_forecast_request
+	create_or_update_forecast_request,
+	get_lead_time_by_custom_names
 )
 
 PRECISION_FACTOR = 4
@@ -1686,3 +1687,20 @@ def receive_forecast(data):
 		"requests_created": len(results),
 		"results": results
 	}
+
+
+@frappe.whitelist()
+def get_lead_time(veg_names):
+	"""
+	Get lead time for items by custom names from Forecast Settings.
+
+	Args:
+		veg_names: JSON string array of veg names (e.g., '["Kai Lan", "Komatsuna"]')
+
+	Returns:
+		dict with min_lead_time, max_lead_time, and detail
+	"""
+	if isinstance(veg_names, string_types):
+		veg_names = json.loads(veg_names)
+
+	return get_lead_time_by_custom_names(veg_names)

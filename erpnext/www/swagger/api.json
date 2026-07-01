@@ -1886,6 +1886,80 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.get_lead_time": {
+      "post": {
+        "summary": "Get Lead Time by Custom Names",
+        "description": "Get lead time for items by custom names from Forecast Settings. Maps custom names to item codes, then retrieves lead_time_days from Item master. Returns min/max lead time and detail per custom name.",
+        "operationId": "get lead time",
+        "requestBody": {
+          "description": "Array of veg names to lookup",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "veg_names": {
+                    "type": "string",
+                    "description": "JSON string array of veg names"
+                  }
+                }
+              },
+              "example": {
+                "veg_names": "[\"Kai Lan\", \"Komatsuna\"]"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "min_lead_time": {
+                      "type": "integer",
+                      "description": "The lowest lead time in days"
+                    },
+                    "max_lead_time": {
+                      "type": "integer",
+                      "description": "The highest lead time in days"
+                    },
+                    "detail": {
+                      "type": "object",
+                      "description": "Lead time per custom name (null if not found)"
+                    }
+                  }
+                },
+                "example": {
+                  "min_lead_time": 35,
+                  "max_lead_time": 48,
+                  "detail": {
+                    "Kai Lan": 35,
+                    "Komatsuna": 48
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Forecast Settings not enabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "error",
+                    "message": "Forecast Settings is not enabled"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
