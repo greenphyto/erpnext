@@ -31,6 +31,15 @@ from datetime import datetime, timedelta
 # from erpnext.stock.utils import get_default_warehouse
 from erpnext.stock.stock_ledger import get_valuation_rate
 from erpnext.setup.doctype.company.company import switch_to_company_admin
+from erpnext.stock.doctype.batch.batch import get_batch_qty, make_batch
+from erpnext.buying.doctype.request.request import (
+	_get_forecast_settings,
+	_resolve_item,
+	_resolve_customer,
+	_resolve_packaging,
+	_get_item_price,
+	create_or_update_forecast_request
+)
 
 PRECISION_FACTOR = 4
 
@@ -1354,3 +1363,293 @@ def delete_item(itemCode):
 	else:
 		doc.db_set("disabled", 1)
 		return False
+		
+@frappe.whitelist()
+def get_document_lotid(lotid=""):
+	# 1. Validation for empty parameter
+	if not lotid:
+		frappe.throw(_("The parameter 'lotid' is required."), frappe.ValidationError)
+	
+	data = {"transactions": []}
+
+	# 2. Fetch Batch details
+	batch = frappe.db.get_value("Batch", {"foms_lot_id": lotid}, "*", as_dict=1)
+	
+	# 3. Check if Batch exists, if not throw 404
+	if not batch:
+		frappe.throw(
+			msg=_("Batch with Lot ID '{0}' not found.").format(lotid), 
+			exc=frappe.DoesNotExistError
+		)
+
+	# Batch
+	data['batch'] = batch
+
+	# get ledger
+	sle = frappe.db.sql("""
+		SELECT 
+			sle.posting_date,
+			sle.warehouse,
+			sle.voucher_type,
+			sle.voucher_no,
+			sle.actual_qty
+		FROM
+			`tabStock Ledger Entry` sle
+		WHERE
+			sle.batch_no = %s
+		ORDER BY sle.posting_date DESC, sle.posting_time DESC, sle.name DESC
+	""", (data['batch'].name), as_dict=1)
+	for d in sle:
+		doc = frappe.get_doc(d.voucher_type, d.voucher_no)
+		data["transactions"].append(doc.as_dict())
+		if doc.doctype == "Stock Entry" and doc.purpose == "Manufacture":
+			data['batch']['work_order'] = doc.work_order
+
+	return data
+
+@frappe.whitelist()
+def get_delivery_by_lotid(lotid=None, delivery_date=""):
+	if isinstance(lotid, str):
+		lotid = json.loads(lotid)
+	lotid = lotid or []
+
+	use_delivery_date = cstr(getdate(delivery_date))
+	dn_list = []
+	data = {}
+	for lot in lotid:
+		data['batch'] = {}
+		batch = frappe.db.get_value("Batch", {"foms_lot_id": lot}, "*", as_dict=1)
+		if not batch:
+			continue
+
+		data['batch'][lot] = batch
+
+	cond = ""
+	filters = {}
+	if delivery_date:
+		cond = " AND dn.delivery_date = %(delivery_date)s "
+		filters = {
+			"delivery_date": use_delivery_date
+		}
+
+	if lotid:
+		cond += " AND dni.foms_lot_name in %(lots)s "
+		filters['lots'] = lotid
+	# Get Delivery Note Items for the batch on the specified delivery date
+	dn_items = frappe.db.sql("""
+		SELECT 
+			dn.name AS delivery_note,
+			dni.item_code,
+			dni.qty,
+			dni.batch_no,
+			dn.posting_date
+		FROM
+			`tabDelivery Note Item` dni
+				JOIN
+			`tabDelivery Note` dn ON dn.name = dni.parent
+		WHERE
+			dn.docstatus != 2
+			{}
+		ORDER BY dn.delivery_date DESC
+	""".format(cond), filters, as_dict=1, debug=0)
+
+	data['transactions'] = []
+	for d in dn_items:
+		dn_list.append(d)
+		doc = frappe.get_doc("Delivery Note", d.delivery_note)
+		data['transactions'].append(doc.as_dict())
+
+	return data
+
+@frappe.whitelist()
+def update_package_size(lotID, newSize):
+	existing_work_order = frappe.db.get_value("Work Order", {"foms_lot_name": lotID})
+	if not existing_work_order:
+		frappe.throw(_(f"No Work Order found for Lot ID {lotID}"), frappe.DoesNotExistError)
+
+	# find packaging size name
+	packname = frappe.get_value("Packaging", {"quantity": newSize, "uom":"Gram"}, "name") or frappe.throw(_(f"Packaging Size {newSize} Gram not found"), frappe.DoesNotExistError)
+	uompack = frappe.get_value("UOM", packname, "name") or frappe.throw(_(f"UOM for Packaging Size {newSize} Gram not found"), frappe.DoesNotExistError)
+
+	wo_doc = frappe.get_doc("Work Order", existing_work_order)
+	old_size = wo_doc.packet_size
+	if old_size == uompack:
+		return True
+	
+	# change size WO
+	wo_doc.packet_size = uompack
+	wo_doc.conversion_factor = flt(newSize)/1000
+	# update packaging item qty
+	for row in wo_doc.get("required_items"):
+		if row.is_packaging:
+			row.required_qty = wo_doc.qty / wo_doc.conversion_factor
+			row.amount = row.required_qty * row.rate
+			row.db_update()
+	wo_doc.db_update()
+
+	# add comment
+	wo_doc.add_comment("Comment", f"Packet size updated from {old_size} to <b>{uompack}</b>")	
+	return True
+
+@frappe.whitelist()
+def get_item_order(item_code, company):
+	# check exists
+	item = frappe.db.get_value("Item", item_code)
+	if not item:
+		frappe.throw(_(f"Item {item_code} not found"), frappe.DoesNotExistError)
+	
+	# get all onprogress POs 
+	# and fetch the qty (stock uom), and required date
+	pos = frappe.db.sql("""
+		SELECT 
+			po.name,
+			po.status,
+			po.transaction_date,
+			MIN(poi.schedule_date) AS required_date,
+			poi.item_code,
+			SUM(poi.stock_qty) AS stock_qty,
+			poi.stock_uom
+		FROM
+			`tabPurchase Order` po
+				JOIN
+			`tabPurchase Order Item` poi ON poi.parent = po.name
+		WHERE
+			po.docstatus = 1
+				AND po.status NOT IN ('Closed' , 'Completed', 'To Bill')
+				AND poi.item_code = %s
+				AND po.company = %s
+				AND po.transaction_date >= "2025-01-01"
+		GROUP BY po.name
+		ORDER BY po.schedule_date ASC
+
+	""", (item_code, company), as_dict=1)
+
+	return pos
+
+
+@frappe.whitelist()
+def receive_forecast(data):
+	"""
+	Receive forecast data from external server.
+
+	Args:
+		data: Array of forecast items with veg_name, packages, uom_in_kg,
+			  forecast_date, customer
+
+	Returns:
+		dict with status, request_name, and item details
+	"""
+	# Parse data
+	if isinstance(data, string_types):
+		data = json.loads(data)
+
+	# Validate payload
+	if not data or not isinstance(data, list):
+		frappe.throw(_("Invalid payload: expected array of objects"))
+
+	required_fields = ["veg_name", "packages", "uom_in_kg", "forecast_date", "customer"]
+	for i, item in enumerate(data):
+		missing = [f for f in required_fields if f not in item]
+		if missing:
+			frappe.throw(_("Item {0}: missing fields: {1}").format(i, ", ".join(missing)))
+
+	# Get Forecast Settings
+	try:
+		settings = _get_forecast_settings()
+	except Exception as e:
+		return {"status": "error", "message": str(e)}
+
+	# Group items by customer + forecast_date
+	grouped = {}
+	failed_items_global = []
+
+	for item in data:
+		# Resolve customer
+		customer_name = _resolve_customer(item["customer"], settings)
+		if not customer_name:
+			failed_items_global.append({
+				"veg_name": item["veg_name"],
+				"status": "failed",
+				"error": "Customer '{0}' not found in mapping".format(item["customer"])
+			})
+			continue
+
+		key = (customer_name, item["forecast_date"])
+		if key not in grouped:
+			grouped[key] = {"successful": [], "failed": []}
+
+		# Resolve item
+		item_code = _resolve_item(item["veg_name"], settings)
+		if not item_code:
+			grouped[key]["failed"].append({
+				"veg_name": item["veg_name"],
+				"status": "failed",
+				"error": "Item '{0}' not found in mapping".format(item["veg_name"])
+			})
+			continue
+
+		# Resolve packaging
+		packaging = _resolve_packaging(item_code, item["uom_in_kg"])
+		if not packaging:
+			grouped[key]["failed"].append({
+				"veg_name": item["veg_name"],
+				"status": "failed",
+				"error": "Packaging not found for quantity {0}".format(item["uom_in_kg"])
+			})
+			continue
+
+		# Get rate
+		rate = _get_item_price(item_code)
+
+		grouped[key]["successful"].append({
+			"veg_name": item["veg_name"],
+			"item_code": item_code,
+			"qty": item["packages"],
+			"uom": packaging["uom"],
+			"packaging_item": packaging["package_item"],
+			"rate": rate,
+			"status": "success"
+		})
+
+	# Process each group
+	results = []
+	for (customer_name, forecast_date), group_data in grouped.items():
+		if group_data["successful"]:
+			result = create_or_update_forecast_request(
+				group_data["successful"], customer_name, forecast_date, settings
+			)
+			# Add failed items to details
+			result["details"].extend(group_data["failed"])
+			result["items_failed"] += len(group_data["failed"])
+			results.append(result)
+		else:
+			results.append({
+				"request_name": None,
+				"items_processed": len(group_data["failed"]),
+				"items_success": 0,
+				"items_failed": len(group_data["failed"]),
+				"details": group_data["failed"]
+			})
+
+	# Add globally failed items (unknown customer)
+	if failed_items_global and results:
+		results[0]["details"].extend(failed_items_global)
+		results[0]["items_failed"] += len(failed_items_global)
+	elif failed_items_global:
+		results.append({
+			"request_name": None,
+			"items_processed": len(failed_items_global),
+			"items_success": 0,
+			"items_failed": len(failed_items_global),
+			"details": failed_items_global
+		})
+
+	# Return combined results
+	if len(results) == 1:
+		return results[0]
+
+	return {
+		"status": "success",
+		"requests_created": len(results),
+		"results": results
+	}

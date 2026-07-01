@@ -6,6 +6,7 @@ from frappe.model.document import Document
 from frappe.utils import getdate, flt, cstr
 from frappe import _
 from erpnext.controllers.foms import UOM_MAP
+from erpnext.stock.get_item_details import get_item_price
 from six import string_types
 class Request(Document):
 	def validate(self):
@@ -106,6 +107,192 @@ class Request(Document):
 				
 				d.progress = sum(progress)/len(progress)
 
+
+
+def _get_forecast_settings():
+	"""Get Forecast Settings with mapping tables."""
+	settings = frappe.get_doc("Forecast Settings", "Forecast Settings")
+	if not settings.enable:
+		frappe.throw(_("Forecast Settings is not enabled"))
+	return settings
+
+
+def _resolve_item(veg_name, settings):
+	"""Map custom_name to item_code from Forecast Settings items table."""
+	for row in settings.items:
+		if row.custom_name == veg_name and row.ref_doctype == "Item":
+			return row.ref_name
+	return None
+
+
+def _resolve_customer(customer_name, settings):
+	"""Map custom_name to customer from Forecast Settings customers table."""
+	for row in settings.customers:
+		if row.custom_name == customer_name and row.ref_doctype == "Customer":
+			return row.ref_name
+	return None
+
+
+def _resolve_packaging(item_code, uom_in_kg):
+	"""Find packaging by weight from Item's packaging_list_available table."""
+	packaging = frappe.get_all(
+		"Packaging List Available",
+		filters={"parent": item_code, "weight": flt(uom_in_kg)},
+		fields=["package_item", "uom"],
+		limit=1
+	)
+	if packaging:
+		return packaging[0]
+	return None
+
+
+def _get_item_price(item_code):
+	"""Get rate from Item Price for default selling price list."""
+	price_list = frappe.db.get_single_value("Selling Settings", "selling_price_list")
+	if not price_list:
+		price_list = frappe.db.get_single_value("Stock Settings", "default_price_list")
+
+	if not price_list:
+		return 0
+
+	args = {
+		"price_list": price_list,
+		"uom": "",
+		"batch_no": ""
+	}
+	prices = get_item_price(args, item_code)
+	if prices:
+		return prices[0][1]  # price_list_rate
+	return 0
+
+
+def _get_existing_request(customer, delivery_date):
+	"""Check for existing draft Request with same customer and delivery date."""
+	name = frappe.db.exists(
+		"Request",
+		{
+			"proposed_customer": customer,
+			"delivery_date": delivery_date,
+			"docstatus": 0
+		}
+	)
+	if name:
+		return frappe.get_doc("Request", name)
+	return None
+
+
+def _add_item_to_request(doc, item_data):
+	"""Add or update item in Request. Replace qty if item_code exists.
+	Returns dict with change info: {action: 'new'|'qty_changed'|'no_change', row_idx, old_qty, new_qty}
+	"""
+	existing_items = doc.get("items", {"item_code": item_data["item_code"]})
+	if existing_items:
+		# Update existing item
+		item = existing_items[0]
+		old_qty = flt(item.qty)
+		new_qty = flt(item_data["qty"])
+		item.qty = new_qty
+		item.uom = item_data["uom"]
+		item.packaging_item = item_data["packaging_item"]
+		item.rate = item_data["rate"]
+		if old_qty != new_qty:
+			return {"action": "qty_changed", "item_code": item_data["item_code"],
+					"row_idx": item.idx, "old_qty": old_qty, "new_qty": new_qty}
+		return {"action": "no_change"}
+	else:
+		# Add new item
+		row = doc.append("items")
+		row.item_code = item_data["item_code"]
+		row.qty = item_data["qty"]
+		row.uom = item_data["uom"]
+		row.packaging_item = item_data["packaging_item"]
+		row.rate = item_data["rate"]
+		return {"action": "new", "item_code": item_data["item_code"], "row_idx": row.idx}
+
+
+def create_or_update_forecast_request(items, customer_name, forecast_date, settings):
+	"""
+	Create or update Request for forecast items.
+
+	Args:
+		items: List of mapped item data
+		customer_name: Customer name (from mapping)
+		forecast_date: Delivery date
+		settings: Forecast Settings document
+
+	Returns:
+		dict with request_name and item results
+	"""
+	# Check for existing Request
+	doc = _get_existing_request(customer_name, forecast_date)
+
+	if not doc:
+		# Create new Request
+		doc = frappe.new_doc("Request")
+		doc.company = settings.company_default or erpnext.get_default_company()
+		doc.department = settings.department_default
+		doc.posting_date = getdate(today())
+		doc.delivery_date = getdate(forecast_date)
+		doc.proposed_customer = customer_name
+		doc.workflow_state = "Draft"
+
+	# Process each item
+	item_results = []
+	changes = []
+	for item in items:
+		try:
+			change = _add_item_to_request(doc, item)
+			if change:
+				changes.append(change)
+			item_results.append({
+				"veg_name": item.get("veg_name", ""),
+				"status": "success",
+				"item_code": item["item_code"]
+			})
+		except Exception as e:
+			item_results.append({
+				"veg_name": item.get("veg_name", ""),
+				"status": "failed",
+				"error": str(e)
+			})
+
+	# Save document
+	is_new = not doc.name
+	if is_new:
+		doc.insert(ignore_permissions=1)
+	else:
+		doc.save(ignore_permissions=1)
+
+	# Add comment only if there are changes
+	has_new_items = any(c.get("action") == "new" for c in changes)
+	has_qty_changes = any(c.get("action") == "qty_changed" for c in changes)
+
+	if is_new:
+		doc.add_comment(
+			"Comment",
+			"Created via Forecast API. Processed {0} items.".format(len(items))
+		)
+	elif has_new_items or has_qty_changes:
+		msg_parts = []
+		for c in changes:
+			if c["action"] == "new":
+				msg_parts.append("Added {0} (row {1})".format(c["item_code"], c["row_idx"]))
+			elif c["action"] == "qty_changed":
+				msg_parts.append("{0} (row {1}) qty {2} → {3}".format(
+					c["item_code"], c["row_idx"], c["old_qty"], c["new_qty"]))
+		doc.add_comment(
+			"Comment",
+			"Updated via Forecast API: " + "; ".join(msg_parts)
+		)
+
+	success_count = len([r for r in item_results if r["status"] == "success"])
+	return {
+		"request_name": doc.name,
+		"items_processed": len(items),
+		"items_success": success_count,
+		"items_failed": len(items) - success_count,
+		"details": item_results
+	}
 
 
 def create_request_form(data):

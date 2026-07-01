@@ -8,6 +8,8 @@
  "field_order": [
   "enable",
   "forecast_days",
+  "company_default",
+  "department_default",
   "items",
   "customers"
  ],
@@ -35,12 +37,24 @@
    "fieldtype": "Table",
    "label": "Customers",
    "options": "Subtitution Name"
+  },
+  {
+   "fieldname": "company_default",
+   "fieldtype": "Link",
+   "label": "Company Default",
+   "options": "Company"
+  },
+  {
+   "fieldname": "department_default",
+   "fieldtype": "Link",
+   "label": "Department Default",
+   "options": "Department"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-06-30 18:19:53.901614",
+ "modified": "2026-07-01 13:33:15.749608",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Forecast Settings",
