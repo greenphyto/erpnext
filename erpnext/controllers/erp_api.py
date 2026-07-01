@@ -33,6 +33,14 @@ from erpnext.stock.utils import get_default_warehouse
 from erpnext.stock.stock_ledger import get_valuation_rate
 from erpnext.setup.doctype.company.company import switch_to_company_admin
 from erpnext.stock.doctype.batch.batch import get_batch_qty, make_batch
+from erpnext.buying.doctype.request.request import (
+	_get_forecast_settings,
+	_resolve_item,
+	_resolve_customer,
+	_resolve_packaging,
+	_get_item_price,
+	create_or_update_forecast_request
+)
 
 PRECISION_FACTOR = 4
 STOCK_TOLERANCE = 0.001
@@ -1550,3 +1558,131 @@ def get_item_order(item_code, company):
 	""", (item_code, company), as_dict=1)
 
 	return pos
+
+
+@frappe.whitelist()
+def receive_forecast(data):
+	"""
+	Receive forecast data from external server.
+
+	Args:
+		data: Array of forecast items with veg_name, packages, uom_in_kg,
+			  forecast_date, customer
+
+	Returns:
+		dict with status, request_name, and item details
+	"""
+	# Parse data
+	if isinstance(data, string_types):
+		data = json.loads(data)
+
+	# Validate payload
+	if not data or not isinstance(data, list):
+		frappe.throw(_("Invalid payload: expected array of objects"))
+
+	required_fields = ["veg_name", "packages", "uom_in_kg", "forecast_date", "customer"]
+	for i, item in enumerate(data):
+		missing = [f for f in required_fields if f not in item]
+		if missing:
+			frappe.throw(_("Item {0}: missing fields: {1}").format(i, ", ".join(missing)))
+
+	# Get Forecast Settings
+	try:
+		settings = _get_forecast_settings()
+	except Exception as e:
+		return {"status": "error", "message": str(e)}
+
+	# Group items by customer + forecast_date
+	grouped = {}
+	failed_items_global = []
+
+	for item in data:
+		# Resolve customer
+		customer_name = _resolve_customer(item["customer"], settings)
+		if not customer_name:
+			failed_items_global.append({
+				"veg_name": item["veg_name"],
+				"status": "failed",
+				"error": "Customer '{0}' not found in mapping".format(item["customer"])
+			})
+			continue
+
+		key = (customer_name, item["forecast_date"])
+		if key not in grouped:
+			grouped[key] = {"successful": [], "failed": []}
+
+		# Resolve item
+		item_code = _resolve_item(item["veg_name"], settings)
+		if not item_code:
+			grouped[key]["failed"].append({
+				"veg_name": item["veg_name"],
+				"status": "failed",
+				"error": "Item '{0}' not found in mapping".format(item["veg_name"])
+			})
+			continue
+
+		# Resolve packaging
+		packaging = _resolve_packaging(item_code, item["uom_in_kg"])
+		if not packaging:
+			grouped[key]["failed"].append({
+				"veg_name": item["veg_name"],
+				"status": "failed",
+				"error": "Packaging not found for quantity {0}".format(item["uom_in_kg"])
+			})
+			continue
+
+		# Get rate
+		rate = _get_item_price(item_code)
+
+		grouped[key]["successful"].append({
+			"veg_name": item["veg_name"],
+			"item_code": item_code,
+			"qty": item["packages"],
+			"uom": packaging["uom"],
+			"packaging_item": packaging["package_item"],
+			"rate": rate,
+			"status": "success"
+		})
+
+	# Process each group
+	results = []
+	for (customer_name, forecast_date), group_data in grouped.items():
+		if group_data["successful"]:
+			result = create_or_update_forecast_request(
+				group_data["successful"], customer_name, forecast_date, settings
+			)
+			# Add failed items to details
+			result["details"].extend(group_data["failed"])
+			result["items_failed"] += len(group_data["failed"])
+			results.append(result)
+		else:
+			results.append({
+				"request_name": None,
+				"items_processed": len(group_data["failed"]),
+				"items_success": 0,
+				"items_failed": len(group_data["failed"]),
+				"details": group_data["failed"]
+			})
+
+	# Add globally failed items (unknown customer)
+	if failed_items_global and results:
+		results[0]["details"].extend(failed_items_global)
+		results[0]["items_failed"] += len(failed_items_global)
+	elif failed_items_global:
+		results.append({
+			"request_name": None,
+			"items_processed": len(failed_items_global),
+			"items_success": 0,
+			"items_failed": len(failed_items_global),
+			"details": failed_items_global
+		})
+
+	# Return combined results
+	if len(results) == 1:
+		return results[0]
+
+	return {
+		"status": "success",
+		"requests_created": len(results),
+		"results": results
+	}
