@@ -1723,6 +1723,169 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.receive_forecast": {
+      "post": {
+        "summary": "Receive Forecast Data",
+        "description": "Receive forecast data from external server and create/update Request documents. Maps custom names to ERP master data via Forecast Settings, then creates or updates Request documents with the mapped data. Duplicate detection: Request level (proposed_customer + delivery_date), Item level (item_code - qty replaced if exists).",
+        "operationId": "receive forecast",
+        "requestBody": {
+          "description": "Array of forecast items",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "veg_name": {
+                          "type": "string",
+                          "description": "Custom name for item (mapped via Forecast Settings)"
+                        },
+                        "packages": {
+                          "type": "number",
+                          "description": "Quantity (becomes qty in Request Items)"
+                        },
+                        "uom_in_kg": {
+                          "type": "number",
+                          "description": "Package weight in Kg to match in Packaging List Available"
+                        },
+                        "total_kg": {
+                          "type": "number",
+                          "description": "Ignored, weight calculated from packaging"
+                        },
+                        "forecast_date": {
+                          "type": "string",
+                          "format": "date",
+                          "description": "Delivery date (YYYY-MM-DD format)"
+                        },
+                        "customer": {
+                          "type": "string",
+                          "description": "Custom name for customer (mapped via Forecast Settings)"
+                        }
+                      },
+                      "required": ["veg_name", "packages", "uom_in_kg", "forecast_date", "customer"]
+                    }
+                  }
+                }
+              },
+              "example": {
+                "data": [
+                  {
+                    "veg_name": "Kai Lan",
+                    "packages": 100,
+                    "uom_in_kg": 0.2,
+                    "total_kg": 20,
+                    "forecast_date": "2026-08-20",
+                    "customer": "NTUC"
+                  },
+                  {
+                    "veg_name": "Mambo Lettuce",
+                    "packages": 50,
+                    "uom_in_kg": 0.10,
+                    "total_kg": 5,
+                    "forecast_date": "2026-08-20",
+                    "customer": "NTUC"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "success, partial, or error"
+                    },
+                    "request_name": {
+                      "type": "string",
+                      "description": "Request document name (REQ.XXXX/YYYY)"
+                    },
+                    "items_processed": {
+                      "type": "integer",
+                      "description": "Total items processed"
+                    },
+                    "items_success": {
+                      "type": "integer",
+                      "description": "Items successfully processed"
+                    },
+                    "items_failed": {
+                      "type": "integer",
+                      "description": "Items that failed processing"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "veg_name": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "description": "success or failed"
+                          },
+                          "item_code": {
+                            "type": "string",
+                            "description": "Mapped item code (only on success)"
+                          },
+                          "error": {
+                            "type": "string",
+                            "description": "Error message (only on failure)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "request_name": "REQ.00001/.2026",
+                  "items_processed": 2,
+                  "items_success": 2,
+                  "items_failed": 0,
+                  "details": [
+                    {
+                      "veg_name": "Kai Lan",
+                      "status": "success",
+                      "item_code": "PR-AV-KL"
+                    },
+                    {
+                      "veg_name": "Red Spinach",
+                      "status": "success",
+                      "item_code": "PR-AV-RS"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid payload or Forecast Settings not enabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "error",
+                    "message": "Forecast Settings is not enabled"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
