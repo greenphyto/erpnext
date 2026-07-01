@@ -396,6 +396,7 @@ def get_events(start, end, user=None, filters=None, item_codes=None):
 			`tabRequest`.delivery_date as start,
 			`tabRequest`.delivery_date as end,
 			`tabRequest`.workflow_state as status,
+			`tabRequest`.docstatus,
 			1 as allDay
 		FROM `tabRequest`
 			INNER JOIN `tabRequest Items` ri ON ri.parent = `tabRequest`.name
@@ -405,23 +406,24 @@ def get_events(start, end, user=None, filters=None, item_codes=None):
 		ORDER BY `tabRequest`.posting_date
 	""".format(filter_condition=filter_condition, item_code_condition=item_code_condition), item_code_args, as_dict=1)
 
-	def get_event_color(item_code):
+	def get_event_color(item_code, docstatus):
+		is_draft = (docstatus == 0)
 		if not item_code:
 			return {"color": "#6C757D", "textColor": "#FFFFFF"}
 		prefix = item_code.upper()
 		if prefix.startswith("PR-AV"):
-			return {"color": "#FFC107", "textColor": "#000000"}
+			return {"color": "#FFC107" if not is_draft else "#EC008C", "textColor": "#000000" if not is_draft else "#FFFFFF"}
 		if prefix.startswith("PR-LV"):
-			return {"color": "#28A745", "textColor": "#FFFFFF"}
+			return {"color": "#28A745" if not is_draft else "#00FFFF", "textColor": "#FFFFFF" if not is_draft else "#000000"}
 		if prefix.startswith("PR-HV"):
-			return {"color": "#007BFF", "textColor": "#FFFFFF"}
+			return {"color": "#007BFF" if not is_draft else "#934FA7", "textColor": "#FFFFFF"}
 		return {"color": "#6C757D", "textColor": "#FFFFFF"}
 
 	for d in events:
 		weight = " @{} Kg".format(d.unit_weight) if d.unit_weight else ""
 		d.title = "{}{}".format(d.item_code or "", weight)
 		d.tooltip = "{}\n{}".format(d.title, d.department or "")
-		style = get_event_color(d.item_code)
+		style = get_event_color(d.item_code, d.docstatus)
 		d.color = style["color"]
 		d.textColor = style["textColor"]
 
