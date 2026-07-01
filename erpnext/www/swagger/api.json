@@ -1409,6 +1409,466 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.get_document_lotid": {
+      "get": {
+        "summary": "Retrieve Batch details and associated Stock Transactions by external Lot ID",
+        "description": "Fetches details of a specific Batch using its external 'foms_lot_id', and retrieves the 10 most recent associated Stock Ledger Entries. For each ledger entry, it fetches the full document details (e.g., Delivery Note, Purchase Receipt).",
+        "operationId": "get_batch_transactions_by_lot_id",
+        "parameters": [
+          {
+            "name": "lotid",
+            "in": "query",
+            "description": "The external FOMS Lot ID to search for.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "LOT-ABC-12345"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "batch": {
+                      "type": "object",
+                      "description": "The full Batch document details.",
+                      "example": {
+                        "name": "BAT00001",
+                        "batch_id": "LOT-ABC-12345",
+                        "item_code": "RM-NS-NSA",
+                        "expiry_date": "2026-12-31",
+                        "foms_lot_id": "LOT-ABC-12345"
+                      }
+                    },
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "description": "Full document details of associated transactions (e.g., Delivery Note, Stock Entry)."
+                      },
+                      "example": [
+                        {
+                          "name": "DN-00045",
+                          "doctype": "Delivery Note",
+                          "posting_date": "2026-01-20",
+                          "customer": "Customer A",
+                          "items": [
+                            {
+                              "item_code": "...",
+                              "batch_no": "BAT00001",
+                              "qty": 10
+                            }
+                          ]
+                        },
+                        {
+                          "name": "STE-00099",
+                          "doctype": "Stock Entry",
+                          "posting_date": "2026-01-15",
+                          "purpose": "Material Issue"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "example": {
+                  "batch": {
+                    "name": "BAT00001",
+                    "foms_lot_id": "LOT-ABC-12345",
+                    "item_code": "RM-NS-NSA",
+                    "expiry_date": "2026-12-31"
+                  },
+                  "transactions": [
+                    {
+                      "name": "DN-00045",
+                      "doctype": "Delivery Note",
+                      "customer": "Customer A"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lot ID not found or no associated transactions found."
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.get_delivery_by_lotid": {
+      "get": {
+        "summary": "Retrieve Delivery Note details by Lot IDs",
+        "description": "Fetches Batch info and Delivery Notes. Note: 'lotid' parameter must be a JSON formatted string array.",
+        "operationId": "get_delivery_note_by_lot_id",
+        "parameters": [
+          {
+            "name": "lotid",
+            "in": "query",
+            "description": "A JSON string array of Lot IDs. Example: [\"LOT-001\", \"LOT-002\"]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "[\"25-1006\", \"25-0998\"]"
+          },
+          {
+            "name": "delivery_date",
+            "in": "query",
+            "description": "Target delivery date (YYYY-MM-DD).",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "example": "2026-01-26"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "batch": {
+                        "type": "object"
+                      },
+                      "transactions": {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON format in lotid parameter"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.update_package_size": {
+      "post": {
+        "summary": "Update package size for work order",
+        "description": "Update the packaging size for a work order based on Lot ID. Changes the packet size, conversion factor, and required packaging item quantities.",
+        "operationId": "update package size",
+        "requestBody": {
+          "description": "Update package size",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "lotID": {
+                    "type": "string",
+                    "description": "The FOMS Lot ID of the work order"
+                  },
+                  "newSize": {
+                    "type": "number",
+                    "description": "New package size in grams"
+                  }
+                },
+                "example": {
+                  "lotID": "25-1097",
+                  "newSize": 240
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": true
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Work Order not found or Packaging Size not found"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.get_item_order": {
+      "get": {
+        "summary": "Get Purchase Orders for Item",
+        "description": "Retrieve all in-progress Purchase Orders for a specific item and company. Returns order details including quantities, schedule dates, and status.",
+        "operationId": "get_item_order",
+        "parameters": [
+          {
+            "name": "item_code",
+            "in": "query",
+            "description": "The item code to search for in Purchase Orders",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "RM-NS-NPA"
+          },
+          {
+            "name": "company",
+            "in": "query",
+            "description": "The company name to filter Purchase Orders",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Greenphyto Pte Ltd"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "Purchase Order number"
+                      },
+                      "status": {
+                        "type": "string",
+                        "description": "Current status of the Purchase Order"
+                      },
+                      "transaction_date": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Date when the PO was created"
+                      },
+                      "required_date": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Expected delivery date for this item"
+                      },
+                      "item_code": {
+                        "type": "string",
+                        "description": "Item code"
+                      },
+                      "stock_qty": {
+                        "type": "number",
+                        "description": "Quantity in stock UOM"
+                      },
+                      "stock_uom": {
+                        "type": "string",
+                        "description": "Stock Unit of Measure"
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "name": "PO-2026-00123",
+                    "status": "To Receive and Bill",
+                    "transaction_date": "2026-04-15",
+                    "required_date": "2026-05-10",
+                    "item_code": "RM-NS-NPA",
+                    "stock_qty": 100.0,
+                    "stock_uom": "Kg"
+                  },
+                  {
+                    "name": "PO-2026-00145",
+                    "status": "To Receive",
+                    "transaction_date": "2026-04-20",
+                    "required_date": "2026-05-15",
+                    "item_code": "RM-NS-NPA",
+                    "stock_qty": 50.0,
+                    "stock_uom": "Kg"
+                  }
+                ]
+              }
+            }
+          },
+          "404": {
+            "description": "Item not found"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.receive_forecast": {
+      "post": {
+        "summary": "Receive Forecast Data",
+        "description": "Receive forecast data from external server and create/update Request documents. Maps custom names to ERP master data via Forecast Settings, then creates or updates Request documents with the mapped data. Duplicate detection: Request level (proposed_customer + delivery_date), Item level (item_code - qty replaced if exists).",
+        "operationId": "receive forecast",
+        "requestBody": {
+          "description": "Array of forecast items",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "veg_name": {
+                          "type": "string",
+                          "description": "Custom name for item (mapped via Forecast Settings)"
+                        },
+                        "packages": {
+                          "type": "number",
+                          "description": "Quantity (becomes qty in Request Items)"
+                        },
+                        "uom_in_kg": {
+                          "type": "number",
+                          "description": "Package weight in Kg to match in Packaging List Available"
+                        },
+                        "total_kg": {
+                          "type": "number",
+                          "description": "Ignored, weight calculated from packaging"
+                        },
+                        "forecast_date": {
+                          "type": "string",
+                          "format": "date",
+                          "description": "Delivery date (YYYY-MM-DD format)"
+                        },
+                        "customer": {
+                          "type": "string",
+                          "description": "Custom name for customer (mapped via Forecast Settings)"
+                        }
+                      },
+                      "required": ["veg_name", "packages", "uom_in_kg", "forecast_date", "customer"]
+                    }
+                  }
+                }
+              },
+              "example": {
+                "data": [
+                  {
+                    "veg_name": "Kai Lan",
+                    "packages": 100,
+                    "uom_in_kg": 0.2,
+                    "total_kg": 20,
+                    "forecast_date": "2026-08-20",
+                    "customer": "NTUC"
+                  },
+                  {
+                    "veg_name": "Mambo Lettuce",
+                    "packages": 50,
+                    "uom_in_kg": 0.10,
+                    "total_kg": 5,
+                    "forecast_date": "2026-08-20",
+                    "customer": "NTUC"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "success, partial, or error"
+                    },
+                    "request_name": {
+                      "type": "string",
+                      "description": "Request document name (REQ.XXXX/YYYY)"
+                    },
+                    "items_processed": {
+                      "type": "integer",
+                      "description": "Total items processed"
+                    },
+                    "items_success": {
+                      "type": "integer",
+                      "description": "Items successfully processed"
+                    },
+                    "items_failed": {
+                      "type": "integer",
+                      "description": "Items that failed processing"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "veg_name": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "description": "success or failed"
+                          },
+                          "item_code": {
+                            "type": "string",
+                            "description": "Mapped item code (only on success)"
+                          },
+                          "error": {
+                            "type": "string",
+                            "description": "Error message (only on failure)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "request_name": "REQ.00001/.2026",
+                  "items_processed": 2,
+                  "items_success": 2,
+                  "items_failed": 0,
+                  "details": [
+                    {
+                      "veg_name": "Kai Lan",
+                      "status": "success",
+                      "item_code": "PR-AV-KL"
+                    },
+                    {
+                      "veg_name": "Red Spinach",
+                      "status": "success",
+                      "item_code": "PR-AV-RS"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid payload or Forecast Settings not enabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "error",
+                    "message": "Forecast Settings is not enabled"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
