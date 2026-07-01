@@ -20,6 +20,13 @@ frappe.ui.form.on('Forecast Settings', {
 				}
 			};
 		});
+		frm.set_query('department_default', function() {
+			return {
+				filters: {
+					'company': frm.doc.company_default
+				}
+			};
+		});
 	}
 });
 
