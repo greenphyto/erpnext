@@ -3,7 +3,7 @@
 
 import frappe, json, erpnext
 from frappe.model.document import Document
-from frappe.utils import getdate, flt, cstr
+from frappe.utils import getdate, flt, cstr, cint
 from frappe import _
 from erpnext.controllers.foms import UOM_MAP
 from erpnext.stock.get_item_details import get_item_price
@@ -439,8 +439,9 @@ def get_events(start, end, user=None, filters=None, item_codes=None):
 			`tabRequest`.department,
 			ri.item_code,
 			ri.unit_weight,
-			`tabRequest`.posting_date as start,
-			`tabRequest`.posting_date as end,
+			ROUND(ri.unit_weight * 1000) as package_size,
+			`tabRequest`.delivery_date as start,
+			`tabRequest`.delivery_date as end,
 			`tabRequest`.workflow_state as status,
 			`tabRequest`.docstatus,
 			1 as allDay
@@ -466,8 +467,9 @@ def get_events(start, end, user=None, filters=None, item_codes=None):
 		return {"color": "#6C757D", "textColor": "#FFFFFF"}
 
 	for d in events:
-		weight = " @{} Kg".format(d.unit_weight) if d.unit_weight else ""
+		weight = " #{} Kg".format(d.unit_weight) if d.unit_weight else ""
 		d.title = "{}{}".format(d.item_code or "", weight)
+		d.package_size = "@{} Gr".format(cint(d.package_size)) if d.package_size else ""
 		d.tooltip = "{}\n{}".format(d.title, d.department or "")
 		style = get_event_color(d.item_code, d.docstatus)
 		d.color = style["color"]
@@ -497,6 +499,7 @@ def get_request_items(filters=None):
 			i.item_name,
 			SUM(ri.unit_weight * ri.qty) as total_weight,
 			GROUP_CONCAT(DISTINCT r.department SEPARATOR ', ') as department,
+			GROUP_CONCAT(DISTINCT ri.uom SEPARATOR ', ') as package_size,
 			COUNT(DISTINCT r.name) as req_count
 		FROM `tabRequest Items` ri
 			INNER JOIN `tabRequest` r ON r.name = ri.parent
