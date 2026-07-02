@@ -23,4 +23,5 @@ CLAUDE.md
 PLAN.md
 */patches/files/*.csv
 */patches/files/*.xlsx
+.commandcode/
 superpowers/
