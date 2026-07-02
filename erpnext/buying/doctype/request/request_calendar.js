@@ -235,7 +235,7 @@ class RequestCards {
 		var card = $(`
 			<div class="facility-card frappe-card" data-item-code="${data.item_code}" data-item-name="${data.item_name || ''}" style="border-left: 4px solid ${border_color};">
 				<div class="card-department">${data.department || '-'}</div>
-				<div class="card-item-name">${data.item_code} #${weight}</div>
+				<div class="card-item-name">${data.item_code} - ${weight}</div>
 				<div class="card-req-count">Req count: <span class="count">${data.req_count || 0}</span></div>
 			</div>
 		`);

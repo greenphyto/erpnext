@@ -426,7 +426,7 @@ def get_events(start, end, user=None, filters=None, item_codes=None):
 			`tabRequest`.company,
 			`tabRequest`.department,
 			ri.item_code,
-			ri.unit_weight,
+			ri.weight,
 			ROUND(ri.unit_weight * 1000) as package_size,
 			`tabRequest`.delivery_date as start,
 			`tabRequest`.delivery_date as end,
@@ -455,9 +455,9 @@ def get_events(start, end, user=None, filters=None, item_codes=None):
 		return {"color": "#6C757D", "textColor": "#FFFFFF"}
 
 	for d in events:
-		weight = " #{} Kg".format(d.unit_weight) if d.unit_weight else ""
+		weight = " - {} Kg".format("{:g}".format(round(flt(d.weight), 2))) if d.weight else ""
 		d.title = "{}{}".format(d.item_code or "", weight)
-		d.package_size = "@{} Gr".format(cint(d.package_size)) if d.package_size else ""
+		d.package_size = "@{} Gr".format("{:g}".format(round(flt(d.package_size), 2))) if d.package_size else ""
 		d.tooltip = "{}\n{}".format(d.title, d.department or "")
 		style = get_event_color(d.item_code, d.docstatus)
 		d.color = style["color"]
