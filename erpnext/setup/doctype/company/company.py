@@ -4,6 +4,7 @@
 
 import json
 
+import erpnext
 import frappe
 import frappe.defaults
 from frappe import _
@@ -821,3 +822,12 @@ def create_transaction_deletion_request(company):
 	tdr = frappe.get_doc({"doctype": "Transaction Deletion Record", "company": company})
 	tdr.insert()
 	tdr.submit()
+
+def switch_to_company_admin(company, change_user=True):
+	if erpnext.get_default_company() == company:
+		return frappe.session.user
+	
+	user = frappe.get_value("Company", company, "admin_user") or "Administrator"
+	if change_user and user:
+		frappe.set_user(user)
+	return user
