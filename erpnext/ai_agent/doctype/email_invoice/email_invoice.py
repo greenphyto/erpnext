@@ -998,8 +998,19 @@ Return refined JSON:"""
 		# set historical data
 		self.get_historic_data(doc)
 
-		# Apply tax template: prefer from extraction data, fallback to company default
+		# Apply tax template: prefer from extraction data, fallback to memory, then company default
 		tax_template = summary_info.get("tax_template") or summary_info.get("taxes_and_charges") or ""
+		if not (tax_template and frappe.db.exists("Purchase Taxes and Charges Template", tax_template)):
+			# Try from memory
+			supplier_name = supplier_info.get("name") or ""
+			if supplier_name:
+				from erpnext.gp_erp.doctype.ai_agent_memory.ai_agent_memory import get_memory
+				_memory = get_memory("Supplier", supplier_name, self.company)
+				if _memory:
+					for line in _memory.split("\n"):
+						if "Tax Template:" in line:
+							tax_template = line.split("Tax Template:")[-1].strip()
+							break
 		if tax_template and frappe.db.exists("Purchase Taxes and Charges Template", tax_template):
 			doc.taxes_and_charges = tax_template
 		else:
