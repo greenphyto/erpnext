@@ -510,9 +510,9 @@ Rules:
 4. Validate rates against historical average rates — flag significant deviations (>20%) but keep the extracted rate
 5. Match invoice number patterns from history
 6. Use historical addresses if the new invoice doesn't specify them
-7. Apply historical tax template if not specified
+7. If the extraction data does NOT have a "tax_template" field in "summary", ADD it using the value from memory's "Tax & Accounts" section
 8. Do NOT invent data — only refine what exists based on memory patterns
-9. Return the refined JSON in the same structure as input
+9. Return the refined JSON in the same structure as input, with "summary.tax_template" always present if memory has a tax template
 
 Supplier Memory:
 {memory}
