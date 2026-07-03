@@ -201,8 +201,8 @@ def _generate_memory_from_pi(pi_doc, scanned_map=None):
         scanned = scanned_map.get(idx, "-")
         item_name = item.item_name or item.item_code or "-"
         uom = item.uom or "-"
-        cost_center = item.cost_center or "-"
-        expense_head = item.expense_account or "-"
+        cost_center = _clean_html(item.cost_center or "-")
+        expense_head = _clean_html(item.expense_account or "-")
         rate = flt(item.rate, 2) if item.rate else "-"
         items_lines += f"\n| {scanned} | {item_name} | {uom} | {cost_center} | {expense_head} | {rate} |"
 
@@ -210,12 +210,12 @@ def _generate_memory_from_pi(pi_doc, scanned_map=None):
     currency = pi_doc.currency or "-"
     payment_terms = pi_doc.payment_terms_template or "-"
 
-    # Addresses
-    shipping = getattr(pi_doc, 'shipping_address_display', None) or getattr(pi_doc, 'shipping_address', None) or "-"
-    billing = getattr(pi_doc, 'billing_address_display', None) or getattr(pi_doc, 'billing_address', None) or "-"
+    # Addresses — clean HTML tags, replace <br> with comma
+    shipping = _clean_address(getattr(pi_doc, 'shipping_address_display', None) or getattr(pi_doc, 'shipping_address', None))
+    billing = _clean_address(getattr(pi_doc, 'billing_address_display', None) or getattr(pi_doc, 'billing_address', None))
 
     # Tax template
-    tax_template = pi_doc.taxes_and_charges or "-"
+    tax_template = _clean_html(pi_doc.taxes_and_charges or "-")
 
     markdown = f"""# {pi_doc.supplier}
 
@@ -234,3 +234,30 @@ def _generate_memory_from_pi(pi_doc, scanned_map=None):
 - Tax Template: {tax_template}
 """
     return markdown.strip()
+
+
+def _clean_html(text):
+    """Remove HTML tags and decode entities from text."""
+    if not text:
+        return "-"
+    import html
+    import re
+    text = html.unescape(str(text))
+    text = re.sub(r'<br\s*/?>', ', ', text)
+    text = re.sub(r'<[^>]+>', '', text)
+    return text.strip() or "-"
+
+
+def _clean_address(text):
+    """Clean address HTML: replace <br> with ' | ', remove other tags."""
+    if not text:
+        return "-"
+    import html
+    import re
+    text = html.unescape(str(text))
+    text = re.sub(r'<br\s*/?>', ' | ', text)
+    text = re.sub(r'<[^>]+>', '', text)
+    # Clean up multiple spaces and leading/trailing separators
+    text = re.sub(r'\s+', ' ', text)
+    text = text.strip().strip('|').strip()
+    return text or "-"
