@@ -704,8 +704,13 @@ Return refined JSON:"""
 		# set historical data
 		self.get_historic_data(doc)
 
-		# Optional GST update if present in payload
-		doc.taxes_and_charges = get_gst_template(self.company)
+		# Apply tax template: prefer from extraction data, fallback to company default
+		summary_info = data.get("summary") or {}
+		tax_template = summary_info.get("tax_template") or summary_info.get("taxes_and_charges") or ""
+		if tax_template and frappe.db.exists("Purchase Taxes and Charges Template", tax_template):
+			doc.taxes_and_charges = tax_template
+		else:
+			doc.taxes_and_charges = get_gst_template(self.company)
 		doc.set_other_charges()
 
 		# del doc.branch
@@ -993,7 +998,12 @@ Return refined JSON:"""
 		# set historical data
 		self.get_historic_data(doc)
 
-		doc.taxes_and_charges = get_gst_template(self.company)
+		# Apply tax template: prefer from extraction data, fallback to company default
+		tax_template = summary_info.get("tax_template") or summary_info.get("taxes_and_charges") or ""
+		if tax_template and frappe.db.exists("Purchase Taxes and Charges Template", tax_template):
+			doc.taxes_and_charges = tax_template
+		else:
+			doc.taxes_and_charges = get_gst_template(self.company)
 		doc.set_other_charges()
 
 		# 4) Persist document; allow saving even if some links are missing

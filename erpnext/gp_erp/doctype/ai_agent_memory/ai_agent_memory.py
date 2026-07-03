@@ -214,8 +214,15 @@ def _generate_memory_from_pi(pi_doc, scanned_map=None):
     shipping = _clean_address(getattr(pi_doc, 'shipping_address_display', None) or getattr(pi_doc, 'shipping_address', None))
     billing = _clean_address(getattr(pi_doc, 'billing_address_display', None) or getattr(pi_doc, 'billing_address', None))
 
-    # Tax template
+    # Tax template and details
     tax_template = _clean_html(pi_doc.taxes_and_charges or "-")
+    tax_details = []
+    for t in (pi_doc.taxes or []):
+        tax_details.append(f"- {_clean_html(t.description)}: {t.rate}% ({t.charge_type})")
+
+    tax_section = f"- Tax Template: {tax_template}"
+    if tax_details:
+        tax_section += "\n" + "\n".join(tax_details)
 
     markdown = f"""# {pi_doc.supplier}
 
@@ -231,7 +238,7 @@ def _generate_memory_from_pi(pi_doc, scanned_map=None):
 - Billing: {billing}
 
 ## Tax & Accounts
-- Tax Template: {tax_template}
+{tax_section}
 """
     return markdown.strip()
 
