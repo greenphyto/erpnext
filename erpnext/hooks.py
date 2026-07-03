@@ -344,7 +344,8 @@ doc_events = {
             # "erpnext.ai_agent.doctype.email_invoice.email_invoice.create_bank_number"
 		],
         "on_submit": [
-            "erpnext.ai_agent.doctype.email_invoice.email_invoice.change_temporary_invoice"
+            "erpnext.ai_agent.doctype.email_invoice.email_invoice.change_temporary_invoice",
+            "erpnext.gp_erp.doctype.ai_agent_memory.ai_agent_memory.update_memory_on_submit"
 		],
         "onload": [
             "erpnext.ai_agent.doctype.email_invoice.email_invoice.setup_onload",
