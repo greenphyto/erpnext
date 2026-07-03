@@ -300,6 +300,21 @@ class EmailInvoice(Document):
 			# Enhance the result
 			payload = self.enhance_payload(payload)
 
+			# NEW: Refine with memory (second layer)
+			_supplier = deep_get(payload, ['result', 'result', 'supplier', 'name'], "")
+			if _supplier:
+				_result_data = deep_get(payload, ['result', 'result'], payload['result'])
+				try:
+					_refined = self.refine_with_memory(_result_data, _supplier, self.company)
+					if _refined:
+						payload['result']['result'] = _refined
+				except Exception as e:
+					# Log but don't block — fallback to original extraction
+					frappe.log_error(
+						f"Memory refinement failed for {self.name}: {e}",
+						"AI Agent Memory"
+					)
+
 			# Attempt to create Non-stock PI from this extracted data
 			r, name = self.create_invoice_result(payload)
 			if not r:
