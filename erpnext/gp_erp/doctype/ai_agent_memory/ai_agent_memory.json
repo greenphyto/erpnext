@@ -9,6 +9,7 @@
  "field_order": [
   "reff_doctype",
   "reff_name",
+  "company",
   "column_break_3",
   "updated_at",
   "section_break_5",
@@ -35,6 +36,15 @@
    "reqd": 1
   },
   {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
    "fieldname": "column_break_3",
    "fieldtype": "Column Break"
   },
@@ -56,7 +66,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-03 12:06:51.571091",
+ "modified": "2026-07-03 07:30:00.000000",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "AI Agent Memory",
