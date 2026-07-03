@@ -11,6 +11,7 @@ from frappe.utils import get_traceback, cstr, get_files_path
 from erpnext.ai_agent.doctype.ai_agent_settings.ai_invoice_converter import AIAgentClient
 from six import string_types
 from erpnext.accounts.party import get_due_date_from_template
+from erpnext.gp_erp.doctype.ai_agent_memory.ai_agent_memory import get_memory
 
 MAX_DISPLAY_LENGTH = 251
 SHORT_HEAD = 200
@@ -461,6 +462,60 @@ class EmailInvoice(Document):
 	def update_website(self, supplier, website):
 		if not frappe.get_value("Supplier", supplier, 'website'):
 			frappe.db.set_value("Supplier", supplier, 'website', website)
+
+	def refine_with_memory(self, extracted_data, supplier, company):
+		"""Second-layer validation using memory + chat_completion().
+
+		Takes the AI server extraction result and refines it against
+		historical supplier memory patterns.
+
+		Args:
+			extracted_data: dict — extraction result from AI server
+			supplier: str — supplier name
+			company: str — company name
+
+		Returns:
+			dict: Refined extraction data, or original if no memory/failed
+		"""
+		from erpnext.controllers.ai import chat_completion
+
+		memory = get_memory("Supplier", supplier, company)
+		if not memory:
+			return extracted_data
+
+		SYSTEM_PROMPT = f"""You are an invoice data validator and refiner.
+
+Given the supplier's historical memory and the AI-extracted data from a new invoice,
+refine the extraction result to match known patterns.
+
+Rules:
+1. Fix item names, UOM, and descriptions to match historical patterns from the Scanned Name -> Item Name mapping
+2. If a scanned name in the new invoice matches a "Scanned Name" in memory, use the corresponding "Item Name"
+3. Pre-fill Cost Center and Expense Head from memory if not present in extraction
+4. Validate rates against historical average rates — flag significant deviations (>20%) but keep the extracted rate
+5. Match invoice number patterns from history
+6. Use historical addresses if the new invoice doesn't specify them
+7. Apply historical tax template if not specified
+8. Do NOT invent data — only refine what exists based on memory patterns
+9. Return the refined JSON in the same structure as input
+
+Supplier Memory:
+{memory}
+
+AI Extracted Data:
+{json.dumps(extracted_data)}
+
+Return refined JSON:"""
+
+		result = chat_completion(SYSTEM_PROMPT, json.dumps(extracted_data))
+		if not result:
+			return extracted_data
+
+		try:
+			refined = json.loads(result)
+			return refined
+		except (json.JSONDecodeError, TypeError):
+			return extracted_data
 
 	def create_invoice_result(self, result=[], com_doc=""):
 		"""Create a Purchase Invoice based on extracted payload.
