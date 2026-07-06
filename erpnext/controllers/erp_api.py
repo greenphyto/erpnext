@@ -1801,3 +1801,51 @@ def get_item_price(item_code, is_selling=1, customer=None, transaction_date=None
 			"currency": currency,
 			"message": "No price found for this item in {0}".format(price_list),
 		}
+
+
+@frappe.whitelist()
+def get_item_uom(item_code):
+	"""
+	Get UOM details for an item.
+
+	Args:
+		item_code: Item code or custom name from Forecast Settings (mandatory)
+
+	Returns:
+		dict with item_code, stock_uom, and uoms list with conversion factors
+	"""
+	# Resolve custom name from Forecast Settings
+	resolved_item = None
+	if item_code:
+		item_mapping = frappe.get_all(
+			"Subtitution Name",
+			filters={
+				"parent": "Forecast Settings",
+				"custom_name": item_code,
+				"ref_doctype": "Item",
+			},
+			fields=["ref_name"],
+			limit=1,
+		)
+		if item_mapping:
+			resolved_item = item_mapping[0].ref_name
+
+	# Use resolved item code or original
+	final_item = resolved_item if resolved_item else item_code
+
+	# Get item document
+	item = frappe.get_cached_doc("Item", final_item)
+
+	# Build UOM list
+	uoms = []
+	for uom in item.uoms:
+		uoms.append({
+			"uom": uom.uom,
+			"conversion_factor": flt(uom.conversion_factor),
+		})
+
+	return {
+		"item_code": final_item,
+		"stock_uom": item.stock_uom,
+		"uoms": uoms,
+	}
