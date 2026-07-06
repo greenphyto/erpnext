@@ -1671,3 +1671,100 @@ def get_lead_time(veg_names):
 		veg_names = json.loads(veg_names)
 
 	return get_lead_time_by_custom_names(veg_names)
+
+
+@frappe.whitelist()
+def get_item_price(item_code, is_selling=1, customer=None, transaction_date=None):
+	"""
+	Get item price from Item Price master.
+
+	Args:
+		item_code: Item code (mandatory)
+		is_selling: 1 for selling price (Standard Selling), 0 for buying price (Standard Buying)
+		customer: Customer name or custom name from Forecast Settings (optional)
+		transaction_date: Transaction date for price validity (optional)
+
+	Returns:
+		dict with item_code, price_list_rate, currency, uom, price_list_name
+	"""
+	# Resolve price list based on is_selling flag
+	price_list = "Standard Selling" if cint(is_selling) else "Standard Buying"
+	currency = frappe.db.get_value("Price List", price_list, "currency")
+
+	# Resolve customer: check if it's a custom name from Forecast Settings
+	resolved_customer = None
+	if customer:
+		# Query Forecast Settings child table (Subtitution Name)
+		customer_mapping = frappe.get_all(
+			"Subtitution Name",
+			filters={
+				"parent": "Forecast Settings",
+				"custom_name": customer,
+				"ref_doctype": "Customer",
+			},
+			fields=["ref_name"],
+			limit=1,
+		)
+		if customer_mapping:
+			resolved_customer = customer_mapping[0].ref_name
+
+	# Use resolved customer name, or original if not found in mapping
+	final_customer = resolved_customer if resolved_customer else customer
+
+	# Build filters for Item Price query
+	filters = {
+		"item_code": item_code,
+		"price_list": price_list,
+	}
+
+	# Customer-specific pricing
+	if final_customer:
+		filters["customer"] = final_customer
+	else:
+		# No customer specified: get prices with no customer (general pricing)
+		# or if all prices have customer, we'll handle below
+		filters["customer"] = ["in", ["", None]]
+
+	# Transaction date validity
+	tx_date = transaction_date or today()
+	filters["valid_from"] = ["<=", tx_date]
+
+	# Query Item Price, order by valid_from desc (most recent first)
+	prices = frappe.get_all(
+		"Item Price",
+		filters=filters,
+		fields=["name", "price_list_rate", "uom", "valid_from", "customer"],
+		order_by="valid_from desc",
+		limit=1,
+	)
+
+	# If no general price found and no customer specified, try to get most recent price
+	if not prices and not final_customer:
+		filters.pop("customer", None)
+		prices = frappe.get_all(
+			"Item Price",
+			filters=filters,
+			fields=["name", "price_list_rate", "uom", "valid_from", "customer"],
+			order_by="valid_from desc",
+			limit=1,
+		)
+
+	if prices:
+		price = prices[0]
+		return {
+			"item_code": item_code,
+			"price_list_rate": flt(price["price_list_rate"]),
+			"uom": price["uom"] or "",
+			"price_list_name": price_list,
+			"currency": currency,
+			"customer": price.get("customer") or "",
+		}
+	else:
+		return {
+			"item_code": item_code,
+			"price_list_rate": 0,
+			"uom": "",
+			"price_list_name": price_list,
+			"currency": currency,
+			"message": "No price found for this item in {0}".format(price_list),
+		}
