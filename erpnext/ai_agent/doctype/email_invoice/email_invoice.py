@@ -7,15 +7,15 @@ from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_i
 from frappe.utils import flt, getdate, get_time
 from erpnext.controllers.erp import get_supplier_context, is_doctype_exists, deep_get, get_supplier_payload
 import os, re
-from frappe.utils import get_traceback, cstr
+from frappe.utils import get_traceback, cstr, get_files_path
 from erpnext.ai_agent.doctype.ai_agent_settings.ai_invoice_converter import AIAgentClient
 from six import string_types
 from erpnext.accounts.party import get_due_date_from_template
 from erpnext.gp_erp.doctype.ai_agent_memory.ai_agent_memory import get_memory
 
-MAX_DISPLAY_LENGTH = 300
-SHORT_HEAD = 300
-SHORT_TAIL = 700
+MAX_DISPLAY_LENGTH = 251
+SHORT_HEAD = 200
+SHORT_TAIL = 50
 GST_DEFAULT = 9
 class EmailInvoice(Document):
 	def validate(self):
@@ -123,16 +123,20 @@ class EmailInvoice(Document):
 		# 5) Agent
 		if has("agent", "no_extraction_result"):
 			return "Agent No Result"
+		if has("agent", "not_invoice"):
+			return "Not Invoice"
 
 		return "Unknown"
 
 	def set_status(self):
-		if self.results:
-			self.reason = ""
-			self.error_trace = ""
-			self.status = "Matched"
-		else:
-			self.status = "Unknown"
+		self.status = "Unknown"
+		for d in self.results:
+			if d.invoice_no:
+				self.status = "Matched"
+				self.error_trace = ""
+				break
+			elif d.po_no:
+				self.status = "Pending"
 
 	def sync_email(self, comm_name="", doc=None):
 		if not doc:
@@ -140,31 +144,30 @@ class EmailInvoice(Document):
 		self.sender = doc.sender
 		self.cc = doc.cc
 		self.bcc = doc.bcc
-		content = ""
-		if len(doc.content or "") > MAX_DISPLAY_LENGTH:
-			content = (
-				(doc.content or "")[:SHORT_HEAD]
-				+ "<br><br><--- Message hidden because too long ---><br><br>"
-				+ (doc.content or "")[-SHORT_TAIL:]
-			)
-		else:
-			content = doc.content or ""
-
-		self.message = content
 		self.received_date = getdate(doc.communication_date)
 		self.time = get_time(doc.communication_date)
 		self.subject = doc.subject
+		content = get_email_message(doc.content)
+		if len(content or "") > MAX_DISPLAY_LENGTH:
+			content = (
+				(content or "")[:SHORT_HEAD]
+				+ "<br><br><--- Message hidden because too long ---><br><br>"
+				+ (content or "")[-SHORT_TAIL:]
+			)
+		self.message = content
 		self.message_id = doc.message_id
 		self.inbox = doc.name
 		self.process_email(doc)
 
 	@frappe.whitelist()
 	def sync_from_ui(self):
-		if self.data_result:
-			payload_temp = json.loads(self.data_result)
-			for d in payload_temp or []:
-				payload = self.enhance_payload(d)
-				self.create_invoice_result(payload)
+		try:
+			payload = json.loads(self.data_result)
+		except:
+			payload = self.data_result
+
+		if payload:
+			self.create_invoice_result(payload)
 		else:
 			self.process_email()
 		
@@ -183,10 +186,12 @@ class EmailInvoice(Document):
 			doc = frappe.get_doc("Communication", self.inbox)
 
 		# Collect attachments linked to this email
-		file_doc_name = frappe.db.get_list(
-			"File",
-			{"attached_to_doctype": "Communication", "attached_to_name": doc.name},
-		)
+		file_doc_name = frappe.db.get_list("File", {"attached_to_doctype": self.doctype, "attached_to_name": self.name})
+		if not file_doc_name:
+			file_doc_name = frappe.db.get_list(
+				"File",
+				{"attached_to_doctype": "Communication", "attached_to_name": doc.name},
+			)
 
 		# No attachments at all
 		if not file_doc_name:
@@ -213,9 +218,13 @@ class EmailInvoice(Document):
 		for file_name in file_doc_name:
 			fn = frappe.get_doc("File", file_name.get("name"))
 			full_path = fn.get_full_path()
+			if not os.path.exists(full_path):
+				full_path = self.find_alternative_file(fn)
 
 			# Check file exists
 			if not os.path.exists(full_path):
+				# alternative find same file with content hash same
+
 				self.add_reason(
 					category="attachment",
 					code="missing_file",
@@ -289,6 +298,14 @@ class EmailInvoice(Document):
 					context={"file": fn.file_name},
 				)
 				continue
+			elif extracted.get("error"):
+				self.add_reason(
+					category="agent",
+					code="not_invoice",
+					message="Attachment is not Invoice",
+					context={"file": fn.file_name},
+				)
+				continue
 
 			# Keep copy of extracted JSON for audit and later review
 			# Also include `file` so downstream creation can attach it
@@ -337,7 +354,8 @@ class EmailInvoice(Document):
 					
 					# copy attachment
 					self.add_attachment_copy(fn, "Purchase Invoice", name )
-
+				if not self.invoice_no:
+					self.invoice_no = name
 			except Exception:
 				pass
 			pi_created.append(name)
@@ -357,6 +375,24 @@ class EmailInvoice(Document):
 			self._finalize_reasons()
 		self.set_status()
 		return pi_created
+
+	def find_alternative_file(self, file_doc):
+		"""Find alternative file with same content hash — returns full_path or empty string."""
+		file_list = frappe.get_all(
+			"File",
+			filters={"content_hash": file_doc.content_hash},
+			fields=["name", "file_url", "is_private"],
+		)
+		file_map = {}
+		for f in file_list or []:
+			file_map[f.file_url] = f
+
+		for key, f in file_map.items():
+			alt_file = frappe.get_doc("File", f.name)
+			full_path = alt_file.get_full_path()
+			if os.path.exists(full_path):
+				return full_path
+		return ""
 
 	def get_sender_domain(self):
 		# exclude from home domain
@@ -402,6 +438,7 @@ class EmailInvoice(Document):
 
 			agent = AIAgentClient()
 			supp_payload = get_supplier_payload(supplier, domains)
+			# save_dict_to_json(supp_payload)
 			temp = agent.get_supplier(supp_payload)
 			supplier_final = temp.get("code")
 			if supplier_final:
@@ -432,11 +469,6 @@ class EmailInvoice(Document):
 				year = match.group(2)
 				return f"PO{number}/{year}"
 			return None
-
-		# for d in deep_get(result, ['items'] ):
-		# 	# fix rate
-		# 	if not d['unit_price']['value']:
-		# 		if d['quantity'] and 
 		po_number = deep_get(result, ['document', 'references', 'purchase_order_number'] )
 		payload['result']['result']['document']['references']['purchase_order_number'] = normalize_po(po_number) or po_number
 			
@@ -509,6 +541,7 @@ Return refined JSON:"""
 
 		Returns (bool, name_or_error): compatible with `process_email` expectations.
 		"""
+		result = result or []
 		if not com_doc and self.inbox:
 			com_doc = frappe.get_doc("Communication", self.inbox)
 
@@ -524,10 +557,11 @@ Return refined JSON:"""
 
 		last_ok = False
 		last_name = ""
-		for res in payloads:
+		for temp in payloads:
 			name = None
 			try:
-				res = res.get("result") or res
+				file_name = temp.get("file")
+				res = temp.get("result") or temp
 				if 'result' in res:
 					res = res.get("result")
 
@@ -537,34 +571,34 @@ Return refined JSON:"""
 				po_ref = frappe.db.exists("Purchase Order", {"name":po_ref})
 				if po_ref:
 					self.flags.po_no = po_ref
-					ok, name_or_err = self.create_invoice(res, po_ref=po_ref)
+					ok, name_or_err = self.create_invoice(res, po_ref=po_ref, file_name=file_name)
 					if not ok:
 						self.add_reason(category="pi", code="create_failed", message=str(name_or_err))
-						return False, name_or_err
+						continue
 					name = name_or_err
 				else:
-					ok, name_or_err = self.create_purchase_invoice_non_stock(res)
+					ok, name_or_err = self.create_purchase_invoice_non_stock(res, file_name=file_name)
 					if not ok:
 						self.add_reason(category="pi", code="create_failed", message=str(name_or_err))
-						return False, name_or_err
+						continue
 					name = name_or_err
 
 			except Exception as e:
 				name = ""
 				self.add_reason(category="system", code="exception", message=f"{e}")
 				self.error_trace = get_traceback()
-				return False, str(e)
+				continue 
+
+			if name:
+				self.add_result(po_ref, name, file_name)
 
 			# Link communication only for the last created doc in the batch
 			if name and com_doc:
 				try:
 					com_doc.db_set("reference_doctype", "Purchase Invoice")
 					com_doc.db_set("reference_name", name)
-					row = self.append("results")
-					row.po_no = self.flags.po_no
-					row.invoice_no = name
-					row.insert()
-
+					if not self.invoice_no:
+						self.invoice_no = name
 				except Exception:
 					pass
 			last_ok = True
@@ -575,8 +609,24 @@ Return refined JSON:"""
 			self._finalize_reasons()
 		self.set_status()
 		return last_ok, last_name
+	
+	def add_result(self, po_no, invoice_no, fn=""):
+		exists = self.get("results", {"invoice_no": invoice_no})
+		if exists:
+			row = exists[0]
+		else:
+			row = self.append("results")
+			row.invoice_no = invoice_no
 
-	def create_invoice(self, data=None, po_ref=None):
+		row.po_no = po_no
+		row.filename = frappe.get_value('File', fn, 'file_name')
+
+		if not exists:
+			row.insert()
+		else:
+			row.db_update()
+
+	def create_invoice(self, data=None, po_ref=None, file_name=""):
 		"""Create Purchase Invoice from an existing Purchase Order and update item rates.
 
 		- Detects the Purchase Order number from `data` (supports nested result structure).
@@ -589,7 +639,7 @@ Return refined JSON:"""
 		
 		bill_no = deep_get(data, ['document', 'number'])
 		bill_date = getdate( deep_get(data, ['document', 'issue_date']) )
-		exists = self.enable_single_invoice(bill_no, bill_date, po_ref)
+		exists = self.enable_single_invoice(bill_no, bill_date)
 		if exists:
 			return True, exists
 
@@ -597,8 +647,15 @@ Return refined JSON:"""
 		doc = make_purchase_invoice(po_ref)
 		doc.set_default_number_fields()
 		doc.created_with_ai = 1
+		doc.set_posting_time = 1
+		doc.naming_series = "TEMP-PI.#####./.YYYY"
 		doc.bill_no = bill_no
 		doc.bill_date = bill_date
+
+		if doc.payment_terms_template:
+			doc.due_date = get_due_date_from_template(doc.payment_terms_template,doc.posting_date, bill_date)
+			for d in doc.get("payment_schedule"):
+				d.due_date = doc.due_date
 
 		# Prepare extracted items for rate update
 		extracted_items = data.get("items") or []
@@ -656,6 +713,10 @@ Return refined JSON:"""
 			doc.taxes_and_charges = get_gst_template(self.company)
 		doc.set_other_charges()
 
+		# del doc.branch
+		# for d in doc.taxes:
+		# 	del d.branch
+
 		# Persist
 		doc.flags.ignore_mandatory = 1
 		doc.flags.ignore_permissions = 1
@@ -666,13 +727,8 @@ Return refined JSON:"""
 		self.add_bank_account(data, doc.name)
 
 		# Attach original file if present
-		file_doc_name = frappe.db.get_list(
-			"File",
-			{"attached_to_doctype": "Communication", "attached_to_name": self.inbox},
-		)
-		for file_name in file_doc_name:
-			fn = frappe.get_doc("File", file_name.get("name"))
-			self.add_attachment_copy(fn, "Purchase Invoice", doc.name )
+		fn = frappe.get_doc("File", file_name)
+		self.add_attachment_copy(fn, "Purchase Invoice", doc.name )
 
 		# Mention rate changes only if any
 		if changes:
@@ -735,8 +791,36 @@ Return refined JSON:"""
 			<div class="hidden data">{json.dumps(bank_data)}</div>
 			"""
 			com.insert(ignore_permissions=True)
+	
+	def get_historic_data(self, doc):
+		# cost center , expense
+		if not doc.supplier:
+			return doc
 		
-	def create_purchase_invoice_non_stock(self, data=None):
+		row = frappe.db.sql("""
+			SELECT
+				pii.expense_account,
+				pii.cost_center,
+				pi.name AS purchase_invoice,
+				pi.posting_date
+			FROM `tabPurchase Invoice Item` pii
+			INNER JOIN `tabPurchase Invoice` pi ON pi.name = pii.parent
+			WHERE pi.supplier = %s
+			AND pi.docstatus = 1
+			ORDER BY pi.posting_date DESC, pi.creation DESC
+			LIMIT 1
+		""", doc.supplier, as_dict=True)
+
+		if row:
+			row = row[0]
+			for d in doc.items:
+				d.cost_center = row.cost_center
+				d.expense_account = row.expense_account
+		
+		return doc
+
+		
+	def create_purchase_invoice_non_stock(self, data=None, file_name=""):
 		"""Create a Non-stock Purchase Invoice purely from the passed parameter.
 
 		Expected payload (simplified): either a dict with keys like
@@ -822,7 +906,10 @@ Return refined JSON:"""
 		doc = frappe.new_doc("Purchase Invoice")
 		doc.company = self.company
 		doc.created_with_ai = 1
+		doc.set_posting_time = 1
 		doc.non_stock_item = 1
+		doc.naming_series = "TEMP-PI-.#####./.YYYY"
+		doc.naming_series = "TEMP-PI.#####./.YYYY"
 		doc.cost_center = frappe.get_value("Company", self.company, "cost_center") or ""
 
 		# Header mapping
@@ -946,10 +1033,9 @@ Return refined JSON:"""
 		self.add_bank_account(data, doc.name)
 
 		# 5) Attach file if `file` docname provided in payload/root
-		file_id = (payload.get("file") if isinstance(payload, dict) else None) or (root.get("file") if isinstance(root, dict) else None)
-		if file_id:
+		if file_name:
 			try:
-				file = frappe.get_doc('File', file_id)
+				file = frappe.get_doc('File', file_name)
 				attachment = frappe.get_doc({
 					'doctype': 'File',
 					'attached_to_doctype': doc.doctype,
@@ -981,21 +1067,25 @@ Return refined JSON:"""
 
 		return True, doc.name
 
-	def enable_single_invoice(self, bill_no, bill_date, po_reff=""):
-		exists = frappe.db.get_value("Purchase Invoice", {"bill_no":bill_no, "bill_date":bill_date})
-		if not exists and po_reff:
-			result = frappe.db.sql("""
-				SELECT pi.name
-				FROM `tabPurchase Invoice` pi
-				JOIN `tabPurchase Invoice Item` pii ON pii.parent = pi.name
-				WHERE pii.purchase_order = %s
-			""", po_reff, as_dict=True)
-			for d in result:
-				if d.name:
-					return d.name
-		
+	def enable_single_invoice(self, bill_no, bill_date):
+		exists = frappe.db.get_value("Purchase Invoice", {"bill_no":bill_no, "bill_date":bill_date, "docstatus":['!=',2]})
 		if exists:
 			return exists
+	
+from email_reply_parser import EmailReplyParser
+from bs4 import BeautifulSoup
+def get_email_message(content):
+	if not content:
+		return ""
+	
+	# Convert Text
+	text = BeautifulSoup(content, "html.parser").get_text(separator="\n")
+
+	# Parse reply
+	parsed_reply = EmailReplyParser.parse_reply(text)
+	res = parsed_reply.strip() if parsed_reply else text.strip()
+
+	return res
 
 # erpnext.ai_agent.doctype.email_invoice.email_invoice.extract_all_bank_data
 def extract_all_bank_data():
@@ -1101,24 +1191,24 @@ def get_bank(bank, swift_number):
 
 	
 def extract_domains(items):
-    out = []
-    seen = set()
-    for s in items:
-        s = str(s).strip().lower()
-        s = re.sub(r'^mailto:', '', s)              # buang mailto:
-        s = re.sub(r'^[a-z]+://', '', s)           # buang skema url
-        s = s.split('/')[0]                         # buang path
-        if '@' in s:
-            s = s.rsplit('@', 1)[1]                 # ambil setelah @
-        s = re.sub(r'^[\*\.\-]+', '', s)            # buang wildcard/.- di depan
-        s = s.split(':')[0]                         # buang port
+	out = []
+	seen = set()
+	for s in items:
+		s = str(s).strip().lower()
+		s = re.sub(r'^mailto:', '', s)              # remove 'mailto:' prefix
+		s = re.sub(r'^[a-z]+://', '', s)           # remove URL scheme (e.g. http://, https://)
+		s = s.split('/')[0]                         # remove path part
+		if '@' in s:
+			s = s.rsplit('@', 1)[1]                 # take the part after '@'
+		s = re.sub(r'^[\*\.\-]+', '', s)            # remove leading wildcards, dots, or hyphens
+		s = s.split(':')[0]                         # remove port number
 
-        # validasi domain sederhana
-        if re.match(r'^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$', s):
-            if s not in seen:
-                seen.add(s)
-                out.append(s)
-    return out
+		# simple domain validation
+		if re.match(r'^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$', s):
+			if s not in seen:
+				seen.add(s)
+				out.append(s)
+	return out
 	
 def get_gst_template(company):
 	return frappe.db.get_value("Purchase Taxes and Charges Template", {"company":company,"is_default":1, "disabled":0}, "name")
@@ -1323,3 +1413,42 @@ def get_item_group(item_group):
 	doc.insert()
 
 	return doc.name
+
+def setup_onload(doc, method=""):
+	print(1299999, doc.flags.got_new_name)
+	if doc.flags.got_new_name:
+		doc.set_onload("disable_auto_reload", 1)
+		doc.set_onload("got_new_name", doc.flags.got_new_name)
+
+# def test_reload2(doc, method=""):
+# 	print(7777777)
+# 	doc.flags.got_new_name = 123123123
+
+def change_temporary_invoice(doc, method=""):
+	# only run for TEMP documents
+	if not doc.name.startswith("TEMP"):
+		return
+
+	# get new name based on final series
+	new_name = frappe.model.naming.make_autoname("PI.#####./.YYYY")
+
+	# rename the document using frappe built-in rename_doc
+	old_name = doc.name
+	doc.flags.got_new_name = new_name
+
+	frappe.rename_doc(doc.doctype, old_name, new_name, force=True, merge=False)
+
+	# update Payment Ledger Entry for against_voucher_no
+	frappe.db.set_value("Payment Ledger Entry", {"voucher_no":new_name, "voucher_type": doc.doctype}, "against_voucher_no", new_name)
+	return new_name
+
+def save_dict_to_json(data: dict, filename="data.json"):
+	# cari direktori file ini (tempat fungsi didefinisikan)
+	current_dir = os.path.dirname(os.path.abspath(__file__))
+	filepath = os.path.join(current_dir, filename)
+
+	# tulis dict ke file JSON
+	with open(filepath, "w", encoding="utf-8") as f:
+		json.dump(data, f, indent=4, ensure_ascii=False)
+
+	print(f"✅ JSON saved to: {filepath}")
