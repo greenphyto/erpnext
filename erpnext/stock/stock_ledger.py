@@ -1541,7 +1541,6 @@ def is_negative_with_precision(neg_sle, is_batch=False):
 	field = "cumulative_total" if is_batch else "qty_after_transaction"
 	precision = cint(frappe.db.get_default("float_precision")) or 2
 	qty_deficit = flt(neg_sle[0][field], precision)
-	print(1490, qty_deficit)
 
 	return qty_deficit < 0 and abs(qty_deficit) > 0.0001
 
