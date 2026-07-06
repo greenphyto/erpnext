@@ -1943,6 +1943,235 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.get_item_price": {
+      "post": {
+        "summary": "Get Item Price",
+        "description": "Get item price from Item Price master. Use <b>is_selling</b> to choose between Standard Selling (1) or Standard Buying (0) price list.",
+        "operationId": "get item price",
+        "requestBody": {
+          "description": "Item price request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "item_code": {
+                    "type": "string",
+                    "description": "Item code (mandatory)"
+                  },
+                  "is_selling": {
+                    "type": "integer",
+                    "enum": [0, 1],
+                    "description": "1 for selling price (Standard Selling), 0 for buying price (Standard Buying). Default: 1"
+                  },
+                  "customer": {
+                    "type": "string",
+                    "description": "Customer name or custom name from Forecast Settings (e.g. 'NTUC' maps to 'NTUC Fairprice Co-Operative Limited'). Optional."
+                  },
+                  "transaction_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Transaction date for price validity (optional)"
+                  }
+                },
+                "required": ["item_code"],
+                "example": {
+                  "item_code": "PR-AV-KL",
+                  "is_selling": 1,
+                  "customer": "NTUC Fairprice Co-Operative Limited",
+                  "transaction_date": "2026-07-06"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "item_code": {
+                      "type": "string"
+                    },
+                    "price_list_rate": {
+                      "type": "number"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "uom": {
+                      "type": "string"
+                    },
+                    "price_list_name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": {
+                    "item_code": "PR-AV-KL",
+                    "price_list_rate": 12.5,
+                    "currency": "SGD",
+                    "uom": "Package",
+                    "price_list_name": "Standard Selling"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or item not found"
+          }
+        }
+      }
+    },
+    "/erpnext.stock.get_item_details.get_conversion_factor": {
+      "post": {
+        "summary": "Get UOM Conversion Factor for Item",
+        "description": "Get the conversion factor between a specified UOM and the item's stock UOM.",
+        "operationId": "get conversion factor",
+        "requestBody": {
+          "description": "Conversion factor request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "item_code": {
+                    "type": "string",
+                    "description": "Item code (mandatory)"
+                  },
+                  "uom": {
+                    "type": "string",
+                    "description": "Target UOM to convert (mandatory)"
+                  }
+                },
+                "required": ["item_code", "uom"],
+                "example": {
+                  "item_code": "PR-AV-KL",
+                  "uom": "Kg"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "conversion_factor": {
+                      "type": "number",
+                      "description": "Conversion factor from specified UOM to stock UOM"
+                    }
+                  }
+                },
+                "example": {
+                  "message": {
+                    "conversion_factor": 1.0
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or UOM not found"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.get_item_uom": {
+      "post": {
+        "summary": "Get Item UOM Details",
+        "description": "Get stock UOM and all available UOMs with conversion factors for an item. Supports custom names from Forecast Settings (e.g. 'Kai Lan' maps to 'PR-AV-KL').",
+        "operationId": "get item uom",
+        "requestBody": {
+          "description": "Item UOM request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "item_code": {
+                    "type": "string",
+                    "description": "Item code or custom name from Forecast Settings (mandatory)"
+                  }
+                },
+                "required": ["item_code"],
+                "example": {
+                  "item_code": "Kai Lan"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "item_code": {
+                      "type": "string",
+                      "description": "Resolved item code"
+                    },
+                    "stock_uom": {
+                      "type": "string",
+                      "description": "Base stock UOM of the item"
+                    },
+                    "uoms": {
+                      "type": "array",
+                      "description": "List of available UOMs with conversion factors",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "uom": {
+                            "type": "string"
+                          },
+                          "conversion_factor": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "message": {
+                    "item_code": "PR-AV-KL",
+                    "stock_uom": "Kg",
+                    "uoms": [
+                      {
+                        "uom": "Kg",
+                        "conversion_factor": 1.0
+                      },
+                      {
+                        "uom": "Package (200g) - GP Type A",
+                        "conversion_factor": 0.2
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or item not found"
+          }
+        }
+      }
     }
   },
   "components": {
