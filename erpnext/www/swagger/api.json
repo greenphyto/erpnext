@@ -2131,6 +2131,10 @@
                       "type": "string",
                       "description": "Base stock UOM of the item"
                     },
+                    "default_packaging": {
+                      "type": "string",
+                      "description": "Default packaging UOM for the item"
+                    },
                     "uoms": {
                       "type": "array",
                       "description": "List of available UOMs with conversion factors",
@@ -2152,6 +2156,7 @@
                   "message": {
                     "item_code": "PR-AV-KL",
                     "stock_uom": "Kg",
+                    "default_packaging": "Package (200g) - GP Type A",
                     "uoms": [
                       {
                         "uom": "Kg",
