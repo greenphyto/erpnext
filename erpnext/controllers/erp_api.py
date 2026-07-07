@@ -1847,5 +1847,6 @@ def get_item_uom(item_code):
 	return {
 		"item_code": final_item,
 		"stock_uom": item.stock_uom,
+		"default_packaging": item.default_packaging or "",
 		"uoms": uoms,
 	}
