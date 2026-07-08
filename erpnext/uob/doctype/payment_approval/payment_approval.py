@@ -123,8 +123,8 @@ class PaymentApproval(Document):
 				if row.bank_account_no == account_no  or account_no == "*" or row.proxy_number == account_no:
 					row.status = status
 					if row.status == "Failed":
-						row.error_code = tr["error_code"]
-						row.error_info = tr["error_info"]
+						row.error_code = tr.get("error_code")
+						row.error_info = tr.get("error_info")
 					else:
 						row.error_code = ""
 						row.error_info = ""
