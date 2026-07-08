@@ -11,6 +11,7 @@ from frappe.utils import get_traceback, cstr, get_files_path
 from erpnext.ai_agent.doctype.ai_agent_settings.ai_invoice_converter import AIAgentClient
 from six import string_types
 from erpnext.accounts.party import get_due_date_from_template
+from erpnext.gp_erp.doctype.ai_agent_memory.ai_agent_memory import get_memory
 
 MAX_DISPLAY_LENGTH = 251
 SHORT_HEAD = 200
@@ -316,6 +317,21 @@ class EmailInvoice(Document):
 			# Enhance the result
 			payload = self.enhance_payload(payload)
 
+			# NEW: Refine with memory (second layer)
+			_supplier = deep_get(payload, ['result', 'result', 'supplier', 'name'], "")
+			if _supplier:
+				_result_data = deep_get(payload, ['result', 'result'], payload['result'])
+				try:
+					_refined = self.refine_with_memory(_result_data, _supplier, self.company)
+					if _refined:
+						payload['result']['result'] = _refined
+				except Exception as e:
+					# Log but don't block — fallback to original extraction
+					frappe.log_error(
+						f"Memory refinement failed for {self.name}: {e}",
+						"AI Agent Memory"
+					)
+
 			# Attempt to create Non-stock PI from this extracted data
 			r, name = self.create_invoice_result(payload)
 			if not r:
@@ -461,6 +477,60 @@ class EmailInvoice(Document):
 	def update_website(self, supplier, website):
 		if not frappe.get_value("Supplier", supplier, 'website'):
 			frappe.db.set_value("Supplier", supplier, 'website', website)
+
+	def refine_with_memory(self, extracted_data, supplier, company):
+		"""Second-layer validation using memory + chat_completion().
+
+		Takes the AI server extraction result and refines it against
+		historical supplier memory patterns.
+
+		Args:
+			extracted_data: dict — extraction result from AI server
+			supplier: str — supplier name
+			company: str — company name
+
+		Returns:
+			dict: Refined extraction data, or original if no memory/failed
+		"""
+		from erpnext.controllers.ai import chat_completion
+
+		memory = get_memory("Supplier", supplier, company)
+		if not memory:
+			return extracted_data
+
+		SYSTEM_PROMPT = f"""You are an invoice data validator and refiner.
+
+Given the supplier's historical memory and the AI-extracted data from a new invoice,
+refine the extraction result to match known patterns.
+
+Rules:
+1. Fix item names, UOM, and descriptions to match historical patterns from the Scanned Name -> Item Name mapping
+2. If a scanned name in the new invoice matches a "Scanned Name" in memory, use the corresponding "Item Name"
+3. Pre-fill Cost Center and Expense Head from memory if not present in extraction
+4. Validate rates against historical average rates — flag significant deviations (>20%) but keep the extracted rate
+5. Match invoice number patterns from history
+6. Use historical addresses if the new invoice doesn't specify them
+7. If the extraction data does NOT have a "tax_template" field in "summary", ADD it using the value from memory's "Tax & Accounts" section
+8. Do NOT invent data — only refine what exists based on memory patterns
+9. Return the refined JSON in the same structure as input, with "summary.tax_template" always present if memory has a tax template
+
+Supplier Memory:
+{memory}
+
+AI Extracted Data:
+{json.dumps(extracted_data)}
+
+Return refined JSON:"""
+
+		result = chat_completion(SYSTEM_PROMPT, json.dumps(extracted_data))
+		if not result:
+			return extracted_data
+
+		try:
+			refined = json.loads(result)
+			return refined
+		except (json.JSONDecodeError, TypeError):
+			return extracted_data
 
 	def create_invoice_result(self, result=[], com_doc=""):
 		"""Create a Purchase Invoice based on extracted payload.
@@ -634,8 +704,13 @@ class EmailInvoice(Document):
 		# set historical data
 		self.get_historic_data(doc)
 
-		# Optional GST update if present in payload
-		doc.taxes_and_charges = get_gst_template(self.company)
+		# Apply tax template: prefer from extraction data, fallback to company default
+		summary_info = data.get("summary") or {}
+		tax_template = summary_info.get("tax_template") or summary_info.get("taxes_and_charges") or ""
+		if tax_template and frappe.db.exists("Purchase Taxes and Charges Template", tax_template):
+			doc.taxes_and_charges = tax_template
+		else:
+			doc.taxes_and_charges = get_gst_template(self.company)
 		doc.set_other_charges()
 
 		# del doc.branch
@@ -923,7 +998,23 @@ class EmailInvoice(Document):
 		# set historical data
 		self.get_historic_data(doc)
 
-		doc.taxes_and_charges = get_gst_template(self.company)
+		# Apply tax template: prefer from extraction data, fallback to memory, then company default
+		tax_template = summary_info.get("tax_template") or summary_info.get("taxes_and_charges") or ""
+		if not (tax_template and frappe.db.exists("Purchase Taxes and Charges Template", tax_template)):
+			# Try from memory
+			supplier_name = supplier_info.get("name") or ""
+			if supplier_name:
+				from erpnext.gp_erp.doctype.ai_agent_memory.ai_agent_memory import get_memory
+				_memory = get_memory("Supplier", supplier_name, self.company)
+				if _memory:
+					for line in _memory.split("\n"):
+						if "Tax Template:" in line:
+							tax_template = line.split("Tax Template:")[-1].strip()
+							break
+		if tax_template and frappe.db.exists("Purchase Taxes and Charges Template", tax_template):
+			doc.taxes_and_charges = tax_template
+		else:
+			doc.taxes_and_charges = get_gst_template(self.company)
 		doc.set_other_charges()
 
 		# 4) Persist document; allow saving even if some links are missing
