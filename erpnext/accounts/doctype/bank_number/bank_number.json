@@ -91,11 +91,11 @@
   },
   {
    "default": "UEN",
-   "description": "\"None\" - Only have general Bank Account<br>\n\"UEN\" - Unique Entity Number<br>\n\"MSISDN\" - Mobile Number<br>\n\"NRIC\" - National Reg. Id Code (including FIN)<br>\n\"VPA\" - Virtual Payment Address ",
+   "description": "\"General\" - Only have general Bank Account<br>\n\"UEN\" - Unique Entity Number<br>\n\"MSISDN\" - Mobile Number<br>\n\"NRIC\" - National Reg. Id Code (including FIN)<br>\n\"VPA\" - Virtual Payment Address ",
    "fieldname": "proxy_type",
    "fieldtype": "Select",
    "label": "Proxy Type",
-   "options": "None\nUEN\nMSISDN\nNRIC\nVPA",
+   "options": "General\nUEN\nMSISDN\nNRIC\nVPA",
    "reqd": 1
   },
   {
@@ -107,17 +107,17 @@
   },
   {
    "allow_in_quick_entry": 1,
-   "depends_on": "eval:doc.proxy_type != \"None\"",
+   "depends_on": "eval:doc.proxy_type != \"General\"",
    "description": "UEN/MSISDN/NRICVPA Number",
    "fieldname": "proxy_number",
    "fieldtype": "Data",
    "label": "Proxy Number",
-   "mandatory_depends_on": "eval:doc.proxy_type != \"None\""
+   "mandatory_depends_on": "eval:doc.proxy_type != \"General\""
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-27 18:26:36.917877",
+ "modified": "2026-07-08 10:44:14.864837",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Bank Number",

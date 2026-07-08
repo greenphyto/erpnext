@@ -631,7 +631,7 @@ class PaymentApproval(Document):
 		res = uob.upload_bank_tx(absolute_path, file_name)
 
 	def get_file_name(self):
-		dates = getdate(self.posting_date).strftime("%d%m")
+		dates = getdate(self.request_date).strftime("%d%m")
 		n = self.batch_number
 		number = f"{n:03d}"
 		file_name = f"PA113{dates}{number}.xml"
