@@ -1,5 +1,5 @@
 import frappe
-import frappe, json
+import frappe, json, re
 from frappe.utils import today, get_last_day, getdate, today, get_last_day
 from frappe.utils import cint, flt, getdate, cstr, safe_abs, add_months
 from six import string_types
@@ -348,25 +348,141 @@ def read_email_inbox():
 def _read_email_inbox(doc_name, company):
 
 	doc = frappe.get_doc("Communication", doc_name)
-	
+
 	# check more deep
 	message = f"{doc.subject}|{doc.content}"
 	if not is_invoice(message):
 		return
-	
+
 	exists = frappe.db.exists("Email Invoice", {"inbox":doc.name})
 	if exists:
 		return
 	else:
+		# AI Routing: detect correct company from email content
+		detected_company = _detect_company_from_email(doc, company)
+
+		# Switch user if company changed — use target company's ai_user
+		if detected_company and detected_company != company:
+			target_ai_user = frappe.db.get_value("Company", detected_company, "ai_user")
+			if target_ai_user:
+				frappe.set_user(target_ai_user)
+
 		# create email invoice
 		em = frappe.new_doc("Email Invoice")
-		em.company = company
+		em.company = detected_company
 		em.inbox = doc.name
 		em.flags.ignore_links = True
 		em.flags.ignore_permissions = True
 		em.insert()
 		em.sync_email(doc = doc)
 		em.save()
+
+def _detect_company_from_email(doc, default_company):
+	"""Use AI to analyze email content and determine the correct company.
+
+	Checks subject + content against all enabled companies to find the best match.
+	Falls back to default_company if AI cannot determine or if analysis fails.
+
+	Args:
+		doc: Communication document
+		default_company: Company from the email account (fallback)
+
+	Returns:
+		str: Detected company name
+	"""
+	try:
+		from erpnext.controllers.ai import chat_completion
+	except ImportError:
+		return default_company
+
+	# Get all enabled companies with details
+	companies = frappe.db.get_list("Company",
+		filters={"enable_supplier_invoice": 1},
+		fields=["name", "abbr", "series_abbr", "default_email_inbox", "country"]
+	)
+
+	if len(companies) <= 1:
+		return default_company
+
+	# Build company context for AI
+	company_context = []
+	for c in companies:
+		company_context.append(
+			f"- Company: {c.name} | Abbr: {c.abbr} | Country: {c.country or 'N/A'}"
+		)
+	company_list = "\n".join(company_context)
+
+	# Prepare email content (strip HTML for cleaner analysis)
+	from bs4 import BeautifulSoup
+	content_clean = BeautifulSoup(doc.content or "", "html.parser").get_text(separator="\n")
+	# Limit content length to avoid token overflow
+	content_sample = content_clean[:3000] if len(content_clean) > 3000 else content_clean
+
+	SYSTEM_PROMPT = f"""You are an invoice email routing assistant for a multi-entity company.
+
+Your task: analyze the email (subject + content) and determine which company it belongs to.
+
+Available Companies:
+{company_list}
+
+Analysis Rules:
+1. Look for company names mentioned in the email (e.g., "Greenphyto Tech Sdn Bhd" → Malaysia)
+2. Check currency: RM/MYR = Malaysia company, SGD = Singapore company
+3. Check GST/Tax registration numbers (MY GST: 012345678900, SG GST: M12345678A)
+4. Check address clues (country, state, city)
+5. Check invoice/GRN/PO number patterns if they match a company's naming convention
+6. If the email is clearly for a specific company, return that company name exactly
+
+Response format (strict JSON):
+{{"company": "Exact Company Name", "confidence": "high|medium|low", "reason": "brief reason"}}
+
+If you cannot determine with confidence, return:
+{{"company": "{default_company}", "confidence": "low", "reason": "unable to determine, using default"}}"""
+
+	user_text = f"""Email Subject: {doc.subject}
+Email Sender: {doc.sender}
+Email Content:
+{content_sample}
+
+Which company does this invoice belong to? Reply with JSON only."""
+
+	try:
+		result = chat_completion(SYSTEM_PROMPT, user_text, temperature=0)
+		if not result:
+			return default_company
+
+		# Parse JSON response
+		import json
+		# Try to extract JSON from response (might be wrapped in markdown)
+		json_match = re.search(r'\{[^{}]*\}', result)
+		if json_match:
+			parsed = json.loads(json_match.group())
+			detected = parsed.get("company", default_company)
+			confidence = parsed.get("confidence", "low")
+			reason = parsed.get("reason", "")
+
+			# Validate detected company exists
+			if detected and frappe.db.exists("Company", detected):
+				if confidence in ("high", "medium"):
+					frappe.log_error(
+						title="Email AI Routing",
+						message=f"{doc.name} → {detected} ({confidence})"
+					)
+					return detected
+				else:
+					frappe.log_error(
+						title="Email AI Routing",
+						message=f"{doc.name} → low conf, default {default_company}"
+					)
+
+		return default_company
+
+	except Exception as e:
+		frappe.log_error(
+			title="Email AI Routing",
+			message=f"Failed for {doc.name}: {str(e)[:200]}"
+		)
+		return default_company
 
 def get_checked_ai_status(cdt, com_name):
 	# get checked status on email receive
