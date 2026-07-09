@@ -652,6 +652,13 @@ Return refined JSON:"""
 		doc.bill_no = bill_no
 		doc.bill_date = bill_date
 
+		# Ensure buying price list matches invoice currency
+		invoice_currency = deep_get(data, ['currency', 'code'], "") or doc.currency
+		if invoice_currency:
+			matched_pl = get_buying_price_list(invoice_currency)
+			if matched_pl:
+				doc.buying_price_list = matched_pl
+
 		if doc.payment_terms_template:
 			doc.due_date = get_due_date_from_template(doc.payment_terms_template,doc.posting_date, bill_date)
 			for d in doc.get("payment_schedule"):
@@ -920,6 +927,9 @@ Return refined JSON:"""
 		# Currency only if exists; otherwise leave blank to record in comment
 		if currency_exists:
 			doc.currency = currency_code
+
+		# Set buying price list based on currency
+		doc.buying_price_list = get_buying_price_list(currency_code)
 
 		# Bill No / Date
 		if doc_info.get("number"):
@@ -1212,6 +1222,22 @@ def extract_domains(items):
 	
 def get_gst_template(company):
 	return frappe.db.get_value("Purchase Taxes and Charges Template", {"company":company,"is_default":1, "disabled":0}, "name")
+
+def get_buying_price_list(currency):
+	"""Get buying price list that matches the given currency."""
+	if not currency:
+		return frappe.db.get_value("Buying Settings", None, "buying_price_list")
+
+	# Find buying price list with matching currency
+	price_list = frappe.db.get_value("Price List",
+		{"buying": 1, "currency": currency, "enabled": 1},
+		"name"
+	)
+	if price_list:
+		return price_list
+
+	# Fallback to default buying price list from settings
+	return frappe.db.get_value("Buying Settings", None, "buying_price_list")
 
 def convert_pdf_to_img(path):
 	import fitz  # PyMuPDF
