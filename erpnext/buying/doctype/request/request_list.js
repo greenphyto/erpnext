@@ -38,6 +38,12 @@ function open_bulk_upload_dialog(listview) {
                 fieldname: "summary_html",
                 fieldtype: "HTML",
                 label: __("Summary")
+            },
+            {
+                fieldname: "auto_submit",
+                fieldtype: "Check",
+                label: __("Auto Submit"),
+                default: 0
             }
         ],
         primary_action_label: __("Generate"),
@@ -47,8 +53,8 @@ function open_bulk_upload_dialog(listview) {
                 return;
             }
 
-            // Collect edits from DataTable
-            generate_requests(parsed_data, edits, dialog, listview);
+            const auto_submit = dialog.get_value("auto_submit") ? 1 : 0;
+            generate_requests(parsed_data, edits, auto_submit, dialog, listview);
         },
         secondary_action_label: __("Cancel"),
         secondary_action: function() {
@@ -358,14 +364,15 @@ function open_bulk_upload_dialog(listview) {
         );
     }
 
-    function generate_requests(data, edits, dialog, listview) {
+    function generate_requests(data, edits, auto_submit, dialog, listview) {
         frappe.dom.freeze(__("Generating Requests..."));
 
         frappe.call({
             method: "erpnext.buying.doctype.request.request.generate_bulk_requests",
             args: {
                 groups: JSON.stringify(data.groups),
-                edits: JSON.stringify(edits)
+                edits: JSON.stringify(edits),
+                auto_submit: auto_submit
             },
             callback: function(r) {
                 frappe.dom.unfreeze();
