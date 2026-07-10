@@ -854,7 +854,7 @@ def parse_forecast_upload(csv_content):
 	}
 
 @frappe.whitelist()
-def generate_bulk_requests(groups, edits=None):
+def generate_bulk_requests(groups, edits=None, auto_submit=0):
 	"""Generate Request drafts from grouped forecast data.
 
 	Args:
@@ -954,6 +954,8 @@ def generate_bulk_requests(groups, edits=None):
 					"Comment",
 					"Created via Bulk Upload. {0} items.".format(len(added_items))
 				)
+				if flt(auto_submit):
+					doc.submit()
 			else:
 				doc.save(ignore_permissions=1)
 				merged.append({
