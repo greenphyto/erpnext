@@ -829,6 +829,9 @@ def generate_bulk_requests(groups, edits=None):
 	if not edits:
 		edits = {}
 
+	if not groups:
+		frappe.throw(_("No groups provided for bulk upload"))
+
 	settings = _get_forecast_settings()
 	created = []
 	merged = []
@@ -872,13 +875,20 @@ def generate_bulk_requests(groups, edits=None):
 				if change and change.get("action") in ("new", "qty_changed"):
 					added_items.append(item["item_code"])
 			except Exception as e:
+				frappe.log_error(
+					title="Bulk Request Generation Error",
+					message="Group {0}, Item {1}: {2}".format(group_label, item.get("item_code", "?"), str(e))
+				)
 				errors.append({
 					"group": group_label,
 					"error": "Item {0}: {1}".format(item.get("item_code", "?"), str(e))
 				})
 
-		if not added_items and not is_new:
-			# Nothing changed for existing doc
+		if not added_items:
+			if not is_new:
+				# Existing doc, nothing changed
+				continue
+			# All items failed for new doc; don't create empty Request
 			continue
 
 		try:
@@ -900,6 +910,10 @@ def generate_bulk_requests(groups, edits=None):
 					"Updated via Bulk Upload: " + ", ".join(added_items)
 				)
 		except Exception as e:
+			frappe.log_error(
+				title="Bulk Request Generation Error",
+				message="Group {0}, Save failed: {1}".format(group_label, str(e))
+			)
 			errors.append({
 				"group": group_label,
 				"error": "Save failed: {0}".format(str(e))
