@@ -183,12 +183,22 @@ function open_bulk_upload_dialog(listview) {
 
             // Group body
             html += '<div class="bulk-group-body" id="' + group_id + '" style="overflow-x: auto;">';
-            html += '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">';
+            html += '<table style="width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed;">';
+            html += '<colgroup>';
+            html += '<col style="width: 15%;">';  // Item
+            html += '<col style="width: 18%;">';  // Vegetable
+            html += '<col style="width: 8%;">';   // Qty
+            html += '<col style="width: 12%;">';  // Packaging
+            html += '<col style="width: 11%;">';  // Total KG
+            html += '<col style="width: 11%;">';  // Rate
+            html += '<col style="width: 15%;">';  // Amount
+            html += '<col style="width: 10%;">';  // Action
+            html += '</colgroup>';
             html += '<thead><tr style="background: #f1f3f5;">';
-            html += '<th style="padding: 6px 8px; text-align: left; border-bottom: 1px solid #dee2e6;">' + __('Item') + '</th>';
-            html += '<th style="padding: 6px 8px; text-align: left; border-bottom: 1px solid #dee2e6;">' + __('Vegetable') + '</th>';
+            html += '<th style="padding: 6px 8px; text-align: left; border-bottom: 1px solid #dee2e6; overflow: hidden; text-overflow: ellipsis;">' + __('Item') + '</th>';
+            html += '<th style="padding: 6px 8px; text-align: left; border-bottom: 1px solid #dee2e6; overflow: hidden; text-overflow: ellipsis;">' + __('Vegetable') + '</th>';
             html += '<th style="padding: 6px 8px; text-align: right; border-bottom: 1px solid #dee2e6;">' + __('Qty') + '</th>';
-            html += '<th style="padding: 6px 8px; text-align: left; border-bottom: 1px solid #dee2e6;">' + __('Packaging') + '</th>';
+            html += '<th style="padding: 6px 8px; text-align: left; border-bottom: 1px solid #dee2e6; overflow: hidden; text-overflow: ellipsis;">' + __('Packaging') + '</th>';
             html += '<th style="padding: 6px 8px; text-align: right; border-bottom: 1px solid #dee2e6;">' + __('Total KG') + '</th>';
             html += '<th style="padding: 6px 8px; text-align: right; border-bottom: 1px solid #dee2e6;">' + __('Rate') + '</th>';
             html += '<th style="padding: 6px 8px; text-align: right; border-bottom: 1px solid #dee2e6;">' + __('Amount') + '</th>';
@@ -205,12 +215,12 @@ function open_bulk_upload_dialog(listview) {
                 const warning_title = escaped_warning ? ' title="' + escaped_warning + '"' : '';
 
                 html += '<tr class="bulk-item-row" data-group="' + group_idx + '" data-item="' + item_idx + '"' + warning_class + '>';
-                html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee;"' + warning_title + '>' + (escaped_warning ? '⚠ ' : '') + (item.item_code || '-') + '</td>';
-                html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee;">' + (item.vegetable || '-') + '</td>';
+                html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"' + warning_title + '>' + (escaped_warning ? '⚠ ' : '') + (item.item_code || '-') + '</td>';
+                html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">' + (item.vegetable || '-') + '</td>';
                 html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee; text-align: right;">';
-                html += '<input type="number" class="bulk-qty-input" data-group="' + group_idx + '" data-item="' + item_idx + '" value="' + (item.qty || 0) + '" style="width: 70px; text-align: right; border: 1px solid #d1d8dd; border-radius: 3px; padding: 3px 5px;"' + disabled + '>';
+                html += '<input type="number" class="bulk-qty-input" data-group="' + group_idx + '" data-item="' + item_idx + '" value="' + (item.qty || 0) + '" style="width: 100%; text-align: right; border: 1px solid #d1d8dd; border-radius: 3px; padding: 3px 5px; box-sizing: border-box;"' + disabled + '>';
                 html += '</td>';
-                html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee;">' + (item.packaging || '-') + '</td>';
+                html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">' + (item.packaging || '-') + '</td>';
                 html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee; text-align: right;" class="bulk-total-kg" data-group="' + group_idx + '" data-item="' + item_idx + '">' + total_kg.toFixed(2) + '</td>';
                 html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee; text-align: right;">' + (item.rate || 0).toFixed(2) + '</td>';
                 html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee; text-align: right;" class="bulk-amount" data-group="' + group_idx + '" data-item="' + item_idx + '">' + amount.toFixed(2) + '</td>';
