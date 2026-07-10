@@ -712,10 +712,6 @@ def parse_forecast_upload(csv_content):
 		unit_price = row.get("Unit Price (SGD)", "").strip()
 
 		if not delivery_date or not customer or not vegetable:
-			warnings.append({
-				"row": row_num,
-				"message": "Skipping row {0}: missing Delivery Date, Customer, or Vegetable".format(row_num)
-			})
 			continue
 
 		# Validate delivery date format
@@ -749,10 +745,18 @@ def parse_forecast_upload(csv_content):
 
 		# Resolve packaging from item
 		packaging = _resolve_packaging(item_code, flt(uom_kg)) if uom_kg else None
-		uom = packaging.get("uom") if packaging else ""
-		packaging_item = packaging.get("package_item") if packaging else ""
-
-		if not packaging:
+		packaging_display = ""
+		packaging_item = ""
+		if packaging:
+			packaging_item = packaging.get("package_item", "")
+			# Build display string like "200 Gr" from weight in kg
+			weight_grams = flt(uom_kg) * 1000
+			packaging_display = "{0:g} Gr".format(weight_grams)
+		else:
+			# Fallback: build from csv weight
+			if uom_kg:
+				weight_grams = flt(uom_kg) * 1000
+				packaging_display = "{0:g} Gr".format(weight_grams)
 			warnings.append({
 				"row": row_num,
 				"message": "No packaging found for {0} with weight {1} kg (row {2})".format(item_code, uom_kg, row_num)
@@ -771,14 +775,18 @@ def parse_forecast_upload(csv_content):
 			})
 			continue
 
+		unit_weight = flt(uom_kg) if uom_kg else 0
+		total_kg = qty * unit_weight
+
 		item_data = {
 			"vegetable": vegetable,
 			"item_code": item_code,
 			"qty": qty,
-			"uom": uom,
+			"packaging": packaging_display,
 			"packaging_item": packaging_item,
 			"rate": rate,
-			"unit_weight": flt(uom_kg) if uom_kg else 0,
+			"unit_weight": unit_weight,
+			"total_kg": round(total_kg, 2),
 			"warning": None,
 		}
 
