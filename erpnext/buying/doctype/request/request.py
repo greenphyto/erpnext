@@ -714,24 +714,6 @@ def parse_forecast_upload(csv_content):
 	warnings = []
 	row_num = 1  # header is row 0
 
-	def _parse_csv_date(date_str):
-		"""Parse date string supporting yyyy-mm-dd and dd/mm/yy formats."""
-		date_str = date_str.strip()
-		if not date_str:
-			return None
-		# Try ISO format first: yyyy-mm-dd
-		if len(date_str) == 10 and date_str[4] == '-' and date_str[7] == '-':
-			return getdate(date_str)
-		# Try dd/mm/yy or dd/mm/yyyy
-		parts = date_str.split('/')
-		if len(parts) == 3:
-			dd, mm, yy = parts
-			if len(yy) == 2:
-				yy = '20' + yy
-			return getdate("{0}-{1}-{2}".format(yy, mm, dd))
-		# Fallback
-		return getdate(date_str)
-
 	for row in reader:
 		row_num += 1
 		delivery_date = row.get("Delivery Date", "").strip()
@@ -746,8 +728,7 @@ def parse_forecast_upload(csv_content):
 
 		# Validate and normalize delivery date
 		try:
-			parsed_date = _parse_csv_date(delivery_date)
-			delivery_date = str(parsed_date)  # normalize to yyyy-mm-dd
+			delivery_date = str(getdate(delivery_date))
 		except Exception:
 			warnings.append({
 				"row": row_num,
