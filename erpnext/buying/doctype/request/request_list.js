@@ -175,8 +175,9 @@ function open_bulk_upload_dialog(listview) {
             html += '<div class="bulk-group" style="margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">';
 
             // Group header (collapsible)
+            const days_label = group.days_to_delivery >= 0 ? group.days_to_delivery + ' days' : Math.abs(group.days_to_delivery) + ' days ago';
             html += '<div class="bulk-group-header" data-group="' + group_idx + '" style="background: #f8f9fa; padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px;">';
-            html += '<span>▼ ' + group.delivery_date + ' — ' + group.customer + ' (' + group.items.length + ' items)</span>';
+            html += '<span>▼ ' + group.delivery_date + ' (' + days_label + ') — ' + group.customer + ' (' + group.items.length + ' items)</span>';
             html += '<span class="group-total" data-group="' + group_idx + '" style="font-weight: normal; color: #6c757d;"></span>';
             html += '</div>';
 
