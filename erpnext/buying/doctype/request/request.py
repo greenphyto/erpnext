@@ -808,3 +808,114 @@ def parse_forecast_upload(csv_content):
 			"total_items": total_items
 		}
 	}
+
+@frappe.whitelist()
+def generate_bulk_requests(groups, edits=None):
+	"""Generate Request drafts from grouped forecast data.
+
+	Args:
+	    groups: JSON string or list of {delivery_date, customer, items: [...]}
+	    edits: JSON string or dict of {group_idx: {item_idx: {qty: new_qty}}}
+
+	Returns:
+	    dict with created, merged, errors, and summary
+	"""
+	if isinstance(groups, string_types):
+		groups = json.loads(groups)
+
+	if isinstance(edits, string_types):
+		edits = json.loads(edits)
+
+	if not edits:
+		edits = {}
+
+	settings = _get_forecast_settings()
+	created = []
+	merged = []
+	errors = []
+
+	for idx, group in enumerate(groups):
+		delivery_date = group.get("delivery_date")
+		customer = group.get("customer")
+		items = group.get("items", [])
+
+		group_label = "{0} - {1}".format(delivery_date, customer)
+
+		if not items:
+			errors.append({"group": group_label, "error": "No items in group"})
+			continue
+
+		# Apply edits to qty
+		group_edits = edits.get(str(idx), {})
+		for item_idx, item in enumerate(items):
+			item_edit = group_edits.get(str(item_idx), {})
+			if "qty" in item_edit:
+				item["qty"] = flt(item_edit["qty"])
+
+		# Check for existing draft Request
+		doc = _get_existing_request(customer, delivery_date)
+
+		is_new = not doc
+		if is_new:
+			doc = frappe.new_doc("Request")
+			doc.company = settings.company_default or erpnext.get_default_company()
+			doc.department = settings.department_default
+			doc.posting_date = getdate(today())
+			doc.delivery_date = getdate(delivery_date)
+			doc.proposed_customer = customer
+			doc.workflow_state = "Draft"
+
+		added_items = []
+		for item in items:
+			try:
+				change = _add_item_to_request(doc, item)
+				if change and change.get("action") in ("new", "qty_changed"):
+					added_items.append(item["item_code"])
+			except Exception as e:
+				errors.append({
+					"group": group_label,
+					"error": "Item {0}: {1}".format(item.get("item_code", "?"), str(e))
+				})
+
+		if not added_items and not is_new:
+			# Nothing changed for existing doc
+			continue
+
+		try:
+			if is_new:
+				doc.insert(ignore_permissions=1)
+				created.append(doc.name)
+				doc.add_comment(
+					"Comment",
+					"Created via Bulk Upload. {0} items.".format(len(added_items))
+				)
+			else:
+				doc.save(ignore_permissions=1)
+				merged.append({
+					"name": doc.name,
+					"added_items": added_items
+				})
+				doc.add_comment(
+					"Comment",
+					"Updated via Bulk Upload: " + ", ".join(added_items)
+				)
+		except Exception as e:
+			errors.append({
+				"group": group_label,
+				"error": "Save failed: {0}".format(str(e))
+			})
+
+	summary_parts = []
+	if created:
+		summary_parts.append("{0} created".format(len(created)))
+	if merged:
+		summary_parts.append("{0} merged".format(len(merged)))
+	if errors:
+		summary_parts.append("{0} errors".format(len(errors)))
+
+	return {
+		"created": created,
+		"merged": merged,
+		"errors": errors,
+		"summary": ", ".join(summary_parts) if summary_parts else "No changes"
+	}
