@@ -551,3 +551,246 @@ def update_request(request_no, items, delivery_date=""):
 	doc.db_update()
 	sync_log(doc, method="on_update_after_submit")
 	return request_no
+
+
+@frappe.whitelist()
+def fetch_tray_data(item_codes):
+	"""Fetch tray config from FOMS for given item codes"""
+	from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI
+
+	if isinstance(item_codes, string_types):
+		item_codes = json.loads(item_codes)
+
+	api = FomsAPI()
+	tray_data_list = []
+
+	for item_code in item_codes:
+		foms_product_id = frappe.get_value("Item", item_code, "foms_product_id")
+		if not foms_product_id:
+			continue
+
+		config = api.get_max_cage_and_tray(foms_product_id)
+		if not config:
+			continue
+
+		config["item_code"] = item_code
+		tray_data_list.append(config)
+
+	return tray_data_list
+
+
+@frappe.whitelist()
+def generate_tray_data_html(tray_data_list):
+	"""Generate HTML table from tray data"""
+	if isinstance(tray_data_list, string_types):
+		tray_data_list = json.loads(tray_data_list)
+	if not tray_data_list:
+		return "<p>No tray data available</p>"
+
+	html = """
+	<style>
+		.tray-data-wrapper {
+			overflow-x: auto;
+			max-width: 100%;
+		}
+		.tray-data-table {
+			width: 100%;
+			min-width: 800px;
+			border-collapse: collapse;
+			font-size: 12px;
+		}
+		.tray-data-table th, .tray-data-table td {
+			border: 1px solid #d1d8dd;
+			padding: 6px 8px;
+			text-align: left;
+			white-space: nowrap;
+		}
+		.tray-data-table th {
+			background-color: #f5f7fa;
+			font-weight: 600;
+		}
+		.tray-data-table tr:nth-child(even) {
+			background-color: #fafbfc;
+		}
+		.tray-data-table th:first-child,
+		.tray-data-table td:first-child {
+			min-width: 100px;
+		}
+	</style>
+	<div class="tray-data-wrapper">
+	<table class="tray-data-table">
+		<thead>
+			<tr>
+				<th>Item Code</th>
+				<th>Product ID</th>
+				<th>Product Name</th>
+				<th>Weight/Plant (Kg)</th>
+				<th>Packet Size (g)</th>
+				<th>Seeding Plant/Tray</th>
+				<th>Seeding Tray/Cage</th>
+				<th>Max Pkt/Seeding Tray</th>
+				<th>Max Pkt/Seeding Cage</th>
+				<th>Transplant Plant/Tray</th>
+				<th>Transplant Tray/Cage</th>
+				<th>Max Pkt/Transplant Tray</th>
+				<th>Max Pkt/Transplant Cage</th>
+			</tr>
+		</thead>
+		<tbody>
+	"""
+
+	for data in tray_data_list:
+		html += """
+			<tr>
+				<td>{item_code}</td>
+				<td>{productId}</td>
+				<td>{productName}</td>
+				<td>{weightPerPlantKg}</td>
+				<td>{packetSizeGrams}</td>
+				<td>{seedingPlantPerTray}</td>
+				<td>{seedingTraysPerCage}</td>
+				<td>{maxPacketsPerSeedingTray}</td>
+				<td>{maxPacketsPerSeedingCage}</td>
+				<td>{transplantingPlantPerTray}</td>
+				<td>{transplantingTraysPerCage}</td>
+				<td>{maxPacketsPerTransplantingTray}</td>
+				<td>{maxPacketsPerTransplantingCage}</td>
+			</tr>
+		""".format(
+			item_code=data.get("item_code", ""),
+			productId=data.get("productId", ""),
+			productName=data.get("productName", ""),
+			weightPerPlantKg=data.get("weightPerPlantKg", ""),
+			packetSizeGrams=data.get("packetSizeGrams", ""),
+			seedingPlantPerTray=data.get("seedingPlantPerTray", ""),
+			seedingTraysPerCage=data.get("seedingTraysPerCage", ""),
+			maxPacketsPerSeedingTray=data.get("maxPacketsPerSeedingTray", ""),
+			maxPacketsPerSeedingCage=data.get("maxPacketsPerSeedingCage", ""),
+			transplantingPlantPerTray=data.get("transplantingPlantPerTray", ""),
+			transplantingTraysPerCage=data.get("transplantingTraysPerCage", ""),
+			maxPacketsPerTransplantingTray=data.get("maxPacketsPerTransplantingTray", ""),
+			maxPacketsPerTransplantingCage=data.get("maxPacketsPerTransplantingCage", "")
+		)
+
+	html += """
+		</tbody>
+	</table>
+	</div>
+	"""
+
+	return html
+
+
+@frappe.whitelist()
+def parse_forecast_upload(csv_content):
+	"""Parse forecast CSV content, map items, and group by (delivery_date, customer).
+
+	Args:
+		csv_content: Raw CSV string content
+
+	Returns:
+		dict with groups, warnings, and summary
+	"""
+	import csv
+	from io import StringIO
+
+	if not csv_content or not csv_content.strip():
+		frappe.throw(_("CSV content is empty"))
+
+	settings = _get_forecast_settings()
+
+	reader = csv.DictReader(StringIO(csv_content))
+
+	# Validate required columns
+	required_columns = ["Delivery Date", "Customer", "Vegetable", "Predicted Packages", "UOM (kg)", "Unit Price (SGD)"]
+	if not reader.fieldnames:
+		frappe.throw(_("Invalid CSV format: no header row found"))
+
+	missing = [col for col in required_columns if col not in reader.fieldnames]
+	if missing:
+		frappe.throw(_("Missing required columns: {0}").format(", ".join(missing)))
+
+	groups_dict = {}  # {(delivery_date, customer): {items: [...]}}
+	warnings = []
+	row_num = 1  # header is row 0
+
+	for row in reader:
+		row_num += 1
+		delivery_date = row.get("Delivery Date", "").strip()
+		customer = row.get("Customer", "").strip()
+		vegetable = row.get("Vegetable", "").strip()
+		predicted_packages = row.get("Predicted Packages", "").strip()
+		uom_kg = row.get("UOM (kg)", "").strip()
+		unit_price = row.get("Unit Price (SGD)", "").strip()
+
+		if not delivery_date or not customer or not vegetable:
+			warnings.append({
+				"row": row_num,
+				"message": "Skipping row {0}: missing Delivery Date, Customer, or Vegetable".format(row_num)
+			})
+			continue
+
+		# Map vegetable to item_code via Forecast Settings
+		item_code = _resolve_item(vegetable, settings)
+		if not item_code:
+			warnings.append({
+				"row": row_num,
+				"message": "Vegetable '{0}' not found in Forecast Settings (row {1})".format(vegetable, row_num)
+			})
+			continue
+
+		# Resolve packaging from item
+		packaging = _resolve_packaging(item_code, flt(uom_kg)) if uom_kg else None
+		uom = packaging.get("uom") if packaging else ""
+		packaging_item = packaging.get("package_item") if packaging else ""
+
+		if not packaging:
+			warnings.append({
+				"row": row_num,
+				"message": "No packaging found for {0} with weight {1} kg (row {2})".format(item_code, uom_kg, row_num)
+			})
+
+		# Get rate from Item Price
+		rate = _get_item_price(item_code)
+		if not rate and unit_price:
+			rate = flt(unit_price)
+
+		qty = flt(predicted_packages) if predicted_packages else 0
+
+		item_data = {
+			"vegetable": vegetable,
+			"item_code": item_code,
+			"qty": qty,
+			"uom": uom,
+			"packaging_item": packaging_item,
+			"rate": rate,
+			"unit_weight": flt(uom_kg) if uom_kg else 0,
+			"warning": None,
+		}
+
+		# Add warning flag if packaging was missing
+		if not packaging:
+			item_data["warning"] = "No packaging found"
+
+		group_key = (delivery_date, customer)
+		if group_key not in groups_dict:
+			groups_dict[group_key] = {
+				"delivery_date": delivery_date,
+				"customer": customer,
+				"items": []
+			}
+		groups_dict[group_key]["items"].append(item_data)
+
+	# Convert to list preserving order
+	groups = list(groups_dict.values())
+
+	total_items = sum(len(g["items"]) for g in groups)
+
+	return {
+		"groups": groups,
+		"warnings": warnings,
+		"summary": {
+			"total_groups": len(groups),
+			"total_items": total_items
+		}
+	}
