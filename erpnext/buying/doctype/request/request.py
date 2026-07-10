@@ -8,6 +8,9 @@ from frappe import _
 from erpnext.controllers.foms import UOM_MAP
 from erpnext.stock.get_item_details import get_item_price
 from six import string_types
+import csv
+from io import StringIO
+
 class Request(Document):
 	def validate(self):
 		self.calculate_price()
@@ -691,9 +694,6 @@ def parse_forecast_upload(csv_content):
 	Returns:
 		dict with groups, warnings, and summary
 	"""
-	import csv
-	from io import StringIO
-
 	if not csv_content or not csv_content.strip():
 		frappe.throw(_("CSV content is empty"))
 
@@ -730,6 +730,26 @@ def parse_forecast_upload(csv_content):
 			})
 			continue
 
+		# Validate delivery date format
+		try:
+			getdate(delivery_date)
+		except Exception:
+			warnings.append({
+				"row": row_num,
+				"message": "Invalid delivery date '{0}' (row {1})".format(delivery_date, row_num)
+			})
+			continue
+
+		# Resolve customer name via Forecast Settings
+		resolved_customer = _resolve_customer(customer, settings)
+		if not resolved_customer:
+			warnings.append({
+				"row": row_num,
+				"message": "Customer '{0}' not found in Forecast Settings (row {1})".format(customer, row_num)
+			})
+			continue
+		customer = resolved_customer
+
 		# Map vegetable to item_code via Forecast Settings
 		item_code = _resolve_item(vegetable, settings)
 		if not item_code:
@@ -756,6 +776,12 @@ def parse_forecast_upload(csv_content):
 			rate = flt(unit_price)
 
 		qty = flt(predicted_packages) if predicted_packages else 0
+		if not qty:
+			warnings.append({
+				"row": row_num,
+				"message": "Missing or zero Predicted Packages for '{0}' (row {1})".format(vegetable, row_num)
+			})
+			continue
 
 		item_data = {
 			"vegetable": vegetable,
