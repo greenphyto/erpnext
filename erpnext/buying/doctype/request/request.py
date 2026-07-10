@@ -667,3 +667,118 @@ def generate_tray_data_html(tray_data_list):
 	"""
 
 	return html
+
+
+@frappe.whitelist()
+def parse_forecast_upload(csv_content):
+	"""Parse forecast CSV content, map items, and group by (delivery_date, customer).
+
+	Args:
+		csv_content: Raw CSV string content
+
+	Returns:
+		dict with groups, warnings, and summary
+	"""
+	import csv
+	from io import StringIO
+
+	if not csv_content or not csv_content.strip():
+		frappe.throw(_("CSV content is empty"))
+
+	settings = _get_forecast_settings()
+
+	reader = csv.DictReader(StringIO(csv_content))
+
+	# Validate required columns
+	required_columns = ["Delivery Date", "Customer", "Vegetable", "Predicted Packages", "UOM (kg)", "Unit Price (SGD)"]
+	if not reader.fieldnames:
+		frappe.throw(_("Invalid CSV format: no header row found"))
+
+	missing = [col for col in required_columns if col not in reader.fieldnames]
+	if missing:
+		frappe.throw(_("Missing required columns: {0}").format(", ".join(missing)))
+
+	groups_dict = {}  # {(delivery_date, customer): {items: [...]}}
+	warnings = []
+	row_num = 1  # header is row 0
+
+	for row in reader:
+		row_num += 1
+		delivery_date = row.get("Delivery Date", "").strip()
+		customer = row.get("Customer", "").strip()
+		vegetable = row.get("Vegetable", "").strip()
+		predicted_packages = row.get("Predicted Packages", "").strip()
+		uom_kg = row.get("UOM (kg)", "").strip()
+		unit_price = row.get("Unit Price (SGD)", "").strip()
+
+		if not delivery_date or not customer or not vegetable:
+			warnings.append({
+				"row": row_num,
+				"message": "Skipping row {0}: missing Delivery Date, Customer, or Vegetable".format(row_num)
+			})
+			continue
+
+		# Map vegetable to item_code via Forecast Settings
+		item_code = _resolve_item(vegetable, settings)
+		if not item_code:
+			warnings.append({
+				"row": row_num,
+				"message": "Vegetable '{0}' not found in Forecast Settings (row {1})".format(vegetable, row_num)
+			})
+			continue
+
+		# Resolve packaging from item
+		packaging = _resolve_packaging(item_code, flt(uom_kg)) if uom_kg else None
+		uom = packaging.get("uom") if packaging else ""
+		packaging_item = packaging.get("package_item") if packaging else ""
+
+		if not packaging:
+			warnings.append({
+				"row": row_num,
+				"message": "No packaging found for {0} with weight {1} kg (row {2})".format(item_code, uom_kg, row_num)
+			})
+
+		# Get rate from Item Price
+		rate = _get_item_price(item_code)
+		if not rate and unit_price:
+			rate = flt(unit_price)
+
+		qty = flt(predicted_packages) if predicted_packages else 0
+
+		item_data = {
+			"vegetable": vegetable,
+			"item_code": item_code,
+			"qty": qty,
+			"uom": uom,
+			"packaging_item": packaging_item,
+			"rate": rate,
+			"unit_weight": flt(uom_kg) if uom_kg else 0,
+			"warning": None,
+		}
+
+		# Add warning flag if packaging was missing
+		if not packaging:
+			item_data["warning"] = "No packaging found"
+
+		group_key = (delivery_date, customer)
+		if group_key not in groups_dict:
+			groups_dict[group_key] = {
+				"delivery_date": delivery_date,
+				"customer": customer,
+				"items": []
+			}
+		groups_dict[group_key]["items"].append(item_data)
+
+	# Convert to list preserving order
+	groups = list(groups_dict.values())
+
+	total_items = sum(len(g["items"]) for g in groups)
+
+	return {
+		"groups": groups,
+		"warnings": warnings,
+		"summary": {
+			"total_groups": len(groups),
+			"total_items": total_items
+		}
+	}
