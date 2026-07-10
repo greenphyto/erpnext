@@ -179,7 +179,16 @@ def _resolve_packaging(item_code, uom_in_kg):
 		limit=1
 	)
 	if packaging:
-		return packaging[0]
+		result = packaging[0]
+		# Look up packaging name from Packaging doctype by matching weight and uom
+		pack_name = frappe.get_value(
+			"Packaging",
+			{"total_weight": flt(uom_in_kg), "uom": result.uom},
+			"name"
+		)
+		if pack_name:
+			result["packaging_name"] = pack_name
+		return result
 	return None
 
 
@@ -762,15 +771,16 @@ def parse_forecast_upload(csv_content):
 		uom = ""
 		if packaging:
 			packaging_item = packaging.get("package_item", "")
-			uom = packaging.get("uom", "")
-			# Build display string like "200 Gr" from weight in kg
-			weight_grams = flt(uom_kg) * 1000
-			packaging_display = "{0:g} Gr".format(weight_grams)
+			# Get packaging title from Packaging doctype (e.g. "Package (200g) - GP Type A")
+			pack_name = packaging.get("packaging_name")
+			if pack_name:
+				uom = pack_name
+				packaging_display = pack_name
+			else:
+				# Fallback to UOM name from Packaging List Available
+				uom = packaging.get("uom", "")
+				packaging_display = uom
 		else:
-			# Fallback: build from csv weight
-			if uom_kg:
-				weight_grams = flt(uom_kg) * 1000
-				packaging_display = "{0:g} Gr".format(weight_grams)
 			warnings.append({
 				"row": row_num,
 				"message": "No packaging found for {0} with weight {1} kg (row {2})".format(item_code, uom_kg, row_num)
