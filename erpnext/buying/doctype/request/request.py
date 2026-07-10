@@ -241,6 +241,7 @@ def _add_item_to_request(doc, item_data):
 		item.uom = item_data["uom"]
 		item.packaging_item = item_data["packaging_item"]
 		item.rate = item_data["rate"]
+		item.unit_weight = flt(item_data.get("unit_weight"))
 		if old_qty != new_qty:
 			return {"action": "qty_changed", "item_code": item_data["item_code"],
 					"row_idx": item.idx, "old_qty": old_qty, "new_qty": new_qty}
@@ -253,6 +254,7 @@ def _add_item_to_request(doc, item_data):
 		row.uom = item_data["uom"]
 		row.packaging_item = item_data["packaging_item"]
 		row.rate = item_data["rate"]
+		row.unit_weight = flt(item_data.get("unit_weight"))
 		return {"action": "new", "item_code": item_data["item_code"], "row_idx": row.idx}
 
 
