@@ -799,9 +799,14 @@ def parse_forecast_upload(csv_content):
 
 		group_key = (delivery_date, customer)
 		if group_key not in groups_dict:
+			try:
+				days_to_delivery = (getdate(delivery_date) - getdate(today())).days
+			except Exception:
+				days_to_delivery = 0
 			groups_dict[group_key] = {
 				"delivery_date": delivery_date,
 				"customer": customer,
+				"days_to_delivery": days_to_delivery,
 				"items": []
 			}
 		groups_dict[group_key]["items"].append(item_data)
@@ -865,6 +870,17 @@ def generate_bulk_requests(groups, edits=None):
 			item_edit = group_edits.get(str(item_idx), {})
 			if "qty" in item_edit:
 				item["qty"] = flt(item_edit["qty"])
+
+		# Validate delivery_date is not in the past
+		try:
+			parsed_delivery = getdate(delivery_date)
+		except Exception:
+			errors.append({"group": group_label, "error": "Invalid delivery date: {0}".format(delivery_date)})
+			continue
+
+		if parsed_delivery < getdate(today()):
+			errors.append({"group": group_label, "error": "Delivery date {0} is in the past".format(delivery_date)})
+			continue
 
 		# Check for existing draft Request
 		doc = _get_existing_request(customer, delivery_date)
