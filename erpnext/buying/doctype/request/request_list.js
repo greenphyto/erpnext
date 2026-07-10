@@ -196,12 +196,13 @@ function open_bulk_upload_dialog(listview) {
 
             group.items.forEach(function(item, item_idx) {
                 const amount = (item.qty || 0) * (item.rate || 0);
-                const warning_class = item.warning ? ' style="background: #fff3cd;"' : '';
-                const disabled = item.warning ? ' disabled' : '';
-                const warning_title = item.warning ? ' title="' + item.warning + '"' : '';
+                const escaped_warning = item.warning ? $('<span>').text(item.warning).html() : '';
+                const warning_class = escaped_warning ? ' style="background: #fff3cd;"' : '';
+                const disabled = escaped_warning ? ' disabled' : '';
+                const warning_title = escaped_warning ? ' title="' + escaped_warning + '"' : '';
 
                 html += '<tr class="bulk-item-row" data-group="' + group_idx + '" data-item="' + item_idx + '"' + warning_class + '>';
-                html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee;"' + warning_title + '>' + (item.warning ? '⚠ ' : '') + (item.item_code || '-') + '</td>';
+                html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee;"' + warning_title + '>' + (escaped_warning ? '⚠ ' : '') + (item.item_code || '-') + '</td>';
                 html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee;">' + (item.vegetable || '-') + '</td>';
                 html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee; text-align: right;">';
                 html += '<input type="number" class="bulk-qty-input" data-group="' + group_idx + '" data-item="' + item_idx + '" value="' + (item.qty || 0) + '" style="width: 70px; text-align: right; border: 1px solid #d1d8dd; border-radius: 3px; padding: 3px 5px;"' + disabled + '>';
@@ -290,6 +291,22 @@ function open_bulk_upload_dialog(listview) {
                     $(this).find('.bulk-group-header').data('group', new_gidx);
                     $(this).find('.bulk-group-body').attr('id', 'group-' + new_gidx);
                 });
+                // Re-key edits: shift down all edits with index > deleted group_idx
+                const new_edits = {};
+                for (const [oldIdx, editData] of Object.entries(edits)) {
+                    const oldIdxNum = parseInt(oldIdx);
+                    if (oldIdxNum === group_idx) continue; // deleted group
+                    if (oldIdxNum > group_idx) {
+                        new_edits[oldIdxNum - 1] = editData; // shift down
+                    } else {
+                        new_edits[oldIdxNum] = editData; // keep as-is
+                    }
+                }
+                // Clear and reassign
+                for (const key of Object.keys(edits)) {
+                    delete edits[key];
+                }
+                Object.assign(edits, new_edits);
             }
 
             update_summary(parsed_data);
@@ -342,7 +359,8 @@ function open_bulk_upload_dialog(listview) {
                         msg += '<p><strong>✅ ' + __('Created') + ' (' + result.created.length + '):</strong></p>';
                         msg += '<ul style="max-height: 150px; overflow-y: auto;">';
                         result.created.forEach(function(name) {
-                            msg += '<li><a href="/app/request/' + name + '">' + name + '</a></li>';
+                            const safe_name = $('<span>').text(name).html();
+                            msg += '<li><a href="/app/request/' + safe_name + '">' + safe_name + '</a></li>';
                         });
                         msg += '</ul>';
                     }
@@ -351,8 +369,12 @@ function open_bulk_upload_dialog(listview) {
                         msg += '<p><strong>🔗 ' + __('Merged') + ' (' + result.merged.length + '):</strong></p>';
                         msg += '<ul style="max-height: 150px; overflow-y: auto;">';
                         result.merged.forEach(function(m) {
-                            msg += '<li><a href="/app/request/' + m.name + '">' + m.name + '</a> — ' +
-                                __('Added') + ': ' + m.added_items.join(', ') + '</li>';
+                            const safe_name = $('<span>').text(m.name).html();
+                            const safe_items = m.added_items.map(function(i) {
+                                return $('<span>').text(i).html();
+                            }).join(', ');
+                            msg += '<li><a href="/app/request/' + safe_name + '">' + safe_name + '</a> — ' +
+                                __('Added') + ': ' + safe_items + '</li>';
                         });
                         msg += '</ul>';
                     }
@@ -361,7 +383,9 @@ function open_bulk_upload_dialog(listview) {
                         msg += '<p><strong>❌ ' + __('Errors') + ' (' + result.errors.length + '):</strong></p>';
                         msg += '<ul style="max-height: 150px; overflow-y: auto;">';
                         result.errors.forEach(function(e) {
-                            msg += '<li><strong>' + e.group + ':</strong> ' + e.error + '</li>';
+                            const safe_group = $('<span>').text(e.group).html();
+                            const safe_error = $('<span>').text(e.error).html();
+                            msg += '<li><strong>' + safe_group + ':</strong> ' + safe_error + '</li>';
                         });
                         msg += '</ul>';
                     }
