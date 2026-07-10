@@ -9,9 +9,9 @@ frappe.listview_settings['Request'] = {
     hide_sidebar: 1,
 
     onload: function(listview) {
-        listview.page.add_button(__("Bulk Upload"), "primary", function() {
+        listview.page.add_button(__("Bulk Upload"), function() {
             open_bulk_upload_dialog(listview);
-        });
+        }, { btn_class: "btn-primary" });
     }
 };
 
