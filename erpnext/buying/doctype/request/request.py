@@ -774,13 +774,17 @@ def parse_forecast_upload(csv_content):
 			# Get packaging title from Packaging doctype (e.g. "Package (200g) - GP Type A")
 			pack_name = packaging.get("packaging_name")
 			if pack_name:
-				uom = pack_name
-				packaging_display = pack_name
+				uom = pack_name  # full name for Request doc
 			else:
-				# Fallback to UOM name from Packaging List Available
 				uom = packaging.get("uom", "")
-				packaging_display = uom
+			# Simple display for preview: "200 Gr"
+			weight_grams = flt(uom_kg) * 1000
+			packaging_display = "{0:g} Gr".format(weight_grams)
 		else:
+			# Fallback: build from csv weight
+			if uom_kg:
+				weight_grams = flt(uom_kg) * 1000
+				packaging_display = "{0:g} Gr".format(weight_grams)
 			warnings.append({
 				"row": row_num,
 				"message": "No packaging found for {0} with weight {1} kg (row {2})".format(item_code, uom_kg, row_num)
