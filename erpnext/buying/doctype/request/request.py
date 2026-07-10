@@ -747,8 +747,10 @@ def parse_forecast_upload(csv_content):
 		packaging = _resolve_packaging(item_code, flt(uom_kg)) if uom_kg else None
 		packaging_display = ""
 		packaging_item = ""
+		uom = ""
 		if packaging:
 			packaging_item = packaging.get("package_item", "")
+			uom = packaging.get("uom", "")
 			# Build display string like "200 Gr" from weight in kg
 			weight_grams = flt(uom_kg) * 1000
 			packaging_display = "{0:g} Gr".format(weight_grams)
@@ -782,6 +784,7 @@ def parse_forecast_upload(csv_content):
 			"vegetable": vegetable,
 			"item_code": item_code,
 			"qty": qty,
+			"uom": uom,
 			"packaging": packaging_display,
 			"packaging_item": packaging_item,
 			"rate": rate,

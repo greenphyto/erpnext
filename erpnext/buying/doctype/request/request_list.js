@@ -188,9 +188,9 @@ function open_bulk_upload_dialog(listview) {
             html += '<th style="padding: 6px 8px; text-align: left; border-bottom: 1px solid #dee2e6;">' + __('Vegetable') + '</th>';
             html += '<th style="padding: 6px 8px; text-align: right; border-bottom: 1px solid #dee2e6;">' + __('Qty') + '</th>';
             html += '<th style="padding: 6px 8px; text-align: left; border-bottom: 1px solid #dee2e6;">' + __('Packaging') + '</th>';
+            html += '<th style="padding: 6px 8px; text-align: right; border-bottom: 1px solid #dee2e6;">' + __('Total KG') + '</th>';
             html += '<th style="padding: 6px 8px; text-align: right; border-bottom: 1px solid #dee2e6;">' + __('Rate') + '</th>';
             html += '<th style="padding: 6px 8px; text-align: right; border-bottom: 1px solid #dee2e6;">' + __('Amount') + '</th>';
-            html += '<th style="padding: 6px 8px; text-align: right; border-bottom: 1px solid #dee2e6;">' + __('Total KG') + '</th>';
             html += '<th style="padding: 6px 8px; text-align: center; border-bottom: 1px solid #dee2e6;">' + __('Action') + '</th>';
             html += '</tr></thead>';
             html += '<tbody>';
@@ -210,9 +210,9 @@ function open_bulk_upload_dialog(listview) {
                 html += '<input type="number" class="bulk-qty-input" data-group="' + group_idx + '" data-item="' + item_idx + '" value="' + (item.qty || 0) + '" style="width: 70px; text-align: right; border: 1px solid #d1d8dd; border-radius: 3px; padding: 3px 5px;"' + disabled + '>';
                 html += '</td>';
                 html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee;">' + (item.packaging || '-') + '</td>';
+                html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee; text-align: right;" class="bulk-total-kg" data-group="' + group_idx + '" data-item="' + item_idx + '">' + total_kg.toFixed(2) + '</td>';
                 html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee; text-align: right;">' + (item.rate || 0).toFixed(2) + '</td>';
                 html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee; text-align: right;" class="bulk-amount" data-group="' + group_idx + '" data-item="' + item_idx + '">' + amount.toFixed(2) + '</td>';
-                html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee; text-align: right;" class="bulk-total-kg" data-group="' + group_idx + '" data-item="' + item_idx + '">' + total_kg.toFixed(2) + '</td>';
                 html += '<td style="padding: 6px 8px; border-bottom: 1px solid #eee; text-align: center;">';
                 html += '<button class="btn btn-xs btn-default bulk-delete-row" data-group="' + group_idx + '" data-item="' + item_idx + '"' + disabled + '>✕</button>';
                 html += '</td>';
