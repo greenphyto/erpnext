@@ -713,7 +713,7 @@ def parse_forecast_upload(csv_content):
 	reader = csv.DictReader(StringIO(csv_content))
 
 	# Validate required columns
-	required_columns = ["Delivery Date", "Customer", "Vegetable", "Predicted Packages", "UOM (kg)", "Unit Price (SGD)"]
+	required_columns = ["Delivery Date", "Customer", "Vegetable", "Predicted Packages", "UOM (g)", "Predicted Kg", "Unit Price (SGD)"]
 	if not reader.fieldnames:
 		frappe.throw(_("Invalid CSV format: no header row found"))
 
@@ -731,7 +731,7 @@ def parse_forecast_upload(csv_content):
 		customer = row.get("Customer", "").strip()
 		vegetable = row.get("Vegetable", "").strip()
 		predicted_packages = row.get("Predicted Packages", "").strip()
-		uom_kg = row.get("UOM (kg)", "").strip()
+		uom_gram = row.get("UOM (g)", "").strip()
 		unit_price = row.get("Unit Price (SGD)", "").strip()
 
 		if not delivery_date or not customer or not vegetable:
@@ -766,8 +766,8 @@ def parse_forecast_upload(csv_content):
 			})
 			continue
 
-		# Resolve packaging from item
-		packaging = _resolve_packaging(item_code, flt(uom_kg)) if uom_kg else None
+		# Resolve packaging from item (DB uses kg, CSV now in grams)
+		packaging = _resolve_packaging(item_code, flt(uom_gram) / 1000) if uom_gram else None
 		packaging_display = ""
 		packaging_item = ""
 		uom = ""
@@ -779,17 +779,15 @@ def parse_forecast_upload(csv_content):
 				uom = pack_name  # full name for Request doc
 			else:
 				uom = packaging.get("uom", "")
-			# Simple display for preview: "200 Gr"
-			weight_grams = flt(uom_kg) * 1000
-			packaging_display = "{0:g} Gr".format(weight_grams)
+			# Simple display for preview: "200 Gr" (use value directly from CSV)
+			packaging_display = "{0:g} Gr".format(flt(uom_gram))
 		else:
 			# Fallback: build from csv weight
-			if uom_kg:
-				weight_grams = flt(uom_kg) * 1000
-				packaging_display = "{0:g} Gr".format(weight_grams)
+			if uom_gram:
+				packaging_display = "{0:g} Gr".format(flt(uom_gram))
 			warnings.append({
 				"row": row_num,
-				"message": "No packaging found for {0} with weight {1} kg (row {2})".format(item_code, uom_kg, row_num)
+				"message": "No packaging found for {0} with weight {1} g (row {2})".format(item_code, uom_gram, row_num)
 			})
 
 		# Get rate from Item Price
@@ -805,7 +803,8 @@ def parse_forecast_upload(csv_content):
 			})
 			continue
 
-		unit_weight = flt(uom_kg) if uom_kg else 0
+		# unit_weight in kg (DB convention), CSV provides grams
+		unit_weight = flt(uom_gram) / 1000 if uom_gram else 0
 		total_kg = qty * unit_weight
 
 		item_data = {

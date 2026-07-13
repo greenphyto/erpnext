@@ -195,7 +195,7 @@ function open_bulk_upload_dialog(listview) {
             html += '<col style="width: 18%;">';  // Vegetable
             html += '<col style="width: 8%;">';   // Qty
             html += '<col style="width: 12%;">';  // Packaging
-            html += '<col style="width: 11%;">';  // Total KG
+            html += '<col style="width: 11%;">';  // Total Kg
             html += '<col style="width: 11%;">';  // Rate
             html += '<col style="width: 15%;">';  // Amount
             html += '<col style="width: 10%;">';  // Action
@@ -205,7 +205,7 @@ function open_bulk_upload_dialog(listview) {
             html += '<th style="padding: 6px 8px; text-align: left; border-bottom: 1px solid #dee2e6; overflow: hidden; text-overflow: ellipsis;">' + __('Vegetable') + '</th>';
             html += '<th style="padding: 6px 8px; text-align: right; border-bottom: 1px solid #dee2e6;">' + __('Qty') + '</th>';
             html += '<th style="padding: 6px 8px; text-align: left; border-bottom: 1px solid #dee2e6; overflow: hidden; text-overflow: ellipsis;">' + __('Packaging') + '</th>';
-            html += '<th style="padding: 6px 8px; text-align: right; border-bottom: 1px solid #dee2e6;">' + __('Total KG') + '</th>';
+            html += '<th style="padding: 6px 8px; text-align: right; border-bottom: 1px solid #dee2e6;">' + __('Total Kg') + '</th>';
             html += '<th style="padding: 6px 8px; text-align: right; border-bottom: 1px solid #dee2e6;">' + __('Rate') + '</th>';
             html += '<th style="padding: 6px 8px; text-align: right; border-bottom: 1px solid #dee2e6;">' + __('Amount') + '</th>';
             html += '<th style="padding: 6px 8px; text-align: center; border-bottom: 1px solid #dee2e6;">' + __('Action') + '</th>';
@@ -414,6 +414,14 @@ function open_bulk_upload_dialog(listview) {
                             msg += '<li><strong>' + safe_group + ':</strong> ' + safe_error + '</li>';
                         });
                         msg += '</ul>';
+                    }
+
+                    // No created, merged, or errors — already inserted
+                    const no_created = !result.created || result.created.length === 0;
+                    const no_merged = !result.merged || result.merged.length === 0;
+                    const no_errors = !result.errors || result.errors.length === 0;
+                    if (no_created && no_merged && no_errors) {
+                        msg += '<p style="text-align: center; color: #8d99a6; padding: 20px 0;">' + __('Already Inserted') + '</p>';
                     }
 
                     msg += '</div>';
