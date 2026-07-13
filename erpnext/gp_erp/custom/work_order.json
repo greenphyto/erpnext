@@ -1,0 +1,83 @@
+{
+ "custom_fields": [
+  {
+   "dt": "Work Order",
+   "fieldname": "repeat_harvest_section",
+   "fieldtype": "Section Break",
+   "label": "Repeat Harvest",
+   "collapsible": 1,
+   "insert_after": "foms_lot_name",
+   "creation": "2026-07-13 10:00:00.000000",
+   "modified": "2026-07-13 10:00:00.000000",
+   "modified_by": "Administrator",
+   "owner": "Administrator"
+  },
+  {
+   "dt": "Work Order",
+   "fieldname": "repeat_harvest_group",
+   "fieldtype": "Link",
+   "label": "Repeat Harvest Group",
+   "options": "Repeat Harvest Group",
+   "read_only": 1,
+   "insert_after": "repeat_harvest_section",
+   "in_standard_filter": 1,
+   "creation": "2026-07-13 10:00:00.000000",
+   "modified": "2026-07-13 10:00:00.000000",
+   "modified_by": "Administrator",
+   "owner": "Administrator"
+  },
+  {
+   "dt": "Work Order",
+   "fieldname": "parent_harvest_product",
+   "fieldtype": "Link",
+   "label": "Parent Harvest Product",
+   "options": "Item",
+   "read_only": 1,
+   "insert_after": "repeat_harvest_group",
+   "creation": "2026-07-13 10:00:00.000000",
+   "modified": "2026-07-13 10:00:00.000000",
+   "modified_by": "Administrator",
+   "owner": "Administrator"
+  },
+  {
+   "dt": "Work Order",
+   "fieldname": "column_break_rh",
+   "fieldtype": "Column Break",
+   "insert_after": "parent_harvest_product",
+   "creation": "2026-07-13 10:00:00.000000",
+   "modified": "2026-07-13 10:00:00.000000",
+   "modified_by": "Administrator",
+   "owner": "Administrator"
+  },
+  {
+   "dt": "Work Order",
+   "fieldname": "repeat_harvest_item",
+   "fieldtype": "Link",
+   "label": "Repeat Harvest Item",
+   "options": "Repeat Harvest Item",
+   "read_only": 1,
+   "insert_after": "column_break_rh",
+   "creation": "2026-07-13 10:00:00.000000",
+   "modified": "2026-07-13 10:00:00.000000",
+   "modified_by": "Administrator",
+   "owner": "Administrator"
+  },
+  {
+   "dt": "Work Order",
+   "fieldname": "harvest_sequence",
+   "fieldtype": "Int",
+   "label": "Harvest Sequence",
+   "read_only": 1,
+   "insert_after": "repeat_harvest_item",
+   "creation": "2026-07-13 10:00:00.000000",
+   "modified": "2026-07-13 10:00:00.000000",
+   "modified_by": "Administrator",
+   "owner": "Administrator"
+  }
+ ],
+ "custom_perms": [],
+ "doctype": "Work Order",
+ "links": [],
+ "property_setters": [],
+ "sync_on_migrate": 1
+}
