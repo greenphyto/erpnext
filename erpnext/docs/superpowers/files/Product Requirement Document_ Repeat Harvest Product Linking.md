@@ -165,7 +165,7 @@ Each Repeat Harvest Item will have its own planned harvest date, Lot ID, task fl
 
 6. Each child product gets its own Lot ID\.
 
-7. The generated requests are shown in the planning calendar\.
+7. The generated Repeat Harvest Items are shown in the planning calendar\.
 
 Example:
 
@@ -231,7 +231,7 @@ When a parent product request is created, the system should generate Repeat Harv
 
 Example:
 
-Generated child requests:
+Generated Repeat Harvest Items:
 
 The first version can use the same requested quantity for each child product unless a future configuration is added for quantity split or expected regrowth yield\.
 
@@ -315,7 +315,7 @@ The system shall validate that:
 
 5. Harvest gap must be zero or greater\.
 
-6. An inactive repeat harvest group should not trigger automatic child requests\.
+6. An inactive repeat harvest group should not trigger automatic Repeat Harvest Item generation\.
 
 ### 14\.3 Request Generation
 
