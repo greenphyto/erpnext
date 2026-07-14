@@ -208,6 +208,15 @@ def make_depreciation_entry(assets, date=None):
 		finance_books.db_update()
 		asset.set_status()
 
+	# Explicitly sync accumulated_depreciation_amount for each affected asset
+	# to ensure the header field is never stale after posting depreciation
+	synced_assets = set()
+	for row_name, data in data_map.items():
+		asset = data['asset']
+		if asset.name not in synced_assets:
+			_sync_accumulated_depreciation_header(asset)
+			synced_assets.add(asset.name)
+
 	return 
 
 def get_month_year(date):
@@ -289,6 +298,9 @@ def scrap_asset(asset_name):
 
 	depreciate_asset(asset, date)
 	asset.reload()
+	_sync_accumulated_depreciation_header(asset)
+
+	_warn_unposted_depreciation(asset, date)
 
 	depreciation_series = frappe.get_cached_value(
 		"Company", asset.company, "series_for_depreciation_entry"
@@ -301,12 +313,12 @@ def scrap_asset(asset_name):
 	je.company = asset.company
 	je.remark = "Scrap Entry for asset {0}".format(asset_name)
 
-	for entry in get_gl_entries_on_asset_disposal(asset):
+	for entry in get_gl_entries_on_asset_disposal(asset, disposal_date=date):
 		entry.update({"reference_type": "Asset", "reference_name": asset_name})
 		je.append("accounts", entry)
 
 	je.flags.ignore_permissions = True
-	je.submit()
+	je.save()
 
 	frappe.db.set_value("Asset", asset_name, "disposal_date", date)
 	frappe.db.set_value("Asset", asset_name, "journal_entry_for_scrap", je.name)
@@ -418,7 +430,7 @@ def disposal_happens_in_the_future(posting_date_of_disposal):
 
 
 def get_gl_entries_on_asset_regain(
-	asset, selling_amount=0, finance_book=None, voucher_type=None, voucher_no=None
+	asset, selling_amount=0, finance_book=None, voucher_type=None, voucher_no=None, disposal_date=None
 ):
 	(
 		fixed_asset_account,
@@ -428,7 +440,7 @@ def get_gl_entries_on_asset_regain(
 		accumulated_depr_amount,
 		disposal_account,
 		value_after_depreciation,
-	) = get_asset_details(asset, finance_book)
+	) = get_asset_details(asset, finance_book, disposal_date)
 
 	gl_entries = [
 		asset.get_gl_dict(
@@ -468,7 +480,7 @@ def get_gl_entries_on_asset_regain(
 
 
 def get_gl_entries_on_asset_disposal(
-	asset, selling_amount=0, finance_book=None, voucher_type=None, voucher_no=None
+	asset, selling_amount=0, finance_book=None, voucher_type=None, voucher_no=None, disposal_date=None
 ):
 	(
 		fixed_asset_account,
@@ -478,7 +490,7 @@ def get_gl_entries_on_asset_disposal(
 		accumulated_depr_amount,
 		disposal_account,
 		value_after_depreciation,
-	) = get_asset_details(asset, finance_book)
+	) = get_asset_details(asset, finance_book, disposal_date)
 
 	gl_entries = [
 		asset.get_gl_dict(
@@ -517,7 +529,7 @@ def get_gl_entries_on_asset_disposal(
 	return gl_entries
 
 
-def get_asset_details(asset, finance_book=None):
+def get_asset_details(asset, finance_book=None, disposal_date=None):
 	fixed_asset_account, accumulated_depr_account, depr_expense_account = get_depreciation_accounts(
 		asset
 	)
@@ -531,12 +543,18 @@ def get_asset_details(asset, finance_book=None):
 				idx = d.idx
 				break
 
-	value_after_depreciation = (
-		asset.finance_books[idx - 1].value_after_depreciation
-		if asset.calculate_depreciation
-		else asset.value_after_depreciation
-	)
-	accumulated_depr_amount = flt(asset.gross_purchase_amount) - flt(value_after_depreciation)
+	if asset.calculate_depreciation and disposal_date:
+		accumulated_depr_amount = get_accumulated_depreciation_from_schedule(
+			asset, disposal_date, finance_book
+		)
+		value_after_depreciation = flt(asset.gross_purchase_amount) - accumulated_depr_amount
+	else:
+		value_after_depreciation = (
+			asset.finance_books[idx - 1].value_after_depreciation
+			if asset.calculate_depreciation
+			else asset.value_after_depreciation
+		)
+		accumulated_depr_amount = flt(asset.gross_purchase_amount) - flt(value_after_depreciation)
 
 	return (
 		fixed_asset_account,
@@ -581,6 +599,102 @@ def get_disposal_account_and_cost_center(company):
 		frappe.throw(_("Please set 'Asset Depreciation Cost Center' in Company {0}").format(company))
 
 	return disposal_account, depreciation_cost_center
+
+
+def get_accumulated_depreciation_from_schedule(asset, disposal_date, finance_book=None):
+	"""Compute accumulated depreciation from the depreciation schedule child table.
+
+	Sums only rows that have a journal_entry (posted) and schedule_date <= disposal_date.
+	This avoids relying on stale header field asset.accumulated_depreciation_amount
+	or stale finance_books.value_after_depreciation.
+	"""
+	finance_book_id = None
+	if finance_book:
+		for fb in asset.finance_books:
+			if fb.finance_book == finance_book:
+				finance_book_id = cint(fb.idx)
+				break
+
+	posted_depreciation = flt(asset.opening_accumulated_depreciation)
+
+	for d in asset.get("schedules"):
+		if finance_book_id and cint(d.finance_book_id) != finance_book_id:
+			continue
+		if d.journal_entry and getdate(d.schedule_date) <= getdate(disposal_date):
+			posted_depreciation += flt(d.depreciation_amount)
+
+	return posted_depreciation
+
+
+def check_unposted_depreciation_entries(asset, disposal_date, finance_book=None):
+	"""Check for unposted depreciation entries on or before the disposal date.
+
+	Returns the count of unposted entries. Raises a warning via frappe.msgprint.
+	"""
+	finance_book_id = None
+	if finance_book:
+		for fb in asset.finance_books:
+			if fb.finance_book == finance_book:
+				finance_book_id = cint(fb.idx)
+				break
+
+	unposted_count = 0
+	for d in asset.get("schedules"):
+		if finance_book_id and cint(d.finance_book_id) != finance_book_id:
+			continue
+		if not d.journal_entry and getdate(d.schedule_date) <= getdate(disposal_date):
+			unposted_count += 1
+
+	return unposted_count
+
+
+def _warn_unposted_depreciation(asset, disposal_date, finance_book=None):
+	"""Show a warning if there are unposted depreciation entries before the disposal date."""
+	unposted = check_unposted_depreciation_entries(asset, disposal_date, finance_book)
+	if unposted:
+		frappe.msgprint(
+			_(
+				"There are {0} unposted depreciation entry/entries on or before the disposal date {1}. "
+				"Only posted depreciation entries are recognized in the disposal journal. "
+				"Please post outstanding depreciation entries first (Create Depreciation Entry) "
+				"to ensure Accumulated Depreciation and Gain/Loss on Disposal are accurate."
+			).format(frappe.bold(unposted), frappe.bold(disposal_date)),
+			title=_("Unposted Depreciation Entries"),
+			indicator="orange",
+			alert=True,
+		)
+
+
+def _sync_accumulated_depreciation_header(asset):
+	"""Recompute and persist asset.accumulated_depreciation_amount from the schedule table.
+
+	This ensures the header field is never stale after a depreciation entry is posted.
+	"""
+	amount = 0
+	for d in asset.get("schedules"):
+		if d.journal_entry:
+			amount += flt(d.depreciation_amount)
+
+	if flt(asset.accumulated_depreciation_amount) != flt(amount):
+		asset.db_set("accumulated_depreciation_amount", amount)
+
+
+@frappe.whitelist()
+def check_unposted_depr_before_disposal(asset_name, disposal_date=None):
+	"""Client-callable: check for unposted depreciation entries before disposal.
+
+	Returns dict with unposted_count and a message for the client to display.
+	"""
+	asset = frappe.get_doc("Asset", asset_name)
+	if not disposal_date:
+		disposal_date = today()
+
+	unposted = check_unposted_depreciation_entries(asset, disposal_date)
+
+	return {
+		"unposted_count": unposted,
+		"disposal_date": disposal_date,
+	}
 
 
 @frappe.whitelist()

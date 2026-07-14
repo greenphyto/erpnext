@@ -307,18 +307,39 @@ frappe.ui.form.on('Asset', {
 
 	make_sales_invoice: function(frm) {
 		frappe.call({
+			method: "erpnext.assets.doctype.asset.depreciation.check_unposted_depr_before_disposal",
 			args: {
-				"asset": frm.doc.name,
-				"item_code": frm.doc.item_code,
-				"company": frm.doc.company,
-				"serial_no": frm.doc.serial_no
+				asset_name: frm.doc.name
 			},
-			method: "erpnext.assets.doctype.asset.asset.make_sales_invoice",
 			callback: function(r) {
-				var doclist = frappe.model.sync(r.message);
-				frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
+				var create_si = function() {
+					frappe.call({
+						args: {
+							"asset": frm.doc.name,
+							"item_code": frm.doc.item_code,
+							"company": frm.doc.company,
+							"serial_no": frm.doc.serial_no
+						},
+						method: "erpnext.assets.doctype.asset.asset.make_sales_invoice",
+						callback: function(r) {
+							var doclist = frappe.model.sync(r.message);
+							frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
+						}
+					});
+				};
+
+				if (r.message && r.message.unposted_count > 0) {
+					frappe.confirm(
+						__("There are {0} unposted depreciation entry/entries on or before {1}. Only posted entries will be recognized when the invoice is submitted. Continue?", [
+							r.message.unposted_count, r.message.disposal_date
+						]),
+						create_si
+					);
+				} else {
+					create_si();
+				}
 			}
-		})
+		});
 	},
 
 	create_asset_maintenance: function(frm) {
@@ -627,17 +648,36 @@ erpnext.asset.set_accumulated_depreciation = function(frm) {
 };
 
 erpnext.asset.scrap_asset = function(frm) {
-	frappe.confirm(__("Do you really want to scrap this asset?"), function () {
-		frappe.call({
-			args: {
-				"asset_name": frm.doc.name
-			},
-			method: "erpnext.assets.doctype.asset.depreciation.scrap_asset",
-			callback: function(r) {
-				cur_frm.reload_doc();
+	frappe.call({
+		method: "erpnext.assets.doctype.asset.depreciation.check_unposted_depr_before_disposal",
+		args: {
+			asset_name: frm.doc.name
+		},
+		callback: function(r) {
+			var proceed = function() {
+				frappe.call({
+					args: {
+						"asset_name": frm.doc.name
+					},
+					method: "erpnext.assets.doctype.asset.depreciation.scrap_asset",
+					callback: function(r) {
+						cur_frm.reload_doc();
+					}
+				});
+			};
+
+			if (r.message && r.message.unposted_count > 0) {
+				frappe.confirm(
+					__("There are {0} unposted depreciation entry/entries on or before {1}. Only posted entries will be recognized in the disposal journal. Continue?", [
+						r.message.unposted_count, r.message.disposal_date
+					]),
+					proceed
+				);
+			} else {
+				frappe.confirm(__("Do you really want to scrap this asset?"), proceed);
 			}
-		})
-	})
+		}
+	});
 };
 
 erpnext.asset.restore_asset = function(frm) {

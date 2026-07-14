@@ -348,13 +348,15 @@ class JournalEntry(AccountsController):
 			if d.reference_type == "Asset" and d.reference_name and d.credit:
 				asset = frappe.get_doc("Asset", d.reference_name)
 				for s in asset.get("schedules"):
+					if s.journal_entry:
+						continue
 					start_date = getdate(self.posting_date).replace(day=1)
 					end_date = getdate(self.posting_date)
 					if s.schedule_date >= start_date and s.schedule_date <= end_date:
-						s.db_set("journal_entry", self.name)
-
 						if flt(d.credit, 2) != flt(s.depreciation_amount, 2):
-							frappe.throw(_(f"Row {d.idx}, Depreciation amount should be <b>{s.depreciation_amount}</b> ")) 
+							frappe.throw(_(f"Row {d.idx}, Depreciation amount should be <b>{s.depreciation_amount}</b> "))
+
+						s.db_set("journal_entry", self.name)
 
 						idx = cint(s.finance_book_id) or 1
 						finance_books = asset.get("finance_books")[idx - 1]

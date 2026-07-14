@@ -23,6 +23,7 @@ from erpnext.accounts.general_ledger import get_round_off_account_and_cost_cente
 from erpnext.accounts.party import get_due_date, get_party_account, get_party_details
 from erpnext.accounts.utils import get_account_currency, get_price_list_with
 from erpnext.assets.doctype.asset.depreciation import (
+	_warn_unposted_depreciation,
 	depreciate_asset,
 	get_disposal_account_and_cost_center,
 	get_gl_entries_on_asset_disposal,
@@ -1208,8 +1209,10 @@ class SalesInvoice(SellingController):
 							depreciate_asset(asset, self.posting_date)
 							asset.reload()
 
+						_warn_unposted_depreciation(asset, self.posting_date, item.finance_book)
+
 						fixed_asset_gl_entries = get_gl_entries_on_asset_disposal(
-							asset, item.base_net_amount, item.finance_book, self.get("doctype"), self.get("name")
+							asset, item.base_net_amount, item.finance_book, self.get("doctype"), self.get("name"), self.posting_date
 						)
 						asset.db_set("disposal_date", self.posting_date)
 

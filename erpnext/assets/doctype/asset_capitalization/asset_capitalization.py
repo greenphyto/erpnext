@@ -12,6 +12,7 @@ from six import string_types
 
 import erpnext
 from erpnext.assets.doctype.asset.depreciation import (
+	_warn_unposted_depreciation,
 	depreciate_asset,
 	get_gl_entries_on_asset_disposal,
 	get_value_after_depreciation_on_disposal_date,
@@ -430,12 +431,15 @@ class AssetCapitalization(StockController):
 				depreciate_asset(asset, self.posting_date)
 				asset.reload()
 
+			_warn_unposted_depreciation(asset, self.posting_date, item.get("finance_book") or self.get("finance_book"))
+
 			fixed_asset_gl_entries = get_gl_entries_on_asset_disposal(
 				asset,
 				item.asset_value,
 				item.get("finance_book") or self.get("finance_book"),
 				self.get("doctype"),
 				self.get("name"),
+				self.posting_date,
 			)
 
 			asset.db_set("disposal_date", self.posting_date)
