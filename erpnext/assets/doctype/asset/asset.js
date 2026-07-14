@@ -654,28 +654,54 @@ erpnext.asset.scrap_asset = function(frm) {
 			asset_name: frm.doc.name
 		},
 		callback: function(r) {
-			var proceed = function() {
-				frappe.call({
-					args: {
-						"asset_name": frm.doc.name
-					},
-					method: "erpnext.assets.doctype.asset.depreciation.scrap_asset",
-					callback: function(r) {
-						cur_frm.reload_doc();
-					}
-				});
-			};
+			var unposted_count = r.message ? r.message.unposted_count : 0;
+			var disposal_date = r.message ? r.message.disposal_date : '';
 
-			if (r.message && r.message.unposted_count > 0) {
-				frappe.confirm(
-					__("There are {0} unposted depreciation entry/entries on or before {1}. Only posted entries will be recognized in the disposal journal. Continue?", [
-						r.message.unposted_count, r.message.disposal_date
-					]),
-					proceed
-				);
-			} else {
-				frappe.confirm(__("Do you really want to scrap this asset?"), proceed);
+			var fields = [
+				{
+					fieldname: 'submit_jv',
+					fieldtype: 'Check',
+					label: __('Submit Journal Entry'),
+					default: 1,
+					description: __('If unchecked, the disposal Journal Entry will be saved as Draft')
+				}
+			];
+
+			var title = __('Scrap Asset');
+			var primary_label = __('Scrap');
+
+			if (unposted_count > 0) {
+				fields.unshift({
+					fieldname: 'warning_html',
+					fieldtype: 'HTML',
+					options: '<div class="alert alert-warning">'
+						+ __('There are {0} unposted depreciation entry/entries on or before {1}. Only posted entries will be recognized in the disposal journal.', [
+							unposted_count, disposal_date
+						])
+						+ '</div>'
+				});
 			}
+
+			var d = new frappe.ui.Dialog({
+				title: title,
+				fields: fields,
+				primary_action_label: primary_label,
+				primary_action: function() {
+					var values = d.get_values();
+					d.hide();
+					frappe.call({
+						args: {
+							"asset_name": frm.doc.name,
+							"submit_jv": values.submit_jv ? 1 : 0
+						},
+						method: "erpnext.assets.doctype.asset.depreciation.scrap_asset",
+						callback: function(r) {
+							cur_frm.reload_doc();
+						}
+					});
+				}
+			});
+			d.show();
 		}
 	});
 };

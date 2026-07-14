@@ -284,7 +284,7 @@ def get_credit_and_debit_accounts(accumulated_depreciation_account, depreciation
 
 
 @frappe.whitelist()
-def scrap_asset(asset_name):
+def scrap_asset(asset_name, submit_jv=True):
 	asset = frappe.get_doc("Asset", asset_name)
 
 	if asset.docstatus != 1:
@@ -318,7 +318,12 @@ def scrap_asset(asset_name):
 		je.append("accounts", entry)
 
 	je.flags.ignore_permissions = True
-	je.save()
+
+	submit_jv = cint(submit_jv)
+	if submit_jv:
+		je.submit()
+	else:
+		je.save()
 
 	frappe.db.set_value("Asset", asset_name, "disposal_date", date)
 	frappe.db.set_value("Asset", asset_name, "journal_entry_for_scrap", je.name)
@@ -339,7 +344,11 @@ def restore_asset(asset_name):
 	asset.db_set("disposal_date", None)
 	asset.db_set("journal_entry_for_scrap", None)
 
-	frappe.get_doc("Journal Entry", je).cancel()
+	je_doc = frappe.get_doc("Journal Entry", je)
+	if je_doc.docstatus == 1:
+		je_doc.cancel()
+	elif je_doc.docstatus == 0:
+		frappe.delete_doc("Journal Entry", je, force=1)
 
 	asset.set_status()
 
