@@ -284,7 +284,7 @@ def get_credit_and_debit_accounts(accumulated_depreciation_account, depreciation
 
 
 @frappe.whitelist()
-def scrap_asset(asset_name, submit_jv=True):
+def scrap_asset(asset_name, disposal_date=None, submit_jv=True):
 	asset = frappe.get_doc("Asset", asset_name)
 
 	if asset.docstatus != 1:
@@ -294,13 +294,27 @@ def scrap_asset(asset_name, submit_jv=True):
 			_("Asset {0} cannot be scrapped, as it is already {1}").format(asset.name, asset.status)
 		)
 
-	date = today()
+	if not disposal_date:
+		disposal_date = today()
+	disposal_date = getdate(disposal_date)
 
-	depreciate_asset(asset, date)
+	# Block if there are already-posted depreciation entries after the disposal date
+	future_posted = check_future_posted_depreciation(asset, disposal_date)
+	if future_posted:
+		je_list = ", ".join([d["journal_entry"] for d in future_posted])
+		frappe.throw(
+			_(
+				"There are posted depreciation entry/entries after the disposal date {0}: {1}. "
+				"Please cancel those journal entries first before disposing the asset."
+			).format(frappe.bold(disposal_date), frappe.bold(je_list)),
+			title=_("Future Depreciation Entries Exist"),
+		)
+
+	depreciate_asset(asset, disposal_date)
 	asset.reload()
 	_sync_accumulated_depreciation_header(asset)
 
-	_warn_unposted_depreciation(asset, date)
+	_warn_unposted_depreciation(asset, disposal_date)
 
 	depreciation_series = frappe.get_cached_value(
 		"Company", asset.company, "series_for_depreciation_entry"
@@ -309,11 +323,11 @@ def scrap_asset(asset_name, submit_jv=True):
 	je = frappe.new_doc("Journal Entry")
 	je.voucher_type = "Journal Entry"
 	je.naming_series = depreciation_series
-	je.posting_date = date
+	je.posting_date = disposal_date
 	je.company = asset.company
 	je.remark = "Scrap Entry for asset {0}".format(asset_name)
 
-	for entry in get_gl_entries_on_asset_disposal(asset, disposal_date=date):
+	for entry in get_gl_entries_on_asset_disposal(asset, disposal_date=disposal_date):
 		entry.update({"reference_type": "Asset", "reference_name": asset_name})
 		je.append("accounts", entry)
 
@@ -325,7 +339,7 @@ def scrap_asset(asset_name, submit_jv=True):
 	else:
 		je.save()
 
-	frappe.db.set_value("Asset", asset_name, "disposal_date", date)
+	frappe.db.set_value("Asset", asset_name, "disposal_date", disposal_date)
 	frappe.db.set_value("Asset", asset_name, "journal_entry_for_scrap", je.name)
 	asset.set_status("Scrapped")
 
@@ -674,6 +688,34 @@ def _warn_unposted_depreciation(asset, disposal_date, finance_book=None):
 		)
 
 
+def check_future_posted_depreciation(asset, disposal_date, finance_book=None):
+	"""Check for already-posted depreciation entries AFTER the disposal date.
+
+	Returns a list of dicts with schedule info for entries that must be cancelled first.
+	Disposal cannot proceed if future entries are already posted because the schedule
+	will be regenerated up to disposal_date and those entries would be orphaned/conflict.
+	"""
+	finance_book_id = None
+	if finance_book:
+		for fb in asset.finance_books:
+			if fb.finance_book == finance_book:
+				finance_book_id = cint(fb.idx)
+				break
+
+	future_posted = []
+	for d in asset.get("schedules"):
+		if finance_book_id and cint(d.finance_book_id) != finance_book_id:
+			continue
+		if d.journal_entry and getdate(d.schedule_date) > getdate(disposal_date):
+			future_posted.append({
+				"schedule_date": d.schedule_date,
+				"journal_entry": d.journal_entry,
+				"depreciation_amount": d.depreciation_amount,
+			})
+
+	return future_posted
+
+
 def _sync_accumulated_depreciation_header(asset):
 	"""Recompute and persist asset.accumulated_depreciation_amount from the schedule table.
 
@@ -690,19 +732,21 @@ def _sync_accumulated_depreciation_header(asset):
 
 @frappe.whitelist()
 def check_unposted_depr_before_disposal(asset_name, disposal_date=None):
-	"""Client-callable: check for unposted depreciation entries before disposal.
+	"""Client-callable: check for unposted and future-posted depreciation entries before disposal.
 
-	Returns dict with unposted_count and a message for the client to display.
+	Returns dict with unposted_count, future_posted entries, and disposal_date.
 	"""
 	asset = frappe.get_doc("Asset", asset_name)
 	if not disposal_date:
 		disposal_date = today()
 
 	unposted = check_unposted_depreciation_entries(asset, disposal_date)
+	future_posted = check_future_posted_depreciation(asset, disposal_date)
 
 	return {
 		"unposted_count": unposted,
 		"disposal_date": disposal_date,
+		"future_posted": future_posted,
 	}
 
 

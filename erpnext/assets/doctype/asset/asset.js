@@ -648,62 +648,99 @@ erpnext.asset.set_accumulated_depreciation = function(frm) {
 };
 
 erpnext.asset.scrap_asset = function(frm) {
-	frappe.call({
-		method: "erpnext.assets.doctype.asset.depreciation.check_unposted_depr_before_disposal",
-		args: {
-			asset_name: frm.doc.name
+	var fields = [
+		{
+			fieldname: 'disposal_date',
+			fieldtype: 'Date',
+			label: __('Disposal Date'),
+			default: frappe.datetime.get_today(),
+			reqd: 1
 		},
-		callback: function(r) {
-			var unposted_count = r.message ? r.message.unposted_count : 0;
-			var disposal_date = r.message ? r.message.disposal_date : '';
+		{
+			fieldname: 'warning_html',
+			fieldtype: 'HTML',
+			options: ''
+		},
+		{
+			fieldname: 'submit_jv',
+			fieldtype: 'Check',
+			label: __('Submit Journal Entry'),
+			default: 1,
+			description: __('If unchecked, the disposal Journal Entry will be saved as Draft')
+		}
+	];
 
-			var fields = [
-				{
-					fieldname: 'submit_jv',
-					fieldtype: 'Check',
-					label: __('Submit Journal Entry'),
-					default: 1,
-					description: __('If unchecked, the disposal Journal Entry will be saved as Draft')
-				}
-			];
-
-			var title = __('Scrap Asset');
-			var primary_label = __('Scrap');
-
-			if (unposted_count > 0) {
-				fields.unshift({
-					fieldname: 'warning_html',
-					fieldtype: 'HTML',
-					options: '<div class="alert alert-warning">'
-						+ __('There are {0} unposted depreciation entry/entries on or before {1}. Only posted entries will be recognized in the disposal journal.', [
-							unposted_count, disposal_date
-						])
-						+ '</div>'
-				});
-			}
-
-			var d = new frappe.ui.Dialog({
-				title: title,
-				fields: fields,
-				primary_action_label: primary_label,
-				primary_action: function() {
-					var values = d.get_values();
-					d.hide();
-					frappe.call({
-						args: {
-							"asset_name": frm.doc.name,
-							"submit_jv": values.submit_jv ? 1 : 0
-						},
-						method: "erpnext.assets.doctype.asset.depreciation.scrap_asset",
-						callback: function(r) {
-							cur_frm.reload_doc();
-						}
-					});
+	var d = new frappe.ui.Dialog({
+		title: __('Scrap Asset'),
+		fields: fields,
+		primary_action_label: __('Scrap'),
+		primary_action: function() {
+			var values = d.get_values();
+			if (!values) return;
+			d.hide();
+			frappe.call({
+				args: {
+					"asset_name": frm.doc.name,
+					"disposal_date": values.disposal_date,
+					"submit_jv": values.submit_jv ? 1 : 0
+				},
+				method: "erpnext.assets.doctype.asset.depreciation.scrap_asset",
+				callback: function(r) {
+					cur_frm.reload_doc();
 				}
 			});
-			d.show();
 		}
 	});
+
+	function check_disposal_date(disposal_date) {
+		if (!disposal_date) return;
+		frappe.call({
+			method: "erpnext.assets.doctype.asset.depreciation.check_unposted_depr_before_disposal",
+			args: {
+				asset_name: frm.doc.name,
+				disposal_date: disposal_date
+			},
+			callback: function(r) {
+				if (!r.message) return;
+				var html = '';
+
+				if (r.message.future_posted && r.message.future_posted.length > 0) {
+					var rows = r.message.future_posted.map(function(e) {
+						return '<li>' + e.journal_entry + ' (' + e.schedule_date + ' — '
+							+ format_currency(e.depreciation_amount, erpnext.get_currency(frm.doc.company)) + ')</li>';
+					}).join('');
+					html += '<div class="alert alert-danger" style="margin-top:10px">'
+						+ '<strong>' + __('Cannot proceed!') + '</strong> '
+						+ __('There are posted depreciation entries after {0}. Cancel them first:', [disposal_date])
+						+ '<ul style="margin:5px 0 0 15px">' + rows + '</ul>'
+						+ '</div>';
+					d.get_primary_btn().prop('disabled', true);
+				} else {
+					d.get_primary_btn().prop('disabled', false);
+				}
+
+				if (r.message.unposted_count > 0) {
+					html += '<div class="alert alert-warning" style="margin-top:10px">'
+						+ __('There are {0} unposted depreciation entry/entries on or before {1}. '
+							+ 'Only posted entries will be recognized in the disposal journal.', [
+							r.message.unposted_count, disposal_date
+						])
+						+ '</div>';
+				}
+
+				d.fields_dict.warning_html.$wrapper.html(html);
+			}
+		});
+	}
+
+	d.fields_dict.disposal_date.$wrapper.find('input').on('change', function() {
+		var val = d.get_value('disposal_date');
+		check_disposal_date(val);
+	});
+
+	d.show();
+	// run initial check with default date
+	check_disposal_date(frappe.datetime.get_today());
 };
 
 erpnext.asset.restore_asset = function(frm) {
