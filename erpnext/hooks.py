@@ -534,7 +534,8 @@ scheduler_events = {
 			"erpnext.controllers.erp.reminder_submit_purchase_invoice"
 		],
         "0 */4 * * *":[
-            "erpnext.controllers.erp.read_email_inbox"
+            "erpnext.controllers.erp.read_email_inbox",
+            "erpnext.controllers.foms.notify_unsynced_requests"
 		],
         "*/30 * * * *": [
             "erpnext.controllers.uob.sync_uob_file"
