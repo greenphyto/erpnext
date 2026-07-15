@@ -260,6 +260,26 @@ def sync_controller(doctype, controller):
 		i+=1
 	show_progress(i, count)
 
+def notify_unsynced_requests():
+	"""Notify about submitted Requests that have not received a FOMS ID."""
+	requests = frappe.get_all(
+		"Request",
+		filters={"docstatus": 1},
+		or_filters=[
+			["foms_id", "is", "not set"],
+			["foms_id", "=", ""],
+		],
+		pluck="name",
+	)
+
+	if not requests:
+		return
+
+	notification = frappe.get_doc("Notification", "Request Not Sync")
+	for request_name in requests:
+		notification.send(frappe.get_doc("Request", request_name))
+
+
 def update_reff_id(res, doc, key_name):
 	if res and 'id' in res:
 		doc.db_set("foms_id", res['id'])
