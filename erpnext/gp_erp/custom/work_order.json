@@ -61,18 +61,6 @@
    "modified": "2026-07-13 10:00:00.000000",
    "modified_by": "Administrator",
    "owner": "Administrator"
-  },
-  {
-   "dt": "Work Order",
-   "fieldname": "harvest_sequence",
-   "fieldtype": "Int",
-   "label": "Harvest Sequence",
-   "read_only": 1,
-   "insert_after": "repeat_harvest_item",
-   "creation": "2026-07-13 10:00:00.000000",
-   "modified": "2026-07-13 10:00:00.000000",
-   "modified_by": "Administrator",
-   "owner": "Administrator"
   }
  ],
  "custom_perms": [],

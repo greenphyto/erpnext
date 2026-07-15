@@ -15,6 +15,7 @@ class Request(Document):
 		self.validate_date()
 		self.validate_lead_time()
 		self.export_salad_items()
+		self.validate_repeat_harvest_items()
 
 	def on_cancel(self):
 		self.detect_work_order_exists()
@@ -45,6 +46,18 @@ class Request(Document):
 		for d in self.get("items"):
 			d.weight = flt(d.unit_weight) * flt(d.qty)
 			self.total_weight += d.weight
+
+	def validate_repeat_harvest_items(self):
+		for item in self.items:
+			if not item.item_code:
+				continue
+			is_child = frappe.db.get_value("Item", item.item_code, "is_repeat_harvest_child")
+			if is_child:
+				frappe.throw(
+					_("Row {0}: Item {1} is a Repeat Harvest Child Product and cannot be requested directly. Please request the Parent Product instead.").format(
+						item.idx, item.item_code
+					)
+				)
 
 	def sync_request_so(self):
 		so_name = frappe.db.exists("Sales Order", {"request_no":self.name, "docstatus":1})

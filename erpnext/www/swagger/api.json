@@ -215,36 +215,112 @@
     "/erpnext.controllers.erp_api.create_work_order": {
       "post": {
         "summary": "Create new Work Order in ERP",
-        "description": "-",
+        "description": "Create a new Work Order in ERP. Supports optional repeat harvest trace fields for tracking child product harvests in FOMS.",
         "operationId": "create new Work Order",
         "requestBody": {
-          "description": "Create new Work Order in ERP",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": ["fomsWorkOrderID", "fomsLotID", "productID", "salesOrderNo", "qty", "gross_weight", "uom"],
                 "properties": {
-                  "data": {
-                    "type": "object"
+                  "fomsWorkOrderID": {
+                    "type": "string",
+                    "description": "FOMS Work Order ID"
+                  },
+                  "fomsLotID": {
+                    "type": "string",
+                    "description": "FOMS Lot ID"
+                  },
+                  "productID": {
+                    "type": "integer",
+                    "description": "FOMS Product ID (maps to Item.foms_product_id)"
+                  },
+                  "salesOrderNo": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "List of Sales Order or Request numbers"
+                  },
+                  "submit": {
+                    "type": "boolean",
+                    "description": "Auto-submit the Work Order after creation (default: false)"
+                  },
+                  "qty": {
+                    "type": "number",
+                    "description": "Quantity to manufacture"
+                  },
+                  "gross_weight": {
+                    "type": "number",
+                    "description": "Gross weight"
+                  },
+                  "uom": {
+                    "type": "string",
+                    "description": "Unit of Measure"
+                  },
+                  "company": {
+                    "type": "string",
+                    "description": "Company name (optional, defaults to default company)"
+                  },
+                  "repeatHarvestGroupID": {
+                    "type": "integer",
+                    "description": "Repeat Harvest Group ID from FOMS. Use when creating a child Work Order for repeat harvest."
+                  },
+                  "childProductID": {
+                    "type": "integer",
+                    "description": "Child Product ID from FOMS. Use when creating a child Work Order for repeat harvest."
+                  },
+                  "harvestSequence": {
+                    "type": "integer",
+                    "description": "Harvest sequence number (1, 2, 3...). Use when creating a child Work Order for repeat harvest."
+                  },
+                  "harvestDate": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Planned harvest date (YYYY-MM-DD). Use when creating a child Work Order for repeat harvest."
+                  }
+                }
+              },
+              "examples": {
+                "normal_work_order": {
+                  "summary": "Normal Work Order",
+                  "description": "Create a standard Work Order without repeat harvest fields",
+                  "value": {
+                    "fomsWorkOrderID": "FOMS-001",
+                    "fomsLotID": "LOT12",
+                    "productID": 37,
+                    "salesOrderNo": ["SO056/2024"],
+                    "submit": true,
+                    "qty": 2,
+                    "gross_weight": 4,
+                    "uom": "Kg",
+                    "company": "Greenphyto Pte Ltd"
                   }
                 },
-                "example": {
-                  "fomsWorkOrderID": "FOMS-001",
-                  "fomsLotID": "LOT12",
-                  "productID": "37",
-                  "salesOrderNo": [
-                    "SO056/2024"
-                  ],
-                  "submit": true,
-                  "qty": 2,
-                  "gross_weight": 4,
-                  "uom": "Kg",
-                  "company": "Greenphyto Pte Ltd"
+                "repeat_harvest_child": {
+                  "summary": "Repeat Harvest Child Work Order",
+                  "description": "Create a child Work Order for repeat harvest with trace fields. This is typically called after parent harvest completes, to track the child product harvest in FOMS.",
+                  "value": {
+                    "fomsWorkOrderID": "FOMS-002",
+                    "fomsLotID": "LOT13",
+                    "productID": 38,
+                    "salesOrderNo": ["SO056/2024"],
+                    "submit": true,
+                    "qty": 2,
+                    "gross_weight": 4,
+                    "uom": "Kg",
+                    "company": "Greenphyto Pte Ltd",
+                    "repeatHarvestGroupID": 1,
+                    "childProductID": 42,
+                    "harvestSequence": 2,
+                    "harvestDate": "2026-08-15"
+                  }
                 }
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -252,18 +328,41 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "example": {
+                  "type": "object",
+                  "properties": {
                     "message": {
-                      "ERPWorkOrderID": "workOrderName",
-                      "ERPBOMId": "bomId"
+                      "type": "object",
+                      "properties": {
+                        "ERPWorkOrderID": {
+                          "type": "string",
+                          "description": "Created Work Order name"
+                        },
+                        "ERPBOMId": {
+                          "type": "string",
+                          "description": "BOM used"
+                        }
+                      }
                     }
+                  }
+                },
+                "example": {
+                  "message": {
+                    "ERPWorkOrderID": "MFG-WO-2026-00001",
+                    "ERPBOMId": "BOM-PR-AV-KL-0001"
                   }
                 }
               }
             }
           },
           "404": {
-            "description": "Invalid input"
+            "description": "Item or BOM not found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Missing Item with Product ID 37"
+                }
+              }
+            }
           }
         }
       }

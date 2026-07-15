@@ -22,7 +22,8 @@ frappe.ui.form.on("Request", {
 		frm.set_query("item_code", "items", function(doc, cdt, cdn) {
 			return {
 				filters: {
-					item_group: "Products"
+					item_group: "Products",
+					is_repeat_harvest_child: 0
 				}
 			}
 		});
@@ -59,11 +60,15 @@ frappe.ui.form.on("Request", {
 		// }
 
 		frm.set_query("item_code", "items", function(doc, cdt, cdn) {
-			var filters = {"is_stock_item": 1, "is_fixed_asset": 0, "item_group": "Products"}
-			if (!doc.non_package_item){
-				filters['is_package_item']=1;
+			return {
+				filters: {
+					is_stock_item: 1,
+					is_fixed_asset: 0,
+					item_group: "Products",
+					is_repeat_harvest_child: 0,
+					is_package_item: doc.non_package_item ? ["in", [0, 1]] : 1
+				}
 			}
-			return erpnext.queries.item(filters);
 		})
 
 		// if (frm.doc.docstatus==1){

@@ -35,6 +35,14 @@
   "column_break1",
   "sales_order_no",
   "request_no",
+  "repeat_harvest_trace_section",
+  "repeat_harvest_group_id",
+  "child_product_id",
+  "column_break_rh_trace",
+  "harvest_sequence",
+  "harvest_date",
+  "fom_lot_id",
+  "erp_sync_status",
   "serial_no_and_batch_for_finished_good_section",
   "has_serial_no",
   "has_batch_no",
@@ -644,6 +652,50 @@
    "fieldname": "request_no",
    "fieldtype": "Data",
    "label": "Request No"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "repeat_harvest_trace_section",
+   "fieldtype": "Section Break",
+   "label": "Repeat Harvest Trace Info"
+  },
+  {
+   "fieldname": "repeat_harvest_group_id",
+   "fieldtype": "Int",
+   "label": "Repeat Harvest Group ID",
+   "description": "Reference ID from Repeat Harvest Group in FOMS"
+  },
+  {
+   "fieldname": "child_product_id",
+   "fieldtype": "Int",
+   "label": "Child Product ID",
+   "description": "FOMS Product ID of the child product"
+  },
+  {
+   "fieldname": "column_break_rh_trace",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "harvest_sequence",
+   "fieldtype": "Int",
+   "label": "Harvest Sequence"
+  },
+  {
+   "fieldname": "harvest_date",
+   "fieldtype": "Date",
+   "label": "Harvest Date"
+  },
+  {
+   "fieldname": "fom_lot_id",
+   "fieldtype": "Data",
+   "label": "Lot ID (FOMS)"
+  },
+  {
+   "default": "",
+   "fieldname": "erp_sync_status",
+   "fieldtype": "Select",
+   "label": "ERP Sync Status",
+   "options": "\nSynced\nFailed"
   },
   {
    "fieldname": "packet_size",
