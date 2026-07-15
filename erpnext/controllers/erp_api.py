@@ -216,7 +216,8 @@ def create_bom(data):
 	return {"ERPBomId":result}
 
 @frappe.whitelist()
-def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, gross_weight, uom, submit=False, company=""):
+def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, gross_weight, uom, submit=False, company="",
+					  repeatHarvestGroupID=None, childProductID=None, harvestSequence=None, harvestDate=None):
 	if not company:
 		company = erpnext.get_default_company()
 
@@ -232,7 +233,11 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 		"uom":uom, 
 		"gross_weight":gross_weight,
 		"submit":submit,
-		"company":company
+		"company":company,
+		"repeatHarvestGroupID":repeatHarvestGroupID,
+		"childProductID":childProductID,
+		"harvestSequence":harvestSequence,
+		"harvestDate":harvestDate
 	}, endpoint="create_work_order")
 
 	submit = get_foms_settings("auto_submit_work_order") or submit
@@ -252,8 +257,13 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 	})
 
 	doc = _create_work_order(log, item_code, bom_no, qty, gross_weight, submit, return_doc=1, args={
-		"use_rate_from_bom":1
-	}, company=company)
+		"use_rate_from_bom":0
+	}, company=company,
+		repeatHarvestGroupID=int(repeatHarvestGroupID) if repeatHarvestGroupID else None,
+		childProductID=int(childProductID) if childProductID else None,
+		harvestSequence=int(harvestSequence) if harvestSequence else None,
+		harvestDate=harvestDate
+	)
 	# seeding_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(1)})
 	# transplanting_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(2)})
 	# harvesting_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(3)})

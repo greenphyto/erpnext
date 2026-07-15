@@ -1848,7 +1848,8 @@ def get_work_order(show_progress=False, work_order=""):
 		manual_save_log=1
 	).run()
 
-def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=False, return_doc=False, args={}, company=""):
+def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=False, return_doc=False, args={}, company="",
+					  repeatHarvestGroupID=None, childProductID=None, harvestSequence=None, harvestDate=None):
 	doc = make_work_order(bom_no, item_code, qty, gross_weight, args=args)
 	validate_operation(doc)
 	doc.foms_work_order = log.workOrderNo
@@ -1867,6 +1868,17 @@ def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=Fals
 	doc.sales_order_no = ", ".join(sales_order_no or [])
 	doc.request_no = ", ".join(request_no or [])
 	doc.use_multi_level_bom = 0 #if use multi level bom it will use exploed items as raw material, but if not it will use bom items
+
+	# Repeat harvest trace fields
+	if repeatHarvestGroupID:
+		doc.repeat_harvest_group_id = repeatHarvestGroupID
+	if childProductID:
+		doc.child_product_id = childProductID
+	if harvestSequence is not None:
+		doc.harvest_sequence = harvestSequence
+	if harvestDate:
+		doc.harvest_date = harvestDate
+
 	doc.insert()
 
 	if submit:

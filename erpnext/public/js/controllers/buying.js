@@ -97,7 +97,7 @@ erpnext.buying.BuyingController = class BuyingController extends erpnext.Transac
 				}
 			}
 			else {
-				var filters = { 'supplier': me.frm.doc.supplier, 'is_purchase_item': 1, 'has_variants': 0}
+				var filters = { 'supplier': me.frm.doc.supplier, 'is_purchase_item': 1, 'has_variants': 0, 'is_repeat_harvest_child': 0}
 				if (me.frm.doc.naming_series=="PO1.#####./.YYYY"){
 					filters["is_stock_item"] = 0;
 				}

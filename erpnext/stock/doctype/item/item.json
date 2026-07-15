@@ -140,7 +140,13 @@
   "item_department",
   "foms_tab",
   "foms_product_id",
-  "foms_raw_id"
+  "foms_raw_id",
+  "foms_variant_id",
+  "repeat_harvest_section",
+  "is_repeat_harvest_parent",
+  "is_repeat_harvest_child",
+  "column_break_rh_item",
+  "repeat_harvest_parent_item"
  ],
  "fields": [
   {
@@ -1063,6 +1069,35 @@
    "fieldtype": "Int",
    "label": "FOMS Variant ID",
    "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "repeat_harvest_section",
+   "fieldtype": "Section Break",
+   "label": "Repeat Harvest Info"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_repeat_harvest_parent",
+   "fieldtype": "Check",
+   "label": "Is Repeat Harvest Parent"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_repeat_harvest_child",
+   "fieldtype": "Check",
+   "label": "Is Repeat Harvest Child"
+  },
+  {
+   "fieldname": "column_break_rh_item",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.is_repeat_harvest_child==1",
+   "fieldname": "repeat_harvest_parent_item",
+   "fieldtype": "Link",
+   "label": "Parent Item",
+   "options": "Item"
   },
   {
    "description": "This will overide default Shelf Life for specific company",

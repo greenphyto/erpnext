@@ -91,7 +91,15 @@
   "work_order_id",
   "lot_id",
   "rack_no",
-  "customer_order_no"
+  "customer_order_no",
+  "repeat_harvest_trace_section",
+  "repeat_harvest_group_id",
+  "child_product_id",
+  "column_break_rh_se",
+  "harvest_sequence",
+  "harvest_date",
+  "fom_lot_id",
+  "erp_sync_status"
  ],
  "fields": [
   {
@@ -688,6 +696,50 @@
    "fieldtype": "Data",
    "label": "Customer Order No",
    "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "repeat_harvest_trace_section",
+   "fieldtype": "Section Break",
+   "label": "Repeat Harvest Trace Info"
+  },
+  {
+   "fieldname": "repeat_harvest_group_id",
+   "fieldtype": "Int",
+   "label": "Repeat Harvest Group ID",
+   "description": "Reference ID from Repeat Harvest Group in FOMS"
+  },
+  {
+   "fieldname": "child_product_id",
+   "fieldtype": "Int",
+   "label": "Child Product ID",
+   "description": "FOMS Product ID of the child product"
+  },
+  {
+   "fieldname": "column_break_rh_se",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "harvest_sequence",
+   "fieldtype": "Int",
+   "label": "Harvest Sequence"
+  },
+  {
+   "fieldname": "harvest_date",
+   "fieldtype": "Date",
+   "label": "Harvest Date"
+  },
+  {
+   "fieldname": "fom_lot_id",
+   "fieldtype": "Data",
+   "label": "Lot ID (FOMS)"
+  },
+  {
+   "default": "",
+   "fieldname": "erp_sync_status",
+   "fieldtype": "Select",
+   "label": "ERP Sync Status",
+   "options": "\nSynced\nFailed"
   },
   {
    "depends_on": "eval:doc.stock_entry_type == \"Material Transfer for Manufacture\"",
