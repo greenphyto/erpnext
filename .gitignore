@@ -25,3 +25,4 @@ PLAN.md
 */patches/files/*.xlsx
 .commandcode/
 superpowers/
+.superpowers/

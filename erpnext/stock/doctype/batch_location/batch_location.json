@@ -1,0 +1,112 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-07-16 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "batch",
+  "item",
+  "warehouse_location",
+  "warehouse",
+  "qty",
+  "stock_uom",
+  "uom",
+  "conversion_factor",
+  "last_updated"
+ ],
+ "fields": [
+  {
+   "fieldname": "batch",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Batch",
+   "options": "Batch",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "warehouse_location",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Warehouse Location",
+   "options": "Warehouse Location",
+   "reqd": 1
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Warehouse",
+   "options": "Warehouse",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Quantity",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "stock_uom",
+   "fieldtype": "Link",
+   "label": "Stock UOM",
+   "options": "UOM",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "conversion_factor",
+   "fieldtype": "Float",
+   "label": "Conversion Factor",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_updated",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Last Updated",
+   "read_only": 1
+  }
+ ],
+ "hide_toolbar": 1,
+ "links": [],
+ "modified": "2026-07-16 09:37:13.996055",
+ "modified_by": "Administrator",
+ "module": "Stock",
+ "name": "Batch Location",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "read": 1,
+   "role": "All"
+  },
+  {
+   "read": 1,
+   "role": "Stock Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
