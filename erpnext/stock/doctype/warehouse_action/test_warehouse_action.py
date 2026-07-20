@@ -4,7 +4,10 @@ from frappe.tests.utils import FrappeTestCase
 
 from erpnext.stock.doctype.batch_location.batch_location import get_batch_location_qty
 from erpnext.stock.doctype.item.test_item import make_item
-from erpnext.stock.doctype.warehouse_action.warehouse_action import get_action_context
+from erpnext.stock.doctype.warehouse_action.warehouse_action import (
+	batch_location_query,
+	get_action_context,
+)
 
 
 def _get_default_company():
@@ -276,6 +279,20 @@ class TestWarehouseAction(FrappeTestCase):
 			result["warehouse_code"],
 			frappe.db.get_value("Warehouse", self.warehouse, "warehouse_code"),
 		)
+
+	def test_batch_location_query_uses_locations_for_batch(self):
+		_seed_batch_location(self.batch, self.loc_a, 20)
+
+		result = batch_location_query(
+			doctype="Warehouse Location",
+			txt="",
+			searchfield="name",
+			start=0,
+			page_len=20,
+			filters={"batch": self.batch, "warehouse": self.warehouse},
+		)
+
+		self.assertEqual([row[0] for row in result], [self.loc_a])
 
 	def test_new_missing_settings_rejected(self):
 		frappe.db.set_single_value("Warehouse Location Settings", "default_warehouse", "")

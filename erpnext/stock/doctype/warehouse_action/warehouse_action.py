@@ -120,6 +120,34 @@ def get_batch_source_locations(batch, warehouse=None):
 
 
 @frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def batch_location_query(doctype, txt, searchfield, start, page_len, filters, as_dict=False):
+	filters = frappe.parse_json(filters) if isinstance(filters, str) else (filters or {})
+	batch = filters.get("batch")
+	warehouse = filters.get("warehouse") or get_default_warehouse()
+	if not batch or not warehouse:
+		return []
+
+	batch_location_filters = {
+		"batch": batch,
+		"warehouse": warehouse,
+		"qty": [">", 0],
+	}
+	if txt:
+		batch_location_filters["warehouse_location"] = ["like", "%{}%".format(txt)]
+
+	return frappe.db.get_list(
+		"Batch Location",
+		filters=batch_location_filters,
+		fields=["warehouse_location as name"],
+		order_by="warehouse_location asc",
+		start=start,
+		page_length=page_len,
+		as_list=not as_dict,
+	)
+
+
+@frappe.whitelist()
 def get_batch_location_stock(batch, warehouse_location):
 	default_warehouse = get_default_warehouse()
 	if not batch or not warehouse_location or not default_warehouse:

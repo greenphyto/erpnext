@@ -64,6 +64,15 @@
 				width: 100%; height: 100%; object-fit: cover; display: block;
 			}
 			.warehouse-action-scanner__preview { display: none; }
+			.warehouse-action-scanner__qr-container {
+				width: 100%; height: 100%; position: relative;
+			}
+			.warehouse-action-scanner__qr-container video {
+				width: 100% !important; height: 100% !important; object-fit: cover !important;
+			}
+			.warehouse-action-scanner__qr-container img { display: none !important; }
+			#warehouse-action-qr-reader { border: none !important; min-height: 200px; }
+			#warehouse-action-qr-reader video { border-radius: 10px; }
 			.warehouse-action-scanner__video-overlay {
 				position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;
 			}
@@ -77,6 +86,9 @@
 			.warehouse-action-scanner__camera-help {
 				margin-top: 8px; text-align: center; font-size: 12px;
 				color: var(--text-muted, #74808a);
+			}
+			.warehouse-action-file-btn {
+				margin-top: 8px; padding: 6px 16px; font-size: 12px;
 			}
 			.warehouse-action-scanner__camera-status {
 				display: flex; align-items: center; gap: 7px; margin-top: 9px;
@@ -105,6 +117,26 @@
 			}
 		`;
 		document.head.appendChild(style);
+	}
+
+	function loadHtml5Qrcode() {
+		return new Promise(function (resolve, reject) {
+			if (window.Html5Qrcode) {
+				resolve(window.Html5Qrcode);
+				return;
+			}
+			var script = document.createElement("script");
+			script.src = "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js";
+			script.onload = function () {
+				if (window.Html5Qrcode) {
+					resolve(window.Html5Qrcode);
+				} else {
+					reject(new Error("Html5Qrcode not found"));
+				}
+			};
+			script.onerror = reject;
+			document.head.appendChild(script);
+		});
 	}
 
 	function add_warehouse_action_menu_item() {
@@ -184,6 +216,7 @@
 			d.hide();
 			open_warehouse_action_form(action_type, ctx);
 		});
+		frappe.warehouse_action_dialog = d
 	}
 
 	function action_card(action_type, icon, title, description) {
@@ -213,7 +246,6 @@
 			{ fieldtype: "Section Break", label: __("Batch and Item") },
 			{
 				fieldname: "batch", fieldtype: "Link", label: __("Batch"), options: "Batch", reqd: 1,
-				onchange: function () { set_batch_context(d, this.get_value()); },
 			},
 			{ fieldname: "item", fieldtype: "Link", label: __("Item"), options: "Item", read_only: 1 },
 		];
@@ -228,6 +260,15 @@
 					options: "Warehouse Location",
 					reqd: 1,
 					filters: location_filters(ctx),
+					get_query: function () {
+						return {
+							query: "erpnext.stock.doctype.warehouse_action.warehouse_action.batch_location_query",
+							filters: {
+								batch: d._warehouse_action_source_batch || "",
+								warehouse: ctx.warehouse,
+							},
+						};
+					},
 					onchange: function () { set_available_stock_qty(d); },
 				},
 				{
@@ -276,6 +317,8 @@
 		});
 		d.show();
 		d.$wrapper.addClass("warehouse-action-dialog");
+		configure_source_location_query(d, ctx);
+		bind_manual_link_handlers(d);
 		set_uom_query(d, []);
 		attach_scan_button(d, "batch", "Batch");
 		if (action_type === "Move" || action_type === "Discard") attach_scan_button(d, "from_location", "Warehouse Location");
@@ -301,15 +344,93 @@
 			open_scan_dialog({
 				expected_type: expected_type,
 				on_submit: function (raw_code) {
-					dialog.set_value(fieldname, raw_code);
-					if (fieldname === "batch") set_batch_context(dialog, raw_code);
+					var set_value_result = dialog.set_value(fieldname, raw_code);
+					if (set_value_result && set_value_result.then) {
+						set_value_result.then(function () {
+							if (fieldname === "batch") set_batch_context(dialog, raw_code);
+							else if (fieldname === "from_location") set_available_stock_qty(dialog);
+						});
+					} else if (fieldname === "batch") {
+						set_batch_context(dialog, raw_code);
+					} else if (fieldname === "from_location") {
+						set_available_stock_qty(dialog);
+					}
 				},
 			});
 		});
 	}
 
+	function configure_source_location_query(dialog, ctx) {
+		var location_field = dialog && dialog.get_field("from_location");
+		if (!location_field) return;
+
+		var query = function () {
+			return {
+				query: "erpnext.stock.doctype.warehouse_action.warehouse_action.batch_location_query",
+				filters: {
+					batch: dialog._warehouse_action_source_batch || dialog.get_value("batch") || "",
+					warehouse: ctx.warehouse,
+				},
+			};
+		};
+		location_field.get_query = query;
+		location_field.df.get_query = query;
+		location_field.df.filters = location_filters(ctx);
+		location_field.refresh();
+	}
+
+	function bind_manual_link_handlers(dialog) {
+		var batch_field = dialog && dialog.get_field("batch");
+		if (batch_field && batch_field.$input) {
+			var handle_batch = function () {
+				var batch = batch_field.get_input_value
+					? batch_field.get_input_value()
+					: dialog.get_value("batch");
+				batch = (batch || "").trim();
+				if (batch === dialog._warehouse_action_last_manual_batch) return;
+				dialog._warehouse_action_last_manual_batch = batch;
+
+				var set_value_result = dialog.set_value("batch", batch);
+				if (set_value_result && set_value_result.then) {
+					set_value_result.then(function () { set_batch_context(dialog, batch); });
+				} else {
+					set_batch_context(dialog, batch);
+				}
+			};
+
+			batch_field.$input.on("change awesomplete-selectcomplete blur", function () {
+				setTimeout(handle_batch, 100);
+			});
+		}
+
+		var source_field = dialog && dialog.get_field("from_location");
+		if (source_field && source_field.$input) {
+			var handle_source = function () {
+				var location = source_field.get_input_value
+					? source_field.get_input_value()
+					: dialog.get_value("from_location");
+				location = (location || "").trim();
+				if (location === dialog._warehouse_action_last_manual_source) return;
+				dialog._warehouse_action_last_manual_source = location;
+
+				var set_value_result = dialog.set_value("from_location", location);
+				if (set_value_result && set_value_result.then) {
+					set_value_result.then(function () { set_available_stock_qty(dialog); });
+				} else {
+					set_available_stock_qty(dialog);
+				}
+			};
+
+			source_field.$input.on("change awesomplete-selectcomplete blur", function () {
+				setTimeout(handle_source, 100);
+			});
+		}
+	}
+
 	function set_batch_context(dialog, batch) {
 		if (!dialog) return;
+		batch = (batch || "").trim();
+		dialog._warehouse_action_source_batch = batch;
 		if (!batch) {
 			dialog.set_value("item", "");
 			dialog.set_value("stock_uom", "");
@@ -385,26 +506,15 @@
 		var location_field = dialog && dialog.get_field("from_location");
 		if (!location_field) return;
 
-		var names = locations.map(function (row) { return row.warehouse_location; }).filter(Boolean);
-		var filters = names.length
-			? { name: ["in", names] }
-			: { name: ["in", ["__no_batch_location__"]] };
-		var query = function () {
-			return { filters: filters };
-		};
-
-		// Dialog Link controls read either the instance query or df query depending
-		// on when the control was initialized. Keep both in sync.
-		location_field.get_query = query;
-		location_field.df.get_query = query;
-		location_field.df.filters = filters;
+		// The From Location field uses the server-side batch_location_query.
+		// Only clear Link autocomplete cache here; do not replace that query
+		// with a client-side name filter.
 		if (location_field.$input && location_field.$input.cache) {
 			location_field.$input.cache[location_field.get_options()] = {};
 		}
 		if (location_field.awesomplete) {
 			location_field.awesomplete.list = [];
 		}
-		location_field.refresh();
 	}
 
 	function clear_available_stock(dialog) {
@@ -425,17 +535,8 @@
 			return;
 		}
 
-		var locations = dialog._warehouse_action_source_locations || [];
-		var source = locations.find(function (row) {
-			return row.warehouse_location === selected_location;
-		});
-		if (source) {
-			apply_available_stock(dialog, source);
-			return;
-		}
-
-		// Fetch the selected row directly as a fallback for a Link value entered
-		// before the source-location list request finished.
+		// Always read the selected row directly so the displayed stock is not
+		// stale when another Warehouse Action changed the balance.
 		frappe.call({
 			method: "erpnext.stock.doctype.warehouse_action.warehouse_action.get_batch_location_stock",
 			args: { batch: batch, warehouse_location: selected_location },
@@ -446,11 +547,7 @@
 					clear_available_stock(dialog);
 					return;
 				}
-				apply_available_stock(dialog, {
-					qty: stock.qty,
-					stock_uom: stock.stock_uom,
-					warehouse_location: selected_location,
-				});
+				apply_available_stock(dialog, stock);
 			},
 			error: function () {
 				if (dialog.get_value("batch") === batch && dialog.get_value("from_location") === selected_location) {
@@ -647,9 +744,10 @@
 
 	function open_scan_dialog(opts) {
 		var expected_type = opts.expected_type;
-		var stream = null;
-		var detector = null;
-		var detector_frame = null;
+		var scanner = null;
+		var native_stream = null;
+		var native_detector = null;
+		var scan_frame = null;
 		var validation_timer = null;
 		var result_generation = 0;
 		var camera_active = false;
@@ -661,11 +759,16 @@
 		var html =
 			'<div class="warehouse-action-scanner">' +
 				'<div class="warehouse-action-scanner__video-wrap">' +
-					'<video class="warehouse-action-scanner__video" autoplay playsinline muted></video>' +
-					'<img class="warehouse-action-scanner__preview" alt="" />' +
+					'<div id="warehouse-action-qr-reader" class="warehouse-action-scanner__qr-container"></div>' +
 					'<div class="warehouse-action-scanner__video-overlay"><div class="warehouse-action-scanner__frame"></div></div>' +
 				'</div>' +
 				'<div class="warehouse-action-scanner__camera-help">' + escape_html(__("Align barcode inside frame")) + '</div>' +
+				'<div style="margin-top:10px;text-align:center;">' +
+					'<input type="file" id="warehouse-action-file-input" accept="image/*" capture="environment" style="display:none;" />' +
+					'<button type="button" class="btn btn-sm btn-default warehouse-action-file-btn">' +
+						'<i class="fa fa-camera"></i> ' + escape_html(__("Take Photo / Choose from Gallery")) +
+					'</button>' +
+				'</div>' +
 				'<div class="warehouse-action-scanner__camera-status"><span class="warehouse-action-scanner__status-dot"></span>' +
 					'<span class="warehouse-action-scanner__camera-status-text">' + escape_html(__("Starting camera…")) + '</span></div>' +
 				'<div class="warehouse-action-scanner__notice" aria-live="polite"><div class="warehouse-action-scanner__notice-title">' +
@@ -685,8 +788,7 @@
 		d.show();
 		d.$wrapper.addClass("warehouse-action-dialog");
 		var wrapper = d.$wrapper[0];
-		var video = wrapper.querySelector(".warehouse-action-scanner__video");
-		var preview = wrapper.querySelector(".warehouse-action-scanner__preview");
+		var qr_container = wrapper.querySelector("#warehouse-action-qr-reader");
 		var result_input = wrapper.querySelector(".warehouse-action-scanner__result");
 		var status_text = wrapper.querySelector(".warehouse-action-scanner__camera-status-text");
 		var status_dot = wrapper.querySelector(".warehouse-action-scanner__status-dot");
@@ -776,94 +878,155 @@
 			});
 		}
 
-		function create_detector() {
-			if (!window.BarcodeDetector) return null;
-			try {
-				return new window.BarcodeDetector({ formats: SCAN_FORMATS });
-			} catch (error) {
-				try { return new window.BarcodeDetector(); } catch (fallback_error) { return null; }
+		function parse_barcode_tag(value) {
+			if (!value) return { tag: null, code: value };
+			var prefixes = ["BATCH:", "LOC:", "ITEM:", "WH:"];
+			for (var i = 0; i < prefixes.length; i++) {
+				if (value.toUpperCase().startsWith(prefixes[i])) {
+					return {
+						tag: prefixes[i].replace(":", ""),
+						code: value.substring(prefixes[i].length).trim()
+					};
+				}
 			}
-		}
-
-		function scan_loop() {
-			if (!camera_active || !detector || camera_captured) return;
-			if (video.readyState >= 2) {
-				detector.detect(video).then(function (codes) {
-					if (!camera_active || camera_captured || !codes || !codes.length) return;
-					var raw_value = codes[0].rawValue;
-					if (raw_value) capture_code(raw_value);
-				}).catch(function () {}).finally(function () {
-					if (camera_active && !camera_captured) detector_frame = requestAnimationFrame(scan_loop);
-				});
-			} else {
-				detector_frame = requestAnimationFrame(scan_loop);
-			}
+			return { tag: null, code: value };
 		}
 
 		function capture_code(raw_value) {
-			if (!camera_active || camera_captured) return;
+			var parsed = parse_barcode_tag(raw_value);
+			var tag = parsed.tag;
+			var code = parsed.code || raw_value;
+
+			if (expected_type === "Batch" && tag === "LOC") {
+				set_notice(__("Not a batch barcode"), __("Scanned location: {0}. Keep scanning for batch.", [code]), "error");
+				return;
+			}
+			if (expected_type === "Warehouse Location" && tag === "BATCH") {
+				set_notice(__("Not a location barcode"), __("Scanned batch: {0}. Keep scanning for location.", [code]), "error");
+				return;
+			}
+
 			camera_captured = true;
-			capture_preview();
 			stop_camera();
 			set_camera_status(__("Camera paused · Captured"), "paused");
-			set_result(raw_value);
-		}
-
-		function capture_preview() {
-			try {
-				if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) return;
-				var canvas = document.createElement("canvas");
-				canvas.width = video.videoWidth;
-				canvas.height = video.videoHeight;
-				canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-				preview.src = canvas.toDataURL("image/jpeg", 0.85);
-				preview.style.display = "block";
-				video.style.display = "none";
-				overlay.style.display = "none";
-			} catch (error) {
-				// Keep the final video frame visible when canvas capture is unavailable.
-			}
+			set_result(code);
 		}
 
 		function stop_camera() {
 			camera_active = false;
-			if (detector_frame) {
-				cancelAnimationFrame(detector_frame);
-				detector_frame = null;
+			if (scan_frame) {
+				cancelAnimationFrame(scan_frame);
+				scan_frame = null;
 			}
-			if (stream) {
-				stream.getTracks().forEach(function (track) { track.stop(); });
-				stream = null;
+			stop_native_stream();
+			native_detector = null;
+			if (scanner) {
+				try {
+					scanner.stop().catch(function(){}).then(function() {
+						try { scanner.clear(); } catch(e) {}
+						scanner = null;
+					});
+				} catch(e) {
+					scanner = null;
+				}
 			}
-			if (video) video.pause();
+		}
+
+		function stop_native_stream() {
+			if (native_stream) {
+				native_stream.getTracks().forEach(function(t) { t.stop(); });
+				native_stream = null;
+			}
+		}
+
+		function create_native_detector() {
+			if (!window.BarcodeDetector) return null;
+			try {
+				return new BarcodeDetector({ formats: SCAN_FORMATS });
+			} catch (e) {
+				try { return new BarcodeDetector(); } catch (e2) { return null; }
+			}
+		}
+
+		function native_scan_loop(video) {
+			if (!camera_active || !native_detector || camera_captured) return;
+			if (video.readyState >= 2) {
+				native_detector.detect(video).then(function(codes) {
+					if (!camera_active || camera_captured || !codes || !codes.length) return;
+					if (codes[0].rawValue) capture_code(codes[0].rawValue);
+				}).catch(function(){}).finally(function() {
+					if (camera_active && !camera_captured) scan_frame = requestAnimationFrame(function() { native_scan_loop(video); });
+				});
+			} else {
+				scan_frame = requestAnimationFrame(function() { native_scan_loop(video); });
+			}
+		}
+
+		function start_camera_native() {
+			var video = document.createElement("video");
+			video.setAttribute("autoplay", "true");
+			video.setAttribute("playsinline", "true");
+			video.setAttribute("muted", "true");
+			video.style.cssText = "width:100%;height:100%;object-fit:cover;";
+			qr_container.appendChild(video);
+
+			navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false }).then(function(stream) {
+				if (!camera_active) { stream.getTracks().forEach(function(t) { t.stop(); }); return; }
+				native_stream = stream;
+				video.srcObject = stream;
+				native_detector = create_native_detector();
+				if (native_detector) {
+					set_camera_status(__("Camera active"), "active");
+					set_notice(__("Waiting for barcode"), __("Align the barcode inside the frame."));
+					scan_frame = requestAnimationFrame(function() { native_scan_loop(video); });
+				} else {
+					stop_native_stream();
+					try_library_scanner();
+				}
+			}).catch(function() {
+				if (!camera_active) return;
+				try_library_scanner();
+			});
+		}
+
+		function try_library_scanner() {
+			loadHtml5Qrcode().then(function(Html5Qrcode) {
+				if (!camera_active) return;
+				scanner = new Html5Qrcode("warehouse-action-qr-reader");
+				return scanner.start(
+					{ facingMode: "environment" },
+					{ fps: 10, aspectRatio: 1.5 },
+					function(decodedText) {
+						if (!camera_active || camera_captured) return;
+						capture_code(decodedText);
+					},
+					function() {}
+				);
+			}).then(function() {
+				if (!camera_active) return;
+				set_camera_status(__("Camera active"), "active");
+				set_notice(__("Waiting for barcode"), __("Align the barcode inside the frame."));
+			}).catch(function(error) {
+				if (!camera_active) return;
+				set_camera_status(__("Camera unavailable"), "error");
+				set_notice(__("Camera unavailable"), __("Type or paste a code manually below."), "error");
+			});
 		}
 
 		function start_camera() {
 			stop_camera();
 			camera_captured = false;
-			preview.removeAttribute("src");
-			preview.style.display = "none";
-			video.style.display = "block";
-			overlay.style.display = "flex";
+			camera_active = true;
 			set_camera_status(__("Starting camera"));
-			if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-				set_camera_status(__("Camera unavailable"), "error");
-				set_notice(__("Camera unavailable"), __("Type or paste a code manually below."), "error");
-				return;
-			}
-			navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false }).then(function (media_stream) {
-				stream = media_stream;
-				video.srcObject = media_stream;
-				camera_active = true;
-				set_camera_status(__("Camera active"), "active");
-				set_notice(__("Waiting for barcode"), __("You can also type or paste a code below."));
-				detector = create_detector();
-				if (detector) detector_frame = requestAnimationFrame(scan_loop);
-				else set_notice(__("Camera ready"), __("Automatic detection is unavailable. Type or paste a code below."), "pending");
-			}).catch(function () {
-				set_camera_status(__("Camera unavailable"), "error");
-				set_notice(__("Camera access denied"), __("Type or paste a code manually below."), "error");
-			});
+			qr_container.innerHTML = "";
+			setTimeout(function() {
+				if (!camera_active) return;
+				if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+					start_camera_native();
+				} else {
+					try_library_scanner();
+				}
+			}, 200);
 		}
 
 		function restart() {
@@ -871,7 +1034,6 @@
 			result_input.value = "";
 			set_notice(__("Waiting for barcode"), __("You can also type or paste a code below."));
 			start_camera();
-			result_input.focus();
 		}
 
 		function submit_result() {
@@ -890,6 +1052,72 @@
 		}
 
 		result_input.addEventListener("input", function () { set_result(result_input.value); });
+		
+		var file_input = wrapper.querySelector("#warehouse-action-file-input");
+		var file_btn = wrapper.querySelector(".warehouse-action-file-btn");
+		if (file_input && file_btn) {
+			file_btn.addEventListener("click", function() {
+				file_input.click();
+			});
+			file_input.addEventListener("change", function(e) {
+				var file = e.target.files && e.target.files[0];
+				if (!file) return;
+				
+				set_notice(__("Processing image..."), __("Scanning barcode from photo."), "pending");
+				
+				if (window.Html5Qrcode || window.BarcodeDetector) {
+					scan_image_file(file);
+				} else {
+					loadHtml5Qrcode().then(function() {
+						scan_image_file(file);
+					}).catch(function() {
+						set_notice(__("Cannot scan image"), __("Barcode detection not available."), "error");
+					});
+				}
+				file_input.value = "";
+			});
+		}
+		
+		function scan_image_file(file) {
+			if (window.BarcodeDetector) {
+				var img = new Image();
+				img.onload = function() {
+					var detector = new BarcodeDetector({ formats: SCAN_FORMATS });
+					detector.detect(img).then(function(barcodes) {
+						if (barcodes && barcodes.length > 0) {
+							capture_code(barcodes[0].rawValue);
+						} else {
+							set_notice(__("No barcode found"), __("Try another photo or type manually."), "error");
+						}
+					}).catch(function() {
+						set_notice(__("Scan failed"), __("Try another photo or type manually."), "error");
+					});
+				};
+				img.onerror = function() {
+					set_notice(__("Cannot load image"), __("Try another photo."), "error");
+				};
+				img.src = URL.createObjectURL(file);
+			} else if (window.Html5Qrcode) {
+				var temp_id = "wa-scan-temp-" + Date.now();
+				var temp_div = document.createElement("div");
+				temp_div.id = temp_id;
+				temp_div.style.display = "none";
+				document.body.appendChild(temp_div);
+				var temp_scanner = new Html5Qrcode(temp_id);
+				temp_scanner.scanFile(file, true).then(function(decodedText) {
+					temp_scanner.clear();
+					temp_div.remove();
+					capture_code(decodedText);
+				}).catch(function() {
+					temp_scanner.clear();
+					temp_div.remove();
+					set_notice(__("No barcode found"), __("Try another photo or type manually."), "error");
+				});
+			} else {
+				set_notice(__("Cannot scan"), __("Barcode detection not available."), "error");
+			}
+		}
+		
 		d.$wrapper.on("hidden.bs.modal", function () {
 			invalidate_validation();
 			stop_camera();
