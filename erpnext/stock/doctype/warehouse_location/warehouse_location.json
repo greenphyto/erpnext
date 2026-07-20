@@ -1,0 +1,103 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:location_code",
+ "creation": "2026-07-16 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "location_code",
+  "warehouse",
+  "aisle_row",
+  "bay_column",
+  "level_tier",
+  "status",
+  "is_mixed_storage_allowed",
+  "uom",
+  "disabled"
+ ],
+ "fields": [
+  {
+   "fieldname": "location_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Location Code",
+   "read_only": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Warehouse",
+   "options": "Warehouse",
+   "reqd": 1
+  },
+  {
+   "fieldname": "aisle_row",
+   "fieldtype": "Data",
+   "label": "Aisle / Row",
+   "reqd": 1
+  },
+  {
+   "fieldname": "bay_column",
+   "fieldtype": "Data",
+   "label": "Bay / Column",
+   "reqd": 1
+  },
+  {
+   "fieldname": "level_tier",
+   "fieldtype": "Data",
+   "label": "Level / Tier",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Available\nOccupied\nPartial\nBlocked"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_mixed_storage_allowed",
+   "fieldtype": "Check",
+   "label": "Is Mixed Storage Allowed"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM"
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Disabled"
+  }
+ ],
+ "links": [],
+ "modified": "2026-07-20 02:22:19.201000",
+ "modified_by": "Administrator",
+ "module": "Stock",
+ "name": "Warehouse Location",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "read": 1,
+   "role": "All"
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "Stock Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,38 @@
+{
+ "actions": [],
+ "creation": "2026-07-16 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "default_warehouse"
+ ],
+ "fields": [
+  {
+   "fieldname": "default_warehouse",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Default Warehouse",
+   "options": "Warehouse",
+   "reqd": 1
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-07-16 09:37:13.996055",
+ "modified_by": "Administrator",
+ "module": "Stock",
+ "name": "Warehouse Location Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "read": 1,
+   "role": "All"
+  },
+  {
+   "read": 1,
+   "write": 1,
+   "role": "Stock Manager"
+  }
+ ],
+ "states": []
+}
