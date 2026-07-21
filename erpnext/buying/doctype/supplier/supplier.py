@@ -51,7 +51,6 @@ class Supplier(TransactionBase):
 		else:
 			self.name = set_name_from_naming_options(frappe.get_meta(self.doctype).autoname, self)
 		
-		self.supplier_id = self.name
 		self.set_code()
 
 	def set_code(self, force=False):
@@ -197,7 +196,6 @@ class Supplier(TransactionBase):
 	def after_rename(self, olddn, newdn, merge=False):
 		if frappe.defaults.get_global_default("supp_master_name") == "Supplier Name":
 			self.db_set("supplier_name", newdn)
-			self.db_set("supplier_id", newdn)
 
 	def update_series(self):
 		next_series = get_exists_series(self.supplier_code_series)

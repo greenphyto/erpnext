@@ -107,7 +107,7 @@ def get_balance_sheet_data(fiscal_year, companies, columns, filters):
 					opening_balance.get(company)
 				)
 
-		unclosed["total"] = opening_balance.get(company)
+		unclosed["total"] = sum(opening_balance.values())
 		data.append(unclosed)
 
 	if provisional_profit_loss:
@@ -134,6 +134,8 @@ def get_balance_sheet_data(fiscal_year, companies, columns, filters):
 
 def prepare_companywise_opening_balance(asset_data, liability_data, equity_data, companies):
 	opening_balance = {}
+	float_precision = cint(frappe.db.get_default("float_precision")) or 2
+
 	for company in companies:
 		opening_value = 0
 
@@ -143,9 +145,9 @@ def prepare_companywise_opening_balance(asset_data, liability_data, equity_data,
 				account_name = get_root_account_name(data[0].root_type, company)
 				opening_value += get_opening_balance(account_name, data, company) or 0.0
 
-		opening_balance[company] = opening_value
+		opening_balance[company] = flt(opening_value, float_precision)
 
-	if opening_balance:
+	if any(opening_balance.values()):
 		return _("Previous Financial Year is not closed"), opening_balance
 
 	return "", {}
@@ -424,8 +426,20 @@ def calculate_values(accounts_by_name, gl_entries_by_account, companies, filters
 							and parent_company_currency != child_company_currency
 							and filters.get("accumulated_in_group_company")
 						):
-							debit = convert(debit, parent_company_currency, child_company_currency, filters.end_date)
-							credit = convert(credit, parent_company_currency, child_company_currency, filters.end_date)
+							debit = convert(
+								debit,
+								parent_company_currency,
+								child_company_currency,
+								filters.end_date,
+								log_context="Consolidated Financial Statement",
+							)
+							credit = convert(
+								credit,
+								parent_company_currency,
+								child_company_currency,
+								filters.end_date,
+								log_context="Consolidated Financial Statement",
+							)
 
 						d[company] = d.get(company, 0.0) + flt(debit) - flt(credit)
 
