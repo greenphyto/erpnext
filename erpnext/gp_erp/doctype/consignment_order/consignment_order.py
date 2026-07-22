@@ -119,7 +119,9 @@ class ConsignmentOrder(DeliveryNote):
 	def on_cancel(self):
 		super(DeliveryNote, self).on_cancel()
 		self.update_stock_ledger()
-		# Internal transfer only: no accounting ledger.
+		# Reverse GL entries created during submit/repost (perpetual inventory).
+		# DeliveryNote.on_cancel normally calls this, but we skip it via super().
+		self.make_gl_entries_on_cancel()
 		self.repost_future_sle_and_gle()
 		self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry", "Repost Item Valuation")
 
