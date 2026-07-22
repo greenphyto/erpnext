@@ -309,6 +309,9 @@ def _fill_ratio(target, numerator_row, revenue, period_list):
 		num = flt((numerator_row or {}).get(period.key, 0))
 		den = flt(revenue.get(period.key, 0))
 		target[period.key] = flt((num / den) * 100, 2) if den else 0
+		num_b = flt((numerator_row or {}).get(period.key + "_budget", 0))
+		den_b = flt(revenue.get(period.key + "_budget", 0))
+		target[period.key + "_budget"] = flt((num_b / den_b) * 100, 2) if den_b else 0
 
 
 def get_payroll_values(filters, period_list):
@@ -511,6 +514,10 @@ def get_report_columns(filters, period_list):
 		},
 	]
 
+	# Short year labels: filters.year = "2026" → cur="26", prev="25"
+	year_str = str(filters.year)[-2:]
+	prev_year_str = str(cint(filters.year) - 1)[-2:]
+
 	if filters.view_mode == "Monthly":
 		for period in period_list:
 			columns.append(
@@ -522,15 +529,35 @@ def get_report_columns(filters, period_list):
 					"width": 130,
 				}
 			)
+			# Budget column per period (same pattern as financial_statements.py)
+			budget_key = period.key + "_budget"
+			month_label = period.label.split()[0] if period.label else ""
+			columns.append(
+				{
+					"fieldname": budget_key,
+					"label": _("{0} Budget").format(month_label),
+					"fieldtype": "Currency",
+					"options": "currency",
+					"width": 130,
+				}
+			)
 		columns.extend(
 			[
 				_cur("total_actual", _("Total Actual")),
 				_cur("budget_ytd", _("Budget YTD")),
-				_cur("variance_amount", _("Variance ($)")),
-				_pct("variance_percent", _("Variance (%)")),
-				_cur("prior_total", _("Total Actual (PY)")),
-				_cur("prior_var_amount", _("Act vs PY ($)")),
-				_pct("prior_var_percent", _("Act vs PY (%)")),
+				_cur("variance_amount", _("Variance ($)"), width=0, hidden=1),
+				_pct("variance_percent", _("Variance (%)"), width=0, hidden=1),
+				_cur("prior_total", _("Act'{0}").format(prev_year_str)),
+				_cur(
+					"prior_var_amount",
+					_("Act'{0} vs Act'{1} ($)").format(year_str, prev_year_str),
+					width=170,
+				),
+				_pct(
+					"prior_var_percent",
+					_("Act'{0} vs Act'{1} (%)").format(year_str, prev_year_str),
+					width=170,
+				),
 			]
 		)
 	else:
@@ -538,31 +565,48 @@ def get_report_columns(filters, period_list):
 			[
 				_cur("ytd_actual", _("Actual YTD")),
 				_cur("ytd_budget", _("Budget YTD")),
-				_cur("ytd_var_amount", _("Act vs Budget ($)")),
-				_pct("ytd_var_percent", _("Act vs Budget (%)")),
-				_cur("ytd_prior_actual", _("Actual YTD (PY)")),
-				_cur("ytd_py_var_amount", _("Act vs PY ($)")),
-				_pct("ytd_py_var_percent", _("Act vs PY (%)")),
+				_cur("ytd_var_amount", _("Act vs Budget ($)"), width=0, hidden=1),
+				_pct("ytd_var_percent", _("Act vs Budget (%)"), width=0, hidden=1),
+				_cur(
+					"ytd_prior_actual",
+					_("Act'{0}").format(prev_year_str),
+				),
+				_cur(
+					"ytd_py_var_amount",
+					_("Act'{0} vs Act'{1} ($)").format(year_str, prev_year_str),
+					width=170,
+				),
+				_pct(
+					"ytd_py_var_percent",
+					_("Act'{0} vs Act'{1} (%)").format(year_str, prev_year_str),
+					width=170,
+				),
 			]
 		)
 
 	return columns
 
 
-def _cur(fieldname, label, width=140):
-	return {
+def _cur(fieldname, label, width=140, hidden=0):
+	col = {
 		"fieldname": fieldname,
 		"label": label,
 		"fieldtype": "Currency",
 		"options": "currency",
 		"width": width,
 	}
+	if hidden:
+		col["hidden"] = 1
+	return col
 
 
-def _pct(fieldname, label, width=120):
-	return {
+def _pct(fieldname, label, width=120, hidden=0):
+	col = {
 		"fieldname": fieldname,
 		"label": label,
 		"fieldtype": "Percent",
 		"width": width,
 	}
+	if hidden:
+		col["hidden"] = 1
+	return col
