@@ -70,6 +70,25 @@ frappe.query_reports["P&L Performance Review"] = {
 			column.is_tree = true;
 		}
 
+		// Ratio rows (GOP%, Payroll%): show as percentage, skip currency formatter
+		if (
+			data &&
+			data.ratio_row &&
+			column.fieldname !== "account" &&
+			column.fieldname !== "acc_code" &&
+			column.fieldname !== "currency"
+		) {
+			let num = parseFloat(value) || 0;
+			let display = num.toFixed(2) + "%";
+			if (data.is_bold) {
+				display = `<strong>${display}</strong>`;
+			}
+			if (num < 0) {
+				display = `<span class="text-danger">${display}</span>`;
+			}
+			return display;
+		}
+
 		value = default_formatter(value, row, column, data);
 
 		if (data && (data.is_group || data.is_bold || data.profit_data || data.ratio_row)) {
