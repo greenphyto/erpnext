@@ -39,7 +39,8 @@
   "produced_qty",
   "foms_section",
   "foms_id",
-  "foms_name"
+  "foms_name",
+  "status"
  ],
  "fields": [
   {
@@ -239,6 +240,8 @@
    "fetch_from": "item.item_group",
    "fieldname": "item_group",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Item Group",
    "options": "Item Group",
    "read_only": 1
@@ -250,6 +253,14 @@
    "in_standard_filter": 1,
    "label": "FOMS Lot ID",
    "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Empty\nActive\nExpired"
   }
  ],
  "icon": "fa fa-archive",
@@ -257,7 +268,7 @@
  "image_field": "image",
  "links": [],
  "max_attachments": 5,
- "modified": "2026-05-12 11:20:42.005756",
+ "modified": "2026-07-23 12:32:20.016690",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Batch",
@@ -274,9 +285,9 @@
    "read": 1,
    "report": 1,
    "role": "Item Manager",
+   "select": 1,
    "set_user_permissions": 1,
    "share": 1,
-   "select": 1,
    "write": 1
   },
   {

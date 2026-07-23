@@ -6,13 +6,21 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname, revert_series_if_last
-from frappe.utils import cint, flt, get_link_to_form
+from frappe.utils import cint, flt, get_link_to_form, getdate
 from frappe.utils.data import add_days
 from frappe.utils.jinja import render_template
 
 
 class UnableToSelectBatchError(frappe.ValidationError):
 	pass
+
+
+def get_batch_status(batch_qty, expiry_date):
+	if flt(batch_qty) <= 0:
+		return "Empty"
+	if expiry_date and getdate(expiry_date) < getdate():
+		return "Expired"
+	return "Active"
 
 
 def get_name_from_hash():
@@ -152,6 +160,10 @@ class Batch(Document):
 	def validate(self):
 		self.item_has_batch_enabled()
 		self.set_batchwise_valuation()
+		self.set_status()
+
+	def set_status(self):
+		self.status = get_batch_status(self.batch_qty, self.expiry_date)
 
 	def item_has_batch_enabled(self):
 		if frappe.db.get_value("Item", self.item, "has_batch_no") == 0:

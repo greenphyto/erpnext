@@ -60,6 +60,8 @@ class StockLedgerEntry(Document):
 
 	def calculate_batch_qty(self):
 		if self.batch_no:
+			from erpnext.stock.doctype.batch.batch import get_batch_status
+
 			batch_qty = (
 				frappe.db.get_value(
 					"Stock Ledger Entry",
@@ -68,7 +70,12 @@ class StockLedgerEntry(Document):
 				)
 				or 0
 			)
-			frappe.db.set_value("Batch", self.batch_no, "batch_qty", batch_qty)
+			expiry_date = frappe.db.get_value("Batch", self.batch_no, "expiry_date")
+			frappe.db.set_value(
+				"Batch",
+				self.batch_no,
+				{"batch_qty": batch_qty, "status": get_batch_status(batch_qty, expiry_date)},
+			)
 
 	def validate_mandatory(self):
 		mandatory = ["warehouse", "posting_date", "voucher_type", "voucher_no", "company"]
