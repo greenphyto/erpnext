@@ -329,3 +329,4 @@ erpnext.patches.v14_0.update_company_settings
 erpnext.patches.gp.add_bank_purpose
 erpnext.patches.gp.add_bank_standart_sg
 erpnext.patches.gp.set_default_cost_center_in_account
+erpnext.patches.gp.set_batch_status
