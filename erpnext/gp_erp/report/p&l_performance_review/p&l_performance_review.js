@@ -2,6 +2,11 @@
 // For license information, please see license.txt
 /* eslint-disable */
 
+const P_L_MONTH_NAMES = [
+	"January", "February", "March", "April", "May", "June",
+	"July", "August", "September", "October", "November", "December",
+];
+
 frappe.query_reports["P&L Performance Review"] = {
 	filters: [
 		{
@@ -29,6 +34,14 @@ frappe.query_reports["P&L Performance Review"] = {
 				{ value: "Monthly", label: __("Monthly") },
 			],
 			default: "YTD",
+			reqd: 1,
+		},
+		{
+			fieldname: "to_month",
+			label: __("Month"),
+			fieldtype: "Select",
+			options: P_L_MONTH_NAMES.join("\n"),
+			default: P_L_MONTH_NAMES[new Date().getMonth()],
 			reqd: 1,
 		},
 		{
