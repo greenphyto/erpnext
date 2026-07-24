@@ -820,6 +820,7 @@ custom_export_report = {
     "Balance Sheet": "erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2.add_formulas",
     "Profit and Loss Statement": "erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2.add_formulas",
     "Consolidated Financial Statement": "erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2.add_formulas",
+    "P&L Performance Review": "erpnext.gp_erp.report.p&l_performance_review.p&l_performance_review.add_borders",
 }
 
 has_permission = {

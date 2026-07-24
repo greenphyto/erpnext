@@ -603,3 +603,71 @@ def _pct(fieldname, label, width=120, hidden=0):
 	if hidden:
 		col["hidden"] = 1
 	return col
+
+
+def add_borders(report_name, xlsx_file):
+	import re
+	from io import BytesIO
+
+	from openpyxl import load_workbook
+	from openpyxl.styles import Border, Side
+
+	stream = BytesIO(xlsx_file.getvalue())
+	wb = load_workbook(stream)
+	thick = Side(style="thick")
+
+	# Each box: (start pattern for first column, end pattern for last column)
+	boxes = [
+		(re.compile(r"^Act .+'\d+$"), re.compile(r"vs Act .+\(\$\)$")),
+		(re.compile(r"^Actual YTD$"), re.compile(r"vs Act YTD .+\(%\)$")),
+	]
+
+	def find_box(ws, start_re, end_re):
+		header_row = min_col = max_col = None
+		for row in ws.iter_rows(min_row=1, max_row=ws.max_row):
+			for cell in row:
+				if not isinstance(cell.value, str):
+					continue
+				if min_col is None and start_re.match(cell.value):
+					header_row = cell.row
+					min_col = cell.column
+				elif min_col is not None and max_col is None and end_re.search(cell.value):
+					max_col = cell.column
+			if header_row and min_col and max_col:
+				break
+		return header_row, min_col, max_col
+
+	def find_last_row(ws, header_row, label="Payroll Cost %"):
+		for row in ws.iter_rows(min_row=header_row, max_row=ws.max_row, min_col=1, max_col=1):
+			if row[0].value == label:
+				return row[0].row
+		return ws.max_row
+
+	for ws in wb.worksheets:
+		for start_re, end_re in boxes:
+			header_row, min_col, max_col = find_box(ws, start_re, end_re)
+			if not (header_row and min_col and max_col):
+				continue
+
+			max_row = find_last_row(ws, header_row)
+
+			for row_idx in range(header_row, max_row + 1):
+				for col_idx in range(min_col, max_col + 1):
+					cell = ws.cell(row=row_idx, column=col_idx)
+					cell.border = Border(
+						top=thick if row_idx == header_row else cell.border.top,
+						bottom=thick if row_idx == max_row else cell.border.bottom,
+						left=thick if col_idx == min_col else cell.border.left,
+						right=thick if col_idx == max_col else cell.border.right,
+					)
+
+	output_stream = BytesIO()
+	wb.save(output_stream)
+	output_stream.seek(0)
+
+	from frappe.utils import get_datetime, now
+
+	date_str_title = " " + get_datetime(now()).strftime("%y%m%d%H%M%S")
+	frappe.response["filename"] = report_name + date_str_title + ".xlsx"
+	frappe.response["filecontent"] = output_stream.getvalue()
+	frappe.response["type"] = "binary"
