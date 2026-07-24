@@ -26,17 +26,6 @@ frappe.query_reports["P&L Performance Review"] = {
 			reqd: 1,
 		},
 		{
-			fieldname: "periodicity",
-			label: __("Periodicity"),
-			fieldtype: "Select",
-			options: [
-				{ value: "YTD", label: __("YTD") },
-				{ value: "Monthly", label: __("Monthly") },
-			],
-			default: "YTD",
-			reqd: 1,
-		},
-		{
 			fieldname: "to_month",
 			label: __("Month"),
 			fieldtype: "Select",
@@ -59,12 +48,6 @@ frappe.query_reports["P&L Performance Review"] = {
 			label: __("Currency"),
 			fieldtype: "Select",
 			options: erpnext.get_presentation_currency_list(),
-		},
-		{
-			fieldname: "accumulated_values",
-			label: __("Accumulated Values"),
-			fieldtype: "Check",
-			default: 1,
 		},
 		{
 			fieldname: "hide_zero_balance",
