@@ -33,12 +33,6 @@ MONTH_NAMES = list(calendar.month_name)
 def execute(filters=None):
 	filters = control_filters(filters)
 
-	# Monthly view: don't pass month/to_month so get_period_list generates Jan..Dec periods
-	# YTD (Yearly): pass month/to_month to get a single Jan-to-to_month period
-	month_kw = {}
-	if filters.view_mode == "YTD":
-		month_kw = {"month": filters.month, "to_month": filters.to_month}
-
 	period_list = get_period_list(
 		filters.from_fiscal_year,
 		filters.to_fiscal_year,
@@ -47,17 +41,12 @@ def execute(filters=None):
 		filters.get("filter_based_on"),
 		filters.periodicity,
 		company=filters.company,
-		**month_kw,
 	)
 
-	# Limit periods to to_month for Monthly mode
-	display_period_list = period_list
-	if filters.view_mode == "Monthly":
-		to_m = list(MONTH_NAMES).index(filters.to_month)
-		period_list = [p for p in period_list if p.to_date.month <= to_m]
-		# Only render the selected month as a column.
-		# Total Actual/Budget YTD = YTD sum when accumulated ON, single month when OFF.
-		display_period_list = period_list[-1:]
+	# Limit periods to to_month; display only selected month as a column
+	to_m = list(MONTH_NAMES).index(filters.to_month)
+	period_list = [p for p in period_list if p.to_date.month <= to_m]
+	display_period_list = period_list[-1:]
 
 	accounts_list = []
 	if cint(filters.hide_zero_balance):
@@ -73,21 +62,18 @@ def execute(filters=None):
 		add_budget_to_rows(expense, budget_map, period_list, filters)
 		add_summary_columns(expense, period_list)
 
-	# When NOT accumulated in Monthly mode, Total Actual / Budget YTD should
-	# reflect only the displayed month, not the YTD sum.  Otherwise the prior-
-	# year comparison mixes YTD actual with single-month prior, producing
-	# nonsensical variance values.
-	if filters.view_mode == "Monthly" and not filters.display_accumulated:
-		_month_key = display_period_list[-1].key
-		for _rows in (income, expense):
-			strip_ytd_to_month(_rows, _month_key)
+	# Monthly act-vs-budget for displayed month (always net-for-that-month)
+	_month_key = display_period_list[-1].key
+	for _rows in (income, expense):
+		fill_monthly_variance(_rows, _month_key)
 
-	merge_prior_year(income, expense, filters, period_list, accounts_list)
+	merge_prior_year(income, expense, filters, period_list, accounts_list, _month_key)
 
 	net_profit_loss = get_net_profit_loss(
 		income, expense, period_list, filters.company, filters.presentation_currency
 	)
 	if net_profit_loss:
+		fill_monthly_variance([net_profit_loss], _month_key)
 		apply_prior_to_net(net_profit_loss, income, expense)
 
 	data = []
@@ -96,17 +82,7 @@ def execute(filters=None):
 	if net_profit_loss:
 		data.append(net_profit_loss)
 
-	append_ratio_rows(data, income, expense, period_list, filters)
-
-	# GL/budget fetch always uses net-per-month (accumulated_values forced 0
-	# above), so the displayed month column already shows net-only figures.
-	# When the "Accumulated Values" toggle is ON, show the Jan..to_month
-	# cumulative total in that same column instead (mirrors Total Actual).
-	if filters.view_mode == "Monthly" and filters.display_accumulated:
-		apply_display_accumulation(data, display_period_list[-1].key)
-
-	if filters.view_mode == "YTD":
-		remap_ytd_fields(data)
+	append_ratio_rows(data, income, expense, period_list, filters, _month_key)
 
 	new_data = prepare_display_rows(data, filters)
 	columns = get_report_columns(filters, display_period_list)
@@ -118,9 +94,11 @@ def control_filters(filters):
 	if not filters.get("year"):
 		frappe.throw(_("Year is required"))
 
-	filters.view_mode = filters.get("periodicity") or "YTD"
-	# get_period_list only knows Monthly/Yearly etc.
-	filters.periodicity = "Monthly" if filters.view_mode == "Monthly" else "Yearly"
+	# Always monthly system — no YTD / Accumulated toggle
+	filters.view_mode = "Monthly"
+	filters.periodicity = "Monthly"
+	filters.accumulated_values = 0
+	filters.display_accumulated = 0
 
 	filters.month = "January"
 	current = getdate(nowdate())
@@ -129,8 +107,6 @@ def control_filters(filters):
 	except Exception:
 		year_num = current.year
 
-	# "Month" filter (fieldname to_month) lets user pick the end-month to display.
-	# Falls back to current month / December if not supplied.
 	if filters.get("to_month") in MONTH_NAMES:
 		pass
 	elif year_num < current.year:
@@ -138,7 +114,6 @@ def control_filters(filters):
 	else:
 		filters.to_month = MONTH_NAMES[current.month]
 
-	# Same pattern as budget_variance_greenphyto (Date Range via period_*_date)
 	start_date = getdate("{}-01-01".format(year_num))
 	end_date = getdate("{}-{}-01".format(year_num, list(MONTH_NAMES).index(filters.to_month)))
 	filters.from_fiscal_year = filters.year
@@ -147,16 +122,6 @@ def control_filters(filters):
 	filters.period_end_date = get_last_day(end_date)
 	filters.filter_based_on = "Fiscal Year"
 	filters.budget_against = filters.get("budget_against") or "Cost Center"
-	# Check filters with value 0 are dropped by query_report.get_filter_values
-	# (falsy). Missing key therefore means OFF, not the JS default.
-	filters.accumulated_values = cint(filters.get("accumulated_values"))
-	# User's real toggle choice (used only for display of the single shown
-	# month column + prior year column in Monthly mode).
-	filters.display_accumulated = filters.accumulated_values
-	# Internal calc always net-per-month for Monthly so summary sums (Total
-	# Actual, Budget YTD) stay correct regardless of the toggle.
-	if filters.view_mode == "Monthly":
-		filters.accumulated_values = 0
 	return filters
 
 
@@ -189,27 +154,19 @@ def fetch_pl(filters, period_list, accounts_list=None):
 	return income, expense
 
 
-def strip_ytd_to_month(rows, month_key):
-	"""Replace YTD total_actual / budget_ytd with single-month values.
-
-	When 'Accumulated Values' is OFF in Monthly mode, the summary columns
-	(Total Actual, Budget YTD) should reflect only the displayed month
-	so that prior-year and budget variances compare like-to-like."""
+def fill_monthly_variance(rows, month_key):
+	"""Act vs Budget for the single displayed month."""
 	budget_key = month_key + "_budget"
 	for row in rows or []:
 		if not row:
 			continue
-		if "total_actual" in row:
-			row["total_actual"] = flt(row.get(month_key, 0))
-		if "budget_ytd" in row:
-			row["budget_ytd"] = flt(row.get(budget_key, 0))
-		bud = flt(row.get("budget_ytd", 0))
-		act = flt(row.get("total_actual", 0))
-		row["variance_amount"] = act - bud
-		row["variance_percent"] = flt((row["variance_amount"] / bud) * 100, 2) if bud else 0
+		act = flt(row.get(month_key, 0))
+		bud = flt(row.get(budget_key, 0))
+		row["monthly_var_amount"] = act - bud
+		row["monthly_var_percent"] = flt((row["monthly_var_amount"] / bud) * 100, 2) if bud else 0
 
 
-def merge_prior_year(income, expense, filters, period_list, accounts_list):
+def merge_prior_year(income, expense, filters, period_list, accounts_list, month_key):
 	try:
 		prev_fy = get_fiscal_year(
 			add_years(period_list[0].year_start_date, -1),
@@ -224,9 +181,6 @@ def merge_prior_year(income, expense, filters, period_list, accounts_list):
 	prev_filters.to_fiscal_year = prev_fy.name
 	prev_filters.year = prev_fy.name
 
-	prev_month_kw = {}
-	if filters.view_mode == "YTD":
-		prev_month_kw = {"month": filters.month, "to_month": filters.to_month}
 	prev_period_list = get_period_list(
 		prev_filters.from_fiscal_year,
 		prev_filters.to_fiscal_year,
@@ -235,15 +189,9 @@ def merge_prior_year(income, expense, filters, period_list, accounts_list):
 		"Fiscal Year",
 		filters.periodicity,
 		company=filters.company,
-		**prev_month_kw,
 	)
-	# Limit prior periods too for Monthly mode
-	if filters.view_mode == "Monthly":
-		to_m = list(MONTH_NAMES).index(filters.to_month)
-		prev_period_list = [p for p in prev_period_list if p.to_date.month <= to_m]
-		if not filters.display_accumulated:
-			# accumulated toggle off -> prior year also just the single selected month
-			prev_period_list = prev_period_list[-1:]
+	to_m = list(MONTH_NAMES).index(filters.to_month)
+	prev_period_list = [p for p in prev_period_list if p.to_date.month <= to_m]
 
 	prev_income, prev_expense = fetch_pl(prev_filters, prev_period_list, accounts_list)
 	_merge_prior_into(income, prev_income, prev_period_list)
@@ -252,54 +200,54 @@ def merge_prior_year(income, expense, filters, period_list, accounts_list):
 
 def _merge_prior_into(current_rows, prior_rows, prev_period_list):
 	prior_map = {}
+	prior_month_map = {}
+	last_key = prev_period_list[-1].key if prev_period_list else None
+
 	for row in prior_rows or []:
 		key = row.get("account_origin") or row.get("account")
 		if not key:
-			# total / blank rows keyed by account_name
 			key = row.get("account_name") or row.get("account")
 		if not key:
 			continue
 		total = sum(flt(row.get(p.key, 0)) for p in prev_period_list)
-		# also keep total_actual if already summarized
-		if row.get("total_actual") is not None and not prev_period_list:
-			total = flt(row.get("total_actual"))
+		month_val = flt(row.get(last_key, 0)) if last_key else 0
 		prior_map[key] = total
-		# map total rows by marker
+		prior_month_map[key] = month_val
 		name = (row.get("account_name") or "").lower()
 		if "total" in name and ("income" in name or "expense" in name or "revenue" in name):
 			prior_map["__total__" + name] = total
+			prior_month_map["__total__" + name] = month_val
 
 	for row in current_rows or []:
 		key = row.get("account_origin") or row.get("account")
 		name = (row.get("account_name") or "").lower()
 		if "total" in name and ("income" in name or "expense" in name or "revenue" in name):
 			prior = flt(prior_map.get("__total__" + name, prior_map.get(key, 0)))
+			prior_m = flt(prior_month_map.get("__total__" + name, prior_month_map.get(key, 0)))
 		else:
 			prior = flt(prior_map.get(key, 0))
+			prior_m = flt(prior_month_map.get(key, 0))
+
+		# YTD prior
 		row["prior_total"] = prior
-		actual = flt(row.get("total_actual", 0))
-		row["prior_var_amount"] = actual - prior
+		actual_ytd = flt(row.get("total_actual", 0))
+		row["prior_var_amount"] = actual_ytd - prior
 		row["prior_var_percent"] = flt((row["prior_var_amount"] / prior) * 100, 2) if prior else 0
 
+		# Monthly prior (same month last year)
+		row["prior_month"] = prior_m
+		# month actual is already on row under period key; var filled later if needed
+		# Use displayed month from total path: caller sets via fill after knowing month_key
+		# Store prior_month only; monthly prior var computed in fill_prior_month_var
 
-def apply_display_accumulation(rows, month_key):
-	"""Replace the single displayed month column (month_key) with the
-	cumulative Jan..to_month value. Only called when "Accumulated Values"
-	is checked in Monthly mode (GL fetch itself is always net-per-month,
-	so row[month_key] normally holds the net-for-that-month value only).
 
-	total_actual/budget_ytd already hold the Jan..to_month sum (for
-	currency rows) or the correctly recomputed cumulative ratio (for
-	GOP%/Payroll Cost% rows, via _fill_ratio using summed numerator/
-	revenue) -- so just copy those instead of summing per-month values
-	(summing percentages would be wrong)."""
+def fill_prior_month_var(rows, month_key):
 	for row in rows or []:
 		if not row:
 			continue
-		if "total_actual" in row:
-			row[month_key] = row["total_actual"]
-		if "budget_ytd" in row:
-			row[month_key + "_budget"] = row["budget_ytd"]
+		act = flt(row.get(month_key, 0))
+		prior_m = flt(row.get("prior_month", 0))
+		row["prior_month_var_amount"] = act - prior_m
 
 
 def apply_prior_to_net(net, income, expense):
@@ -311,12 +259,13 @@ def apply_prior_to_net(net, income, expense):
 	net["prior_var_percent"] = (
 		flt((net["prior_var_amount"] / prior) * 100, 2) if prior else 0
 	)
+	net["prior_month"] = flt(inc.get("prior_month", 0)) - flt(exp.get("prior_month", 0))
+	# prior_month_var filled by fill_prior_month_var after net is built
 
 
-def append_ratio_rows(data, income, expense, period_list, filters):
+def append_ratio_rows(data, income, expense, period_list, filters, month_key):
 	"""GOP % and Payroll Cost % after Profit/(Loss)."""
 	income_total = income[-2] if income else {}
-	expense_total = expense[-2] if expense else {}
 	currency = (
 		filters.get("presentation_currency")
 		or frappe.get_cached_value("Company", filters.company, "default_currency")
@@ -326,6 +275,7 @@ def append_ratio_rows(data, income, expense, period_list, filters):
 		"total_actual": flt(income_total.get("total_actual", 0)),
 		"budget_ytd": flt(income_total.get("budget_ytd", 0)),
 		"prior_total": flt(income_total.get("prior_total", 0)),
+		"prior_month": flt(income_total.get("prior_month", 0)),
 	}
 	for period in period_list:
 		revenue[period.key] = flt(income_total.get(period.key, 0))
@@ -337,16 +287,19 @@ def append_ratio_rows(data, income, expense, period_list, filters):
 			profit = row
 			break
 
-	# GOP %
 	gop = _blank_ratio_row("GOP %", currency)
-	_fill_ratio(gop, profit or {}, revenue, period_list)
+	_fill_ratio(gop, profit or {}, revenue, period_list, month_key)
 	data.append(gop)
 
-	# Payroll Cost %
 	payroll_vals = get_payroll_values(filters, period_list)
 	payroll_row = _blank_ratio_row("Payroll Cost %", currency)
-	_fill_ratio(payroll_row, payroll_vals, revenue, period_list)
+	_fill_ratio(payroll_row, payroll_vals, revenue, period_list, month_key)
 	data.append(payroll_row)
+
+	# prior_month_var for all data rows that have prior_month
+	for row in data:
+		if row and "prior_month" in row:
+			fill_prior_month_var([row], month_key)
 
 
 def _blank_ratio_row(label, currency):
@@ -360,9 +313,9 @@ def _blank_ratio_row(label, currency):
 	}
 
 
-def _fill_ratio(target, numerator_row, revenue, period_list):
+def _fill_ratio(target, numerator_row, revenue, period_list, month_key):
 	"""ratio = numerator / revenue for each summary + period key."""
-	for field in ("total_actual", "budget_ytd", "prior_total"):
+	for field in ("total_actual", "budget_ytd", "prior_total", "prior_month"):
 		num = flt((numerator_row or {}).get(field, 0))
 		den = flt(revenue.get(field, 0))
 		target[field] = flt((num / den) * 100, 2) if den else 0
@@ -386,6 +339,12 @@ def _fill_ratio(target, numerator_row, revenue, period_list):
 		den_b = flt(revenue.get(period.key + "_budget", 0))
 		target[period.key + "_budget"] = flt((num_b / den_b) * 100, 2) if den_b else 0
 
+	# Monthly act-vs-budget %
+	act_m = flt(target.get(month_key, 0))
+	bud_m = flt(target.get(month_key + "_budget", 0))
+	target["monthly_var_amount"] = act_m - bud_m
+	target["monthly_var_percent"] = flt((target["monthly_var_amount"] / bud_m) * 100, 2) if bud_m else 0
+
 
 def get_payroll_values(filters, period_list):
 	"""SUM GL of account_number 600001 descendants, shaped like a row with period keys + totals."""
@@ -396,7 +355,6 @@ def get_payroll_values(filters, period_list):
 		as_dict=1,
 	)
 	if not account:
-		# fallback any company with that number (spec: resolve by company filter first)
 		account = frappe.db.get_value(
 			"Account",
 			{"account_number": PAYROLL_ACCOUNT_NUMBER},
@@ -455,68 +413,38 @@ def get_payroll_values(filters, period_list):
 		bal = flt(r.balance)
 		for p in period_list:
 			if p.from_date <= posting <= p.to_date:
-				if filters.accumulated_values:
-					# accumulated: all postings up to period.to_date within year range
-					pass
 				result[p.key] = flt(result.get(p.key, 0)) + bal
 				break
 		result["total_actual"] = flt(result["total_actual"]) + bal
 
-	if filters.accumulated_values and filters.periodicity == "Monthly":
-		running = 0.0
-		for p in period_list:
-			running += flt(result.get(p.key, 0))
-			result[p.key] = running
-
-	# budget for payroll group: sum descendants from budget_map already on expense tree if present
-	# compute from get_budget_data
 	budget_map = get_budget_data(filters, ytd=False)
 	start_m = list(MONTH_NAMES).index(filters.month) if filters.month in MONTH_NAMES else 1
 	end_m = list(MONTH_NAMES).index(filters.to_month) if filters.to_month in MONTH_NAMES else 12
 
-	# Per-period budget columns (month_budget), same logic as add_budget_to_rows
-	running_budget = 0.0
 	for p in period_list:
 		p_to_date = getdate(p.to_date) if p.to_date else None
 		budget_key = p.key + "_budget"
 		budget_value = 0.0
-		if filters.periodicity == "Yearly":
-			for acc in leaf_accounts:
-				for m in range(start_m, end_m + 1):
-					budget_value += flt(budget_map.get(acc, {}).get(m, 0))
-		elif p_to_date:
+		if p_to_date:
 			month_num = p_to_date.month
-			month_budget = sum(flt(budget_map.get(acc, {}).get(month_num, 0)) for acc in leaf_accounts)
-			if filters.accumulated_values:
-				running_budget += month_budget
-				budget_value = running_budget
-			else:
-				budget_value = month_budget
+			budget_value = sum(flt(budget_map.get(acc, {}).get(month_num, 0)) for acc in leaf_accounts)
 		result[budget_key] = budget_value
 
 	budget_ytd = 0.0
-	# sum budget for all leaf accounts under payroll
 	for acc in leaf_accounts:
 		for m in range(start_m, end_m + 1):
 			budget_ytd += flt(budget_map.get(acc, {}).get(m, 0))
-	# also try group account key
 	for m in range(start_m, end_m + 1):
 		budget_ytd += flt(budget_map.get(account.name, {}).get(m, 0))
-
 	result["budget_ytd"] = budget_ytd
 
-	# prior year payroll
+	# prior year payroll: YTD + single month
 	try:
-		prev_fy = get_fiscal_year(
-			add_years(period_list[0].year_start_date, -1),
-			company=filters.company,
-			as_dict=1,
-		)
-		if filters.display_accumulated:
-			prev_from = add_years(period_list[0].from_date, -1)
-		else:
-			prev_from = add_years(period_list[-1].from_date, -1)
+		prev_from = add_years(period_list[0].from_date, -1)
 		prev_to = add_years(period_list[-1].to_date, -1)
+		prev_month_from = add_years(period_list[-1].from_date, -1)
+		prev_month_to = add_years(period_list[-1].to_date, -1)
+
 		prev_values = dict(values)
 		prev_values["from_date"] = prev_from
 		prev_values["to_date"] = prev_to
@@ -530,35 +458,25 @@ def get_payroll_values(filters, period_list):
 			prev_values,
 		)[0][0]
 		result["prior_total"] = flt(prev_total)
+
+		prev_m_values = dict(values)
+		prev_m_values["from_date"] = prev_month_from
+		prev_m_values["to_date"] = prev_month_to
+		prev_m_values["company"] = company
+		prev_month = frappe.db.sql(
+			"""
+			select coalesce(sum(gle.debit) - sum(gle.credit), 0)
+			from `tabGL Entry` gle
+			where {cond}
+			""".format(cond=" and ".join(conditions)),
+			prev_m_values,
+		)[0][0]
+		result["prior_month"] = flt(prev_month)
 	except Exception:
 		result["prior_total"] = 0
-
-	# When NOT accumulated, override summary totals with single-month values
-	if not filters.display_accumulated and filters.view_mode == "Monthly":
-		displayed_key = period_list[-1].key
-		result["total_actual"] = flt(result.get(displayed_key, 0))
-		result["budget_ytd"] = flt(result.get(displayed_key + "_budget", 0))
+		result["prior_month"] = 0
 
 	return result
-
-
-def remap_ytd_fields(data):
-	"""YTD view: expose ytd_* fieldnames from summary fields."""
-	mapping = {
-		"total_actual": "ytd_actual",
-		"budget_ytd": "ytd_budget",
-		"variance_amount": "ytd_var_amount",
-		"variance_percent": "ytd_var_percent",
-		"prior_total": "ytd_prior_actual",
-		"prior_var_amount": "ytd_py_var_amount",
-		"prior_var_percent": "ytd_py_var_percent",
-	}
-	for row in data:
-		if not row:
-			continue
-		for src, dst in mapping.items():
-			if src in row:
-				row[dst] = row[src]
 
 
 def prepare_display_rows(data, filters):
@@ -571,7 +489,6 @@ def prepare_display_rows(data, filters):
 			d["account_name"] = remove_account_number(d.get("account_name") or "")
 			if frappe.flags.in_export:
 				d["account"] = d["account_name"]
-		# rename total labels closer to template
 		name = d.get("account_name") or ""
 		if "Total Income" in name:
 			d["account_name"] = "Total Revenue"
@@ -580,10 +497,7 @@ def prepare_display_rows(data, filters):
 			d["account_name"] = "Total Expenses"
 			d["account"] = "Total Expenses"
 		if d.get("profit_data"):
-			if filters.get("periodicity") == "Monthly":
-				d["account_name"] = "Profit/(Loss) for the Month"
-			else:
-				d["account_name"] = "Profit/(Loss) for the Year"
+			d["account_name"] = "Profit/(Loss)"
 			d["account"] = "Profit/(Loss)"
 		new_data.append(d)
 	return new_data
@@ -607,86 +521,61 @@ def get_report_columns(filters, period_list):
 			"fieldtype": "Data",
 			"width": 110,
 		},
-		{
-			"fieldname": "currency",
-			"label": _("Currency"),
-			"fieldtype": "Link",
-			"options": "Currency",
-			"hidden": 1,
-		},
 	]
 
-	# Short year labels: filters.year = "2026" → cur="26", prev="25"
 	year_str = str(filters.year)[-2:]
 	prev_year_str = str(cint(filters.year) - 1)[-2:]
-
 	month_abbr = (filters.to_month or "")[:3]
 
-	if filters.view_mode == "Monthly":
-		for period in period_list:
-			columns.append(
-				{
-					"fieldname": period.key,
-					"label": period.label,
-					"fieldtype": "Currency",
-					"options": "currency",
-					"width": 130,
-				}
-			)
-			# Budget column per period (same pattern as financial_statements.py)
-			budget_key = period.key + "_budget"
-			month_label = period.label.split()[0] if period.label else ""
-			columns.append(
-				{
-					"fieldname": budget_key,
-					"label": _("{0} Budget").format(month_label),
-					"fieldtype": "Currency",
-					"options": "currency",
-					"width": 130,
-				}
-			)
-		columns.extend(
-			[
-				_cur("total_actual", _("Total Actual")),
-				_cur("budget_ytd", _("Budget YTD")),
-				_cur("variance_amount", _("Variance ($)"), width=0, hidden=1),
-				_pct("variance_percent", _("Variance (%)"), width=0, hidden=1),
-				_cur("prior_total", _("Act {0} '{1}").format(month_abbr, prev_year_str)),
-				_cur(
-					"prior_var_amount",
-					_("Act {0} '{1} vs Act {0} '{2} ($)").format(month_abbr, year_str, prev_year_str),
-					width=170,
-				),
-				_pct(
-					"prior_var_percent",
-					_("Act {0} '{1} vs Act {0} '{2} (%)").format(month_abbr, year_str, prev_year_str),
-					width=170,
-				),
-			]
+	for period in period_list:
+		# Act May 26
+		columns.append(
+			{
+				"fieldname": period.key,
+				"label": _("Act {0} '{1}").format(month_abbr, year_str),
+				"fieldtype": "Currency",
+				"options": "currency",
+				"width": 120,
+			}
 		)
-	else:
-		columns.extend(
-			[
-				_cur("ytd_actual", _("Actual YTD")),
-				_cur("ytd_budget", _("Budget YTD")),
-				_cur("ytd_var_amount", _("Act vs Budget ($)"), width=0, hidden=1),
-				_pct("ytd_var_percent", _("Act vs Budget (%)"), width=0, hidden=1),
-				_cur(
-					"ytd_prior_actual",
-					_("Act'{0}").format(prev_year_str),
-				),
-				_cur(
-					"ytd_py_var_amount",
-					_("Act'{0} vs Act'{1} ($)").format(year_str, prev_year_str),
-					width=170,
-				),
-				_pct(
-					"ytd_py_var_percent",
-					_("Act'{0} vs Act'{1} (%)").format(year_str, prev_year_str),
-					width=170,
-				),
-			]
+		# Budget May 26
+		columns.append(
+			{
+				"fieldname": period.key + "_budget",
+				"label": _("Budget {0} '{1}").format(month_abbr, year_str),
+				"fieldtype": "Currency",
+				"options": "currency",
+				"width": 130,
+			}
 		)
+
+	columns.extend(
+		[
+			_cur("monthly_var_amount", _("Act vs Budget (Month) ($)"), width=200),
+			_pct("monthly_var_percent", _("Act vs Budget (Month) (%)"), width=200),
+			_cur("prior_month", _("Act {0} '{1}").format(month_abbr, prev_year_str)),
+			_cur(
+				"prior_month_var_amount",
+				_("Act {0} '{1} vs Act {0} '{2} ($)").format(month_abbr, year_str, prev_year_str),
+				width=230,
+			),
+			_cur("total_actual", _("Actual YTD"), width=140),
+			_cur("budget_ytd", _("Budget YTD"), width=140),
+			_cur("variance_amount", _("Act vs Budget Yearly ($)"), width=200),
+			_pct("variance_percent", _("Act vs Budget Yearly (%)"), width=200),
+			_cur("prior_total", _("Act '{0}").format(prev_year_str)),
+			_cur(
+				"prior_var_amount",
+				_("Act YTD '{0} vs Act YTD '{1} ($)").format(year_str, prev_year_str),
+				width=230,
+			),
+			_pct(
+				"prior_var_percent",
+				_("Act YTD '{0} vs Act YTD '{1} (%)").format(year_str, prev_year_str),
+				width=230,
+			),
+		]
+	)
 
 	return columns
 
