@@ -248,6 +248,9 @@ def fill_prior_month_var(rows, month_key):
 		act = flt(row.get(month_key, 0))
 		prior_m = flt(row.get("prior_month", 0))
 		row["prior_month_var_amount"] = act - prior_m
+		row["prior_month_var_percent"] = (
+			flt((row["prior_month_var_amount"] / prior_m) * 100, 2) if prior_m else 0
+		)
 
 
 def apply_prior_to_net(net, income, expense):
@@ -557,6 +560,11 @@ def get_report_columns(filters, period_list):
 			_cur(
 				"prior_month_var_amount",
 				_("Act {0} '{1} vs Act {0} '{2} ($)").format(month_abbr, year_str, prev_year_str),
+				width=230,
+			),
+			_pct(
+				"prior_month_var_percent",
+				_("Act {0} '{1} vs Act {0} '{2} (%)").format(month_abbr, year_str, prev_year_str),
 				width=230,
 			),
 			_cur("total_actual", _("Actual YTD"), width=140),
