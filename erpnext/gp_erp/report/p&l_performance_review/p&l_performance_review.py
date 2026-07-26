@@ -626,7 +626,7 @@ def add_borders(report_name, xlsx_file):
 
 	# Each box: (start pattern for first column, end pattern for last column)
 	boxes = [
-		(re.compile(r"^Act .+'\d+$"), re.compile(r"vs Act .+\(\$\)$")),
+		(re.compile(r"^Act .+'\d+$"), re.compile(r"vs Act .+\(%\)$")),
 		(re.compile(r"^Actual YTD$"), re.compile(r"vs Act YTD .+\(%\)$")),
 	]
 
