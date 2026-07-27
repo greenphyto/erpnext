@@ -324,6 +324,7 @@
 		if (action_type === "Move" || action_type === "Discard") attach_scan_button(d, "from_location", "Warehouse Location");
 		if (action_type === "New" || action_type === "Move") attach_scan_button(d, "to_location", "Warehouse Location");
 		update_stock_qty(d);
+		return d;
 	}
 
 	function location_filters(ctx) {
@@ -610,7 +611,7 @@
 				var item_doc = response.message;
 				var stock_uom = item_doc.stock_uom;
 				var packaging_uoms = (item_doc.packaging || [])
-					.map(function (row) { return row.uom; })
+					.map(function (row) { return row.packaging; })
 					.filter(Boolean);
 				var allowed_uoms = unique_values(packaging_uoms.concat(stock_uom || ""));
 				var current_uom = dialog.get_value("uom");
@@ -640,6 +641,14 @@
 		uom_field.get_query = function () {
 			return { filters: filters };
 		};
+
+		if (uom_field.$input && uom_field.$input.cache) {
+			uom_field.$input.cache[uom_field.get_options()] = {};
+		}
+		if (uom_field.awesomplete) {
+			uom_field.awesomplete.list = [];
+		}
+
 		uom_field.refresh();
 	}
 
@@ -1126,4 +1135,18 @@
 	}
 
 	window.open_scan_dialog = open_scan_dialog;
+	window.open_warehouse_action_form = open_warehouse_action_form;
+	window.set_warehouse_action_batch = function (dialog, batch) {
+		var set_value_result = dialog.set_value("batch", batch);
+		if (set_value_result && set_value_result.then) {
+			set_value_result.then(function () { set_batch_context(dialog, batch); });
+		} else {
+			set_batch_context(dialog, batch);
+		}
+	};
+	window.get_warehouse_action_context = function () {
+		return frappe.call({
+			method: "erpnext.stock.doctype.warehouse_action.warehouse_action.get_action_context",
+		});
+	};
 })();
