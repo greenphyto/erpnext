@@ -269,7 +269,13 @@
 							},
 						};
 					},
-					onchange: function () { set_available_stock_qty(d); },
+					onchange: function () {
+						set_available_stock_qty(d);
+						if (d.has_field("to_location")) {
+							var from_loc = d.get_value("from_location");
+							if (from_loc && from_loc === d.get_value("to_location")) d.set_value("to_location", "");
+						}
+					},
 				},
 				{
 					fieldname: "available_stock_qty",
@@ -289,7 +295,17 @@
 		if (action_type === "New" || action_type === "Move") {
 			fields.push(
 				{ fieldtype: "Section Break", label: __("Target Location") },
-				{ fieldname: "to_location", fieldtype: "Link", label: __("To Location"), options: "Warehouse Location", reqd: 1, filters: location_filters(ctx) }
+				{
+				fieldname: "to_location", fieldtype: "Link", label: __("To Location"), options: "Warehouse Location", reqd: 1, filters: location_filters(ctx),
+				get_query: function () {
+					var filters = { warehouse: ctx.warehouse, disabled: 0, status: ["!=", "Blocked"] };
+					if (d.has_field("from_location")) {
+						var from_loc = d.get_value("from_location");
+						if (from_loc) filters.name = ["!=", from_loc];
+					}
+					return { filters: filters };
+				},
+			}
 			);
 		}
 
