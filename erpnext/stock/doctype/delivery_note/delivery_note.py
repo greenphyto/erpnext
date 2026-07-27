@@ -1396,6 +1396,77 @@ def update_delivery_note_status(docname, status):
 
 
 @frappe.whitelist()
+def record_batch_location_discard(
+	delivery_note, item_row, warehouse_location, qty, batch=None, uom=None, warehouse_action=None
+):
+	"""Record qty taken from a Warehouse Location against a Delivery Note Item row,
+	so Show Batch Location can display already taken qty per location."""
+	parent = frappe.db.get_value("Delivery Note Item", item_row, "parent")
+	if parent != delivery_note:
+		frappe.throw(_("Item row does not belong to Delivery Note {0}.").format(delivery_note))
+
+	qty = flt(qty)
+	location_map = (
+		frappe.db.get_value("Delivery Note Item", item_row, "warehouse_location_map") or "{}"
+	)
+	location_map = frappe.parse_json(location_map) or {}
+	existing = location_map.get(warehouse_location)
+	final_batch = batch or (existing.get("batch") if isinstance(existing, dict) else "") or ""
+	expiry_date = frappe.db.get_value("Batch", final_batch, "expiry_date") if final_batch else None
+	if isinstance(existing, dict):
+		prev_qty = flt(existing.get("qty"))
+		location_map[warehouse_location] = {
+			"qty": prev_qty + qty,
+			"batch": final_batch,
+			"uom": uom or existing.get("uom") or "",
+			"expiry_date": expiry_date,
+			"warehouse_action": warehouse_action or existing.get("warehouse_action") or "",
+		}
+	else:
+		location_map[warehouse_location] = {
+			"qty": flt(existing) + qty,
+			"batch": final_batch,
+			"uom": uom or "",
+			"expiry_date": expiry_date,
+			"warehouse_action": warehouse_action or "",
+		}
+	frappe.db.set_value(
+		"Delivery Note Item", item_row, "warehouse_location_map", frappe.as_json(location_map)
+	)
+	return location_map
+
+
+@frappe.whitelist()
+def cancel_batch_location_discard(delivery_note, item_row, warehouse_location):
+	"""Restore stock previously taken (Discard) for a location and remove it from the map."""
+	from erpnext.stock.doctype.warehouse_action.warehouse_action import restore_move
+
+	parent = frappe.db.get_value("Delivery Note Item", item_row, "parent")
+	if parent != delivery_note:
+		frappe.throw(_("Item row does not belong to Delivery Note {0}.").format(delivery_note))
+
+	location_map = (
+		frappe.db.get_value("Delivery Note Item", item_row, "warehouse_location_map") or "{}"
+	)
+	location_map = frappe.parse_json(location_map) or {}
+	entry = location_map.get(warehouse_location)
+	if not entry:
+		frappe.throw(_("No taken record found for Warehouse Location {0}.").format(warehouse_location))
+
+	warehouse_action = entry.get("warehouse_action") if isinstance(entry, dict) else None
+	if not warehouse_action:
+		frappe.throw(_("Warehouse Action reference missing for Warehouse Location {0}.").format(warehouse_location))
+
+	restore_move(warehouse_action)
+
+	del location_map[warehouse_location]
+	frappe.db.set_value(
+		"Delivery Note Item", item_row, "warehouse_location_map", frappe.as_json(location_map)
+	)
+	return location_map
+
+
+@frappe.whitelist()
 def make_inter_company_purchase_receipt(source_name, target_doc=None):
 	return make_inter_company_transaction("Delivery Note", source_name, target_doc)
 

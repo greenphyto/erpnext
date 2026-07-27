@@ -60,6 +60,58 @@ erpnext.stock.delivery_note.render_batch_location_dialog = function(frm, rows, c
 	});
 	d.show();
 
+	function get_location_map(row) {
+		var map = row.warehouse_location_map;
+		if (!map) return {};
+		if (typeof map === "string") {
+			try { map = JSON.parse(map) || {}; } catch (e) { return {}; }
+		}
+		// normalize: support legacy number values and new {qty, batch, uom, expiry_date}
+		var normalized = {};
+		Object.keys(map).forEach(function(key) {
+			var val = map[key];
+			if (val && typeof val === "object") {
+				normalized[key] = {
+					qty: flt(val.qty),
+					batch: val.batch || "",
+					uom: val.uom || "",
+					expiry_date: val.expiry_date || "",
+				};
+			} else {
+				normalized[key] = { qty: flt(val), batch: "", uom: "", expiry_date: "" };
+			}
+		});
+		return normalized;
+	}
+
+	function get_taken_qty(entry) {
+		if (!entry) return 0;
+		return flt(typeof entry === "object" ? entry.qty : entry);
+	}
+
+	function get_total_taken(location_map) {
+		var total = 0;
+		Object.keys(location_map).forEach(function(key) { total += get_taken_qty(location_map[key]); });
+		return total;
+	}
+
+	function merge_taken_locations(locations, location_map, default_uom) {
+		var seen = {};
+		locations.forEach(function(loc) { seen[loc.warehouse_location] = true; });
+		Object.keys(location_map).forEach(function(loc_name) {
+			if (seen[loc_name]) return;
+			var entry = location_map[loc_name];
+			locations.push({
+				warehouse_location: loc_name,
+				batch: entry.batch || "",
+				expiry_date: entry.expiry_date || "",
+				qty: 0,
+				stock_uom: entry.uom || default_uom || "",
+			});
+		});
+		return locations;
+	}
+
 	function load_locations(body, row) {
 		body.html('<div class="text-muted" style="padding:8px 0;">' + __("Loading...") + '</div>').slideDown(150);
 		frappe.call({
@@ -68,37 +120,62 @@ erpnext.stock.delivery_note.render_batch_location_dialog = function(frm, rows, c
 			callback: function(res) {
 				var locations = (res && res.message) || [];
 				body.data("loaded", true);
-				var remaining = flt(row.stock_qty) || flt(row.qty);
+
+				var location_map = get_location_map(row);
+				var total_needed = flt(row.stock_qty) || flt(row.qty);
+				var total_taken = get_total_taken(location_map);
+				var remaining = total_needed - total_taken;
 				var location_uom = (locations[0] && locations[0].stock_uom) || row.stock_uom || "";
+
+				locations = merge_taken_locations(locations, location_map, location_uom);
 
 				if (!locations.length) {
 					body.html(
 						'<div class="text-muted" style="padding:8px 0;">' + __("No stock found in any location.") + '</div>' +
 						'<div class="dn-batch-location-shortage text-danger" style="padding:8px 0 0;font-weight:600;">' +
-						__("Qty remain {0} {1} not found", [flt(remaining, 2), location_uom]) + '</div>'
+						__("Qty remain {0} {1} not found", [flt(Math.max(remaining, 0), 2), location_uom]) + '</div>'
 					);
 					return;
 				}
 
 				var rows_html = locations.map(function(loc) {
 					var stock_qty = flt(loc.qty);
-					var allocated = Math.min(stock_qty, remaining);
-					remaining -= allocated;
+					var already_taken = get_taken_qty(location_map[loc.warehouse_location]);
+					var is_taken = already_taken > 0;
+
+					var qty_value, action_cell;
+					if (is_taken) {
+						qty_value = already_taken;
+						action_cell =
+							'<span class="indicator-pill green" style="white-space:nowrap;">' + __("Taken") + '</span> ' +
+							'<button type="button" class="btn btn-xs btn-icon dn-batch-location-cancel-take" ' +
+								'title="' + frappe.utils.escape_html(__("Undo Take")) + '" ' +
+								'data-location="' + frappe.utils.escape_html(loc.warehouse_location) + '" ' +
+								'style="padding:0 4px;">' +
+								'<i class="fa fa-times text-danger"></i>' +
+							'</button>';
+					} else {
+						qty_value = Math.max(Math.min(stock_qty, remaining), 0);
+						remaining -= qty_value;
+						action_cell = '<button type="button" class="btn btn-xs btn-default dn-batch-location-discard" ' +
+							'data-batch="' + frappe.utils.escape_html(loc.batch) + '" ' +
+							'data-location="' + frappe.utils.escape_html(loc.warehouse_location) + '" ' +
+							'data-uom="' + frappe.utils.escape_html(loc.stock_uom || "") + '">' +
+							__("Take") + '</button>';
+					}
+
 					return (
 						'<tr>' +
 							'<td>' + frappe.utils.escape_html(loc.warehouse_location) + '</td>' +
-							'<td>' + frappe.utils.escape_html(loc.batch) + '</td>' +
-							'<td>' + frappe.utils.escape_html(loc.expiry_date || "") + '</td>' +
+							'<td>' + frappe.utils.escape_html(loc.batch || (location_map[loc.warehouse_location] && location_map[loc.warehouse_location].batch) || "") + '</td>' +
+							'<td>' + frappe.utils.escape_html(loc.expiry_date || (location_map[loc.warehouse_location] && location_map[loc.warehouse_location].expiry_date) || "") + '</td>' +
 							'<td>' + frappe.utils.escape_html(flt(stock_qty, 2)) + '</td>' +
 							'<td><input type="number" step="any" min="0" max="' + stock_qty +
-								'" class="form-control input-xs dn-batch-location-qty" value="' + flt(allocated, 2) + '" ' +
-								'data-stock-qty="' + stock_qty + '" style="width:90px;"></td>' +
+								'" class="form-control input-xs dn-batch-location-qty" value="' + flt(qty_value, 2) + '" ' +
+								'data-stock-qty="' + stock_qty + '"' + (is_taken ? ' readonly disabled' : '') +
+								' style="width:90px;"></td>' +
 							'<td>' + frappe.utils.escape_html(loc.stock_uom || "") + '</td>' +
-							'<td><button type="button" class="btn btn-xs btn-default dn-batch-location-discard" ' +
-								'data-batch="' + frappe.utils.escape_html(loc.batch) + '" ' +
-								'data-location="' + frappe.utils.escape_html(loc.warehouse_location) + '" ' +
-								'data-uom="' + frappe.utils.escape_html(loc.stock_uom || "") + '">' +
-								__("Discard") + '</button></td>' +
+							'<td>' + action_cell + '</td>' +
 						'</tr>'
 					);
 				}).join("");
@@ -169,7 +246,7 @@ erpnext.stock.delivery_note.render_batch_location_dialog = function(frm, rows, c
 		}
 
 		frappe.confirm(
-			__("Continue discard stock?"),
+			__("Continue take stock?"),
 			function() {
 				frappe.call({
 					method: "frappe.client.insert",
@@ -192,8 +269,24 @@ erpnext.stock.delivery_note.render_batch_location_dialog = function(frm, rows, c
 							method: "frappe.client.submit",
 							args: { doc: r.message },
 							callback: function() {
-								frappe.show_alert({ message: __("Stock discarded successfully."), indicator: "green" });
-								load_locations(body, row);
+								frappe.call({
+									method: "erpnext.stock.doctype.delivery_note.delivery_note.record_batch_location_discard",
+									args: {
+										delivery_note: frm.doc.name,
+										item_row: row.name,
+										warehouse_location: location,
+										qty: qty,
+										batch: batch,
+										uom: uom,
+										warehouse_action: r.message.name,
+									},
+									callback: function(map_res) {
+										row.warehouse_location_map = (map_res && map_res.message) || {};
+										frm.refresh_field("items");
+										frappe.show_alert({ message: __("Stock taken successfully."), indicator: "green" });
+										load_locations(body, row);
+									},
+								});
 							},
 							error: function(err) {
 								frappe.msgprint({ title: __("Submit failed"), message: (err && err.message) || __("Could not submit Warehouse Action."), indicator: "red" });
@@ -202,6 +295,39 @@ erpnext.stock.delivery_note.render_batch_location_dialog = function(frm, rows, c
 					},
 					error: function(err) {
 						frappe.msgprint({ title: __("Could not save"), message: (err && err.message) || __("Could not create Warehouse Action."), indicator: "red" });
+					},
+				});
+			}
+		);
+	});
+
+	d.$wrapper.on("click", ".dn-batch-location-cancel-take", function() {
+		var $btn = $(this);
+		var location = $btn.data("location");
+		var wrapper_row = $btn.closest(".dn-batch-location-row");
+		var body = wrapper_row.find(".dn-batch-location-row__body");
+		var idx = parseInt(wrapper_row.attr("data-idx"), 10);
+		var row = rows[idx];
+
+		frappe.confirm(
+			__("Cancel this take? Stock will be restored to the location."),
+			function() {
+				frappe.call({
+					method: "erpnext.stock.doctype.delivery_note.delivery_note.cancel_batch_location_discard",
+					args: {
+						delivery_note: frm.doc.name,
+						item_row: row.name,
+						warehouse_location: location,
+					},
+					freeze: true,
+					callback: function(map_res) {
+						row.warehouse_location_map = (map_res && map_res.message) || {};
+						frm.refresh_field("items");
+						frappe.show_alert({ message: __("Take cancelled, stock restored."), indicator: "green" });
+						load_locations(body, row);
+					},
+					error: function(err) {
+						frappe.msgprint({ title: __("Could not cancel"), message: (err && err.message) || __("Could not restore stock."), indicator: "red" });
 					},
 				});
 			}

@@ -50,6 +50,27 @@ frappe.ui.form.on("Warehouse Action", {
 	conversion_factor(frm) {
 		update_stock_qty_preview(frm);
 	},
+	refresh(frm) {
+		if (frm.doc.docstatus === 1 && ["Move", "Discard"].includes(frm.doc.action_type)) {
+			frm.add_custom_button(__("Restore Location"), () => {
+				frappe.confirm(
+					__("Restore stock back to {0}?", [frm.doc.from_location]),
+					() => {
+						frappe.call({
+							method: "erpnext.stock.doctype.warehouse_action.warehouse_action.restore_move",
+							args: { warehouse_action: frm.doc.name },
+							freeze: true,
+							callback(r) {
+								if (r.message) {
+									frappe.set_route("Form", "Warehouse Action", r.message);
+								}
+							},
+						});
+					}
+				);
+			});
+		}
+	},
 });
 
 function update_stock_qty_preview(frm) {

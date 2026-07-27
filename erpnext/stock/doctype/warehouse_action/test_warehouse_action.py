@@ -7,6 +7,7 @@ from erpnext.stock.doctype.item.test_item import make_item
 from erpnext.stock.doctype.warehouse_action.warehouse_action import (
 	batch_location_query,
 	get_action_context,
+	restore_move,
 )
 
 
@@ -293,6 +294,56 @@ class TestWarehouseAction(FrappeTestCase):
 		)
 
 		self.assertEqual([row[0] for row in result], [self.loc_a])
+
+	def test_restore_move_reverses_when_stock_available(self):
+		_seed_batch_location(self.batch, self.loc_a, 20)
+		action = _make_action(
+			"Move", self.batch, self.warehouse, 1, "Kg", 10,
+			from_location=self.loc_a, to_location=self.loc_b,
+		)
+		action.submit()
+		self.assertEqual(_get_qty(self.batch, self.loc_b), 10)
+
+		restore_move(action.name)
+		self.assertEqual(_get_qty(self.batch, self.loc_a), 20)
+		self.assertEqual(_get_qty(self.batch, self.loc_b), 0)
+
+	def test_restore_move_rejected_when_stock_moved_away(self):
+		_seed_batch_location(self.batch, self.loc_a, 20)
+		action = _make_action(
+			"Move", self.batch, self.warehouse, 1, "Kg", 10,
+			from_location=self.loc_a, to_location=self.loc_b,
+		)
+		action.submit()
+
+		_make_action(
+			"Discard", self.batch, self.warehouse, 1, "Kg", 10,
+			from_location=self.loc_b,
+		).submit()
+
+		self.assertRaises(ValidationError, restore_move, action.name)
+
+	def test_restore_discard_brings_stock_back(self):
+		_seed_batch_location(self.batch, self.loc_a, 20)
+		action = _make_action(
+			"Discard", self.batch, self.warehouse, 5, "Kg", 1,
+			from_location=self.loc_a,
+		)
+		action.submit()
+		self.assertEqual(_get_qty(self.batch, self.loc_a), 15)
+
+		restored_name = restore_move(action.name)
+		self.assertEqual(_get_qty(self.batch, self.loc_a), 20)
+		restored = frappe.get_doc("Warehouse Action", restored_name)
+		self.assertEqual(restored.action_type, "New")
+		self.assertEqual(restored.to_location, self.loc_a)
+
+	def test_restore_rejects_non_move_or_discard(self):
+		action = _make_action(
+			"New", self.batch, self.warehouse, 2, "Kg", 10, to_location=self.loc_a
+		)
+		action.submit()
+		self.assertRaises(ValidationError, restore_move, action.name)
 
 	def test_new_missing_settings_rejected(self):
 		frappe.db.set_single_value("Warehouse Location Settings", "default_warehouse", "")

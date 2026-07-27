@@ -5,6 +5,7 @@ from frappe.utils import flt, now_datetime
 
 from erpnext.stock.doctype.batch_location.batch_location import (
 	decrease_batch_location,
+	get_batch_location_qty,
 	increase_batch_location,
 )
 from erpnext.stock.doctype.warehouse_location_settings.warehouse_location_settings import (
@@ -18,7 +19,8 @@ class WarehouseAction(Document):
 			self.user = frappe.session.user
 		self.posting_datetime = self.posting_datetime or now_datetime()
 		self.item = frappe.db.get_value("Batch", self.batch, "item")
-		self.warehouse = get_default_warehouse()
+		if not frappe.flags.get("warehouse_action_restoring"):
+			self.warehouse = get_default_warehouse()
 		self.stock_uom = frappe.db.get_value("Item", self.item, "stock_uom")
 		self.stock_qty = flt(self.qty) * flt(self.conversion_factor)
 
@@ -192,6 +194,45 @@ def batch_location_query(doctype, txt, searchfield, start, page_len, filters, as
 		page_length=page_len,
 		as_list=not as_dict,
 	)
+
+
+@frappe.whitelist()
+def restore_move(warehouse_action):
+	"""Reverse a submitted Move (moves stock back) or Discard (brings stock back)."""
+	original = frappe.get_doc("Warehouse Action", warehouse_action)
+	if original.action_type not in ("Move", "Discard") or original.docstatus != 1:
+		frappe.throw(_("Only a submitted Move or Discard action can be restored."))
+
+	if original.action_type == "Move":
+		available_qty = get_batch_location_qty(original.batch, original.to_location)
+		if available_qty < flt(original.stock_qty):
+			frappe.throw(
+				_("Stock at {0} is only {1}, not enough to restore {2}.").format(
+					original.to_location, available_qty, original.stock_qty
+				)
+			)
+		restore = frappe.new_doc("Warehouse Action")
+		restore.action_type = "Move"
+		restore.from_location = original.to_location
+		restore.to_location = original.from_location
+	else:
+		restore = frappe.new_doc("Warehouse Action")
+		restore.action_type = "New"
+		restore.to_location = original.from_location
+
+	restore.warehouse = original.warehouse
+	restore.batch = original.batch
+	restore.qty = original.qty
+	restore.uom = original.uom
+	restore.conversion_factor = original.conversion_factor
+	restore.remarks = _("Restore of {0}").format(original.name)
+	try:
+		frappe.flags.warehouse_action_restoring = True
+		restore.insert(ignore_permissions=True)
+		restore.submit()
+	finally:
+		frappe.flags.warehouse_action_restoring = False
+	return restore.name
 
 
 @frappe.whitelist()

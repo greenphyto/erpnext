@@ -94,6 +94,7 @@
   "foms_work_order",
   "serial_no",
   "actual_batch_qty",
+  "warehouse_location_map",
   "actual_qty",
   "installed_qty",
   "item_tax_rate",
@@ -588,6 +589,15 @@
    "width": "150px"
   },
   {
+   "allow_on_submit": 1,
+   "fieldname": "warehouse_location_map",
+   "fieldtype": "JSON",
+   "label": "Warehouse Location Map",
+   "no_copy": 1,
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
    "fieldname": "serial_no",
    "fieldtype": "Text",
    "in_list_view": 1,
@@ -947,7 +957,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-05-20 11:42:40.021531",
+ "modified": "2026-07-27 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note Item",
