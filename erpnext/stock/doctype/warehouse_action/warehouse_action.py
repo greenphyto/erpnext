@@ -106,16 +106,63 @@ def get_batch_source_locations(batch, warehouse=None):
 	if not batch or not default_warehouse:
 		return []
 
-	return frappe.db.get_list(
-		"Batch Location",
-		filters={
-			"batch": batch,
-			"warehouse": default_warehouse,
-			"qty": [">", 0],
-		},
-		fields=["warehouse_location", "qty", "stock_uom"],
-		order_by="qty desc",
-		limit_page_length=0,
+	bl = frappe.qb.DocType("Batch Location")
+	wl = frappe.qb.DocType("Warehouse Location")
+	batch_dt = frappe.qb.DocType("Batch")
+	return (
+		frappe.qb.from_(bl)
+		.join(wl)
+		.on(bl.warehouse_location == wl.name)
+		.left_join(batch_dt)
+		.on(bl.batch == batch_dt.name)
+		.select(
+			bl.batch,
+			batch_dt.expiry_date,
+			bl.warehouse_location,
+			bl.qty,
+			bl.stock_uom,
+			wl.aisle_row,
+			wl.bay_column,
+			wl.level_tier,
+		)
+		.where(bl.batch == batch)
+		.where(bl.warehouse == default_warehouse)
+		.where(bl.qty > 0)
+		.orderby(batch_dt.expiry_date)
+		.orderby(bl.warehouse_location)
+		.run(as_dict=True)
+	)
+
+
+@frappe.whitelist()
+def get_item_source_locations(item, warehouse=None):
+	"""All batch locations for item, FIFO by earliest expiry date first."""
+	default_warehouse = get_default_warehouse()
+	if warehouse and warehouse != default_warehouse:
+		frappe.throw(_("Warehouse must match the configured Default Warehouse."))
+	if not item or not default_warehouse:
+		return []
+
+	bl = frappe.qb.DocType("Batch Location")
+	batch_dt = frappe.qb.DocType("Batch")
+	return (
+		frappe.qb.from_(bl)
+		.left_join(batch_dt)
+		.on(bl.batch == batch_dt.name)
+		.select(
+			bl.batch,
+			batch_dt.expiry_date,
+			bl.warehouse_location,
+			bl.qty,
+			bl.stock_uom,
+		)
+		.where(bl.item == item)
+		.where(bl.warehouse == default_warehouse)
+		.where(bl.qty > 0)
+		.orderby(batch_dt.expiry_date)
+		.orderby(bl.batch)
+		.orderby(bl.warehouse_location)
+		.run(as_dict=True)
 	)
 
 

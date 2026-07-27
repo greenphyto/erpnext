@@ -9,6 +9,206 @@ frappe.provide("erpnext.stock");
 frappe.provide("erpnext.stock.delivery_note");
 frappe.provide("erpnext.accounts.dimensions");
 
+erpnext.stock.delivery_note.show_batch_locations = function(frm) {
+	var rows = (frm.doc.items || []).filter(function(row) { return !!row.batch_no; });
+	if (!rows.length) {
+		frappe.msgprint(__("No items with Batch selected."));
+		return;
+	}
+	if (!window.get_warehouse_action_context) {
+		frappe.msgprint(__("Warehouse Action module is not available."));
+		return;
+	}
+	window.get_warehouse_action_context().then(function(r) {
+		var warehouse = r && r.message && r.message.warehouse;
+		if (!warehouse) {
+			frappe.msgprint({
+				title: __("Warehouse Action"),
+				message: __("Please configure Default Warehouse in Warehouse Location Settings first."),
+				indicator: "orange",
+			});
+			return;
+		}
+		erpnext.stock.delivery_note.render_batch_location_dialog(frm, rows, r.message);
+	});
+};
+
+erpnext.stock.delivery_note.render_batch_location_dialog = function(frm, rows, ctx) {
+	var html =
+		'<div class="dn-batch-location-list">' +
+		rows.map(function(row, i) {
+			var needed = flt(flt(row.stock_qty) || flt(row.qty), 2);
+			return (
+				'<div class="dn-batch-location-row" data-idx="' + i + '" style="border:1px solid var(--border-color,#d1d8dd);border-radius:8px;margin-bottom:10px;">' +
+					'<div class="dn-batch-location-row__header" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;cursor:pointer;">' +
+						'<div><strong>' + frappe.utils.escape_html(row.item_code) + '</strong>' +
+						' &middot; ' + __("Batch") + ': ' + frappe.utils.escape_html(row.batch_no) +
+						' &middot; ' + __("Qty") + ': ' + frappe.utils.escape_html(needed) + ' ' + frappe.utils.escape_html(row.stock_uom || "") +
+						'</div>' +
+						'<span class="dn-batch-location-row__toggle">' + __("Show Location") + ' &#9660;</span>' +
+					'</div>' +
+					'<div class="dn-batch-location-row__body" style="display:none;padding:0 12px 12px;"></div>' +
+				'</div>'
+			);
+		}).join("") +
+		'</div>';
+
+	var d = new frappe.ui.Dialog({
+		title: __("Batch Locations"),
+		size: "large",
+		fields: [{ fieldtype: "HTML", fieldname: "batch_location_html", options: html }],
+	});
+	d.show();
+
+	function load_locations(body, row) {
+		body.html('<div class="text-muted" style="padding:8px 0;">' + __("Loading...") + '</div>').slideDown(150);
+		frappe.call({
+			method: "erpnext.stock.doctype.warehouse_action.warehouse_action.get_item_source_locations",
+			args: { item: row.item_code, warehouse: ctx.warehouse },
+			callback: function(res) {
+				var locations = (res && res.message) || [];
+				body.data("loaded", true);
+				var remaining = flt(row.stock_qty) || flt(row.qty);
+				var location_uom = (locations[0] && locations[0].stock_uom) || row.stock_uom || "";
+
+				if (!locations.length) {
+					body.html(
+						'<div class="text-muted" style="padding:8px 0;">' + __("No stock found in any location.") + '</div>' +
+						'<div class="dn-batch-location-shortage text-danger" style="padding:8px 0 0;font-weight:600;">' +
+						__("Qty remain {0} {1} not found", [flt(remaining, 2), location_uom]) + '</div>'
+					);
+					return;
+				}
+
+				var rows_html = locations.map(function(loc) {
+					var stock_qty = flt(loc.qty);
+					var allocated = Math.min(stock_qty, remaining);
+					remaining -= allocated;
+					return (
+						'<tr>' +
+							'<td>' + frappe.utils.escape_html(loc.warehouse_location) + '</td>' +
+							'<td>' + frappe.utils.escape_html(loc.batch) + '</td>' +
+							'<td>' + frappe.utils.escape_html(loc.expiry_date || "") + '</td>' +
+							'<td>' + frappe.utils.escape_html(flt(stock_qty, 2)) + '</td>' +
+							'<td><input type="number" step="any" min="0" max="' + stock_qty +
+								'" class="form-control input-xs dn-batch-location-qty" value="' + flt(allocated, 2) + '" ' +
+								'data-stock-qty="' + stock_qty + '" style="width:90px;"></td>' +
+							'<td>' + frappe.utils.escape_html(loc.stock_uom || "") + '</td>' +
+							'<td><button type="button" class="btn btn-xs btn-default dn-batch-location-discard" ' +
+								'data-batch="' + frappe.utils.escape_html(loc.batch) + '" ' +
+								'data-location="' + frappe.utils.escape_html(loc.warehouse_location) + '" ' +
+								'data-uom="' + frappe.utils.escape_html(loc.stock_uom || "") + '">' +
+								__("Discard") + '</button></td>' +
+						'</tr>'
+					);
+				}).join("");
+
+				var footer_html = "";
+				if (remaining > 0) {
+					footer_html =
+						'<div class="dn-batch-location-shortage text-danger" style="padding:8px 0 0;font-weight:600;">' +
+						__("Qty remain {0} {1} not found", [flt(remaining, 2), location_uom]) + '</div>';
+				}
+
+				var table_html =
+					'<table class="table table-bordered" style="margin-bottom:0;">' +
+						'<thead><tr>' +
+							'<th>' + __("Location") + '</th>' +
+							'<th>' + __("Batch") + '</th>' +
+							'<th>' + __("Exp Date") + '</th>' +
+							'<th>' + __("Stock Qty") + '</th>' +
+							'<th>' + __("Qty Needed") + '</th>' +
+							'<th>' + __("UOM") + '</th>' +
+							'<th>' + __("Action") + '</th>' +
+						'</tr></thead>' +
+						'<tbody>' + rows_html + '</tbody>' +
+					'</table>' + footer_html;
+				body.html(table_html);
+			},
+		});
+	}
+
+	d.$wrapper.find(".dn-batch-location-row__header").on("click", function() {
+		var wrapper_row = $(this).closest(".dn-batch-location-row");
+		var body = wrapper_row.find(".dn-batch-location-row__body");
+		var idx = parseInt(wrapper_row.attr("data-idx"), 10);
+		var row = rows[idx];
+
+		if (body.is(":visible")) {
+			body.slideUp(150);
+			return;
+		}
+		if (body.data("loaded")) {
+			body.slideDown(150);
+			return;
+		}
+		load_locations(body, row);
+	});
+
+	d.$wrapper.on("click", ".dn-batch-location-discard", function() {
+		var $btn = $(this);
+		var $tr = $btn.closest("tr");
+		var $input = $tr.find(".dn-batch-location-qty");
+		var batch = $btn.data("batch");
+		var location = $btn.data("location");
+		var stock_qty = flt($input.data("stock-qty"));
+		var qty = flt($input.val());
+		var uom = $btn.data("uom");
+		var wrapper_row = $btn.closest(".dn-batch-location-row");
+		var body = wrapper_row.find(".dn-batch-location-row__body");
+		var idx = parseInt(wrapper_row.attr("data-idx"), 10);
+		var row = rows[idx];
+
+		if (qty <= 0) {
+			frappe.msgprint(__("Qty Needed must be greater than zero."));
+			return;
+		}
+		if (qty > stock_qty) {
+			frappe.msgprint(__("Qty Needed ({0}) exceeds Stock Qty ({1}) at this location.", [qty, stock_qty]));
+			return;
+		}
+
+		frappe.confirm(
+			__("Continue discard stock?"),
+			function() {
+				frappe.call({
+					method: "frappe.client.insert",
+					args: {
+						doc: {
+							doctype: "Warehouse Action",
+							action_type: "Discard",
+							batch: batch,
+							from_location: location,
+							qty: qty,
+							uom: uom,
+							conversion_factor: 1,
+							remarks: __("Discard from Delivery Note {0}", [frm.doc.name]),
+						},
+					},
+					freeze: true,
+					callback: function(r) {
+						if (!r || !r.message || !r.message.name) return;
+						frappe.call({
+							method: "frappe.client.submit",
+							args: { doc: r.message },
+							callback: function() {
+								frappe.show_alert({ message: __("Stock discarded successfully."), indicator: "green" });
+								load_locations(body, row);
+							},
+							error: function(err) {
+								frappe.msgprint({ title: __("Submit failed"), message: (err && err.message) || __("Could not submit Warehouse Action."), indicator: "red" });
+							},
+						});
+					},
+					error: function(err) {
+						frappe.msgprint({ title: __("Could not save"), message: (err && err.message) || __("Could not create Warehouse Action."), indicator: "red" });
+					},
+				});
+			}
+		);
+	});
+};
+
 frappe.ui.form.on("Delivery Note", {
 	setup: function(frm) {
 		frm.custom_make_buttons = {
@@ -185,6 +385,13 @@ frappe.ui.form.on("Delivery Note", {
 		
 		erpnext.add_image_slide(frm)
 		erpnext.set_batch_no_readonly(frm);
+		// erpnext.set_batch_no_readonly(frm);
+
+		if (!frm.is_new() && (frm.doc.items || []).some(row => row.batch_no)) {
+			frm.add_custom_button(__('Show Batch Location'), function() {
+				erpnext.stock.delivery_note.show_batch_locations(frm);
+			});
+		}
 	},
 	is_return: function(frm){
 		frm.set_value("naming_series", "DO-RET-.YYYY.-.###")
@@ -294,7 +501,7 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 		super.refresh();
 		if ((!doc.is_return) && (doc.status!="Closed" || this.frm.is_new())) {
 			if (this.frm.doc.docstatus===0) {
-				this.frm.add_custom_button(__('Sales Order'),
+				this.frm.add_custom_button(__('Get Items From > Sales Order'),
 					function() {
 						if (!me.frm.doc.customer) {
 							frappe.throw({
@@ -317,7 +524,7 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 								project: me.frm.doc.project || undefined,
 							}
 						})
-					}, __("Get Items From"));
+					}, __("Modify"));
 			}
 		}
 
@@ -414,7 +621,7 @@ erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpn
 								});
 							}
 						})
-					});
+					}, __("Modify"));
 				}
 
 				if (!doc.__islocal && doc.docstatus==1) {
