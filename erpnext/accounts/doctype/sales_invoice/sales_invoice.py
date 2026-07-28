@@ -248,6 +248,11 @@ class SalesInvoice(SellingController):
 		from erpnext.stock.get_item_details import get_item_price
 		account = frappe.get_cached_value("Company", self.company, "default_discount_account")
 		for d in self.get("items"):
+			d.discount_account = account
+			if d.get("so_detail") or d.get("quotation_item"):
+				# item mapped from Sales Order / Quotation, price list rate must
+				# stay identical to origin document, do not refetch
+				continue
 			item_price_args = {
 				"item_code": d.item_code,
 				"price_list": "Standard Selling",
@@ -256,7 +261,6 @@ class SalesInvoice(SellingController):
 				"transaction_date": self.get("posting_date"),
 				"batch_no": d.get("batch_no"),
 			}
-			d.discount_account = account
 			temp = get_item_price(item_price_args, d.item_code)
 			if temp:
 				temp = temp[0]

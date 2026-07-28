@@ -642,7 +642,11 @@ class AccountsController(TransactionBase):
 					# 		"cost_center", self.get("cost_center") or erpnext.get_default_cost_center(self.company)
 					# )
 
-					if ret.get("pricing_rules"):
+					if ret.get("pricing_rules") and not (
+						item.get("so_detail") or item.get("quotation_item")
+					):
+						# skip re-applying pricing rule for items mapped from Sales Order /
+						# Quotation, rate must stay identical to origin document
 						self.apply_pricing_rule_on_items(item, ret)
 						self.set_pricing_rule_details(item, ret)
 				else:

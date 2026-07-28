@@ -140,11 +140,20 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 		if out.uom == "KG":
 			out.uom = ""
 
-	if doc and doc.get("doctype") == "Delivery Note":
+	if doc and doc.get("doctype") in ("Delivery Note", "Sales Invoice"):
 		for d in doc.get("items"):
 			if d.get("name") == args.get("child_docname"):
 				if d.get("so_detail"):
 					# copy back value from origin if from SO
+					for k,val in out.items():
+						if d.get(k):
+							out[k] = d.get(k)
+
+	if doc and doc.get("doctype") == "Sales Order":
+		for d in doc.get("items"):
+			if d.get("name") == args.get("child_docname"):
+				if d.get("quotation_item"):
+					# copy back value from origin if from Quotation
 					for k,val in out.items():
 						if d.get(k):
 							out[k] = d.get(k)
