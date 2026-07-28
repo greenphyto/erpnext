@@ -1339,13 +1339,6 @@ class AccountsController(TransactionBase):
 				self.precision(based_on, item),
 			)
 			if not ref_amt:
-				frappe.msgprint(
-					_("System will not check overbilling since amount for Item {0} in {1} is zero").format(
-						item.item_code, ref_dt
-					),
-					title=_("Warning"),
-					indicator="orange",
-				)
 				continue
 
 			already_billed = self.get_billed_amount_for_item(item, item_ref_dn, based_on)
