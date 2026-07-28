@@ -365,13 +365,6 @@ def get_party_account(party_type, party=None, company=None):
 	if not company:
 		frappe.throw(_("Please select a Company"))
 
-	if party_type == "Supplier":
-		supp_code = frappe.get_value("Supplier", party, "supplier_code")
-		map_acc = supplier_mapping_account(company)
-		for code, account in map_acc.items():
-			if supp_code and code in supp_code:
-				return account
-
 	if not party and party_type in ["Customer", "Supplier"]:
 		default_account_name = (
 			"default_receivable_account" if party_type == "Customer" else "default_payable_account"
@@ -391,6 +384,12 @@ def get_party_account(party_type, party=None, company=None):
 			{"parenttype": party_group_doctype, "parent": group, "company": company},
 			"account",
 		)
+
+	if not account and party_type == "Supplier":
+		supp_code = frappe.get_value("Supplier", party, "supplier_code")
+		if supp_code:
+			map_acc = supplier_mapping_account(company)
+			account = map_acc.get(supp_code)
 
 	if not account and party_type in ["Customer", "Supplier"]:
 		default_account_name = (
