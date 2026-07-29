@@ -51,6 +51,7 @@ doctype_js = {
 	"Supplier": "gp_erp/controllers/buying/supplier.js",
 	"BOM": "gp_erp/controllers/manufacturing/bom.js",
 	"Workstation": "gp_erp/controllers/manufacturing/workstation.js",
+	"Routing": "gp_erp/controllers/manufacturing/routing.js",
 }
 doctype_list_js = {
 	"Code List": [
@@ -88,6 +89,11 @@ override_doctype_class = {
     "Item": "erpnext.gp_erp.controllers.stock.item.ItemGP",
     "GL Entry": "erpnext.gp_erp.controllers.accounts.gl_entry.GLEntryGP",
     "Batch": "erpnext.gp_erp.controllers.stock.batch.BatchGP",
+    "Job Card": "erpnext.gp_erp.controllers.manufacturing.job_card.JobCardGP",
+    "Stock Reconciliation": "erpnext.gp_erp.controllers.stock.stock_reconciliation.StockReconciliationGP",
+    "Routing": "erpnext.gp_erp.controllers.manufacturing.routing.RoutingGP",
+    "Stock Settings": "erpnext.gp_erp.controllers.stock.stock_settings.StockSettingsGP",
+    "Currency Exchange Settings": "erpnext.gp_erp.controllers.accounts.currency_exchange_settings.CurrencyExchangeSettingsGP",
 }
 
 override_whitelisted_methods = {"frappe.www.contact.send_message": "erpnext.templates.utils.send_message"}
