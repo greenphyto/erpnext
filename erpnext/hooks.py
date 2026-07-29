@@ -34,6 +34,16 @@ doctype_js = {
 	"Event": "public/js/event.js",
 	"Newsletter": "public/js/newsletter.js",
 	"Contact": "public/js/contact.js",
+	"Sales Invoice": "gp_erp/controllers/selling/sales_invoice.js",
+	"Purchase Invoice": "gp_erp/controllers/buying/purchase_invoice.js",
+	"Stock Entry": "gp_erp/controllers/stock/stock_entry.js",
+	"Journal Entry": "gp_erp/controllers/accounts/journal_entry.js",
+	"Payment Entry": "gp_erp/controllers/accounts/payment_entry.js",
+	"Delivery Note": "gp_erp/controllers/stock/delivery_note.js",
+	"Purchase Order": "gp_erp/controllers/buying/purchase_order.js",
+	"Sales Order": "gp_erp/controllers/selling/sales_order.js",
+	"Quotation": "gp_erp/controllers/selling/quotation.js",
+	"Customer": "gp_erp/controllers/selling/customer.js",
 }
 doctype_list_js = {
 	"Code List": [
@@ -51,6 +61,11 @@ override_doctype_class = {
     "Stock Entry": "erpnext.gp_erp.controllers.stock.stock_entry.StockEntryGP",
     "Journal Entry": "erpnext.gp_erp.controllers.accounts.journal_entry.JournalEntryGP",
     "Payment Entry": "erpnext.gp_erp.controllers.accounts.payment_entry.PaymentEntryGP",
+    "Delivery Note": "erpnext.gp_erp.controllers.stock.delivery_note.DeliveryNoteGP",
+    "Purchase Order": "erpnext.gp_erp.controllers.buying.purchase_order.PurchaseOrderGP",
+    "Sales Order": "erpnext.gp_erp.controllers.selling.sales_order.SalesOrderGP",
+    "Quotation": "erpnext.gp_erp.controllers.selling.quotation.QuotationGP",
+    "Customer": "erpnext.gp_erp.controllers.selling.customer.CustomerGP",
 }
 
 override_whitelisted_methods = {"frappe.www.contact.send_message": "erpnext.templates.utils.send_message"}
