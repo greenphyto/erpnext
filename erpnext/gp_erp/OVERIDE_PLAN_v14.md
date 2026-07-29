@@ -41,6 +41,11 @@ erpnext/gp_erp/
 │       ├── __init__.py
 │       └── ...
 │
+├── public/js/controllers/           # NEW — global prototype monkey-patches for base-controller JS classes
+│   ├── README.md
+│   ├── transaction_patch.js         # patches erpnext.TransactionController.prototype
+│   └── taxes_and_totals_patch.js    # patches erpnext.taxes_and_totals.prototype
+│
 ├── report_controllers/              # NEW — overrides the logic of EXISTING ERPNext reports (not gp_erp's own reports)
 │   ├── __init__.py
 │   ├── registry.py                  # single source of truth: {report_name: dotted_module_path}
@@ -140,6 +145,68 @@ Paths in `doctype_js` are relative to the app root (`frappe.get_app_path`), not 
 
 ---
 
+## 3.6. Global Controller Patch — Prototype Monkey-Patch for Base JS Classes
+
+**Different problem from section 3.5:** `taxes_and_totals.js` and `transaction.js` are NOT per-doctype scripts. They are shared base classes loaded globally on EVERY page via `erpnext.bundle.js`, which is wired through `hooks.py:app_include_js` (not `doctype_js`). The JS class chain looks like this:
+
+```
+erpnext.payments
+  └── erpnext.taxes_and_totals          (public/js/controllers/taxes_and_totals.js)
+        └── erpnext.TransactionController  (public/js/controllers/transaction.js)
+              ├── erpnext.selling.SellingController   (selling/sales_common.js)
+              │     ├── SalesInvoiceController   (sales_invoice.js)
+              │     ├── SalesOrderController      (sales_order.js)
+              │     └── ...
+              └── erpnext.buying.BuyingController    (public/js/controllers/buying.js)
+                    ├── PurchaseOrderController  (purchase_order.js)
+                    └── ...
+```
+
+Every transactional doctype (Sales Invoice, Purchase Invoice, Stock Entry, Delivery Note, Sales Order, Purchase Order, Quotation, Purchase Receipt...) instantiates one of these subclasses via `extend_cscript(cur_frm.cscript, new XxxController({frm: cur_frm}))` at the bottom of its own `.js` file. The base `TransactionController` and `TaxesAndTotals` methods are called through prototype-chain resolution at runtime — so patching their prototypes affects every doctype that inherits them.
+
+**Why `doctype_js` doesn't work here:** `doctype_js` files get inlined into a doctype's `__js` metadata and loaded only when that specific doctype's form opens. Base classes like `taxes_and_totals.js` need to be available on every page (including non-doctype pages like reports, dashboards) because other bundles and doctype scripts reference `erpnext.TransactionController` and `erpnext.taxes_and_totals` directly.
+
+**Pattern** (save original prototype ref before overwriting — manual `super()` equivalent):
+
+```javascript
+// erpnext/gp_erp/public/js/controllers/transaction_patch.js
+(function () {
+    const _original_calculate_taxes_and_totals =
+        erpnext.TransactionController.prototype.calculate_taxes_and_totals;
+
+    erpnext.TransactionController.prototype.calculate_taxes_and_totals =
+        async function (update_paid_amount) {
+            await _original_calculate_taxes_and_totals.call(this, update_paid_amount);
+            // custom logic added on top of original behavior
+        };
+})();
+```
+
+This works because JavaScript prototype lookup is dynamic at call-time, not fixed at class-definition time. The subclass (e.g. `SalesInvoiceController`) inherits the patched prototype, and any `super.calculate_taxes_and_totals()` call inside the subclass resolves against the patched version — there is no "frozen" reference at `extends` time. The only case this doesn't cover is if a subclass defines the same method itself (overriding at subclass level); then you'd need to patch that specific subclass prototype instead.
+
+**Wiring** — append path to `app_include_js` in `hooks.py`, AFTER `"erpnext.bundle.js"` so it loads after the base classes are defined:
+
+```python
+app_include_js = [
+    "erpnext.bundle.js",
+    "/assets/erpnext/js/company_view.js",
+    "/assets/erpnext/js/gp_erp/controllers/transaction_patch.js",
+    "/assets/erpnext/js/gp_erp/controllers/taxes_and_totals_patch.js",
+]
+```
+
+Path format: `"/assets/erpnext/js/..."` — same convention as `company_view.js` already in `app_include_js`. No need to add to `build.json` or esbuild config; raw asset paths work via `app_include_js`.
+
+**Coexistence with section 3.5 (doctype_js):** Both mechanisms can be used together for the same doctype. `doctype_js` adds per-doctype handlers (`frappe.ui.form.on("Sales Invoice", ...)`). Global prototype patches affect the base controller class methods (`TransactionController.prototype.calculate_taxes_and_totals`). They operate at different layers — prototype chain vs. event-handler list — and don't conflict.
+
+**Coexistence with section 3 (override_doctype_class):** No interaction — `override_doctype_class` is Python-side, these patches are JS-side. They target different runtime environments entirely.
+
+**Future candidates (not implemented yet):**
+- `transaction_patch.js` — patch `calculate_taxes_and_totals`, `item_code`, `rate`, etc. on `TransactionController.prototype`
+- `taxes_and_totals_patch.js` — patch `apply_discount_amount`, `set_item_wise_tax`, etc. on `TaxesAndTotals.prototype`
+
+---
+
 ## 4. Report Controller Override Flow
 
 **Technical problem:** `Report.execute_module()` (frappe/core/doctype/report/report.py:191-195) builds a deterministic path:
@@ -191,13 +258,14 @@ report_override.apply()
 
 - JSON override — optional/possible via Customize Form / custom field json (`gp_erp/custom/`), the mechanism already exists, no new system needed.
 - Registry abstraction for DocType controllers (not needed — the `hooks.py` dict is already enough, native, single file, no reinventing the wheel).
-- "True override" for JS (non-additive) — no native hook exists, and the reimplementation approach is entirely different (rewrite the full event handler, no `super()`). Handle it case-by-case if/when the need arises, instead of building a generic abstraction upfront.
+- "True override" for per-doctype JS event handlers (section 3.5) — no native hook exists, and the reimplementation approach is entirely different (rewrite the full event handler, no `super()`). Handle it case-by-case if/when the need arises, instead of building a generic abstraction upfront.
 
 ---
 
 ## 6. Verification
 
 - DocType override: `bench --site test5 console` → `frappe.get_doc("Sales Invoice").__class__.__name__` should be `SalesInvoiceGP`.
-- Client Script: open the Sales Invoice form in the browser, check that `sales_invoice.js` is loaded (network tab / `frm.script_type`, or drop a temporary `console.log`) — confirm no errors and that ERPNext's original handlers still run.
+- Client Script (section 3.5): open the Sales Invoice form in the browser, check that `sales_invoice.js` is loaded (network tab / `frm.script_type`, or drop a temporary `console.log`) — confirm no errors and that ERPNext's original handlers still run.
+- Global controller patch (section 3.6): open any transactional doctype form (e.g. Sales Invoice) after deploying `transaction_patch.js`, open browser console — confirm the patched method runs (e.g. drop a `console.log` in the patch body), confirm no errors, confirm original behavior still works.
 - Report override: `bench --site test5 execute erpnext.gp_erp.report_pacthing.report_override.apply`, then run the report from the UI and check the modified result.
 - A small self-check assertion is left in `report_override.py` (e.g. `assert report_module.get_report_module_dotted_path is _patched` called once after `apply()`).
