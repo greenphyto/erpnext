@@ -5,9 +5,11 @@ Payment Entry, GL Entry, Account, ...).
 
 ## How to use
 
-Same pattern as the parent `controllers/` folder — one file per doctype,
-class inherits from the original controller, registered in
-`hooks.py:override_doctype_class`.
+Same pattern as the parent `controllers/` folder — one `.py` + one
+co-located `.js` per doctype (same base name), Python class inherits from
+the original controller, JS appends to the doctype's form script.
+Registered in `hooks.py:override_doctype_class` (Python) and
+`hooks.py:doctype_js` (JS).
 
 ```python
 # payment_entry.py
@@ -17,6 +19,15 @@ class PaymentEntryGP(PaymentEntry):
     def validate(self):
         super().validate()
         ...
+```
+
+```javascript
+// payment_entry.js — additive only, no super() equivalent
+frappe.ui.form.on("Payment Entry", {
+    validate(frm) {
+        ...
+    },
+});
 ```
 
 ## Planned implementation
