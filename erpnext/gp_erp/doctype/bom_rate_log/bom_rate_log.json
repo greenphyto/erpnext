@@ -1,0 +1,70 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2024-11-01 16:58:17.060570",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "posting_date",
+  "reff_doctype",
+  "reff_name",
+  "data",
+  "show_log"
+ ],
+ "fields": [
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date"
+  },
+  {
+   "fieldname": "data",
+   "fieldtype": "Code",
+   "label": "Data"
+  },
+  {
+   "default": "Purchase Receipt",
+   "fieldname": "reff_doctype",
+   "fieldtype": "Select",
+   "label": "Reff Doctype",
+   "options": "Purchase Receipt\nStock Entry"
+  },
+  {
+   "fieldname": "reff_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Reff Name",
+   "options": "reff_doctype"
+  },
+  {
+   "fieldname": "show_log",
+   "fieldtype": "Button",
+   "label": "Show Log"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-11-01 16:59:16.017771",
+ "modified_by": "Administrator",
+ "module": "GP ERP",
+ "name": "BOM Rate Log",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

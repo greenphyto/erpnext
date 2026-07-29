@@ -1,0 +1,283 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "REQ.####./.YYYY",
+ "creation": "2024-06-12 11:19:02.204816",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "proposed_customer",
+  "department",
+  "foms_id",
+  "column_break_3",
+  "posting_date",
+  "delivery_date",
+  "duration_days",
+  "section_break_5",
+  "non_package_item",
+  "tray_data_section",
+  "tray_data_html",
+  "get_tray_data",
+  "items",
+  "section_break_8",
+  "total_price",
+  "column_break_10",
+  "total_weight",
+  "salad_ingredients_section",
+  "salad_items",
+  "section_break_9",
+  "amended_from",
+  "workflow_state",
+  "req_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Department",
+   "options": "Department"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Request",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_9",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "workflow_state",
+   "fieldtype": "Data",
+   "label": "Workflow State",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Request Items",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_price",
+   "fieldtype": "Currency",
+   "label": "Total Price",
+   "read_only": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "delivery_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Delivery Date",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "reqd": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_weight",
+   "fieldtype": "Float",
+   "label": "Total Weight (Kg)",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_8",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_package_item",
+   "fieldtype": "Check",
+   "label": "Non Package Item"
+  },
+  {
+   "fieldname": "tray_data_section",
+   "fieldtype": "Section Break",
+   "label": "Tray Data"
+  },
+  {
+   "fieldname": "tray_data_html",
+   "fieldtype": "HTML",
+   "label": "Tray Data",
+   "read_only": 1
+  },
+  {
+   "fieldname": "get_tray_data",
+   "fieldtype": "Button",
+   "label": "Get Tray Data"
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "req_id",
+   "fieldtype": "Data",
+   "label": "Request ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "salad_ingredients_section",
+   "fieldtype": "Section Break",
+   "label": "Salad Ingredients"
+  },
+  {
+   "fieldname": "salad_items",
+   "fieldtype": "Table",
+   "label": "Salad Items",
+   "options": "BOM Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "description": "Days from posting date to delivery date",
+   "fieldname": "duration_days",
+   "fieldtype": "Data",
+   "label": "Duration (days)",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "proposed_customer",
+   "fieldtype": "Link",
+   "label": "Proposed Customer",
+   "options": "Customer"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-06-26 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "GP ERP",
+ "name": "Request",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Master Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
