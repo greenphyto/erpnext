@@ -44,7 +44,14 @@ doctype_list_js = {
 	],
 }
 
-override_doctype_class = {"Address": "erpnext.accounts.custom.address.ERPNextAddress"}
+override_doctype_class = {
+    "Address": "erpnext.accounts.custom.address.ERPNextAddress",
+    "Sales Invoice": "erpnext.gp_erp.controllers.selling.sales_invoice.SalesInvoiceGP",
+    "Purchase Invoice": "erpnext.gp_erp.controllers.buying.purchase_invoice.PurchaseInvoiceGP",
+    "Stock Entry": "erpnext.gp_erp.controllers.stock.stock_entry.StockEntryGP",
+    "Journal Entry": "erpnext.gp_erp.controllers.accounts.journal_entry.JournalEntryGP",
+    "Payment Entry": "erpnext.gp_erp.controllers.accounts.payment_entry.PaymentEntryGP",
+}
 
 override_whitelisted_methods = {"frappe.www.contact.send_message": "erpnext.templates.utils.send_message"}
 
