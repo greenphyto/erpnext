@@ -55,6 +55,13 @@ doctype_js = {
 	"Budget": "gp_erp/controllers/accounts/budget.js",
 	"Job Card": "gp_erp/controllers/manufacturing/job_card.js",
 	"Company": "gp_erp/controllers/setup/company.js",
+	"Mode of Payment": "gp_erp/controllers/accounts/mode_of_payment.js",
+	"Currency Exchange Settings": "gp_erp/controllers/accounts/currency_exchange_settings.js",
+	"Process Statement Of Accounts": "gp_erp/controllers/accounts/process_statement_of_accounts.js",
+	"Stock Reconciliation": "gp_erp/controllers/stock/stock_reconciliation.js",
+	"Stock Settings": "gp_erp/controllers/stock/stock_settings.js",
+	"Pick List": "gp_erp/controllers/stock/pick_list.js",
+	"Item": "gp_erp/controllers/stock/item.js",
 }
 doctype_list_js = {
 	"Code List": [
@@ -68,6 +75,7 @@ doctype_list_js = {
 	"Sales Order": ["gp_erp/controllers/selling/sales_order_list.js"],
 	"Delivery Note": ["gp_erp/controllers/stock/delivery_note_list.js"],
 	"Asset": ["gp_erp/controllers/assets/asset_list.js"],
+	"Material Request": ["gp_erp/controllers/stock/material_request_list.js"],
 }
 
 override_doctype_class = {
@@ -105,6 +113,8 @@ override_doctype_class = {
     "Workstation Type": "erpnext.gp_erp.controllers.manufacturing.workstation_type.WorkstationTypeGP",
     "Pick List": "erpnext.gp_erp.controllers.stock.pick_list.PickListGP",
     "Invoice Discounting": "erpnext.gp_erp.controllers.accounts.invoice_discounting.InvoiceDiscountingGP",
+    "UOM": "erpnext.gp_erp.controllers.setup.uom.UOMGP",
+    "Shipping Rule": "erpnext.gp_erp.controllers.accounts.shipping_rule.ShippingRuleGP",
 }
 
 override_whitelisted_methods = {"frappe.www.contact.send_message": "erpnext.templates.utils.send_message"}
