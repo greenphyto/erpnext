@@ -1,81 +1,114 @@
 # controllers/
 
-Master folder for DocType controller overrides — both Python
-(`override_doctype_class`) and client-side JS (`doctype_js`). Each doctype
-gets a co-located `.py` + `.js` pair in the same module subfolder.
+Master folder for all DocType override layers — co-located per doctype in
+the same module subfolder.  Each doctype can have up to 4 files:
 
-- **Python side**: Frappe's native `override_doctype_class` hook, resolved
-  in `base_document.py:import_controller()` to swap the default controller
-  class of a DocType with a custom subclass. No monkey-patching involved.
-- **JS side**: Frappe's native `doctype_js` hook (`meta.py:114`,
-  `add_code_via_hook`). Unlike the Python side, this is **additive**, not a
-  class swap — the file's content gets appended after the DocType's
-  standard JS. There is no `super()` equivalent in JS.
+| File | Hook | Layer |
+|---|---|---|
+| `sales_invoice.py` | `override_doctype_class` | Python controller class |
+| `sales_invoice.js` | `doctype_js` | Form-level client script (additive) |
+| `sales_invoice_list.js` | `doctype_list_js` | List view config (additive) |
+| `sales_invoice_dashboard.py` | `override_doctype_dashboards` | Dashboard metadata (transform dict) |
+
+All four layers can coexist for the same doctype without conflict — they
+operate at completely different runtime points (server-side controller,
+client-side form handlers, list view config, form sidebar metadata).
 
 ## How to use
 
-1. Pick the ERPNext module the target DocType belongs to (`selling/`,
-   `buying/`, `stock/`, `accounts/`, ...). Create the subfolder if it
-   doesn't exist yet, mirroring `erpnext/<module>/doctype/` naming so
-   anyone familiar with ERPNext can find the file.
-2. Create a `.py` file named after the doctype (snake_case), containing a
-   class that inherits from the original controller:
+### 1. Python controller (section 3 of the plan)
 
-   ```python
-   # erpnext/gp_erp/controllers/selling/sales_invoice.py
-   from erpnext.accounts.doctype.sales_invoice.sales_invoice import SalesInvoice
+Inherit from the original controller class, register in
+`hooks.py:override_doctype_class`:
 
-   class SalesInvoiceGP(SalesInvoice):
-       def validate(self):
-           super().validate()
-           self.custom_validation_logic()
-   ```
+```python
+# selling/sales_invoice.py
+from erpnext.accounts.doctype.sales_invoice.sales_invoice import SalesInvoice
 
-3. Register it in `hooks.py` under `override_doctype_class`:
+class SalesInvoiceGP(SalesInvoice):
+    def validate(self):
+        super().validate()
+        self.custom_validation_logic()
+```
 
-   ```python
-   override_doctype_class = {
-       "Sales Invoice": "erpnext.gp_erp.controllers.selling.sales_invoice.SalesInvoiceGP",
-   }
-   ```
+```python
+override_doctype_class = {
+    "Sales Invoice": "erpnext.gp_erp.controllers.selling.sales_invoice.SalesInvoiceGP",
+}
+```
 
-4. (Optional) Create a `.js` file with the same base name, co-located next
-   to the `.py` file, for client-side additions:
+### 2. Form JS (section 3.5)
 
-   ```javascript
-   // erpnext/gp_erp/controllers/selling/sales_invoice.js
-   frappe.ui.form.on("Sales Invoice", {
-       validate(frm) {
-           // additional client-side logic
-       },
-   });
-   ```
+Additive client script, registered in `hooks.py:doctype_js`:
 
-5. Register it in `hooks.py` under `doctype_js` (path relative to app
-   root, not dotted-module-path):
+```javascript
+// selling/sales_invoice.js
+frappe.ui.form.on("Sales Invoice", {
+    validate(frm) { /* additional logic */ },
+});
+```
 
-   ```python
-   doctype_js = {
-       "Sales Invoice": "gp_erp/controllers/selling/sales_invoice.js",
-   }
-   ```
+```python
+doctype_js = {
+    "Sales Invoice": "gp_erp/controllers/selling/sales_invoice.js",
+}
+```
 
-That's it. Python-side methods not overridden keep behaving exactly like
-the original class (through `super()` chaining, or simply by not existing
-in the subclass). JS-side handlers get appended, not swapped.
+### 3. List view JS (section 3.7)
+
+Additive list config, registered in `hooks.py:doctype_list_js`:
+
+```javascript
+// selling/sales_invoice_list.js
+frappe.listview_settings["Sales Invoice"] = {
+    add_fields: ["custom_field"],
+    onload(listview) { /* custom list actions */ },
+};
+```
+
+```python
+doctype_list_js = {
+    "Sales Invoice": ["gp_erp/controllers/selling/sales_invoice_list.js"],
+}
+```
+
+### 4. Dashboard (section 3.8)
+
+Transform the dashboard metadata dict, registered in
+`hooks.py:override_doctype_dashboards`:
+
+```python
+# selling/sales_invoice_dashboard.py
+from frappe import _
+
+def get_data(data=None):
+    if not data:
+        data = {}
+    data["transactions"] = data.get("transactions", []) + [
+        {"label": _("Custom"), "items": ["Custom DocType"]},
+    ]
+    return data
+```
+
+```python
+override_doctype_dashboards = {
+    "Sales Invoice": "erpnext.gp_erp.controllers.selling.sales_invoice_dashboard.get_data",
+}
+```
 
 ## Rules
 
-- Always inherit from the original controller class, never rewrite it
-  from scratch (Python side).
+- Always inherit from the original controller class, never rewrite from
+  scratch (Python side).
 - Always call `super().<method>()` unless you deliberately want to fully
   replace ERPNext's default behavior for that method (Python side).
-- One `.py` + one `.js` file per doctype, same base name, same subfolder.
+- One file per layer per doctype, same base name, same subfolder.
   Do not stack multiple doctype overrides in a single file.
 - JS is additive only. If you need to truly replace an existing handler
   (not just add one), you must rewrite that exact `frappe.ui.form.on(...)`
-  handler yourself — check the standard doctype's `.js` source first to
-  know what you're overriding and in what load order.
+  handler yourself — check the standard doctype's `.js` source first.
+- Dashboard functions must accept `data=None` and merge into the existing
+  dict, not return a hardcoded dict that replaces ERPNext's original.
 - Existing `doc_events` hooks in `hooks.py` (pointing to
   `controllers/erp.py` / `controllers/foms.py`) remain valid and can run
   alongside `override_doctype_class` — migration to this structure is
@@ -90,4 +123,4 @@ Not yet implemented. First candidates to migrate from `doc_events`
 - Purchase Invoice (`buying/`)
 - Stock Entry (`stock/`)
 
-See `gp_erp/OVERIDE_PLAN_v14.md` (section 3) for full rationale.
+See `gp_erp/OVERIDE_PLAN_v14.md` sections 3–3.8 for full rationale.

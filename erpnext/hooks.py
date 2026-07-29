@@ -113,8 +113,6 @@ override_doctype_class = {
     "Workstation Type": "erpnext.gp_erp.controllers.manufacturing.workstation_type.WorkstationTypeGP",
     "Pick List": "erpnext.gp_erp.controllers.stock.pick_list.PickListGP",
     "Invoice Discounting": "erpnext.gp_erp.controllers.accounts.invoice_discounting.InvoiceDiscountingGP",
-    "UOM": "erpnext.gp_erp.controllers.setup.uom.UOMGP",
-    "Shipping Rule": "erpnext.gp_erp.controllers.accounts.shipping_rule.ShippingRuleGP",
 }
 
 override_whitelisted_methods = {"frappe.www.contact.send_message": "erpnext.templates.utils.send_message"}

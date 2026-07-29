@@ -23,23 +23,33 @@ This is not "monkey-patch everything" — it's native hook when available, monke
 ```
 erpnext/gp_erp/
 │
-├── controllers/                     # MASTER controller folder — entry point for override_doctype_class + doctype_js + doctype_list_js
+├── controllers/                     # MASTER controller folder — all override layers for a doctype
 │   ├── __init__.py
 │   ├── selling/
 │   │   ├── __init__.py
-│   │   ├── sales_invoice.py         # class SalesInvoiceGP(SalesInvoice): ...
-│   │   ├── sales_invoice.js         # frappe.ui.form.on("Sales Invoice", {...}) — co-located, same name
-│   │   └── sales_invoice_list.js    # frappe.listview_settings["Sales Invoice"] — list view override
+│   │   ├── sales_invoice.py         # override_doctype_class: class SalesInvoiceGP(SalesInvoice): ...
+│   │   ├── sales_invoice.js         # doctype_js: frappe.ui.form.on("Sales Invoice", {...})
+│   │   ├── sales_invoice_list.js    # doctype_list_js: frappe.listview_settings["Sales Invoice"]
+│   │   └── sales_invoice_dashboard.py  # override_doctype_dashboards: def get_data(data=None): ...
 │   ├── buying/
 │   │   ├── __init__.py
-│   │   ├── purchase_invoice.py      # class PurchaseInvoiceGP(PurchaseInvoice): ...
+│   │   ├── purchase_invoice.py
 │   │   ├── purchase_invoice.js
-│   │   └── purchase_invoice_list.js
+│   │   ├── purchase_invoice_list.js
+│   │   └── purchase_invoice_dashboard.py
 │   ├── stock/
 │   │   ├── __init__.py
-│   │   ├── stock_entry.py           # class StockEntryGP(StockEntry): ...
+│   │   ├── stock_entry.py
 │   │   ├── stock_entry.js
-│   │   └── stock_entry_list.js
+│   │   ├── stock_entry_list.js
+│   │   ├── stock_entry_dashboard.py
+│   │   ├── item_dashboard.py        # EXISTING, already here — dashboard override for "Item" doctype
+│   │   └── ...
+│   ├── manufacturing/               # EXISTING, already populated
+│   │   ├── __init__.py
+│   │   ├── work_order.py
+│   │   ├── work_order.js
+│   │   └── work_order_dashboard.py  # EXISTING, already here
 │   └── accounts/
 │       ├── __init__.py
 │       └── ...
@@ -263,6 +273,90 @@ doctype_list_js = {
 
 ---
 
+## 3.8. Dashboard Override — `override_doctype_dashboards` Hook
+
+**Mechanism:** Native Frappe hook, no monkey-patch. Frappe loads `get_data()` from `<doctype>_dashboard.py` by convention (`meta.py:257`, `meta.py:662`), then runs all hooks registered in `override_doctype_dashboards` (`meta.py:670-672`):
+
+```python
+for hook in frappe.get_hooks("override_doctype_dashboards", {}).get(self.name, []):
+    data = frappe._dict(frappe.get_attr(hook)(data=data))
+```
+
+Each hook function receives the current `data` dict (or `None` on first call), and returns the modified dict. Hooks run in registration order — last installed app's hook wins last, which means it can fully replace the dashboard if needed.
+
+**The `data` dict** is what `frm.dashboard` renders on the client side (`frappe/ui/form/dashboard.js`). It controls the "Connections" section (transaction groups, link counts), heatmap, graph, and internal/external link resolution. Key properties:
+
+```python
+{
+    "fieldname": "sales_invoice",           # link field name for filtering connections
+    "non_standard_fieldnames": {...},       # doctype → field override mapping
+    "internal_links": {...},                # doctypes linked within the same app
+    "internal_and_external_links": {...},   # doctypes that can be either
+    "transactions": [                       # "Connections" section groups
+        {"label": "Payment", "items": ["Payment Entry", "Journal Entry"]},
+        {"label": "Reference", "items": ["Sales Order", "Delivery Note"]},
+    ],
+    "heatmap": True,                        # show activity heatmap
+    "heatmap_message": "...",               # message below heatmap
+    "graph_method": "method.path",          # method to fetch graph data
+    "graph_method_args": {...},             # additional args for graph method
+}
+```
+
+**Pattern** — extend or replace the existing dashboard data:
+
+```python
+# erpnext/gp_erp/controllers/selling/sales_invoice_dashboard.py
+from frappe import _
+
+
+def get_data(data=None):
+    if not data:
+        data = {}
+
+    # merge transactions — add to existing groups or create new ones
+    existing_labels = [t["label"] for t in data.get("transactions", [])]
+    if _("Custom Group") not in existing_labels:
+        data["transactions"] = data.get("transactions", []) + [
+            {"label": _("Custom Group"), "items": ["Custom DocType"]},
+        ]
+
+    # override internal links (destructive — replaces existing)
+    data["internal_links"] = {
+        "Sales Order": ["items", "sales_order"],
+        "Delivery Note": ["items", "delivery_note"],
+    }
+
+    return data
+```
+
+**Wiring** — one line per doctype in `hooks.py`, new dict (add only when needed):
+
+```python
+override_doctype_dashboards = {
+    "Sales Invoice": "erpnext.gp_erp.controllers.selling.sales_invoice_dashboard.get_data",
+    "Purchase Invoice": "erpnext.gp_erp.controllers.buying.purchase_invoice_dashboard.get_data",
+    "Stock Entry": "erpnext.gp_erp.controllers.stock.stock_entry_dashboard.get_data",
+    "Item": "erpnext.gp_erp.controllers.stock.item_dashboard.get_data",
+    "Work Order": "erpnext.gp_erp.controllers.manufacturing.work_order_dashboard.get_data",
+}
+```
+
+**Existing dashboard files already in `gp_erp/controllers/`:** Two files already exist here but have a signature issue — `get_data()` takes no arguments, which means they can't receive and transform the existing `data` from ERPNext's original `_dashboard.py`. They need to be updated to accept `data=None` and merge instead of fully replacing:
+
+- `gp_erp/controllers/stock/item_dashboard.py` — currently returns hardcoded data, should merge into `stock/doctype/item/item_dashboard.py`'s output
+- `gp_erp/controllers/manufacturing/work_order_dashboard.py` — same issue, should merge into `manufacturing/doctype/work_order/work_order_dashboard.py`'s output
+
+**Coexistence with other override layers (all for the same doctype):**
+- `override_doctype_class` (section 3) — Python-side controller class, no interaction
+- `doctype_js` (section 3.5) — form-level JS handlers, no interaction
+- `doctype_list_js` (section 3.7) — list view JS, no interaction
+- Global prototype patch (section 3.6) — base class JS, no interaction
+
+Dashboard override is purely about the metadata dict that powers the form's "Connections" sidebar — it doesn't touch form logic, list logic, or controller behavior.
+
+---
+
 ## 4. Report Controller Override Flow
 
 **Technical problem:** `Report.execute_module()` (frappe/core/doctype/report/report.py:191-195) builds a deterministic path:
@@ -320,8 +414,10 @@ report_override.apply()
 
 ## 6. Verification
 
-- DocType override: `bench --site test5 console` → `frappe.get_doc("Sales Invoice").__class__.__name__` should be `SalesInvoiceGP`.
+- DocType override (section 3): `bench --site test5 console` → `frappe.get_doc("Sales Invoice").__class__.__name__` should be `SalesInvoiceGP`.
 - Client Script (section 3.5): open the Sales Invoice form in the browser, check that `sales_invoice.js` is loaded (network tab / `frm.script_type`, or drop a temporary `console.log`) — confirm no errors and that ERPNext's original handlers still run.
+- List View JS (section 3.7): open the Sales Invoice list view in the browser — confirm custom fields appear in columns and custom list actions are visible.
 - Global controller patch (section 3.6): open any transactional doctype form (e.g. Sales Invoice) after deploying `transaction_patch.js`, open browser console — confirm the patched method runs (e.g. drop a `console.log` in the patch body), confirm no errors, confirm original behavior still works.
-- Report override: `bench --site test5 execute erpnext.gp_erp.report_pacthing.report_override.apply`, then run the report from the UI and check the modified result.
+- Dashboard override (section 3.8): open the Sales Invoice form, check the "Connections" sidebar — confirm custom transaction groups appear alongside ERPNext's original groups, confirm linked doctype counts load correctly.
+- Report override (section 4): `bench --site test5 execute erpnext.gp_erp.report_pacthing.report_override.apply`, then run the report from the UI and check the modified result.
 - A small self-check assertion is left in `report_override.py` (e.g. `assert report_module.get_report_module_dotted_path is _patched` called once after `apply()`).
