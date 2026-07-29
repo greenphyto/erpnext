@@ -52,6 +52,10 @@ doctype_list_js = {
 	"Common Code": [
 		"edi/doctype/code_list/code_list_import.js",
 	],
+	"Purchase Invoice": ["gp_erp/controllers/buying/purchase_invoice_list.js"],
+	"Sales Invoice": ["gp_erp/controllers/selling/sales_invoice_list.js"],
+	"Sales Order": ["gp_erp/controllers/selling/sales_order_list.js"],
+	"Delivery Note": ["gp_erp/controllers/stock/delivery_note_list.js"],
 }
 
 override_doctype_class = {
