@@ -2,9 +2,13 @@
 # License: GNU General Public License v3. See license.txt
 
 
+import math
+
 import frappe
 from frappe import _
-from frappe.utils import cint, flt
+from frappe.contacts.doctype.address.address import get_address_display, get_default_address
+from frappe.contacts.doctype.contact.contact import get_contact_details, get_default_contact
+from frappe.utils import cint, cstr, flt, getdate
 
 from erpnext.controllers.status_updater import StatusUpdater
 
@@ -214,3 +218,54 @@ def item_details(doctype, txt, searchfield, start, page_len, filters):
 	 			limit  {} offset {} """.format("%s", searchfield, "%s", get_match_cond(doctype), "%s", "%s"),
 		((filters or {}).get("delivery_note"), "%%%s%%" % txt, page_len, start),
 	)
+
+
+# GP: Added functions for packing slip
+
+
+@frappe.whitelist()
+def get_company_billing_address(company):
+	"""Fetch default billing address for a given Company."""
+	address = frappe.db.get_value(
+		"Address",
+		{
+			"link_doctype": "Company",
+			"link_name": company,
+			"is_primary_address": 1,
+		},
+		["name", "address_line1", "address_line2", "city", "state", "pincode", "country"],
+		as_dict=True,
+	)
+
+	if not address:
+		address_name = frappe.db.get_value(
+			"Dynamic Link",
+			{
+				"link_doctype": "Company",
+				"link_name": company,
+				"parenttype": "Address",
+			},
+			"parent",
+		)
+		if address_name:
+			address = frappe.db.get_value(
+				"Address",
+				address_name,
+				["name", "address_line1", "address_line2", "city", "state", "pincode", "country"],
+				as_dict=True,
+			)
+
+	if not address:
+		return None
+
+	parts = [
+		address.get("address_line1"),
+		address.get("address_line2"),
+		address.get("city"),
+		address.get("state"),
+		address.get("pincode"),
+		address.get("country"),
+	]
+	address["display"] = ", ".join(filter(None, parts))
+
+	return address

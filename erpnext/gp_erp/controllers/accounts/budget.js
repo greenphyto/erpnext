@@ -94,7 +94,7 @@ frappe.ui.form.on('Budget', {
 		d.show();
 		d.$wrapper.find('#btn-download-budget-template').on('click', function() {
 			window.open(
-				'/api/method/erpnext.accounts.doctype.budget.budget_upload_template.download_budget_template?company='
+				'/api/method/erpnext.gp_erp.controllers.accounts.budget_upload_template.download_budget_template?company='
 				+ encodeURIComponent(frm.doc.company)
 			);
 		});

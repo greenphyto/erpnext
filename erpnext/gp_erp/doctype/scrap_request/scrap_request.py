@@ -8,7 +8,7 @@ from frappe.utils import getdate, add_days, cint
 from erpnext.stock.doctype.batch.batch import get_batch_qty
 from erpnext.stock.get_item_details import get_conversion_factor
 from erpnext.controllers.foms import get_wip_warehouse
-from erpnext.setup.doctype.company.company import switch_to_company_admin
+from erpnext.gp_erp.controllers.setup.company import switch_to_company_admin
 class ScrapRequest(Document):
 	def validate(self):
 		if self.docstatus == 0:
