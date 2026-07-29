@@ -23,20 +23,23 @@ This is not "monkey-patch everything" — it's native hook when available, monke
 ```
 erpnext/gp_erp/
 │
-├── controllers/                     # MASTER controller folder — entry point for override_doctype_class + doctype_js
+├── controllers/                     # MASTER controller folder — entry point for override_doctype_class + doctype_js + doctype_list_js
 │   ├── __init__.py
 │   ├── selling/
 │   │   ├── __init__.py
 │   │   ├── sales_invoice.py         # class SalesInvoiceGP(SalesInvoice): ...
-│   │   └── sales_invoice.js         # frappe.ui.form.on("Sales Invoice", {...}) — co-located, same name
+│   │   ├── sales_invoice.js         # frappe.ui.form.on("Sales Invoice", {...}) — co-located, same name
+│   │   └── sales_invoice_list.js    # frappe.listview_settings["Sales Invoice"] — list view override
 │   ├── buying/
 │   │   ├── __init__.py
 │   │   ├── purchase_invoice.py      # class PurchaseInvoiceGP(PurchaseInvoice): ...
-│   │   └── purchase_invoice.js
+│   │   ├── purchase_invoice.js
+│   │   └── purchase_invoice_list.js
 │   ├── stock/
 │   │   ├── __init__.py
 │   │   ├── stock_entry.py           # class StockEntryGP(StockEntry): ...
-│   │   └── stock_entry.js
+│   │   ├── stock_entry.js
+│   │   └── stock_entry_list.js
 │   └── accounts/
 │       ├── __init__.py
 │       └── ...
@@ -204,6 +207,59 @@ Path format: `"/assets/erpnext/js/..."` — same convention as `company_view.js`
 **Future candidates (not implemented yet):**
 - `transaction_patch.js` — patch `calculate_taxes_and_totals`, `item_code`, `rate`, etc. on `TransactionController.prototype`
 - `taxes_and_totals_patch.js` — patch `apply_discount_amount`, `set_item_wise_tax`, etc. on `TaxesAndTotals.prototype`
+
+---
+
+## 3.7. List View JS — `doctype_list_js` Hook
+
+**Mechanism:** Same as `doctype_js` (section 3.5) — additive, not a replacement. Frappe loads `<doctype_name>_list.js` from the doctype's own folder by convention (`meta.py:103`), then appends additional files registered via `doctype_list_js` hook (`meta.py:115`). The underlying data structure is `frappe.listview_settings["<Doctype>"]` — a plain JS object that configures columns, indicators, and list view actions. Adding more properties to this object extends the list view behavior without conflicts.
+
+**Files follow the same co-location pattern:** one `*_list.js` file per doctype, same subfolder as the `.py` + `.js` pair, distinguished by the `_list` suffix.
+
+**Pattern:**
+```javascript
+// erpnext/gp_erp/controllers/buying/purchase_invoice_list.js
+frappe.listview_settings["Purchase Invoice"] = {
+    // merge these properties into the existing listview_settings object;
+    // Frappe merges them additively — properties you don't set stay from
+    // the original file.
+    add_fields: ["custom_field_1", "custom_field_2"],
+    onload(listview) {
+        // custom list view actions (buttons, filters)
+    },
+};
+```
+
+**Wiring** (one entry per doctype in `hooks.py`, dict already exists, just add to it):
+
+```python
+doctype_list_js = {
+    "Code List": ["edi/doctype/code_list/code_list_import.js"],
+    "Common Code": ["edi/doctype/code_list/code_list_import.js"],
+    "Purchase Invoice": ["gp_erp/controllers/buying/purchase_invoice_list.js"],
+}
+```
+
+**If you need to override an existing method** like `get_indicator` from the original `_list.js` (not just add properties), the additive merge alone won't replace it — Frappe does a shallow `$.extend` on `listview_settings`, so both original and custom `get_indicator` functions would interact unpredictably. Use prototype-style save-and-replace on the `listview_settings` object instead:
+
+```javascript
+(function () {
+    const _original_get_indicator =
+        frappe.listview_settings["Purchase Invoice"].get_indicator;
+
+    frappe.listview_settings["Purchase Invoice"].get_indicator = function (doc) {
+        // custom logic
+        return _original_get_indicator ? _original_get_indicator.call(this, doc) : null;
+    };
+})();
+```
+
+**Difference from `doctype_js` (section 3.5):** `doctype_js` appends to form-level event handlers (`frappe.ui.form.on("Sales Invoice", ...)`). `doctype_list_js` appends to list-view configuration (`frappe.listview_settings["Sales Invoice"]`). Different endpoints, but the same additive hook mechanism. Both files are co-located in the same module subfolder.
+
+**Coexistence:** All three JS layers can be used together for the same doctype without conflict:
+- `*_list.js` → list view behavior
+- `*.js` (via `doctype_js`) → form behavior
+- `*_patch.js` (via `app_include_js`) → global base class behavior
 
 ---
 
