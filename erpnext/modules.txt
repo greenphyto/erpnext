@@ -20,3 +20,6 @@ Bulk Transaction
 Subcontracting
 EDI
 GP ERP
+UOB
+FOMS
+AI Agent
