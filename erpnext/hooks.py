@@ -53,6 +53,8 @@ doctype_js = {
 	"Workstation": "gp_erp/controllers/manufacturing/workstation.js",
 	"Routing": "gp_erp/controllers/manufacturing/routing.js",
 	"Budget": "gp_erp/controllers/accounts/budget.js",
+	"Job Card": "gp_erp/controllers/manufacturing/job_card.js",
+	"Company": "gp_erp/controllers/setup/company.js",
 }
 doctype_list_js = {
 	"Code List": [
@@ -100,6 +102,9 @@ override_doctype_class = {
     "Warehouse": "erpnext.gp_erp.controllers.stock.warehouse.WarehouseGP",
     "Buying Settings": "erpnext.gp_erp.controllers.buying.buying_settings.BuyingSettingsGP",
     "Fiscal Year": "erpnext.gp_erp.controllers.accounts.fiscal_year.FiscalYearGP",
+    "Workstation Type": "erpnext.gp_erp.controllers.manufacturing.workstation_type.WorkstationTypeGP",
+    "Pick List": "erpnext.gp_erp.controllers.stock.pick_list.PickListGP",
+    "Invoice Discounting": "erpnext.gp_erp.controllers.accounts.invoice_discounting.InvoiceDiscountingGP",
 }
 
 override_whitelisted_methods = {"frappe.www.contact.send_message": "erpnext.templates.utils.send_message"}
