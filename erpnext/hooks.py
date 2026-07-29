@@ -62,6 +62,7 @@ doctype_js = {
 	"Stock Settings": "gp_erp/controllers/stock/stock_settings.js",
 	"Pick List": "gp_erp/controllers/stock/pick_list.js",
 	"Item": "gp_erp/controllers/stock/item.js",
+	"Asset Maintenance Log": "gp_erp/controllers/assets/asset_maintenance_log.js",
 }
 doctype_list_js = {
 	"Code List": [

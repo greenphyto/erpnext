@@ -12,6 +12,7 @@ from frappe.utils import cint, flt, get_link_to_form
 import erpnext
 from erpnext.assets.doctype.asset.asset import get_asset_value_after_depreciation
 from erpnext.assets.doctype.asset.depreciation import (
+	_warn_unposted_depreciation,
 	depreciate_asset,
 	get_gl_entries_on_asset_disposal,
 	get_value_after_depreciation_on_disposal_date,
@@ -507,6 +508,8 @@ class AssetCapitalization(StockController):
 					asset.reload()
 				finally:
 					frappe.flags.is_composite_component = False
+
+			_warn_unposted_depreciation(asset, self.posting_date, item.get("finance_book") or self.get("finance_book"))
 
 			fixed_asset_gl_entries = get_gl_entries_on_asset_disposal(
 				asset,

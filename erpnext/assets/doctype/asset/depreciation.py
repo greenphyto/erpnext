@@ -944,3 +944,19 @@ def check_unposted_depreciation_entries(asset, disposal_date, finance_book=None)
 		tuple(params),
 		as_dict=True,
 	)
+
+
+def _warn_unposted_depreciation(asset, disposal_date, finance_book=None):
+	unposted = check_unposted_depreciation_entries(asset, disposal_date, finance_book)
+	if unposted:
+		frappe.msgprint(
+			_(
+				"There are {0} unposted depreciation entry/entries on or before the disposal date {1}. "
+				"Only posted depreciation entries are recognized in the disposal journal. "
+				"Please post outstanding depreciation entries first (Create Depreciation Entry) "
+				"to ensure Accumulated Depreciation and Gain/Loss on Disposal are accurate."
+			).format(frappe.bold(unposted), frappe.bold(disposal_date)),
+			title=_("Unposted Depreciation Entries"),
+			indicator="orange",
+			alert=True,
+		)

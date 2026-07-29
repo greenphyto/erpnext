@@ -86,6 +86,14 @@ def get_batch_naming_series():
 	return series
 
 
+def get_batch_status(batch_qty, expiry_date):
+	if flt(batch_qty) <= 0:
+		return "Empty"
+	if expiry_date and getdate(expiry_date) < getdate():
+		return "Expired"
+	return "Active"
+
+
 class Batch(Document):
 	# begin: auto-generated types
 	# This code is auto-generated. Do not modify anything in this block.
