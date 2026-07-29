@@ -44,6 +44,11 @@ doctype_js = {
 	"Sales Order": "gp_erp/controllers/selling/sales_order.js",
 	"Quotation": "gp_erp/controllers/selling/quotation.js",
 	"Customer": "gp_erp/controllers/selling/customer.js",
+	"Asset": "gp_erp/controllers/assets/asset.js",
+	"Work Order": "gp_erp/controllers/manufacturing/work_order.js",
+	"Material Request": "gp_erp/controllers/stock/material_request.js",
+	"Purchase Receipt": "gp_erp/controllers/stock/purchase_receipt.js",
+	"Supplier": "gp_erp/controllers/buying/supplier.js",
 }
 doctype_list_js = {
 	"Code List": [
@@ -56,6 +61,7 @@ doctype_list_js = {
 	"Sales Invoice": ["gp_erp/controllers/selling/sales_invoice_list.js"],
 	"Sales Order": ["gp_erp/controllers/selling/sales_order_list.js"],
 	"Delivery Note": ["gp_erp/controllers/stock/delivery_note_list.js"],
+	"Asset": ["gp_erp/controllers/assets/asset_list.js"],
 }
 
 override_doctype_class = {
@@ -70,6 +76,11 @@ override_doctype_class = {
     "Sales Order": "erpnext.gp_erp.controllers.selling.sales_order.SalesOrderGP",
     "Quotation": "erpnext.gp_erp.controllers.selling.quotation.QuotationGP",
     "Customer": "erpnext.gp_erp.controllers.selling.customer.CustomerGP",
+    "Asset": "erpnext.gp_erp.controllers.assets.asset.AssetGP",
+    "Work Order": "erpnext.gp_erp.controllers.manufacturing.work_order.WorkOrderGP",
+    "Material Request": "erpnext.gp_erp.controllers.stock.material_request.MaterialRequestGP",
+    "Purchase Receipt": "erpnext.gp_erp.controllers.stock.purchase_receipt.PurchaseReceiptGP",
+    "Supplier": "erpnext.gp_erp.controllers.buying.supplier.SupplierGP",
 }
 
 override_whitelisted_methods = {"frappe.www.contact.send_message": "erpnext.templates.utils.send_message"}
