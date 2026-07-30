@@ -13,7 +13,6 @@ from frappe.utils.user import get_users_with_role
 from rq.timeouts import JobTimeoutException
 
 import erpnext
-import json
 from erpnext.accounts.general_ledger import validate_accounting_period
 from erpnext.accounts.utils import get_future_stock_vouchers, repost_gle_for_stock_vouchers
 from erpnext.stock.stock_ledger import (
@@ -464,11 +463,12 @@ def notify_error_to_stock_managers(doc, traceback):
 
 
 def get_recipients():
-	email_candidate = frappe.local.conf.email_support
-	if email_candidate:
-		recipients = json.loads(email_candidate)
-	else:
-		return []
+	role = (
+		frappe.db.get_single_value("Stock Reposting Settings", "notify_reposting_error_to_role")
+		or "Stock Manager"
+	)
+
+	recipients = get_users_with_role(role)
 
 	return recipients
 

@@ -283,23 +283,7 @@ class StockLedgerEntry(Document):
 			):
 				return
 
-			if self.voucher_type == "Delivery Note":
-				doc = frappe.get_doc(self.voucher_type, self.voucher_no)
-				if cint(doc.is_return) or cint(doc.is_marketing) or cint(doc.is_donation) or cint(doc.is_replacement) or cint(doc.is_pledge):
-					return
-
-			from erpnext.stock.doctype.batch.batch import get_batch_qty, get_batch_status
-
-			batch_qty = get_batch_qty(self.batch_no, self.warehouse)
-			if batch_qty is None:
-				batch_qty = 0
 			expiry_date = frappe.db.get_value("Batch", self.batch_no, "expiry_date")
-			frappe.db.set_value(
-				"Batch",
-				self.batch_no,
-				{"batch_qty": batch_qty, "status": get_batch_status(batch_qty, expiry_date)},
-			)
-
 			if expiry_date:
 				if getdate(self.posting_date) > getdate(expiry_date):
 					frappe.throw(

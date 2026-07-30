@@ -3,7 +3,6 @@
 
 
 import frappe
-from frappe import _
 from frappe.model.document import Document
 from frappe.query_builder import Case, Order
 from frappe.query_builder.functions import Coalesce, CombineDatetime, Sum
@@ -260,8 +259,6 @@ def get_bin_details(bin_name):
 def update_qty(bin_name, args):
 	from erpnext.controllers.stock_controller import future_sle_exists
 
-	validate_warehouse_restriction(args.get("item_code"), args.get("warehouse"))
-
 	bin_details = get_bin_details(bin_name)
 	# actual qty is already updated by processing current voucher
 	actual_qty = bin_details.actual_qty or 0.0
@@ -320,12 +317,3 @@ def get_actual_qty(item_code, warehouse):
 		actual_qty = last_sle_qty[0][0]
 
 	return actual_qty
-
-
-def validate_warehouse_restriction(item_name, warehouse):
-	only_for_item = frappe.get_value("Warehouse", warehouse, "only_for_item")
-	if not only_for_item:
-		return
-
-	if only_for_item != item_name:
-		frappe.throw(_("Warehouse <b>{0}</b> is only for item <b>{1}</b>").format(warehouse, only_for_item))
