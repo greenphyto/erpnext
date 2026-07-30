@@ -1,7 +1,7 @@
 import frappe
 import frappe, json, re
 from frappe.utils import today, get_last_day, getdate, today, get_last_day
-from frappe.utils import cint, flt, getdate, cstr, safe_abs, add_months
+from frappe.utils import cint, flt, getdate, cstr, abs, add_months
 from six import string_types
 from frappe.contacts.doctype.address.address import get_default_address
 from erpnext.stock.stock_ledger import get_valuation_rate
@@ -1084,7 +1084,7 @@ def _trial_balance_different_issue(company):
 	report_data = run('Trial Balance', filters=filters)
 	if report_data and report_data.get("result"):
 		summmary_data = report_data.get("result")[-1]
-		diff = safe_abs(summmary_data['closing_credit'])
+		diff = abs(summmary_data['closing_credit'])
 		if diff > allowed_value:
 			# Send Notif
 			if frappe.db.get_value("Notification", "Difference on Trial Balance", "enabled"):

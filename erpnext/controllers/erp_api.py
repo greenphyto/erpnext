@@ -31,7 +31,7 @@ from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms
 from datetime import datetime, timedelta
 from erpnext.stock.utils import get_default_warehouse
 from erpnext.stock.stock_ledger import get_valuation_rate
-from erpnext.setup.doctype.company.company import switch_to_company_admin
+from erpnext.gp_erp.controllers.setup.company import switch_to_company_admin
 from erpnext.stock.doctype.batch.batch import get_batch_qty, make_batch
 from erpnext.buying.doctype.request.request import (
 	_get_forecast_settings,

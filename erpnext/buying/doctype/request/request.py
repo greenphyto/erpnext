@@ -5,7 +5,7 @@ import frappe, json, erpnext
 from frappe.model.document import Document
 from frappe.utils import getdate, flt, cstr, add_days, today, cint
 from frappe import _
-from erpnext.controllers.foms import UOM_MAP
+# from erpnext.controllers.foms import UOM_MAP
 from erpnext.stock.get_item_details import get_item_price
 from six import string_types
 import csv

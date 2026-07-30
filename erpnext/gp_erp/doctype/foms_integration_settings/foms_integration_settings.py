@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 from six import string_types
 from frappe.model.document import Document
 from frappe.utils import cint, flt
-from frappe.core.doctype.sync_log.sync_log import update_success, update_error
+# from frappe.core.doctype.sync_log.sync_log import update_success, update_error
 
 class FOMSIntegrationSettings(Document):
 	@frappe.whitelist()
