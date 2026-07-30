@@ -77,7 +77,18 @@
   "putaway_rule",
   "column_break_51",
   "reference_purchase_receipt",
-  "job_card_item"
+  "job_card_item",
+  "is_process_loss",
+  "rate_map",
+  "asset_section",
+  "asset_code",
+  "asset_category",
+  "column_break_49",
+  "item_asset",
+  "created_asset",
+  "purchase_value",
+  "consignment_request",
+  "consignment_item"
  ],
  "fields": [
   {
@@ -609,6 +620,69 @@
   {
    "fieldname": "column_break_prps",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_process_loss",
+   "fieldtype": "Check",
+   "label": "Is Process Loss"
+  },
+  {
+   "fieldname": "asset_section",
+   "fieldtype": "Section Break",
+   "label": "Asset"
+  },
+  {
+   "fieldname": "asset_code",
+   "fieldtype": "Link",
+   "label": "Asset Code",
+   "options": "Account"
+  },
+  {
+   "fieldname": "asset_category",
+   "fieldtype": "Link",
+   "label": "Asset Category",
+   "options": "Asset Category"
+  },
+  {
+   "fieldname": "column_break_49",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item_asset",
+   "fieldtype": "Data",
+   "label": "Item Asset",
+   "read_only": 1
+  },
+  {
+   "fieldname": "purchase_value",
+   "fieldtype": "Currency",
+   "label": "Purchase Value"
+  },
+  {
+   "fieldname": "created_asset",
+   "fieldtype": "Small Text",
+   "label": "Created Asset",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rate_map",
+   "fieldtype": "Currency",
+   "label": "Rate Map",
+   "read_only": 1
+  },
+  {
+   "fieldname": "consignment_request",
+   "fieldtype": "Link",
+   "label": "Consignment Request",
+   "options": "Consignment Request",
+   "read_only": 1
+  },
+  {
+   "fieldname": "consignment_item",
+   "fieldtype": "Data",
+   "label": "Consignment Item",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
@@ -616,7 +690,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-10-14 15:10:38.373099",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry Detail",

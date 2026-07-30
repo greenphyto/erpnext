@@ -85,7 +85,33 @@
   "amended_from",
   "credit_note",
   "is_return",
-  "tab_connections"
+  "tab_connections",
+  "stock_entry_type_view",
+  "request_no",
+  "from_supplier",
+  "foms_id",
+  "sb1",
+  "material_reff",
+  "section_break_12",
+  "losses_section",
+  "loss_qty",
+  "expense_loss_account",
+  "column_break_48",
+  "loss_rate",
+  "total_loss_amount",
+  "total_incoming_receipt",
+  "additional_cost_temporary_section",
+  "wip_additional_costs",
+  "total_wip_additional_costs",
+  "dimension_col_break",
+  "return_work_order",
+  "system_generated",
+  "operation",
+  "foms_details_section",
+  "work_order_id",
+  "lot_id",
+  "rack_no",
+  "customer_order_no"
  ],
  "fields": [
   {
@@ -699,6 +725,168 @@
    "fieldtype": "Data",
    "is_virtual": 1,
    "label": "Last Scanned Warehouse"
+  },
+  {
+   "depends_on": "eval: doc.from_bom && (doc.purpose!==\"Sales Return\" && doc.purpose!==\"Purchase Return\")",
+   "fieldname": "sb1",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_12",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "dimension_col_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "job_card.operation",
+   "fieldname": "operation",
+   "fieldtype": "Data",
+   "label": "Operation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "material_reff",
+   "fieldtype": "Link",
+   "label": "Material Reff",
+   "options": "Stock Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_details_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS Details"
+  },
+  {
+   "fieldname": "work_order_id",
+   "fieldtype": "Data",
+   "label": "Work Order ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "lot_id",
+   "fieldtype": "Data",
+   "label": "Lot ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rack_no",
+   "fieldtype": "Data",
+   "label": "Rack No",
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer_order_no",
+   "fieldtype": "Data",
+   "label": "Customer Order No",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.stock_entry_type == \"Material Transfer for Manufacture\"",
+   "description": "This section cost will not creating the accounting ledger entry, it is just for temporary WIP Additional Costs Information",
+   "fieldname": "additional_cost_temporary_section",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "label": "Additional Cost (WIP)"
+  },
+  {
+   "fieldname": "wip_additional_costs",
+   "fieldtype": "Table",
+   "label": "WIP Additional Costs",
+   "options": "Landed Cost Taxes and Charges"
+  },
+  {
+   "fieldname": "total_wip_additional_costs",
+   "fieldtype": "Currency",
+   "label": "Total WIP Additional Costs",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stock_entry_type_view",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Stock Entry Type",
+   "options": "Stock Entry Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "request_no",
+   "fieldtype": "Data",
+   "label": "Request No",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.purpose == \"Material Receipt\"",
+   "fieldname": "from_supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier"
+  },
+  {
+   "default": "0",
+   "fieldname": "system_generated",
+   "fieldtype": "Check",
+   "label": "System Generated",
+   "read_only": 1
+  },
+  {
+   "fieldname": "losses_section",
+   "fieldtype": "Section Break",
+   "label": "Losses"
+  },
+  {
+   "fieldname": "loss_qty",
+   "fieldtype": "Float",
+   "label": "Loss Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "loss_rate",
+   "fieldtype": "Currency",
+   "label": "Loss rate",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_48",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_loss_amount",
+   "fieldtype": "Currency",
+   "label": "Total Loss Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "expense_loss_account",
+   "fieldtype": "Link",
+   "label": "Production Variance Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "total_incoming_receipt",
+   "fieldtype": "Currency",
+   "label": "Total Incoming Value (Receipt)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "return_work_order",
+   "fieldtype": "Data",
+   "label": "Return Work Order",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "icon": "fa fa-file-text",
@@ -706,7 +894,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-08-04 19:21:03.338958",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry",

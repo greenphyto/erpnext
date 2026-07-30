@@ -27,7 +27,10 @@
   "lft",
   "rgt",
   "old_parent",
-  "include_in_gross"
+  "include_in_gross",
+  "cost_center",
+  "inter_company_account",
+  "is_trade_related"
  ],
  "fields": [
   {
@@ -185,13 +188,35 @@
    "fieldname": "disabled",
    "fieldtype": "Check",
    "label": "Disable"
+  },
+  {
+   "default": "0",
+   "fieldname": "inter_company_account",
+   "fieldtype": "Check",
+   "label": "Inter Company Account"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_trade_related",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Is Trade Related?"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Cost Center",
+   "options": "Cost Center"
   }
  ],
  "icon": "fa fa-money",
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-08-19 15:19:11.095045",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Account",

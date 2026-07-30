@@ -76,7 +76,24 @@
   "production_plan_sub_assembly_item",
   "product_bundle_item",
   "amended_from",
-  "connections_tab"
+  "connections_tab",
+  "operation_no",
+  "packet_size",
+  "conversion_factor",
+  "is_salad_item",
+  "column_break11",
+  "gross_weight",
+  "revised_qty",
+  "foms_detail_section",
+  "foms_work_order",
+  "foms_lot_name",
+  "foms_lot_id",
+  "sales_order_no",
+  "request_no",
+  "serial_no",
+  "use_rate_from_bom",
+  "current_operation",
+  "material_returned"
  ],
  "fields": [
   {
@@ -595,6 +612,119 @@
    "label": "Disassembled Qty",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "depends_on": "has_serial_no",
+   "fieldname": "serial_no",
+   "fieldtype": "Small Text",
+   "label": "Serial Nos",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "foms_work_order",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "FOMS Work Order",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "bom_no.operation_no",
+   "fieldname": "operation_no",
+   "fieldtype": "Data",
+   "label": "Operation No",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_lot_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "FOMS Lot ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_lot_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "FOMS Lot ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_detail_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS Detail"
+  },
+  {
+   "fieldname": "column_break11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "split with comma \", \"",
+   "fieldname": "sales_order_no",
+   "fieldtype": "Data",
+   "label": "Sales Order No"
+  },
+  {
+   "fieldname": "gross_weight",
+   "fieldtype": "Float",
+   "label": "Gross Weight"
+  },
+  {
+   "fieldname": "request_no",
+   "fieldtype": "Data",
+   "label": "Request No"
+  },
+  {
+   "fieldname": "packet_size",
+   "fieldtype": "Link",
+   "label": "Packet Size",
+   "options": "UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "conversion_factor",
+   "fieldtype": "Float",
+   "label": "Conversion Factor",
+   "precision": "5",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_salad_item",
+   "fieldtype": "Check",
+   "label": "Is Salad Item",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.status == \"CLosed\"",
+   "fieldname": "material_returned",
+   "fieldtype": "Check",
+   "label": "Material Returned",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "use_rate_from_bom",
+   "fieldtype": "Check",
+   "label": "Use rate from BOM"
+  },
+  {
+   "depends_on": "eval:doc.revised_qty",
+   "fieldname": "revised_qty",
+   "fieldtype": "Float",
+   "label": "Revised Qty",
+   "read_only": 1
+  },
+  {
+   "default": "Not Started",
+   "fieldname": "current_operation",
+   "fieldtype": "Select",
+   "label": "Current Operation",
+   "options": "Not Started\nSeeding\nTransplanting\nHarvesting\nCompleted"
   }
  ],
  "icon": "fa fa-cogs",
@@ -602,7 +732,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-06-21 00:55:45.916224",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",

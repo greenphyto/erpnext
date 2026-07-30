@@ -11,7 +11,8 @@
   "mode_of_payment",
   "enabled",
   "type",
-  "accounts"
+  "accounts",
+  "paynow"
  ],
  "fields": [
   {
@@ -42,13 +43,19 @@
    "fieldname": "enabled",
    "fieldtype": "Check",
    "label": "Enabled"
+  },
+  {
+   "default": "0",
+   "fieldname": "paynow",
+   "fieldtype": "Check",
+   "label": "PayNow"
   }
  ],
  "icon": "fa fa-credit-card",
  "idx": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-09-18 17:57:23.835236",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Mode of Payment",

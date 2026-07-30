@@ -227,7 +227,8 @@
   "is_internal_customer",
   "is_discounted",
   "remarks",
-  "connections_tab"
+  "connections_tab",
+  "column_break_27"
  ],
  "fields": [
   {
@@ -2270,6 +2271,10 @@
    "label": "Consignment Request",
    "options": "Consignment Request",
    "read_only": 1
+  },
+  {
+   "fieldname": "column_break_27",
+   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
@@ -2283,7 +2288,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2026-07-29 08:05:14.000000",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

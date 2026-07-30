@@ -73,7 +73,10 @@
   "section_break_80",
   "page_break",
   "purchase_order",
-  "purchase_order_item"
+  "purchase_order_item",
+  "tracking_section",
+  "col_break_tracking_section",
+  "recalculate_rate"
  ],
  "fields": [
   {
@@ -592,12 +595,26 @@
    "fieldtype": "Link",
    "label": "Service Expense Account",
    "options": "Account"
+  },
+  {
+   "fieldname": "tracking_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "col_break_tracking_section",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "recalculate_rate",
+   "fieldtype": "Check",
+   "label": "Recalculate Rate"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-09-26 12:00:38.877638",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Subcontracting",
  "name": "Subcontracting Receipt Item",

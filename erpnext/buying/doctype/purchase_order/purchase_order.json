@@ -161,7 +161,13 @@
   "party_account_currency",
   "inter_company_order_reference",
   "is_old_subcontracting_flow",
-  "connections_tab"
+  "connections_tab",
+  "material_request_type",
+  "email_status",
+  "non_stock_item",
+  "company_shipping_address_section",
+  "remarks",
+  "dashboard"
  ],
  "fields": [
   {
@@ -1302,6 +1308,48 @@
    "fieldtype": "Data",
    "is_virtual": 1,
    "label": "Last Scanned Warehouse"
+  },
+  {
+   "fieldname": "dashboard",
+   "fieldtype": "Tab Break",
+   "label": "Dashboard",
+   "show_dashboard": 1
+  },
+  {
+   "fieldname": "company_shipping_address_section",
+   "fieldtype": "Section Break",
+   "label": "Company Shipping Address"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_stock_item",
+   "fieldtype": "Check",
+   "label": "Non Stock Item"
+  },
+  {
+   "fieldname": "material_request_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Purpose",
+   "options": "Purchase\nMaterial Transfer\nMaterial Issue\nManufacture\nCustomer Provided\nServices"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Text Editor",
+   "label": "Remarks"
+  },
+  {
+   "default": "N",
+   "fieldname": "email_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Email Status",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "options": "Y\nN",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
@@ -1309,7 +1357,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-07-31 17:19:40.816883",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order",

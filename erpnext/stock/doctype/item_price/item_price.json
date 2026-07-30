@@ -34,7 +34,8 @@
   "valid_upto",
   "section_break_24",
   "note",
-  "reference"
+  "reference",
+  "item_group"
  ],
  "fields": [
   {
@@ -218,13 +219,23 @@
    "fieldtype": "Link",
    "label": "Batch No",
    "options": "Batch"
+  },
+  {
+   "fetch_from": "item_code.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Item Group",
+   "options": "Item Group",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-flag",
  "idx": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-02 22:18:00.450641",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item Price",

@@ -100,7 +100,17 @@
   "ignore_is_opening_check_for_reporting",
   "payment_request_settings",
   "create_pr_in_draft_status",
-  "column_break_xrnd"
+  "column_break_xrnd",
+  "multi_company_section",
+  "enable_switch_company_menu",
+  "skip_ceo_role_from_strict_permissions",
+  "mandatory_reference_on_journal_entry",
+  "report_setting_section",
+  "use_custom_cash_flow",
+  "save_fetched_currency_exchange_rates",
+  "series_mapping_section",
+  "asset_code_map",
+  "report_settings_sb"
  ],
  "fields": [
   {
@@ -664,6 +674,63 @@
    "fieldname": "default_ageing_range",
    "fieldtype": "Data",
    "label": "Default Ageing Range"
+  },
+  {
+   "fieldname": "report_settings_sb",
+   "fieldtype": "Section Break",
+   "label": "Report Settings"
+  },
+  {
+   "default": "0",
+   "description": "Only select this if you have set up the Cash Flow Mapper documents",
+   "fieldname": "use_custom_cash_flow",
+   "fieldtype": "Check",
+   "label": "Enable Custom Cash Flow Format"
+  },
+  {
+   "fieldname": "report_setting_section",
+   "fieldtype": "Section Break",
+   "label": "Report Setting"
+  },
+  {
+   "fieldname": "series_mapping_section",
+   "fieldtype": "Section Break",
+   "label": "Series Mapping"
+  },
+  {
+   "fieldname": "asset_code_map",
+   "fieldtype": "Table",
+   "label": "Asset Code Map",
+   "options": "Asset Code Map"
+  },
+  {
+   "default": "0",
+   "fieldname": "save_fetched_currency_exchange_rates",
+   "fieldtype": "Check",
+   "label": "Save fetched currency exchange rates"
+  },
+  {
+   "default": "0",
+   "fieldname": "mandatory_reference_on_journal_entry",
+   "fieldtype": "Check",
+   "label": "Mandatory Reference on Journal Entry"
+  },
+  {
+   "fieldname": "multi_company_section",
+   "fieldtype": "Section Break",
+   "label": "Multi Company"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_switch_company_menu",
+   "fieldtype": "Check",
+   "label": "Enable Switch Company Menu"
+  },
+  {
+   "default": "0",
+   "fieldname": "skip_ceo_role_from_strict_permissions",
+   "fieldtype": "Check",
+   "label": "Skip CEO role from strict permissions"
   }
  ],
  "icon": "icon-cog",
@@ -671,7 +738,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-12-26 19:46:55.093717",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounts Settings",

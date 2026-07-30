@@ -82,7 +82,22 @@
   "stock_frozen_upto_days",
   "column_break_26",
   "role_allowed_to_create_edit_back_dated_transactions",
-  "stock_auth_role"
+  "stock_auth_role",
+  "force_to_non_stock_item",
+  "send_missing_item_price",
+  "block_batch_splitting_transaction",
+  "automatically_set_serial_nos_based_on_fifo",
+  "set_qty_in_transactions_based_on_serial_no_input",
+  "column_break_10",
+  "scrap_tab",
+  "scrap_settings_section",
+  "enable_auto_collect_expired_items",
+  "expiry_days",
+  "account_for_raw_material_scrap",
+  "column_break_58",
+  "enable_auto_collect_expired_products",
+  "expiry_days_product",
+  "account_for_product_scrap"
  ],
  "fields": [
   {
@@ -538,6 +553,91 @@
    "fieldname": "validate_material_transfer_warehouses",
    "fieldtype": "Check",
    "label": "Validate Material Transfer Warehouses"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "automatically_set_serial_nos_based_on_fifo",
+   "fieldtype": "Check",
+   "label": "Automatically Set Serial Nos Based on FIFO"
+  },
+  {
+   "default": "1",
+   "fieldname": "set_qty_in_transactions_based_on_serial_no_input",
+   "fieldtype": "Check",
+   "label": "Set Qty in Transactions Based on Serial No Input"
+  },
+  {
+   "default": "0",
+   "description": "Every time create new item it will uncheck in the maintenance stock, so always maintenance stock = 0",
+   "fieldname": "force_to_non_stock_item",
+   "fieldtype": "Check",
+   "label": "Force to non-stock item"
+  },
+  {
+   "fieldname": "scrap_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Scrap Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_auto_collect_expired_items",
+   "fieldtype": "Check",
+   "label": "Enable auto collect expired Items"
+  },
+  {
+   "depends_on": "eval:doc.enable_auto_collect_expired_items",
+   "fieldname": "expiry_days",
+   "fieldtype": "Int",
+   "label": "Expiry within (days)"
+  },
+  {
+   "fieldname": "scrap_tab",
+   "fieldtype": "Tab Break",
+   "label": "Scrap"
+  },
+  {
+   "default": "0",
+   "fieldname": "block_batch_splitting_transaction",
+   "fieldtype": "Check",
+   "label": "Block Batch Splitting Transaction"
+  },
+  {
+   "fieldname": "account_for_raw_material_scrap",
+   "fieldtype": "Link",
+   "label": "Account for Raw Material Scrap",
+   "options": "Account"
+  },
+  {
+   "fieldname": "account_for_product_scrap",
+   "fieldtype": "Link",
+   "label": "Account for Product Scrap",
+   "options": "Account"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_auto_collect_expired_products",
+   "fieldtype": "Check",
+   "label": "Enable auto collect expired products"
+  },
+  {
+   "fieldname": "column_break_58",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "-14",
+   "description": "Set negative value for older days",
+   "fieldname": "expiry_days_product",
+   "fieldtype": "Int",
+   "label": "Expiry within (days)"
+  },
+  {
+   "fieldname": "send_missing_item_price",
+   "fieldtype": "Button",
+   "label": "Send Missing Item Price"
   }
  ],
  "icon": "icon-cog",
@@ -545,7 +645,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-11-11 11:35:39.864923",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Settings",

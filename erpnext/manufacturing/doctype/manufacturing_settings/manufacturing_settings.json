@@ -39,7 +39,14 @@
   "other_settings_section",
   "set_op_cost_and_scrap_from_sub_assemblies",
   "column_break_23",
-  "make_serial_no_batch_from_work_order"
+  "make_serial_no_batch_from_work_order",
+  "allow_single_completed_work_order",
+  "default_source_warehouse",
+  "update_bom_rate_as_pr_price",
+  "enable_attrition_qty",
+  "enable_create_sample_delivery",
+  "packaging_section",
+  "default_packaging"
  ],
  "fields": [
   {
@@ -243,13 +250,57 @@
    "fieldname": "enforce_time_logs",
    "fieldtype": "Check",
    "label": "Enforce Time Logs"
+  },
+  {
+   "fieldname": "default_source_warehouse",
+   "fieldtype": "Link",
+   "label": "Default Source Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "default": "0",
+   "description": "When do a Purchase Receipt it will update the BOM raw material as last Purchase Rate",
+   "fieldname": "update_bom_rate_as_pr_price",
+   "fieldtype": "Check",
+   "label": "Update BOM rate as Purchase Receipt price"
+  },
+  {
+   "default": "0",
+   "description": "This will allow single submission of finish goods as all completed process of work order. and skip remaining qty and etc",
+   "fieldname": "allow_single_completed_work_order",
+   "fieldtype": "Check",
+   "label": "Allow Single Completed Work Order"
+  },
+  {
+   "fieldname": "packaging_section",
+   "fieldtype": "Section Break",
+   "label": "Packaging"
+  },
+  {
+   "fieldname": "default_packaging",
+   "fieldtype": "Link",
+   "label": "Default Packaging",
+   "options": "Item"
+  },
+  {
+   "default": "0",
+   "description": "It will create 1 sample Delivery Note (sample) on every work order finish",
+   "fieldname": "enable_create_sample_delivery",
+   "fieldtype": "Check",
+   "label": "Enable Create Sample Delivery"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_attrition_qty",
+   "fieldtype": "Check",
+   "label": "Enable Attrition Qty"
   }
  ],
  "icon": "icon-wrench",
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-05-16 11:23:16.916512",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Manufacturing Settings",

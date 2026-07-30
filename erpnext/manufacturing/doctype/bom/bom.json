@@ -83,7 +83,15 @@
   "bom_creator_item",
   "column_break_oxbz",
   "amended_from",
-  "connections_tab"
+  "connections_tab",
+  "operation_no",
+  "foms_recipe_version",
+  "storage_duration",
+  "lead_time_days",
+  "column_break_12",
+  "column_break_31",
+  "section_break_33",
+  "section_break_25"
  ],
  "fields": [
   {
@@ -634,6 +642,49 @@
   {
    "fieldname": "column_break_oxbz",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_25",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_31",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_33",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "operation_no",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Operation No",
+   "options": "\n1\n2\n3\n4\n5"
+  },
+  {
+   "fieldname": "foms_recipe_version",
+   "fieldtype": "Data",
+   "label": "FOMS Recipe Version",
+   "read_only": 1
+  },
+  {
+   "default": "1",
+   "fetch_from": "item.shelf_life_in_days",
+   "fetch_if_empty": 1,
+   "fieldname": "storage_duration",
+   "fieldtype": "Int",
+   "label": "Storage Duration"
+  },
+  {
+   "fieldname": "lead_time_days",
+   "fieldtype": "Int",
+   "label": "Lead Time Days"
   }
  ],
  "icon": "fa fa-sitemap",
@@ -641,7 +692,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-11-19 16:17:15.925156",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "BOM",

@@ -15,7 +15,11 @@
   "include_reconciled_entries",
   "include_pos_transactions",
   "section_break_10",
-  "payment_entries"
+  "payment_entries",
+  "company",
+  "get_payment_entries",
+  "update_clearance_date",
+  "total_amount"
  ],
  "fields": [
   {
@@ -84,6 +88,29 @@
    "fieldtype": "Table",
    "label": "Payment Entries",
    "options": "Bank Clearance Detail"
+  },
+  {
+   "fieldname": "get_payment_entries",
+   "fieldtype": "Button",
+   "label": "Get Payment Entries"
+  },
+  {
+   "fieldname": "update_clearance_date",
+   "fieldtype": "Button",
+   "label": "Update Clearance Date"
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "options": "account_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "hide_toolbar": 1,
@@ -91,7 +118,7 @@
  "idx": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-11-28 17:24:13.008692",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Bank Clearance",
