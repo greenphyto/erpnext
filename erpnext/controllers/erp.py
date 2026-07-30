@@ -1,7 +1,7 @@
 import frappe
 import frappe, json, re
 from frappe.utils import today, get_last_day, getdate, today, get_last_day
-from frappe.utils import cint, flt, getdate, cstr, abs, add_months
+from frappe.utils import cint, flt, getdate, cstr, add_months
 from six import string_types
 from frappe.contacts.doctype.address.address import get_default_address
 from erpnext.stock.stock_ledger import get_valuation_rate

@@ -1,5 +1,9 @@
 import frappe
 from frappe import _
+from frappe.utils import cint
+from frappe.utils import get_link_to_form
+
+import erpnext
 
 install_docs = [
 	{"doctype": "Role", "role_name": "Stock Manager", "name": "Stock Manager"},
@@ -94,3 +98,52 @@ def get_warehouse_account(warehouse, warehouse_account=None):
 
 def get_company_default_inventory_account(company):
 	return frappe.get_cached_value("Company", company, "default_inventory_account")
+
+
+def get_item_account(account_map, warehouse, item="", key="account", get_default=False, operation=""):
+	data = None
+	if not warehouse and not get_default:
+		return None
+
+	part_number = "--"
+	if item:
+		part_number = cint(frappe.get_value("Item", item, "material_number"))
+
+	if item and (account_map.get(item) or account_map.get(part_number)):
+		dt = account_map.get(item)
+		if not dt:
+			dt = account_map.get(part_number)
+		data = dt.get(key)
+
+	if not data and item in account_map:
+		company = erpnext.get_default_company()
+		stock_account = frappe.get_cached_value("Company", company, "default_inventory_account")
+		if not key or key == "account":
+			return stock_account
+		else:
+			return frappe.get_value("Account", stock_account, "account_currency")
+
+		link_str = get_link_to_form("Part Number Settings", "", "Part Number Settings")
+		frappe.throw(_(f"Account is Missing for inventory item <b>{item}</b>. Please edit the {link_str}."))
+
+	if not data and warehouse:
+		data = account_map[warehouse].get(key)
+
+	if "WIP" in account_map:
+		wip_warehouse = account_map['WIP']['wip_warehouse']
+		if wip_warehouse == warehouse or warehouse == "WIP":
+			if operation:
+				dt = account_map['WIP'].get(operation)
+				if dt:
+					data = account_map['WIP'][operation].get(key)
+				else:
+					data = None
+
+			if not data or not operation:
+				wip_account = account_map['WIP']['account']
+				if not wip_account:
+					frappe.msgprint(_("Missing Account for Item Stock, please update the Part Number Settings"))
+
+				data = account_map['WIP'].get(key)
+
+	return data

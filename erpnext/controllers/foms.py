@@ -7,7 +7,6 @@ from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
 from frappe import _
 from frappe.core.doctype.sync_log.sync_log import update_success, create_log, delete_log
-from frappe.utils import abs
 
 import json, math, re
 from erpnext import get_company_currency, get_default_company

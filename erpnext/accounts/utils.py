@@ -2510,3 +2510,22 @@ def build_qb_match_conditions(doctype, user=None) -> list:
 
 def is_immutable_ledger_enabled():
 	return frappe.get_single_value("Accounts Settings", "enable_immutable_ledger")
+
+
+def get_account_number_map(company: str):
+	accounts = frappe.db.get_all(
+		"Account",
+		filters={
+			"company": company,
+			"is_group": 0,
+			"disabled": 0,
+		},
+		fields=["name", "account_number", "account_name"],
+		order_by="account_number asc"
+	)
+
+	return {
+		acc.account_number: acc.name
+		for acc in accounts
+		if acc.account_number
+	}
