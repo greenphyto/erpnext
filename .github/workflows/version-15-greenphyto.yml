@@ -1,0 +1,60 @@
+on:
+  push:
+    branches:
+      - version-15-greenphyto
+
+name: Deploy to ERPNext 15 Test Environments
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: self-hosted
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+    - name: executing remote ssh to build server and upload docker image
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.ON_PREMISE_DIGITALTWIN_HOST }}
+        username: ${{ secrets.ON_PREMISE_USERNAME }}
+        key: ${{ secrets.ON_PREMISE_KEY }}
+        port: ${{ secrets.ON_PREMISE_PORT }}
+        command_timeout: 30m
+        script_stop: true
+        script: |
+          cd /home/gpadmin/greenphyto/greenphyto_erpnext_15_build/frappe_docker/
+          docker compose -p frappe -f compose.custom.yaml down
+          docker build --no-cache --build-arg=FRAPPE_PATH=https://github.com/greenphyto/frappe --build-arg=FRAPPE_BRANCH=version-15-greenphyto --secret=id=apps_json,src=apps.json --tag=gp_custom:16 --file=images/custom/Containerfile .
+          docker compose -p frappe -f compose.custom.yaml up -d
+          echo 'upload finished'
+     
+    - name: Send mail
+      uses: dawidd6/action-send-mail@v3
+      with:
+        # Required mail server address:
+        server_address: smtp.gmail.com
+        # Required mail server port:
+        server_port: 465
+        # Required mail server username:
+        username: ${{secrets.MAIL_USERNAME}}
+        # Required mail server password:
+        password: ${{secrets.MAIL_PASSWORD}}
+        # Required mail subject:
+        subject: ERPNext 15 (On-Premise Test Env) Deployment Done 
+        # Required recipients' addresses:
+        to: weiquan@greenphyto.com,myo@greenphyto.com,rizky@greenphyto.com
+        # Required sender full name (address can be skipped):
+        from: Info@greenphyto.com # <user@example.com>
+        # Optional whether this connection use TLS (default is true if server_port is 465)
+        secure: true
+        # Optional plain body:
+        body: |
+          ERPNext deployment completed for On-Premise Test environment.
+          • Branch: version-15-greenphyto 
+          • Commit: ${{github.event.head_commit.message}}  
+          • URL: http://172.17.252.229:8080 
+          
+      
+       
