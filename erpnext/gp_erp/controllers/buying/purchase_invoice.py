@@ -1,7 +1,8 @@
 import frappe
-from frappe import _, get_link_to_form
-from frappe.model.mapper import get_mapped_doc
+from frappe import _
 from frappe.utils import cint, flt, getdate, add_days
+from frappe.utils.data import get_link_to_form
+from frappe.model.mapper import get_mapped_doc
 
 from erpnext.accounts.doctype.purchase_invoice.purchase_invoice import PurchaseInvoice
 

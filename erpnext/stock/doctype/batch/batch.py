@@ -625,3 +625,31 @@ def get_wip_warehouse():
 		data.append(wip_settings)
 
 	return data
+
+
+def set_batch_nos(doc, warehouse_field, throw=False, child_table="items"):
+	"""Automatically select `batch_no` for outgoing items in item table"""
+	for d in doc.get(child_table):
+		qty = d.get("stock_qty") or d.get("transfer_qty") or d.get("qty") or 0
+		warehouse = d.get(warehouse_field, None)
+		if warehouse and qty > 0 and frappe.db.get_value("Item", d.item_code, "has_batch_no"):
+			if not d.batch_no:
+				batch = get_batch_qty(item_code=d.item_code, warehouse=warehouse)
+				if batch:
+					d.batch_no = batch[0].batch_no
+				elif throw:
+					frappe.throw(
+						_("Row {0}: Batch No must be set for Item {1}").format(d.idx, d.item_code)
+					)
+			else:
+				batch_qty = get_batch_qty(batch_no=d.batch_no, warehouse=warehouse)
+				if isinstance(batch_qty, list):
+					batch_qty = batch_qty[0].qty if batch_qty else 0
+				if doc.docstatus == 1:
+					from frappe.utils import flt
+					if flt(batch_qty, d.precision("qty")) < flt(qty, d.precision("qty")):
+						frappe.throw(
+							_(
+								"Row #{0}: The batch {1} has only {2} qty. Please select another batch which has {3} qty available."
+							).format(d.idx, d.batch_no, batch_qty, qty)
+						)

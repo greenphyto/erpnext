@@ -18,7 +18,6 @@ class SalesInvoiceGP(SalesInvoice):
             pass
 
     def before_insert(self):
-        super(SalesInvoiceGP, self).before_insert()
         if self.is_return:
             self.naming_series = "CN.###./.YYYY"
 

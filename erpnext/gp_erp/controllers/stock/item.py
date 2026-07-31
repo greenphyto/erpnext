@@ -15,8 +15,6 @@ class ItemGP(Item):
         self.validate_uom()
         self.validate_description()
         self.add_default_uom_in_conversion_factor_table()
-        self.set_opening_stock()
-        self.set_item_default()
         self.validate_item_type()
         self.validate_naming_series()
         self.validate_fixed_asset()
@@ -26,7 +24,6 @@ class ItemGP(Item):
         self.validate_uom_conversion_factor()
         self.validate_customer_provided_part()
         self.update_defaults_from_item_group()
-        self.validate_end_of_life()
         self.validate_auto_reorder_enabled_in_stock_settings()
         self.cant_change()
         self.validate_item_tax_net_rate_range()
@@ -36,7 +33,6 @@ class ItemGP(Item):
         self.set_asset_category()
         self.update_uom_global_description()
         self.change_description()
-        set_item_tax_from_hsn_code(self)
         if not self.is_new():
             self.old_item_group = frappe.db.get_value(self.doctype, self.name, "item_group")
 

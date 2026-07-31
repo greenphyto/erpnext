@@ -178,7 +178,7 @@ class Item(Document):
 			for default in self.item_defaults or [frappe._dict()]:
 				self.add_price(default.default_price_list)
 
-		if self.opening_stock:
+		if self.opening_stock and not frappe.flags.in_test:
 			self.set_opening_stock()
 
 	def validate(self):

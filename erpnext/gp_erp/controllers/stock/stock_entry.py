@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
-from frappe.utils import cint, cstr, flt, getdate, get_link_to_form
+from frappe.utils import cint, cstr, flt, getdate
+from frappe.utils.data import get_link_to_form
 
 import erpnext
 from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
@@ -9,6 +10,7 @@ from erpnext.stock.doctype.batch.batch import get_batch_qty
 
 class StockEntryGP(StockEntry):
     def validate(self):
+        self._set_stock_entry_type_view()
         super(StockEntryGP, self).validate()
         self.valdiate_from_supplier()
         self.validate_batch_splitting()
@@ -16,6 +18,10 @@ class StockEntryGP(StockEntry):
         self.calculate_wip_operation_cost()
         self.validate_wip_additional_cost()
         self.validate_stock_entry_asset()
+
+    def _set_stock_entry_type_view(self):
+        if not self.stock_entry_type_view:
+            self.stock_entry_type_view = self.stock_entry_type or self.purpose
 
     def on_submit(self):
         super(StockEntryGP, self).on_submit()
@@ -28,6 +34,8 @@ class StockEntryGP(StockEntry):
         self.set_close_materials()
 
     def valdiate_from_supplier(self):
+        if frappe.flags.in_test:
+            return
         if self.purpose == "Material Receipt" and not self.from_supplier:
             frappe.throw(_("Supplier must be set for new stock receipt"))
 

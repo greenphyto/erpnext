@@ -12,7 +12,6 @@ from erpnext import get_default_company
 
 def before_tests():
 	frappe.clear_cache()
-	# complete setup if missing
 	from frappe.desk.page.setup_wizard.setup_wizard import setup_complete
 
 	if not frappe.db.a_row_exists("Company"):
@@ -36,12 +35,56 @@ def before_tests():
 			}
 		)
 
+	_setup_test_company()
+
 	frappe.db.sql("delete from `tabItem Price`")
 
 	_enable_all_roles_for_admin()
 
 	set_defaults_for_tests()
 
+	frappe.db.commit()
+
+
+def _setup_test_company():
+	import json
+	import os
+
+	test_records_path = os.path.join(
+		os.path.dirname(__file__), "doctype", "company", "test_records.json"
+	)
+	with open(test_records_path) as f:
+		test_companies = json.load(f)
+
+	_ensure_holiday_list()
+
+	for company_data in test_companies:
+		company_name = company_data.get("company_name")
+		if frappe.db.exists("Company", company_name):
+			continue
+		try:
+			company = frappe.get_doc(company_data)
+			company.flags.ignore_links = True
+			company.insert(ignore_if_duplicate=True)
+			frappe.db.commit()
+		except Exception as e:
+			print(f"_setup_test_company: Failed to create {company_name}: {e}")
+			frappe.db.rollback()
+			frappe.clear_messages()
+
+
+def _ensure_holiday_list():
+	if frappe.db.exists("Holiday List", "_Test Holiday List"):
+		return
+	from datetime import date
+	current_year = now_datetime().year
+	holiday_list = frappe.get_doc({
+		"doctype": "Holiday List",
+		"holiday_list_name": "_Test Holiday List",
+		"from_date": f"{current_year}-01-01",
+		"to_date": f"{current_year}-12-31",
+	})
+	holiday_list.insert(ignore_if_duplicate=True)
 	frappe.db.commit()
 
 

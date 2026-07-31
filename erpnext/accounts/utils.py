@@ -2529,3 +2529,20 @@ def get_account_number_map(company: str):
 		for acc in accounts
 		if acc.account_number
 	}
+
+
+def get_cost_center_from_account(account, company=""):
+	if not company:
+		company = erpnext.get_default_company()
+
+	if not account:
+		return {"value": "", "lock": 0}
+
+	cost_center = erpnext.get_default_cost_center(company)
+	if cost_center:
+		return {"value": cost_center, "lock": 1}
+
+	if cint(account[0]) in (1, 2, 3):
+		return {"value": "", "lock": 1}
+
+	return {"value": "", "lock": 0}

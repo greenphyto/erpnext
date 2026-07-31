@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 from frappe.utils import flt
+from frappe.utils.nestedset import get_descendants_of
 
 from erpnext.accounts.doctype.account.account import Account
 
@@ -8,11 +9,10 @@ from erpnext.accounts.doctype.account.account import Account
 class AccountGP(Account):
     def on_update(self):
         super(AccountGP, self).on_update()
-        self.validate_child_account()
         self.sync_child_accounts()
 
     def sync_child_accounts(self):
-        descendants = frappe.get_descendants_of("Company", self.company, ignore_permissions=True)
+        descendants = get_descendants_of("Company", self.company, ignore_permissions=True)
         if not descendants:
             return
         parent_acc_name_map = {}

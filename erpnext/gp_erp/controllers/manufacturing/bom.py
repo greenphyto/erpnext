@@ -111,10 +111,17 @@ class BOMGP(BOM):
                     d.wages_cost = doc.hour_rate_labour
                     d.rent_cost = doc.hour_rate_rent
 
-    def calculate_cost(self, update_hour_rate=False):
+    def calculate_cost(self, save_updates=False, update_hour_rate=False):
         self.get_workstation_cost()
         self.calculate_operating_cost(update_hour_rate)
-        self.calculate_bom_cost()
+        self.calculate_rm_cost(save=save_updates)
+        self.calculate_sm_cost(save=save_updates)
+        if save_updates:
+            self.calculate_exploded_cost()
+        self.total_cost = flt(self.operating_cost) + flt(self.raw_material_cost) - flt(self.scrap_material_cost)
+        self.base_total_cost = (
+            flt(self.base_operating_cost) + flt(self.base_raw_material_cost) - flt(self.base_scrap_material_cost)
+        )
 
     def calculate_operating_cost(self, update_hour_rate=False):
         for d in self.get("operations"):

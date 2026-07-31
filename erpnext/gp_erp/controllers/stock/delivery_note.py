@@ -51,7 +51,6 @@ class DeliveryNoteGP(DeliveryNote):
             )
 
     def before_insert(self):
-        super(DeliveryNoteGP, self).before_insert()
         if self.is_return:
             self.naming_series = "DO-RET-.YYYY.-.###"
 
