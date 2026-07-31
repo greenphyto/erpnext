@@ -57,6 +57,14 @@ class SellingController(StockController):
 		self.validate_target_warehouse()
 		self.validate_wip_warehouse()
 		self.validate_reff_row()
+		self.validate_tc_name()
+
+	def validate_tc_name(self):
+		if self.meta.has_field("tc_name") and self.tc_name:
+			selling = frappe.db.get_value("Terms and Conditions", self.tc_name, "selling")
+			if not selling:
+				self.tc_name = ""
+				self.terms = ""
 
 	def set_missing_values(self, for_validate=False):
 
