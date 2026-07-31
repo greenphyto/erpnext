@@ -2538,11 +2538,38 @@ def get_cost_center_from_account(account, company=""):
 	if not account:
 		return {"value": "", "lock": 0}
 
-	cost_center = erpnext.get_default_cost_center(company)
-	if cost_center:
-		return {"value": cost_center, "lock": 1}
+	account_cost_center = frappe.get_cached_value("Account", account, "cost_center")
+	if account_cost_center:
+		return {"value": account_cost_center, "lock": 1}
 
-	if cint(account[0]) in (1, 2, 3):
+	mapping_cost_center = frappe.db.get_value("Cost Center Mapping", {
+		"company": company,
+		"account": account,
+	}, "cost_center")
+	if mapping_cost_center:
+		return {"value": mapping_cost_center, "lock": 1}
+
+	report_type = frappe.get_cached_value("Account", account, "report_type")
+	if report_type != "Profit and Loss":
 		return {"value": "", "lock": 1}
 
 	return {"value": "", "lock": 0}
+
+
+def get_barcode(value):
+	import base64
+	import io
+
+	try:
+		from barcode import Code128
+		from barcode.writer import ImageWriter
+
+		stream = io.BytesIO()
+		barcode = Code128(str(value), writer=ImageWriter())
+		barcode.write(stream)
+		stream.seek(0)
+		b64 = base64.b64encode(stream.read()).decode()
+	except ImportError:
+		b64 = base64.b64encode(str(value).encode()).decode()
+
+	return f'<img src="data:image/png;base64,{b64}">'

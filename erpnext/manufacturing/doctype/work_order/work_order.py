@@ -1841,3 +1841,19 @@ def make_stock_return_entry(work_order):
 	stock_entry.set_stock_entry_type()
 
 	return stock_entry
+
+
+@frappe.whitelist()
+def make_scrap_materials(work_order):
+	wo_doc = frappe.get_doc("Work Order", work_order)
+	stock_entry = frappe.new_doc("Stock Entry")
+	stock_entry.work_order = work_order
+	stock_entry.company = wo_doc.company
+	stock_entry.stock_entry_type = "Waste Materials"
+	stock_entry.bom_no = wo_doc.bom_no
+	stock_entry.from_bom = 0
+
+	if wo_doc.wip_warehouse:
+		stock_entry.from_warehouse = wo_doc.wip_warehouse
+
+	return stock_entry

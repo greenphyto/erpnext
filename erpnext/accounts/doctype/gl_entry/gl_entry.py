@@ -20,6 +20,7 @@ from erpnext.accounts.party import (
 )
 from erpnext.accounts.utils import get_account_currency, get_fiscal_year
 from erpnext.exceptions import InvalidAccountCurrency
+from frappe.utils import getdate, nowdate as _nowdate
 
 exclude_from_linked_with = True
 
@@ -468,3 +469,10 @@ def rename_temporarily_named_docs(doctype):
 					frappe.call(hook, newname=newname, oldname=oldname)
 
 		frappe.db.commit()
+
+
+def allow_cost_center_missing(gl):
+	cur_fiscal_year = get_fiscal_year(_nowdate(), as_dict=True)
+	if getdate(gl.posting_date) < cur_fiscal_year.year_start_date:
+		return True
+	return False

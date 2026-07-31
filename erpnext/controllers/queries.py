@@ -200,7 +200,7 @@ def item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=Fals
 		for field in [searchfield or "name", "item_code", "item_group", "item_name"]
 		if field not in searchfields
 	]
-	searchfields = " or ".join([field + " like %(txt)s" for field in searchfields])
+	searchfields = " or ".join(["tabItem." + field + " like %(txt)s" for field in searchfields])
 
 	if filters and isinstance(filters, dict):
 		if filters.get("customer") or filters.get("supplier"):
@@ -236,10 +236,15 @@ def item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=Fals
 		# scan description only if items are less than 50000
 		description_cond = "or tabItem.description LIKE %(txt)s"
 
+	child_table_joins = ""
+	if filters and isinstance(filters, dict) and filters.get("department"):
+		child_table_joins = "left join `tabItem Department` on `tabItem Department`.parent = tabItem.name"
+
 	return frappe.db.sql(
 		"""select
 			tabItem.name {columns}
 		from tabItem
+		{child_table_joins}
 		where tabItem.docstatus < 2
 			and tabItem.disabled=0
 			and tabItem.has_variants=0
@@ -248,12 +253,13 @@ def item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=Fals
 				{description_cond})
 			{fcond} {mcond}
 		order by
-			if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
-			if(locate(%(_txt)s, item_name), locate(%(_txt)s, item_name), 99999),
-			idx desc,
-			name, item_name
+			if(locate(%(_txt)s, tabItem.name), locate(%(_txt)s, tabItem.name), 99999),
+			if(locate(%(_txt)s, tabItem.item_name), locate(%(_txt)s, tabItem.item_name), 99999),
+			tabItem.idx desc,
+			tabItem.name, tabItem.item_name
 		limit %(start)s, %(page_len)s """.format(
 			columns=columns,
+			child_table_joins=child_table_joins,
 			scond=searchfields,
 			fcond=get_filters_cond(doctype, filters, conditions).replace("%", "%%"),
 			mcond=get_match_cond(doctype).replace("%", "%%"),
@@ -947,6 +953,11 @@ def get_filtered_child_rows(doctype, txt, searchfield, start, page_len, filters)
 		)
 
 	return query.run(as_dict=False)
+
+
+@frappe.whitelist()
+def get_company_enable():
+	return frappe.get_all("Company", filters={"is_group": 0}, pluck="name")
 
 
 @frappe.whitelist()

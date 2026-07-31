@@ -879,8 +879,8 @@ def check_unposted_depr_before_disposal(asset_name, disposal_date=None):
 		schedules = frappe.db.sql(
 			"""
 			SELECT schedule_date, journal_entry, depreciation_amount
-			FROM `tabAsset Depreciation Schedule`
-			WHERE parent=%s AND finance_book_id=%s AND NOT journal_entry
+			FROM `tabDepreciation Schedule`
+			WHERE parent=%s AND finance_book_id=%s AND (journal_entry IS NULL OR journal_entry = '')
 			AND schedule_date <= %s
 			""",
 			(asset.name, fb.idx, disposal_date),
@@ -891,9 +891,9 @@ def check_unposted_depr_before_disposal(asset_name, disposal_date=None):
 		future = frappe.db.sql(
 			"""
 			SELECT journal_entry, schedule_date, depreciation_amount
-			FROM `tabAsset Depreciation Schedule`
-			WHERE parent=%s AND finance_book_id=%s AND journal_entry
-			AND schedule_date > %s AND is_cancelled = 0
+			FROM `tabDepreciation Schedule`
+			WHERE parent=%s AND finance_book_id=%s AND journal_entry IS NOT NULL AND journal_entry != ''
+			AND schedule_date > %s
 			""",
 			(asset.name, fb.idx, disposal_date),
 			as_dict=True,
@@ -910,6 +910,16 @@ def check_unposted_depr_before_disposal(asset_name, disposal_date=None):
 def check_future_posted_depreciation(asset, disposal_date):
 	"""Return list of posted depreciation entries after disposal_date."""
 	future_posted = []
+	schedules = asset.get("schedules") or []
+	if schedules:
+		for row in schedules:
+			if row.get("journal_entry") and getdate(row.get("schedule_date")) > getdate(disposal_date):
+				future_posted.append({
+					"journal_entry": row.get("journal_entry"),
+					"schedule_date": row.get("schedule_date"),
+					"depreciation_amount": row.get("depreciation_amount"),
+				})
+		return future_posted
 	finance_books = asset.get("finance_books") or []
 	for fb in finance_books:
 		future = frappe.db.sql(
@@ -944,6 +954,22 @@ def check_unposted_depreciation_entries(asset, disposal_date, finance_book=None)
 		tuple(params),
 		as_dict=True,
 	)
+
+
+def get_month_year(date):
+	date = getdate(date)
+	return f"{date.month:02d} {date.year}"
+
+
+def get_depreciable_assets(date, asset_category=None):
+	filters = {
+		"docstatus": 1,
+		"status": ("not in", ["Scrapped", "Sold", "Capitalized", "Decapitalized"]),
+		"calculate_depreciation": 1,
+	}
+	if asset_category:
+		filters["asset_category"] = ("in", asset_category)
+	return frappe.get_all("Asset", filters=filters, pluck="name")
 
 
 def _warn_unposted_depreciation(asset, disposal_date, finance_book=None):

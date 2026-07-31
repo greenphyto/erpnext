@@ -8,6 +8,10 @@ from erpnext.buying.doctype.supplier.supplier import Supplier
 
 
 class SupplierGP(Supplier):
+    def validate(self):
+        super().validate()
+        self.set_code()
+
     def set_code(self, force=False):
         comp_abbr = cstr(frappe.get_value("Company", self.company, "series_abbr"))
         series = self.supplier_code_series or "S0.####"

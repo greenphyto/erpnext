@@ -289,3 +289,19 @@ def identity(x, *args, **kwargs):
 	Use like this: `from erpnext.setup.utils import identity as _`
 	"""
 	return x
+
+
+def save_currency_exchange(from_currency, to_currency, date=None, rate=None):
+	if not date:
+		date = nowdate()
+	if not rate:
+		return
+	doc = frappe.new_doc("Currency Exchange")
+	doc.date = date
+	doc.from_currency = from_currency
+	doc.to_currency = to_currency
+	doc.exchange_rate = rate
+	doc.for_buying = 1
+	doc.for_selling = 1
+	doc.insert(ignore_permissions=True)
+	frappe.db.commit()

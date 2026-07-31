@@ -75,6 +75,13 @@ class WorkOrderGP(WorkOrder):
             self.planned_operating_cost += flt(d.planned_operating_cost)
             self.actual_operating_cost += flt(d.actual_operating_cost)
 
+        variable_cost = (
+            self.actual_operating_cost if self.actual_operating_cost else self.planned_operating_cost
+        )
+        self.total_operating_cost = (
+            flt(self.additional_operating_cost) + flt(variable_cost) + flt(self.corrective_operation_cost)
+        )
+
     def validate_cost_editing(self):
         old_doc = self.get_doc_before_save()
         if not old_doc:

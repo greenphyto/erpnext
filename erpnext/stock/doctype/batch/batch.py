@@ -9,7 +9,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname, revert_series_if_last
 from frappe.query_builder.functions import CurDate, Sum
-from frappe.utils import cint, flt, get_link_to_form
+from frappe.utils import cint, flt, get_link_to_form, getdate
 from frappe.utils.data import add_days
 from frappe.utils.jinja import render_template
 
@@ -653,3 +653,43 @@ def set_batch_nos(doc, warehouse_field, throw=False, child_table="items"):
 								"Row #{0}: The batch {1} has only {2} qty. Please select another batch which has {3} qty available."
 							).format(d.idx, d.batch_no, batch_qty, qty)
 						)
+
+
+def get_item_shelf_life_in_days(item_code, reference_doctype=None, reference_name=None):
+	has_expiry_date, shelf_life_in_days = frappe.db.get_value(
+		"Item", item_code, ["has_expiry_date", "shelf_life_in_days"]
+	) or (0, None)
+	if not (reference_doctype and reference_name):
+		return has_expiry_date, shelf_life_in_days
+	if not frappe.db.exists("DocType", reference_doctype):
+		return has_expiry_date, shelf_life_in_days
+	meta = frappe.get_meta(reference_doctype)
+	if not meta.has_field("company"):
+		return has_expiry_date, shelf_life_in_days
+	reference_company = frappe.db.get_value(reference_doctype, reference_name, "company")
+	if not reference_company:
+		return has_expiry_date, shelf_life_in_days
+	mapped_shelf_life = frappe.db.get_value(
+		"Shell Life Companies",
+		{"parent": item_code, "parenttype": "Item", "company": reference_company},
+		"shelf_life_in_days",
+	)
+	if mapped_shelf_life is not None:
+		shelf_life_in_days = mapped_shelf_life
+	return has_expiry_date, shelf_life_in_days
+
+
+def pick_batches(item_code, warehouse, qty, strategy="FIFO"):
+	batches = get_batches(item_code, warehouse, qty)
+	if not batches:
+		return []
+	result = []
+	remaining = flt(qty)
+	for batch in batches:
+		if remaining <= 0:
+			break
+		pick_qty = min(flt(batch.qty), remaining)
+		if pick_qty > 0:
+			result.append(frappe._dict({"batch_no": batch.batch_no, "qty": pick_qty}))
+			remaining -= pick_qty
+	return result

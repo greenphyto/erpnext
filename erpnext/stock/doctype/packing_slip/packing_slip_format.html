@@ -1,0 +1,23 @@
+<div class="print-format">
+	<h2>Packing Slip</h2>
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<th>Item</th>
+				<th>Qty</th>
+				<th>Net Weight</th>
+				<th>Gross Weight</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for item in doc.items %}
+			<tr>
+				<td>{{ item.item_code }}</td>
+				<td>{{ item.qty }}</td>
+				<td>{{ item.net_weight }}</td>
+				<td>{{ item.gross_weight }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
