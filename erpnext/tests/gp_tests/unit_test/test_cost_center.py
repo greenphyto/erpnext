@@ -1,3 +1,4 @@
+import os
 import frappe
 import unittest
 from frappe.utils import cstr, cint, nowdate, getdate, flt
@@ -5,7 +6,7 @@ from frappe.utils import cstr, cint, nowdate, getdate, flt
 import erpnext
 from erpnext.accounts.utils import get_cost_center_from_account
 
-SITE_NAME = "test5"
+SITE_NAME = os.environ.get("FRAPPE_SITE", "test5-15")
 SITES_PATH = "/workspace/development/gp-frappe-bench/sites"
 
 

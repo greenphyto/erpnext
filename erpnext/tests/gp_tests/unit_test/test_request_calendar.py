@@ -1,3 +1,4 @@
+import os
 import frappe
 import unittest
 from frappe.utils import nowdate, flt
@@ -5,7 +6,7 @@ import json
 
 from erpnext.buying.doctype.request.request import get_events, get_request_items
 
-SITE_NAME = "test5"
+SITE_NAME = os.environ.get("FRAPPE_SITE", "test5-15")
 SITES_PATH = "/workspace/development/gp-frappe-bench/sites"
 
 

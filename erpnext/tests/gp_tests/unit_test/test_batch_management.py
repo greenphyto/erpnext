@@ -8,7 +8,8 @@ from erpnext.stock.doctype.batch.batch import (
 	get_available_batch_portion,
 )
 
-SITE_NAME = "test5"
+import os
+SITE_NAME = os.environ.get("FRAPPE_SITE", "test5-15")
 SITES_PATH = "/workspace/development/gp-frappe-bench/sites"
 
 

@@ -1,3 +1,4 @@
+import os
 import frappe
 import unittest
 from frappe.utils import flt, getdate, nowdate, get_last_day, add_months
@@ -8,7 +9,7 @@ from erpnext.assets.doctype.asset.depreciation import (
 	check_future_posted_depreciation,
 )
 
-SITE_NAME = "test5"
+SITE_NAME = os.environ.get("FRAPPE_SITE", "test5-15")
 SITES_PATH = "/workspace/development/gp-frappe-bench/sites"
 
 

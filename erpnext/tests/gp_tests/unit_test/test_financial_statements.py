@@ -2,7 +2,8 @@ import frappe
 import unittest
 from frappe.utils import flt, getdate, get_first_day, get_last_day
 
-SITE_NAME = "test5"
+import os
+SITE_NAME = os.environ.get("FRAPPE_SITE", "test5-15")
 SITES_PATH = "/workspace/development/gp-frappe-bench/sites"
 
 

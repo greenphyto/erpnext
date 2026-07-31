@@ -1,8 +1,9 @@
+import os
 import frappe
 import unittest
 import json
 
-SITE_NAME = "test5"
+SITE_NAME = os.environ.get("FRAPPE_SITE", "test5-15")
 SITES_PATH = "/workspace/development/gp-frappe-bench/sites"
 
 

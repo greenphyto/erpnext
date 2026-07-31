@@ -1,3 +1,4 @@
+import os
 import frappe
 import unittest
 from frappe.utils import flt, nowdate
@@ -8,7 +9,7 @@ from erpnext.buying.doctype.request.request import (
 	_get_existing_request,
 )
 
-SITE_NAME = "test5"
+SITE_NAME = os.environ.get("FRAPPE_SITE", "test5-15")
 SITES_PATH = "/workspace/development/gp-frappe-bench/sites"
 
 
