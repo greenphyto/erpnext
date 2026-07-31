@@ -40,15 +40,21 @@ class TestGetDefaultCostCenter(unittest.TestCase):
 		self.assertEqual(result, expected_cc)
 
 	def test_returns_cost_center_from_mapping(self):
-		mapping = frappe.db.get_value("Cost Center Mapping", {
+		mappings = frappe.db.get_all("Cost Center Mapping", {
 			"company": self.company
-		}, ["account", "cost_center"], as_dict=True)
-		if not mapping:
+		}, ["account", "cost_center"])
+		if not mappings:
 			self.skipTest("No Cost Center Mapping found")
 
-		account_cc = frappe.get_value("Account", mapping.account, "cost_center")
-		if account_cc:
-			self.skipTest("Account already has cost_center set directly")
+		mapping = None
+		for m in mappings:
+			account_cc = frappe.get_value("Account", m.account, "cost_center")
+			if not account_cc:
+				mapping = m
+				break
+
+		if not mapping:
+			self.skipTest("All mapped accounts have cost_center set directly")
 
 		result = erpnext.get_default_cost_center(company=self.company, account=mapping.account)
 		self.assertEqual(result, mapping.cost_center)
