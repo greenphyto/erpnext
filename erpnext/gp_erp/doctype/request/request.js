@@ -1,7 +1,7 @@
 // Copyright (c) 2024, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-{% include 'erpnext/selling/sales_common.js' %}
+erpnext.sales_common.setup_selling_controller();
 
 frappe.ui.form.on("Request", {
 	quantity: function (frm) {
@@ -46,6 +46,14 @@ frappe.ui.form.on("Request", {
 				}
 			}
 		})
+
+		frm.set_query("packaging_item", "items", function(doc, cdt, cdn) {
+			return {
+				filters: {
+					material_group: "Other Packaging"
+				}
+			}
+		});
 
 
 

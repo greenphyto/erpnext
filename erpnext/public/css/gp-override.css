@@ -1,0 +1,24 @@
+/* GP Override - Sidebar text color fix */
+.layout-side-section a,
+.layout-side-section .standard-sidebar-item > a,
+.layout-side-section .standard-sidebar-item .sidebar-item-label,
+.layout-side-section .desk-sidebar .standard-sidebar-item > a,
+.layout-side-section .desk-sidebar .standard-sidebar-item .sidebar-item-label,
+ul.list-unstyled.sidebar-menu a,
+ul.list-unstyled.sidebar-menu li a,
+.layout-side-section .sidebar-label,
+.layout-side-section .sidebar-menu > li > a {
+  color: white !important;
+}
+
+.layout-side-section .standard-sidebar-item svg,
+.layout-side-section .desk-sidebar .standard-sidebar-item svg,
+ul.list-unstyled.sidebar-menu svg,
+ul.list-unstyled.sidebar-menu li svg {
+  stroke: white !important;
+  --icon-stroke: white !important;
+}
+
+#freeze .freeze-message-container {
+  background-color: #898b93;
+}

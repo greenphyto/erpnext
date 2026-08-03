@@ -79,8 +79,9 @@ function open_bulk_upload_dialog(listview) {
     const $file_input = $upload_section.find('#bulk-upload-csv-input');
 
     // Click to upload
-    $upload_area.on('click', function() {
-        $file_input.trigger('click');
+    $upload_area.on('click', function(e) {
+        if (e.target === $file_input[0]) return;
+        $file_input[0].click();
     });
 
     // Drag & drop

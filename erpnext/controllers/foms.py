@@ -85,7 +85,7 @@ UOM_KG_CONVERTION = {
 
 TRANFER_AGAIN = 'Job Card'
 ITEM_GROUP_NOT_SYNC = ['Products', "Fixed Assets", "Services"]
-COMPANY_ALLOWED_WITH_FOMS = ["Greenphyto Pte Ltd"]
+COMPANY_ALLOWED_WITH_FOMS = ["Greenphyto Pte Ltd", "Greenphyto Tech Sdn Bhd"]
 
 def is_allowed_foms_company(company=None, doc=None):
 	if not COMPANY_ALLOWED_WITH_FOMS:
