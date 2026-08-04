@@ -30,7 +30,6 @@ ASSET_NON_CURRENT = [
 	("Accumulated Depreciation", None, [
 		"110510", "110528", "110530", "110540", "110550", "110560", "110570",
 	]),
-	("_spacer", None, None),
 	("Intangible assets", None, [
 		"110072", "110575",
 	]),
@@ -265,13 +264,12 @@ def execute(filters=None):
 	render_groups(data, ASSET_CURRENT, acc_map, period_list, prev_acc_map, prev_period_list)
 	ca_total = sum_groups_total(ASSET_CURRENT, acc_map, period_list, prev_acc_map, prev_period_list)
 	data.append(total_row("", ca_total, period_list, currency))
-	data.append({})
 
 	asset_total = get_root_total("Asset", root_type_totals, period_list, prev_root_type_totals, prev_period_list)
 	data.append(total_row("Total Asset (Debit)", asset_total, period_list, currency))
-	data.append({})
 
 	# --- LIABILITIES ---
+	data.append({})
 	data.append(section_row("Liabilities"))
 	data.append(group_row("Current liabilities", ""))
 	render_groups(data, LIABILITY_CURRENT, acc_map, period_list, prev_acc_map, prev_period_list)
@@ -282,21 +280,22 @@ def execute(filters=None):
 	render_groups(data, LIABILITY_NON_CURRENT, acc_map, period_list, prev_acc_map, prev_period_list)
 	ncl_total = sum_groups_total(LIABILITY_NON_CURRENT, acc_map, period_list, prev_acc_map, prev_period_list)
 	data.append(total_row("", ncl_total, period_list, currency))
-	data.append({})
 
 	liability_total = get_root_total("Liability", root_type_totals, period_list, prev_root_type_totals, prev_period_list)
 	data.append(total_row("Total Liability (Credit)", liability_total, period_list, currency))
-	data.append({})
 
 	# --- EQUITY ---
+	data.append({})
 	data.append(section_row("Equity"))
 	for acc in EQUITY_ACCOUNTS:
 		row = make_acc_row(acc, acc_map, period_list, prev_acc_map, prev_period_list)
 		if row:
+			row["indent"] = 1
 			data.append(row)
 
 	# P/L row
 	pl_row_data = make_pl_row(pl_data, period_list, prev_pl_data, prev_period_list, currency)
+	pl_row_data["indent"] = 0
 	data.append(pl_row_data)
 
 	equity_total = get_root_total("Equity", root_type_totals, period_list, prev_root_type_totals, prev_period_list)
@@ -305,10 +304,10 @@ def execute(filters=None):
 		equity_total[p.key] += flt(pl_row_data.get(p.key))
 	equity_total[PREV_YEAR_KEY] += flt(pl_row_data.get(PREV_YEAR_KEY))
 	data.append(total_row("Total Equity (Credit)", equity_total, period_list, currency))
-	data.append({})
-	data.append({})
 
 	# Total Liability + Equity
+	data.append({})
+	data.append({})
 	final = {}
 	for p in period_list:
 		final[p.key] = flt(liability_total.get(p.key)) + flt(equity_total.get(p.key))
@@ -341,13 +340,16 @@ def execute(filters=None):
 # === Helper functions ===
 
 def section_row(label):
-	return {"account_name": label, "account": label, "is_bold": True}
+	return {"account_name": label, "account": label, "is_bold": True, "indent": 0}
 
 def group_row(label, acc_code):
-	return {"account_name": label, "account": label, "acc_code": acc_code or "", "is_group": True}
+	return {"account_name": label, "account": label, "acc_code": acc_code or "", "is_group": True, "indent": 1}
 
 def total_row(label, totals, period_list, currency):
-	row = {"account_name": label, "account": label, "is_bold": True, "currency": currency}
+	indent = 1
+	if label in ("Total Asset (Debit)", "Total Liability (Credit)", "Total Equity (Credit)", "Total Liability and Equity (Credit)"):
+		indent = 0
+	row = {"account_name": label, "account": label, "is_bold": True, "currency": currency, "indent": indent}
 	for p in period_list:
 		row[p.key] = flt(totals.get(p.key))
 	row[PREV_YEAR_KEY] = flt(totals.get(PREV_YEAR_KEY))
@@ -361,6 +363,7 @@ def make_acc_row(acc_code, acc_map, period_list, prev_acc_map, prev_period_list)
 		"account": acc_data.get("_account", ""),
 		"account_name": acc_data.get("_account", ""),
 		"acc_code": acc_code,
+		"indent": 3,
 	}
 	for p in period_list:
 		row[p.key] = flt(acc_data.get(p.key))
@@ -396,6 +399,7 @@ def render_groups(data, groups, acc_map, period_list, prev_acc_map, prev_period_
 			if row:
 				row["account_name"] = label
 				row["is_bold"] = True
+				row["indent"] = 2
 				data.append(row)
 			continue
 
@@ -410,17 +414,12 @@ def render_groups(data, groups, acc_map, period_list, prev_acc_map, prev_period_
 				group_total[p.key] += flt(acc_map.get(acc, {}).get(p.key))
 			group_total[PREV_YEAR_KEY] += get_prev_val(acc, prev_acc_map, prev_period_list)
 
-		# Also add acc_code itself if it has a value (group account with balance)
-		if acc_code and acc_code in acc_map:
-			for p in period_list:
-				group_total[p.key] += flt(acc_map[acc_code].get(p.key))
-			group_total[PREV_YEAR_KEY] += get_prev_val(acc_code, prev_acc_map, prev_period_list)
-
 		grp_row = {
 			"account_name": label,
 			"account": label,
 			"acc_code": acc_code or "",
 			"is_group": True,
+			"indent": 2,
 		}
 		for p in period_list:
 			grp_row[p.key] = group_total[p.key]
@@ -451,10 +450,6 @@ def sum_groups_total(groups, acc_map, period_list, prev_acc_map, prev_period_lis
 			for p in period_list:
 				totals[p.key] += flt(acc_map.get(acc, {}).get(p.key))
 			totals[PREV_YEAR_KEY] += get_prev_val(acc, prev_acc_map, prev_period_list)
-		if acc_code and acc_code in acc_map:
-			for p in period_list:
-				totals[p.key] += flt(acc_map[acc_code].get(p.key))
-			totals[PREV_YEAR_KEY] += get_prev_val(acc_code, prev_acc_map, prev_period_list)
 
 	return totals
 
