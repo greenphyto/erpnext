@@ -1,44 +1,39 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
 
-frappe.require("assets/erpnext/js/financial_statements.js", function() {
-	frappe.query_reports["Balance Sheet Greenphyto"] = $.extend({}, erpnext.financial_statements);
-
-	erpnext.utils.add_dimensions('Balance Sheet Greenphyto', 10);
-
-	frappe.query_reports["Balance Sheet Greenphyto"]["filters"].push({
-		"fieldname": "accumulated_values",
-		"label": __("Accumulated Values"),
-		"fieldtype": "Check",
-		"default": 1
-	});
-
-	frappe.query_reports["Balance Sheet Greenphyto"]["filters"].push({
-		"fieldname": "monthly_net",
-		"label": __("Monthly Net (Non-Accumulated)"),
-		"fieldtype": "Check",
-		"default": 0,
-		"depends_on": "eval:doc.periodicity == 'Monthly'"
-	});
-
-	frappe.query_reports["Balance Sheet Greenphyto"]["filters"].push({
-		"fieldname": "include_default_book_entries",
-		"label": __("Include Default Book Entries"),
-		"fieldtype": "Check",
-		"default": 1
-	});
-
-	frappe.query_reports["Balance Sheet Greenphyto"]["filters"].push({
-		"fieldname": "ignore_closing_entries",
-		"label": __("Ignore Closing Entry"),
-		"fieldtype": "Check",
-		"default": 0
-	});
-
-	frappe.query_reports["Balance Sheet Greenphyto"]["filters"].push({
-		"fieldname": "show_number_group",
-		"label": __("Show Number Group"),
-		"fieldtype": "Check",
-		"default": 0
-	});
-});
+frappe.query_reports["Balance Sheet Greenphyto"] = {
+	"filters": [
+		{
+			"fieldname": "company",
+			"label": __("Company"),
+			"fieldtype": "Link",
+			"options": "Company",
+			"default": frappe.defaults.get_user_default("Company"),
+			"reqd": 1
+		},
+		{
+			"fieldname": "fiscal_year",
+			"label": __("Fiscal Year"),
+			"fieldtype": "Link",
+			"options": "Fiscal Year",
+			"default": frappe.defaults.get_user_default("fiscal_year"),
+			"reqd": 1
+		},
+		{
+			"fieldname": "include_default_book_entries",
+			"label": __("Include Default Book Entries"),
+			"fieldtype": "Check",
+			"default": 1
+		},
+		{
+			"fieldname": "ignore_closing_entries",
+			"label": __("Ignore Closing Entry"),
+			"fieldtype": "Check",
+			"default": 0
+		},
+	],
+	"tree": true,
+	"name_field": "account",
+	"parent_field": "parent_account",
+	"initial_depth": 3,
+};

@@ -11,7 +11,6 @@ from erpnext.accounts.report.financial_statements import (
 	get_data,
 	get_period_list,
 )
-from erpnext.accounts.report.utils import convert_wrap_report_data
 from erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement import execute as pl_report
 
 PREV_YEAR_KEY = "prev_year"
@@ -201,15 +200,22 @@ def fetch_balances_via_get_data(company, period_list, filters, ignore_closing_en
 def execute(filters=None):
 	filters = frappe._dict(filters or {})
 
+	fiscal_year = filters.get("fiscal_year") or filters.get("from_fiscal_year")
+	if not fiscal_year:
+		frappe.throw(_("Fiscal Year is required"))
+
+	filters.from_fiscal_year = fiscal_year
+	filters.to_fiscal_year = fiscal_year
+	filters.filter_based_on = "Fiscal Year"
+	filters.periodicity = "Yearly"
+	filters.accumulated_values = 1
+
 	period_list = get_period_list(
 		filters.from_fiscal_year, filters.to_fiscal_year,
 		filters.period_start_date, filters.period_end_date,
 		filters.filter_based_on, filters.periodicity,
 		company=filters.company, month=filters.month, to_month=filters.to_month,
 	)
-
-	if not filters.get("accumulated_values"):
-		frappe.throw(_("Accumulated Values must be set fo Balance Sheet report"))
 
 	currency = filters.presentation_currency or frappe.get_cached_value(
 		"Company", filters.company, "default_currency"
@@ -315,14 +321,25 @@ def execute(filters=None):
 	data.append(total_row("Total Liability and Equity (Credit)", final, period_list, currency))
 
 	# Columns
+	from frappe.utils import today, getdate
+	current_date = getdate(today())
+	current_month_label = current_date.strftime("%b %Y")
+
 	columns = get_columns(
 		filters.periodicity, period_list, filters.accumulated_values, company=filters.company
 	)
 	for col in columns:
 		if col.get("fieldtype") == "Currency" and col.get("fieldname") != PREV_YEAR_KEY:
-			col["label"] = "{} ({})".format(col["label"], currency)
+			col["label"] = "{} ({})".format(current_month_label, currency)
 
-	prev_year_label = "{} ({})".format(prev_fy or _("Previous Year"), currency)
+	# Prev year label: Dec of prev fiscal year end
+	if prev_fy and prev_period_list:
+		prev_end_date = prev_period_list[-1].to_date
+		prev_month_label = getdate(prev_end_date).strftime("%b %Y")
+	else:
+		prev_month_label = prev_fy or _("Previous Year")
+
+	prev_year_label = "{} ({})".format(prev_month_label, currency)
 	columns.insert(2, {
 		"fieldname": PREV_YEAR_KEY,
 		"label": prev_year_label,
@@ -330,9 +347,6 @@ def execute(filters=None):
 		"options": "currency",
 		"width": 150,
 	})
-
-	if frappe.flags.in_export:
-		convert_wrap_report_data(columns, data, precision=2)
 
 	return columns, data, None, None, None
 
