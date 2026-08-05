@@ -43,6 +43,12 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 			"fieldtype": "Check",
 			"default": 0
 		},
+		// {
+		// 	"fieldname": "hide_if_empty",
+		// 	"label": __("Hide If Empty"),
+		// 	"fieldtype": "Check",
+		// 	"default": 1
+		// },
 		{
 			"fieldname": "show_all_cost_centers",
 			"label": __("Show on Cost Centers"),

@@ -60,6 +60,8 @@ def execute(filters=None):
 		current_month = current_date.month
 		period_list = [p for p in period_list if getdate(p.to_date).month <= current_month]
 
+	hide_if_empty = cint(filters.get("hide_if_empty", 1))
+
 	income = get_data(
 		filters.company,
 		"Income",
@@ -69,6 +71,7 @@ def execute(filters=None):
 		accumulated_values=filters.accumulated_values,
 		ignore_closing_entries=True,
 		ignore_accumulated_values_for_fy=True,
+		filter_zero_value=hide_if_empty,
 	)
 
 	expense = get_data(
@@ -80,6 +83,7 @@ def execute(filters=None):
 		accumulated_values=filters.accumulated_values,
 		ignore_closing_entries=True,
 		ignore_accumulated_values_for_fy=True,
+		filter_zero_value=hide_if_empty,
 	)
 
 	data = build_malaysia_pnl(income, expense, period_list, filters)
