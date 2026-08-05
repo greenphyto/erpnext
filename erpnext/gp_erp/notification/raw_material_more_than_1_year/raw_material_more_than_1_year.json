@@ -1,0 +1,35 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "creation": "2026-08-05 15:07:56.862041",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Batch",
+ "enabled": 1,
+ "event": "Custom",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "",
+ "modified": "2026-08-05 15:28:50.862041",
+ "modified_by": "Administrator",
+ "module": "GP ERP",
+ "name": "Raw Material more than 1 year",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_role": "Stock Master Manager"
+  },
+  {
+   "receiver_by_role": "Manufacturing Manager"
+  },
+  {
+   "receiver_by_role": "Stock Manager"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "sender": "ERP",
+ "sender_email": "erp@greenphyto.com",
+ "subject": "[Alert] Raw Material Batches Older Than 1 Year ({{ doc.doc_list | length }} batches)"
+}

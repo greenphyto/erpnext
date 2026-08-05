@@ -582,6 +582,7 @@ scheduler_events = {
         "erpnext.controllers.foms.get_packaging",
 		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_items",
 		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_product",
+        "erpnext.gp_erp.notification.raw_material_more_than_1_year.raw_material_more_than_1_year.notify_raw_material_more_than_1_year",
         "erpnext.ai_agent.doctype.email_invoice.email_invoice.pull_erp_po"
 	],
 	"weekly": [
