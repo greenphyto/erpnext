@@ -14,6 +14,7 @@
   "title",
   "naming_series",
   "customer",
+  "donor_name",
   "customer_name",
   "tax_id",
   "order_type",
@@ -21,12 +22,16 @@
   "transaction_date",
   "delivery_date",
   "column_break1",
+  "company",
   "po_no",
   "po_date",
-  "company",
+  "pending_po",
   "skip_delivery_note",
   "has_unit_price_items",
+  "is_pledge",
   "amended_from",
+  "donor_information_section",
+  "donor_info",
   "accounting_dimensions_section",
   "cost_center",
   "dimension_col_break",
@@ -45,6 +50,11 @@
   "column_break_28",
   "set_warehouse",
   "reserve_stock",
+  "custom_dimensions_section",
+  "non_package_item",
+  "non_stock_item",
+  "col_break_46",
+  "is_carton_order",
   "items_section",
   "items",
   "section_break_31",
@@ -109,6 +119,7 @@
   "contact_email",
   "shipping_address_column",
   "shipping_address_name",
+  "outlet_name",
   "shipping_address",
   "column_break_93",
   "dispatch_address_name",
@@ -167,21 +178,8 @@
   "campaign",
   "party_account_currency",
   "connections_tab",
-  "donor_name",
-  "pending_po",
-  "is_pledge",
-  "donor_information_section",
-  "donor_info",
-  "column_break_77",
-  "custom_dimensions_section",
-  "non_package_item",
-  "non_stock_item",
-  "col_break_46",
-  "is_carton_order",
-  "sec_break_48",
   "bom_items_section",
   "bom_item",
-  "outlet_name",
   "on_progress",
   "per_working",
   "foms_details_section",
@@ -1596,6 +1594,36 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "0",
+   "fieldname": "is_pledge",
+   "fieldtype": "Check",
+   "label": "For Pledge"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "pending_po",
+   "fieldtype": "Check",
+   "label": "Pending PO number?"
+  },
+  {
+   "depends_on": "eval:doc.is_pledge",
+   "fieldname": "donor_name",
+   "fieldtype": "Data",
+   "label": "Donor Name"
+  },
+  {
+   "depends_on": "eval:doc.is_pledge",
+   "fieldname": "donor_information_section",
+   "fieldtype": "Section Break",
+   "label": "Donor Information"
+  },
+  {
+   "fieldname": "donor_info",
+   "fieldtype": "HTML",
+   "label": "Donor Info"
+  },
+  {
    "fieldname": "connections_tab",
    "fieldtype": "Tab Break",
    "label": "Connections",
@@ -1688,21 +1716,8 @@
    "label": "Last Scanned Warehouse"
   },
   {
-   "fieldname": "column_break_77",
-   "fieldtype": "Column Break",
-   "hide_days": 1,
-   "hide_seconds": 1
-  },
-  {
    "fieldname": "custom_dimensions_section",
    "fieldtype": "Section Break"
-  },
-  {
-   "allow_on_submit": 1,
-   "default": "0",
-   "fieldname": "pending_po",
-   "fieldtype": "Check",
-   "label": "Pending PO number?"
   },
   {
    "default": "0",
@@ -1769,29 +1784,6 @@
    "read_only": 1
   },
   {
-   "depends_on": "eval:doc.is_pledge",
-   "fieldname": "donor_name",
-   "fieldtype": "Data",
-   "label": "Donor Name"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_pledge",
-   "fieldtype": "Check",
-   "label": "For Pledge"
-  },
-  {
-   "depends_on": "eval:doc.is_pledge",
-   "fieldname": "donor_information_section",
-   "fieldtype": "Section Break",
-   "label": "Donor Information"
-  },
-  {
-   "fieldname": "donor_info",
-   "fieldtype": "HTML",
-   "label": "Donor Info"
-  },
-  {
    "default": "0",
    "fieldname": "non_stock_item",
    "fieldtype": "Check",
@@ -1815,17 +1807,13 @@
    "fieldname": "is_carton_order",
    "fieldtype": "Check",
    "label": "Is Carton Order"
-  },
-  {
-   "fieldname": "sec_break_48",
-   "fieldtype": "Section Break"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-07-29 08:46:06.575197",
+ "modified": "2026-08-03 16:20:02.072029",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

@@ -11,6 +11,8 @@
   "naming_series",
   "customer",
   "customer_name",
+  "donor_name",
+  "delivery_note",
   "tax_id",
   "company",
   "company_tax_id",
@@ -34,6 +36,10 @@
   "debit_note_transaction",
   "is_pledge",
   "amended_from",
+  "customer_po_details",
+  "po_no",
+  "column_break_23",
+  "po_date",
   "accounting_dimensions_section",
   "cost_center",
   "dimension_col_break",
@@ -182,12 +188,6 @@
   "tc_name",
   "terms",
   "more_info_tab",
-  "customer_po_details",
-  "po_no",
-  "column_break_23",
-  "po_date",
-  "donor_name",
-  "delivery_note",
   "more_info",
   "debit_to",
   "party_account_currency",
@@ -227,8 +227,7 @@
   "is_internal_customer",
   "is_discounted",
   "remarks",
-  "connections_tab",
-  "column_break_27"
+  "connections_tab"
  ],
  "fields": [
   {
@@ -2271,10 +2270,6 @@
    "label": "Consignment Request",
    "options": "Consignment Request",
    "read_only": 1
-  },
-  {
-   "fieldname": "column_break_27",
-   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
@@ -2288,7 +2283,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2026-07-29 08:46:06.575197",
+ "modified": "2026-08-06 15:23:15.623618",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

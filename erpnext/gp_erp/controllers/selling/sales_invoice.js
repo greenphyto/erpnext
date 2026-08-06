@@ -3,6 +3,23 @@ frappe.ui.form.on("Sales Invoice", {
         frm.set_value("naming_series", "CN.###./.YYYY");
     },
 
+    is_pledge: function(frm) {
+        if (cint(frm.doc.is_pledge) == 0) {
+            frm.set_value("customer", "");
+            frm.set_value("naming_series", "INV.###./.YYYY");
+            frm.set_value("po_no", "");
+            return;
+        }
+        frm.set_value("naming_series", "DON.###./.YYYY");
+        frm.set_value("po_no", "For Pledge");
+        frm.set_value("po_date", "");
+        frappe.db.get_value("Company", frm.doc.company, "donor_customer").then(r => {
+            if (r.message && r.message.donor_customer) {
+                frm.set_value("customer", r.message.donor_customer);
+            }
+        });
+    },
+
     debit_note_transaction: function(frm) {
         if (frm.doc.debit_note_transaction) {
             if (frm.doc.customer) {

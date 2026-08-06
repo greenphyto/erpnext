@@ -1592,3 +1592,41 @@ def get_blanket_order_details(args):
 		blanket_order_details = blanket_order_details[0] if blanket_order_details else ""
 
 	return blanket_order_details
+
+
+@frappe.whitelist()
+def get_carton_detail(args):
+	import math
+	from six import string_types
+
+	if isinstance(args, string_types):
+		args = frappe._dict(json.loads(args))
+
+	temp = frappe.db.sql("""
+		SELECT
+			cpd.item_code,
+			cpd.package,
+			cpd.package as uom,
+			cpd.packaging as packaging_item,
+			cpd.carton_uom as carton_uom,
+			cpd.carton_size as carton_conversion
+		FROM
+			`tabCustomer Packaging Detail` cpd
+		LEFT JOIN
+			`tabCustomer` c
+		ON
+			cpd.parent = c.name
+		WHERE
+			c.name = %(customer)s
+			and cpd.item_code = %(item_code)s
+			and (%(package)s is null or %(package)s = '' or cpd.package = %(package)s)
+		ORDER BY cpd.package
+	""", {"customer": args.customer, "item_code": args.item_code, "package": args.uom}, as_dict=1)
+	res = temp[0] if temp else frappe._dict({})
+	res.is_carton = 1
+	res.carton_conversion = res.carton_conversion or 12
+	res.carton_qty = math.ceil(flt(args.qty) / flt(res.carton_conversion)) if res.carton_conversion else 0
+	if not res.packaging_item:
+		res.packaging_item = frappe.get_value("Packaging List Available", {"parent": args.item_code, "packaging": args.uom}, "package_item")
+
+	return res
