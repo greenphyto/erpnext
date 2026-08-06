@@ -10,7 +10,11 @@
  "field_order": [
   "enabled",
   "uom_name",
-  "must_be_whole_number"
+  "must_be_whole_number",
+  "is_packaging",
+  "is_carton",
+  "column_break_5",
+  "global_description"
  ],
  "fields": [
   {
@@ -35,12 +39,38 @@
    "fieldname": "enabled",
    "fieldtype": "Check",
    "label": "Enabled"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_packaging",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Is Packaging"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "global_description",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Global Description"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_carton",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Is Carton"
   }
  ],
  "icon": "fa fa-compass",
  "idx": 1,
  "links": [],
- "modified": "2021-10-18 14:07:43.722144",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "UOM",

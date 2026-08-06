@@ -8,6 +8,21 @@
  "document_type": "Document",
  "engine": "InnoDB",
  "field_order": [
+  "organization_name",
+  "organization_address",
+  "donor_name",
+  "delivery_date",
+  "posting_datetime",
+  "delivery_completed_at",
+  "delivery_completed_by",
+  "is_replacement",
+  "is_donation",
+  "is_giveaway",
+  "is_marketing",
+  "is_production",
+  "is_pledge",
+  "non_stock_item",
+  "section_break_hfxd",
   "title",
   "naming_series",
   "customer",
@@ -164,7 +179,38 @@
   "column_break5",
   "excise_page",
   "instructions",
-  "connections_tab"
+  "connections_tab",
+  "replacement_reason_section",
+  "replacement_reason",
+  "column_break_29",
+  "rpl_creator",
+  "custom_dimensions_section",
+  "pick_list",
+  "non_package_item",
+  "col_break_46",
+  "is_carton_order",
+  "sec_break_48",
+  "total_gross_weight",
+  "shipping_method_section",
+  "inter_company_terms",
+  "carton_weight",
+  "total_cartons",
+  "column_break_72",
+  "mode_of_transport",
+  "port_of_discharge",
+  "port_of_loading",
+  "outlet_name",
+  "foms_id",
+  "column_break_25",
+  "signature_details_section",
+  "authorized_signature_section",
+  "signature",
+  "signature_by",
+  "taken_at",
+  "column_break_161",
+  "attachment_preview",
+  "attachment",
+  "work_order"
  ],
  "fields": [
   {
@@ -1398,13 +1444,307 @@
    "fieldtype": "Data",
    "is_virtual": 1,
    "label": "Last Scanned Warehouse"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "pick_list",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Pick List",
+   "options": "Pick List",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_25",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "custom_dimensions_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "posting_datetime",
+   "fieldtype": "Datetime",
+   "label": "Posting Date & Time",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "delivery_completed_at",
+   "fieldtype": "Datetime",
+   "label": "Delivery Completed at",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "delivery_completed_by",
+   "fieldtype": "Data",
+   "label": "Delivery Completed By",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.docstatus == 1",
+   "fieldname": "signature_details_section",
+   "fieldtype": "Tab Break",
+   "label": "Signature Details"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "signature",
+   "fieldtype": "Signature",
+   "label": "Signature"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "column_break_161",
+   "fieldtype": "Column Break",
+   "label": "Attachment"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "attachment",
+   "fieldtype": "Attach Image",
+   "label": "Attachment"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "attachment_preview",
+   "fieldtype": "Image",
+   "label": "Attachment Preview",
+   "options": "attachment"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "signature_by",
+   "fieldtype": "Data",
+   "label": "Signature By"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "taken_at",
+   "fieldtype": "Datetime",
+   "label": "Taken At"
+  },
+  {
+   "fieldname": "authorized_signature_section",
+   "fieldtype": "Section Break",
+   "label": "Authorized Signature"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_package_item",
+   "fieldtype": "Check",
+   "label": "Non Package Item"
+  },
+  {
+   "fieldname": "col_break_46",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:cint(doc.non_stock_item) == 0 && doc.non_package_item == 0",
+   "fieldname": "is_carton_order",
+   "fieldtype": "Check",
+   "label": "Is Carton Order"
+  },
+  {
+   "fieldname": "sec_break_48",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_donation",
+   "fieldtype": "Check",
+   "label": "For Donation to External Organisation",
+   "set_only_once": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_giveaway",
+   "fieldtype": "Check",
+   "label": "For Distribution to Internal Staff",
+   "set_only_once": 1
+  },
+  {
+   "depends_on": "eval:doc.is_donation",
+   "fieldname": "organization_name",
+   "fieldtype": "Data",
+   "label": "Organization Name"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_replacement",
+   "fieldtype": "Check",
+   "label": "Is Replacement",
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "delivery_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Delivery Date"
+  },
+  {
+   "depends_on": "eval:doc.is_donation",
+   "fieldname": "organization_address",
+   "fieldtype": "Small Text",
+   "label": "Organization Address"
+  },
+  {
+   "depends_on": "eval:doc.is_replacement",
+   "fieldname": "replacement_reason_section",
+   "fieldtype": "Section Break",
+   "label": "Replacement Reason"
+  },
+  {
+   "fieldname": "replacement_reason",
+   "fieldtype": "Select",
+   "label": "Replacement Reason",
+   "mandatory_depends_on": "eval:doc.is_replacement",
+   "options": "\nCommercial Reasons\nQuality Issues"
+  },
+  {
+   "fieldname": "column_break_29",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rpl_creator",
+   "fieldtype": "Data",
+   "label": "Creator",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_marketing",
+   "fieldtype": "Check",
+   "label": "For Marketing",
+   "set_only_once": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_production",
+   "fieldtype": "Check",
+   "label": "For Production",
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "work_order",
+   "fieldtype": "Link",
+   "label": "Work Order",
+   "options": "Work Order",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_pledge",
+   "fieldtype": "Check",
+   "label": "For Pledge",
+   "set_only_once": 1
+  },
+  {
+   "depends_on": "eval:doc.is_pledge",
+   "fieldname": "donor_name",
+   "fieldtype": "Data",
+   "label": "Donor Name"
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "shipping_address_name.outlet_name",
+   "fieldname": "outlet_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Outlet Name",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:doc.shipping_rule",
+   "fieldname": "shipping_method_section",
+   "fieldtype": "Section Break",
+   "label": "Shipping Method"
+  },
+  {
+   "fetch_from": "shipping_rule.mode_of_transport",
+   "fetch_if_empty": 1,
+   "fieldname": "mode_of_transport",
+   "fieldtype": "Select",
+   "label": "Mode of Transport",
+   "options": "Land\nSea\nAir"
+  },
+  {
+   "fetch_from": "shipping_rule.port_of_discharge",
+   "fetch_if_empty": 1,
+   "fieldname": "port_of_discharge",
+   "fieldtype": "Link",
+   "label": "Port of Discharge",
+   "options": "Port"
+  },
+  {
+   "fetch_from": "shipping_rule.port_of_loading",
+   "fetch_if_empty": 1,
+   "fieldname": "port_of_loading",
+   "fieldtype": "Link",
+   "label": "Port of Loading",
+   "options": "Port"
+  },
+  {
+   "fieldname": "column_break_72",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Carton weight at single pcs (KG)",
+   "fetch_from": "shipping_rule.carton_weight",
+   "fetch_if_empty": 1,
+   "fieldname": "carton_weight",
+   "fieldtype": "Float",
+   "label": "Carton Weight"
+  },
+  {
+   "fetch_from": "shipping_rule.default_inter_company_terms",
+   "fetch_if_empty": 1,
+   "fieldname": "inter_company_terms",
+   "fieldtype": "Link",
+   "label": "Inter Company Terms",
+   "options": "Terms and Conditions"
+  },
+  {
+   "fieldname": "total_gross_weight",
+   "fieldtype": "Float",
+   "label": "Total Gross Weight",
+   "read_only": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "total_cartons",
+   "fieldtype": "Int",
+   "label": "Total Cartons"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_stock_item",
+   "fieldtype": "Check",
+   "label": "For Non-stock Item"
+  },
+  {
+   "fieldname": "section_break_hfxd",
+   "fieldtype": "Section Break"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-12-02 23:55:25.415443",
+ "modified": "2026-08-03 16:35:37.475069",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

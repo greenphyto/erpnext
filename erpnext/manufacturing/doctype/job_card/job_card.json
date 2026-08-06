@@ -72,7 +72,11 @@
   "started_time",
   "current_time",
   "amended_from",
-  "connections_tab"
+  "connections_tab",
+  "operation_section_section",
+  "column_break_18",
+  "operation_rate",
+  "percentage"
  ],
  "fields": [
   {
@@ -507,11 +511,32 @@
   {
    "fieldname": "column_break_fcmp",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "operation_section_section",
+   "fieldtype": "Section Break",
+   "label": "Operation Section"
+  },
+  {
+   "fieldname": "column_break_18",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "is_corrective_job_card",
+   "fieldname": "operation_rate",
+   "fieldtype": "Currency",
+   "label": "Operation Rate"
+  },
+  {
+   "fieldname": "percentage",
+   "fieldtype": "Percent",
+   "label": "Percentage",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2025-08-04 15:47:54.514290",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Job Card",

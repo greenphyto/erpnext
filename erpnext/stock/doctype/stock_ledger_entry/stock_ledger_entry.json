@@ -42,7 +42,9 @@
   "is_cancelled",
   "to_rename",
   "serial_no",
-  "batch_no"
+  "batch_no",
+  "is_custom_rate",
+  "fix_note"
  ],
  "fields": [
   {
@@ -353,6 +355,18 @@
    "fieldtype": "Datetime",
    "label": "Posting Datetime",
    "search_index": 1
+  },
+  {
+   "fieldname": "fix_note",
+   "fieldtype": "Small Text",
+   "label": "Fix Note",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_custom_rate",
+   "fieldtype": "Check",
+   "label": "Is Custom Rate"
   }
  ],
  "grid_page_length": 50,
@@ -362,7 +376,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-04 09:59:15.546556",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Ledger Entry",

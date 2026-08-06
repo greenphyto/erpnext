@@ -15,7 +15,8 @@
   "company",
   "tax_category",
   "section_break6",
-  "taxes"
+  "taxes",
+  "default_for_zero"
  ],
  "fields": [
   {
@@ -72,12 +73,18 @@
    "fieldtype": "Link",
    "label": "Tax Category",
    "options": "Tax Category"
+  },
+  {
+   "default": "0",
+   "fieldname": "default_for_zero",
+   "fieldtype": "Check",
+   "label": "Default for Zero Tax"
   }
  ],
  "icon": "fa fa-money",
  "idx": 1,
  "links": [],
- "modified": "2024-01-30 13:08:09.537242",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Taxes and Charges Template",

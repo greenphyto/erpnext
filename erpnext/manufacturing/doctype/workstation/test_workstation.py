@@ -1,7 +1,6 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors and Contributors
 # See license.txt
 import frappe
-from frappe.test_runner import make_test_records
 from frappe.tests.utils import FrappeTestCase
 
 from erpnext.manufacturing.doctype.operation.test_operation import make_operation
@@ -14,7 +13,6 @@ from erpnext.manufacturing.doctype.workstation.workstation import (
 
 test_dependencies = ["Warehouse"]
 test_records = frappe.get_test_records("Workstation")
-make_test_records("Workstation")
 
 
 class TestWorkstation(FrappeTestCase):

@@ -2510,3 +2510,66 @@ def build_qb_match_conditions(doctype, user=None) -> list:
 
 def is_immutable_ledger_enabled():
 	return frappe.get_single_value("Accounts Settings", "enable_immutable_ledger")
+
+
+def get_account_number_map(company: str):
+	accounts = frappe.db.get_all(
+		"Account",
+		filters={
+			"company": company,
+			"is_group": 0,
+			"disabled": 0,
+		},
+		fields=["name", "account_number", "account_name"],
+		order_by="account_number asc"
+	)
+
+	return {
+		acc.account_number: acc.name
+		for acc in accounts
+		if acc.account_number
+	}
+
+
+def get_cost_center_from_account(account, company=""):
+	if not company:
+		company = erpnext.get_default_company()
+
+	if not account:
+		return {"value": "", "lock": 0}
+
+	account_cost_center = frappe.get_cached_value("Account", account, "cost_center")
+	if account_cost_center:
+		return {"value": account_cost_center, "lock": 1}
+
+	mapping_cost_center = frappe.db.get_value("Cost Center Mapping", {
+		"company": company,
+		"account": account,
+	}, "cost_center")
+	if mapping_cost_center:
+		return {"value": mapping_cost_center, "lock": 1}
+
+	report_type = frappe.get_cached_value("Account", account, "report_type")
+	if report_type != "Profit and Loss":
+		return {"value": "", "lock": 1}
+
+	return {"value": "", "lock": 0}
+
+
+def get_barcode(value):
+	import base64
+	import io
+
+	try:
+		from barcode import Code128
+		from barcode.writer import ImageWriter
+
+		stream = io.BytesIO()
+		barcode = Code128(str(value), writer=ImageWriter())
+		barcode.write(stream)
+		stream.seek(0)
+		b64 = base64.b64encode(stream.read()).decode()
+	except ImportError:
+		b64 = base64.b64encode(str(value).encode()).decode()
+
+	return f'<img src="data:image/png;base64,{b64}">'

@@ -27,7 +27,19 @@
   "more_information_section",
   "description",
   "column_break_18",
-  "image"
+  "image",
+  "section_break_8",
+  "calculation_type",
+  "electrical_cost",
+  "consumable_cost",
+  "column_break_13",
+  "machinery_cost",
+  "wages_cost",
+  "column_break_16",
+  "rent_cost",
+  "section_break_11",
+  "operation_rate",
+  "base_operation_rate"
  ],
  "fields": [
   {
@@ -190,13 +202,89 @@
    "in_list_view": 1,
    "label": "Workstation Type",
    "options": "Workstation Type"
+  },
+  {
+   "fieldname": "operation_rate",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Operation Rate",
+   "oldfieldname": "hour_rate",
+   "oldfieldtype": "Currency",
+   "options": "currency",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "default": "Per Hour",
+   "fetch_from": "workstation.calculation_type",
+   "fieldname": "calculation_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Calculation Type",
+   "options": "Per Hour\nPer Qty\nPer KG",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:parent.doctype == 'BOM'",
+   "fieldname": "base_operation_rate",
+   "fieldtype": "Currency",
+   "label": "Base Operation Rate(Company Currency)",
+   "options": "Company:company:default_currency",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_8",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_11",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "electrical_cost",
+   "fieldtype": "Currency",
+   "label": "Electrical Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "consumable_cost",
+   "fieldtype": "Currency",
+   "label": "Consumable Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_13",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "machinery_cost",
+   "fieldtype": "Currency",
+   "label": "Machinery Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "wages_cost",
+   "fieldtype": "Currency",
+   "label": "Wages Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rent_cost",
+   "fieldtype": "Currency",
+   "label": "Rent Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-07-31 16:17:47.287117",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "BOM Operation",

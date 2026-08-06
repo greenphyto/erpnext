@@ -1,0 +1,71 @@
+Account
+Accounts Settings
+Asset
+Asset Maintenance Log
+Asset Repair
+Asset Value Adjustment
+BOM
+BOM Rate Log
+Bank
+Bank Account
+Bank Clearance
+Bank Number
+Bank Reconciliation Tool
+Batch
+Budget
+Buying Settings
+CRM Settings
+Company
+Cost Center
+Currency Exchange
+Currency Exchange Settings
+Customer
+Delivery Note
+Delivery Term
+Delivery Trip
+Department
+Exchange Rate Revaluation
+GL Entry
+Item
+Item Price
+Job Card
+Journal Entry
+Lead
+Location
+Manufacturing Settings
+Material Group
+Material Request
+Mode of Payment
+Packaging
+Packaging Material
+Packed Item
+Packing Slip
+Payment Entry
+Payment Ledger Entry
+Payment Terms Template
+Pick List
+Process Statement Of Accounts
+Purchase Invoice
+Purchase Order
+Purchase Receipt
+Purchase Taxes and Charges Template
+Putaway Rule
+QRCode Data
+Quotation
+Request
+Sales Invoice
+Sales Order
+Sales Taxes and Charges Template
+Scrap Request
+Selling Settings
+Shipping Rule
+Stock Entry
+Stock Entry Type
+Stock Ledger Entry
+Stock Reconciliation
+Stock Settings
+Supplier
+UOM
+Warehouse
+Work Order
+Workstation

@@ -1,0 +1,126 @@
+Account
+Account Adjustment Map
+Accounts Settings
+Advance Taxes and Charges
+Asset
+Asset Code Map
+Asset Maintenance Log
+Asset Maintenance Task
+Asset Repair
+Asset Value Adjustment
+BOM
+BOM Explosion Item
+BOM Item
+BOM Operation
+BOM Rate Log
+Bank
+Bank Account
+Bank Clearance
+Bank Number
+Bank Reconciliation Tool
+Batch
+Budget
+Budget Account
+Buying Settings
+CRM Settings
+Company
+Cost Center
+Cost Center Mapping
+Currency Exchange
+Currency Exchange Settings
+Customer
+Default Account by Code
+Delivery Note
+Delivery Note Item
+Delivery Term
+Delivery Trip
+Department
+Depreciation Schedule
+Exchange Rate Revaluation
+Exchange Rate Revaluation Account
+GL Entry
+GST for Journal Entry
+Item
+Item Customer Price
+Item List
+Item Price
+Item Reorder
+Job Card
+Journal Entry
+Journal Entry Account
+Landed Cost Taxes and Charges
+Lead
+Location
+Manufacturing Settings
+Material Group
+Material Request
+Material Request Item
+Mode of Payment
+POS Invoice Item
+Packaging
+Packaging List Available
+Packaging Material
+Packed Item
+Packing Slip
+Packing Slip Item
+Part Number Details
+Payment Entry
+Payment Entry Deduction
+Payment Entry Reference
+Payment Ledger Entry
+Payment Schedule
+Payment Terms Template
+Pick List
+Pick List Item
+Process Statement Of Accounts
+Process Statement Of Accounts Customer
+Purchase Invoice
+Purchase Invoice Item
+Purchase Order
+Purchase Order Item
+Purchase Order Item Supplied
+Purchase Receipt
+Purchase Receipt Item
+Purchase Receipt Item Supplied
+Purchase Taxes and Charges
+Purchase Taxes and Charges Template
+Purchase User Permissions List
+Putaway Rule
+QRCode Data
+Quotation
+Quotation Item
+Request
+Request Items
+Request for Quotation Item
+Sales Invoice
+Sales Invoice Item
+Sales Order
+Sales Order Item
+Sales Taxes and Charges
+Sales Taxes and Charges Template
+Scrap Items
+Scrap Request
+Selling Settings
+Series PO required PR
+Shipping Rule
+Stock Entry
+Stock Entry Detail
+Stock Entry Type
+Stock Ledger Entry
+Stock Reconciliation
+Stock Reconciliation Item
+Stock Settings
+Subcontracting Order Item
+Subcontracting Order Supplied Item
+Subcontracting Receipt Item
+Subcontracting Receipt Supplied Item
+Supplier
+Supplier Code Account
+Supplier Quotation Item
+UOM
+UOM Conversion Detail
+Warehouse
+Work Order
+Work Order Item
+Work Order Operation
+Workstation

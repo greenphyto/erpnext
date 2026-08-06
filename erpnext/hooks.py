@@ -22,8 +22,8 @@ add_to_apps_screen = [
 
 develop_version = "15.x.x-develop"
 
-app_include_js = "erpnext.bundle.js"
-app_include_css = ["erpnext.bundle.css", "https://erp.greenphyto.com/assets/erpnext/dist/css/gp-sg.css"]
+app_include_js = ["erpnext.bundle.js", "/assets/erpnext/js/company_view.js"]
+app_include_css = ["erpnext.bundle.css", "https://erp.greenphyto.com/assets/erpnext/dist/css/gp-sg.css", "/assets/erpnext/css/gp-override.css"]
 web_include_js = "erpnext-web.bundle.js"
 web_include_css = "erpnext-web.bundle.css"
 email_css = "email_erpnext.bundle.css"
@@ -328,19 +328,23 @@ doc_events = {
 		"validate": [
 			"erpnext.support.doctype.service_level_agreement.service_level_agreement.apply",
 			"erpnext.setup.doctype.transaction_deletion_record.transaction_deletion_record.check_for_running_deletion_job",
+			"erpnext.controllers.erp.validate_company_selected",
 		],
+		"before_naming": "erpnext.controllers.erp.change_naming_series",
 	},
 	tuple(period_closing_doctypes): {
 		"validate": "erpnext.accounts.doctype.accounting_period.accounting_period.validate_accounting_period_on_doc_save",
 	},
-	"Stock Entry": {
-		"on_submit": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
-		"on_cancel": "erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
-	},
 	"User": {
 		"after_insert": "frappe.contacts.doctype.contact.contact.update_contact",
-		"validate": "erpnext.setup.doctype.employee.employee.validate_employee_role",
-		"on_update": "erpnext.portal.utils.set_default_role",
+		"validate": [
+			"erpnext.controllers.erp.set_permanent_company",
+			"erpnext.setup.doctype.employee.employee.validate_employee_role",
+		],
+		"on_update": [
+			"erpnext.setup.doctype.employee.employee.update_user_permissions",
+			"erpnext.portal.utils.set_default_role",
+		],
 	},
 	"Communication": {
 		"on_update": [
@@ -359,9 +363,11 @@ doc_events = {
 		"on_submit": [
 			"erpnext.regional.create_transaction_log",
 			"erpnext.regional.italy.utils.sales_invoice_on_submit",
+			"erpnext.gp_erp.doctype.consignment_request.consignment_request.billing_consignment_controller",
 		],
 		"on_cancel": [
 			"erpnext.regional.italy.utils.sales_invoice_on_cancel",
+			"erpnext.gp_erp.doctype.consignment_request.consignment_request.billing_consignment_controller",
 		],
 		"on_trash": "erpnext.regional.check_deletion_permission",
 	},
@@ -369,17 +375,27 @@ doc_events = {
 		"validate": [
 			"erpnext.regional.united_arab_emirates.utils.update_grand_total_for_rcm",
 			"erpnext.regional.united_arab_emirates.utils.validate_returns",
-		]
+		],
+		"on_submit": [
+			"erpnext.ai_agent.doctype.email_invoice.email_invoice.change_temporary_invoice",
+			"erpnext.gp_erp.doctype.ai_agent_memory.ai_agent_memory.update_memory_on_submit",
+		],
+		"onload": [
+			"erpnext.ai_agent.doctype.email_invoice.email_invoice.setup_onload",
+		],
 	},
 	"Payment Entry": {
 		"on_submit": [
 			"erpnext.regional.create_transaction_log",
+			"erpnext.accounts.doctype.payment_request.payment_request.update_payment_req_status",
+			"erpnext.accounts.doctype.dunning.dunning.resolve_dunning",
 		],
 		"on_trash": "erpnext.regional.check_deletion_permission",
 	},
 	"Address": {
 		"validate": [
 			"erpnext.regional.italy.utils.set_state_code",
+			"erpnext.controllers.erp.add_donor_address",
 		],
 	},
 	"Contact": {
@@ -390,8 +406,113 @@ doc_events = {
 	"Email Unsubscribe": {
 		"after_insert": "erpnext.crm.doctype.email_campaign.email_campaign.unsubscribe_recipient"
 	},
+	"Company": {
+		"validate": ["erpnext.controllers.erp.create_ai_user"],
+	},
 	"Integration Request": {
 		"validate": "erpnext.accounts.doctype.payment_request.payment_request.validate_payment"
+	},
+	"Asset": {
+		"on_submit": "erpnext.assets.doctype.asset.asset.asset_trigger",
+		"on_cancel": "erpnext.assets.doctype.asset.asset.asset_trigger",
+		"on_update_after_submit": "erpnext.assets.doctype.asset.asset.asset_trigger",
+		"validate": "erpnext.assets.doctype.asset.asset.asset_trigger",
+		"on_trash": "erpnext.assets.doctype.asset.asset.asset_trigger",
+	},
+	"Supplier": {
+		"on_update": "erpnext.controllers.foms.sync_log",
+		"after_delete": "erpnext.controllers.foms.sync_log",
+	},
+	"Customer": {
+		"on_update": [
+			"erpnext.controllers.foms.sync_log",
+			"erpnext.controllers.erp.update_item_packaging_and_uom",
+		],
+		"after_delete": "erpnext.controllers.foms.sync_log",
+	},
+	"Warehouse": {
+		"validate": "erpnext.controllers.foms.sync_log",
+		"after_delete": "erpnext.controllers.foms.sync_log",
+	},
+	"Stock Reconciliation": {
+		"on_submit": "erpnext.controllers.foms.sync_log",
+		"on_cancel": "erpnext.controllers.foms.sync_log",
+	},
+	"Purchase Receipt": {
+		"on_submit": "erpnext.controllers.foms.sync_log",
+		"on_cancel": "erpnext.controllers.foms.sync_log",
+	},
+	"Sales Order": {
+		"on_submit": "erpnext.controllers.foms.sync_log",
+		"on_update_after_submit": "erpnext.controllers.foms.sync_log",
+		"on_cancel": "erpnext.controllers.foms.sync_log",
+	},
+	"Item": {
+		"validate": [
+			"erpnext.stock.doctype.item.item.update_item_pic",
+			"erpnext.foms.doctype.rate_card.rate_card.update_bom_item",
+		],
+	},
+	"Part Number Settings": {
+		"validate": "erpnext.stock.doctype.item.item.update_item_pic",
+	},
+	"Scrap Request": {
+		"on_submit": "erpnext.controllers.foms.sync_log",
+		"on_cancel": "erpnext.controllers.foms.sync_log",
+	},
+	"Delivery Note": {
+		"on_submit": [
+			"erpnext.controllers.foms.sync_log",
+		],
+		"on_cancel": [
+			"erpnext.controllers.foms.sync_log",
+		],
+	},
+	"Department": {
+		"validate": "erpnext.controllers.foms.sync_log",
+	},
+	"Request": {
+		"on_submit": "erpnext.controllers.foms.sync_log",
+		"on_cancel": "erpnext.controllers.foms.sync_log",
+	},
+	"Stock Entry": {
+		"on_submit": [
+			"erpnext.controllers.foms.sync_log",
+			"erpnext.controllers.foms.detect_salad_items",
+			"erpnext.controllers.foms.check_missing_se_rate",
+			"erpnext.controllers.erp.create_sample_after_work_order",
+			"erpnext.controllers.erp.detect_work_order_different",
+			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
+			"erpnext.controllers.foms.create_prod_variance_entry",
+			"erpnext.gp_erp.doctype.consignment_request.consignment_request.stock_entry_controller",
+		],
+		"before_cancel": [
+			"erpnext.controllers.foms.detect_salad_items",
+			"erpnext.controllers.foms.cancel_repack_se",
+			"erpnext.controllers.erp.cancel_sample_on_work_order",
+		],
+		"on_cancel": [
+			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
+			"erpnext.gp_erp.doctype.consignment_request.consignment_request.stock_entry_controller",
+		],
+	},
+	"Stock Ledger Entry": {
+		"on_submit": "erpnext.controllers.foms.sync_sle",
+	},
+	"Email Queue": {
+		"validate": "erpnext.controllers.erp.check_email_status",
+	},
+	"Scheduled Job Log": {
+		"after_insert": "erpnext.ai_agent.doctype.ai_agent_settings.ai_agent_settings.read_log",
+	},
+	"Purchase Order": {
+		"on_submit": "erpnext.controllers.erp.auto_create_selling_from_internal",
+	},
+	"Material Request": {
+		"validate": "erpnext.controllers.erp.detection_incoming_rate_not_logic",
+	},
+	"Work Order": {
+		"on_submit": "erpnext.controllers.foms.check_missing_wo_rate",
 	},
 }
 
@@ -432,7 +553,9 @@ scheduler_events = {
 		"erpnext.erpnext_integrations.doctype.plaid_settings.plaid_settings.automatic_synchronization",
 		"erpnext.utilities.doctype.video.video.update_youtube_data",
 	],
-	"daily": [],
+	"daily": [
+		"erpnext.stock.reorder_item.reorder_item",
+	],
 	"daily_long": [],
 	"daily_maintenance": [
 		"erpnext.support.doctype.issue.issue.auto_close_tickets",
@@ -471,6 +594,9 @@ scheduler_events = {
 	"monthly_long": [
 		"erpnext.accounts.deferred_revenue.process_deferred_accounting",
 		"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_monthly",
+	],
+	"monthly": [
+		"erpnext.assets.doctype.asset.depreciation.post_depreciation_entries",
 	],
 }
 
@@ -663,3 +789,19 @@ default_log_clearing_doctypes = {
 export_python_type_annotations = True
 
 fields_for_group_similar_items = ["qty", "amount"]
+
+bypass_workflow_permission = "erpnext.controllers.erp.control_bypass_workflow"
+
+sync_log_method = {
+    1: "erpnext.controllers.foms._update_foms_supplier",
+    2: "erpnext.controllers.foms._update_foms_customer",
+    3: "erpnext.controllers.foms._update_warehouse",
+    4: "erpnext.controllers.foms._update_stock_receipt",
+    5: "erpnext.controllers.foms._update_foms_sales_order",
+    6: "erpnext.controllers.foms._update_foms_stock_recon",
+    7: "erpnext.controllers.foms._update_foms_scrap_request",
+    8: "erpnext.controllers.foms._update_foms_department",
+    9: "erpnext.controllers.foms._sync_delivery_note2",
+    10: "erpnext.controllers.foms._update_foms_forecast",
+    11: "erpnext.controllers.foms.update_stock_entry",
+}

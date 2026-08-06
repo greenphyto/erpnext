@@ -1428,10 +1428,10 @@ class AccountsController(TransactionBase):
 		if self.flags.allow_zero_qty:
 			return
 
-		for item in self.items:
-			if self.doctype == "Purchase Receipt" and item.rejected_qty:
-				continue
+		if self.doctype == "Purchase Receipt":
+			return
 
+		for item in self.items:
 			if not flt(item.qty):
 				frappe.throw(
 					msg=_("Row #{0}: Quantity for Item {1} cannot be zero.").format(

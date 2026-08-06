@@ -7,11 +7,15 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "item_code",
+  "customer_sku",
+  "customer_sku_name",
   "barcode",
   "has_item_scanned",
-  "item_code",
   "col_break1",
   "item_name",
+  "item_name_view",
+  "marketing_name",
   "customer_item_code",
   "description_section",
   "description",
@@ -20,6 +24,12 @@
   "image_section",
   "image",
   "image_view",
+  "carton_section",
+  "carton_qty",
+  "is_carton",
+  "column_break_kcgi",
+  "carton_conversion",
+  "carton_uom",
   "quantity_and_rate",
   "qty",
   "stock_uom",
@@ -28,6 +38,8 @@
   "conversion_factor",
   "stock_qty",
   "section_break_17",
+  "cost_center",
+  "lock_cost_center",
   "price_list_rate",
   "base_price_list_rate",
   "discount_and_margin",
@@ -38,6 +50,7 @@
   "discount_percentage",
   "discount_amount",
   "distributed_discount_amount",
+  "total_discount_amount",
   "base_rate_with_margin",
   "section_break1",
   "rate",
@@ -109,16 +122,17 @@
   "column_break_vwhb",
   "pos_invoice",
   "pos_invoice_item",
+  "column_break_fotx",
+  "consignment_request",
+  "cr_detail",
   "internal_transfer_section",
   "purchase_order",
   "column_break_92",
   "purchase_order_item",
   "accounting_dimensions_section",
-  "cost_center",
+  "column_break_sdhb",
   "dimension_col_break",
-  "project",
-  "section_break_54",
-  "page_break"
+  "project"
  ],
  "fields": [
   {
@@ -774,20 +788,6 @@
    "options": "Asset"
   },
   {
-   "fieldname": "section_break_54",
-   "fieldtype": "Section Break"
-  },
-  {
-   "allow_on_submit": 1,
-   "default": "0",
-   "fieldname": "page_break",
-   "fieldtype": "Check",
-   "label": "Page Break",
-   "no_copy": 1,
-   "print_hide": 1,
-   "report_hide": 1
-  },
-  {
    "collapsible": 1,
    "fieldname": "description_section",
    "fieldtype": "Section Break",
@@ -978,18 +978,111 @@
    "options": "POS Invoice",
    "print_hide": 1,
    "search_index": 1
+  },
+  {
+   "fieldname": "carton_section",
+   "fieldtype": "Section Break",
+   "label": "Carton"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_carton",
+   "fieldtype": "Check",
+   "label": "Is Carton"
+  },
+  {
+   "columns": 2,
+   "fieldname": "carton_qty",
+   "fieldtype": "Int",
+   "label": "Carton Qty"
+  },
+  {
+   "columns": 2,
+   "fieldname": "carton_conversion",
+   "fieldtype": "Int",
+   "label": "Carton Conversion"
+  },
+  {
+   "depends_on": "eval:doc.is_carton",
+   "fieldname": "carton_uom",
+   "fieldtype": "Link",
+   "label": "Carton UOM",
+   "options": "UOM"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "item_name_view",
+   "fieldtype": "Data",
+   "label": "Item Name"
+  },
+  {
+   "default": "0",
+   "fieldname": "lock_cost_center",
+   "fieldtype": "Check",
+   "label": "Lock Cost Center",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.marketing_name",
+   "fieldname": "marketing_name",
+   "fieldtype": "Data",
+   "label": "Marketing Name"
+  },
+  {
+   "fieldname": "total_discount_amount",
+   "fieldtype": "Currency",
+   "label": "Total Discount Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer_sku",
+   "fieldtype": "Data",
+   "label": "Customer SKU",
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer_sku_name",
+   "fieldtype": "Data",
+   "label": "Customer SKU Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "consignment_request",
+   "fieldtype": "Link",
+   "label": "Consignment Request",
+   "options": "Consignment Request",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cr_detail",
+   "fieldtype": "Data",
+   "label": "Consignment Request Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_kcgi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_sdhb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_fotx",
+   "fieldtype": "Column Break"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-03-12 16:33:55.503777",
+ "modified": "2026-08-06 15:36:21.280828",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice Item",
  "naming_rule": "Random",
  "owner": "Administrator",
  "permissions": [],
+ "row_format": "Dynamic",
  "sort_field": "creation",
  "sort_order": "DESC",
  "states": []

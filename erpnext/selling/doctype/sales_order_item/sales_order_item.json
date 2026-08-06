@@ -111,7 +111,27 @@
   "accounting_dimensions_section",
   "cost_center",
   "column_break_ihdh",
-  "project"
+  "project",
+  "item_name_view",
+  "marketing_name",
+  "carton_section",
+  "is_carton",
+  "carton_qty",
+  "carton_conversion",
+  "carton_uom",
+  "packaging_section",
+  "weight_order",
+  "replacement_qty",
+  "foms_detail_section",
+  "foms_id",
+  "lot_id",
+  "salad_product_section",
+  "is_salad_product",
+  "salad_recipe",
+  "batch_no",
+  "column_break_14",
+  "progress",
+  "stock_entry"
  ],
  "fields": [
   {
@@ -966,12 +986,139 @@
    "label": "Project",
    "options": "Project",
    "search_index": 1
+  },
+  {
+   "fieldname": "packaging_section",
+   "fieldtype": "Section Break",
+   "label": "Packaging"
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "weight_order",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Is weight order?"
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "foms_detail_section",
+   "fieldtype": "Section Break",
+   "label": "FOMS Detail"
+  },
+  {
+   "fieldname": "lot_id",
+   "fieldtype": "Data",
+   "label": "Lot ID",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.marketing_name",
+   "fieldname": "marketing_name",
+   "fieldtype": "Data",
+   "label": "Marketing Name"
+  },
+  {
+   "fieldname": "replacement_qty",
+   "fieldtype": "Float",
+   "label": "Replacement Qty",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.is_salad_product",
+   "fieldname": "salad_product_section",
+   "fieldtype": "Section Break",
+   "label": "Salad Product"
+  },
+  {
+   "default": "0",
+   "fetch_from": "item_code.salad_product",
+   "fieldname": "is_salad_product",
+   "fieldtype": "Check",
+   "label": "Is Salad Product",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.default_bom",
+   "fieldname": "salad_recipe",
+   "fieldtype": "Link",
+   "label": "Salad Recipe",
+   "options": "BOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stock_entry",
+   "fieldtype": "Data",
+   "label": "Stock Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "progress",
+   "fieldtype": "Percent",
+   "label": "Progress",
+   "read_only": 1
+  },
+  {
+   "fieldname": "batch_no",
+   "fieldtype": "Link",
+   "label": "Batch No",
+   "options": "Batch",
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_name_view",
+   "fieldtype": "Data",
+   "label": "Item Name View"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_carton",
+   "fieldtype": "Check",
+   "label": "Is Carton",
+   "reqd": 1
+  },
+  {
+   "fieldname": "carton_section",
+   "fieldtype": "Section Break",
+   "label": "Carton"
+  },
+  {
+   "columns": 2,
+   "fieldname": "carton_qty",
+   "fieldtype": "Int",
+   "label": "Carton Qty"
+  },
+  {
+   "columns": 2,
+   "fieldname": "carton_conversion",
+   "fieldtype": "Int",
+   "label": "Carton Conversion"
+  },
+  {
+   "columns": 2,
+   "depends_on": "eval:doc.is_carton",
+   "fieldname": "carton_uom",
+   "fieldtype": "Link",
+   "label": "Carton UOM",
+   "options": "UOM"
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-02-28 09:45:44.934947",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",

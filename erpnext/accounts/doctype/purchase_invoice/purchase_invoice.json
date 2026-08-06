@@ -199,7 +199,21 @@
   "inter_company_invoice_reference",
   "is_old_subcontracting_flow",
   "remarks",
-  "connections_tab"
+  "connections_tab",
+  "posting_datetime",
+  "delivery_note_no",
+  "po_amount_different",
+  "gst_input_section_section",
+  "gst_input_tax",
+  "base_value_for_gst_input",
+  "base_currency_of_base_value",
+  "column_break_47",
+  "non_stock_item",
+  "supplier_bank_account_section",
+  "bank_number",
+  "bank_details",
+  "column_break_110",
+  "column_break_38"
  ],
  "fields": [
   {
@@ -1652,6 +1666,82 @@
    "fieldtype": "Data",
    "is_virtual": 1,
    "label": "Last Scanned Warehouse"
+  },
+  {
+   "fieldname": "column_break_38",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "posting_datetime",
+   "fieldtype": "Datetime",
+   "label": "Posting Date & Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "delivery_note_no",
+   "fieldtype": "Data",
+   "label": "Delivery Note No"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_stock_item",
+   "fieldtype": "Check",
+   "label": "Non Stock Item"
+  },
+  {
+   "default": "0",
+   "fieldname": "gst_input_tax",
+   "fieldtype": "Check",
+   "label": "GST Input Tax"
+  },
+  {
+   "depends_on": "eval:doc.gst_input_tax",
+   "fieldname": "base_value_for_gst_input",
+   "fieldtype": "Currency",
+   "label": "Base Value for GST input"
+  },
+  {
+   "fieldname": "gst_input_section_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "GST Input"
+  },
+  {
+   "fieldname": "column_break_47",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.base_value_for_gst_input!=doc.base_currency_of_base_value",
+   "fieldname": "base_currency_of_base_value",
+   "fieldtype": "Currency",
+   "label": "Base Currency of Base Value",
+   "read_only": 1
+  },
+  {
+   "fieldname": "supplier_bank_account_section",
+   "fieldtype": "Section Break",
+   "label": "Supplier Bank Account"
+  },
+  {
+   "fieldname": "bank_number",
+   "fieldtype": "Link",
+   "label": "Bank Number",
+   "options": "Bank Number"
+  },
+  {
+   "fieldname": "bank_details",
+   "fieldtype": "HTML",
+   "label": "Bank Details"
+  },
+  {
+   "fieldname": "column_break_110",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "po_amount_different",
+   "fieldtype": "Check",
+   "label": "PO Amount Different!"
   }
  ],
  "grid_page_length": 50,
@@ -1659,7 +1749,7 @@
  "idx": 204,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-08-04 19:19:11.380664",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",

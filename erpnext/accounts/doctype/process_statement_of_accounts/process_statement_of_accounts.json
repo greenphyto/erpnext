@@ -61,7 +61,9 @@
   "cc_to",
   "section_break_30",
   "body",
-  "help_text"
+  "help_text",
+  "group_by",
+  "pdf_template"
  ],
  "fields": [
   {
@@ -399,10 +401,24 @@
    "fieldtype": "Select",
    "label": "Categorize By",
    "options": "\nCategorize by Voucher\nCategorize by Voucher (Consolidated)"
+  },
+  {
+   "default": "Group by Voucher (Consolidated)",
+   "fieldname": "group_by",
+   "fieldtype": "Select",
+   "label": "Group By",
+   "options": "\nGroup by Voucher\nGroup by Voucher (Consolidated)"
+  },
+  {
+   "default": "Simple",
+   "fieldname": "pdf_template",
+   "fieldtype": "Select",
+   "label": "PDF Template",
+   "options": "Simple\nDetailed"
   }
  ],
  "links": [],
- "modified": "2025-10-07 12:19:20.719898",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Process Statement Of Accounts",

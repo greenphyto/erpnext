@@ -178,7 +178,7 @@ class Item(Document):
 			for default in self.item_defaults or [frappe._dict()]:
 				self.add_price(default.default_price_list)
 
-		if self.opening_stock:
+		if self.opening_stock and not frappe.flags.in_test:
 			self.set_opening_stock()
 
 	def validate(self):
@@ -1083,6 +1083,39 @@ class Item(Document):
 					title=_("Enable Auto Re-Order"),
 					indicator="orange",
 				)
+
+	def get_item_material_group(self, set_data=False):
+		material_group_map = [
+			(["RM-SD"], "Seeds"),
+			(["RM-NS"], "Nutrition"),
+			(["PDLED"], "LED"),
+			(["ZGW"], "Gateway"),
+			(["DMC"], "Dimmer Controller"),
+			(["POC"], "Power Connector"),
+			(["ZMS"], "FG - Systems"),
+			(["PD-"], "Trays & Boards"),
+			(["TOM"], "Tooling & Moulding"),
+			(["ACC"], "Accessories"),
+			(["PR-LV"], "Vegetables (Lettuce)"),
+			(["PR-AV"], "Vegetables (Asian Vegetables)"),
+			(["ZOT"], "Other Packaging"),
+		]
+
+		item_code = self.item_code or ""
+		result = ""
+
+		for prefixes, group in material_group_map:
+			for prefix in prefixes:
+				if item_code.startswith(prefix):
+					result = group
+					break
+			if result:
+				break
+
+		if set_data:
+			self.material_group = result
+
+		return result
 
 
 def convert_erpnext_to_barcodenumber(erpnext_number, barcode):

@@ -28,10 +28,17 @@ class SalesInvoiceItem(Document):
 		base_rate_with_margin: DF.Currency
 		batch_no: DF.Link | None
 		brand: DF.Data | None
+		carton_conversion: DF.Int
+		carton_qty: DF.Int
+		carton_uom: DF.Link | None
 		company_total_stock: DF.Float
+		consignment_request: DF.Link | None
 		conversion_factor: DF.Float
 		cost_center: DF.Link
+		cr_detail: DF.Data | None
 		customer_item_code: DF.Data | None
+		customer_sku: DF.Data | None
+		customer_sku_name: DF.Data | None
 		deferred_revenue_account: DF.Link | None
 		delivered_by_supplier: DF.Check
 		delivered_qty: DF.Float
@@ -50,18 +57,21 @@ class SalesInvoiceItem(Document):
 		image: DF.Attach | None
 		income_account: DF.Link
 		incoming_rate: DF.Currency
+		is_carton: DF.Check
 		is_fixed_asset: DF.Check
 		is_free_item: DF.Check
 		item_code: DF.Link | None
 		item_group: DF.Link | None
 		item_name: DF.Data
+		item_name_view: DF.Data | None
 		item_tax_rate: DF.SmallText | None
 		item_tax_template: DF.Link | None
+		lock_cost_center: DF.Check
 		margin_rate_or_amount: DF.Float
 		margin_type: DF.Literal["", "Percentage", "Amount"]
+		marketing_name: DF.Data | None
 		net_amount: DF.Currency
 		net_rate: DF.Currency
-		page_break: DF.Check
 		parent: DF.Data
 		parentfield: DF.Data
 		parenttype: DF.Data
@@ -88,6 +98,7 @@ class SalesInvoiceItem(Document):
 		stock_uom: DF.Link | None
 		stock_uom_rate: DF.Currency
 		target_warehouse: DF.Link | None
+		total_discount_amount: DF.Currency
 		total_weight: DF.Float
 		uom: DF.Link
 		use_serial_batch_fields: DF.Check

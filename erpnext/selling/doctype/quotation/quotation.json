@@ -134,7 +134,24 @@
   "opportunity",
   "supplier_quotation",
   "enq_det",
-  "connections_tab"
+  "connections_tab",
+  "new_customer",
+  "is_existing_customer",
+  "non_stock_item",
+  "col_break_46",
+  "is_carton_order",
+  "sec_break_48",
+  "manual_address_section",
+  "manual_address_line",
+  "manual_city",
+  "manual_state",
+  "manual_country",
+  "manual_col_break_1",
+  "manual_contact_person_name",
+  "manual_tlp",
+  "manual_mobile_no",
+  "manual_email",
+  "manual_fax"
  ],
  "fields": [
   {
@@ -1102,13 +1119,103 @@
    "fieldtype": "Data",
    "is_virtual": 1,
    "label": "Last Scanned Warehouse"
+  },
+  {
+   "depends_on": "eval:doc.is_existing_customer==0",
+   "fieldname": "manual_address_section",
+   "fieldtype": "Section Break",
+   "label": "Address & Contact",
+   "options": "fa fa-map-marker"
+  },
+  {
+   "fieldname": "manual_address_line",
+   "fieldtype": "Small Text",
+   "label": "Address Line"
+  },
+  {
+   "fieldname": "manual_city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "manual_state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "manual_country",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "fieldname": "manual_col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "manual_contact_person_name",
+   "fieldtype": "Data",
+   "label": "Contact Person Name"
+  },
+  {
+   "fieldname": "manual_tlp",
+   "fieldtype": "Data",
+   "label": "Tlp"
+  },
+  {
+   "fieldname": "manual_mobile_no",
+   "fieldtype": "Data",
+   "label": "Mobile No"
+  },
+  {
+   "fieldname": "manual_email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "manual_fax",
+   "fieldtype": "Data",
+   "label": "Fax"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_stock_item",
+   "fieldtype": "Check",
+   "label": "Non-Stock Item"
+  },
+  {
+   "fieldname": "col_break_46",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.non_stock_item == 0",
+   "fieldname": "is_carton_order",
+   "fieldtype": "Check",
+   "label": "Is Carton Order"
+  },
+  {
+   "fieldname": "sec_break_48",
+   "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval:doc.is_existing_customer==0",
+   "fieldname": "new_customer",
+   "fieldtype": "Data",
+   "label": "New Customer"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_existing_customer",
+   "fieldtype": "Check",
+   "label": "Is Existing Customer"
   }
  ],
  "icon": "fa fa-shopping-cart",
  "idx": 82,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-07-31 17:23:48.875382",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Quotation",

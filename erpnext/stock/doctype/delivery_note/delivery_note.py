@@ -651,19 +651,20 @@ class DeliveryNote(SellingController):
 	def validate_packed_qty(self):
 		"""Validate that if packed qty exists, it should be equal to qty"""
 
-		if frappe.db.exists("Packing Slip", {"docstatus": 1, "delivery_note": self.name}):
+		has_packing_slip = self.name and frappe.db.exists("Packing Slip", {"docstatus": 1, "delivery_note": self.name})
+		items_to_check = self.items
+		if has_packing_slip:
 			product_bundle_list = self.get_product_bundle_list()
-			for item in self.items + self.packed_items:
-				if (
-					item.item_code not in product_bundle_list
-					and flt(item.packed_qty)
-					and flt(item.packed_qty) != flt(item.qty)
-				):
-					frappe.throw(
-						_("Row {0}: Packed Qty must be equal to {1} Qty.").format(
-							item.idx, frappe.bold(item.doctype)
-						)
-					)
+			items_to_check = [i for i in (self.items + self.packed_items) if i.item_code not in product_bundle_list]
+
+		for item in items_to_check:
+			if flt(item.packed_qty) and flt(item.packed_qty) != flt(item.qty):
+				frappe.throw(
+					_("Row {0}: Packed Qty must be equal to {1} Qty.").format(
+						item.idx, frappe.bold(item.doctype)
+					),
+					frappe.ValidationError,
+				)
 
 	def update_pick_list_status(self):
 		from erpnext.stock.doctype.pick_list.pick_list import update_pick_list_status

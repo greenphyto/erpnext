@@ -120,7 +120,52 @@
   "expenses_included_in_valuation",
   "manufacturing_section",
   "default_operating_cost_account",
-  "dashboard_tab"
+  "dashboard_tab",
+  "time_zone",
+  "theme_section",
+  "series_abbr",
+  "color",
+  "theme_path",
+  "charts_section",
+  "default_warehouse_for_delivery",
+  "default_bank_charge_account",
+  "donation_and_distribution_section",
+  "giveaway_account",
+  "donation_account",
+  "production_delivery_account",
+  "marketing_delivery_account",
+  "donor_delivery_account",
+  "sales_replacement_account",
+  "column_break_65",
+  "internal_staff_customer",
+  "donation_customer",
+  "production_customer",
+  "marketing_customer",
+  "donor_customer",
+  "column_break_68",
+  "donation_warehouse",
+  "default_warehouse",
+  "default_stock_scrap_item",
+  "default_salvage_warehouse",
+  "account_for_product_scrap",
+  "account_for_raw_material_scrap",
+  "opening_stock_from_stock_entry",
+  "manufacturing_settings_section",
+  "default_cost_expense_account",
+  "production_attrition_expense_account",
+  "cost_center_for_production",
+  "cost_center_for_packing",
+  "column_break_84",
+  "operation_wip_account",
+  "column_break_86",
+  "unrealized_fx_account_map",
+  "ai_agent_settings_section",
+  "default_email_inbox",
+  "ai_user",
+  "column_break_105",
+  "enable_supplier_invoice",
+  "admin_user",
+  "production_loss_account"
  ],
  "fields": [
   {
@@ -858,6 +903,265 @@
    "fieldtype": "Link",
    "label": "Default Sales Contact",
    "options": "Contact"
+  },
+  {
+   "fieldname": "charts_section",
+   "fieldtype": "Section Break",
+   "label": "Default Values"
+  },
+  {
+   "fieldname": "column_break_86",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "unrealized_fx_account_map",
+   "fieldtype": "Table",
+   "label": "Unrealized FX Account Map",
+   "options": "Account Adjustment Map"
+  },
+  {
+   "fieldname": "manufacturing_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Manufacturing Settings"
+  },
+  {
+   "description": "Default expense account for additional cost for work order",
+   "fieldname": "default_cost_expense_account",
+   "fieldtype": "Link",
+   "label": "Default Cost Expense Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "column_break_84",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Default cost center for Seeding and Transplanting process",
+   "fieldname": "cost_center_for_production",
+   "fieldtype": "Link",
+   "label": "Cost Center for Production",
+   "options": "Cost Center"
+  },
+  {
+   "fieldname": "cost_center_for_packing",
+   "fieldtype": "Link",
+   "label": "Cost Center for Packing",
+   "options": "Cost Center"
+  },
+  {
+   "fieldname": "operation_wip_account",
+   "fieldtype": "Table",
+   "label": "Operation WIP Account",
+   "options": "Operation WIP Account"
+  },
+  {
+   "fieldname": "opening_stock_from_stock_entry",
+   "fieldtype": "Link",
+   "label": "Opening Stock from Stock Entry",
+   "options": "Account"
+  },
+  {
+   "fieldname": "donation_account",
+   "fieldtype": "Link",
+   "label": "Donation to External Organisation",
+   "options": "Account"
+  },
+  {
+   "fieldname": "giveaway_account",
+   "fieldtype": "Link",
+   "label": "Distribution to Internal Staff Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "donation_and_distribution_section",
+   "fieldtype": "Section Break",
+   "label": "Donation and Distribution"
+  },
+  {
+   "fieldname": "column_break_65",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "internal_staff_customer",
+   "fieldtype": "Link",
+   "label": "Internal Staff Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "donation_customer",
+   "fieldtype": "Link",
+   "label": "Donation Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "column_break_68",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "production_loss_account",
+   "fieldtype": "Link",
+   "label": "Production Variance Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "sales_replacement_account",
+   "fieldtype": "Link",
+   "label": "Sales Replacement Account",
+   "options": "Account"
+  },
+  {
+   "description": "Account for attraction cost on WIP",
+   "fieldname": "production_attrition_expense_account",
+   "fieldtype": "Link",
+   "label": "Production Attrition Expense Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "production_delivery_account",
+   "fieldtype": "Link",
+   "label": "Production Delivery Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "marketing_delivery_account",
+   "fieldtype": "Link",
+   "label": "Marketing Delivery Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "marketing_customer",
+   "fieldtype": "Link",
+   "label": "Marketing Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "production_customer",
+   "fieldtype": "Link",
+   "label": "Production Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "default_stock_scrap_item",
+   "fieldtype": "Link",
+   "label": "Default Stock Scrap Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "default_bank_charge_account",
+   "fieldtype": "Link",
+   "label": "Default Bank Charge Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "donor_delivery_account",
+   "fieldtype": "Link",
+   "label": "Donor Delivery Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "donor_customer",
+   "fieldtype": "Link",
+   "label": "Donor Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "color",
+   "fieldtype": "Color",
+   "label": "Color"
+  },
+  {
+   "fieldname": "time_zone",
+   "fieldtype": "Select",
+   "label": "Time zone"
+  },
+  {
+   "fieldname": "series_abbr",
+   "fieldtype": "Data",
+   "label": "Series Abbr",
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "default_warehouse",
+   "fieldtype": "Link",
+   "label": "Default Warehouse",
+   "options": "Warehouse",
+   "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "theme_section",
+   "fieldtype": "Section Break",
+   "label": "Theme"
+  },
+  {
+   "fieldname": "theme_path",
+   "fieldtype": "Data",
+   "label": "Theme Path"
+  },
+  {
+   "fieldname": "default_warehouse_for_delivery",
+   "fieldtype": "Link",
+   "label": "Default Warehouse for Delivery",
+   "options": "Warehouse"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "ai_agent_settings_section",
+   "fieldtype": "Section Break",
+   "label": "AI Agent Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_supplier_invoice",
+   "fieldtype": "Check",
+   "label": "Enable Supplier Invoice"
+  },
+  {
+   "fieldname": "default_email_inbox",
+   "fieldtype": "Link",
+   "label": "Default Email Inbox",
+   "options": "Email Account"
+  },
+  {
+   "fieldname": "ai_user",
+   "fieldtype": "Link",
+   "label": "AI User",
+   "options": "User"
+  },
+  {
+   "fieldname": "column_break_105",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_salvage_warehouse",
+   "fieldtype": "Link",
+   "label": "Default Salvage Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "description": "User from specific company to do automation",
+   "fieldname": "admin_user",
+   "fieldtype": "Link",
+   "label": "Admin User",
+   "options": "User"
+  },
+  {
+   "fieldname": "account_for_product_scrap",
+   "fieldtype": "Link",
+   "label": "Account for Product Scrap",
+   "options": "Account"
+  },
+  {
+   "fieldname": "account_for_raw_material_scrap",
+   "fieldtype": "Link",
+   "label": "Account for Raw Material Scrap",
+   "options": "Account"
+  },
+  {
+   "fieldname": "donation_warehouse",
+   "fieldtype": "Link",
+   "label": "Donation Warehouse",
+   "options": "Warehouse"
   }
  ],
  "icon": "fa fa-building",
@@ -865,7 +1169,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2025-11-16 16:51:27.624096",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

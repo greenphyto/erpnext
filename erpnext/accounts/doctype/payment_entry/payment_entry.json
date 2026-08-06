@@ -99,7 +99,13 @@
   "subscription_section",
   "auto_repeat",
   "amended_from",
-  "title"
+  "title",
+  "auto_generated",
+  "get_outstanding_invoice",
+  "set_exchange_gain_loss",
+  "additional_info",
+  "payment_approval",
+  "from_cost_center"
  ],
  "fields": [
   {
@@ -786,6 +792,44 @@
    "options": "No\nYes",
    "print_hide": 1,
    "search_index": 1
+  },
+  {
+   "depends_on": "eval:doc.docstatus==0",
+   "fieldname": "get_outstanding_invoice",
+   "fieldtype": "Button",
+   "label": "Get Outstanding Invoice"
+  },
+  {
+   "fieldname": "set_exchange_gain_loss",
+   "fieldtype": "Button",
+   "label": "Set Exchange Gain / Loss"
+  },
+  {
+   "fieldname": "from_cost_center",
+   "fieldtype": "Link",
+   "label": "From Cost Center",
+   "options": "Cost Center"
+  },
+  {
+   "fieldname": "additional_info",
+   "fieldtype": "Small Text",
+   "label": "Additional Info",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.auto_generated",
+   "description": "This Payment Entry is <b>auto generated</b> from Bank Account's Statement and Report",
+   "fieldname": "auto_generated",
+   "fieldtype": "Check",
+   "label": "Auto Generated"
+  },
+  {
+   "fieldname": "payment_approval",
+   "fieldtype": "Link",
+   "label": "Payment Approval",
+   "options": "Payment Approval",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
@@ -800,7 +844,7 @@
    "table_fieldname": "payment_entries"
   }
  ],
- "modified": "2025-05-15 18:01:04.013025",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Payment Entry",

@@ -77,7 +77,22 @@
   "purchase_amount",
   "default_finance_book",
   "depr_entry_posting_status",
-  "amended_from"
+  "amended_from",
+  "asset_code_series",
+  "disabled",
+  "vendor",
+  "accumulated_depreciation_amount",
+  "number_of_depreciations_booked",
+  "warranty_information_section",
+  "warranty_coverage",
+  "column_break_43",
+  "warranty_start",
+  "warranty_end",
+  "warranty_agreement",
+  "section_break_14",
+  "schedules",
+  "purchase_receipt_amount",
+  "qrcode_image"
  ],
  "fields": [
   {
@@ -554,6 +569,105 @@
    "hidden": 1,
    "label": "Purchase Invoice Item",
    "options": "Purchase Invoice Item"
+  },
+  {
+   "depends_on": "eval:(doc.is_existing_asset && doc.opening_accumulated_depreciation)",
+   "fieldname": "number_of_depreciations_booked",
+   "fieldtype": "Int",
+   "label": "Number of Depreciations Booked",
+   "no_copy": 1
+  },
+  {
+   "depends_on": "calculate_depreciation",
+   "fieldname": "section_break_14",
+   "fieldtype": "Section Break",
+   "label": "Depreciation Schedule"
+  },
+  {
+   "fieldname": "schedules",
+   "fieldtype": "Table",
+   "label": "Depreciation Schedule",
+   "no_copy": 1,
+   "options": "Depreciation Schedule"
+  },
+  {
+   "fieldname": "purchase_receipt_amount",
+   "fieldtype": "Currency",
+   "hidden": 1,
+   "label": "Purchase Receipt Amount",
+   "no_copy": 1,
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "qrcode_image",
+   "fieldtype": "Data",
+   "label": "QRCode Image",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.asset_code",
+   "fieldname": "asset_code_series",
+   "fieldtype": "Link",
+   "label": "Asset Code Series",
+   "options": "Account",
+   "read_only": 1
+  },
+  {
+   "fieldname": "vendor",
+   "fieldtype": "Link",
+   "label": "Vendor",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "accumulated_depreciation_amount",
+   "fieldtype": "Currency",
+   "label": "Accumulated Depreciation Amount",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:doc.warranty_coverage",
+   "fieldname": "warranty_information_section",
+   "fieldtype": "Section Break",
+   "label": "Warranty Information"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "warranty_start",
+   "fieldtype": "Date",
+   "label": "Warranty Start"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "warranty_end",
+   "fieldtype": "Date",
+   "label": "Warranty End"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "warranty_coverage",
+   "fieldtype": "Text Editor",
+   "label": "Warranty Coverage"
+  },
+  {
+   "fieldname": "column_break_43",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "warranty_agreement",
+   "fieldtype": "Attach",
+   "label": "Warranty Agreement"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled",
+   "read_only": 1
   }
  ],
  "idx": 72,
@@ -597,7 +711,7 @@
    "link_fieldname": "target_asset"
   }
  ],
- "modified": "2025-12-23 16:01:10.195932",
+ "modified": "2026-07-29 08:46:06.575197",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",
