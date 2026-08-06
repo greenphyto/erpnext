@@ -192,6 +192,9 @@ class Batch(Document):
 				title=_("Expiry Date Mandatory"),
 			)
 
+		if self.item_group == "Raw Material":
+			self.expiry_date = getdate("2099-01-01")
+
 	def get_name_from_naming_series(self):
 		"""
 		Get a name generated for a Batch from the Batch's naming series.
