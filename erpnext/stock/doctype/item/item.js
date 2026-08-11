@@ -501,7 +501,8 @@ $.extend(erpnext.item, {
 	},
 
 	allow_uom_global_change: function(frm){
-		
+		if (!frm.doc.uoms || !frm.doc.uoms.length) return;
+
 		function revert_uom(){
 			$.each( frm.doc.uoms , (i,row)=>{
 				frappe.model.set_value(row.doctype, row.name, "global_description", row.origin_description)
