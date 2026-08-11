@@ -25,6 +25,28 @@ class Request(Document):
 	def validate_date(self):
 		if getdate(self.delivery_date) < getdate(self.posting_date):
 			frappe.throw(_("Delivery Date cannot before posting date."))
+		self.validate_core_vegetable_delivery_day()
+
+	def validate_core_vegetable_delivery_day(self):
+		delivery_date = getdate(self.delivery_date)
+		day_name = delivery_date.strftime("%A").lower()
+
+		settings = frappe.get_single("Manufacturing Settings")
+		core_veg_map = {}
+		for row in settings.get("core_vegetables") or []:
+			core_veg_map[row.item] = row
+
+		for d in self.get("items"):
+			if d.item_code in core_veg_map:
+				row = core_veg_map[d.item_code]
+				if not cint(row.get(day_name)):
+					allowed = [day.capitalize() for day in
+						["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+						if cint(row.get(day))]
+					frappe.throw(
+						_("Item {0} is a Core Vegetable and cannot be delivered on <b>{1}</b>. Allowed days: {2}")
+						.format(d.item_code, day_name.capitalize(), ", ".join(allowed))
+					)
 
 	def calculate_price(self):
 		self.total_price = 0
