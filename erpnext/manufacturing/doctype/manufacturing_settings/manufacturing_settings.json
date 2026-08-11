@@ -39,7 +39,9 @@
   "make_serial_no_batch_from_work_order",
   "enable_create_sample_delivery",
   "packaging_section",
-  "default_packaging"
+  "default_packaging",
+  "request_settings_tab",
+  "core_vegetables"
  ],
  "fields": [
   {
@@ -245,13 +247,24 @@
    "fieldname": "enable_attrition_qty",
    "fieldtype": "Check",
    "label": "Enable Attrition Qty"
+  },
+  {
+   "fieldname": "request_settings_tab",
+   "fieldtype": "Tab Break",
+   "label": "Request Settings"
+  },
+  {
+   "fieldname": "core_vegetables",
+   "fieldtype": "Table",
+   "label": "Core Vegetables",
+   "options": "Core Vegetables"
   }
  ],
  "icon": "icon-wrench",
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-12-23 11:10:34.677228",
+ "modified": "2026-08-11 11:22:37.522515",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Manufacturing Settings",
