@@ -137,11 +137,30 @@ class Item(Document):
 		self.validate_debit_note_item()
 		self.set_asset_category()
 		self.update_uom_global_description()
+		self.change_description()
+		self.set_rnd_product()
 
 		set_item_tax_from_hsn_code(self)
 
 		if not self.is_new():
-			self.old_item_group = frappe.db.get_value(self.doctype, self.name, "item_group")\
+			self.old_item_group = frappe.db.get_value(self.doctype, self.name, "item_group")
+	
+	def change_description(self):
+		# copy description
+		prev_doc = self.get_doc_before_save()
+		cur_description = strip_html(cstr(self.description)).strip()
+		if prev_doc and prev_doc.item_name == cur_description:
+			self.description = self.item_name
+
+	def set_rnd_product(self):
+		if "R&D" in (self.item_name or ""):
+			self.rnd_product = 1
+			for d in self.item_defaults:
+				company = frappe.get_cached_doc("Company", d.company)
+				if company.default_rnd_expense:
+					d.expense_account = company.default_rnd_expense
+				if company.default_rnd_cost_center:
+					d.selling_cost_center = company.default_rnd_cost_center
 	
 	def validate_foms_item(self):
 		print(1111, self.flags.allow_delete)

@@ -23,6 +23,7 @@
   "default_supplier",
   "column_break0",
   "disabled",
+  "rnd_product",
   "allow_alternative_item",
   "is_stock_item",
   "disable_discount_amount",
@@ -1105,6 +1106,14 @@
    "fieldtype": "Table",
    "label": "Shelf Life Companies",
    "options": "Shell Life Companies"
+  },
+  {
+   "default": "0",
+   "fieldname": "rnd_product",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "R&D Product"
   }
  ],
  "icon": "fa fa-tag",
@@ -1113,7 +1122,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2026-05-31 12:36:51.306697",
+ "modified": "2026-08-11 11:31:11.124470",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",
