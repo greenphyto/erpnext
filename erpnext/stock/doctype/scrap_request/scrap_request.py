@@ -18,10 +18,15 @@ class ScrapRequest(Document):
 	def set_scrap_account(self):
 		rm_account = frappe.db.get_single_value("Stock Settings", "account_for_raw_material_scrap")
 		pr_account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
+		company = self.company if hasattr(self, "company") and self.company else frappe.defaults.get_defaults().get("company")
+		rnd_expense = frappe.db.get_value("Company", company, "default_rnd_expense") if company else None
 		for d in self.items:
-			if d.item_group == "Raw Material":
+			rnd_product = frappe.db.get_value("Item", d.item_code, "rnd_product") if d.item_code else 0
+			if rnd_product:
+				d.expense_account = rnd_expense or pr_account
+			elif d.item_group == "Raw Material":
 				d.expense_account = rm_account
-			if d.item_group == "Products":
+			elif d.item_group == "Products":
 				d.expense_account = pr_account		
 			
 	def on_submit(self):
@@ -59,8 +64,11 @@ def create_material_issue(doc, submit=False):
 	
 	qty_all = 0
 	wip_warehouse = get_wip_warehouse()
+	company = doc.company if hasattr(doc, "company") and doc.company else frappe.defaults.get_defaults().get("company")
+	rnd_cost_center = frappe.db.get_value("Company", company, "default_rnd_cost_center") if company else None
 	for d in doc.get("items"):
 		qty_map = get_batch_qty(d.batch)
+		rnd_product = frappe.db.get_value("Item", d.item_code, "rnd_product") if d.item_code else 0
 		for dt in qty_map:
 			if dt.get("warehouse") not in wip_warehouse:
 				row = stock_entry.append("items")
@@ -72,7 +80,9 @@ def create_material_issue(doc, submit=False):
 				row.is_scrap_item = 1
 				row.conversion_factor = get_conversion_factor(d.item_code, d.uom).get("conversion_factor", 1)
 				row.s_warehouse = dt.get("warehouse")
-				row.expense_account = doc.scrap_account
+				row.expense_account = d.expense_account
+				if rnd_product and rnd_cost_center:
+					row.cost_center = rnd_cost_center
 
 	if not qty_all:
 		return 
@@ -232,10 +242,13 @@ def collect_expired_product(date=""):
 		stock_entry.request_no = "Expired Product"
 		expense_account = frappe.db.get_value("Company", company, "account_for_product_scrap")
 		cost_center = frappe.db.get_value("Company", company, "cost_center")
+		rnd_expense = frappe.db.get_value("Company", company, "default_rnd_expense")
+		rnd_cost_center = frappe.db.get_value("Company", company, "default_rnd_cost_center")
 
 		for d in data:
 			if d.company != company:
 				continue
+			rnd_product = frappe.db.get_value("Item", d.item, "rnd_product")
 			row = stock_entry.append("items")
 			row.item_code = d.item
 			row.qty = d.batch_qty
@@ -244,8 +257,12 @@ def collect_expired_product(date=""):
 			row.is_scrap_item = 1
 			row.conversion_factor = 1
 			row.s_warehouse = d.get("warehouse")
-			row.expense_account = expense_account
-			row.cost_center = cost_center
+			if rnd_product:
+				row.expense_account = rnd_expense or expense_account
+				row.cost_center = rnd_cost_center or cost_center
+			else:
+				row.expense_account = expense_account
+				row.cost_center = cost_center
 		
 		stock_entry.system_generated = 1
 		stock_entry.remarks = "Expired products (system)"
