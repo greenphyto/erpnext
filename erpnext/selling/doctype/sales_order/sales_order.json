@@ -59,6 +59,9 @@
   "sec_break_48",
   "items",
   "section_break_31",
+  "salad_detail_section",
+  "salad_items",
+  "section_break_45",
   "total_qty",
   "total_net_weight",
   "column_break_33",
@@ -1791,6 +1794,17 @@
    "label": "Is Carton Order"
   },
   {
+   "fieldname": "salad_detail_section",
+   "fieldtype": "Section Break",
+   "label": "Salad Detail"
+  },
+  {
+   "fieldname": "salad_items",
+   "fieldtype": "HTML",
+   "label": "Salad Items",
+   "read_only": 1
+  },
+  {
    "fieldname": "sec_break_48",
    "fieldtype": "Section Break"
   }
@@ -1799,7 +1813,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-18 16:09:14.467954",
+ "modified": "2026-08-12 07:59:53.000000",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
