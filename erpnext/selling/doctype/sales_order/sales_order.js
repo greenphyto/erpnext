@@ -127,6 +127,8 @@ frappe.ui.form.on("Sales Order", {
 
 		if (frm.doc.items && frm.doc.items.some(row => row.is_salad_product)) {
 			frm.events.render_salad_items(frm);
+		} else if (frm.fields_dict.salad_items) {
+			frm.fields_dict.salad_items.$wrapper.html("");
 		}
 	},
 
@@ -150,6 +152,7 @@ frappe.ui.form.on("Sales Order", {
 							<th style="text-align:right;">Required Qty</th>
 							<th style="text-align:right;">Available Qty</th>
 							<th style="text-align:right;">Shortage</th>
+							<th style="text-align:right;">Lead Time (Days)</th>
 							<th>Status</th>
 						</tr>
 					</thead><tbody>`;
@@ -167,6 +170,7 @@ frappe.ui.form.on("Sales Order", {
 						<td style="text-align:right;">${d.required_qty}</td>
 						<td style="text-align:right;">${d.available_qty}</td>
 						<td style="text-align:right;color:${is_short ? 'red' : 'green'};">${is_short ? d.shortage : 0}</td>
+						<td style="text-align:right;">${d.lead_time_days || 0}</td>
 						<td>${status}</td>
 					</tr>`;
 				});
