@@ -28,8 +28,10 @@ class Request(Document):
 		self.validate_core_vegetable_delivery_day()
 
 	def validate_core_vegetable_delivery_day(self):
+		from datetime import timedelta
 		delivery_date = getdate(self.delivery_date)
-		day_name = delivery_date.strftime("%A").lower()
+		harvest_date = delivery_date - timedelta(days=1)
+		harvest_day_name = harvest_date.strftime("%A").lower()
 
 		settings = frappe.get_single("Manufacturing Settings")
 		core_veg_map = {}
@@ -39,18 +41,18 @@ class Request(Document):
 		for d in self.get("items"):
 			if d.item_code in core_veg_map:
 				row = core_veg_map[d.item_code]
-				if not cint(row.get(day_name)):
+				if not cint(row.get(harvest_day_name)):
 					allowed = [day.capitalize() for day in
 						["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 						if cint(row.get(day))]
 					frappe.throw(
-						_("Item {0} is a Core Vegetable and cannot be delivered on <b>{1}</b>. Allowed days: {2}")
-						.format(d.item_code, day_name.capitalize(), ", ".join(allowed))
+						_("Item {0} is a Core Vegetable and cannot be harvested on <b>{1}</b> (delivery {2}). Allowed harvest days: {3}")
+						.format(d.item_code, harvest_day_name.capitalize(), delivery_date.strftime("%A"), ", ".join(allowed))
 					)
 			else:
-				if day_name not in ("thursday", "friday"):
+				if harvest_day_name not in ("wednesday", "thursday"):
 					frappe.throw(
-						_("Item {0} can only be delivered on Thursday or Friday.")
+						_("Item {0} can only be harvested on Wednesday or Thursday (delivery Thursday or Friday).")
 						.format(d.item_code)
 					)
 

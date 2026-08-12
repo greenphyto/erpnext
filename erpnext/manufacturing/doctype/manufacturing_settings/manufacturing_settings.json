@@ -254,7 +254,7 @@
    "label": "Request Settings"
   },
   {
-   "description": "The regular vegetables allowed for delivery on Thursday and Friday",
+   "description": "",
    "fieldname": "core_vegetables",
    "fieldtype": "Table",
    "label": "Vegetables with Restrictions",
@@ -265,7 +265,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-08-12 09:59:54.772644",
+ "modified": "2026-08-12 09:59:55.772644",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Manufacturing Settings",
