@@ -11,9 +11,8 @@
   "supplier_group",
   "column_break_4",
   "buying_price_list",
-  "maintain_same_rate_action",
-  "role_to_override_stop_action",
-  "transaction_settings_section",
+   "maintain_same_rate_action",
+   "transaction_settings_section",
   "po_required",
   "pr_required",
   "column_break_12",
@@ -103,21 +102,14 @@
    "fieldtype": "Column Break"
   },
   {
-   "default": "Stop",
+   "default": "Auto Change",
    "depends_on": "maintain_same_rate",
-   "description": "Configure the action to stop the transaction or just warn if the same rate is not maintained.",
+   "description": "Configure the action to auto change the rate or just warn if the same rate is not maintained.",
    "fieldname": "maintain_same_rate_action",
    "fieldtype": "Select",
    "label": "Action If Same Rate is Not Maintained",
    "mandatory_depends_on": "maintain_same_rate",
-   "options": "Stop\nWarn"
-  },
-  {
-   "depends_on": "eval:doc.maintain_same_rate_action == 'Stop'",
-   "fieldname": "role_to_override_stop_action",
-   "fieldtype": "Link",
-   "label": "Role Allowed to Override Stop Action",
-   "options": "Role"
+   "options": "Auto Change\nWarn"
   },
   {
    "default": "1",

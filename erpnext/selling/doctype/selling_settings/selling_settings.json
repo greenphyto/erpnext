@@ -13,9 +13,8 @@
   "territory",
   "item_price_settings_section",
   "selling_price_list",
-  "maintain_same_rate_action",
-  "role_to_override_stop_action",
-  "column_break_15",
+   "maintain_same_rate_action",
+   "column_break_15",
   "maintain_same_sales_rate",
   "editable_price_list_rate",
   "validate_selling_price",
@@ -125,20 +124,13 @@
    "label": "Hide Customer's Tax ID from Sales Transactions"
   },
   {
-   "default": "Stop",
+   "default": "Auto Change",
    "depends_on": "maintain_same_sales_rate",
    "fieldname": "maintain_same_rate_action",
    "fieldtype": "Select",
    "label": "Action if Same Rate is Not Maintained Throughout Sales Cycle",
    "mandatory_depends_on": "maintain_same_sales_rate",
-   "options": "Stop\nWarn"
-  },
-  {
-   "depends_on": "eval: doc.maintain_same_sales_rate && doc.maintain_same_rate_action == 'Stop'",
-   "fieldname": "role_to_override_stop_action",
-   "fieldtype": "Link",
-   "label": "Role Allowed to Override Stop Action",
-   "options": "Role"
+   "options": "Auto Change\nWarn"
   },
   {
    "fieldname": "customer_defaults_section",
