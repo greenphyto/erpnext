@@ -47,6 +47,12 @@ class Request(Document):
 						_("Item {0} is a Core Vegetable and cannot be delivered on <b>{1}</b>. Allowed days: {2}")
 						.format(d.item_code, day_name.capitalize(), ", ".join(allowed))
 					)
+			else:
+				if day_name not in ("thursday", "friday"):
+					frappe.throw(
+						_("Item {0} can only be delivered on Thursday or Friday.")
+						.format(d.item_code)
+					)
 
 	def calculate_price(self):
 		self.total_price = 0
