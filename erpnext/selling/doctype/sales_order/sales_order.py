@@ -73,6 +73,7 @@ class SalesOrder(SellingController):
 			self.delivery_status = "Not Delivered"
 
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
+		self.validate_salad_lead_time()
 		self.load_bom_items()
 
 	def on_update_after_submit(self):
@@ -436,6 +437,43 @@ class SalesOrder(SellingController):
 				row.bom_no = frappe.get_value("Item", row.item_code, "default_bom")
 				if not row.bom_no:
 					row.progress = 100
+
+	def validate_salad_lead_time(self):
+		for d in self.items:
+			is_salad, bom_name = frappe.get_value("Item", d.item_code, ["salad_product", "default_bom"])
+			if not is_salad or not bom_name:
+				continue
+
+			delivery_date = getdate(d.delivery_date or self.delivery_date)
+			today = getdate(nowdate())
+			available_days = (delivery_date - today).days
+
+			bom = frappe.get_doc("BOM", bom_name)
+			insufficient = []
+			for item in bom.get("items"):
+				lead_time = cint(item.lead_time_days)
+				if lead_time and lead_time > available_days:
+					insufficient.append({
+						"item_code": item.item_code,
+						"item_name": item.item_name,
+						"lead_time_days": lead_time,
+						"available_days": available_days
+					})
+
+			if insufficient:
+				msg = _("Mixed product {0} cannot be fulfilled. Insufficient lead time for child products:").format(
+					frappe.bold(d.item_code)
+				)
+				msg += "<br><br><table class='table table-bordered'>"
+				msg += "<tr><th>{}</th><th>{}</th><th>{}</th></tr>".format(
+					_("Child Product"), _("Required Lead Time (days)"), _("Available Days")
+				)
+				for item in insufficient:
+					msg += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+						item["item_code"], item["lead_time_days"], item["available_days"]
+					)
+				msg += "</table>"
+				frappe.throw(msg, title=_("Insufficient Lead Time"))
 
 	def before_update_after_submit(self):
 		self.validate_po()
