@@ -51,6 +51,9 @@
   "non_package_item",
   "items",
   "section_break_31",
+  "salad_detail_section",
+  "salad_items",
+  "section_break_45",
   "total_qty",
   "total_net_weight",
   "column_break_33",
@@ -1731,13 +1734,28 @@
    "label": "BOM Item",
    "options": "BOM Item",
    "read_only": 1
+  },
+  {
+   "fieldname": "salad_detail_section",
+   "fieldtype": "Section Break",
+   "label": "Salad Detail"
+  },
+  {
+   "fieldname": "salad_items",
+   "fieldtype": "HTML",
+   "label": "Salad Items",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_45",
+   "fieldtype": "Section Break"
   }
  ],
  "icon": "fa fa-file-text",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-17 17:40:57.664327",
+ "modified": "2026-08-11 20:54:08.284072",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",

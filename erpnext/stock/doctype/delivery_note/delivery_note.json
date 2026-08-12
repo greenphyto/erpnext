@@ -57,6 +57,8 @@
   "section_break_30",
   "non_package_item",
   "items",
+  "salad_detail_section",
+  "salad_items",
   "section_break_31",
   "total_qty",
   "total_net_weight",
@@ -1575,13 +1577,24 @@
    "fieldname": "organization_adress",
    "fieldtype": "Small Text",
    "label": "Organization Adress"
+  },
+  {
+   "fieldname": "salad_detail_section",
+   "fieldtype": "Section Break",
+   "label": "Salad Detail"
+  },
+  {
+   "fieldname": "salad_items",
+   "fieldtype": "HTML",
+   "label": "Salad Items",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-17 14:37:51.160362",
+ "modified": "2026-08-11 20:38:42.270517",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

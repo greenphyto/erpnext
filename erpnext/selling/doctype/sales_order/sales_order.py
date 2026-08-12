@@ -1447,3 +1447,32 @@ def update_produced_qty_in_so_item(sales_order, sales_order_item):
 		return
 
 	frappe.db.set_value("Sales Order Item", sales_order_item, "produced_qty", total_produced_qty)
+
+
+@frappe.whitelist()
+def get_salad_items_with_availability(sales_order):
+	so = frappe.get_doc("Sales Order", sales_order)
+	result = []
+	for d in so.get("bom_item"):
+		available_qty = get_total_available_qty(d.item_code, so.company)
+		result.append({
+			"item_code": d.item_code,
+			"item_name": frappe.get_value("Item", d.item_code, "item_name") or d.item_code,
+			"required_qty": flt(d.qty, 3),
+			"available_qty": flt(available_qty, 3),
+			"uom": d.uom,
+			"parent_item": d.parent_item,
+			"progress": d.progress or 0,
+			"batch_no": d.get("batch_no") or "",
+			"shortage": flt(d.qty - available_qty, 3) if available_qty < d.qty else 0
+		})
+	return result
+
+
+def get_total_available_qty(item_code, company):
+	from erpnext.stock.doctype.batch.batch import get_available_batch
+	batches = get_available_batch(item_code, 0, skip_wip_warehouse=True, company=company, date=nowdate())
+	total = 0
+	for b in batches:
+		total += flt(b.qty)
+	return total
