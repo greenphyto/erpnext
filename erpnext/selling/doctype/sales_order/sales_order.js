@@ -144,7 +144,18 @@ frappe.ui.form.on("Sales Order", {
 					return;
 				}
 				let rows = r.message;
-				let html = `<table class="table table-bordered table-condensed" style="font-size:12px;">
+				let total_progress = rows.length ? rows.reduce((sum, d) => sum + (d.progress || 0), 0) / rows.length : 0;
+				let overall_color = total_progress >= 100 ? '#28a745' : (total_progress > 0 ? '#ffc107' : '#dc3545');
+				let html = `<div style="margin-bottom:10px;">
+					<div style="display:flex;align-items:center;gap:10px;">
+						<b>Overall Progress</b>
+						<div style="flex:1;background:#e9ecef;border-radius:6px;overflow:hidden;height:24px;position:relative;">
+							<div style="background:${overall_color};height:100%;width:${Math.min(total_progress, 100)}%;transition:width 0.3s;"></div>
+							<span style="position:absolute;top:0;left:0;right:0;text-align:center;font-size:12px;line-height:24px;font-weight:bold;">${flt(total_progress, 1)}%</span>
+						</div>
+					</div>
+				</div>`;
+				html += `<table class="table table-bordered table-condensed" style="font-size:12px;">
 					<thead>
 						<tr style="background:#f7f7f7;">
 							<th>Parent Item</th>
@@ -155,6 +166,7 @@ frappe.ui.form.on("Sales Order", {
 							<th style="text-align:right;">Available Qty</th>
 							<th style="text-align:right;">Shortage</th>
 							<th style="text-align:right;">Lead Time (Days)</th>
+							<th style="text-align:center;">Progress</th>
 							<th>Status</th>
 						</tr>
 					</thead><tbody>`;
@@ -164,6 +176,12 @@ frappe.ui.form.on("Sales Order", {
 					let status = is_short
 						? `<span class="text-danger"><b>Insufficient Stock</b></span>`
 						: `<span class="text-success">OK</span>`;
+					let progress = d.progress || 0;
+					let progress_color = progress >= 100 ? '#28a745' : (progress > 0 ? '#ffc107' : '#dc3545');
+					let progress_html = `<div style="background:#e9ecef;border-radius:4px;overflow:hidden;height:18px;position:relative;">
+						<div style="background:${progress_color};height:100%;width:${Math.min(progress, 100)}%;"></div>
+						<span style="position:absolute;top:0;left:0;right:0;text-align:center;font-size:11px;line-height:18px;">${flt(progress, 1)}%</span>
+					</div>`;
 					html += `<tr style="${row_style}">
 						<td>${d.parent_item || ''}</td>
 						<td>${d.item_code}</td>
@@ -173,6 +191,7 @@ frappe.ui.form.on("Sales Order", {
 						<td style="text-align:right;">${d.available_qty}</td>
 						<td style="text-align:right;color:${is_short ? 'red' : 'green'};">${is_short ? d.shortage : 0}</td>
 						<td style="text-align:right;">${d.lead_time_days || 0}</td>
+						<td style="min-width:80px;">${progress_html}</td>
 						<td>${status}</td>
 					</tr>`;
 				});
