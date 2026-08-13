@@ -1187,6 +1187,7 @@ def get_dn_salad_items_with_availability(delivery_note):
 				"available_qty": available_qty,
 				"uom": item.uom,
 				"parent_item": d.item_code,
-				"shortage": shortage
+				"shortage": shortage,
+				"lead_time_days": cint(frappe.db.get_value("Item", item.item_code, "lead_time_days"))
 			})
 	return result

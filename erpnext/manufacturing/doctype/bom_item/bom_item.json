@@ -312,6 +312,7 @@
    },
    {
     "default": "0",
+    "fetch_from": "item_code.lead_time_days",
     "fieldname": "lead_time_days",
     "fieldtype": "Int",
     "label": "Lead Time in Days"
