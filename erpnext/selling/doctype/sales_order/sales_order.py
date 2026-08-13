@@ -1568,11 +1568,7 @@ def get_salad_items_with_availability(sales_order):
 	result = []
 	for d in so.get("bom_item"):
 		available_qty = get_total_available_qty(d.item_code, so.company)
-		lead_time = 0
-		if d.parent_item:
-			bom_name = frappe.get_value("Item", d.parent_item, "default_bom")
-			if bom_name:
-				lead_time = cint(frappe.db.get_value("BOM Item", {"parent": bom_name, "item_code": d.item_code}, "lead_time_days"))
+		lead_time = cint(frappe.db.get_value("Item", d.item_code, "lead_time_days"))
 		result.append({
 			"item_code": d.item_code,
 			"item_name": frappe.get_value("Item", d.item_code, "item_name") or d.item_code,
