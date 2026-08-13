@@ -1494,16 +1494,19 @@ def get_salad_items_with_availability(sales_order):
 	for d in so.get("bom_item"):
 		available_qty = get_total_available_qty(d.item_code, so.company)
 		lead_time = cint(frappe.db.get_value("Item", d.item_code, "lead_time_days"))
+		stock_uom = frappe.db.get_value("Item", d.item_code, "stock_uom")
+		conversion = flt(d.stock_qty) / flt(d.qty) if flt(d.qty) else 1
+		required_qty_stock = flt(d.qty * conversion, 3)
 		result.append({
 			"item_code": d.item_code,
 			"item_name": frappe.get_value("Item", d.item_code, "item_name") or d.item_code,
-			"required_qty": flt(d.qty, 3),
+			"required_qty": required_qty_stock,
 			"available_qty": flt(available_qty, 3),
-			"uom": d.uom,
+			"uom": stock_uom,
 			"parent_item": d.parent_item,
 			"progress": d.progress or 0,
 			"batch_no": d.get("batch_no") or "",
-			"shortage": flt(d.qty - available_qty, 3) if available_qty < d.qty else 0,
+			"shortage": flt(required_qty_stock - available_qty, 3) if available_qty < required_qty_stock else 0,
 			"lead_time_days": lead_time
 		})
 	return result

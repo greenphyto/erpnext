@@ -44,8 +44,10 @@ OPERATION_MAP_BY_NAME = {
 # FOMS UOM to ERP UOM
 UOM_MAP = {
 	"L":"Litre",
+	"l":"Litre",
 	"g":"Gram",
 	"kg":"Kg",
+	"Kg":"Kg",
 	"unit":"Unit",
 	"ml":"Millilitre",
 }
@@ -84,7 +86,7 @@ ITEM_NOT_SYNC = ['ZOT04']
 
 def get_uom(uom_foms, default=""):
 	uom_foms = uom_foms or default or'kg'
-	uom = UOM_MAP.get(uom_foms)
+	uom = UOM_MAP.get(uom_foms) or UOM_MAP.get(uom_foms.lower())
 
 	if not uom:
 		uom = frappe.db.exists("Item", uom_foms)
@@ -1767,6 +1769,19 @@ def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=Fals
 	doc.foms_lot_id = log.id
 	doc.foms_lot_name = log.lotId
 	doc.gross_weight = gross_weight
+	doc.company = company
+
+	if not doc.source_warehouse:
+		doc.source_warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_source_warehouse")
+	if not doc.wip_warehouse and not doc.skip_transfer:
+		doc.wip_warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_wip_warehouse")
+	if not doc.fg_warehouse:
+		doc.fg_warehouse = frappe.db.get_single_value("Manufacturing Settings", "default_fg_warehouse")
+
+	for d in doc.get("required_items"):
+		if not d.source_warehouse:
+			d.source_warehouse = doc.source_warehouse
+
 	sales_order_no = []
 	request_no = []
 	for so in log.sales_order_no:
@@ -2125,7 +2140,7 @@ def make_salad_product(name,doctype, item_code="", parent_item="", wo_name="", c
 
 	return se_name
 
-def create_repack_entry(bom_name, qty,expiry_date, submit=False):
+def create_repack_entry(bom_name, qty,expiry_date, submit=False, warehouse=None):
 	from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
 	se = frappe.new_doc("Stock Entry")
 	se.stock_entry_type_view = "Repack"
@@ -2134,9 +2149,9 @@ def create_repack_entry(bom_name, qty,expiry_date, submit=False):
 	se.bom_no = bom_name
 	se.from_bom = 1
 	se.fg_completed_qty = qty
-	warehouse = frappe.db.get_single_value('Manufacturing Settings', "default_fg_warehouse")
-	se.from_warehouse = warehouse
-	se.to_warehouse = warehouse
+	fg_warehouse = frappe.db.get_single_value('Manufacturing Settings', "default_fg_warehouse")
+	se.from_warehouse = fg_warehouse
+	se.to_warehouse = warehouse or fg_warehouse
 	se.use_multi_level_bom = 0
 	se.get_items()
 	finish_batch = ""
@@ -2145,7 +2160,8 @@ def create_repack_entry(bom_name, qty,expiry_date, submit=False):
 	for d in se.items:
 		is_manufacture_item = frappe.get_value("Item", d.item_code, "default_bom")
 		if not is_manufacture_item:
-			data = get_available_batch(d.item_code, d.qty)
+			search_qty = flt(d.qty) * flt(d.conversion_factor or 1)
+			data = get_available_batch(d.item_code, search_qty)
 			if data:
 				d.s_warehouse = data[0].get("warehouse")
 				d.batch_no = data[0].get("batch_id")
