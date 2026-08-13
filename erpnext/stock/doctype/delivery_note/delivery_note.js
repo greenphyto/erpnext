@@ -144,7 +144,7 @@ frappe.ui.form.on("Delivery Note", {
 		
 		erpnext.add_image_slide(frm)
 
-		if (frm.doc.items && frm.doc.items.length) {
+		if (!frm.is_new() && frm.doc.items && frm.doc.items.length) {
 			frm.events.render_salad_items(frm);
 		}
 	},
