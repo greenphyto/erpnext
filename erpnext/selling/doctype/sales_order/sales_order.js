@@ -127,7 +127,7 @@ frappe.ui.form.on("Sales Order", {
 			frm.cscript.add_button_make_salad(frm.doc);
 		}
 
-		if (frm.doc.items && frm.doc.items.some(row => row.is_salad_product)) {
+		if (!frm.is_new() && frm.doc.items && frm.doc.items.some(row => row.is_salad_product)) {
 			frm.events.render_salad_items(frm);
 		} else if (frm.fields_dict.salad_items) {
 			frm.fields_dict.salad_items.$wrapper.html("");
