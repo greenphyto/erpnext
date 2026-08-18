@@ -77,6 +77,16 @@ frappe.ui.form.on("Delivery Note", {
 			}
 		});
 
+		frm.set_query('batch_no', 'items', function(doc, cdt, cdn) {
+			var row = locals[cdt][cdn];
+			return {
+				filters: {
+					'item': row.item_code,
+					'is_salad_batch': 0
+				}
+			}
+		});
+
 		frm.set_df_property('packed_items', 'cannot_add_rows', true);
 		frm.set_df_property('packed_items', 'cannot_delete_rows', true);
 	},

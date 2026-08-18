@@ -169,6 +169,7 @@ class DeliveryNote(SellingController):
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_with_previous_doc()
 		self.validate_donation()
+		self.validate_salad_batch()
 		self.add_item_batch_foms_id()
 
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
@@ -203,6 +204,19 @@ class DeliveryNote(SellingController):
 		if account:
 			for d in self.items:
 				d.expense_account = account
+
+	def validate_salad_batch(self):
+		for d in self.items:
+			if not d.batch_no:
+				continue
+			is_salad_batch = frappe.db.get_value("Batch", d.batch_no, "is_salad_batch")
+			if not is_salad_batch:
+				continue
+			is_salad_product = frappe.db.get_value("Item", d.item_code, "salad_product")
+			if not is_salad_product:
+				frappe.throw(
+					_("Batch {0} belongs to salad product and cannot be used for normal orders").format(d.batch_no)
+				)
 
 	def add_item_batch_foms_id(self):
 		def get_foms_lot_name(batch):
