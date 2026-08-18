@@ -2233,6 +2233,12 @@ def create_bom_mixing_product(data):
 			op = frappe._dict(op)
 			operation_name = op.processName or "Mixing"
 
+			if not frappe.db.exists("Operation", operation_name):
+				op_doc = frappe.new_doc("Operation")
+				op_doc.__newname = operation_name
+				op_doc.description = operation_name
+				op_doc.insert(ignore_permissions=True)
+
 			op_row = bom.append("operations")
 			op_row.operation = operation_name
 			op_row.time_in_mins = 60
@@ -2296,11 +2302,14 @@ def submit_salad_finished_goods(data):
 	if not children:
 		frappe.throw(_("Missing children materials"), frappe.ValidationError)
 
-	item_data = frappe.get_value("Item", salad_item_code, ["name", "salad_product", "default_bom"], as_dict=True)
+	item_data = frappe.get_value("Item", salad_item_code, ["name", "salad_product", "default_bom", "has_batch_no"], as_dict=True)
 	if not item_data:
 		frappe.throw(_(f"Item {salad_item_code} not found"), frappe.DoesNotExistError)
 	if not cint(item_data.salad_product):
 		frappe.throw(_(f"Item {salad_item_code} is not a salad product"), frappe.ValidationError)
+
+	if not cint(item_data.has_batch_no):
+		frappe.db.set_value("Item", salad_item_code, "has_batch_no", 1)
 
 	fg_warehouse = warehouse or frappe.db.get_single_value("Manufacturing Settings", "default_fg_warehouse")
 
@@ -2333,13 +2342,15 @@ def submit_salad_finished_goods(data):
 	finished_row.is_finished_item = 1
 
 	if not frappe.db.exists("Batch", salad_batch_id):
-		finished_row.batch_no = make_batch(frappe._dict({
-			"item": salad_item_code,
-			"qty_to_produce": qty,
-			"reference_doctype": "Stock Entry",
-			"expiry_date": expiry_date
-		}))
-		frappe.db.set_value("Batch", finished_row.batch_no, "batch_id", salad_batch_id)
+		batch_doc = frappe.new_doc("Batch")
+		batch_doc.batch_id = salad_batch_id
+		batch_doc.item = salad_item_code
+		batch_doc.qty_to_produce = qty
+		batch_doc.reference_doctype = "Stock Entry"
+		batch_doc.expiry_date = expiry_date
+		batch_doc.flags.ignore_permissions = 1
+		batch_doc.insert()
+		finished_row.batch_no = batch_doc.name
 	else:
 		finished_row.batch_no = salad_batch_id
 
