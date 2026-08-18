@@ -2323,8 +2323,19 @@ def submit_salad_finished_goods(data):
 
 	for child in children:
 		child = frappe._dict(child)
-		if not frappe.db.exists("Batch", child.batch_no):
-			frappe.throw(_(f"Batch {child.batch_no} does not exist"), frappe.DoesNotExistError)
+		batch_no = child.get("batch_no")
+		lot_id = child.get("lot_id")
+
+		if not batch_no and lot_id:
+			batch_no = get_batch_from_lot_id(lot_id)
+			if not batch_no:
+				frappe.throw(_(f"No finished goods batch found for lot_id {lot_id}"), frappe.ValidationError)
+
+		if not batch_no:
+			frappe.throw(_(f"Missing batch_no or lot_id for child item {child.get('item_code')}"), frappe.ValidationError)
+
+		if not frappe.db.exists("Batch", batch_no):
+			frappe.throw(_(f"Batch {batch_no} does not exist"), frappe.DoesNotExistError)
 
 		child_warehouse = child.get("warehouse") or fg_warehouse
 		row = se.append("items")
@@ -2332,7 +2343,7 @@ def submit_salad_finished_goods(data):
 		row.qty = flt(child.qty)
 		row.uom = get_uom(child.get("uom") or "kg")
 		row.s_warehouse = child_warehouse
-		row.batch_no = child.batch_no
+		row.batch_no = batch_no
 
 	finished_row = se.append("items")
 	finished_row.item_code = salad_item_code
@@ -2358,15 +2369,35 @@ def submit_salad_finished_goods(data):
 	se.save()
 	se.submit()
 
-	for child in children:
-		child = frappe._dict(child)
-		if frappe.db.exists("Batch", child.batch_no):
-			frappe.db.set_value("Batch", child.batch_no, "is_salad_batch", 1)
+	for item in se.items:
+		if not item.is_finished_item and item.batch_no:
+			if frappe.db.exists("Batch", item.batch_no):
+				frappe.db.set_value("Batch", item.batch_no, "is_salad_batch", 1)
 
 	frappe.db.commit()
 
 	return {"stock_entry": se.name, "batch": finished_row.batch_no}
 
+
+def get_batch_from_lot_id(lot_id):
+	wo_name = frappe.db.get_value("Work Order", {"foms_lot_name": lot_id}, "name")
+	if not wo_name:
+		return None
+
+	se_name = frappe.db.get_value("Stock Entry", {
+		"work_order": wo_name,
+		"purpose": "Manufacture",
+		"docstatus": 1
+	}, "name")
+	if not se_name:
+		return None
+
+	batch_no = frappe.db.get_value("Stock Entry Detail", {
+		"parent": se_name,
+		"is_finished_item": 1
+	}, "batch_no")
+
+	return batch_no
 
 from erpnext.manufacturing.doctype.bom.bom import get_bom_items_as_dict
 from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
