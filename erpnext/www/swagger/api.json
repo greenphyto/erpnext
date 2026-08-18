@@ -2406,7 +2406,7 @@
     "/erpnext.controllers.foms.submit_salad_finished_goods": {
       "post": {
         "summary": "Submit salad finished goods (Repack)",
-        "description": "FOMS sends the salad product batch and its child material batches. ERP creates a Repack Stock Entry, marks child batches as is_salad_batch=1, and submits the entry.",
+        "description": "FOMS sends the salad product batch and its child material batches. ERP creates a Repack Stock Entry, marks child batches as is_salad_batch=1, and submits the entry. Children can use either 'lot_id' (recommended) or 'batch_no' to identify the child batch. When using lot_id, ERP looks up the Work Order by foms_lot_name and retrieves the finished goods batch.",
         "operationId": "submit salad finished goods",
         "requestBody": {
           "description": "Salad finished goods with child material batches",
@@ -2418,37 +2418,79 @@
                   "data": {
                     "type": "object"
                   }
+                }
+              },
+              "examples": {
+                "using_lot_id": {
+                  "summary": "Using lot_id (recommended)",
+                  "description": "FOMS sends lot_id for each child. ERP resolves the batch from the Work Order's finished goods.",
+                  "value": {
+                    "data": {
+                      "salad_item_code": "PR-MX-MES",
+                      "salad_batch": "PR-MX-MES-BN00001",
+                      "qty": 1,
+                      "expiry_date": "2026-09-01",
+                      "warehouse": "",
+                      "children": [
+                        {
+                          "item_code": "PR-AV-KL",
+                          "lot_id": "26-0101",
+                          "qty": 0.5,
+                          "uom": "kg",
+                          "warehouse": ""
+                        },
+                        {
+                          "item_code": "PR-AV-DRE",
+                          "lot_id": "26-0102",
+                          "qty": 0.3,
+                          "uom": "kg",
+                          "warehouse": ""
+                        },
+                        {
+                          "item_code": "PR-AV-CS",
+                          "lot_id": "26-0103",
+                          "qty": 0.2,
+                          "uom": "kg",
+                          "warehouse": ""
+                        }
+                      ]
+                    }
+                  }
                 },
-                "example": {
-                  "data": {
-                    "salad_item_code": "PR-MX-MES",
-                    "salad_batch": "PR-MX-MES-BN00001",
-                    "qty": 1,
-                    "expiry_date": "2026-09-01",
-                    "warehouse": "",
-                    "children": [
-                      {
-                        "item_code": "PR-AV-KL",
-                        "batch_no": "PR-AV-KL-BN00001",
-                        "qty": 0.5,
-                        "uom": "kg",
-                        "warehouse": ""
-                      },
-                      {
-                        "item_code": "PR-AV-DRE",
-                        "batch_no": "PR-AV-DRE-BN00002",
-                        "qty": 0.3,
-                        "uom": "kg",
-                        "warehouse": ""
-                      },
-                      {
-                        "item_code": "PR-AV-CS",
-                        "batch_no": "PR-AV-CS-BN00001",
-                        "qty": 0.2,
-                        "uom": "kg",
-                        "warehouse": ""
-                      }
-                    ]
+                "using_batch_no": {
+                  "summary": "Using batch_no (direct)",
+                  "description": "FOMS sends batch_no directly if already known.",
+                  "value": {
+                    "data": {
+                      "salad_item_code": "PR-MX-MES",
+                      "salad_batch": "PR-MX-MES-BN00001",
+                      "qty": 1,
+                      "expiry_date": "2026-09-01",
+                      "warehouse": "",
+                      "children": [
+                        {
+                          "item_code": "PR-AV-KL",
+                          "batch_no": "PR-AV-KL-BN00359",
+                          "qty": 0.5,
+                          "uom": "kg",
+                          "warehouse": ""
+                        },
+                        {
+                          "item_code": "PR-AV-DRE",
+                          "batch_no": "PR-AV-DRE-BN00313",
+                          "qty": 0.3,
+                          "uom": "kg",
+                          "warehouse": ""
+                        },
+                        {
+                          "item_code": "PR-AV-CS",
+                          "batch_no": "PR-AV-CS-BN00001",
+                          "qty": 0.2,
+                          "uom": "kg",
+                          "warehouse": ""
+                        }
+                      ]
+                    }
                   }
                 }
               }
@@ -2464,7 +2506,7 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "stock_entry": "STE-RPK-2026-00001",
+                      "stock_entry": "RE-00003/2026",
                       "batch": "PR-MX-MES-BN00001"
                     }
                   }
@@ -2473,7 +2515,7 @@
             }
           },
           "404": {
-            "description": "Item or Batch not found"
+            "description": "Item, Batch, or Work Order not found"
           },
           "417": {
             "description": "Validation error"
