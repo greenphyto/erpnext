@@ -807,8 +807,11 @@ class StockEntry(StockEntryAsset, StockController):
 		for d in self.get("items"):
 			if d.s_warehouse:
 				if reset_outgoing_rate and not d.set_basic_rate_manually:
-					args = self.get_args_for_incoming_rate(d)
-					rate = get_incoming_rate(args, raise_error_if_no_rate)
+					if self.purpose == "Material Issue":
+						rate = self.get_valuation_rate_from_previous_sle(d)
+					else:
+						args = self.get_args_for_incoming_rate(d)
+						rate = get_incoming_rate(args, raise_error_if_no_rate)
 					if rate > 0:
 						if not d.basic_rate:
 							d.basic_rate = rate
@@ -818,6 +821,17 @@ class StockEntry(StockEntryAsset, StockController):
 					outgoing_items_cost += flt(d.basic_amount)
 
 		return outgoing_items_cost
+
+	def get_valuation_rate_from_previous_sle(self, item):
+		from erpnext.stock.stock_ledger import get_previous_sle
+
+		previous_sle = get_previous_sle({
+			"item_code": item.item_code,
+			"warehouse": item.s_warehouse,
+			"posting_date": self.posting_date,
+			"posting_time": self.posting_time,
+		})
+		return flt(previous_sle.get("valuation_rate"))
 
 	def get_args_for_incoming_rate(self, item):
 		return frappe._dict(
