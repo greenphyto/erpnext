@@ -18,3 +18,5 @@ __pycache__
 node_modules/
 .backportrc.json
 test_script.py
+erpnext/patches/docs/*.md
+node_modules
