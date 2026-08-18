@@ -2262,6 +2262,20 @@ def submit_salad_finished_goods(data):
 		row.s_warehouse = child_warehouse
 		row.batch_no = batch_no
 
+	pack_item = frappe.get_value("Item", salad_item_code, "default_packaging")
+	if not pack_item:
+		pack_item = frappe.db.get_single_value("Manufacturing Settings", "default_packaging")
+	if pack_item:
+		pack_qty = flt(data.get("pack_qty") or qty)
+		pack_batch = get_available_batch(pack_item, pack_qty, skip_wip_warehouse=True)
+		pack_row = se.append("items")
+		pack_row.item_code = pack_item
+		pack_row.qty = pack_qty
+		pack_row.uom = frappe.get_value("Item", pack_item, "stock_uom") or "Unit"
+		pack_row.s_warehouse = pack_batch[0].get("warehouse") if pack_batch else fg_warehouse
+		if pack_batch:
+			pack_row.batch_no = pack_batch[0].get("batch_id")
+
 	finished_row = se.append("items")
 	finished_row.item_code = salad_item_code
 	finished_row.qty = qty
