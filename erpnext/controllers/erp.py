@@ -1,53 +1,1352 @@
-import frappe
+import frappe, json
+from frappe.utils import cint, flt, getdate, cstr, today, get_last_day, cint, safe_abs
+from six import string_types
+from frappe.contacts.doctype.address.address import get_default_address
+
+# util: sanitize description by removing editor wrapper tags
+def _sanitize_desc(desc):
+	if not isinstance(desc, string_types):
+		return desc
+	return (
+		desc.replace('<div class="ql-editor read-mode"><p>', "")
+		.replace("</p></div>", "")
+	)
+
+def check_email_status(log, method=""):
+	if log.status != "Sent":
+		return
+	
+	comm_name = frappe.get_value("Communication", {"message_id":log.message_id})
+	if not comm_name:
+		return
+	
+	doc = frappe.get_doc("Communication", comm_name)
+	if not doc.reference_doctype and doc.reference_name:
+		return
+	
+	if doc.reference_doctype in ["Purchase Order"]:
+		frappe.db.set_value(doc.reference_doctype, doc.reference_name, "email_status", "Y")
+
+	notif = frappe.get_doc("Notification", "Email Sent Status")
+	notif.send(doc)
+
+@frappe.whitelist()
+def read_email_inbox_enquee():
+    frappe.enqueue(
+        "erpnext.controllers.erp.read_email_inbox",
+        queue="long",
+        job_name=f"Read Inbox",
+        timeout=1800,
+        now=False
+    )
+	
+# change to scheduler 5 minutes each
+def read_email_inbox():
+	# settings
+	enable = cint(frappe.get_value("Buying Settings","Buying Settings", 'enable_supplier_invoice'))
+	if not enable:
+		return
+
+	company_enable = frappe.db.get_list("Company", {"enable_supplier_invoice": 1}, ["name", "default_email_inbox", "ai_user"])
+	for comp in company_enable:
+		company = comp.name
+		invoice_email_default = comp.default_email_inbox
+		
+		# change user
+		frappe.set_user(comp.ai_user or "Administrator")
+
+		# get all communication coming
+		email_list = frappe.db.sql("""
+		SELECT 
+			c.name,
+			c.subject,
+			c.sender,
+			c.creation,
+			c.email_account,
+			c.reference_name,
+			c.reference_doctype
+		FROM
+			`tabCommunication` c
+				LEFT JOIN
+			`tabComment` com ON com.reference_doctype = 'Communication'
+				AND com.reference_name = c.name
+				AND com.comment_type = 'Info'
+				AND com.content = 'Checked by AI Agent'
+		WHERE
+			c.communication_type = 'Communication'
+				AND c.sent_or_received = 'Received'
+				AND com.name IS NULL
+				AND c.email_account = %s
+				AND (COALESCE(c.reference_name, '') = ''
+				OR COALESCE(c.reference_doctype, '') = '')
+		ORDER BY c.creation ASC limit 5
+			""", (invoice_email_default), as_dict=1 , debug=0)
+		
+		# filters
+		ignore_list = ["google.com"]
+		def check_ignore(sender):
+			# because this email has "invoice" in his name (invoices@gmail.com)
+			# so we need to ignore the sender if from google itself
+			# exp: email security etc
+			for d in ignore_list:
+				if d in sender:
+					return True
+			return False
 
 
-def rename_purchase_receipt(old_name, new_name):
-	pr = frappe.get_doc("Purchase Receipt", old_name)
+		# process
+		for comm in email_list:
+			set_checked_ai_status("Communication", comm.name)
+			
+			if check_ignore(comm.sender):
+				continue
 
-	if pr.docstatus != 0:
-		frappe.throw("Only Draft Purchase Receipt can be renamed")
+			_read_email_inbox(comm.name, company)
 
-	frappe.rename_doc("Purchase Receipt", old_name, new_name, force=True)
+def _read_email_inbox(doc_name, company):
 
-	child_tables = [
-		"Purchase Receipt Item",
-		"Pricing Rule Detail",
-		"Purchase Receipt Item Supplied",
-		"Purchase Taxes and Charges",
+	doc = frappe.get_doc("Communication", doc_name)
+	
+	# check more deep
+	message = f"{doc.subject}|{doc.content}"
+	if not is_invoice(message):
+		return
+	
+	exists = frappe.db.exists("Email Invoice", {"inbox":doc.name})
+	if exists:
+		return
+	else:
+		# create email invoice
+		em = frappe.new_doc("Email Invoice")
+		em.company = company
+		em.inbox = doc.name
+		em.flags.ignore_links = True
+		em.flags.ignore_permissions = True
+		em.insert()
+		em.sync_email(doc = doc)
+		em.save()
+
+def get_checked_ai_status(cdt, com_name):
+	# get checked status on email receive
+	exists = frappe.db.exists("Comment", {
+		"reference_name":com_name,
+		"reference_doctype": cdt,
+		"content":"Checked by AI Agent",
+		"comment_type":"Info"
+	})
+	return exists
+
+def set_checked_ai_status(cdt, com_name):
+	# get checked status on email receive
+	frappe.get_doc({
+		"doctype": "Comment",
+		"comment_type": "Info",
+		"reference_doctype": cdt,
+		"reference_name": com_name,
+		"content": "Checked by AI Agent",
+		"comment_by": "AI Agent"
+	}).insert(ignore_permissions=True)
+
+def is_invoice(text):
+	text = text.lower()
+	
+	invoice_keywords = [
+		# English
+		"invoice", "tax invoice", "bill to", "invoice number",
+		"date of invoice", "tax amount", "invoice total", "amount due",
+		
+		# Chinese (Simplified)
+		"发票", "税务发票", "发票号码", "发票日期", "金额", "总金额",
+		
+		# Japanese
+		"請求書", "税請求書", "請求日", "請求番号", "合計金額", "金額",
+		
+		# Korean
+		"세금계산서", "계산서", "송장", "청구서", "총액", "청구 금액",
+		
+		# Spanish
+		"factura", "factura fiscal", "número de factura", "fecha de factura", "importe", "total a pagar",
+		
+		# French
+		"facture", "numéro de facture", "date de facture", "montant", "total à payer",
+		
+		# German
+		"rechnung", "rechnungsnummer", "rechnungsdatum", "gesamtbetrag", "betrag",
+		
+		# Portuguese
+		"fatura", "número da fatura", "data da fatura", "valor", "total a pagar",
+		
+		# Italian
+		"fattura", "numero fattura", "data fattura", "importo", "totale da pagare",
+
+		# Dutch
+		"factuur", "factuurnummer", "factuurdatum", "totaalbedrag", "te betalen bedrag",
+
+		# Russian
+		"счет-фактура", "счет", "номер счета", "дата счета", "сумма", "итого к оплате",
+
+		# Arabic (with and without diacritics)
+		"فاتورة", "رقم الفاتورة", "تاريخ الفاتورة", "المبلغ", "إجمالي المبلغ", "المبلغ المستحق",
+
+		# Hindi (Devanagari)
+		"चालान", "इनवॉइस", "इनवॉइस संख्या", "चालान संख्या", "तिथि", "राशि", "कुल राशि",
+
+		# Indonesia"
+		"faktur", "faktur pajak", "tagihan ke", "nomor faktur",
+		"tanggal faktur", "jumlah pajak", "total faktur", "jumlah yang harus dibayar",
+
+		"payment", "Purchase", "Billing", "Bill", "Charge"
 	]
 
-	for doctype in child_tables:
-		frappe.db.sql(
-			"""UPDATE `tab{doctype}` SET parent = %s WHERE parent = %s""".format(doctype=doctype),
-			(new_name, old_name),
+	return any(keyword in text for keyword in invoice_keywords)
+
+
+
+def get_item_context():
+	# build item list as base knowledge / context for AI
+	context = []
+	# we limit to products and enable
+	items = frappe.db.sql("""
+		SELECT 
+			i.name AS item_code, i.item_name, i.marketing_name, i.description
+		FROM
+			`tabItem` i
+		WHERE
+			i.disabled = 0
+				AND i.item_group = 'Raw Material' and i.item_name not like "(R&D)%" limit 10
+	""", as_dict=1)
+	for d in items:
+		keys = [d.item_name]
+		if d.marketing_name:
+			keys += [d.marketing_name]
+		if d.description:
+			keys += [d.description]
+		context.append(
+			{
+				"code": d.item_code,
+				"name": d.item_name,
+				"desc": _sanitize_desc(d.description),
+				"keyword": keys,
+			}
 		)
 
-	print(f"Purchase Receipt renamed from {old_name} to {new_name}")
+	
+	return json.dumps(context)
 
+def get_item_context_from_supplier(supplier=""):
+	"""
+	Ambil konteks item berbasis riwayat pembelian dari supplier tertentu.
 
-def rename_purchase_invoice(old_name, new_name):
-	pi = frappe.get_doc("Purchase Invoice", old_name)
+	Prioritas sumber: Purchase Invoice (PI) lebih tinggi dari Purchase Order (PO).
 
-	if pi.docstatus != 0:
-		frappe.throw("Only Draft Purchase Invoice can be renamed")
+	Output akhir berupa list of objects: [{code, name, desc}].
+	(Selama proses, deduplikasi tetap memakai dict untuk memilih entri terbaik.)
+	"""
+	if not supplier:
+		return json.dumps({})
 
-	frappe.rename_doc("Purchase Invoice", old_name, new_name, force=True)
+	# Gabungkan PI dan PO, beri prioritas (1=PI, 2=PO) lalu urutkan waktu terbaru.
+	rows = frappe.db.sql(
+		"""
+		SELECT item_code, item_name, description, doc_ts, priority FROM (
+			SELECT 
+				pii.item_code,
+				pii.item_name,
+				pii.description,
+				COALESCE(pi.modified, pi.creation) AS doc_ts,
+				1 AS priority
+			FROM `tabPurchase Invoice Item` pii
+			INNER JOIN `tabPurchase Invoice` pi ON pi.name = pii.parent
+			WHERE pi.supplier = %s
+				AND pi.docstatus IN (1)
+				AND COALESCE(pii.item_code, '') <> ''
 
-	child_tables = [
-		"Purchase Invoice Item",
-		"Pricing Rule Detail",
-		"Purchase Receipt Item Supplied",
-		"Purchase Taxes and Charges",
-		"Purchase Invoice Advance",
-		"Payment Schedule",
-		"Advance Tax",
-		"Tax Withheld Vouchers",
+			UNION ALL
+
+			SELECT 
+				poi.item_code,
+				poi.item_name,
+				poi.description,
+				COALESCE(po.modified, po.creation) AS doc_ts,
+				2 AS priority
+			FROM `tabPurchase Order Item` poi
+			INNER JOIN `tabPurchase Order` po ON po.name = poi.parent
+			WHERE po.supplier = %s
+				AND po.docstatus IN (1)
+				AND COALESCE(poi.item_code, '') <> ''
+		) t
+		ORDER BY priority ASC, doc_ts DESC
+		""",
+		(supplier, supplier),
+		as_dict=1,
+	)
+
+	context = {}
+	for r in rows:
+		code = r.get("item_code")
+		if not code or code in context:
+			continue
+
+		name = r.get("item_name")
+		desc = r.get("description")
+
+		if not name or not desc:
+			item_master = frappe.db.get_value(
+				"Item", code, ["item_name", "description"], as_dict=True
+			)
+			if item_master:
+				name = name or item_master.get("item_name")
+				desc = desc or item_master.get("description")
+
+		context[code]={
+			"code": code,
+			"name": name or code,
+			"desc": _sanitize_desc(desc or ""),
+		}
+
+	context_list = [
+		{"code": code, "name": v.get("name") or code, "desc": v.get("desc") or ""}
+		for code, v in context.items()
 	]
 
-	for doctype in child_tables:
-		frappe.db.sql(
-			"""UPDATE `tab{doctype}` SET parent = %s WHERE parent = %s""".format(doctype=doctype),
-			(new_name, old_name),
-		)
+	return json.dumps(context_list)
 
-	print(f"Purchase Invoice renamed from {old_name} to {new_name}")
+def get_customer_context():
+	context = {}
+	items = frappe.db.sql("""
+		SELECT 
+			c.name, c.customer_name
+		FROM
+			`tabCustomer` c
+		WHERE
+			c.disabled = 0 AND c.is_frozen = 0
+	""", as_dict=1)
+
+	contacts = frappe.db.sql("""
+		SELECT 
+			dl.link_name as customer_code,
+			c.email_id,
+			c.first_name,
+			c.company_name,
+			(SELECT 
+					GROUP_CONCAT(DISTINCT ce.email_id
+							ORDER BY ce.idx
+							SEPARATOR ',')
+				FROM
+					`tabContact Email` ce
+				WHERE
+					ce.parent = c.name AND ce.is_primary = 0) AS other_email
+		FROM
+			`tabDynamic Link` dl
+				LEFT JOIN
+			`tabContact` c ON c.name = dl.parent
+		WHERE
+			dl.link_doctype = 'Customer'
+	""", as_dict=1)
+
+	# not yet
+	# join contacts to customer
+	email_map = {}
+	for d in contacts:
+		other_email = (d.other_email or "").split(",")
+
+		if not other_email and not d.email_id:
+			continue
+		
+		if not d.name in email_map:
+			email_map[d.name] = [d.email_id] + other_email
+		else:
+			em = [d.email_id] + other_email
+			email_map[d.name] += em
+	
+
+	for d in items:
+		if not d.name in context:
+			emails = email_map.get(d.name) or []
+			context[d.name] = {
+				"keyword": d.customer_name,
+				"emails":emails
+			}
+	
+	return json.dumps(context)
+
+def get_supplier_context():
+	context = []
+	
+	# Ambil semua supplier aktif
+	suppliers = frappe.db.sql("""
+		SELECT 
+			s.name, s.supplier_name, s.website, s.supplier_keywords
+		FROM
+			`tabSupplier` s
+		WHERE
+			s.disabled = 0
+	""", as_dict=1)
+
+	# Ambil kontak yang terhubung ke supplier
+	contacts = frappe.db.sql("""
+		SELECT 
+			dl.link_name as supplier_code,
+			c.email_id,
+			c.first_name,
+			c.company_name,
+			(SELECT 
+					GROUP_CONCAT(DISTINCT ce.email_id
+							ORDER BY ce.idx
+							SEPARATOR ',')
+				FROM
+					`tabContact Email` ce
+				WHERE
+					ce.parent = c.name AND ce.is_primary = 0) AS other_email
+		FROM
+			`tabDynamic Link` dl
+				LEFT JOIN
+			`tabContact` c ON c.name = dl.parent
+		WHERE
+			dl.link_doctype = 'Supplier'
+	""", as_dict=1)
+
+	# Gabungkan kontak berdasarkan supplier_code
+	email_map = {}
+	for d in contacts:
+		other_email = (d.other_email or "").split(",") if d.other_email else []
+
+		if not other_email and not d.email_id:
+			continue
+		
+		if d.supplier_code not in email_map:
+			email_map[d.supplier_code] = [d.email_id] + other_email if d.email_id else other_email
+		else:
+			em = [d.email_id] + other_email if d.email_id else other_email
+			email_map[d.supplier_code] += em
+
+	# Bangun context dictionary
+	for s in suppliers:
+		emails = email_map.get(s.name) or []
+		if s.website:
+			emails.append(s.website)
+
+		result = [x.strip() for x in cstr(s.supplier_keywords).split(",")]
+		keywords = [s.supplier_name] + result
+			
+		context.append({
+			"code":s.name,
+			"keyword": "|".join(keywords),
+			"emails": emails
+		})
+
+	return json.dumps(context)
+
+def shipping_context():
+	pass
+
+def package_context():
+	pass
+
+def make_sales_order(args):
+	if not args:
+		return
+	
+	if isinstance(args, string_types):
+		args = json.loads(args)
+
+	doc = frappe.new_doc("Sales Order")
+	doc.customer = args.get("company_name") #should check exist or not
+	for d in args.get("items"):
+		item_code = d.get("item_code")
+		# temporary use default
+		uom = frappe.get_value("Item", item_code, "default_packaging")
+		row = doc.append("items")
+		row.item_code = item_code
+		row.qty = flt(d.get("qty"))
+		row.uom = uom
+	doc.delivery_date = getdate(args.get("delivery_date"))
+	# temporary
+	doc.pending_po = 1
+
+	# temporary use default address
+	addr = frappe.get_value("Customer", doc.customer, 'customer_primary_address')
+	doc.customer_address = addr
+	doc.shipping_address_name = addr
+	doc.ai_doc = 1
+	# add attachment
+	doc.save()
+	return doc.name
+
+def deep_get(d, path, default=None):
+	cur = d
+	for p in path:
+		try:
+			if isinstance(cur, dict):
+				cur = cur.get(p, default)
+			elif isinstance(cur, list) and isinstance(p, int):
+				cur = cur[p]
+			else:
+				return default
+		except (KeyError, IndexError, TypeError):
+			return default
+	return cur
+
+def get_supplier_payload(suppliers, domains):
+	"""
+	Build payload containing suppliers, domains, supplier references, and domain map.
+
+	- references: { supplier_code: {keyword: supplier_name, emails: [..]} }
+	- domain_map: { domain: [supplier_code, supplier_name] }
+
+	Domains are collected from Supplier.website and email domains of linked Contacts.
+	"""
+
+	# Helpers
+	def _extract_domain_from_url(url):
+		if not url:
+			return ""
+		url = url.strip().lower()
+		# Remove scheme
+		if url.startswith("http://"):
+			url = url[len("http://"):]
+		elif url.startswith("https://"):
+			url = url[len("https://"):]
+		# Remove credentials if any
+		if "@" in url and "/" in url.split("@")[0]:
+			url = url.split("@", 1)[1]
+		# Strip path and query
+		url = url.split("/", 1)[0].split("?", 1)[0]
+		# Drop port
+		url = url.split(":", 1)[0]
+		# Drop common subdomain prefix
+		if url.startswith("www."):
+			url = url[4:]
+		return url
+
+	def _extract_domain_from_email(email):
+		if not email or "@" not in email:
+			return ""
+		return email.split("@", 1)[1].strip().lower()
+
+	def _entity_list(code, name):
+		out = []
+		for v in (code, name):
+			if v and v not in out:
+				out.append(v)
+		return out
+
+	def _looks_like_domain(s):
+		if not isinstance(s, string_types):
+			return False
+		s = s.strip().lower()
+		if not s:
+			return False
+		if "://" in s or s.startswith("www.") or "/" in s:
+			return True
+		# bare domains like example.com (avoid names with spaces)
+		return "." in s and " " not in s and "@" not in s
+
+	# Normalize inputs: accept JSON or comma-separated strings
+	if isinstance(suppliers, string_types):
+		try:
+			suppliers_in = json.loads(suppliers)
+		except Exception:
+			suppliers_in = [s.strip() for s in suppliers.split(",") if s and s.strip()]
+	else:
+		suppliers_in = suppliers or []
+
+	if isinstance(domains, string_types):
+		try:
+			domains_in = json.loads(domains)
+		except Exception:
+			domains_in = [d.strip() for d in domains.split(",") if d and d.strip()]
+	else:
+		domains_in = domains or []
+
+	# Clean suppliers/domains if they look like URLs/domains
+	suppliers_display = []
+	for s in suppliers_in:
+		if _looks_like_domain(s):
+			suppliers_display.append(_extract_domain_from_url(s) or s)
+		else:
+			suppliers_display.append(s)
+
+	# Use only non-domain-like strings for DB query (supplier codes)
+	suppliers_for_query = [s for s in suppliers_in if not _looks_like_domain(s)]
+
+	# Clean and de-duplicate domains
+	seen_domains = set()
+	domains_clean = []
+	for d in domains_in:
+		dom = _extract_domain_from_url(d) or d
+		if dom and dom not in seen_domains:
+			seen_domains.add(dom)
+			domains_clean.append(dom)
+
+	# Fetch supplier master data
+	refs = {}
+	domain_map = {}
+
+	# Always fetch all active suppliers (exclude disabled/frozen)
+	supplier_rows = frappe.db.sql(
+		"""
+		SELECT name, supplier_name, website
+		FROM `tabSupplier`
+		WHERE disabled = 0 AND is_frozen = 0
+		""",
+		as_dict=1,
+	)
+
+	supplier_set = {r.name for r in supplier_rows}
+
+	# Pull linked contacts' emails for these suppliers
+	emails_by_supplier = {s: [] for s in supplier_set}
+	if supplier_set:
+		contact_rows = frappe.db.sql(
+			"""
+			SELECT 
+				dl.link_name AS supplier_code,
+				c.email_id AS primary_email,
+				(
+					SELECT GROUP_CONCAT(DISTINCT ce.email_id ORDER BY ce.idx SEPARATOR ',')
+					FROM `tabContact Email` ce
+					WHERE ce.parent = c.name AND COALESCE(ce.email_id, '') <> ''
+				) AS other_emails
+			FROM `tabDynamic Link` dl
+			LEFT JOIN `tabContact` c ON c.name = dl.parent
+			WHERE dl.link_doctype = 'Supplier' AND dl.link_name IN (%s)
+			""" % (", ".join(["%s"] * len(supplier_set))),
+			tuple(supplier_set),
+			as_dict=1,
+		)
+		for r in contact_rows:
+			emails = []
+			if r.primary_email:
+				emails.append(r.primary_email)
+			if r.other_emails:
+				emails.extend([e for e in r.other_emails.split(",") if e])
+			if emails:
+				cur = emails_by_supplier.get(r.supplier_code) or []
+				cur.extend(emails)
+				emails_by_supplier[r.supplier_code] = cur
+
+	# Build references and domain map
+	for s in supplier_rows:
+		code = s.name
+		sname = s.supplier_name or code
+		# dedupe emails and keep order
+		seen = set()
+		emails = []
+		for e in emails_by_supplier.get(code, []):
+			if e and e not in seen:
+				seen.add(e)
+				emails.append(e)
+		refs[code] = {"keyword": sname, "emails": emails}
+
+		# website domain
+		wdom = _extract_domain_from_url(s.website)
+		if wdom:
+			domain_map[wdom] = _entity_list(code, sname)
+		# email domains
+		for e in emails:
+			dom = _extract_domain_from_email(e)
+			if dom and dom not in domain_map:
+				domain_map[dom] = _entity_list(code, sname)
+
+	payload = {
+		"supplier_names": suppliers_display,
+		"domains": domains_clean,
+		"references": refs,
+		"domain_map": domain_map,
+	}
+
+	return payload
+
+from erpnext.ai_agent.doctype.ai_agent_settings.ai_invoice_converter import AIAgentClient
+def chunks(lst, size):
+	for i in range(0, len(lst), size):
+		yield lst[i:i + size]
+
+def update_supplier_domain():
+	# ambil supplier yang belum ada website
+	supplier_data = frappe.db.sql("""
+		SELECT name
+		FROM `tabSupplier`
+		WHERE website IS NULL
+		  AND disabled = 0
+		  AND supplier_type = 'Company'
+	""", as_dict=1)
+
+	payload = [x["name"] for x in supplier_data]
+	agent = AIAgentClient()
+
+	for batch in chunks(payload, 20):   # max 50 per panggilan
+		res = agent.get_supplier_domain(batch)
+
+		# update tiap hasil
+		if 'result' in res:
+			res = res.get("result")
+
+		for d in res:
+			if d.get("company") and d.get("domain"):
+				frappe.db.set_value(
+					"Supplier",
+					d["company"],
+					"website",          # <- tambahkan fieldname yang mau diupdate
+					d["domain"]
+				)
+				print("Set domain", d["company"], d["domain"])
+
+		frappe.db.commit()
+
+def is_doctype_exists(doctype):
+	try:
+		meta = frappe.get_meta(doctype)
+		return meta
+	except frappe.DoesNotExistError:
+		return None
+	
+def reminder_submit_purchase_invoice(force=False):
+	if getdate(today()).day != 5 and not frappe.flags.in_test and not force:
+		return
+	
+	if not frappe.db.exists("Notification", "Submit Purchase Invoice Draft"):
+		return
+	
+	doc_notif = frappe.get_doc("Notification", "Submit Purchase Invoice Draft")
+	
+	# get list invoice
+	doc_list = frappe.db.sql("""
+		SELECT
+			name,
+			supplier,
+			posting_date,
+			grand_total,
+			currency,
+			owner
+		FROM
+			`tabPurchase Invoice`
+		WHERE
+			docstatus = 0
+			AND posting_date <= LAST_DAY(CURDATE())
+		ORDER BY
+			posting_date ASC limit 5
+	""", as_dict=1)
+
+	if not doc_list:
+		return
+
+	doc = frappe._dict({
+		"doc_list":doc_list
+	})
+	doc_notif.send(doc)
+
+# send notif if any different found
+def detect_work_order_different(doc, method=""):
+	try:
+		_detect_work_order_different(doc, method)
+	except Exception as e:
+		print(e)
+
+def _detect_work_order_different(se, method=""):
+	if not se.get("work_order"):
+		return
+	
+	doc = frappe.get_doc("Work Order", se.work_order)
+	if doc.status != "Completed":
+		return
+
+	data = frappe.db.sql("""
+		SELECT 
+			*
+		FROM
+			(SELECT 
+				se.work_order AS work_order,
+				wo.creation,
+				gl.account,
+				se.name AS SE,
+				se.posting_date AS se_date,
+				SUM(gl.debit) AS total_debit,
+				SUM(gl.credit) AS total_credit,
+				SUM(gl.debit) - SUM(gl.credit) AS diff
+			FROM
+				`tabGL Entry` gl
+			JOIN `tabStock Entry` se 
+				ON gl.voucher_type = 'Stock Entry'
+				AND gl.voucher_no = se.name
+			LEFT JOIN `tabWork Order` wo 
+				ON wo.name = se.work_order
+			WHERE
+				se.work_order IS NOT NULL
+				AND gl.is_cancelled = 0
+				AND wo.status = 'Completed'
+				AND wo.name = %s
+				AND gl.account IN (
+					'121303 - Stock - Harvesting WIP - GPL',
+					'121301 - Stock - Seeding WIP - GPL',
+					'121302 - Stock - Transplanting WIP - GPL',
+					'501060 - Stock Adjustment - GPL'
+				)
+			GROUP BY se.work_order, gl.account
+			ORDER BY wo.creation, se.work_order
+			) t
+		WHERE ABS(t.diff) > 0.1
+	""", (doc.name,), as_dict=1)
+
+	if not data:
+		return  # no issue, do nothing
+
+	# Build HTML table
+	rows = ""
+	for d in data:
+		rows += f"""
+			<tr>
+				<td>{d.work_order}</td>
+				<td>{d.creation}</td>
+				<td>{d.SE}</td>
+				<td>{d.se_date}</td>
+				<td>{d.account}</td>
+				<td style="text-align:right;">{d.total_debit:.2f}</td>
+				<td style="text-align:right;">{d.total_credit:.2f}</td>
+				<td style="text-align:right; color:red;">{d.diff:.2f}</td>
+			</tr>
+		"""
+
+	message = f"""
+		<p>Hello Team,</p>
+		<p>We detected a difference in GL values for Work Order 
+		<a href="{frappe.utils.get_url()}/app/work-order/{doc.name}">{doc.name}</a>. 
+		Please review the details below:</p>
+
+		<table border="1" cellspacing="0" cellpadding="4" style="border-collapse: collapse;">
+			<tr>
+				<th>Work Order</th>
+				<th>Creation</th>
+				<th>Stock Entry</th>
+				<th>Date</th>
+				<th>Account</th>
+				<th>Total Debit</th>
+				<th>Total Credit</th>
+				<th>Diff</th>
+			</tr>
+			{rows}
+		</table>
+
+		<p>Regards,<br>ERP Notification</p>
+	"""
+
+	frappe.sendmail(
+		recipients=["rizky@greenphyto.com", "weiquan@greenphyto.com"],   # bisa list lebih dari satu
+		subject="🚨 Different Value on Work Order",
+		message=message
+	)
+
+@frappe.whitelist()
+def get_company_availabe():
+	data = frappe.db.get_list("Company", {}, ["name","name as value", "color"], ignore_permissions=1)
+	return data
+
+@frappe.whitelist()
+def switch_company(company, force=False, user=""):
+	user = user or frappe.session.user
+	
+	user_disabled = frappe.get_value("User", frappe.session.user, "cannot_change_company")
+	if user_disabled and not force:
+		return {"result":False, "error":"You are not allowed to change company."}
+	
+	# if administrator, always set to all
+	frappe.db.set_value("User", user, "company_selected", company)
+	frappe.db.set_value("User", user, "company", company)
+	# change role
+	filters = {
+		"user":user,
+		"allow":"Company",
+		"auto":1,
+		"hide_descendants":1
+	}
+	# set default
+	perm_name = frappe.db.exists("User Permission", filters)
+	if not perm_name:
+		perm_name = frappe.db.exists("User Permission", {
+			"user":user,
+			"allow":"Company",
+		})
+
+	if perm_name:
+		doc = frappe.get_doc("User Permission", perm_name)
+	else:
+		doc = frappe.new_doc("User Permission")
+
+	# change defaults
+	switch_default_values(user, company)
+	
+	is_skip_enabled = frappe.db.get_single_value("Accounts Settings", "skip_ceo_role_from_strict_permissions")
+	is_ceo = "CEO" in frappe.get_roles()
+
+	if is_skip_enabled and is_ceo:
+		return {"result": True}
+
+	doc.update(filters)
+	doc.for_value = company
+	doc.flags.ignore_permissions = 1
+	doc.save()
+
+	return {"result": True}
+
+from frappe.utils.verified_command import verify_request
+@frappe.whitelist(allow_guest=True)
+def switch_company_web(user, to_company):
+	if not verify_request():
+		return
+
+	if frappe.db.exists("User", user) and frappe.db.exists("Company", to_company):
+		frappe.set_user(user)
+		return switch_company(to_company, user=user)
+
+from frappe.defaults import set_default
+def switch_default_values(user, company):
+	"""
+	change values for:
+	 - company
+	 - country
+	 - currency
+	 - time_zone
+	 - letter_head
+	 - default_letter_head_content
+	 - buying_price_list
+	 - selling_price_list
+	 - default_warehouse
+	"""
+	doc = frappe.get_doc("Company", company)
+	# company
+	set_default("company", company, user)
+
+	# currency
+	set_default("currency", doc.default_currency, user)
+
+	# country
+	set_default("country", doc.country, user)
+
+	# timezone
+	set_default("time_zone", doc.time_zone, user)
+
+	# Letter head & content
+	lh_name = frappe.db.get_value("Letter Head", {"company":company}, ["name", "content"], as_dict=1) 
+	if lh_name:
+		set_default("letter_head", lh_name.name, user)
+		set_default("default_letter_head_content", lh_name.content, user)
+	
+	# buying_price_list
+	name = frappe.db.get_value("Price List", {"buying":1, "enabled":1, "currency":doc.default_currency})
+	if name:
+		set_default("buying_price_list", name, user)
+
+	# selling_price_list
+	name = frappe.db.get_value("Price List", {"selling":1, "enabled":1, "currency":doc.default_currency})
+	if name:
+		set_default("selling_price_list", name, user)
+
+	if doc.default_warehouse:
+		set_default("default_warehouse", doc.default_warehouse, user)
+
+	
+
+def validate_company_selected(doc, method=""):
+	if doc.meta.has_field("company") or frappe.session.user == "Administrator":
+		return
+	
+	meta = frappe.get_meta("Accounts Settings")
+	if not meta.has_field("enable_switch_company_menu") or not cint(frappe.db.get_single_value("Accounts Settings", "enable_switch_company_menu")):
+		return
+	
+	cur_company = frappe.db.get_value("User", frappe.session.user, "company_selected")
+	if not cur_company or cur_company == "ALL":
+		return
+	
+	if doc.get("company") and doc.get("company") != cur_company:
+		frappe.throw("Company mismatch, please reload your browser or contact Administrator.")
+
+def set_permanent_company(doc, method=""):
+	if doc.get("company"):
+		if not doc.get("__islocal"):
+			switch_company(doc.company, force=1, user=doc.name)
+		doc.company_selected = doc.get("company")
+
+def change_naming_series(doc, method=""):
+	doctypes = [
+		# Buying
+		"Purchase Order",
+		"Purchase Receipt",
+		"Purchase Invoice",
+		"Supplier Quotation",
+
+		# Selling
+		"Sales Order",
+		"Delivery Note",
+		"Sales Invoice",
+		"Quotation",
+
+		# Stock / Manufacturing
+		"Stock Entry",
+		"Stock Reconciliation",
+		"Material Request",
+		"Work Order",
+		"Job Card",
+
+		# Payment & Accounting
+		"Payment Entry",
+		"Journal Entry",
+
+		# Optional / cross-module transactional docs
+		"Expense Claim",
+		"Landed Cost Voucher",
+		"Subcontracting Receipt",
+		"Subcontracting Order",
+
+		"Consignment Order",
+		"Consignment Request"
+	]
+
+	if doc.get("doctype") not in doctypes:
+		return
+
+	if not doc.meta.get_field("naming_series") or not doc.meta.get_field("company"):
+		return
+	
+	"""Attach the company abbreviation (e.g., 'MY') to the document name if not already present."""
+	abbr = frappe.db.get_value("Company", doc.get("company"), "series_abbr")
+
+	if not abbr:
+		return
+
+	abbr = abbr.strip().upper()
+	current_name = (doc.naming_series or "").strip()
+
+	# Check if the current name already starts with the abbreviation
+	if not current_name.startswith(abbr):
+		doc.naming_series = f"{abbr}{current_name}"
+
+from datetime import date, timedelta
+from dateutil.relativedelta import relativedelta
+def trial_balance_different_issue():
+	for d in frappe.get_all("Company"):
+		_trial_balance_different_issue(d.name)
+		
+def _trial_balance_different_issue(company):
+	from frappe.desk.query_report import run
+	today = date.today()
+	prev_month = today - relativedelta(months=1)
+	from_date = date(today.year, 1, 1)      # 1 Januari tahun ini
+	to_date = date(today.year, 12, 31)
+
+	allowed_value = 0.005
+	filters = {
+		"company": company,
+		"fiscal_year": str(today.year),
+		"from_date": from_date.strftime("%Y-%m-%d"),
+		"to_date": to_date.strftime("%Y-%m-%d"),
+		"with_period_closing_entry": 1,
+		"include_default_book_entries": 1
+	}
+	report_data = run('Trial Balance', filters=filters)
+	if report_data and report_data.get("result"):
+		summmary_data = report_data.get("result")[-1]
+		diff = safe_abs(summmary_data['closing_credit'])
+		if diff > allowed_value:
+			# Send Notif
+			if frappe.db.get_value("Notification", "Difference on Trial Balance", "enabled"):
+				doc_notif = frappe.get_doc("Notification", "Difference on Trial Balance") 
+				doc = frappe._dict({
+					"period_label": prev_month.strftime("%B %Y"), 
+					"company":company,
+					"difference": diff,
+					"fiscal_year":str(today.year)
+				})
+				doc_notif.send(doc)
+
+def create_sample_after_work_order(doc, method=""):
+	# Run only for Manufacture type
+	if doc.purpose != "Manufacture":
+		return
+	
+	if not frappe.db.get_single_value("Manufacturing Settings", "enable_create_sample_delivery"):
+		return
+
+	# Ensure Work Order linked
+	if not doc.work_order:
+		return
+
+	# Check duplication: avoid multiple DN
+	if frappe.db.exists("Delivery Note", {"work_order": doc.work_order, "for_marketing":1}):
+		return
+
+	# Fetch Work Order
+	wo = frappe.get_doc("Work Order", doc.work_order)
+
+	# Determine FG item & qty
+	production_item = wo.production_item
+	qty = 1
+	uom = wo.packet_size
+	batch_no = ""
+	for row in doc.items:
+		if row.batch_no and row.is_finished_item:
+			batch_no = row.batch_no
+
+	customer = frappe.get_value("Company", doc.company, "internal_staff_customer")
+
+	# Warehouse
+	warehouse = wo.fg_warehouse 
+	address = get_default_address("Customer", customer)
+
+	# Build the Delivery Note
+	dn = frappe.new_doc("Delivery Note")
+	dn.naming_series = "GPM-.YYYY.-.###"
+	dn.customer = customer
+	dn.company = doc.company
+	dn.work_order = wo.name
+	dn.set_warehouse = warehouse
+	dn.for_marketing = 1
+	dn.customer_address = address
+	dn.shipping_address_name = address
+
+	dn.append("items", {
+		"item_code": production_item,
+		"qty": qty,
+		"uom":uom,
+		"warehouse": warehouse,
+		"batch_no": batch_no,
+		"description": "Auto-generated delivery note after manufacturing completion."
+	})
+
+	# Save and submit
+	dn.insert(ignore_permissions=True)
+	try:
+		dn.submit()
+	except:
+		pass
+
+	return dn.name
+
+def auto_create_selling_from_internal(doc, method=""):
+	def try_save(d):
+		try:
+			d.flags.ignore_permissions = 1
+			d.save()
+		except:
+			pass
+	
+	if doc.get("supplier"):
+		with_internal_supplier = frappe.get_value("Supplier", doc.supplier, "is_internal_supplier")
+		if not with_internal_supplier:
+			return
+	elif doc.get("customer"):
+		with_internal_supplier = frappe.get_value("Customer", doc.customer, "is_internal_customer")
+		if not with_internal_supplier:
+			return
+	else:
+		return
+	
+	if doc.doctype in ['Purchase Order', 'Purchase Invoice']:
+		from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_inter_company_transaction
+		doc_res = make_inter_company_transaction(doc.doctype, doc.name, {})
+		doc_res.flags.ignore_mandatory = 1
+		try_save(doc_res)
+	else:
+		from erpnext.stock.doctype.delivery_note.delivery_note import make_inter_company_transaction
+		doc_res = make_inter_company_transaction(doc.doctype, doc.name, {})
+		try_save(doc_res)
+
+
+def create_ai_user(doc, method=""):
+	if not cint(doc.get("enable_supplier_invoice")):
+		return
+	
+	# validate email
+	temp = frappe.db.get_value("Company", {"name": ['!=', doc.name], "default_email_inbox":doc.default_email_inbox}, "name", cache=False)
+	if temp:
+		frappe.throw(f"Email inbox <b>{doc.default_email_inbox}</b> already used in another company", title="Duplicate Email Inbox")
+		return
+	
+	abbr = doc.get("series_abbr") or "SG"
+	email = f"ai_user_{abbr}@example.com"
+	full_name = f"AI User {abbr}"
+	if not doc.ai_user:
+		user = frappe.get_doc({
+			"doctype": "User",
+			"name": "ai_user",
+			"email": email,
+			"first_name": full_name,
+			"full_name": full_name
+		})
+		user.company = doc.name
+		user.cannot_change_company = 1
+		user.company_selected = doc.name
+		user.send_welcome_email = 0
+		user.insert()
+		# roles checked all except employee
+		roles = frappe.db.get_all("Role", {"name": ["!=", "Employee"], "disabled": 0}, pluck="name")
+		user.add_roles(*roles)
+		print("AI User created:", email)
+		user.save()
+		doc.ai_user = user.name
+
+def control_bypass_workflow(user, doc):
+	enable_switch_company = frappe.db.get_value("User", user, "cannot_change_company")
+	if not enable_switch_company:
+		return True
+	else:
+		return False
+
+def copy_cost_center(source_company, target_company):
+	"""
+		- Get all cost centers from source company
+		- copy the name
+		- and use the abbreviation from target company
+	"""
+	source_abbr = frappe.get_value("Company", source_company, "abbr")
+	target_abbr = frappe.get_value("Company", target_company, "abbr")
+	
+	if not source_abbr or not target_abbr:
+		frappe.throw("Invalid company abbreviation")
+	
+	# Get all cost centers from source company, ordered by lft to maintain hierarchy
+	cost_centers = frappe.get_all("Cost Center", 
+		filters={"company": source_company},
+		fields=["name", "cost_center_name", "parent_cost_center", "is_group", "disabled"],
+		order_by="lft asc"
+	)
+	
+	# Map old cost center names to new ones
+	cost_center_map = {}
+	
+	for cc in cost_centers:
+		if cc.cost_center_name == source_company:
+			# skip root
+			continue
+
+		# Get the full doc to copy all fields
+		source_cc = frappe.get_doc("Cost Center", cc.name)
+		
+		cost_center_name = source_cc.cost_center_name
+		if source_abbr in cost_center_name:
+			cost_center_name = cost_center_name.replace(source_abbr, target_abbr)
+
+			name = frappe.db.exists("Cost Center", {"cost_center_name": cost_center_name})
+			if name:
+				cost_center_map[cc.name] = name
+				continue
+
+		# Create new cost center name with target abbreviation
+		if source_cc.cost_center_number:
+			new_name = f"{source_cc.cost_center_number} - {source_cc.cost_center_name} - {target_abbr}"
+		else: 
+			new_name = f"{source_cc.cost_center_name} - {target_abbr}"
+		
+		# Check if cost center already exists
+		if frappe.db.exists("Cost Center", new_name):
+			cost_center_map[cc.name] = new_name
+			continue
+
+		
+		# Create new cost center
+		new_cc = frappe.new_doc("Cost Center")
+		new_cc.cost_center_name = cost_center_name
+		new_cc.cost_center_number = source_cc.cost_center_number
+		new_cc.company = target_company
+		new_cc.is_group = source_cc.is_group
+		new_cc.disabled = source_cc.disabled
+		new_cc.parent_cost_center = get_parent_copy_cost_center(
+			source_cc.parent_cost_center, 
+			source_company, 
+			target_company
+		)
+		
+		# Handle parent cost center - use mapped parent if exists
+		if source_cc.parent_cost_center and source_cc.parent_cost_center in cost_center_map:
+			new_cc.parent_cost_center = cost_center_map[source_cc.parent_cost_center]
+		
+		new_cc.insert(ignore_permissions=True)
+		cost_center_map[cc.name] = new_cc.name
+		print(f"Created Cost Center: {new_cc.name}")
+	
+	return cost_center_map
+
+def get_parent_copy_cost_center(parent_name, source_company, target_company):
+	"""
+		- when we say parent cost center, we should make sure in target company have the same cost center with source company, if not we should create it first
+		- then we should return the new parent cost center name
+		- but if the parent = "{company} - {abbr}" which is the root, we should return the root target company version which is "{target_company} - {target_abbr}"
+		- recursively ensures all parent hierarchy (grandparent, great-grandparent, etc.) exists before creating
+	"""
+	if not parent_name:
+		return None
+	
+	source_abbr = frappe.get_value("Company", source_company, "abbr")
+	target_abbr = frappe.get_value("Company", target_company, "abbr")
+	
+	# Check if parent is the root (company itself)
+	if parent_name == f"{source_company} - {source_abbr}":
+		return f"{target_company} - {target_abbr}"
+	
+	# Get the parent cost center from source
+	source_parent = frappe.get_doc("Cost Center", parent_name)
+	
+	# Build the target parent name
+	target_parent_name = f"{source_parent.cost_center_name} - {target_abbr}"
+	
+	# Check if it already exists in target company
+	if frappe.db.exists("Cost Center", target_parent_name):
+		return target_parent_name
+
+	target_cost_center_name = source_parent.cost_center_name
+	if source_abbr in target_cost_center_name:
+		target_cost_center_name = target_cost_center_name.replace(source_abbr, target_abbr)
+
+	if frappe.db.exists("Cost Center", f"{target_cost_center_name} - {target_abbr}"):
+		return f"{target_cost_center_name} - {target_abbr}"
+	
+	# Before creating this cost center, ensure its parent exists first (recursive)
+	# This ensures the entire hierarchy from root down is created in order
+	grandparent_name = None
+	if source_parent.parent_cost_center:
+		grandparent_name = get_parent_copy_cost_center(
+			source_parent.parent_cost_center, 
+			source_company, 
+			target_company
+		)
+	
+	# Now create this cost center with the ensured parent
+	new_parent = frappe.new_doc("Cost Center")
+	new_parent.cost_center_number = source_parent.cost_center_number
+	new_parent.cost_center_name = target_cost_center_name
+	new_parent.company = target_company
+	new_parent.is_group = source_parent.is_group
+	new_parent.disabled = source_parent.disabled
+	new_parent.parent_cost_center = grandparent_name
+	
+	new_parent.insert(ignore_permissions=True)
+	print(f"Created parent Cost Center: {new_parent.name}")
+	
+	return new_parent.name
+
+def update_item_packaging_and_uom(doc, method=""):
+	# trigger from Customer save
+	# get detail on item selected in each customer.customer_packaging.item_code
+	# find unique customer.customer_packaging.package in tabel item.packaging.packaging
+	# if not have added it
+	# if deleted from customer, keep it if other customer have it, if not delete from item
+	# and save (ignore permission)
+	if not doc or doc.doctype != "Customer":
+		return
+
+	# Sync new packaging to item
+	for d in doc.get("customer_packaging") or []:
+		if d.item_code and d.package:
+			package_name = d.package.strip()
+			available_package = frappe.db.get_list("Packaging List Available", filters={"parent": d.item_code}, pluck="packaging")
+			if d.package not in available_package:
+				item_doc = frappe.get_doc("Item", d.item_code)
+				row = item_doc.append("packaging")
+				row.packaging = package_name
+				row.package_item = d.packaging
+				row.quantity = frappe.db.get_value("Packaging", package_name, "quantity") or 0
+				row.weight = frappe.db.get_value("Packaging", package_name, "total_weight") or 0
+				row.uom = frappe.db.get_value("Packaging", package_name, "uom")
+				item_doc.flags.ignore_permissions = True
+				item_doc.save()
