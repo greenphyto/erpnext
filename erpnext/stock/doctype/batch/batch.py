@@ -341,7 +341,7 @@ def get_batch_no(item_code, warehouse, qty=1, throw=False, serial_no=None):
 	return batch_no
 
 
-def get_batches(item_code, warehouse, qty=1, throw=False, serial_no=None):
+def get_batches(item_code, warehouse, qty=1, throw=False, serial_no=None, include_salad_batch=False):
 	from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
 
 	cond = ""
@@ -360,6 +360,9 @@ def get_batches(item_code, warehouse, qty=1, throw=False, serial_no=None):
 			return []
 
 		cond = " and `tabBatch`.name = %s" % (frappe.db.escape(batch[0].batch_no))
+
+	if not include_salad_batch:
+		cond += " and ifnull(`tabBatch`.is_salad_batch, 0) = 0"
 
 	return frappe.db.sql(
 		"""
@@ -381,7 +384,7 @@ def get_batches(item_code, warehouse, qty=1, throw=False, serial_no=None):
 
 import erpnext
 from frappe.utils import getdate
-def get_available_batch(item_code, qty, skip_wip_warehouse=False, company="", date=""):
+def get_available_batch(item_code, qty, skip_wip_warehouse=False, company="", date="", include_salad_batch=False):
 	from erpnext.stock.report.batch_wise_balance_history.batch_wise_balance_history import get_item_warehouse_batch_map
 	if not skip_wip_warehouse:
 		wip_warehouse = get_wip_warehouse()
@@ -403,6 +406,8 @@ def get_available_batch(item_code, qty, skip_wip_warehouse=False, company="", da
 			for batch in sorted(val[wh]):
 				qty_dict = val[wh][batch]
 				if qty_dict.bal_qty > qty and wh not in wip_warehouse:
+					if not include_salad_batch and cint(frappe.db.get_value("Batch", batch, "is_salad_batch")):
+						continue
 					result.append(frappe._dict({'batch_id':batch, 'qty': qty_dict.bal_qty, 'warehouse':wh}))
 
 	return result

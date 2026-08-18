@@ -2291,6 +2291,177 @@ def create_repack_entry(bom_name, qty,expiry_date, submit=False, warehouse=None)
 	return se.name
 
 
+@frappe.whitelist()
+def create_bom_mixing_product(data):
+	if isinstance(data, str):
+		data = json.loads(data)
+
+	data = frappe._dict(data.get("data") if "data" in data else data)
+	product_id = data.get("productID")
+	version_name = data.get("productVersionName")
+
+	if not product_id:
+		frappe.throw(_("Missing productID"), frappe.ValidationError)
+
+	item_name = frappe.get_value("Item", {"foms_product_id": product_id})
+	if not item_name:
+		frappe.throw(_(f"Item with Product ID {product_id} not found"), frappe.DoesNotExistError)
+
+	if not cint(frappe.get_value("Item", item_name, "salad_product")):
+		frappe.db.set_value("Item", item_name, "salad_product", 1)
+
+	all_process = data.get("process") or []
+	if not all_process:
+		frappe.throw(_("Missing process data"), frappe.ValidationError)
+
+	name, status = find_existing_bom(item_name, version_name)
+
+	if name:
+		bom = frappe.get_doc("BOM", name)
+	else:
+		bom = frappe.new_doc("BOM")
+
+	if bom.docstatus == 0:
+		bom.item = item_name
+		bom.storage_duration = get_product_storage_duration(product_id)
+		bom.is_default = 1
+		bom.foms_recipe_version = version_name
+		bom.with_operations = 1
+		bom.transfer_material_against = TRANFER_AGAIN
+		bom.rm_cost_as_per = "Last Purchase Rate"
+		bom.operations = []
+		bom.items = []
+
+		for op in all_process:
+			op = frappe._dict(op)
+			operation_name = op.processName or "Mixing"
+
+			op_row = bom.append("operations")
+			op_row.operation = operation_name
+			op_row.time_in_mins = 60
+			op_row.workstation = get_workstation_name(item_name, operation_name)
+			op_row.description = operation_name
+
+			for rm in (op.get("productRawMaterial") or []):
+				rm = frappe._dict(rm)
+				rm_item_name = frappe.get_value("Item", {"item_code": rm.rawMaterialRefNo, "is_stock_item": 1})
+				if not rm_item_name:
+					continue
+
+				uom = get_uom(rm.uomrm)
+				qty = rm.qtyrmInKg or rm.qtyrm or 0
+				if uom in ["Unit"]:
+					qty = cint(qty)
+				else:
+					qty = flt(qty)
+
+				if qty == 0 or math.isinf(flt(qty)):
+					continue
+
+				row = bom.append("items")
+				row.item_code = rm.rawMaterialRefNo
+				row.uom = uom
+				row.qty = qty
+				row.operation = operation_name
+
+		if not bom.items:
+			frappe.throw(_("No valid raw materials found in payload"), frappe.ValidationError)
+
+		bom.save(ignore_permissions=True)
+		name = bom.name
+
+	submit = get_foms_settings("auto_submit_bom")
+	if submit and bom and bom.docstatus == 0:
+		bom.submit()
+
+	return name
+
+
+@frappe.whitelist()
+def submit_salad_finished_goods(data):
+	if isinstance(data, str):
+		data = json.loads(data)
+
+	data = frappe._dict(data)
+	salad_item_code = data.get("salad_item_code")
+	salad_batch_id = data.get("salad_batch")
+	qty = flt(data.get("qty"))
+	expiry_date = data.get("expiry_date")
+	warehouse = data.get("warehouse")
+	children = data.get("children") or []
+
+	if not salad_item_code:
+		frappe.throw(_("Missing salad_item_code"), frappe.ValidationError)
+	if not salad_batch_id:
+		frappe.throw(_("Missing salad_batch"), frappe.ValidationError)
+	if not qty:
+		frappe.throw(_("Missing qty"), frappe.ValidationError)
+	if not children:
+		frappe.throw(_("Missing children materials"), frappe.ValidationError)
+
+	item_data = frappe.get_value("Item", salad_item_code, ["name", "salad_product", "default_bom"], as_dict=True)
+	if not item_data:
+		frappe.throw(_(f"Item {salad_item_code} not found"), frappe.DoesNotExistError)
+	if not cint(item_data.salad_product):
+		frappe.throw(_(f"Item {salad_item_code} is not a salad product"), frappe.ValidationError)
+
+	fg_warehouse = warehouse or frappe.db.get_single_value("Manufacturing Settings", "default_fg_warehouse")
+
+	se = frappe.new_doc("Stock Entry")
+	se.stock_entry_type_view = "Repack"
+	se.naming_series = frappe.get_value("Stock Entry Type", "Repack", "series") or "STE-RPK-.YYYY.-"
+	se.purpose = "Repack"
+	se.from_bom = 0
+	se.fg_completed_qty = qty
+	se.to_warehouse = fg_warehouse
+
+	for child in children:
+		child = frappe._dict(child)
+		if not frappe.db.exists("Batch", child.batch_no):
+			frappe.throw(_(f"Batch {child.batch_no} does not exist"), frappe.DoesNotExistError)
+
+		child_warehouse = child.get("warehouse") or fg_warehouse
+		row = se.append("items")
+		row.item_code = child.item_code
+		row.qty = flt(child.qty)
+		row.uom = get_uom(child.get("uom") or "kg")
+		row.s_warehouse = child_warehouse
+		row.batch_no = child.batch_no
+
+	finished_row = se.append("items")
+	finished_row.item_code = salad_item_code
+	finished_row.qty = qty
+	finished_row.uom = frappe.get_value("Item", salad_item_code, "stock_uom") or "Kg"
+	finished_row.t_warehouse = fg_warehouse
+	finished_row.is_finished_item = 1
+
+	if not frappe.db.exists("Batch", salad_batch_id):
+		finished_row.batch_no = make_batch(frappe._dict({
+			"item": salad_item_code,
+			"qty_to_produce": qty,
+			"reference_doctype": "Stock Entry",
+			"expiry_date": expiry_date
+		}))
+		frappe.db.set_value("Batch", finished_row.batch_no, "batch_id", salad_batch_id)
+	else:
+		finished_row.batch_no = salad_batch_id
+
+	se.flags.ignore_permissions = 1
+	se.save()
+	se.submit()
+
+	for child in children:
+		child = frappe._dict(child)
+		if frappe.db.exists("Batch", child.batch_no):
+			frappe.db.set_value("Batch", child.batch_no, "is_salad_batch", 1)
+
+	frappe.db.commit()
+
+	return {"stock_entry": se.name, "batch": finished_row.batch_no}
+
+
+from erpnext.manufacturing.doctype.bom.bom import get_bom_items_as_dict
+from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
 
 def get_data_dummy_work_order(item='', qty=10, work_order="", lot_id='', reff=[], operation_no=None):
 	import erpnext
