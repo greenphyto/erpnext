@@ -1588,7 +1588,8 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 	bom = None
 
 	if item_name:
-		
+		is_salad = cint(frappe.get_value("Item", item_name, "salad_product"))
+
 		# join process Preharvest and PostHarvest
 		if "process" in log:
 			all_process = log.process
@@ -1618,7 +1619,15 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 						
 			for op in all_process:
 				op = frappe._dict(op)
-				operation_name = get_operation_map_name(op.processName)
+				if is_salad:
+					operation_name = op.processName or "Mixing"
+					if not frappe.db.exists("Operation", operation_name):
+						op_doc = frappe.new_doc("Operation")
+						op_doc.__newname = operation_name
+						op_doc.description = operation_name
+						op_doc.insert(ignore_permissions=True)
+				else:
+					operation_name = get_operation_map_name(op.processName)
 
 				if not operation_name in operation_map:
 					op_row = bom.append("operations")
@@ -2186,98 +2195,6 @@ def create_repack_entry(bom_name, qty,expiry_date, submit=False, warehouse=None)
 		se.submit()
 
 	return se.name
-
-
-@frappe.whitelist()
-def create_bom_mixing_product(data):
-	if isinstance(data, str):
-		data = json.loads(data)
-
-	data = frappe._dict(data.get("data") if "data" in data else data)
-	product_id = data.get("productID")
-	version_name = data.get("productVersionName")
-
-	if not product_id:
-		frappe.throw(_("Missing productID"), frappe.ValidationError)
-
-	item_name = frappe.get_value("Item", {"foms_product_id": product_id})
-	if not item_name:
-		frappe.throw(_(f"Item with Product ID {product_id} not found"), frappe.DoesNotExistError)
-
-	if not cint(frappe.get_value("Item", item_name, "salad_product")):
-		frappe.db.set_value("Item", item_name, "salad_product", 1)
-
-	all_process = data.get("process") or []
-	if not all_process:
-		frappe.throw(_("Missing process data"), frappe.ValidationError)
-
-	name, status = find_existing_bom(item_name, version_name)
-
-	if name:
-		bom = frappe.get_doc("BOM", name)
-	else:
-		bom = frappe.new_doc("BOM")
-
-	if bom.docstatus == 0:
-		bom.item = item_name
-		bom.storage_duration = get_product_storage_duration(product_id)
-		bom.is_default = 1
-		bom.foms_recipe_version = version_name
-		bom.with_operations = 1
-		bom.transfer_material_against = TRANFER_AGAIN
-		bom.rm_cost_as_per = "Last Purchase Rate"
-		bom.operations = []
-		bom.items = []
-
-		for op in all_process:
-			op = frappe._dict(op)
-			operation_name = op.processName or "Mixing"
-
-			if not frappe.db.exists("Operation", operation_name):
-				op_doc = frappe.new_doc("Operation")
-				op_doc.__newname = operation_name
-				op_doc.description = operation_name
-				op_doc.insert(ignore_permissions=True)
-
-			op_row = bom.append("operations")
-			op_row.operation = operation_name
-			op_row.time_in_mins = 60
-			op_row.workstation = get_workstation_name(item_name, operation_name)
-			op_row.description = operation_name
-
-			for rm in (op.get("productRawMaterial") or []):
-				rm = frappe._dict(rm)
-				rm_item_name = frappe.get_value("Item", {"item_code": rm.rawMaterialRefNo, "is_stock_item": 1})
-				if not rm_item_name:
-					continue
-
-				uom = get_uom(rm.uomrm)
-				qty = rm.qtyrmInKg or rm.qtyrm or 0
-				if uom in ["Unit"]:
-					qty = cint(qty)
-				else:
-					qty = flt(qty)
-
-				if qty == 0 or math.isinf(flt(qty)):
-					continue
-
-				row = bom.append("items")
-				row.item_code = rm.rawMaterialRefNo
-				row.uom = uom
-				row.qty = qty
-				row.operation = operation_name
-
-		if not bom.items:
-			frappe.throw(_("No valid raw materials found in payload"), frappe.ValidationError)
-
-		bom.save(ignore_permissions=True)
-		name = bom.name
-
-	submit = get_foms_settings("auto_submit_bom")
-	if submit and bom and bom.docstatus == 0:
-		bom.submit()
-
-	return name
 
 
 @frappe.whitelist()
