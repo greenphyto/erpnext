@@ -1307,7 +1307,7 @@
     "/erpnext.controllers.foms.submit_salad_finished_goods": {
       "post": {
         "summary": "Submit salad finished goods (Repack)",
-        "description": "FOMS sends the salad product batch and its child material batches. ERP creates a Repack Stock Entry, marks child batches as is_salad_batch=1, and submits the entry. Children can use either 'lot_id' (recommended) or 'batch_no' to identify the child batch. When using lot_id, ERP looks up the Work Order by foms_lot_name and retrieves the finished goods batch.",
+        "description": "FOMS sends the salad product lot_id and its child material lot_ids/batch_nos. ERP creates a Repack Stock Entry with auto-generated batch (following Item naming convention), stores lot_id in foms_id field on both Stock Entry and Batch, marks child batches as is_salad_batch=1. Children can use either 'lot_id' (recommended) or 'batch_no'.",
         "operationId": "submit salad finished goods",
         "requestBody": {
           "description": "Salad finished goods with child material batches",
@@ -1323,12 +1323,12 @@
               },
               "examples": {
                 "using_lot_id": {
-                  "summary": "Using lot_id (recommended)",
-                  "description": "FOMS sends lot_id for each child. ERP resolves the batch from the Work Order's finished goods.",
+                  "summary": "Using lot_id for children (recommended)",
+                  "description": "FOMS sends lot_id for salad and each child. ERP auto-generates batch name and resolves child batches from Work Orders.",
                   "value": {
                     "data": {
                       "salad_item_code": "PR-MX-MES",
-                      "salad_batch": "PR-MX-MES-BN00001",
+                      "lot_id": "26-0501",
                       "qty": 1,
                       "expiry_date": "2026-09-01",
                       "warehouse": "",
@@ -1359,12 +1359,12 @@
                   }
                 },
                 "using_batch_no": {
-                  "summary": "Using batch_no (direct)",
-                  "description": "FOMS sends batch_no directly if already known.",
+                  "summary": "Using batch_no for children (direct)",
+                  "description": "FOMS sends batch_no directly for children if already known.",
                   "value": {
                     "data": {
                       "salad_item_code": "PR-MX-MES",
-                      "salad_batch": "PR-MX-MES-BN00001",
+                      "lot_id": "26-0501",
                       "qty": 1,
                       "expiry_date": "2026-09-01",
                       "warehouse": "",
