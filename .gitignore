@@ -26,3 +26,5 @@ PLAN.md
 .commandcode/
 superpowers/
 .superpowers/
+erpnext/patches/docs/*
+node_modules
