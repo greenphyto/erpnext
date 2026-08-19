@@ -435,6 +435,7 @@ doc_events = {
 	"Delivery Note": {
         "on_submit":[
         	"erpnext.controllers.foms.sync_log",
+            "erpnext.stock.rate_alert.check_rate_anomaly",
 		],
         "on_cancel":[
             "erpnext.controllers.foms.sync_log",
@@ -456,7 +457,8 @@ doc_events = {
             "erpnext.controllers.erp.detect_work_order_different",
 			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
 			"erpnext.controllers.foms.create_prod_variance_entry",
-            "erpnext.gp_erp.doctype.consignment_request.consignment_request.stock_entry_controller"
+            "erpnext.gp_erp.doctype.consignment_request.consignment_request.stock_entry_controller",
+            "erpnext.stock.rate_alert.check_rate_anomaly",
 		],
         "before_cancel":[
             "erpnext.controllers.foms.detect_salad_items",
