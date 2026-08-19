@@ -2307,7 +2307,7 @@ def submit_salad_finished_goods(data):
 
 	data = frappe._dict(data)
 	salad_item_code = data.get("salad_item_code")
-	salad_batch_id = data.get("salad_batch")
+	salad_lot_id = data.get("lot_id")
 	qty = flt(data.get("qty"))
 	expiry_date = data.get("expiry_date")
 	warehouse = data.get("warehouse")
@@ -2315,8 +2315,8 @@ def submit_salad_finished_goods(data):
 
 	if not salad_item_code:
 		frappe.throw(_("Missing salad_item_code"), frappe.ValidationError)
-	if not salad_batch_id:
-		frappe.throw(_("Missing salad_batch"), frappe.ValidationError)
+	if not salad_lot_id:
+		frappe.throw(_("Missing lot_id"), frappe.ValidationError)
 	if not qty:
 		frappe.throw(_("Missing qty"), frappe.ValidationError)
 	if not children:
@@ -2340,6 +2340,7 @@ def submit_salad_finished_goods(data):
 	se.from_bom = 0
 	se.fg_completed_qty = qty
 	se.to_warehouse = fg_warehouse
+	se.fom_lot__id = salad_lot_id
 
 	for child in children:
 		child = frappe._dict(child)
@@ -2372,18 +2373,18 @@ def submit_salad_finished_goods(data):
 	finished_row.t_warehouse = fg_warehouse
 	finished_row.is_finished_item = 1
 
-	if not frappe.db.exists("Batch", salad_batch_id):
-		batch_doc = frappe.new_doc("Batch")
-		batch_doc.batch_id = salad_batch_id
-		batch_doc.item = salad_item_code
-		batch_doc.qty_to_produce = qty
-		batch_doc.reference_doctype = "Stock Entry"
-		batch_doc.expiry_date = expiry_date
-		batch_doc.flags.ignore_permissions = 1
-		batch_doc.insert()
-		finished_row.batch_no = batch_doc.name
-	else:
-		finished_row.batch_no = salad_batch_id
+	if not cint(frappe.get_value("Item", salad_item_code, "create_new_batch")):
+		frappe.db.set_value("Item", salad_item_code, "create_new_batch", 1)
+
+	batch_doc = frappe.new_doc("Batch")
+	batch_doc.item = salad_item_code
+	batch_doc.qty_to_produce = qty
+	batch_doc.reference_doctype = "Stock Entry"
+	batch_doc.expiry_date = expiry_date
+	batch_doc.foms_id = salad_lot_id
+	batch_doc.flags.ignore_permissions = 1
+	batch_doc.insert()
+	finished_row.batch_no = batch_doc.name
 
 	se.flags.ignore_permissions = 1
 	se.save()
