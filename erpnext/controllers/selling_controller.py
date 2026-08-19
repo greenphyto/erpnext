@@ -486,7 +486,9 @@ class SellingController(StockController):
 				# Get incoming rate based on original item cost based on valuation method
 				qty = flt(d.get("stock_qty") or d.get("actual_qty"))
 
-				if not (self.get("is_return") and d.incoming_rate):
+				if self.get("is_return") and d.get("dn_detail"):
+					d.incoming_rate = self._get_return_rate_from_dn_detail(d)
+				elif not (self.get("is_return") and d.incoming_rate):
 					d.incoming_rate = get_incoming_rate(
 						{
 							"item_code": d.item_code,
@@ -537,6 +539,41 @@ class SellingController(StockController):
 				d.incoming_rate = get_rate_for_return(
 					self.doctype, self.name, d.item_code, self.return_against, item_row=d
 				)
+
+	def _get_return_rate_from_dn_detail(self, item):
+		rate = 0
+		if item.get("dn_detail"):
+			rate = flt(
+				frappe.db.get_value(
+					"Stock Ledger Entry",
+					{
+						"voucher_detail_no": item.dn_detail,
+						"is_cancelled": 0,
+						"actual_qty": ["<", 0],
+					},
+					"abs(stock_value_difference / actual_qty)",
+				)
+			)
+
+		if not rate:
+			rate = get_incoming_rate(
+				{
+					"item_code": item.item_code,
+					"warehouse": item.warehouse,
+					"posting_date": self.get("posting_date") or self.get("transaction_date"),
+					"posting_time": self.get("posting_time") or nowtime(),
+					"qty": flt(item.get("stock_qty") or item.get("actual_qty")),
+					"serial_no": item.get("serial_no"),
+					"batch_no": item.get("batch_no"),
+					"company": self.company,
+					"voucher_type": self.doctype,
+					"voucher_no": self.name,
+					"allow_zero_valuation": item.get("allow_zero_valuation"),
+				},
+				raise_error_if_no_rate=False,
+			)
+
+		return rate
 
 	def update_stock_ledger(self):
 		self.update_reserved_qty()
