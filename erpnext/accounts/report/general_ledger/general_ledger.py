@@ -247,7 +247,7 @@ def get_conditions(filters):
 
 	if filters.get("cost_center"):
 		filters.cost_center = get_cost_centers_with_children(filters.cost_center)
-		conditions.append("cost_center in %(cost_center)s")
+		conditions.append("gl.cost_center in %(cost_center)s")
 
 	if filters.get("voucher_no"):
 		conditions.append("voucher_no=%(voucher_no)s")
