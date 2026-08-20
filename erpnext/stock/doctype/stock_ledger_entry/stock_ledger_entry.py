@@ -159,7 +159,7 @@ class StockLedgerEntry(Document):
 			self.posting_time = "00:00"
 
 	def validate_batch(self):
-		if self.batch_no and self.voucher_type != "Stock Entry":
+		if self.batch_no and self.voucher_type not in ("Stock Entry", "Stock Reconciliation"):
 			if (self.voucher_type in ["Purchase Receipt", "Purchase Invoice"] and self.actual_qty < 0) or (
 				self.voucher_type in ["Delivery Note", "Sales Invoice"] and self.actual_qty > 0
 			):
