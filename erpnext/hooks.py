@@ -487,6 +487,9 @@ doc_events = {
 	},
     "Work Order":{
         "on_submit":"erpnext.controllers.foms.check_missing_wo_rate"
+	},
+    "Batch":{
+        "on_update":"erpnext.controllers.foms.update_raw_material_status"
 	}
 }
 
@@ -584,7 +587,8 @@ scheduler_events = {
         "erpnext.controllers.foms.get_packaging",
 		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_items",
 		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_product",
-        "erpnext.ai_agent.doctype.email_invoice.email_invoice.pull_erp_po"
+        "erpnext.ai_agent.doctype.email_invoice.email_invoice.pull_erp_po",
+        "erpnext.controllers.foms.daily_update_batch_status"
 	],
 	"weekly": [
 		"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_weekly",

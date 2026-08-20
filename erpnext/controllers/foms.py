@@ -722,6 +722,67 @@ def _create_foms_batch(batch_no, warehouse="", qty=0):
 		frappe.db.set_value("Batch", batch.name, "foms_id", res.get('id'))
 		frappe.db.set_value("Batch", batch.name, "foms_name", res.get('batchRefNo'))
 
+# BATCH STATUS UPDATE
+FOMS_BATCH_STATUS_MAP = {
+	"Active": "Active",
+	"Expired": "Expired",
+	"Empty": "Cancel",
+}
+
+def update_raw_material_status(doc, method=""):
+	if not is_enable_integration():
+		return
+
+	if not cint(doc.foms_id):
+		return
+
+	if not is_allowed_foms_company(doc=doc):
+		return
+
+	status = FOMS_BATCH_STATUS_MAP.get(doc.status)
+	if not status:
+		return
+
+	api = FomsAPI()
+	data = {
+		"rawMaterialBatchId": cint(doc.foms_id),
+		"status": status
+	}
+	api.update_raw_material_status(data)
+
+# erpnext.controllers.foms.daily_update_batch_status
+def daily_update_batch_status():
+	if not is_enable_integration():
+		return
+
+	batches = frappe.db.sql("""
+		SELECT name, batch_qty, expiry_date, foms_id, status as old_status
+		FROM `tabBatch`
+		WHERE foms_id > 0 AND disabled = 0
+	""", as_dict=1)
+
+	api = FomsAPI()
+	for batch in batches:
+		if flt(batch.batch_qty) <= 0:
+			new_status = "Empty"
+		elif batch.expiry_date and getdate(batch.expiry_date) < getdate():
+			new_status = "Expired"
+		else:
+			new_status = "Active"
+
+		foms_status = FOMS_BATCH_STATUS_MAP.get(new_status)
+		if not foms_status:
+			continue
+
+		if new_status != batch.old_status:
+			frappe.db.set_value("Batch", batch.name, "status", new_status)
+
+		data = {
+			"rawMaterialBatchId": cint(batch.foms_id),
+			"status": foms_status
+		}
+		api.update_raw_material_status(data)
+
 # STOCK ENTRY
 def update_stock_entry(log, api=""):
 	company = frappe.get_value("Stock Entry", log.docname, "company")

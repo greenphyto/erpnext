@@ -179,10 +179,10 @@ class Batch(Document):
 		has_expiry_date, shelf_life_in_days = get_item_shelf_life_in_days(
 			self.item, self.get("reference_doctype"), self.get("reference_name")
 		)
-		if not self.expiry_date and has_expiry_date and shelf_life_in_days:
+		if not self.expiry_date and has_expiry_date and shelf_life_in_days and self.item_group != "Raw Material":
 			self.expiry_date = add_days(self.manufacturing_date, shelf_life_in_days)
 		
-		if has_expiry_date and not self.expiry_date:
+		if has_expiry_date and not self.expiry_date and self.item_group != "Raw Material":
 			frappe.throw(
 				msg=_("Please set {0} for Batched Item {1}, which is used to set {2} on Submit.").format(
 					frappe.bold("Shelf Life in Days"),
@@ -191,9 +191,6 @@ class Batch(Document):
 				),
 				title=_("Expiry Date Mandatory"),
 			)
-
-		if self.item_group == "Raw Material":
-			self.expiry_date = getdate("2099-01-01")
 
 	def get_name_from_naming_series(self):
 		"""
