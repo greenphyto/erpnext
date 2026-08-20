@@ -76,6 +76,7 @@ METHOD_MAP = {
 	"Delivery Note":9,
 	"Request":10,
 	"Stock Entry":11,
+	"Batch":12,
 }
 
 UOM_KG_CONVERTION = {
@@ -729,21 +730,26 @@ FOMS_BATCH_STATUS_MAP = {
 	"Empty": "Cancel",
 }
 
-def update_raw_material_status(doc, method=""):
-	if not is_enable_integration():
-		return
+def update_raw_material_status():
+	sync_controller("Batch", _update_raw_material_status)
 
+def _update_raw_material_status(log, api=None):
+	if not api:
+		api = FomsAPI()
+
+	doc = frappe.get_doc("Batch", log.docname)
 	if not cint(doc.foms_id):
 		return
 
 	if not is_allowed_foms_company(doc=doc):
 		return
 
+	api.log = log
+
 	status = FOMS_BATCH_STATUS_MAP.get(doc.status)
 	if not status:
 		return
 
-	api = FomsAPI()
 	data = {
 		"rawMaterialBatchId": cint(doc.foms_id),
 		"status": status

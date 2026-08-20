@@ -489,7 +489,7 @@ doc_events = {
         "on_submit":"erpnext.controllers.foms.check_missing_wo_rate"
 	},
     "Batch":{
-        "on_update":"erpnext.controllers.foms.update_raw_material_status"
+        "on_update":"erpnext.controllers.foms.sync_log"
 	}
 }
 
@@ -815,7 +815,8 @@ sync_log_method = {
     8:"erpnext.controllers.foms._update_foms_department",
     9:"erpnext.controllers.foms._sync_delivery_note2",
     10:"erpnext.controllers.foms._update_foms_forecast",
-    11:"erpnext.controllers.foms.update_stock_entry"
+    11:"erpnext.controllers.foms.update_stock_entry",
+    12:"erpnext.controllers.foms._update_raw_material_status"
 }
 
 get_email_default = "erpnext.controllers.email.get_last_email_default"
