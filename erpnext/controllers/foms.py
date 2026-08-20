@@ -727,7 +727,7 @@ def _create_foms_batch(batch_no, warehouse="", qty=0):
 FOMS_BATCH_STATUS_MAP = {
 	"Active": "Active",
 	"Expired": "Expired",
-	"Empty": "Cancel",
+	"Empty": "Empty",
 }
 
 def update_raw_material_status():
