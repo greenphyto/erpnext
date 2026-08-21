@@ -16,7 +16,7 @@ def check_rate_anomaly(doc, method):
 		if not current_rate:
 			continue
 
-		prev_rate = _get_last_valuation_rate(item_code, warehouse)
+		prev_rate = _get_last_valuation_rate(item_code, warehouse, doc.doctype, doc.name)
 		if not prev_rate or prev_rate < MIN_PREV_RATE:
 			continue
 
@@ -60,14 +60,18 @@ def _is_product_item(item_code):
 	return item_group == "Products"
 
 
-def _get_last_valuation_rate(item_code, warehouse):
+def _get_last_valuation_rate(item_code, warehouse, voucher_type=None, voucher_no=None):
+	filters = {
+		"item_code": item_code,
+		"warehouse": warehouse,
+		"is_cancelled": 0,
+	}
+	if voucher_no:
+		filters["voucher_no"] = ["!=", voucher_no]
+
 	rate = frappe.db.get_value(
 		"Stock Ledger Entry",
-		{
-			"item_code": item_code,
-			"warehouse": warehouse,
-			"is_cancelled": 0,
-		},
+		filters,
 		"valuation_rate",
 		order_by="posting_date desc, posting_time desc, creation desc",
 	)
