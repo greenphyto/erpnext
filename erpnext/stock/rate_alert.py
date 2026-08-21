@@ -3,6 +3,7 @@ from frappe.utils import flt
 
 
 RATE_THRESHOLD = 0.25
+MIN_PREV_RATE = 0.01
 
 
 def check_rate_anomaly(doc, method):
@@ -16,7 +17,7 @@ def check_rate_anomaly(doc, method):
 			continue
 
 		prev_rate = _get_last_valuation_rate(item_code, warehouse)
-		if not prev_rate:
+		if not prev_rate or prev_rate < MIN_PREV_RATE:
 			continue
 
 		diff_pct = (current_rate - prev_rate) / prev_rate
