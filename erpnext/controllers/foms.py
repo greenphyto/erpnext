@@ -1714,11 +1714,18 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 						if not rm_item_name:
 							continue
 
+						is_ratio = cint(rm.get("isRatio"))
 						uom = get_uom(rm.uomrm)
-						if uom in ['Unit']:
-							qty = cint(rm.qtyrmInKg or rm.qtyrm )
+
+						if is_ratio:
+							ratio = flt(rm.qtyrm) / 100
+							conversion = flt(UOM_KG_CONVERTION.get(uom) or 1)
+							qty = ratio * conversion
 						else:
-							qty = rm.qtyrmInKg or rm.qtyrm 
+							if uom in ['Unit']:
+								qty = cint(rm.qtyrmInKg or rm.qtyrm)
+							else:
+								qty = rm.qtyrmInKg or rm.qtyrm
 
 						if qty == 0 or math.isinf( flt(qty) ):
 							continue

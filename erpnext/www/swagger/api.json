@@ -115,74 +115,89 @@
                   "data": {
                     "type": "object"
                   }
+                }
+              },
+              "examples": {
+                "normal_product": {
+                  "summary": "Normal product BOM (default)",
+                  "description": "Standard BOM creation for non-salad products. Operations are mapped to Seeding/Transplanting/Harvesting.",
+                  "value": {
+                    "data": {
+                      "productID": "37",
+                      "productVersionName": "V2.0",
+                      "process": [
+                        {
+                          "processName": "Seeding",
+                          "productRawMaterial": [
+                            {
+                              "rawMaterialId": 10,
+                              "rawMaterialRefNo": "RM-NS-NSA",
+                              "rawMaterialName": "Seed A",
+                              "uomrm": "g",
+                              "uomProduct": "Kg",
+                              "qtyrm": 5
+                            }
+                          ]
+                        },
+                        {
+                          "processName": "Harvesting",
+                          "productRawMaterial": [
+                            {
+                              "rawMaterialId": 20,
+                              "rawMaterialRefNo": "RM-PK-BAG",
+                              "rawMaterialName": "Packaging Bag",
+                              "uomrm": "unit",
+                              "uomProduct": "Unit",
+                              "qtyrm": 1
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
                 },
-                "example": {
-                  "data": {
-                    "productID": "37",
-                    "productVersionName": "V1.6",
-                    "process": [
-                      {
-                        "processName": "Seeding",
-                        "productRawMaterial": [
-                          {
-                            "rawMaterialId": 38,
-                            "rawMaterialRefNo": "RM-IN-WW",
-                            "rawMaterialName": "Water",
-                            "uomrm": "L",
-                            "uomProduct": "Per Tray",
-                            "qtyrm": 36.0
-                          },
-                          {
-                            "rawMaterialId": 39,
-                            "rawMaterialRefNo": "RM-MS-SP",
-                            "rawMaterialName": "Sponge",
-                            "uomrm": "unit",
-                            "uomProduct": "Per Tray",
-                            "qtyrm": 180.0
-                          },
-                          {
-                            "rawMaterialId": 40,
-                            "rawMaterialRefNo": "RM-NS-NSA",
-                            "rawMaterialName": "Nutrient A",
-                            "uomrm": "ml",
-                            "uomProduct": "Per Tray",
-                            "qtyrm": 180.0
-                          },
-                          {
-                            "rawMaterialId": 41,
-                            "rawMaterialRefNo": "RM-NS-NSB",
-                            "rawMaterialName": "Nutrient B",
-                            "uomrm": "ml",
-                            "uomProduct": "Per Tray",
-                            "qtyrm": 180.0
-                          },
-                          {
-                            "rawMaterialId": 57,
-                            "rawMaterialRefNo": "RM-SD-SPC",
-                            "rawMaterialName": "Small Size Pak Choy Seeds",
-                            "uomrm": "g",
-                            "uomProduct": "Per Tray",
-                            "qtyrm": 0.75
-                          }
-                        ],
-                        "productTask": [
-                          {
-                            "taskID": "T-0289",
-                            "taskSequence": 1,
-                            "taskName": "Check in RM & Equipment",
-                            "details": "Check in all the required RM",
-                            "taskType": "Check in Raw Materials/Equipment"
-                          },
-                          {
-                            "taskID": "T-0290",
-                            "taskSequence": 2,
-                            "taskName": "Get location from ASRS",
-                            "details": "Location obtained from ASRS",
-                            "taskType": "ASRS Storage"
-                          }
-                        ]
-                      }
-                    ]
+                "salad_product_with_ratio": {
+                  "summary": "Salad/mixing product BOM (with isRatio)",
+                  "description": "BOM for salad product (item.salad_product=1). Uses processName directly (e.g. 'Mixing'). When isRatio=1, qtyrm is percentage of 1kg parent. Example: qtyrm=50 with uomrm='g' means 50% of 1kg = 500g.",
+                  "value": {
+                    "data": {
+                      "productID": "54",
+                      "productVersionName": "V1.6",
+                      "process": [
+                        {
+                          "processName": "Mixing",
+                          "productRawMaterial": [
+                            {
+                              "rawMaterialId": 37,
+                              "rawMaterialRefNo": "PR-AV-KL",
+                              "rawMaterialName": "F1 Hybrid Kailan 1",
+                              "uomrm": "g",
+                              "uomProduct": "Kg",
+                              "qtyrm": 50,
+                              "isRatio": 1
+                            },
+                            {
+                              "rawMaterialId": 52,
+                              "rawMaterialRefNo": "PR-AV-DRE",
+                              "rawMaterialName": "Komatsuna Dream",
+                              "uomrm": "g",
+                              "uomProduct": "Kg",
+                              "qtyrm": 30,
+                              "isRatio": 1
+                            },
+                            {
+                              "rawMaterialId": 38,
+                              "rawMaterialRefNo": "PR-AV-CS",
+                              "rawMaterialName": "F1 Hong Kong Choy Sum",
+                              "uomrm": "g",
+                              "uomProduct": "Kg",
+                              "qtyrm": 20,
+                              "isRatio": 1
+                            }
+                          ]
+                        }
+                      ]
+                    }
                   }
                 }
               }
