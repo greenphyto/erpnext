@@ -211,6 +211,15 @@ frappe.ui.form.on("Sales Order", {
 		});
 	},
 
+	is_lazada_order: function(frm){
+		if (cint(frm.doc.is_lazada_order)==0) return;
+		frappe.db.get_single_value("Lazada Settings", "lazada_customer").then(r=>{
+			if (r.message) {
+				frm.set_value("customer", r.message);
+			}
+		});
+	},
+
 	get_items_from_internal_purchase_order(frm) {
 		frm.add_custom_button(__('Purchase Order'), () => {
 			erpnext.utils.map_current_doc({
@@ -374,6 +383,16 @@ erpnext.selling.SalesOrderController = class SalesOrderController extends erpnex
 					if(flt(doc.per_delivered, 6) < 100 && (order_is_a_sale || order_is_a_custom_sale) && allow_delivery) {
 						this.frm.add_custom_button(__('Delivery Note'), () => this.make_delivery_note_based_on_delivery_date(), __('Create'));
 						this.frm.add_custom_button(__('Work Order'), () => this.make_work_order(), __('Create'));
+					}
+
+					// lazada delivery
+					if(doc.is_lazada_order && flt(doc.per_delivered, 6) < 100 && allow_delivery) {
+						this.frm.add_custom_button(__('Lazada Delivery'), () => {
+							frappe.model.open_mapped_doc({
+								method: "erpnext.gp_erp.doctype.lazada_delivery.lazada_delivery.LazadaDelivery.make_lazada_delivery",
+								frm: this.frm,
+							});
+						}, __('Create'));
 					}
 
 					// sales invoice

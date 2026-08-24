@@ -6,7 +6,8 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "default_warehouse"
+  "default_warehouse",
+  "lazada_customer"
  ],
  "fields": [
   {
@@ -14,12 +15,18 @@
    "fieldtype": "Link",
    "label": "Default Warehouse",
    "options": "Warehouse"
+  },
+  {
+   "fieldname": "lazada_customer",
+   "fieldtype": "Link",
+   "label": "Lazada Customer",
+   "options": "Customer"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-08-24 10:42:11.472395",
+ "modified": "2026-08-24 12:01:37.073098",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Lazada Settings",

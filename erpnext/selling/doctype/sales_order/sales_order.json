@@ -25,8 +25,9 @@
   "po_no",
   "po_date",
   "pending_po",
-  "is_pledge",
-  "company",
+   "is_pledge",
+   "is_lazada_order",
+   "company",
   "skip_delivery_note",
   "amended_from",
   "donor_information_section",
@@ -1751,15 +1752,21 @@
    "fieldtype": "Data",
    "label": "Donor Name"
   },
-  {
-   "default": "0",
-   "fieldname": "is_pledge",
-   "fieldtype": "Check",
-   "label": "For Pledge"
-  },
-  {
-   "depends_on": "eval:doc.is_pledge",
-   "fieldname": "donor_information_section",
+   {
+    "default": "0",
+    "fieldname": "is_pledge",
+    "fieldtype": "Check",
+    "label": "For Pledge"
+   },
+   {
+    "default": "0",
+    "fieldname": "is_lazada_order",
+    "fieldtype": "Check",
+    "label": "Is Lazada Order"
+   },
+   {
+    "depends_on": "eval:doc.is_pledge",
+    "fieldname": "donor_information_section",
    "fieldtype": "Section Break",
    "label": "Donor Information"
   },
