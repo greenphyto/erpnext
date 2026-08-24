@@ -43,7 +43,11 @@ def _get_stock_items(doc):
 			if doc.get("is_return"):
 				results.append((d.item_code, d.warehouse, flt(d.incoming_rate)))
 			else:
-				results.append((d.item_code, d.warehouse, flt(d.incoming_rate)))
+				sle_rate = _get_current_voucher_valuation_rate(
+					d.item_code, d.warehouse, doc.doctype, doc.name
+				)
+				if sle_rate:
+					results.append((d.item_code, d.warehouse, flt(sle_rate)))
 	elif doc.doctype == "Stock Entry":
 		for d in doc.get("items") or []:
 			if not _is_product_item(d.item_code):
@@ -72,6 +76,22 @@ def _get_last_valuation_rate(item_code, warehouse, voucher_type=None, voucher_no
 	rate = frappe.db.get_value(
 		"Stock Ledger Entry",
 		filters,
+		"valuation_rate",
+		order_by="posting_date desc, posting_time desc, creation desc",
+	)
+	return flt(rate)
+
+
+def _get_current_voucher_valuation_rate(item_code, warehouse, voucher_type, voucher_no):
+	rate = frappe.db.get_value(
+		"Stock Ledger Entry",
+		{
+			"item_code": item_code,
+			"warehouse": warehouse,
+			"is_cancelled": 0,
+			"voucher_type": voucher_type,
+			"voucher_no": voucher_no,
+		},
 		"valuation_rate",
 		order_by="posting_date desc, posting_time desc, creation desc",
 	)
