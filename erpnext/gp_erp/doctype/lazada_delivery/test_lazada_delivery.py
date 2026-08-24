@@ -1,7 +1,7 @@
-# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and Contributors
+# Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
 # See license.txt
 
-# import frappe
+import frappe
 from frappe.tests.utils import FrappeTestCase
 
 
