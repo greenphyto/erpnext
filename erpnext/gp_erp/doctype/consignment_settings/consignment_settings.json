@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:company",
+ "creation": "2026-08-26 12:09:26.276700",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "default_update_stock_on_sales_invoice",
+  "allow_expired_product_on_sales_invoice"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "default_update_stock_on_sales_invoice",
+   "fieldtype": "Check",
+   "label": "Default Update Stock on Sales Invoice"
+  },
+  {
+   "default": "0",
+   "fieldname": "allow_expired_product_on_sales_invoice",
+   "fieldtype": "Check",
+   "label": "Allow Expired product on Sales Invoice"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-26 12:11:27.079943",
+ "modified_by": "Administrator",
+ "module": "GP ERP",
+ "name": "Consignment Settings",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
