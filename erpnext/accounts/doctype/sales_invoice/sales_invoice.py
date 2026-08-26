@@ -134,7 +134,11 @@ class SalesInvoice(SellingController):
 			self.is_opening = "No"
 
 		if self._action != "submit" and self.update_stock and not self.is_return:
-			set_batch_nos(self, "warehouse", True)
+			allow_expired = bool(
+				self.company
+				and frappe.db.get_value("Consignment Settings", self.company, "allow_expired_product_on_sales_invoice")
+			)
+			set_batch_nos(self, "warehouse", True, allow_expired=allow_expired)
 
 		if self.redeem_loyalty_points:
 			lp = frappe.get_doc("Loyalty Program", self.loyalty_program)
@@ -343,8 +347,107 @@ class SalesInvoice(SellingController):
 		if self.is_return:
 			self.naming_series = "CN.###./.YYYY"
 
+	def before_validate(self):
+		if not self.update_stock and self.company and frappe.db.get_value("Consignment Settings", self.company, "default_update_stock_on_sales_invoice"):
+			self.update_stock = 1
+
+		if self.update_stock and self.customer:
+			con_warehouse = frappe.db.get_value("Warehouse", {"customer": self.customer})
+			if con_warehouse and not self.set_warehouse:
+				self.set_warehouse = con_warehouse
+
+		if self.update_stock and self.set_warehouse:
+			self._auto_set_batch_no()
+
 	def before_save(self):
 		set_account_for_mode_of_payment(self)
+
+	def _auto_set_batch_no(self):
+		from erpnext.stock.doctype.batch.batch import get_batches, get_batch_qty
+
+		allow_expired = bool(
+			self.company
+			and frappe.db.get_value("Consignment Settings", self.company, "allow_expired_product_on_sales_invoice")
+		)
+
+		# Step 1: validate existing batch_no — clear if qty insufficient
+		for d in self.get("items"):
+			qty = d.get("stock_qty") or d.get("qty") or 0
+			warehouse = d.warehouse or self.set_warehouse
+			if not (warehouse and qty > 0 and d.batch_no and frappe.db.get_value("Item", d.item_code, "has_batch_no")):
+				continue
+			batch_qty = get_batch_qty(batch_no=d.batch_no, warehouse=warehouse) or 0
+			if flt(batch_qty) < flt(qty):
+				d.batch_no = ""
+
+		# Step 2: assign batch for items without batch_no (new or cleared)
+		split_info = []
+		new_items = []
+		for idx, d in enumerate(self.get("items")):
+			qty = d.get("stock_qty") or d.get("qty") or 0
+			warehouse = d.warehouse or self.set_warehouse
+			if not (warehouse and qty > 0 and not d.batch_no and frappe.db.get_value("Item", d.item_code, "has_batch_no")):
+				continue
+
+			batches = get_batches(d.item_code, warehouse, qty, allow_expired=allow_expired) or []
+			if not batches:
+				continue
+
+			item_splits = []
+			remaining = flt(qty)
+			first = True
+			for batch in batches:
+				if remaining <= 0:
+					break
+				batch_qty = min(flt(batch.qty), remaining)
+				if batch_qty <= 0:
+					continue
+
+				item_splits.append({"batch": batch.batch_id, "qty": batch_qty})
+
+				if first:
+					d.batch_no = batch.batch_id
+					d.qty = batch_qty / flt(d.conversion_factor or 1)
+					d.stock_qty = batch_qty
+					d.amount = batch_qty * flt(d.rate or 0)
+					first = False
+				else:
+					new_row = self.append("items", {})
+					copy_fields = [
+						"item_code", "item_name", "description", "warehouse", "target_warehouse",
+						"uom", "stock_uom", "conversion_factor", "rate", "price_list_rate",
+						"cost_center", "income_account", "sales_order", "so_detail",
+						"delivery_note", "dn_detail", "project", "item_tax_rate",
+						"allow_zero_valuation_rate", "blanket_order", "blanket_order_detail",
+					]
+					for f in copy_fields:
+						new_row.set(f, d.get(f))
+					new_row.batch_no = batch.batch_id
+					new_row.qty = batch_qty / flt(d.conversion_factor or 1)
+					new_row.stock_qty = batch_qty
+					new_row.amount = batch_qty * flt(d.rate or 0)
+					new_items.append(new_row)
+
+				remaining -= batch_qty
+
+			if len(item_splits) > 1:
+				split_info.append({
+					"item": d.item_code,
+					"total_qty": qty,
+					"splits": item_splits,
+				})
+
+		if new_items:
+			self.calculate_taxes_and_totals()
+
+		if split_info:
+			html = "<b>Items were split into multiple batches:</b><br><br>"
+			for info in split_info:
+				html += f"<b>{info['item']}</b> - Total: {info['total_qty']}<br>"
+				for s in info["splits"]:
+					html += f"&nbsp;&nbsp;&bull; {s['batch']}: {flt(s['qty'], 2)}<br>"
+				html += "<br>"
+			frappe.msgprint(html, title="Batch Split", indicator="green")
 
 	def on_submit(self):
 		self.validate_pos_paid_amount()
@@ -368,6 +471,7 @@ class SalesInvoice(SellingController):
 		# Updating stock ledger should always be called after updating prevdoc status,
 		# because updating reserved qty in bin depends upon updated delivered qty in SO
 		if self.update_stock == 1:
+			self._auto_set_batch_no()
 			self.update_stock_ledger()
 		if self.is_return and self.update_stock:
 			update_serial_nos_after_submit(self, "items")
