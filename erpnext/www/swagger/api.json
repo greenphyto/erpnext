@@ -120,11 +120,12 @@
               "examples": {
                 "normal_product": {
                   "summary": "Normal product BOM (default)",
-                  "description": "Standard BOM creation for non-salad products. Operations are mapped to Seeding/Transplanting/Harvesting.",
+                  "description": "Standard BOM creation for non-salad products. Operations are mapped to Seeding/Transplanting/Harvesting. Optionally set LeadTimeDays to update item lead time (in days).",
                   "value": {
                     "data": {
                       "productID": "37",
                       "productVersionName": "V2.0",
+                      "LeadTimeDays": 7,
                       "process": [
                         {
                           "processName": "Seeding",
@@ -158,11 +159,12 @@
                 },
                 "salad_product_with_ratio": {
                   "summary": "Salad/mixing product BOM (with isRatio)",
-                  "description": "BOM for salad product (item.salad_product=1). Uses processName directly (e.g. 'Mixing'). When isRatio=1, qtyrm is percentage of 1kg parent. Example: qtyrm=50 with uomrm='g' means 50% of 1kg = 500g.",
+                  "description": "BOM for salad product (item.salad_product=1). Uses processName directly (e.g. 'Mixing'). When isRatio=1, qtyrm is percentage of 1kg parent. Example: qtyrm=50 with uomrm='g' means 50% of 1kg = 500g. Optionally set LeadTimeDays to update item lead time.",
                   "value": {
                     "data": {
                       "productID": "54",
                       "productVersionName": "V1.6",
+                      "LeadTimeDays": 3,
                       "process": [
                         {
                           "processName": "Mixing",
