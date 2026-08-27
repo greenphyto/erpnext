@@ -18,13 +18,5 @@ __pycache__
 node_modules/
 .backportrc.json
 test_script.py
-CLAUDE.md
-.claude/
-PLAN.md
-*/patches/files/*.csv
-*/patches/files/*.xlsx
-.commandcode/
-superpowers/
-.superpowers/
 erpnext/patches/docs/*
 node_modules

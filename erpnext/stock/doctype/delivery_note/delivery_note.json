@@ -72,6 +72,8 @@
   "is_carton_order",
   "sec_break_48",
   "items",
+  "salad_detail_section",
+  "salad_items",
   "section_break_31",
   "total_qty",
   "total_net_weight",
@@ -1601,149 +1603,25 @@
    "depends_on": "eval:doc.is_donation",
    "fieldname": "organization_address",
    "fieldtype": "Small Text",
-   "label": "Organization Address"
+   "label": "Organization Adress"
   },
   {
-   "depends_on": "eval:doc.is_replacement",
-   "fieldname": "replacement_reason_section",
+   "fieldname": "salad_detail_section",
    "fieldtype": "Section Break",
-   "label": "Replacement Reason"
+   "label": "Salad Detail"
   },
   {
-   "fieldname": "replacement_reason",
-   "fieldtype": "Select",
-   "label": "Replacement Reason",
-   "mandatory_depends_on": "eval:doc.is_replacement",
-   "options": "\nCommercial Reasons\nQuality Issues"
-  },
-  {
-   "fieldname": "column_break_29",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "rpl_creator",
-   "fieldtype": "Data",
-   "label": "Creator",
+   "fieldname": "salad_items",
+   "fieldtype": "HTML",
+   "label": "Salad Items",
    "read_only": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "is_marketing",
-   "fieldtype": "Check",
-   "label": "For Marketing",
-   "set_only_once": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "is_production",
-   "fieldtype": "Check",
-   "label": "For Production",
-   "set_only_once": 1
-  },
-  {
-   "fieldname": "work_order",
-   "fieldtype": "Link",
-   "label": "Work Order",
-   "options": "Work Order",
-   "read_only": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "is_pledge",
-   "fieldtype": "Check",
-   "label": "For Pledge",
-   "set_only_once": 1
-  },
-  {
-   "depends_on": "eval:doc.is_pledge",
-   "fieldname": "donor_name",
-   "fieldtype": "Data",
-   "label": "Donor Name"
-  },
-  {
-   "allow_on_submit": 1,
-   "fetch_from": "shipping_address_name.outlet_name",
-   "fieldname": "outlet_name",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Outlet Name",
-   "read_only": 1
-  },
-  {
-   "collapsible": 1,
-   "collapsible_depends_on": "eval:doc.shipping_rule",
-   "fieldname": "shipping_method_section",
-   "fieldtype": "Section Break",
-   "label": "Shipping Method"
-  },
-  {
-   "fetch_from": "shipping_rule.mode_of_transport",
-   "fetch_if_empty": 1,
-   "fieldname": "mode_of_transport",
-   "fieldtype": "Select",
-   "label": "Mode of Transport",
-   "options": "Land\nSea\nAir"
-  },
-  {
-   "fetch_from": "shipping_rule.port_of_discharge",
-   "fetch_if_empty": 1,
-   "fieldname": "port_of_discharge",
-   "fieldtype": "Link",
-   "label": "Port of Discharge",
-   "options": "Port"
-  },
-  {
-   "fetch_from": "shipping_rule.port_of_loading",
-   "fetch_if_empty": 1,
-   "fieldname": "port_of_loading",
-   "fieldtype": "Link",
-   "label": "Port of Loading",
-   "options": "Port"
-  },
-  {
-   "fieldname": "column_break_72",
-   "fieldtype": "Column Break"
-  },
-  {
-   "description": "Carton weight at single pcs (KG)",
-   "fetch_from": "shipping_rule.carton_weight",
-   "fetch_if_empty": 1,
-   "fieldname": "carton_weight",
-   "fieldtype": "Float",
-   "label": "Carton Weight"
-  },
-  {
-   "fetch_from": "shipping_rule.default_inter_company_terms",
-   "fetch_if_empty": 1,
-   "fieldname": "inter_company_terms",
-   "fieldtype": "Link",
-   "label": "Inter Company Terms",
-   "options": "Terms and Conditions"
-  },
-  {
-   "fieldname": "total_gross_weight",
-   "fieldtype": "Float",
-   "label": "Total Gross Weight",
-   "read_only": 1
-  },
-  {
-   "default": "1",
-   "fieldname": "total_cartons",
-   "fieldtype": "Int",
-   "label": "Total Cartons"
-  },
-  {
-   "default": "0",
-   "fieldname": "non_stock_item",
-   "fieldtype": "Check",
-   "label": "For Non-stock Item"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-20 16:28:29.563449",
+ "modified": "2026-08-11 20:38:42.270517",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",

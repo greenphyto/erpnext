@@ -112,7 +112,8 @@
   "dimension_col_break",
   "project",
   "section_break_72",
-  "page_break"
+  "page_break",
+  "stock_entry_repack"
  ],
  "fields": [
   {
@@ -910,35 +911,13 @@
    "read_only": 1
   },
   {
-   "fieldname": "against_consignment_request",
+   "fieldname": "stock_entry_repack",
    "fieldtype": "Link",
-   "label": "Against Consignment Request",
-   "options": "Consignment Request",
-   "read_only": 1
-  },
-  {
-   "fieldname": "cr_detail",
-   "fieldtype": "Data",
-   "label": "Against Consignment Request Item",
-   "read_only": 1
-  },
-  {
-   "fieldname": "packed_qty",
-   "fieldtype": "Float",
-   "label": "Packed Qty",
-   "read_only": 1
-  },
-  {
-   "fieldname": "item_name_view",
-   "fieldtype": "Data",
-   "label": "Item Name"
-  },
-  {
-   "columns": 2,
-   "fieldname": "packaging_item",
-   "fieldtype": "Link",
-   "label": "Packaging Item",
-   "options": "Item"
+   "label": "Repack Stock Entry",
+   "options": "Stock Entry",
+   "read_only": 1,
+   "no_copy": 1,
+   "print_hide": 1
   }
  ],
  "idx": 1,

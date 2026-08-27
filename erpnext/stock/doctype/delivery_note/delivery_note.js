@@ -77,15 +77,14 @@ frappe.ui.form.on("Delivery Note", {
 			}
 		});
 
-		frm.set_query("uom", "items", function(doc, cdt, cdn) {
+		frm.set_query('batch_no', 'items', function(doc, cdt, cdn) {
 			var row = locals[cdt][cdn];
-			if (!row.item_code) frappe.throw(__("Please select Item"));
-			var args =  erpnext.queries.uom({
-				"parent": row.item_code,
-				"is_packaging": doc.non_package_item? 0 : 1
-			})
-
-			return args;
+			return {
+				filters: {
+					'item': row.item_code,
+					'is_salad_batch': 0
+				}
+			}
 		});
 
 		frm.set_df_property('packed_items', 'cannot_add_rows', true);
@@ -200,7 +199,56 @@ frappe.ui.form.on("Delivery Note", {
 		}
 		
 		erpnext.add_image_slide(frm)
-		// erpnext.set_batch_no_readonly(frm);
+
+		if (!frm.is_new() && frm.doc.items && frm.doc.items.length) {
+			frm.events.render_salad_items(frm);
+		}
+	},
+
+	render_salad_items: function(frm) {
+		frappe.call({
+			method: "erpnext.stock.doctype.delivery_note.delivery_note.get_dn_salad_items_with_availability",
+			args: { delivery_note: frm.doc.name },
+			callback: function(r) {
+				if (!r.message || !r.message.length) {
+					frm.fields_dict.salad_items.$wrapper.html("");
+					return;
+				}
+				let rows = r.message;
+				let html = `<table class="table table-bordered table-condensed" style="font-size:12px;">
+					<thead>
+						<tr style="background:#f7f7f7;">
+							<th>Parent Item</th>
+							<th>Child Item</th>
+							<th>Item Name</th>
+							<th>UOM</th>
+							<th style="text-align:right;">Required Qty</th>
+							<th style="text-align:right;">Available Qty</th>
+							<th style="text-align:right;">Shortage</th>
+							<th>Status</th>
+						</tr>
+					</thead><tbody>`;
+				rows.forEach(function(d) {
+					let is_short = d.shortage > 0;
+					let row_style = is_short ? 'background:#fff0f0;' : '';
+					let status = is_short
+						? `<span class="text-danger"><b>Insufficient Stock</b></span>`
+						: `<span class="text-success">OK</span>`;
+					html += `<tr style="${row_style}">
+						<td>${d.parent_item || ''}</td>
+						<td>${d.item_code}</td>
+						<td>${d.item_name}</td>
+						<td>${d.uom}</td>
+						<td style="text-align:right;">${d.required_qty}</td>
+						<td style="text-align:right;">${d.available_qty}</td>
+						<td style="text-align:right;color:${is_short ? 'red' : 'green'};">${is_short ? d.shortage : 0}</td>
+						<td>${status}</td>
+					</tr>`;
+				});
+				html += `</tbody></table>`;
+				frm.fields_dict.salad_items.$wrapper.html(html);
+			}
+		});
 	},
 	is_return: function(frm){
 		frm.set_value("naming_series", "DO-RET-.YYYY.-.###")

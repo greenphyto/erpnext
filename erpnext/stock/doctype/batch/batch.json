@@ -37,10 +37,10 @@
   "qty_to_produce",
   "column_break_23",
   "produced_qty",
-  "foms_section",
-  "foms_id",
-  "foms_name",
-  "status"
+   "foms_section",
+   "foms_id",
+   "foms_name",
+   "is_salad_batch"
  ],
  "fields": [
   {
@@ -227,6 +227,12 @@
    "fieldtype": "Data",
    "label": "Foms Name",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_salad_batch",
+   "fieldtype": "Check",
+   "label": "Is Salad Batch"
   },
   {
    "fieldname": "section_break_14",

@@ -808,8 +808,8 @@
                     "CustomerName": "NTUC Fairprice Co-Operative Limited",
                     "items": [
                       {
-                        "Product_Id": "PR-AV-KL",
-                        "ProductName": "F1 Hybrid Kailan",
+                        "Product_Id": "FD-VG-01",
+                        "ProductName": "Red Beans",
                         "uom": "Nos",
                         "DONumberOfPacket": 2,
                         "Price": 10,
@@ -1110,7 +1110,6 @@
                     "posting_date": "2024-05-26",
                     "delivery_date": "2024-05-30",
                     "foms_order_id": "12",
-                    "company": "Greenphyto Pte Ltd",
                     "items": [
                       {
                         "item_code": "PR-AV-KLL",
@@ -1120,8 +1119,8 @@
                         "rate": 1.2,
                         "unit_qty": 200,
                         "unit_uom": "g",
-                        "unit_weight": 0.20,
-                        "weight": 0.40
+                        "unit_weight": 0.2,
+                        "weight": 0.4
                       }
                     ]
                   }
@@ -1370,32 +1369,95 @@
         }
       }
     },
-    "/erpnext.controllers.erp_api.update_item_safety_stock": {
+    "/erpnext.controllers.foms.submit_salad_finished_goods": {
       "post": {
-        "summary": "Update item safety stock + reorder",
-        "description": "Updates Item.safety_stock, then syncs reorder settings. If any Item Reorder rows exist, their warehouse_reorder_level is updated; otherwise, a new Item Reorder row is created with warehouse_reorder_level = safety_stock and warehouse_reorder_qty = 100.",
-        "operationId": "update item safety stock",
+        "summary": "Submit salad finished goods (Repack)",
+        "description": "FOMS sends the salad product lot_id and its child material lot_ids/batch_nos. ERP creates a Repack Stock Entry with auto-generated batch (following Item naming convention), stores lot_id in foms_id field on both Stock Entry and Batch, marks child batches as is_salad_batch=1. Children can use either 'lot_id' (recommended) or 'batch_no'.",
+        "operationId": "submit salad finished goods",
         "requestBody": {
-          "description": "Set safety stock and sync reorder",
+          "description": "Salad finished goods with child material batches",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "item_code": {
-                    "type": "string"
-                  },
-                  "safety_stock": {
-                    "type": "number"
-                  },
-                  "company": {
-                    "type": "string"
+                  "data": {
+                    "type": "object"
+                  }
+                }
+              },
+              "examples": {
+                "using_lot_id": {
+                  "summary": "Using lot_id for children (recommended)",
+                  "description": "FOMS sends lot_id for salad and each child. ERP auto-generates batch name and resolves child batches from Work Orders.",
+                  "value": {
+                    "data": {
+                      "salad_item_code": "PR-MX-MES",
+                      "lot_id": "26-0501",
+                      "qty": 1,
+                      "expiry_date": "2026-09-01",
+                      "warehouse": "",
+                      "children": [
+                        {
+                          "item_code": "PR-AV-KL",
+                          "lot_id": "26-0101",
+                          "qty": 0.5,
+                          "uom": "kg",
+                          "warehouse": ""
+                        },
+                        {
+                          "item_code": "PR-AV-DRE",
+                          "lot_id": "26-0102",
+                          "qty": 0.3,
+                          "uom": "kg",
+                          "warehouse": ""
+                        },
+                        {
+                          "item_code": "PR-AV-CS",
+                          "lot_id": "26-0103",
+                          "qty": 0.2,
+                          "uom": "kg",
+                          "warehouse": ""
+                        }
+                      ]
+                    }
                   }
                 },
-                "example": {
-                  "item_code": "RM-NS-NSA",
-                  "safety_stock": 50,
-                  "company": "Greenphyto Pte Ltd"
+                "using_batch_no": {
+                  "summary": "Using batch_no for children (direct)",
+                  "description": "FOMS sends batch_no directly for children if already known.",
+                  "value": {
+                    "data": {
+                      "salad_item_code": "PR-MX-MES",
+                      "lot_id": "26-0501",
+                      "qty": 1,
+                      "expiry_date": "2026-09-01",
+                      "warehouse": "",
+                      "children": [
+                        {
+                          "item_code": "PR-AV-KL",
+                          "batch_no": "PR-AV-KL-BN00359",
+                          "qty": 0.5,
+                          "uom": "kg",
+                          "warehouse": ""
+                        },
+                        {
+                          "item_code": "PR-AV-DRE",
+                          "batch_no": "PR-AV-DRE-BN00313",
+                          "qty": 0.3,
+                          "uom": "kg",
+                          "warehouse": ""
+                        },
+                        {
+                          "item_code": "PR-AV-CS",
+                          "batch_no": "PR-AV-CS-BN00001",
+                          "qty": 0.2,
+                          "uom": "kg",
+                          "warehouse": ""
+                        }
+                      ]
+                    }
+                  }
                 }
               }
             }
@@ -1410,11 +1472,8 @@
                 "schema": {
                   "example": {
                     "message": {
-                      "item_code": "RM-NS-NSA",
-                      "safety_stock": 50,
-                      "reorder_rows_updated": 1,
-                      "reorder_row_created": false,
-                      "updated": true
+                      "stock_entry": "RE-00003/2026",
+                      "batch": "PR-MX-MES-BN00001"
                     }
                   }
                 }
@@ -1422,775 +1481,10 @@
             }
           },
           "404": {
-            "description": "Item not found or invalid input"
-          }
-        }
-      }
-    },
-    "/erpnext.controllers.erp_api.get_document_lotid": {
-      "get": {
-        "summary": "Retrieve Batch details and associated Stock Transactions by external Lot ID",
-        "description": "Fetches details of a specific Batch using its external 'foms_lot_id', and retrieves the 10 most recent associated Stock Ledger Entries. For each ledger entry, it fetches the full document details (e.g., Delivery Note, Purchase Receipt).",
-        "operationId": "get_batch_transactions_by_lot_id",
-        "parameters": [
-          {
-            "name": "lotid",
-            "in": "query",
-            "description": "The external FOMS Lot ID to search for.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "LOT-ABC-12345"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "batch": {
-                      "type": "object",
-                      "description": "The full Batch document details.",
-                      "example": {
-                        "name": "BAT00001",
-                        "batch_id": "LOT-ABC-12345",
-                        "item_code": "RM-NS-NSA",
-                        "expiry_date": "2026-12-31",
-                        "foms_lot_id": "LOT-ABC-12345"
-                      }
-                    },
-                    "transactions": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "description": "Full document details of associated transactions (e.g., Delivery Note, Stock Entry)."
-                      },
-                      "example": [
-                        {
-                          "name": "DN-00045",
-                          "doctype": "Delivery Note",
-                          "posting_date": "2026-01-20",
-                          "customer": "Customer A",
-                          "items": [
-                            {
-                              "item_code": "...",
-                              "batch_no": "BAT00001",
-                              "qty": 10
-                            }
-                          ]
-                        },
-                        {
-                          "name": "STE-00099",
-                          "doctype": "Stock Entry",
-                          "posting_date": "2026-01-15",
-                          "purpose": "Material Issue"
-                        }
-                      ]
-                    }
-                  }
-                },
-                "example": {
-                  "batch": {
-                    "name": "BAT00001",
-                    "foms_lot_id": "LOT-ABC-12345",
-                    "item_code": "RM-NS-NSA",
-                    "expiry_date": "2026-12-31"
-                  },
-                  "transactions": [
-                    {
-                      "name": "DN-00045",
-                      "doctype": "Delivery Note",
-                      "customer": "Customer A"
-                    }
-                  ]
-                }
-              }
-            }
+            "description": "Item, Batch, or Work Order not found"
           },
-          "404": {
-            "description": "Lot ID not found or no associated transactions found."
-          }
-        }
-      }
-    },
-    "/erpnext.controllers.erp_api.get_delivery_by_lotid": {
-      "get": {
-        "summary": "Retrieve Delivery Note details by Lot IDs",
-        "description": "Fetches Batch info and Delivery Notes. Note: 'lotid' parameter must be a JSON formatted string array.",
-        "operationId": "get_delivery_note_by_lot_id",
-        "parameters": [
-          {
-            "name": "lotid",
-            "in": "query",
-            "description": "A JSON string array of Lot IDs. Example: [\"LOT-001\", \"LOT-002\"]",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "example": "[\"25-1006\", \"25-0998\"]"
-          },
-          {
-            "name": "delivery_date",
-            "in": "query",
-            "description": "Target delivery date (YYYY-MM-DD).",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "date"
-            },
-            "example": "2026-01-26"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": {
-                    "type": "object",
-                    "properties": {
-                      "batch": {
-                        "type": "object"
-                      },
-                      "transactions": {
-                        "type": "array",
-                        "items": {
-                          "type": "object"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid JSON format in lotid parameter"
-          }
-        }
-      }
-    },
-    "/erpnext.controllers.erp_api.update_package_size": {
-      "post": {
-        "summary": "Update package size for work order",
-        "description": "Update the packaging size for a work order based on Lot ID. Changes the packet size, conversion factor, and required packaging item quantities.",
-        "operationId": "update package size",
-        "requestBody": {
-          "description": "Update package size",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "lotID": {
-                    "type": "string",
-                    "description": "The FOMS Lot ID of the work order"
-                  },
-                  "newSize": {
-                    "type": "number",
-                    "description": "New package size in grams"
-                  }
-                },
-                "example": {
-                  "lotID": "25-1097",
-                  "newSize": 240
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "example": {
-                    "message": true
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Work Order not found or Packaging Size not found"
-          }
-        }
-      }
-    },
-    "/erpnext.controllers.erp_api.get_item_order": {
-      "get": {
-        "summary": "Get Purchase Orders for Item",
-        "description": "Retrieve all in-progress Purchase Orders for a specific item and company. Returns order details including quantities, schedule dates, and status.",
-        "operationId": "get_item_order",
-        "parameters": [
-          {
-            "name": "item_code",
-            "in": "query",
-            "description": "The item code to search for in Purchase Orders",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "RM-NS-NPA"
-          },
-          {
-            "name": "company",
-            "in": "query",
-            "description": "The company name to filter Purchase Orders",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "Greenphyto Pte Ltd"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "type": "string",
-                        "description": "Purchase Order number"
-                      },
-                      "status": {
-                        "type": "string",
-                        "description": "Current status of the Purchase Order"
-                      },
-                      "transaction_date": {
-                        "type": "string",
-                        "format": "date",
-                        "description": "Date when the PO was created"
-                      },
-                      "required_date": {
-                        "type": "string",
-                        "format": "date",
-                        "description": "Expected delivery date for this item"
-                      },
-                      "item_code": {
-                        "type": "string",
-                        "description": "Item code"
-                      },
-                      "stock_qty": {
-                        "type": "number",
-                        "description": "Quantity in stock UOM"
-                      },
-                      "stock_uom": {
-                        "type": "string",
-                        "description": "Stock Unit of Measure"
-                      }
-                    }
-                  }
-                },
-                "example": [
-                  {
-                    "name": "PO-2026-00123",
-                    "status": "To Receive and Bill",
-                    "transaction_date": "2026-04-15",
-                    "required_date": "2026-05-10",
-                    "item_code": "RM-NS-NPA",
-                    "stock_qty": 100.0,
-                    "stock_uom": "Kg"
-                  },
-                  {
-                    "name": "PO-2026-00145",
-                    "status": "To Receive",
-                    "transaction_date": "2026-04-20",
-                    "required_date": "2026-05-15",
-                    "item_code": "RM-NS-NPA",
-                    "stock_qty": 50.0,
-                    "stock_uom": "Kg"
-                  }
-                ]
-              }
-            }
-          },
-          "404": {
-            "description": "Item not found"
-          }
-        }
-      }
-    },
-    "/erpnext.controllers.erp_api.receive_forecast": {
-      "post": {
-        "summary": "Receive Forecast Data",
-        "description": "Receive forecast data from external server and create/update Request documents. Maps custom names to ERP master data via Forecast Settings, then creates or updates Request documents with the mapped data. Duplicate detection: Request level (proposed_customer + delivery_date), Item level (item_code - qty replaced if exists).",
-        "operationId": "receive forecast",
-        "requestBody": {
-          "description": "Array of forecast items",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "data": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "veg_name": {
-                          "type": "string",
-                          "description": "Custom name for item (mapped via Forecast Settings)"
-                        },
-                        "packages": {
-                          "type": "number",
-                          "description": "Quantity (becomes qty in Request Items)"
-                        },
-                        "uom_in_kg": {
-                          "type": "number",
-                          "description": "Package weight in Kg to match in Packaging List Available"
-                        },
-                        "total_kg": {
-                          "type": "number",
-                          "description": "Ignored, weight calculated from packaging"
-                        },
-                        "forecast_date": {
-                          "type": "string",
-                          "format": "date",
-                          "description": "Delivery date (YYYY-MM-DD format)"
-                        },
-                        "customer": {
-                          "type": "string",
-                          "description": "Custom name for customer (mapped via Forecast Settings)"
-                        }
-                      },
-                      "required": ["veg_name", "packages", "uom_in_kg", "forecast_date", "customer"]
-                    }
-                  }
-                }
-              },
-              "example": {
-                "data": [
-                  {
-                    "veg_name": "Kai Lan",
-                    "packages": 100,
-                    "uom_in_kg": 0.2,
-                    "total_kg": 20,
-                    "forecast_date": "2026-08-20",
-                    "customer": "NTUC"
-                  },
-                  {
-                    "veg_name": "Mambo Lettuce",
-                    "packages": 50,
-                    "uom_in_kg": 0.10,
-                    "total_kg": 5,
-                    "forecast_date": "2026-08-20",
-                    "customer": "NTUC"
-                  }
-                ]
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "description": "success, partial, or error"
-                    },
-                    "request_name": {
-                      "type": "string",
-                      "description": "Request document name (REQ.XXXX/YYYY)"
-                    },
-                    "items_processed": {
-                      "type": "integer",
-                      "description": "Total items processed"
-                    },
-                    "items_success": {
-                      "type": "integer",
-                      "description": "Items successfully processed"
-                    },
-                    "items_failed": {
-                      "type": "integer",
-                      "description": "Items that failed processing"
-                    },
-                    "details": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "veg_name": {
-                            "type": "string"
-                          },
-                          "status": {
-                            "type": "string",
-                            "description": "success or failed"
-                          },
-                          "item_code": {
-                            "type": "string",
-                            "description": "Mapped item code (only on success)"
-                          },
-                          "error": {
-                            "type": "string",
-                            "description": "Error message (only on failure)"
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "example": {
-                  "status": "success",
-                  "request_name": "REQ.00001/.2026",
-                  "items_processed": 2,
-                  "items_success": 2,
-                  "items_failed": 0,
-                  "details": [
-                    {
-                      "veg_name": "Kai Lan",
-                      "status": "success",
-                      "item_code": "PR-AV-KL"
-                    },
-                    {
-                      "veg_name": "Red Spinach",
-                      "status": "success",
-                      "item_code": "PR-AV-RS"
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid payload or Forecast Settings not enabled",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "example": {
-                    "status": "error",
-                    "message": "Forecast Settings is not enabled"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/erpnext.controllers.erp_api.get_lead_time": {
-      "post": {
-        "summary": "Get Lead Time by Custom Names",
-        "description": "Get lead time for items by custom names from Forecast Settings. Maps custom names to item codes, then retrieves lead_time_days from Item master. Returns min/max lead time and detail per custom name.",
-        "operationId": "get lead time",
-        "requestBody": {
-          "description": "Array of veg names to lookup",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "veg_names": {
-                    "type": "string",
-                    "description": "JSON string array of veg names"
-                  }
-                }
-              },
-              "example": {
-                "veg_names": "[\"Kai Lan\", \"Komatsuna\"]"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "min_lead_time": {
-                      "type": "integer",
-                      "description": "The lowest lead time in days"
-                    },
-                    "max_lead_time": {
-                      "type": "integer",
-                      "description": "The highest lead time in days"
-                    },
-                    "detail": {
-                      "type": "object",
-                      "description": "Lead time per custom name (null if not found)"
-                    }
-                  }
-                },
-                "example": {
-                  "min_lead_time": 35,
-                  "max_lead_time": 48,
-                  "detail": {
-                    "Kai Lan": 35,
-                    "Komatsuna": 48
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Forecast Settings not enabled",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "example": {
-                    "status": "error",
-                    "message": "Forecast Settings is not enabled"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/erpnext.controllers.erp_api.get_item_price": {
-      "post": {
-        "summary": "Get Item Price",
-        "description": "Get item price from Item Price master. Use <b>is_selling</b> to choose between Standard Selling (1) or Standard Buying (0) price list.",
-        "operationId": "get item price",
-        "requestBody": {
-          "description": "Item price request",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "item_code": {
-                    "type": "string",
-                    "description": "Item code (mandatory)"
-                  },
-                  "is_selling": {
-                    "type": "integer",
-                    "enum": [0, 1],
-                    "description": "1 for selling price (Standard Selling), 0 for buying price (Standard Buying). Default: 1"
-                  },
-                  "customer": {
-                    "type": "string",
-                    "description": "Customer name or custom name from Forecast Settings (e.g. 'NTUC' maps to 'NTUC Fairprice Co-Operative Limited'). Optional."
-                  },
-                  "transaction_date": {
-                    "type": "string",
-                    "format": "date",
-                    "description": "Transaction date for price validity (optional)"
-                  }
-                },
-                "required": ["item_code"],
-                "example": {
-                  "item_code": "PR-AV-KL",
-                  "is_selling": 1,
-                  "customer": "NTUC Fairprice Co-Operative Limited",
-                  "transaction_date": "2026-07-06"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "item_code": {
-                      "type": "string"
-                    },
-                    "price_list_rate": {
-                      "type": "number"
-                    },
-                    "currency": {
-                      "type": "string"
-                    },
-                    "uom": {
-                      "type": "string"
-                    },
-                    "price_list_name": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "example": {
-                  "message": {
-                    "item_code": "PR-AV-KL",
-                    "price_list_rate": 12.5,
-                    "currency": "SGD",
-                    "uom": "Package",
-                    "price_list_name": "Standard Selling"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input or item not found"
-          }
-        }
-      }
-    },
-    "/erpnext.stock.get_item_details.get_conversion_factor": {
-      "post": {
-        "summary": "Get UOM Conversion Factor for Item",
-        "description": "Get the conversion factor between a specified UOM and the item's stock UOM.",
-        "operationId": "get conversion factor",
-        "requestBody": {
-          "description": "Conversion factor request",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "item_code": {
-                    "type": "string",
-                    "description": "Item code (mandatory)"
-                  },
-                  "uom": {
-                    "type": "string",
-                    "description": "Target UOM to convert (mandatory)"
-                  }
-                },
-                "required": ["item_code", "uom"],
-                "example": {
-                  "item_code": "PR-AV-KL",
-                  "uom": "Kg"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "conversion_factor": {
-                      "type": "number",
-                      "description": "Conversion factor from specified UOM to stock UOM"
-                    }
-                  }
-                },
-                "example": {
-                  "message": {
-                    "conversion_factor": 1.0
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input or UOM not found"
-          }
-        }
-      }
-    },
-    "/erpnext.controllers.erp_api.get_item_uom": {
-      "post": {
-        "summary": "Get Item UOM Details",
-        "description": "Get stock UOM and all available UOMs with conversion factors for an item. Supports custom names from Forecast Settings (e.g. 'Kai Lan' maps to 'PR-AV-KL').",
-        "operationId": "get item uom",
-        "requestBody": {
-          "description": "Item UOM request",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "item_code": {
-                    "type": "string",
-                    "description": "Item code or custom name from Forecast Settings (mandatory)"
-                  }
-                },
-                "required": ["item_code"],
-                "example": {
-                  "item_code": "Kai Lan"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "item_code": {
-                      "type": "string",
-                      "description": "Resolved item code"
-                    },
-                    "stock_uom": {
-                      "type": "string",
-                      "description": "Base stock UOM of the item"
-                    },
-                    "default_packaging": {
-                      "type": "string",
-                      "description": "Default packaging UOM for the item"
-                    },
-                    "uoms": {
-                      "type": "array",
-                      "description": "List of available UOMs with conversion factors",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "uom": {
-                            "type": "string"
-                          },
-                          "conversion_factor": {
-                            "type": "number"
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "example": {
-                  "message": {
-                    "item_code": "PR-AV-KL",
-                    "stock_uom": "Kg",
-                    "default_packaging": "Package (200g) - GP Type A",
-                    "uoms": [
-                      {
-                        "uom": "Kg",
-                        "conversion_factor": 1.0
-                      },
-                      {
-                        "uom": "Package (200g) - GP Type A",
-                        "conversion_factor": 0.2
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input or item not found"
+          "417": {
+            "description": "Validation error"
           }
         }
       }
