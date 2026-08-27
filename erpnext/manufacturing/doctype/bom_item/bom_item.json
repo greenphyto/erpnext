@@ -42,6 +42,7 @@
   "column_break_33",
   "sourced_by_supplier",
   "foms_id",
+  "lead_time_days",
   "progress",
   "batch_no",
   "work_order"
@@ -303,13 +304,20 @@
    "fieldtype": "Check",
    "label": "Do Not Explode"
   },
-  {
-   "fieldname": "foms_id",
-   "fieldtype": "Data",
-   "label": "FOMS ID",
-   "read_only": 1
-  },
-  {
+   {
+    "fieldname": "foms_id",
+    "fieldtype": "Data",
+    "label": "FOMS ID",
+    "read_only": 1
+   },
+   {
+    "default": "0",
+    "fetch_from": "item_code.lead_time_days",
+    "fieldname": "lead_time_days",
+    "fieldtype": "Int",
+    "label": "Lead Time in Days"
+   },
+   {
    "fieldname": "parent_item",
    "fieldtype": "Link",
    "label": "Parent Item",

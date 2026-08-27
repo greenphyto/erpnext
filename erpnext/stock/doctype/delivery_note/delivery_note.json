@@ -72,6 +72,8 @@
   "is_carton_order",
   "sec_break_48",
   "items",
+  "salad_detail_section",
+  "salad_items",
   "section_break_31",
   "total_qty",
   "total_net_weight",
@@ -1602,6 +1604,17 @@
    "fieldname": "organization_address",
    "fieldtype": "Small Text",
    "label": "Organization Address"
+  },
+  {
+   "fieldname": "salad_detail_section",
+   "fieldtype": "Section Break",
+   "label": "Salad Detail"
+  },
+  {
+   "fieldname": "salad_items",
+   "fieldtype": "HTML",
+   "label": "Salad Items",
+   "read_only": 1
   },
   {
    "depends_on": "eval:doc.is_replacement",
