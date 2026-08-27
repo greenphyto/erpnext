@@ -1855,6 +1855,7 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 					operation_map[operation_name] = op_row
 
 				if op.productRawMaterial:
+					total_ratio = sum(flt(r.get("qtyrm")) for r in op.productRawMaterial if cint(r.get("isRatio")))
 					for rm in op.productRawMaterial:
 						rm = frappe._dict(rm)
 						rm_item_name = frappe.get_value("Item", {"item_code":rm.rawMaterialRefNo, "is_stock_item":1})
@@ -1866,6 +1867,9 @@ def create_bom_products(log, product_id, submit=False, force_new=False):
 							qty = cint(rm.qtyrmInKg or rm.qtyrm )
 						else:
 							qty = rm.qtyrmInKg or rm.qtyrm 
+
+						if cint(rm.isRatio) and total_ratio:
+							qty = flt(qty) / flt(total_ratio)
 
 						if qty == 0 or math.isinf( flt(qty) ):
 							continue
