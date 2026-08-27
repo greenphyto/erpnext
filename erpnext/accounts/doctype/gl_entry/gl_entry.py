@@ -140,9 +140,9 @@ class GLEntry(Document):
 					if account_number:
 						against_account_number.append(account_number)
 
-		self.against_account = ", ".join( list(set(against_account)) )
-		self.against_party =  ", ".join( list(set(against_party)) )
-		self.against_account_number = ", ".join( list(set(against_account_number)) )
+		self.against_account = ", ".join( list(set(against_account))[:3] )
+		self.against_party =  ", ".join( list(set(against_party))[:3] )
+		self.against_account_number = ", ".join( list(set(against_account_number))[:3] )
 		self.account_number = frappe.get_value("Account", self.account, "account_number")
 
 	def set_default_cost_center_value(self):
