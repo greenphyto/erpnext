@@ -249,7 +249,7 @@ class BOM(WebsiteGenerator):
 		if not cint(frappe.get_value("Item", self.item, "salad_product")):
 			return
 
-		self.rm_cost_as_per = "Last Purchase Rate"
+		self.rm_cost_as_per = "Valuation Rate"
 		self.storage_duration = cint(self.storage_duration) or 14
 		for d in self.items:
 			d.do_not_explode = 1
