@@ -181,16 +181,19 @@ class SalesInvoice(SellingController):
 		except:
 			pass
 
+	def before_validate(self):
+		self.set_lazada_warehouse()
+
 	def set_lazada_warehouse(self):
-		if not self.update_stock or not self.delivery_note:
+		if not self.is_lazada_order:
 			return
 
-		if frappe.db.get_value("Delivery Note", self.delivery_note, "is_lazada_order"):
-			warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
-			if warehouse:
-				self.set_warehouse = warehouse
-				for item in self.items:
-					item.warehouse = warehouse
+		self.update_stock = 1
+		warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
+		if warehouse:
+			self.set_warehouse = warehouse
+			for item in self.items:
+				item.warehouse = warehouse
 
 	def validate_pledge(self):
 		if self.customer == "Donor":
