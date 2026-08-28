@@ -1071,6 +1071,11 @@ def make_sales_invoice(source_name, target_doc=None):
 			target.naming_series = 'CN.###./.YYYY'
 			# without linking for return_against
 
+		if source.is_lazada_order:
+			target.is_lazada_order = 1
+			target.update_stock = 1
+			target.set_warehouse = source.set_target_warehouse
+
 		target.run_method("set_missing_values")
 		target.run_method("set_po_nos")
 
@@ -1104,6 +1109,8 @@ def make_sales_invoice(source_name, target_doc=None):
 
 	def update_item(source_doc, target_doc, source_parent):
 		target_doc.qty = source_doc.qty
+		if source_parent.is_lazada_order:
+			target_doc.warehouse = source_parent.set_target_warehouse
 
 		if source_doc.serial_no and source_parent.per_billed > 0 and not source_parent.is_return:
 			target_doc.serial_no = get_delivery_note_serial_no(
@@ -1170,6 +1177,12 @@ def make_sales_invoice(source_name, target_doc=None):
 	)
 	if automatically_fetch_payment_terms:
 		doc.set_payment_schedule()
+
+	if frappe.get_cached_value("Delivery Note", source_name, "is_lazada_order"):
+		warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
+		if warehouse:
+			for item in doc.items:
+				item.warehouse = warehouse
 
 	doc.set_onload("ignore_price_list", True)
 
