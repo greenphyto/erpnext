@@ -944,6 +944,14 @@ def make_replacement_qty(source_name, target_doc=None):
 def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 	def postprocess(source, target):
 		set_missing_values(source, target)
+		if source.is_lazada_order:
+			target.is_lazada_order = 1
+			target.update_stock = 1
+			warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
+			if warehouse:
+				target.set_warehouse = warehouse
+				for item in target.items:
+					item.warehouse = warehouse
 		# Get the advance paid Journal Entries in Sales Invoice Advance
 		if target.get("allocate_advances_automatically"):
 			target.set_advances()

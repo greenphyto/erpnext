@@ -188,6 +188,7 @@ class SalesInvoice(SellingController):
 		if frappe.db.get_value("Delivery Note", self.delivery_note, "is_lazada_order"):
 			warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
 			if warehouse:
+				self.set_warehouse = warehouse
 				for item in self.items:
 					item.warehouse = warehouse
 
