@@ -25,9 +25,9 @@
   "po_no",
   "po_date",
   "pending_po",
-   "is_pledge",
-   "is_lazada_order",
-   "company",
+  "is_pledge",
+  "is_lazada_order",
+  "company",
   "skip_delivery_note",
   "amended_from",
   "donor_information_section",
@@ -224,7 +224,7 @@
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "SO.###./.YYYY\nPLN.###./.YYYY",
+   "options": "SO.###./.YYYY\nPLN.###./.YYYY\nLAZ.###./.YYYY",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1752,21 +1752,21 @@
    "fieldtype": "Data",
    "label": "Donor Name"
   },
-   {
-    "default": "0",
-    "fieldname": "is_pledge",
-    "fieldtype": "Check",
-    "label": "For Pledge"
-   },
-   {
-    "default": "0",
-    "fieldname": "is_lazada_order",
-    "fieldtype": "Check",
-    "label": "Is Lazada Order"
-   },
-   {
-    "depends_on": "eval:doc.is_pledge",
-    "fieldname": "donor_information_section",
+  {
+   "default": "0",
+   "fieldname": "is_pledge",
+   "fieldtype": "Check",
+   "label": "For Pledge"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_lazada_order",
+   "fieldtype": "Check",
+   "label": "Is Lazada Order"
+  },
+  {
+   "depends_on": "eval:doc.is_pledge",
+   "fieldname": "donor_information_section",
    "fieldtype": "Section Break",
    "label": "Donor Information"
   },
@@ -1820,7 +1820,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-08-12 15:56:58.179428",
+ "modified": "2026-08-28 12:16:09.352002",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order",
