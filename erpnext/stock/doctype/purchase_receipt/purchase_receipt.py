@@ -315,7 +315,7 @@ class PurchaseReceipt(BuyingController):
 			if key not in item_list:
 				item_list.append(key)
 		
-		update_BOM_rate(item_list)
+		update_BOM_rate(item_list, self.company)
 
 	def check_next_docstatus(self):
 		submit_rv = frappe.db.sql(
@@ -1222,20 +1222,24 @@ def get_item_account_wise_additional_cost(purchase_document):
 def on_doctype_update():
 	frappe.db.add_index("Purchase Receipt", ["supplier", "is_return", "return_against"])
 
-def update_BOM_rate(item_list):
+def update_BOM_rate(item_list, company):
 	bom_list = frappe.db.sql("""
 		SELECT 
 			i.item_code, b.name, i.uom, i.qty, i.rate
 		FROM
 			`tabBOM Item` i
+				INNER JOIN
+			`tabItem` it ON it.name = i.item_code
 				LEFT JOIN
 			`tabBOM` b ON b.name = i.parent
 		WHERE
 			b.is_active = 1 AND b.is_default = 1
 				AND b.docstatus = 1
+				AND b.company = %(company)s
+				AND it.item_group = 'Raw Material'
 				AND i.item_code IN %(item_list)s
 		GROUP BY b.name
-	""", {"item_list":item_list}, as_dict=1, debug=0)
+	""", {"item_list": item_list, "company": company}, as_dict=1, debug=0)
 
 	for b in bom_list:
 		bom = frappe.get_doc("BOM", b.name)
