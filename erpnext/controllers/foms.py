@@ -1751,6 +1751,7 @@ def create_products(log):
 			doc.foms_product_id = log.id
 
 	doc.item_group = types
+	doc.salad_product = cint(log.isSaladProduct)
 	doc.shelf_life_in_days = log.defaultExpiryDays
 	if not doc.shelf_life_in_days:
 		doc.shelf_life_in_days = get_product_storage_duration(log.id)
