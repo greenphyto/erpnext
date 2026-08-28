@@ -1179,9 +1179,10 @@ def make_sales_invoice(source_name, target_doc=None):
 	if automatically_fetch_payment_terms:
 		doc.set_payment_schedule()
 
-	if frappe.get_cached_value("Delivery Note", source_name, "is_lazada_order"):
-		warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
+	if doc.is_lazada_order:
+		warehouse = doc.set_target_warehouse
 		if warehouse:
+			doc.set_warehouse = warehouse
 			for item in doc.items:
 				item.warehouse = warehouse
 
