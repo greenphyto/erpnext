@@ -140,9 +140,10 @@ frappe.ui.form.on("Sales Order", {
 
 	is_lazada_order: function(frm){
 		if (cint(frm.doc.is_lazada_order)==0) return;
+		frm.set_value("naming_series", "LAZ.###./.YYYY");
 		frappe.db.get_single_value("Lazada Settings", "lazada_customer").then(r=>{
-			if (r.message) {
-				frm.set_value("customer", r.message);
+			if (r) {
+				frm.set_value("customer", r);
 			}
 		});
 	},
