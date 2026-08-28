@@ -19,7 +19,7 @@ from erpnext.accounts.doctype.sales_invoice.sales_invoice import (
 	update_linked_doc,
 	validate_inter_company_party,
 )
-from erpnext.accounts.party import get_party_account
+from erpnext.accounts.party import get_party_account, get_party_shipping_address
 from erpnext.controllers.selling_controller import SellingController
 from erpnext.manufacturing.doctype.production_plan.production_plan import (
 	get_items_for_material_requests,
@@ -97,6 +97,38 @@ class SalesOrder(SellingController):
 		if warehouse:
 			for item in self.items:
 				item.warehouse = warehouse
+
+		if not self.shipping_address_name:
+			address = get_customer_shipping_address(self.customer)
+			if not address:
+				billing_address = frappe.db.sql(
+					"""
+						select ta.name
+						from `tabDynamic Link` dl
+						join `tabAddress` ta on ta.name = dl.parent
+						where dl.link_doctype = 'Customer'
+							and dl.link_name = %s
+							and dl.parenttype = 'Address'
+							and ifnull(ta.disabled, 0) = 0
+							and ta.address_type = 'Billing'
+						order by ta.is_primary_address desc, ta.name
+						limit 1
+					""",
+					self.customer,
+					as_dict=True,
+				)
+				if billing_address:
+					address = get_customer_shipping_address(self.customer, billing_address[0].name)
+
+			address_name = (
+				address.get("name")
+				or get_party_shipping_address("Customer", self.customer)
+				or frappe.db.get_value("Customer", self.customer, "customer_primary_address")
+				or frappe.db.get_value("Customer", self.customer, "primary_address")
+			)
+			self.shipping_address_name = address_name
+			if address.get("address"):
+				self.shipping_address = address.get("address")
 
 	def validate_packaging(self):
 		for d in self.get("items"):
@@ -814,7 +846,10 @@ def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 		target.shipping_address_name = source.shipping_address_name
 		if not target.shipping_address_name:
 			cust_address = get_customer_shipping_address(source.customer)
-			target.update({"shipping_address_name":cust_address.get("name")})
+			target.update({
+				"shipping_address_name": cust_address.get("name"),
+				"shipping_address": cust_address.get("address"),
+			})
 
 		if target.company_address:
 			target.update(get_fetch_values("Delivery Note", "company_address", target.company_address))
