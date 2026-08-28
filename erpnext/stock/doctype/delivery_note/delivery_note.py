@@ -136,6 +136,17 @@ class DeliveryNote(SellingController):
 		if self.is_return:
 			self.naming_series = "DO-RET-.YYYY.-.###"
 
+	def before_validate(self):
+		if self.is_lazada_order:
+			self.naming_series = "LAZ-.YYYY.-.#####"
+			self.customer = frappe.db.get_single_value("Lazada Settings", "lazada_customer")
+			warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
+			if warehouse:
+				self.set_target_warehouse = warehouse
+				for item in self.items:
+					item.warehouse = self.set_warehouse
+					item.target_warehouse = warehouse
+
 	def before_print(self, settings=None):
 		def toggle_print_hide(meta, fieldname):
 			df = meta.get_field(fieldname)

@@ -144,6 +144,17 @@ frappe.ui.form.on("Delivery Note", {
 		});
 	},
 
+	is_lazada_order: function(frm){
+		if (cint(frm.doc.is_lazada_order)==0) return;
+		frm.set_value("naming_series", "LAZ-.YYYY.-.#####");
+		frappe.db.get_single_value("Lazada Settings", "lazada_customer").then(customer=>{
+			if (customer) frm.set_value("customer", customer);
+		});
+		frappe.db.get_single_value("Lazada Settings", "default_warehouse").then(warehouse=>{
+			if (warehouse) frm.set_value("set_target_warehouse", warehouse);
+		});
+	},
+
 	is_pledge: function(frm){
 		if (cint(frm.doc.is_pledge)==0) return;
 		frm.set_value("naming_series", 'PON-.YYYY.-.#####');

@@ -1909,6 +1909,9 @@ class AccountsController(TransactionBase):
 		else:
 			return False
 
+		if self.doctype == "Delivery Note" and self.get("is_lazada_order"):
+			return any(item.get("target_warehouse") for item in self.get("items"))
+
 		if self.get(internal_party_field) and (self.represents_company == self.company):
 			return True
 

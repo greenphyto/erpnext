@@ -90,6 +90,16 @@ class SalesOrder(SellingController):
 
 	def before_validate(self):
 		self.validate_packaging()
+		self.set_lazada_warehouse()
+
+	def set_lazada_warehouse(self):
+		if not self.is_lazada_order:
+			return
+
+		warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
+		if warehouse:
+			for item in self.items:
+				item.warehouse = warehouse
 
 	def validate_packaging(self):
 		for d in self.get("items"):
@@ -788,9 +798,20 @@ def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 		if source.is_pledge:
 			target.naming_series = 'PON-.YYYY.-.#####'
 
+		if source.is_lazada_order:
+			target.is_lazada_order = 1
+			target.naming_series = 'LAZ-.YYYY.-.#####'
+			target.customer = frappe.db.get_single_value("Lazada Settings", "lazada_customer")
+			target.set_warehouse = source.set_warehouse
+			target.set_target_warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
+
 	def update_item(source, target, source_parent):
-		warehouse = frappe.get_value("Company", source_parent.company, "default_warehouse_for_delivery")
+		warehouse = source_parent.set_warehouse if source_parent.is_lazada_order else frappe.get_value(
+			"Company", source_parent.company, "default_warehouse_for_delivery"
+		)
 		target.warehouse = warehouse
+		if source_parent.is_lazada_order:
+			target.target_warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
 		target.base_amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.base_rate)
 		target.amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.rate)
 		target.qty = flt(source.qty) - flt(source.delivered_qty)
