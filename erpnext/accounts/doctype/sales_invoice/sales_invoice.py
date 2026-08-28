@@ -178,11 +178,26 @@ class SalesInvoice(SellingController):
 			validate_loyalty_points(self, self.loyalty_points)
 
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
+		self.set_lazada_warehouse()
 		try:
 			self.set_other_reff()
 			self.link_internal_company()
 		except:
 			pass
+
+	def before_validate(self):
+		self.set_lazada_warehouse()
+
+	def set_lazada_warehouse(self):
+		if not self.is_lazada_order:
+			return
+
+		self.update_stock = 1
+		warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
+		if warehouse:
+			self.set_warehouse = warehouse
+			for item in self.items:
+				item.warehouse = warehouse
 
 	def validate_pledge(self):
 		if self.customer == "Donor":
@@ -1004,9 +1019,15 @@ class SalesInvoice(SellingController):
 
 	def validate_delivery_note(self):
 		for d in self.get("items"):
-			if d.delivery_note:
+			if not d.delivery_note:
+				continue
+
+			dn_warehouse = frappe.db.get_value("Delivery Note", d.delivery_note, "set_warehouse")
+			if self.set_warehouse and self.set_warehouse == dn_warehouse:
 				msgprint(
-					_("Stock cannot be updated against Delivery Note {0}").format(d.delivery_note),
+					_("Stock cannot be updated against Delivery Note {0} with same warehouse").format(
+						d.delivery_note
+					),
 					raise_exception=1,
 				)
 

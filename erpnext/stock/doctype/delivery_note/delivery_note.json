@@ -40,6 +40,7 @@
   "is_production",
   "is_pledge",
   "non_stock_item",
+  "is_lazada_order",
   "replacement_reason_section",
   "replacement_reason",
   "column_break_29",
@@ -226,7 +227,7 @@
    "label": "Series",
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "DO-.YYYY.-.#####\nDO-RPL-.YYYY.-.#####\nGPO-.YYYY.-.###\nDON-.YYYY.-.###\nDO-RET-.YYYY.-.###\nGPM-.YYYY.-.#####\nGPP-.YYYY.-.#####\nPON-.YYYY.-.#####",
+   "options": "DO-.YYYY.-.#####\nDO-RPL-.YYYY.-.#####\nGPO-.YYYY.-.###\nDON-.YYYY.-.###\nDO-RET-.YYYY.-.###\nGPM-.YYYY.-.#####\nGPP-.YYYY.-.#####\nPON-.YYYY.-.#####\nLAZ-.YYYY.-.#####",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -1325,7 +1326,7 @@
    "read_only": 1
   },
   {
-   "depends_on": "eval: doc.is_internal_customer",
+   "depends_on": "eval: doc.is_internal_customer || doc.is_lazada_order",
    "fieldname": "set_target_warehouse",
    "fieldtype": "Link",
    "in_standard_filter": 1,
@@ -1750,13 +1751,19 @@
    "fieldname": "non_stock_item",
    "fieldtype": "Check",
    "label": "For Non-stock Item"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_lazada_order",
+   "fieldtype": "Check",
+   "label": "Is Lazada Order"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-20 16:28:29.563449",
+ "modified": "2026-08-28 14:58:35.913505",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note",
