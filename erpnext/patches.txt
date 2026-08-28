@@ -332,5 +332,4 @@ erpnext.patches.gp.add_bank_standart_sg
 erpnext.patches.gp.add_remitance_purpose
 erpnext.patches.gp.set_default_cost_center_in_account
 erpnext.patches.v14_0.add_mixing_operation
-erpnext.patches.gp.set_batch_status
 erpnext.patches.gp.create_lazada_customer
