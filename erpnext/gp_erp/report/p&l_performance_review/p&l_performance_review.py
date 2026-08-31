@@ -317,7 +317,7 @@ def restructure_for_display(income, expense, filters, period_list, month_key):
 			continue
 		if row.get("account_name") and "total" in (row.get("account_name") or "").lower():
 			continue
-		if row.get("is_group") and row.get("indent", 0) == 0:
+		if row.get("is_group"):
 			continue
 		cat = _classify_income(row)
 		if cat == "direct":
@@ -330,7 +330,7 @@ def restructure_for_display(income, expense, filters, period_list, month_key):
 			continue
 		if row.get("account_name") and "total" in (row.get("account_name") or "").lower():
 			continue
-		if row.get("is_group") and row.get("indent", 0) == 0:
+		if row.get("is_group"):
 			continue
 		cat = _classify_expense(row)
 		if cat == "cogs":
@@ -444,7 +444,6 @@ def restructure_for_display(income, expense, filters, period_list, month_key):
 	data.append({})
 
 	cogs_cos_display = _sum_rows(cogs_rows + cos_rows)
-	_negate_for_display(cogs_cos_display)
 	data.append(_make_row("COGS / Cost of Sales", cogs_cos_display, bold=True))
 
 	cogs_display = _sum_rows(cogs_rows)
@@ -489,17 +488,14 @@ def restructure_for_display(income, expense, filters, period_list, month_key):
 	for acc_num, label in OPEX_SUB_GROUPS:
 		sub_rows = opex_grouped.get(acc_num, [])
 		sub_total = _sum_rows(sub_rows)
-		_negate_for_display(sub_total)
 		data.append(_make_row(label, sub_total))
 		for r in sub_rows:
 			if not r.get("is_group"):
 				_label_row(r, show_num)
-				_negate_for_display_row(r)
 				r["indent"] = 2
 				data.append(r)
 
 	opex_display = dict(opex_total)
-	_negate_for_display(opex_display)
 	data.append(_make_row("Total Operating Expenses", opex_display, bold=True))
 
 	data.append({})
@@ -511,7 +507,6 @@ def restructure_for_display(income, expense, filters, period_list, month_key):
 	data.append({})
 
 	dep_display = dict(depreciation_total)
-	_negate_for_display(dep_display)
 	data.append(_make_row("Depreciation", dep_display, bold=True))
 
 	data.append({})
@@ -523,7 +518,6 @@ def restructure_for_display(income, expense, filters, period_list, month_key):
 	data.append({})
 
 	fin_display = dict(finance_total)
-	_negate_for_display(fin_display)
 	data.append(_make_row("Finance Expenses", fin_display, bold=True))
 
 	data.append({})
@@ -533,7 +527,6 @@ def restructure_for_display(income, expense, filters, period_list, month_key):
 	data.append({})
 
 	tax_display = dict(tax_total)
-	_negate_for_display(tax_display)
 	data.append(_make_row("Taxation", tax_display, bold=True))
 
 	data.append({})
