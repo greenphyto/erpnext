@@ -2870,7 +2870,7 @@ def submit_salad_finished_goods(data):
 	batch_doc.qty_to_produce = qty
 	batch_doc.reference_doctype = "Stock Entry"
 	batch_doc.expiry_date = expiry_date
-	batch_doc.foms_id = salad_lot_id
+	batch_doc.foms_lot_id = salad_lot_id
 	batch_doc.flags.ignore_permissions = 1
 	batch_doc.insert()
 	finished_row.batch_no = batch_doc.name
@@ -2900,21 +2900,4 @@ def submit_salad_finished_goods(data):
 
 
 def get_batch_from_lot_id(lot_id):
-	wo_name = frappe.db.get_value("Work Order", {"foms_lot_name": lot_id}, "name")
-	if not wo_name:
-		return None
-
-	se_name = frappe.db.get_value("Stock Entry", {
-		"work_order": wo_name,
-		"purpose": "Manufacture",
-		"docstatus": 1
-	}, "name")
-	if not se_name:
-		return None
-
-	batch_no = frappe.db.get_value("Stock Entry Detail", {
-		"parent": se_name,
-		"is_finished_item": 1
-	}, "batch_no")
-
-	return batch_no
+	return frappe.db.get_value("Batch", {"foms_lot_id": lot_id}, "name")
