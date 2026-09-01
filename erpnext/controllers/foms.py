@@ -2428,10 +2428,11 @@ def submit_salad_finished_goods(data):
 		"Stock Entry",
 		se.name,
 		data,
-		endpoint="submit_salad_finished_goods",
 	)
 	map_doc.doc_type = "Stock Entry"
 	map_doc.doc_name = se.name
+	if map_doc.meta.get_field("endpoint"):
+		map_doc.endpoint = "submit_salad_finished_goods"
 	map_doc.save()
 
 	for item in se.items:
