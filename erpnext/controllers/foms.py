@@ -2329,7 +2329,7 @@ def submit_salad_finished_goods(data):
 	if not children:
 		frappe.throw(_("Missing children materials"), frappe.ValidationError)
 
-	item_data = frappe.get_value("Item", salad_item_code, ["name", "salad_product", "default_bom", "has_batch_no"], as_dict=True)
+	item_data = frappe.get_value("Item", salad_item_code, ["name", "salad_product", "default_bom", "default_packaging", "has_batch_no"], as_dict=True)
 	if not item_data:
 		frappe.throw(_(f"Item {salad_item_code} not found"), frappe.DoesNotExistError)
 	if not cint(item_data.salad_product):
@@ -2344,10 +2344,37 @@ def submit_salad_finished_goods(data):
 	se.stock_entry_type_view = "Repack"
 	se.naming_series = frappe.get_value("Stock Entry Type", "Repack", "series") or "STE-RPK-.YYYY.-"
 	se.purpose = "Repack"
-	se.from_bom = 0
+	se.bom_no = item_data.default_bom
+	se.from_bom = 1
 	se.fg_completed_qty = qty
 	se.to_warehouse = fg_warehouse
 	se.fom_lot__id = salad_lot_id
+
+	packaging = frappe.db.get_value(
+		"Packaging List Available",
+		{"parent": salad_item_code, "parentfield": "packaging", "default": 1},
+		["packaging", "package_item"],
+		as_dict=True,
+	)
+	pack_item = (packaging and packaging.package_item) or frappe.db.get_single_value(
+		"Manufacturing Settings", "default_packaging"
+	)
+	packaging_uom = item_data.default_packaging
+	packaging_size = frappe.db.get_value(
+		"UOM Conversion Detail",
+		{"parent": salad_item_code, "uom": packaging_uom},
+		"conversion_factor",
+	)
+	if pack_item and packaging_uom and flt(packaging_size):
+		pack_qty = flt(qty) * 1000 / flt(packaging_size)
+		pack_batch = get_available_batch(pack_item, pack_qty)
+		if pack_batch:
+			pack_row = se.append("items")
+			pack_row.item_code = pack_item
+			pack_row.qty = pack_qty
+			pack_row.uom = frappe.get_value("Item", pack_item, "stock_uom")
+			pack_row.s_warehouse = pack_batch[0].get("warehouse")
+			pack_row.batch_no = pack_batch[0].get("batch_id")
 
 	for child in children:
 		child = frappe._dict(child)
