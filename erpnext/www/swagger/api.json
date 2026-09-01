@@ -116,74 +116,37 @@
                     "type": "object"
                   }
                 },
-                "example": {
-                  "data": {
-                    "productID": "37",
-                    "productVersionName": "V1.6",
-                    "leadTimeDays": 30,
-                    "process": [
-                      {
-                        "processName": "Seeding",
-                        "productRawMaterial": [
-                          {
-                            "rawMaterialId": 38,
-                            "rawMaterialRefNo": "RM-IN-WW",
-                            "rawMaterialName": "Water",
-                            "uomrm": "L",
-                            "uomProduct": "Per Tray",
-                            "qtyrm": 36.0
-                          },
-                          {
-                            "rawMaterialId": 39,
-                            "rawMaterialRefNo": "RM-MS-SP",
-                            "rawMaterialName": "Sponge",
-                            "uomrm": "unit",
-                            "uomProduct": "Per Tray",
-                            "qtyrm": 180.0
-                          },
-                          {
-                            "rawMaterialId": 40,
-                            "rawMaterialRefNo": "RM-NS-NSA",
-                            "rawMaterialName": "Nutrient A",
-                            "uomrm": "ml",
-                            "uomProduct": "Per Tray",
-                            "qtyrm": 180.0
-                          },
-                          {
-                            "rawMaterialId": 41,
-                            "rawMaterialRefNo": "RM-NS-NSB",
-                            "rawMaterialName": "Nutrient B",
-                            "uomrm": "ml",
-                            "uomProduct": "Per Tray",
-                            "qtyrm": 180.0
-                          },
-                          {
-                            "rawMaterialId": 57,
-                            "rawMaterialRefNo": "RM-SD-SPC",
-                            "rawMaterialName": "Small Size Pak Choy Seeds",
-                            "uomrm": "g",
-                            "uomProduct": "Per Tray",
-                            "qtyrm": 0.75
-                          }
-                        ],
-                        "productTask": [
-                          {
-                            "taskID": "T-0289",
-                            "taskSequence": 1,
-                            "taskName": "Check in RM & Equipment",
-                            "details": "Check in all the required RM",
-                            "taskType": "Check in Raw Materials/Equipment"
-                          },
-                          {
-                            "taskID": "T-0290",
-                            "taskSequence": 2,
-                            "taskName": "Get location from ASRS",
-                            "details": "Location obtained from ASRS",
-                            "taskType": "ASRS Storage"
-                          }
+                "examples": {
+                  "normal_product": {
+                    "summary": "Normal product BOM (default)",
+                    "description": "Standard BOM creation for non-salad products. Operations are mapped to Seeding/Transplanting/Harvesting. Optionally set LeadTimeDays to update item lead time (in days).",
+                    "value": {
+                      "data": {
+                        "productID": "37",
+                        "productVersionName": "V2.0",
+                        "LeadTimeDays": 7,
+                        "process": [
+                          {"processName": "Seeding", "productRawMaterial": [{"rawMaterialId": 10, "rawMaterialRefNo": "RM-NS-NSA", "rawMaterialName": "Seed A", "uomrm": "g", "uomProduct": "Kg", "qtyrm": 5}]},
+                          {"processName": "Harvesting", "productRawMaterial": [{"rawMaterialId": 20, "rawMaterialRefNo": "RM-PK-BAG", "rawMaterialName": "Packaging Bag", "uomrm": "unit", "uomProduct": "Unit", "qtyrm": 1}]}
                         ]
                       }
-                    ]
+                    }
+                  },
+                  "salad_product_with_ratio": {
+                    "summary": "Salad/mixing product BOM (with isRatio)",
+                    "description": "BOM for salad product (item.salad_product=1). Uses processName directly (e.g. 'Mixing'). When isRatio=1, qtyrm is percentage of 1kg parent. Example: qtyrm=50 with uomrm='g' means 50% of 1kg = 500g. Optionally set LeadTimeDays to update item lead time.",
+                    "value": {
+                      "data": {
+                        "productID": "54",
+                        "productVersionName": "V1.6",
+                        "LeadTimeDays": 3,
+                        "process": [{"processName": "Mixing", "productRawMaterial": [
+                          {"rawMaterialId": 37, "rawMaterialRefNo": "PR-AV-KL", "rawMaterialName": "F1 Hybrid Kailan 1", "uomrm": "g", "uomProduct": "Kg", "qtyrm": 50, "isRatio": 1},
+                          {"rawMaterialId": 52, "rawMaterialRefNo": "PR-AV-DRE", "rawMaterialName": "Komatsuna Dream", "uomrm": "g", "uomProduct": "Kg", "qtyrm": 30, "isRatio": 1},
+                          {"rawMaterialId": 38, "rawMaterialRefNo": "PR-AV-CS", "rawMaterialName": "F1 Hong Kong Choy Sum", "uomrm": "g", "uomProduct": "Kg", "qtyrm": 20, "isRatio": 1}
+                        ]}]
+                      }
+                    }
                   }
                 }
               }
@@ -1374,6 +1337,83 @@
           "404": {
             "description": "Invalid input"
           }
+        }
+      }
+    },
+    "/erpnext.controllers.foms.submit_salad_finished_goods": {
+      "post": {
+        "summary": "Submit salad finished goods (Repack)",
+        "description": "FOMS sends the salad product lot_id and its child material lot_ids/batch_nos. ERP creates a Repack Stock Entry with auto-generated batch (following Item naming convention), stores lot_id in foms_id field on both Stock Entry and Batch, marks child batches as is_salad_batch=1. Children can use either 'lot_id' (recommended) or 'batch_no'.",
+        "operationId": "submit salad finished goods",
+        "requestBody": {
+          "description": "Salad finished goods with child material batches",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "examples": {
+                  "using_lot_id": {
+                    "summary": "Using lot_id for children (recommended)",
+                    "description": "FOMS sends lot_id for salad and each child. ERP auto-generates batch name and resolves child batches from Work Orders.",
+                    "value": {
+                      "data": {
+                        "salad_item_code": "PR-MX-MES",
+                        "lot_id": "26-0501",
+                        "qty": 1,
+                        "expiry_date": "2026-09-01",
+                        "warehouse": "",
+                        "children": [
+                          {"item_code": "PR-AV-KL", "lot_id": "26-0101", "qty": 0.5, "uom": "kg", "warehouse": ""},
+                          {"item_code": "PR-AV-DRE", "lot_id": "26-0102", "qty": 0.3, "uom": "kg", "warehouse": ""},
+                          {"item_code": "PR-AV-CS", "lot_id": "26-0103", "qty": 0.2, "uom": "kg", "warehouse": ""}
+                        ]
+                      }
+                    }
+                  },
+                  "using_batch_no": {
+                    "summary": "Using batch_no for children (direct)",
+                    "description": "FOMS sends batch_no directly for children if already known.",
+                    "value": {
+                      "data": {
+                        "salad_item_code": "PR-MX-MES",
+                        "lot_id": "26-0501",
+                        "qty": 1,
+                        "expiry_date": "2026-09-01",
+                        "warehouse": "",
+                        "children": [
+                          {"item_code": "PR-AV-KL", "batch_no": "PR-AV-KL-BN00359", "qty": 0.5, "uom": "kg", "warehouse": ""},
+                          {"item_code": "PR-AV-DRE", "batch_no": "PR-AV-DRE-BN00313", "qty": 0.3, "uom": "kg", "warehouse": ""},
+                          {"item_code": "PR-AV-CS", "batch_no": "PR-AV-CS-BN00001", "qty": 0.2, "uom": "kg", "warehouse": ""}
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {"stock_entry": "RE-00003/2026", "batch": "PR-MX-MES-BN00001"}
+                  }
+                }
+              }
+            }
+          },
+          "404": {"description": "Item, Batch, or Work Order not found"},
+          "417": {"description": "Validation error"}
         }
       }
     },
