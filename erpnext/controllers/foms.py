@@ -1515,7 +1515,7 @@ def _update_foms_forecast(log, api=None):
 			if not product_id:
 				continue
 
-			weight_order = use_weight_orderp
+			weight_order = use_weight_order
 				
 			stock_uom = temp.stock_uom
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
