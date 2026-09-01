@@ -2879,6 +2879,16 @@ def submit_salad_finished_goods(data):
 	se.save()
 	se.submit()
 
+	map_doc = create_foms_data(
+		"Stock Entry",
+		se.name,
+		data,
+		endpoint="submit_salad_finished_goods",
+	)
+	map_doc.doc_type = "Stock Entry"
+	map_doc.doc_name = se.name
+	map_doc.save()
+
 	for item in se.items:
 		if not item.is_finished_item and item.batch_no:
 			if frappe.db.exists("Batch", item.batch_no):
