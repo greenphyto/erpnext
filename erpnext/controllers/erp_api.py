@@ -222,6 +222,11 @@ def create_bom(data):
 	save_log("BOM", data_name, {"data":data}, endpoint="create_bom")
 	result = create_bom_products(data, product_id, submit=submit)
 	update_log("BOM", data_name, "BOM", result)
+
+	lead_time_days = flt(data.get("LeadTimeDays"))
+	if item and lead_time_days:
+		frappe.db.set_value("Item", item, "lead_time_days", cint(lead_time_days))
+
 	return {"ERPBomId":result}
 
 @frappe.whitelist()
