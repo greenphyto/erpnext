@@ -1509,18 +1509,13 @@ def _update_foms_forecast(log, api=None):
 		proposed_customer = cint(frappe.get_value("Customer", doc.get("proposed_customer"), "foms_id")) or 0
 		products = []
 		
-		for d in doc.get("items") + doc.get("salad_items"):
-			if d.get("is_salad_product"):
-				continue
-			
+		for d in doc.get("items"):
 			temp = frappe.get_value("Item", d.item_code, ["foms_product_id", "stock_uom"], as_dict=1)
 			product_id = temp.foms_product_id
 			if not product_id:
 				continue
 
-			weight_order = False
-			if d.get("is_salad_product") or use_weight_order:
-				weight_order = True
+			weight_order = use_weight_orderp
 				
 			stock_uom = temp.stock_uom
 			package_id = frappe.get_value("Packaging", d.uom, "foms_id")
