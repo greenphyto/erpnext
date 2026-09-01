@@ -38,6 +38,7 @@ def execute(filters=None):
 								item_map[item]["description"],
 								wh,
 								batch,
+								qty_dict.foms_lot_id,
 								flt(qty_dict.opening_qty, float_precision),
 								flt(qty_dict.in_qty, float_precision),
 								flt(qty_dict.out_qty, float_precision),
@@ -57,7 +58,8 @@ def get_columns(filters):
 		+ [_("Item Name") + "::150"]
 		+ [_("Description") + "::150"]
 		+ [_("Warehouse") + ":Link/Warehouse:100"]
-		+ [_("Batch") + ":Link/Batch:100"]
+		+ [_("Batch") + ":Link/Batch:180"]
+		+ [_("FOMS ID") + "::100"]
 		+ [_("Opening Qty") + ":Float:90"]
 		+ [_("In Qty") + ":Float:80"]
 		+ [_("Out Qty") + ":Float:80"]
@@ -76,12 +78,16 @@ def get_stock_ledger_entries(filters):
 		frappe.throw(_("'To Date' is required"))
 
 	sle = frappe.qb.DocType("Stock Ledger Entry")
+	batch = frappe.qb.DocType("Batch")
 	query = (
 		frappe.qb.from_(sle)
+		.left_join(batch)
+		.on(sle.batch_no == batch.name)
 		.select(
 			sle.item_code,
 			sle.warehouse,
 			sle.batch_no,
+			batch.foms_lot_id,
 			sle.posting_date,
 			fn.Sum(sle.actual_qty).as_("actual_qty"),
 		)
@@ -91,7 +97,7 @@ def get_stock_ledger_entries(filters):
 			& (fn.IfNull(sle.batch_no, "") != "")
 			& (sle.posting_date <= filters["to_date"])
 		)
-		.groupby(sle.voucher_no, sle.batch_no, sle.item_code, sle.warehouse)
+		.groupby(sle.voucher_no, sle.batch_no, batch.foms_lot_id, sle.item_code, sle.warehouse)
 		.orderby(sle.item_code, sle.warehouse)
 	)
 
@@ -112,7 +118,7 @@ def get_item_warehouse_batch_map(filters, float_precision):
 
 	for d in sle:
 		iwb_map.setdefault(d.item_code, {}).setdefault(d.warehouse, {}).setdefault(
-			d.batch_no, frappe._dict({"opening_qty": 0.0, "in_qty": 0.0, "out_qty": 0.0, "bal_qty": 0.0})
+			d.batch_no, frappe._dict({"foms_lot_id": d.foms_lot_id or "", "opening_qty": 0.0, "in_qty": 0.0, "out_qty": 0.0, "bal_qty": 0.0})
 		)
 		qty_dict = iwb_map[d.item_code][d.warehouse][d.batch_no]
 		if d.posting_date < from_date:
