@@ -359,6 +359,7 @@ def restructure_for_display(income, expense, filters, period_list, month_key):
 		result = {}
 		for k in value_keys:
 			result[k] = sum(flt(r.get(k, 0)) for r in rows)
+		_recalc_variances(result, month_key)
 		return result
 
 	revenue_total = _sum_rows(direct_rows)
@@ -400,12 +401,14 @@ def restructure_for_display(income, expense, filters, period_list, month_key):
 		pat[k] = flt(pbt.get(k, 0)) - flt(tax_total.get(k, 0))
 	_recalc_variances(pat, month_key)
 
-	def _make_row(label, vals, bold=False, is_margin=False):
+	def _make_row(label, vals, bold=False, is_margin=False, is_group=False):
 		row = frappe._dict({
 			"account_name": label,
 			"account": label,
 			"currency": currency,
 		})
+		if is_group:
+			row["is_group"] = 1
 		if bold:
 			row["is_bold"] = 1
 		if is_margin:
@@ -434,7 +437,7 @@ def restructure_for_display(income, expense, filters, period_list, month_key):
 	show_num = filters.get("show_number_group")
 	data = []
 
-	data.append(_make_row("Revenue", {}, bold=True))
+	data.append(_make_row("Revenue", revenue_total, bold=True, is_group=True))
 	for r in direct_rows:
 		if not r.get("is_group"):
 			_label_row(r, show_num)
@@ -447,7 +450,7 @@ def restructure_for_display(income, expense, filters, period_list, month_key):
 	data.append(_make_row("COGS / Cost of Sales", cogs_cos_display, bold=True))
 
 	cogs_display = _sum_rows(cogs_rows)
-	data.append(_make_row("Cost of Goods Sold", cogs_display))
+	data.append(_make_row("Cost of Goods Sold", cogs_display, bold=True, is_group=True))
 	for r in cogs_rows:
 		if not r.get("is_group"):
 			_label_row(r, show_num)
@@ -455,7 +458,7 @@ def restructure_for_display(income, expense, filters, period_list, month_key):
 			data.append(r)
 
 	cos_display = _sum_rows(cos_rows)
-	data.append(_make_row("Cost of Sales", cos_display))
+	data.append(_make_row("Cost of Sales", cos_display, bold=True, is_group=True))
 	for r in cos_rows:
 		if not r.get("is_group"):
 			_label_row(r, show_num)
@@ -488,7 +491,7 @@ def restructure_for_display(income, expense, filters, period_list, month_key):
 	for acc_num, label in OPEX_SUB_GROUPS:
 		sub_rows = opex_grouped.get(acc_num, [])
 		sub_total = _sum_rows(sub_rows)
-		data.append(_make_row(label, sub_total))
+		data.append(_make_row(label, sub_total, bold=True, is_group=True))
 		for r in sub_rows:
 			if not r.get("is_group"):
 				_label_row(r, show_num)
