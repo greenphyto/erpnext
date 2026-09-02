@@ -72,6 +72,7 @@ class StockController(AccountsController):
 			if self.docstatus == 1:
 				if not gl_entries:
 					gl_entries = self.get_gl_entries(warehouse_account)
+				print(gl_entries)
 				make_gl_entries(gl_entries, from_repost=from_repost)
 
 		elif self.doctype in ["Purchase Receipt", "Purchase Invoice"] and self.docstatus == 1:
@@ -220,7 +221,7 @@ class StockController(AccountsController):
 
 			if abs(sle_rounding_diff) > (1.0 / (10**precision)) and self.is_internal_transfer():
 				warehouse_asset_account = ""
-				if self.get("is_internal_customer"):
+				if self.get("is_internal_customer") or self.get("is_lazada_order"):
 					warehouse_asset_account = get_item_account(warehouse_account, item_row.get("target_warehouse"), item_row.item_code, operation=operation)
 				elif self.get("is_internal_supplier"):
 					warehouse_asset_account = get_item_account(warehouse_account, item_row.get("warehouse"), item_row.item_code, operation=operation)
