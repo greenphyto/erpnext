@@ -26,7 +26,9 @@ def execute(filters=None):
 
 	data = []
 	for item in sorted(iwb_map):
-		if not filters.get("item") or filters.get("item") == item:
+		if (not filters.get("item") or filters.get("item") == item) and (
+			not filters.get("item_group") or item_map[item]["item_group"] == filters.get("item_group")
+		):
 			for wh in sorted(iwb_map[item]):
 				for batch in sorted(iwb_map[item][wh]):
 					qty_dict = iwb_map[item][wh][batch]
@@ -150,7 +152,7 @@ def get_item_warehouse_batch_map(filters, float_precision):
 
 def get_item_details(filters):
 	item_map = {}
-	for d in (frappe.qb.from_("Item").select("name", "item_name", "description", "stock_uom")).run(
+	for d in (frappe.qb.from_("Item").select("name", "item_name", "description", "stock_uom", "item_group")).run(
 		as_dict=1
 	):
 		item_map.setdefault(d.name, d)
