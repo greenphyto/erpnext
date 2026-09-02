@@ -44,4 +44,12 @@ frappe.query_reports["Balance Sheet Greenphyto"] = {
 	"name_field": "account",
 	"parent_field": "parent_account",
 	"initial_depth": 3,
+	"formatter": function(value, row, column, data, default_formatter) {
+		value = default_formatter(value, row, column, data);
+		if (data && (data.is_group || data.is_bold || (data.indent !== undefined && data.indent === 0))) {
+			value = $(`<span>${value}</span>`);
+			value = value.css("font-weight", "bold").wrap("<p></p>").parent().html();
+		}
+		return value;
+	}
 };
