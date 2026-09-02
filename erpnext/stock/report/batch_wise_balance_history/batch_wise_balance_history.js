@@ -75,6 +75,13 @@ frappe.query_reports["Batch-Wise Balance History"] = {
 			column.link_onclick = "frappe.query_reports['Batch-Wise Balance History'].set_batch_route_to_stock_ledger(" + JSON.stringify(data) + ")";
 		}
 
+		if (column.fieldname == "status" && data && data["status"]) {
+			let status = data['status']
+			let colors = {"Active": "green", "Expiry": "red", "Empty": "gray"};
+			value = `<span class="indicator-pill ${colors[status] || "gray"}">${status || ""}</span>`;
+			return value;
+		}
+
 		value = default_formatter(value, row, column, data);
 		return value;
 	},
