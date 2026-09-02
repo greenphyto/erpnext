@@ -240,7 +240,7 @@ def execute(filters=None):
 			prev_fy, prev_fy,
 			prev_filters.period_start_date, prev_filters.period_end_date,
 			prev_filters.filter_based_on, prev_filters.periodicity,
-			company=prev_filters.company, month=prev_filters.month, to_month=prev_filters.to_month,
+			company=prev_filters.company,
 		)
 		if prev_period_list:
 			prev_acc_map, prev_root_type_totals = fetch_balances_via_get_data(
@@ -321,25 +321,20 @@ def execute(filters=None):
 	data.append(total_row("Total Liability and Equity (Credit)", final, period_list, currency))
 
 	# Columns
-	from frappe.utils import today, getdate
-	current_date = getdate(today())
-	current_month_label = current_date.strftime("%b %Y")
+	from frappe.utils import getdate
 
 	columns = get_columns(
 		filters.periodicity, period_list, filters.accumulated_values, company=filters.company
 	)
+	selected_month_label = getdate(period_list[-1].to_date).strftime("%b %Y") if period_list else _("Selected Month")
 	for col in columns:
 		if col.get("fieldtype") == "Currency" and col.get("fieldname") != PREV_YEAR_KEY:
-			col["label"] = "{} ({})".format(current_month_label, currency)
+			col["label"] = "{} ({})".format(selected_month_label, currency)
 
-	# Prev year label: Dec of prev fiscal year end
-	if prev_fy and prev_period_list:
-		prev_end_date = prev_period_list[-1].to_date
-		prev_month_label = getdate(prev_end_date).strftime("%b %Y")
+	if prev_fy:
+		prev_year_label = "Dec {} ({})".format(getdate(period_list[-1].to_date).year - 1, currency)
 	else:
-		prev_month_label = prev_fy or _("Previous Year")
-
-	prev_year_label = "{} ({})".format(prev_month_label, currency)
+		prev_year_label = _("Previous Year")
 	columns.insert(2, {
 		"fieldname": PREV_YEAR_KEY,
 		"label": prev_year_label,

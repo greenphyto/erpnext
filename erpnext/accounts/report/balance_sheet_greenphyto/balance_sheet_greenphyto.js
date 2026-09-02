@@ -20,6 +20,14 @@ frappe.query_reports["Balance Sheet Greenphyto"] = {
 			"reqd": 1
 		},
 		{
+			"fieldname": "month",
+			"label": __("Month"),
+			"fieldtype": "Select",
+			"options": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+			"default": frappe.datetime.str_to_obj(frappe.datetime.get_today()).toLocaleString("en-US", { month: "long" }),
+			"reqd": 1
+		},
+		{
 			"fieldname": "include_default_book_entries",
 			"label": __("Include Default Book Entries"),
 			"fieldtype": "Check",
