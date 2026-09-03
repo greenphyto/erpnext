@@ -5,6 +5,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import cint, cstr
 from erpnext.accounts.utils import get_balance_on, get_account_number_map
+from erpnext.stock.doctype.item.item import parse_material_group_series
 
 class PartNumberSettings(Document):
 	@frappe.whitelist()
@@ -149,6 +150,7 @@ class PartNumberSettings(Document):
 			self.is_parent = 0
 	
 	def update_item_material_number(self):
+		highest_by_group = {}
 		for d in self.data_mapping:
 			if not d.code:
 				continue
@@ -157,6 +159,27 @@ class PartNumberSettings(Document):
 			current_part_number = frappe.db.get_value("Item", item, "material_number")
 			if current_part_number != d.part_number:
 				frappe.db.set_value("Item", item, "material_number", d.part_number)
+
+			if d.material_group and d.part_number:
+				highest_by_group[d.material_group] = max(
+					highest_by_group.get(d.material_group, 0), cint(d.part_number)
+				)
+
+		for material_group, highest in highest_by_group.items():
+			highest = highest or 0
+			series = parse_material_group_series(material_group)
+			prefix = series.split(".", 1)[0]
+			current = frappe.db.sql(
+				"select current from `tabSeries` where name = %s", (prefix,), as_dict=True
+			)
+			current = cint(current[0].current) if current else 0
+			temp = cstr(highest)
+			highest = cint(temp[-3:])
+			if current < highest:
+				frappe.db.sql(
+					"update `tabSeries` set current = %s where name = %s", (highest, prefix)
+				)
+
 
 	def update_company_item(self):
 		for d in self.data_mapping:
