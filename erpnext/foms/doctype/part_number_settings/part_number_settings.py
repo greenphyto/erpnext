@@ -106,6 +106,7 @@ class PartNumberSettings(Document):
 		self.set_parent_company()
 		# self.validate_account_change()
 		self.update_item_name()
+		self.update_item_material_number()
 		self.update_company_item()
 		self.validate_account_currency()
 
@@ -147,6 +148,16 @@ class PartNumberSettings(Document):
 		else:
 			self.is_parent = 0
 	
+	def update_item_material_number(self):
+		for d in self.data_mapping:
+			if not d.code:
+				continue
+
+			item = d.code.strip()
+			current_part_number = frappe.db.get_value("Item", item, "material_number")
+			if current_part_number != d.part_number:
+				frappe.db.set_value("Item", item, "material_number", d.part_number)
+
 	def update_company_item(self):
 		for d in self.data_mapping:
 			d.company = d.company
