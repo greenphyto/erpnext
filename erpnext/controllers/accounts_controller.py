@@ -676,6 +676,8 @@ class AccountsController(TransactionBase):
 					item.set("price_list_rate", item.rate)
 					item.set("discount_percentage", 0)
 					item.set("discount_amount", 0)
+					item.set("margin_rate_or_amount", 0)
+					item.set("rate_with_margin", 0)
 					if item.meta.get_field("total_discount_amount"):
 						item.set("total_discount_amount", 0)
 					return

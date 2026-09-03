@@ -35,6 +35,12 @@ purchase_doctypes = [
 	"Purchase Invoice",
 ]
 
+ITEM_NO_DISCOUNT = [
+	"Debit Note",
+	"Credit Note",
+	"Non-stock"
+]
+
 
 @frappe.whitelist()
 def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=True):
@@ -1422,6 +1428,20 @@ def apply_price_list(args, as_doc=False):
 def apply_price_list_on_item(args):
 	item_doc = frappe.db.get_value("Item", args.item_code, ["name", "variant_of"], as_dict=1)
 	item_details = get_price_list_rate(args, item_doc)
+
+	disable_discount_amount = frappe.get_cached_value(
+		"Item", args.get("item_code"), "disable_discount_amount"
+	)
+
+	if args.get("is_return") or args.get("item_code") in ITEM_NO_DISCOUNT or disable_discount_amount:
+		item_details.update(
+			{
+				"margin_rate_or_amount": 0,
+				"rate_with_margin": 0,
+				"discount_amount": 0,
+				"total_discount_amount": 0,
+			}
+		)
 
 	item_details.update(get_pricing_rule_for_item(args, item_details.price_list_rate))
 
