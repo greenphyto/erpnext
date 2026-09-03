@@ -41,8 +41,9 @@
   "replacement_qty",
   "packed_qty",
   "section_break_17",
-  "price_list_rate",
-  "base_price_list_rate",
+   "price_list_rate",
+   "disable_discount_amount",
+   "base_price_list_rate",
   "discount_and_margin",
   "margin_type",
   "margin_rate_or_amount",
@@ -359,13 +360,21 @@
    "print_width": "100px",
    "width": "100px"
   },
-  {
-   "depends_on": "price_list_rate",
-   "fieldname": "discount_amount",
-   "fieldtype": "Currency",
-   "label": "Discount Amount",
-   "options": "currency"
-  },
+   {
+    "depends_on": "price_list_rate",
+    "fieldname": "discount_amount",
+    "fieldtype": "Currency",
+    "label": "Discount Amount",
+    "options": "currency"
+   },
+   {
+    "fieldname": "disable_discount_amount",
+    "fieldtype": "Check",
+    "fetch_from": "item_code.disable_discount_amount",
+    "hidden": 0,
+    "label": "Disable Discount Amount",
+    "read_only": 1
+   },
   {
    "depends_on": "eval:doc.margin_type && doc.price_list_rate && doc.margin_rate_or_amount",
    "fieldname": "base_rate_with_margin",
@@ -955,7 +964,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-06-04 04:00:09.296376",
+ "modified": "2026-09-03 08:42:54.518237",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note Item",

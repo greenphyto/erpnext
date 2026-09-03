@@ -14,7 +14,15 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 
 			frappe.model.round_floats_in(item, ["rate", "price_list_rate"]);
 
-			if(item.price_list_rate && !is_non_stock) {
+			if (item.disable_discount_amount) {
+				item.price_list_rate = item.rate;
+				item.discount_percentage = 0;
+				item.discount_amount = 0;
+				item.total_discount_amount = 0;
+				item.margin_type = '';
+				item.margin_rate_or_amount = 0;
+				item.rate_with_margin = 0;
+			} else if(item.price_list_rate && !is_non_stock) {
 				if(item.rate > item.price_list_rate && has_margin_field) {
 					// if rate is greater than price_list_rate, set margin
 					// or set discount
@@ -450,7 +458,6 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 	}
 
 	rate(doc, cdt, cdn) {
-		console.log("Rate changed");
 		var row = locals[cdt][cdn];
 
 		if (!row || row.__setting_rate_from_disable_discount) {
@@ -464,8 +471,10 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 				updates.push(() => frappe.model.set_value(cdt, cdn, "price_list_rate", row.rate));
 			}
 
-			if (flt(row.total_discount_amount) > 0) {
-				updates.push(() => frappe.model.set_value(cdt, cdn, "total_discount_amount", 0));
+			for (const fieldname of ["discount_percentage", "discount_amount", "total_discount_amount", "margin_rate_or_amount", "rate_with_margin"]) {
+				if (flt(row[fieldname]) !== 0) {
+					updates.push(() => frappe.model.set_value(cdt, cdn, fieldname, 0));
+				}
 			}
 
 			if (!updates.length) {

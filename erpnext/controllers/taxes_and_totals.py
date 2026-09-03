@@ -150,6 +150,16 @@ class calculate_taxes_and_totals(object):
 			for item in self.doc.get("items"):
 				self.doc.round_floats_in(item)
 
+				if item.get("disable_discount_amount"):
+					item.price_list_rate = item.rate
+					item.discount_percentage = 0
+					item.discount_amount = 0
+					item.margin_rate_or_amount = 0
+					item.rate_with_margin = 0
+					item.total_discount_amount = 0
+					item.net_rate = item.rate
+					continue
+
 				if item.discount_percentage == 100:
 					item.rate = 0.0
 				elif item.price_list_rate:

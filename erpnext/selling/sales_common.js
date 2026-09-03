@@ -147,6 +147,12 @@ erpnext.selling.SellingController = class SellingController extends erpnext.Tran
 
 	apply_discount_on_item(doc, cdt, cdn, field) {
 		var item = frappe.get_doc(cdt, cdn);
+		if (item.disable_discount_amount) {
+			item[field] = 0.0;
+			item.discount_percentage = 0.0;
+			item.discount_amount = 0.0;
+			return;
+		}
 		if(!item.price_list_rate) {
 			item[field] = 0.0;
 		} else {

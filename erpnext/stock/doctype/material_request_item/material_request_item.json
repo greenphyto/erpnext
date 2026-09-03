@@ -72,8 +72,9 @@
   "net_amount",
   "base_net_rate",
   "base_net_amount",
-  "price_list_rate",
-  "base_price_list_rate",
+   "price_list_rate",
+   "disable_discount_amount",
+   "base_price_list_rate",
   "item_tax_rate",
   "from_reorder_level",
   "notif"
@@ -584,14 +585,22 @@
    "fieldtype": "Percent",
    "label": "Discount on Price List Rate (%)"
   },
-  {
-   "depends_on": "price_list_rate",
-   "fieldname": "discount_amount",
-   "fieldtype": "Currency",
-   "label": "Discount Amount",
-   "options": "currency",
-   "precision": "4"
-  },
+   {
+    "depends_on": "price_list_rate",
+    "fieldname": "discount_amount",
+    "fieldtype": "Currency",
+    "label": "Discount Amount",
+    "options": "currency",
+    "precision": "4"
+   },
+   {
+    "fieldname": "disable_discount_amount",
+    "fieldtype": "Check",
+    "fetch_from": "item_code.disable_discount_amount",
+    "hidden": 0,
+    "label": "Disable Discount Amount",
+    "read_only": 1
+   },
   {
    "fieldname": "item_name_view",
    "fieldtype": "Data",
@@ -635,7 +644,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-03-10 14:24:54.877177",
+ "modified": "2026-09-03 08:42:54.518237",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Material Request Item",
