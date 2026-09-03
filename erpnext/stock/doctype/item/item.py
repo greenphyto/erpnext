@@ -134,6 +134,7 @@ class Item(Document):
 		self.validate_item_tax_net_rate_range()
 		self.insert_department()
 		self.set_material_number()
+		self.validate_batch_number_for_part_number()
 		self.validate_debit_note_item()
 		self.set_asset_category()
 		self.update_uom_global_description()
@@ -1209,6 +1210,17 @@ class Item(Document):
 					title=_("Enable Auto Re-Order"),
 					indicator="orange",
 				)
+
+	def validate_batch_number_for_part_number(self):
+		if not self.is_stock_item or self.has_batch_no or not self.get("material_group"):
+			return
+
+		if frappe.db.exists("Part Number Details", {"material_group": self.material_group}):
+			frappe.throw(
+				_("Item in Material Group {0} must have a batch number").format(
+					frappe.bold(self.material_group)
+				)
+			)
 
 	def set_material_number(self):
 		if self.disabled:

@@ -205,6 +205,22 @@ frappe.ui.form.on("Item", {
 		frm.toggle_reqd('customer', frm.doc.is_customer_provided_item ? 1:0);
 	},
 
+	material_group: function(frm) {
+		frm.trigger("set_batch_defaults");
+	},
+
+	set_batch_defaults: function(frm) {
+		if (frm.doc.__islocal && frm.doc.is_stock_item && frm.doc.material_group && frm.doc.item_code) {
+			frm.set_value({
+				has_batch_no: 1,
+				create_new_batch: 1,
+				batch_number_series: `${frm.doc.item_code}-BN.#####`,
+				has_expiry_date: 1,
+				shelf_life_in_days: 365
+			});
+		}
+	},
+
 	is_fixed_asset: function(frm) {
 		// set serial no to false & toggles its visibility
 		frm.set_value('has_serial_no', 0);
@@ -276,6 +292,7 @@ frappe.ui.form.on("Item", {
 	item_code: function(frm) {
 		if(!frm.doc.item_name)
 			frm.set_value("item_name", frm.doc.item_code);
+		frm.trigger("set_batch_defaults");
 	},
 
 	is_stock_item: function(frm) {
