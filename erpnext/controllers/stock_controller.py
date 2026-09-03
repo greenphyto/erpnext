@@ -72,7 +72,6 @@ class StockController(AccountsController):
 			if self.docstatus == 1:
 				if not gl_entries:
 					gl_entries = self.get_gl_entries(warehouse_account)
-				print(gl_entries)
 				make_gl_entries(gl_entries, from_repost=from_repost)
 
 		elif self.doctype in ["Purchase Receipt", "Purchase Invoice"] and self.docstatus == 1:
