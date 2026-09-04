@@ -1679,6 +1679,28 @@ def get_carton_detail(args):
 	res.carton_conversion = res.carton_conversion or 12
 	res.carton_qty = math.ceil(flt(args.qty) / flt(res.carton_conversion)) if res.carton_conversion else 0
 	if not res.packaging_item:
-		res.packaging_item = frappe.get_value("Packaging List Available", {"parent": args.item_code, "packaging": args.uom}, "package_item")
+		res.packaging_item = frappe.get_value(
+			"Packaging List Available",
+			{
+				"parent": args.item_code,
+				"parentfield": "packaging",
+				"packaging": args.uom,
+				"customer": args.customer,
+			},
+			"package_item",
+		)
+	if not res.packaging_item:
+		res.packaging_item = frappe.get_value(
+			"Packaging List Available",
+			{
+				"parent": args.item_code,
+				"parentfield": "packaging",
+				"packaging": args.uom,
+				"default": 1,
+			},
+			"package_item",
+		)
+	if not res.packaging_item:
+		res.packaging_item = frappe.db.get_single_value("Manufacturing Settings", "default_packaging")
 
 	return res
