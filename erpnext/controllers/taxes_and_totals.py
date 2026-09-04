@@ -623,7 +623,7 @@ class calculate_taxes_and_totals(object):
 				self.doc.total_net_weight += d.total_weight
 		
 		if self.doc.meta.get_field("total_gross_weight") and self.doc.meta.get_field("total_cartons"):
-			self.doc.total_cartons = cint(self.doc.total_qty / 12)
+			self.doc.total_cartons = sum(flt(d.get("carton_qty")) for d in self.doc.items)
 			total_carton_weight = cint(self.doc.get("total_cartons")) * flt(self.doc.get("carton_weight"))  + self.doc.total_net_weight
 			self.doc.total_gross_weight = total_carton_weight
 

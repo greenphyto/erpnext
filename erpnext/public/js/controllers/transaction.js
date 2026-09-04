@@ -1411,7 +1411,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 
 	sync_carton_qty_from_qty(doc, cdt, cdn) {
 		let item = frappe.get_doc(cdt, cdn);
-		if (!doc.is_carton_order || !cint(item.is_carton)) return;
+		if (!cint(item.is_carton)) return;
 
 		let conversion = flt(item.carton_conversion);
 		if (!conversion) return;
@@ -2695,15 +2695,15 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		if (in_list(['Request'], this.frm.doc.doctype)){
 			allow_change = true;
 		}
-		if (me.frm.doc.is_carton_order || allow_change){
-			if (item.item_code && customer) {
+		if (item.item_code && customer) {
 				frappe.call({
 					method: "erpnext.stock.get_item_details.get_carton_detail",
 					args: {
 						args: {
 							customer: customer,
 							item_code: item.item_code,
-							uom: item.uom
+							uom: item.uom,
+							qty: item.qty
 						}
 					},
 					callback: (r) => {
@@ -2711,8 +2711,8 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 
 						let detail = r.message || {};
 						let conversion = flt(detail.carton_conversion) || 12;
-						item.is_carton = cint(me.frm.doc.is_carton_order);
-						item.carton_qty = cint((flt(item.qty) / conversion)) || 1;
+						item.is_carton = 1;
+						item.carton_qty = Math.ceil(flt(item.qty) / conversion) || 1;
 						item.carton_conversion = conversion;
 						item.packaging_item = detail.packaging_item || "";
 						item.carton_uom = detail.carton_uom || "Carton";
@@ -2722,20 +2722,12 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 						me.frm.refresh_field("items");
 					}
 				});
-			} else {
-				item.is_carton = 1;
-				item.carton_qty = 1;
-				item.carton_conversion = 12;
-				item.packaging_item = "";
-				item.carton_uom = "Carton";
-				me.frm.refresh_field("items");
-			}
-		}else{
-			item.is_carton = 0;
-			item.carton_qty = 0;
-			item.carton_conversion = 0;
+		} else {
+			item.is_carton = 1;
+			item.carton_qty = 1;
+			item.carton_conversion = 12;
 			item.packaging_item = "";
-			item.carton_uom = "";
+			item.carton_uom = "Carton";
 			me.frm.refresh_field("items");
 		}
 	}

@@ -164,7 +164,7 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 						if d.get(k):
 							out[k] = d.get(k)
 	
-	if doc and doc.get("is_carton_order"):
+	if doc:
 		out.update(get_carton_detail(args))
 
 	return out
