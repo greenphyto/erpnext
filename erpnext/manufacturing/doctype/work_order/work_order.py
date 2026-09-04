@@ -1139,11 +1139,45 @@ class WorkOrder(Document):
 			if temp:
 				data += temp
 
-		res = frappe.db.sql('select packaging, weight, package_item from `tabPackaging List Available` where parent = %s and parentfield = "packaging" and `default` = 1', (self.production_item), as_dict=1)
-		if res and len(res)==1:
-			self.packet_size = res[0].packaging
-			self.conversion_factor = res[0].weight
-			self.flags.package_item = res[0].package_item
+		customer = None
+		if self.request_no:
+			request_name = self.request_no.replace(" ", "").split(",")[0]
+			customer = frappe.db.get_value("Request", request_name, "proposed_customer")
+
+		res = None
+		if customer and self.packet_size:
+			res = frappe.db.get_value(
+				"Packaging List Available",
+				{
+					"parent": self.production_item,
+					"parentfield": "packaging",
+					"customer": customer,
+					"packaging": self.packet_size,
+				},
+				["packaging", "weight", "package_item"],
+				as_dict=True,
+			)
+
+		if not res:
+			res = frappe.db.get_value(
+				"Packaging List Available",
+				{"parent": self.production_item, "parentfield": "packaging", "packaging": self.packet_size},
+				["packaging", "weight", "package_item"],
+				as_dict=True,
+			)
+
+		if not res:
+			res = frappe.db.get_value(
+				"Packaging List Available",
+				{"parent": self.production_item, "parentfield": "packaging", "default": 1},
+				["packaging", "weight", "package_item"],
+				as_dict=True,
+			)
+
+		if res:
+			self.packet_size = res.packaging
+			self.conversion_factor = res.weight
+			self.flags.package_item = res.package_item
 		else:
 			self.packet_size = frappe.db.get_value("Item", self.production_item, "stock_uom")
 			self.conversion_factor = 1
