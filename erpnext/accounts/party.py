@@ -158,14 +158,12 @@ def _get_party_details(
 		party_details["is_lazada_order"] = int(bool(lazada_customer and party.name == lazada_customer))
 		if party_details["is_lazada_order"]:
 			warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
-			if warehouse:
-				party_details["set_warehouse"] = warehouse
-				party_details["set_target_warehouse"] = warehouse
 			if doctype == "Sales Order":
 				party_details["naming_series"] = "LAZ.###./.YYYY"
 			elif doctype == "Sales Invoice":
 				party_details["naming_series"] = "LAZ-INV.###./.YYYY"
 			elif doctype == "Delivery Note":
+				party_details["set_target_warehouse"] = warehouse
 				party_details["naming_series"] = "LAZ-.YYYY.-.#####"
 
 	# sales team

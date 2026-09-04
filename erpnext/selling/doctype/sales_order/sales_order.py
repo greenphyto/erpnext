@@ -134,11 +134,6 @@ class SalesOrder(SellingController):
 		if not self.is_lazada_order:
 			return
 
-		warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
-		if warehouse:
-			for item in self.items:
-				item.warehouse = warehouse
-
 		if not self.shipping_address_name:
 			address = get_customer_shipping_address(self.customer)
 			if not address:

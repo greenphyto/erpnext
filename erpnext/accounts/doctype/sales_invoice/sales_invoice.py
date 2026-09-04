@@ -193,12 +193,6 @@ class SalesInvoice(SellingController):
 			return
 
 		self.update_stock = 1
-		warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
-		if warehouse:
-			self.set_warehouse = warehouse
-			for item in self.items:
-				item.warehouse = warehouse
-
 	def validate_pledge(self):
 		if self.customer == "Donor":
 			self.is_pledge = 1
