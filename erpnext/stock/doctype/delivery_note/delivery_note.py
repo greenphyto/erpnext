@@ -346,6 +346,14 @@ class DeliveryNote(SellingController):
 			for d in self.items:
 				d.expense_account = account
 
+		rnd_account = None
+		for d in self.items:
+			if d.rnd_item:
+				if rnd_account is None:
+					rnd_account = frappe.get_value("Company", self.company, "account_for_rnd_item_scrap")
+				if rnd_account:
+					d.expense_account = rnd_account
+
 	def validate_salad_batch(self):
 		for d in self.items:
 			if not d.batch_no:

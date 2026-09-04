@@ -1739,6 +1739,7 @@ class StockEntry(StockEntryAsset, StockController):
 	
 	def set_expense_account(self):
 		warehouse_account = get_warehouse_account_map(self.company)
+		rnd_account = None
 		for d in self.get("items"):
 			if self.purpose in ['Material Transfer', 'Material Transfer for Manufacture', "Manufacture"]:
 				# keep balance sheet
@@ -1765,6 +1766,12 @@ class StockEntry(StockEntryAsset, StockController):
 					)
 
 				item = item[0]
+				if d.rnd_item:
+					if not rnd_account:
+						rnd_account = frappe.db.get_value("Company", self.company, "account_for_rnd_item_scrap")
+					if rnd_account:
+						d.expense_account = rnd_account
+						continue
 				item_group_defaults = get_item_group_defaults(item.name, self.company)
 				d.expense_account = (
 					item.get("expense_account")

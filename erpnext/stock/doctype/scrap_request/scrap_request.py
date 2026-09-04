@@ -19,11 +19,17 @@ class ScrapRequest(Document):
 	def set_scrap_account(self):
 		rm_account = frappe.db.get_single_value("Stock Settings", "account_for_raw_material_scrap")
 		pr_account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
+		rnd_account = None
 		for d in self.items:
-			if d.item_group == "Raw Material":
+			if d.rnd_item:
+				if rnd_account is None:
+					rnd_account = frappe.db.get_value("Company", self.company, "account_for_rnd_item_scrap")
+				if rnd_account:
+					d.expense_account = rnd_account
+			elif d.item_group == "Raw Material":
 				d.expense_account = rm_account
-			if d.item_group == "Products":
-				d.expense_account = pr_account		
+			elif d.item_group == "Products":
+				d.expense_account = pr_account
 			
 	def on_submit(self):
 		name = create_material_issue(self, True)
@@ -260,6 +266,7 @@ def collect_expired_product(date=""):
 		stock_entry.request_no = "Expired Product"
 		expense_account = frappe.db.get_value("Company", company, "account_for_product_scrap")
 		cost_center = frappe.db.get_value("Company", company, "cost_center")
+		rnd_account = None
 
 		for d in data:
 			if d.company != company:
@@ -272,7 +279,12 @@ def collect_expired_product(date=""):
 			row.is_scrap_item = 1
 			row.conversion_factor = 1
 			row.s_warehouse = d.get("warehouse")
-			row.expense_account = expense_account
+			if frappe.db.get_value("Item", d.item, "rnd_item"):
+				if rnd_account is None:
+					rnd_account = frappe.db.get_value("Company", company, "account_for_rnd_item_scrap")
+				row.expense_account = rnd_account or expense_account
+			else:
+				row.expense_account = expense_account
 			row.cost_center = cost_center
 		
 		stock_entry.system_generated = 1
