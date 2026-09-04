@@ -485,11 +485,21 @@ def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 	if filters.get("posting_date") and not filters.get("allow_expired"):
 		cond = "and (batch.expiry_date is null or batch.expiry_date >= %(posting_date)s)"
 
+	posting_datetime_cond_warehouse = ""
+	if filters.get("posting_date") and filters.get("posting_time"):
+		posting_datetime_cond_warehouse = (
+			"and (sle.posting_date < %(posting_date)s "
+			"or (sle.posting_date = %(posting_date)s "
+			"and sle.posting_time <= %(posting_time)s))"
+		)
+
+
 	batch_nos = None
 	args = {
 		"item_code": filters.get("item_code"),
 		"warehouse": filters.get("warehouse"),
 		"posting_date": filters.get("posting_date"),
+		"posting_time": filters.get("posting_time"),
 		"txt": "%{0}%".format(txt),
 		"start": start,
 		"page_len": page_len,
@@ -532,12 +542,14 @@ def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 				{search_cond})
 				and batch.docstatus < 2
 				{cond}
+				{posting_datetime_cond_warehouse}
 				{match_conditions}
 			group by batch_no {having_clause}
 			order by batch.expiry_date, sle.batch_no desc
 			limit %(page_len)s offset %(start)s""".format(
 				search_columns=search_columns,
 				cond=cond,
+				posting_datetime_cond_warehouse=posting_datetime_cond_warehouse,
 				match_conditions=get_match_cond(doctype),
 				having_clause=having_clause,
 				search_cond=search_cond,

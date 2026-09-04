@@ -2367,6 +2367,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 			let filters = {
 				'item_code': item.item_code,
 				'posting_date': me.frm.doc.posting_date || frappe.datetime.nowdate(),
+				'posting_time': me.frm.doc.posting_time || frappe.datetime.now_time(),
 			}
 
 			if (doc.doctype == "Delivery Note" && (doc.is_marketing || doc.is_donation || doc.is_replacement || doc.is_pledge)){
