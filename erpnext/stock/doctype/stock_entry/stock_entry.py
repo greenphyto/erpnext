@@ -1766,7 +1766,7 @@ class StockEntry(StockEntryAsset, StockController):
 					)
 
 				item = item[0]
-				if d.rnd_item:
+				if d.get("rnd_item"):
 					if not rnd_account:
 						rnd_account = frappe.db.get_value("Company", self.company, "account_for_rnd_item_scrap")
 					if rnd_account:

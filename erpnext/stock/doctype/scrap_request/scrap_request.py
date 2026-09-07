@@ -21,7 +21,7 @@ class ScrapRequest(Document):
 		pr_account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
 		rnd_account = None
 		for d in self.items:
-			if d.rnd_item:
+			if d.get("rnd_item"):
 				if rnd_account is None:
 					rnd_account = frappe.db.get_value("Company", self.company, "account_for_rnd_item_scrap")
 				if rnd_account:
