@@ -110,6 +110,11 @@ def _get_party_details(
 	party = frappe.get_doc(party_type, party)
 	currency = party.get("default_currency") or currency or get_company_currency(company)
 
+	if party_type == "Customer" and company:
+		party_details["set_warehouse"] = frappe.db.get_value(
+			"Company", company, "default_warehouse_for_delivery"
+		)
+
 	party_address, shipping_address = set_address_details(
 		party_details,
 		party,
