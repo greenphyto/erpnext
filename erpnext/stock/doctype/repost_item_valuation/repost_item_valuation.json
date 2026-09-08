@@ -18,9 +18,10 @@
   "company",
   "allow_negative_stock",
   "via_landed_cost_voucher",
-  "allow_zero_rate",
-  "amended_from",
-  "error_section",
+   "allow_zero_rate",
+   "recalculate_valuation_rate",
+   "amended_from",
+   "error_section",
   "error_log",
   "items_to_be_repost",
   "affected_transactions",
@@ -147,6 +148,13 @@
    "fieldname": "allow_zero_rate",
    "fieldtype": "Check",
    "label": "Allow Zero Rate"
+  },
+  {
+   "default": "0",
+   "description": "Recalculate source transaction valuation rate before reposting",
+   "fieldname": "recalculate_valuation_rate",
+   "fieldtype": "Check",
+   "label": "Recalculate Valuation Rate"
   },
   {
    "fieldname": "items_to_be_repost",
