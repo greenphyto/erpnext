@@ -159,7 +159,7 @@ class StockLedgerEntry(Document):
 			self.posting_time = "00:00"
 
 	def validate_batch(self):
-		if self.batch_no and self.voucher_type != "Stock Entry":
+		if self.batch_no and self.voucher_type not in ("Stock Entry", "Stock Reconciliation"):
 			if (self.voucher_type in ["Purchase Receipt", "Purchase Invoice"] and self.actual_qty < 0) or (
 				self.voucher_type in ["Delivery Note", "Sales Invoice"] and self.actual_qty > 0
 			):
@@ -168,6 +168,11 @@ class StockLedgerEntry(Document):
 			if self.voucher_type == "Delivery Note":
 				doc = frappe.get_doc(self.voucher_type, self.voucher_no)
 				if cint(doc.is_return) or cint(doc.is_marketing) or cint(doc.is_donation) or cint(doc.is_replacement) or cint(doc.is_pledge):
+					return
+
+			if self.voucher_type == "Sales Invoice":
+				company = frappe.db.get_value("Sales Invoice", self.voucher_no, "company")
+				if company and frappe.db.get_value("Consignment Settings", company, "allow_expired_product_on_sales_invoice"):
 					return
 
 			expiry_date = frappe.db.get_value("Batch", self.batch_no, "expiry_date")

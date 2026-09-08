@@ -12,7 +12,6 @@
   "column_break_4",
   "buying_price_list",
   "maintain_same_rate_action",
-  "role_to_override_stop_action",
   "transaction_settings_section",
   "po_required",
   "pr_required",
@@ -108,21 +107,14 @@
    "fieldtype": "Column Break"
   },
   {
-   "default": "Stop",
+   "default": "Auto Change",
    "depends_on": "maintain_same_rate",
-   "description": "Configure the action to stop the transaction or just warn if the same rate is not maintained.",
+   "description": "Configure the action to auto change the rate or just warn if the same rate is not maintained.",
    "fieldname": "maintain_same_rate_action",
    "fieldtype": "Select",
    "label": "Action If Same Rate is Not Maintained",
    "mandatory_depends_on": "maintain_same_rate",
-   "options": "Stop\nWarn"
-  },
-  {
-   "depends_on": "eval:doc.maintain_same_rate_action == 'Stop'",
-   "fieldname": "role_to_override_stop_action",
-   "fieldtype": "Link",
-   "label": "Role Allowed to Override Stop Action",
-   "options": "Role"
+   "options": "Auto Change\nWarn\nStop"
   },
   {
    "default": "1",
@@ -242,7 +234,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-05-04 18:27:01.154850",
+ "modified": "2026-09-03 11:32:16.009443",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Buying Settings",

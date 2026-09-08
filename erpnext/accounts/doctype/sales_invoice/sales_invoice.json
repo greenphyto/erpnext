@@ -35,6 +35,7 @@
   "is_debit_note",
   "debit_note_transaction",
   "is_pledge",
+  "is_lazada_order",
   "amended_from",
   "accounting_dimensions_section",
   "cost_center",
@@ -252,7 +253,7 @@
    "no_copy": 1,
    "oldfieldname": "naming_series",
    "oldfieldtype": "Select",
-   "options": "INV.###./.YYYY\nCN.###./.YYYY\nINV-RET.###./.YYYY",
+   "options": "INV.###./.YYYY\nCN.###./.YYYY\nINV-RET.###./.YYYY\nLAZ-INV.###./.YYYY",
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
@@ -2216,6 +2217,12 @@
    "label": "Consignment Request",
    "options": "Consignment Request",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_lazada_order",
+   "fieldtype": "Check",
+   "label": "Is Lazada Order"
   }
  ],
  "icon": "fa fa-file-text",
@@ -2228,7 +2235,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2026-05-26 13:12:13.458680",
+ "modified": "2026-09-03 12:21:48.292714",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",

@@ -35,6 +35,12 @@ purchase_doctypes = [
 	"Purchase Invoice",
 ]
 
+ITEM_NO_DISCOUNT = [
+	"Debit Note",
+	"Credit Note",
+	"Non-stock"
+]
+
 
 @frappe.whitelist()
 def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=True):
@@ -140,7 +146,7 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 		if out.uom == "KG":
 			out.uom = ""
 
-	if doc and doc.get("doctype") == "Delivery Note":
+	if doc and doc.get("doctype") in ("Delivery Note", "Sales Invoice"):
 		for d in doc.get("items"):
 			if d.get("name") == args.get("child_docname"):
 				if d.get("so_detail"):
@@ -148,8 +154,17 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 					for k,val in out.items():
 						if d.get(k):
 							out[k] = d.get(k)
+
+	if doc and doc.get("doctype") == "Sales Order":
+		for d in doc.get("items"):
+			if d.get("name") == args.get("child_docname"):
+				if d.get("quotation_item"):
+					# copy back value from origin if from Quotation
+					for k,val in out.items():
+						if d.get(k):
+							out[k] = d.get(k)
 	
-	if doc and doc.get("is_carton_order"):
+	if doc:
 		out.update(get_carton_detail(args))
 
 	return out
@@ -1414,6 +1429,20 @@ def apply_price_list_on_item(args):
 	item_doc = frappe.db.get_value("Item", args.item_code, ["name", "variant_of"], as_dict=1)
 	item_details = get_price_list_rate(args, item_doc)
 
+	disable_discount_amount = frappe.get_cached_value(
+		"Item", args.get("item_code"), "disable_discount_amount"
+	)
+
+	if args.get("is_return") or args.get("item_code") in ITEM_NO_DISCOUNT or disable_discount_amount:
+		item_details.update(
+			{
+				"margin_rate_or_amount": 0,
+				"rate_with_margin": 0,
+				"discount_amount": 0,
+				"total_discount_amount": 0,
+			}
+		)
+
 	item_details.update(get_pricing_rule_for_item(args, item_details.price_list_rate))
 
 	return item_details
@@ -1650,6 +1679,28 @@ def get_carton_detail(args):
 	res.carton_conversion = res.carton_conversion or 12
 	res.carton_qty = math.ceil(flt(args.qty) / flt(res.carton_conversion)) if res.carton_conversion else 0
 	if not res.packaging_item:
-		res.packaging_item = frappe.get_value("Packaging List Available", {"parent": args.item_code, "packaging": args.uom}, "package_item")
+		res.packaging_item = frappe.get_value(
+			"Packaging List Available",
+			{
+				"parent": args.item_code,
+				"parentfield": "packaging",
+				"packaging": args.uom,
+				"customer": args.customer,
+			},
+			"package_item",
+		)
+	if not res.packaging_item:
+		res.packaging_item = frappe.get_value(
+			"Packaging List Available",
+			{
+				"parent": args.item_code,
+				"parentfield": "packaging",
+				"packaging": args.uom,
+				"default": 1,
+			},
+			"package_item",
+		)
+	if not res.packaging_item:
+		res.packaging_item = frappe.db.get_single_value("Manufacturing Settings", "default_packaging")
 
 	return res

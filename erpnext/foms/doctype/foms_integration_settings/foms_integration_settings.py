@@ -486,6 +486,11 @@ class FomsAPI():
 
 		return res
 	
+	def update_raw_material_status(self, data):
+		data = self.convert_data(data)
+		res = self.req("POST", "/userportal/RawMaterialUP/UpdateRawMaterialStatus", data=data)
+		return res
+
 	def delete_batch_no(self, id):
 		id = cint(id)
 		res = self.req("DELETE", f"/userportal/RawMaterialUP/DeleteRawMaterialBatch?id={id}")

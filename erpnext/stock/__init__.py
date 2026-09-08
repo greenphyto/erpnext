@@ -106,12 +106,14 @@ def get_part_number_account_settings(company):
 
 		item_account.setdefault(d.code, frappe._dict({
 			"account":d.account_code,
-			"account_currency":account_currency
+			"account_currency":account_currency,
+			"is_group":0
 		}))
 		if d.part_number not in item_account:
 			item_account.setdefault(d.part_number, frappe._dict({
 				"account":d.account_code,
-				"account_currency":account_currency
+				"account_currency":account_currency,
+				"is_group":0
 			}))
 	
 	return item_account

@@ -1346,7 +1346,9 @@ def get_stock_and_account_balance(account=None, posting_date=None, company=None)
 	related_warehouses = [
 		wh
 		for wh, wh_details in warehouse_account.items()
-		if wh_details.account == account and not wh_details.is_group
+		if isinstance(wh_details, dict)
+		and wh_details.get("account") == account
+		and not wh_details.get("is_group")
 	]
 
 	total_stock_value = 0.0

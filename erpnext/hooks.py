@@ -435,6 +435,7 @@ doc_events = {
 	"Delivery Note": {
         "on_submit":[
         	"erpnext.controllers.foms.sync_log",
+            "erpnext.stock.rate_alert.check_rate_anomaly",
 		],
         "on_cancel":[
             "erpnext.controllers.foms.sync_log",
@@ -456,7 +457,8 @@ doc_events = {
             "erpnext.controllers.erp.detect_work_order_different",
 			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
 			"erpnext.controllers.foms.create_prod_variance_entry",
-            "erpnext.gp_erp.doctype.consignment_request.consignment_request.stock_entry_controller"
+            "erpnext.gp_erp.doctype.consignment_request.consignment_request.stock_entry_controller",
+            "erpnext.stock.rate_alert.check_rate_anomaly",
 		],
         "before_cancel":[
             "erpnext.controllers.foms.detect_salad_items",
@@ -485,6 +487,9 @@ doc_events = {
 	},
     "Work Order":{
         "on_submit":"erpnext.controllers.foms.check_missing_wo_rate"
+	},
+    "Batch":{
+        "on_update":"erpnext.controllers.foms.sync_log"
 	}
 }
 
@@ -528,7 +533,8 @@ scheduler_events = {
 			"erpnext.controllers.erp.reminder_submit_purchase_invoice"
 		],
         "0 */4 * * *":[
-            "erpnext.controllers.erp.read_email_inbox"
+            "erpnext.controllers.erp.read_email_inbox",
+            "erpnext.controllers.foms.notify_unsynced_requests"
 		],
         "*/30 * * * *": [
             "erpnext.controllers.uob.sync_uob_file"
@@ -545,7 +551,6 @@ scheduler_events = {
         "erpnext.controllers.foms.update_stock_receipt",
 	],
 	"hourly_long": [
-		"erpnext.accounts.doctype.subscription.subscription.process_all",
 		"erpnext.stock.doctype.repost_item_valuation.repost_item_valuation.repost_entries",
 		"erpnext.bulk_transaction.doctype.bulk_transaction_log.bulk_transaction_log.retry_failing_transaction",
 	],
@@ -582,12 +587,15 @@ scheduler_events = {
         "erpnext.controllers.foms.get_packaging",
 		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_items",
 		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_product",
-        "erpnext.ai_agent.doctype.email_invoice.email_invoice.pull_erp_po"
+        "erpnext.ai_agent.doctype.email_invoice.email_invoice.pull_erp_po",
+        "erpnext.controllers.foms.daily_update_batch_status"
 	],
 	"weekly": [
 		"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_weekly",
+        "erpnext.gp_erp.notification.raw_material_more_than_1_year.raw_material_more_than_1_year.notify_raw_material_more_than_1_year",
 	],
 	"daily_long": [
+		"erpnext.accounts.doctype.subscription.subscription.process_all",
 		"erpnext.setup.doctype.email_digest.email_digest.send",
 		"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.auto_update_latest_price_in_all_boms",
 		"erpnext.loan_management.doctype.process_loan_security_shortfall.process_loan_security_shortfall.create_process_loan_security_shortfall",
@@ -807,7 +815,8 @@ sync_log_method = {
     8:"erpnext.controllers.foms._update_foms_department",
     9:"erpnext.controllers.foms._sync_delivery_note2",
     10:"erpnext.controllers.foms._update_foms_forecast",
-    11:"erpnext.controllers.foms.update_stock_entry"
+    11:"erpnext.controllers.foms.update_stock_entry",
+    12:"erpnext.controllers.foms._update_raw_material_status"
 }
 
 get_email_default = "erpnext.controllers.email.get_last_email_default"
@@ -820,6 +829,8 @@ custom_export_report = {
     "Balance Sheet": "erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2.add_formulas",
     "Profit and Loss Statement": "erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2.add_formulas",
     "Consolidated Financial Statement": "erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2.add_formulas",
+    "Balance Sheet Greenphyto": "erpnext.accounts.report.balance_sheet_v2.balance_sheet_v2.add_formulas",
+    "P&L Performance Review": "erpnext.gp_erp.report.p&l_performance_review.p&l_performance_review.add_borders",
 }
 
 has_permission = {

@@ -105,6 +105,21 @@ class ConsignmentOrder(DeliveryNote):
 				if not d.target_warehouse:
 					frappe.throw(_("Destination Warehouse is required in row {0}").format(d.idx))
 
+				if not flt(d.incoming_rate) and d.warehouse:
+					d.incoming_rate = get_incoming_rate(
+						{
+							"item_code": d.item_code,
+							"warehouse": d.warehouse,
+							"posting_date": self.posting_date,
+							"posting_time": self.posting_time or nowtime(),
+							"qty": -1 * flt(d.qty),
+							"voucher_type": self.doctype,
+							"voucher_no": self.name,
+							"company": self.company,
+						},
+						raise_error_if_no_rate=False,
+					)
+
 				sl_entries.append(self.get_sle_for_source_warehouse(d))
 				sl_entries.append(self.get_sle_for_target_warehouse(d))
 

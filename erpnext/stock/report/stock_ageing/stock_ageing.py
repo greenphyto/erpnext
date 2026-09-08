@@ -33,13 +33,10 @@ def format_report_data(filters: Filters, item_details: Dict, to_date: str) -> Li
 	data = []
 
 	precision = cint(frappe.db.get_single_value("System Settings", "float_precision", cache=True))
-	print("formatData")
-	print(item_details.items())
 	for item, item_dict in item_details.items():
 		if not flt(item_dict.get("total_qty"), precision):
 			continue
 
-		earliest_age, latest_age = 0, 0
 		details = item_dict["details"]
 		fifo_queue = sorted(filter(_func, item_dict["fifo_queue"]), key=_func)
 
@@ -47,8 +44,6 @@ def format_report_data(filters: Filters, item_details: Dict, to_date: str) -> Li
 			continue
 
 		average_age = get_average_age(fifo_queue, to_date)
-		earliest_age = date_diff(to_date, fifo_queue[0][1])
-		latest_age = date_diff(to_date, fifo_queue[-1][1])
 		range1, range2, range3, above_range3 = get_range_age(filters, fifo_queue, to_date, item_dict)
 
 		row = [details.name, details.item_name, details.description, details.item_group, details.brand,flt(item_dict.get("stock_value"), precision)]
@@ -64,8 +59,6 @@ def format_report_data(filters: Filters, item_details: Dict, to_date: str) -> Li
 				range2,
 				range3,
 				above_range3,
-				earliest_age,
-				latest_age,
 				details.stock_uom,
 			]
 		)
@@ -163,8 +156,6 @@ def get_columns(filters: Filters) -> List[Dict]:
 	columns.extend(range_columns)
 	columns.extend(
 		[
-			{"label": _("Earliest"), "fieldname": "earliest", "fieldtype": "Int", "width": 80},
-			{"label": _("Latest"), "fieldname": "latest", "fieldtype": "Int", "width": 80},
 			{"label": _("UOM"), "fieldname": "uom", "fieldtype": "Link", "options": "UOM", "width": 100},
 		]
 	)
@@ -390,8 +381,6 @@ class FIFOSlots:
 			item_row["total_qty"] += flt(row["total_qty"])
 			item_row["has_serial_no"] = row["has_serial_no"]
 			item_row["stock_value"] += flt(row["stock_value"])
-			print("Aggregated")
-			print(item_aggregated_data)
 		return item_aggregated_data
 
 	def __get_stock_ledger_entries(self) -> List[Dict]:
@@ -431,8 +420,6 @@ class FIFOSlots:
 			sle_query = self.__get_warehouse_conditions(sle, sle_query)
 
 		sle_query = sle_query.orderby(sle.posting_date, sle.posting_time, sle.creation, sle.actual_qty)
-
-		print(sle_query)
 
 		return sle_query.run(as_dict=True)
 

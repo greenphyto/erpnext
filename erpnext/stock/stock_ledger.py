@@ -62,13 +62,12 @@ def make_sl_entries(sl_entries, allow_negative_stock=False, via_landed_cost_vouc
 
 				key = (sle.batch_no, sle.warehouse)
 				if key not in qty_map:
-					temp = get_previous_sle({
-						"item_code": sle.item_code,
-						"warehouse": sle.warehouse,
-						"posting_date": sle.posting_date,
-						"posting_time": sle.posting_time,
-					}) or {}
-					qty_map[key]=flt(temp.get("qty_after_transaction"))
+					qty_map[key] = flt(get_batch_qty(
+						batch_no=sle.batch_no,
+						warehouse=sle.warehouse,
+						posting_date=sle.posting_date,
+						posting_time=sle.posting_time,
+					))
 				
 				cur_qty = -flt(sle.get("actual_qty"))
 				diff = qty_map[key]-cur_qty
@@ -308,8 +307,8 @@ def repost_future_sle(
 
 def validate_item_warehouse(args):
 	for field in ["item_code", "warehouse", "posting_date", "posting_time"]:
-		if not args.get(field):
-			validation_msg = f"The field {frappe.unscrub(args.get(field))} is required for the reposting"
+		if args.get(field) is None or args.get(field) == "":
+			validation_msg = f"The field {frappe.unscrub(field)} is required for the reposting"
 			frappe.throw(_(validation_msg))
 
 

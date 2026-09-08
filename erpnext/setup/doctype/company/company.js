@@ -206,6 +206,20 @@ erpnext.company.set_chart_of_accounts_options = function(doc) {
 }
 
 erpnext.company.setup_queries = function(frm) {
+	frappe.meta.get_docfields("Company").forEach(function(df) {
+		if (df.fieldtype === "Link" && df.options === "Account") {
+			frm.set_query(df.fieldname, function(doc) {
+				return {
+					filters: {
+						company: doc.name,
+						disabled: 0,
+						is_group: 0
+						}
+				};
+			});
+		}
+	});
+
 	$.each([
 		["default_bank_account", {"account_type": "Bank"}],
 		["default_cash_account", {"account_type": "Cash"}],
@@ -259,6 +273,7 @@ erpnext.company.setup_queries = function(frm) {
 erpnext.company.set_custom_query = function(frm, v) {
 	var filters = {
 		"company": frm.doc.name,
+		"disabled": 0,
 		"is_group": 0
 	};
 

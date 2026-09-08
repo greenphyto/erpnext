@@ -26,17 +26,6 @@ frappe.query_reports["P&L Performance Review"] = {
 			reqd: 1,
 		},
 		{
-			fieldname: "periodicity",
-			label: __("Periodicity"),
-			fieldtype: "Select",
-			options: [
-				{ value: "YTD", label: __("YTD") },
-				{ value: "Monthly", label: __("Monthly") },
-			],
-			default: "YTD",
-			reqd: 1,
-		},
-		{
 			fieldname: "to_month",
 			label: __("Month"),
 			fieldtype: "Select",
@@ -61,12 +50,6 @@ frappe.query_reports["P&L Performance Review"] = {
 			options: erpnext.get_presentation_currency_list(),
 		},
 		{
-			fieldname: "accumulated_values",
-			label: __("Accumulated Values"),
-			fieldtype: "Check",
-			default: 1,
-		},
-		{
 			fieldname: "hide_zero_balance",
 			label: __("Hide Zero Balance"),
 			fieldtype: "Check",
@@ -83,10 +66,9 @@ frappe.query_reports["P&L Performance Review"] = {
 			column.is_tree = true;
 		}
 
-		// Ratio rows (GOP%, Payroll%): show as percentage, skip currency formatter
 		if (
 			data &&
-			data.ratio_row &&
+			data.is_margin &&
 			column.fieldname !== "account" &&
 			column.fieldname !== "acc_code" &&
 			column.fieldname !== "currency"
@@ -99,12 +81,12 @@ frappe.query_reports["P&L Performance Review"] = {
 			if (num < 0) {
 				display = `<span class="text-danger">${display}</span>`;
 			}
-			return display;
+			return `<div style="text-align: right;">${display}</div>`;
 		}
 
 		value = default_formatter(value, row, column, data);
 
-		if (data && (data.is_group || data.is_bold || data.profit_data || data.ratio_row)) {
+		if (data && (data.is_group || data.is_bold || data.profit_data)) {
 			value = $(`<span>${value}</span>`);
 			var $value = $(value).css("font-weight", "bold");
 			if (data.warn_if_negative && data[column.fieldname] < 0) {

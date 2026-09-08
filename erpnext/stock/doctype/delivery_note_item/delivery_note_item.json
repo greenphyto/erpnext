@@ -9,8 +9,9 @@
  "field_order": [
   "barcode",
   "has_item_scanned",
-  "item_code",
-  "item_name",
+   "item_code",
+   "rnd_item",
+   "item_name",
   "item_name_view",
   "marketing_name",
   "col_break1",
@@ -41,8 +42,9 @@
   "replacement_qty",
   "packed_qty",
   "section_break_17",
-  "price_list_rate",
-  "base_price_list_rate",
+   "price_list_rate",
+   "disable_discount_amount",
+   "base_price_list_rate",
   "discount_and_margin",
   "margin_type",
   "margin_rate_or_amount",
@@ -112,7 +114,8 @@
   "dimension_col_break",
   "project",
   "section_break_72",
-  "page_break"
+  "page_break",
+  "stock_entry_repack"
  ],
  "fields": [
   {
@@ -135,9 +138,16 @@
    "search_index": 1,
    "width": "150px"
   },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "item_name",
+   {
+    "fetch_from": "item_code.rnd_item",
+    "fieldname": "rnd_item",
+    "fieldtype": "Check",
+    "label": "RND Item",
+    "read_only": 1
+   },
+   {
+    "allow_on_submit": 1,
+    "fieldname": "item_name",
    "fieldtype": "Data",
    "in_global_search": 1,
    "label": "Item Name",
@@ -358,13 +368,21 @@
    "print_width": "100px",
    "width": "100px"
   },
-  {
-   "depends_on": "price_list_rate",
-   "fieldname": "discount_amount",
-   "fieldtype": "Currency",
-   "label": "Discount Amount",
-   "options": "currency"
-  },
+   {
+    "depends_on": "price_list_rate",
+    "fieldname": "discount_amount",
+    "fieldtype": "Currency",
+    "label": "Discount Amount",
+    "options": "currency"
+   },
+   {
+    "fieldname": "disable_discount_amount",
+    "fieldtype": "Check",
+    "fetch_from": "item_code.disable_discount_amount",
+    "hidden": 0,
+    "label": "Disable Discount Amount",
+    "read_only": 1
+   },
   {
    "depends_on": "eval:doc.margin_type && doc.price_list_rate && doc.margin_rate_or_amount",
    "fieldname": "base_rate_with_margin",
@@ -939,13 +957,22 @@
    "fieldtype": "Link",
    "label": "Packaging Item",
    "options": "Item"
+  },
+  {
+   "fieldname": "stock_entry_repack",
+   "fieldtype": "Link",
+   "label": "Repack Stock Entry",
+   "options": "Stock Entry",
+   "read_only": 1,
+   "no_copy": 1,
+   "print_hide": 1
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-06-04 04:00:09.296376",
+  "modified": "2026-09-04 02:40:21.611115",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Delivery Note Item",

@@ -14,8 +14,9 @@
   "col_break1",
   "t_warehouse",
   "sec_break1",
-  "item_code",
-  "item_name",
+   "item_code",
+   "rnd_item",
+   "item_name",
   "col_break2",
   "is_finished_item",
   "is_scrap_item",
@@ -134,10 +135,17 @@
    "reqd": 1,
    "search_index": 1
   },
-  {
-   "fieldname": "col_break2",
-   "fieldtype": "Column Break"
-  },
+   {
+    "fetch_from": "item_code.rnd_item",
+    "fieldname": "rnd_item",
+    "fieldtype": "Check",
+    "label": "RND Item",
+    "read_only": 1
+   },
+   {
+    "fieldname": "col_break2",
+    "fieldtype": "Column Break"
+   },
   {
    "fieldname": "item_name",
    "fieldtype": "Data",
@@ -655,7 +663,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-05-12 11:47:22.516739",
+  "modified": "2026-09-04 02:40:21.611115",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Entry Detail",

@@ -115,7 +115,11 @@ class StockController(AccountsController):
 
 				if self.doctype == "Delivery Note" and (cint(self.is_marketing) or cint(self.is_donation) or cint(self.is_replacement) or cint(self.is_pledge)):
 					continue
-				
+
+				if self.doctype == "Sales Invoice" and self.company:
+					if frappe.db.get_value("Consignment Settings", self.company, "allow_expired_product_on_sales_invoice"):
+						continue
+
 				if expiry_date and getdate(expiry_date) < getdate(self.posting_date):
 					frappe.throw(
 						_("Row #{0}: The batch {1} has already expired.").format(
@@ -216,7 +220,7 @@ class StockController(AccountsController):
 
 			if abs(sle_rounding_diff) > (1.0 / (10**precision)) and self.is_internal_transfer():
 				warehouse_asset_account = ""
-				if self.get("is_internal_customer"):
+				if self.get("is_internal_customer") or self.get("is_lazada_order"):
 					warehouse_asset_account = get_item_account(warehouse_account, item_row.get("target_warehouse"), item_row.item_code, operation=operation)
 				elif self.get("is_internal_supplier"):
 					warehouse_asset_account = get_item_account(warehouse_account, item_row.get("warehouse"), item_row.item_code, operation=operation)

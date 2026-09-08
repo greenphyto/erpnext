@@ -642,7 +642,11 @@ class AccountsController(TransactionBase):
 					# 		"cost_center", self.get("cost_center") or erpnext.get_default_cost_center(self.company)
 					# )
 
-					if ret.get("pricing_rules"):
+					if ret.get("pricing_rules") and not (
+						item.get("so_detail") or item.get("quotation_item")
+					):
+						# skip re-applying pricing rule for items mapped from Sales Order /
+						# Quotation, rate must stay identical to origin document
 						self.apply_pricing_rule_on_items(item, ret)
 						self.set_pricing_rule_details(item, ret)
 				else:
@@ -672,6 +676,8 @@ class AccountsController(TransactionBase):
 					item.set("price_list_rate", item.rate)
 					item.set("discount_percentage", 0)
 					item.set("discount_amount", 0)
+					item.set("margin_rate_or_amount", 0)
+					item.set("rate_with_margin", 0)
 					if item.meta.get_field("total_discount_amount"):
 						item.set("total_discount_amount", 0)
 					return
@@ -1335,13 +1341,6 @@ class AccountsController(TransactionBase):
 				self.precision(based_on, item),
 			)
 			if not ref_amt:
-				frappe.msgprint(
-					_("System will not check overbilling since amount for Item {0} in {1} is zero").format(
-						item.item_code, ref_dt
-					),
-					title=_("Warning"),
-					indicator="orange",
-				)
 				continue
 
 			already_billed = self.get_billed_amount_for_item(item, item_ref_dn, based_on)
@@ -1911,6 +1910,9 @@ class AccountsController(TransactionBase):
 			internal_party_field = "is_internal_supplier"
 		else:
 			return False
+
+		if self.doctype == "Delivery Note" and self.get("is_lazada_order"):
+			return any(item.get("target_warehouse") for item in self.get("items"))
 
 		if self.get(internal_party_field) and (self.represents_company == self.company):
 			return True

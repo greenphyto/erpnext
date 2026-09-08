@@ -7,6 +7,16 @@ erpnext.taxes_and_totals = class TaxesAndTotals extends erpnext.payments {
 	}
 
 	apply_pricing_rule_on_item(item) {
+		if (item.disable_discount_amount) {
+			item.price_list_rate = item.rate;
+			item.discount_percentage = 0;
+			item.discount_amount = 0;
+			item.total_discount_amount = 0;
+			item.margin_rate_or_amount = 0;
+			item.rate_with_margin = 0;
+			return;
+		}
+
 		let effective_item_rate = item.price_list_rate;
 		let item_rate = item.rate;
 		if (in_list(["Sales Order", "Quotation"], item.parenttype) && item.blanket_order_rate) {

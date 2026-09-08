@@ -16,7 +16,7 @@ frappe.query_reports["Batch-Wise Balance History"] = {
 			"label": __("From Date"),
 			"fieldtype": "Date",
 			"width": "80",
-			"default": frappe.sys_defaults.year_start_date,
+			"default": frappe.datetime.get_today(),
 			"reqd": 1
 		},
 		{
@@ -39,6 +39,13 @@ frappe.query_reports["Batch-Wise Balance History"] = {
 					}
 				};
 			}
+		},
+		{
+			"fieldname":"item_group",
+			"label": __("Item Group"),
+			"fieldtype": "Link",
+			"options": "Item Group",
+			"default": "Products"
 		},
 		{
 			"fieldname":"warehouse",
@@ -73,6 +80,13 @@ frappe.query_reports["Batch-Wise Balance History"] = {
 		if (column.fieldname == "Batch" && data && !!data["Batch"]) {
 			value = data["Batch"];
 			column.link_onclick = "frappe.query_reports['Batch-Wise Balance History'].set_batch_route_to_stock_ledger(" + JSON.stringify(data) + ")";
+		}
+
+		if (column.fieldname == "status" && data && data["status"]) {
+			let status = data['status']
+			let colors = {"Active": "green", "Expiry": "red", "Empty": "gray"};
+			value = `<span class="indicator-pill ${colors[status] || "gray"}">${status || ""}</span>`;
+			return value;
 		}
 
 		value = default_formatter(value, row, column, data);

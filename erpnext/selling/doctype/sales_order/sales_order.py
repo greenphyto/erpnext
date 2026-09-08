@@ -20,7 +20,7 @@ from erpnext.accounts.doctype.sales_invoice.sales_invoice import (
 	update_linked_doc,
 	validate_inter_company_party,
 )
-from erpnext.accounts.party import get_party_account
+from erpnext.accounts.party import get_party_account, get_party_shipping_address
 from erpnext.controllers.selling_controller import SellingController
 from erpnext.manufacturing.doctype.production_plan.production_plan import (
 	get_items_for_material_requests,
@@ -77,6 +77,7 @@ class SalesOrder(SellingController):
 			self.delivery_status = "Not Delivered"
 
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
+		# self.validate_salad_lead_time()
 		self.load_bom_items()
 
 	def validate_pledge(self):
@@ -85,11 +86,85 @@ class SalesOrder(SellingController):
 			if not self.contact_display:
 				self.contact_display = self.donor_name
 
+	def validate_salad_lead_time(self):
+		for d in self.items:
+			is_salad, bom_name = frappe.get_value("Item", d.item_code, ["salad_product", "default_bom"])
+			if not is_salad or not bom_name:
+				continue
+
+			delivery_date = getdate(d.delivery_date or self.delivery_date)
+			today = getdate(nowdate())
+			available_days = (delivery_date - today).days
+
+			bom = frappe.get_doc("BOM", bom_name)
+			insufficient = []
+			for item in bom.get("items"):
+				lead_time = cint(item.lead_time_days)
+				if lead_time and lead_time > available_days:
+					insufficient.append({
+						"item_code": item.item_code,
+						"item_name": item.item_name,
+						"lead_time_days": lead_time,
+						"available_days": available_days
+					})
+
+			if insufficient:
+				msg = _("Mixed product {0} cannot be fulfilled. Insufficient lead time for child products:").format(
+					frappe.bold(d.item_code)
+				)
+				msg += "<br><br><table class='table table-bordered'>"
+				msg += "<tr><th>{}</th><th>{}</th><th>{}</th></tr>".format(
+					_("Child Product"), _("Required Lead Time (days)"), _("Available Days")
+				)
+				for item in insufficient:
+					msg += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+						item["item_code"], item["lead_time_days"], item["available_days"]
+					)
+				msg += "</table>"
+				frappe.throw(msg, title=_("Insufficient Lead Time"))
+
 	def on_update_after_submit(self):
 		self.update_po_no()
 
 	def before_validate(self):
 		self.validate_packaging()
+		self.set_lazada_warehouse()
+
+	def set_lazada_warehouse(self):
+		if not self.is_lazada_order:
+			return
+
+		if not self.shipping_address_name:
+			address = get_customer_shipping_address(self.customer)
+			if not address:
+				billing_address = frappe.db.sql(
+					"""
+						select ta.name
+						from `tabDynamic Link` dl
+						join `tabAddress` ta on ta.name = dl.parent
+						where dl.link_doctype = 'Customer'
+							and dl.link_name = %s
+							and dl.parenttype = 'Address'
+							and ifnull(ta.disabled, 0) = 0
+							and ta.address_type = 'Billing'
+						order by ta.is_primary_address desc, ta.name
+						limit 1
+					""",
+					self.customer,
+					as_dict=True,
+				)
+				if billing_address:
+					address = get_customer_shipping_address(self.customer, billing_address[0].name)
+
+			address_name = (
+				address.get("name")
+				or get_party_shipping_address("Customer", self.customer)
+				or frappe.db.get_value("Customer", self.customer, "customer_primary_address")
+				or frappe.db.get_value("Customer", self.customer, "primary_address")
+			)
+			self.shipping_address_name = address_name
+			if address.get("address"):
+				self.shipping_address = address.get("address")
 
 	def validate_packaging(self):
 		for d in self.get("items"):
@@ -770,7 +845,10 @@ def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 		target.shipping_address_name = source.shipping_address_name
 		if not target.shipping_address_name:
 			cust_address = get_customer_shipping_address(source.customer)
-			target.update({"shipping_address_name":cust_address.get("name")})
+			target.update({
+				"shipping_address_name": cust_address.get("name"),
+				"shipping_address": cust_address.get("address"),
+			})
 
 		if target.company_address:
 			target.update(get_fetch_values("Delivery Note", "company_address", target.company_address))
@@ -788,9 +866,20 @@ def make_delivery_note(source_name, target_doc=None, skip_item_mapping=False):
 		if source.is_pledge:
 			target.naming_series = 'PON-.YYYY.-.#####'
 
+		if source.is_lazada_order:
+			target.is_lazada_order = 1
+			target.naming_series = 'LAZ-.YYYY.-.#####'
+			target.customer = frappe.db.get_single_value("Lazada Settings", "lazada_customer")
+			target.set_warehouse = source.set_warehouse
+			target.set_target_warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
+
 	def update_item(source, target, source_parent):
-		warehouse = frappe.get_value("Company", source_parent.company, "default_warehouse_for_delivery")
+		warehouse = source_parent.set_warehouse if source_parent.is_lazada_order else frappe.get_value(
+			"Company", source_parent.company, "default_warehouse_for_delivery"
+		)
 		target.warehouse = warehouse
+		if source_parent.is_lazada_order:
+			target.target_warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
 		target.base_amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.base_rate)
 		target.amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.rate)
 		target.qty = flt(source.qty) - flt(source.delivered_qty)
@@ -888,6 +977,14 @@ def make_replacement_qty(source_name, target_doc=None):
 def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 	def postprocess(source, target):
 		set_missing_values(source, target)
+		if source.is_lazada_order:
+			target.is_lazada_order = 1
+			target.update_stock = 1
+			warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
+			if warehouse:
+				target.set_warehouse = warehouse
+				for item in target.items:
+					item.warehouse = warehouse
 		# Get the advance paid Journal Entries in Sales Invoice Advance
 		if target.get("allocate_advances_automatically"):
 			target.set_advances()
@@ -1535,3 +1632,37 @@ def update_produced_qty_in_so_item(sales_order, sales_order_item):
 		return
 
 	frappe.db.set_value("Sales Order Item", sales_order_item, "produced_qty", total_produced_qty)
+
+
+@frappe.whitelist()
+def get_salad_items_with_availability(sales_order):
+	so = frappe.get_doc("Sales Order", sales_order)
+	result = []
+	for d in so.get("bom_item"):
+		available_qty = get_total_available_qty(d.item_code, so.company)
+		lead_time = cint(frappe.db.get_value("Item", d.item_code, "lead_time_days"))
+		stock_uom = frappe.db.get_value("Item", d.item_code, "stock_uom")
+		conversion = flt(d.stock_qty) / flt(d.qty) if flt(d.qty) else 1
+		required_qty_stock = flt(d.qty * conversion, 3)
+		result.append({
+			"item_code": d.item_code,
+			"item_name": frappe.get_value("Item", d.item_code, "item_name") or d.item_code,
+			"required_qty": required_qty_stock,
+			"available_qty": flt(available_qty, 3),
+			"uom": stock_uom,
+			"parent_item": d.parent_item,
+			"progress": d.progress or 0,
+			"batch_no": d.get("batch_no") or "",
+			"shortage": flt(required_qty_stock - available_qty, 3) if available_qty < required_qty_stock else 0,
+			"lead_time_days": lead_time
+		})
+	return result
+
+
+def get_total_available_qty(item_code, company):
+	from erpnext.stock.doctype.batch.batch import get_available_batch
+	batches = get_available_batch(item_code, 0, skip_wip_warehouse=True, company=company, date=nowdate())
+	total = 0
+	for b in batches:
+		total += flt(b.qty)
+	return total

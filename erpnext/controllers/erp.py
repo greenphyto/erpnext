@@ -1692,7 +1692,7 @@ def update_item_packaging_and_uom(doc, method=""):
 	for d in doc.get("customer_packaging") or []:
 		if d.item_code and d.package:
 			package_name = d.package.strip()
-			available_package = frappe.db.get_list("Packaging List Available", filters={"parent": d.item_code}, pluck="packaging")
+			available_package = frappe.db.get_all("Packaging List Available", filters={"parent": d.item_code}, pluck="packaging")
 			if d.package not in available_package:
 				item_doc = frappe.get_doc("Item", d.item_code)
 				row = item_doc.append("packaging")

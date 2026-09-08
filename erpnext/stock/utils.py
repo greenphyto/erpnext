@@ -62,7 +62,11 @@ def get_stock_value_on(warehouse=None, posting_date=None, item_code=None):
 
 	if warehouse:
 
-		lft, rgt, is_group = frappe.db.get_value("Warehouse", warehouse, ["lft", "rgt", "is_group"])
+		wh_data = frappe.db.get_value("Warehouse", warehouse, ["lft", "rgt", "is_group"])
+		if not wh_data:
+			return 0.0
+
+		lft, rgt, is_group = wh_data
 
 		if is_group:
 			values.extend([lft, rgt])

@@ -89,30 +89,34 @@ class TransactionBase(StatusUpdater):
 
 		if self.doctype in buying_doctypes:
 			action = frappe.db.get_single_value("Buying Settings", "maintain_same_rate_action")
-			settings_doc = "Buying Settings"
 		else:
 			action = frappe.db.get_single_value("Selling Settings", "maintain_same_rate_action")
-			settings_doc = "Selling Settings"
 
 		for ref_dt, ref_dn_field, ref_link_field in ref_details:
 			for d in self.get("items"):
 				if d.get(ref_link_field):
 					ref_rate = frappe.db.get_value(ref_dt + " Item", d.get(ref_link_field), "rate")
 
+					if ref_rate is None:
+						continue
+
 					if abs(flt(d.rate - ref_rate, d.precision("rate"))) >= 0.01:
-						if action == "Stop":
-							role_allowed_to_override = frappe.db.get_single_value(
-								settings_doc, "role_to_override_stop_action"
+						if action == "Warn":
+							frappe.msgprint(
+								_("Row #{0}: Rate has been changed from {1} to {2} as per {3}: {4}").format(
+									d.idx, d.rate, ref_rate, ref_dt, d.get(ref_dn_field)
+								),
+								alert=True,
 							)
 
-							if role_allowed_to_override not in frappe.get_roles():
-								frappe.throw(
-									_("Row #{0}: Rate must be same as {1}: {2} ({3})").format(
-										d.idx, ref_dt, d.get(ref_dn_field), ref_rate
-									)
-								)
-						else:
-							d.rate = ref_rate
+					d.rate = ref_rate
+					d.net_rate = ref_rate
+					d.amount = flt(d.rate) * flt(d.qty)
+					d.net_amount = flt(d.net_rate) * flt(d.qty)
+					if d.get("price_list_rate") and flt(d.price_list_rate) > 0:
+						d.discount_percentage = flt(
+							(1 - flt(d.rate) / flt(d.price_list_rate)) * 100.0, d.precision("discount_percentage")
+						)
 
 	def validate_item_non_stock(self):
 		if not self.get("non_stock_item"):
