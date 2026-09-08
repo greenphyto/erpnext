@@ -314,6 +314,9 @@ def get_incoming_rate(args, raise_error_if_no_rate=True):
 			company=args.get("company"),
 			raise_error_if_no_rate=raise_error_if_no_rate,
 			batch_no=args.get("batch_no"),
+			posting_date=args.get("posting_date"),
+			posting_time=args.get("posting_time"),
+			creation=args.get("creation"),
 		)
 
 	return flt(in_rate)
