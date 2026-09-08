@@ -274,6 +274,45 @@ class TestRepostItemValuation(FrappeTestCase, StockTestMixin):
 			gle_filters={"account": "Stock In Hand - TCP1"},
 		)
 
+	def test_recalculate_valuation_rate_for_purchase_receipt(self):
+		item = self.make_item().name
+		pr = make_purchase_receipt(item_code=item, qty=1, rate=100)
+		self.assertSLEs(pr, [{"incoming_rate": 100}])
+
+		pr.load_from_db()
+		pr.items[0].db_set({"base_net_amount": 150, "net_rate": 150})
+		riv = frappe.get_doc(
+			doctype="Repost Item Valuation",
+			based_on="Transaction",
+			voucher_type=pr.doctype,
+			voucher_no=pr.name,
+			recalculate_valuation_rate=1,
+			posting_date=pr.posting_date,
+			posting_time=pr.posting_time,
+		)
+		riv.submit()
+
+		self.assertSLEs(pr, [{"incoming_rate": 150}])
+
+	def test_recalculate_valuation_rate_for_stock_entry(self):
+		item = self.make_item().name
+		se = make_stock_entry(item_code=item, target="_Test Warehouse - _TC", qty=1, rate=100)
+		self.assertSLEs(se, [{"incoming_rate": 100}])
+
+		se.items[0].db_set("basic_rate", 150)
+		riv = frappe.get_doc(
+			doctype="Repost Item Valuation",
+			based_on="Transaction",
+			voucher_type=se.doctype,
+			voucher_no=se.name,
+			recalculate_valuation_rate=1,
+			posting_date=se.posting_date,
+			posting_time=se.posting_time,
+		)
+		riv.submit()
+
+		self.assertSLEs(se, [{"incoming_rate": 150}])
+
 	def test_duplicate_ple_on_repost(self):
 		from erpnext.accounts import utils
 

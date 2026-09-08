@@ -276,6 +276,7 @@ def repost_future_sle(
 				"posting_time": args[i].get("posting_time"),
 				"creation": args[i].get("creation"),
 				"distinct_item_warehouses": distinct_item_warehouses,
+				"repost_doc": doc,
 			},
 			allow_negative_stock=allow_negative_stock,
 			via_landed_cost_voucher=via_landed_cost_voucher,
@@ -415,6 +416,7 @@ class update_entries_after(object):
 		self.fix_note = ""
 
 		self.args = frappe._dict(args)
+		self.repost_doc = self.args.get("repost_doc")
 		if self.args.sle_id:
 			self.args["name"] = self.args.sle_id
 
@@ -681,7 +683,9 @@ class update_entries_after(object):
 
 	def get_dynamic_incoming_outgoing_rate(self, sle):
 		# Get updated incoming/outgoing rate from transaction
-		if sle.recalculate_rate:
+		if sle.recalculate_rate or (
+			self.repost_doc and self.repost_doc.get("recalculate_valuation_rate")
+		):
 			rate = self.get_incoming_outgoing_rate_from_transaction(sle)
 
 			if flt(sle.actual_qty) >= 0:
