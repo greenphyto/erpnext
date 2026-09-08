@@ -659,6 +659,9 @@ class update_entries_after(object):
 		sle.stock_value_difference = stock_value_difference
 		sle.fix_note = self.fix_note
 		sle.doctype = "Stock Ledger Entry"
+		sle.outgoing_rate = (
+			abs(flt(sle.stock_value_difference)) / abs(sle.actual_qty) if sle.actual_qty else 0
+		)
 
 		frappe.get_doc(sle).db_update()
 

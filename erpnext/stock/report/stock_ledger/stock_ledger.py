@@ -201,6 +201,14 @@ def get_columns(filters):
 				"convertible": "rate",
 			},
 			{
+				"label": _("Outgoing Rate"),
+				"fieldname": "outgoing_rate",
+				"fieldtype": "Currency",
+				"width": 110,
+				"options": "Company:company:default_currency",
+				"convertible": "rate",
+			},
+			{
 				"label": _("Valuation Rate"),
 				"fieldname": "valuation_rate",
 				"fieldtype": "Currency",
@@ -287,6 +295,7 @@ def get_stock_ledger_entries(filters, items):
 			sle.posting_time,
 			sle.actual_qty,
 			sle.incoming_rate,
+			sle.outgoing_rate,
 			sle.valuation_rate,
 			sle.company,
 			sle.voucher_type,
