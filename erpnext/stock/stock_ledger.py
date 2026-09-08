@@ -1052,6 +1052,9 @@ class update_entries_after(object):
 			currency=erpnext.get_company_currency(sle.company),
 			company=sle.company,
 			batch_no=sle.batch_no,
+			posting_date=sle.posting_date,
+			posting_time=sle.posting_time,
+			creation=sle.creation,
 		)
 
 	def get_sle_before_datetime(self, args):
@@ -1288,6 +1291,9 @@ def get_valuation_rate(
 	company=None,
 	raise_error_if_no_rate=True,
 	batch_no=None,
+	posting_date=None,
+	posting_time=None,
+	creation=None,
 ):
 
 	if not company:
@@ -1295,21 +1301,24 @@ def get_valuation_rate(
 
 	last_valuation_rate = None
 
-	# Get moving average rate of a specific batch number
-	if warehouse and batch_no and frappe.db.get_value("Batch", batch_no, "use_batchwise_valuation"):
-		last_valuation_rate = frappe.db.sql(
-			"""
-			select sum(stock_value_difference) / sum(actual_qty)
-			from `tabStock Ledger Entry`
-			where
-				item_code = %s
-				AND warehouse = %s
-				AND batch_no = %s
-				AND is_cancelled = 0
-				AND NOT (voucher_no = %s AND voucher_type = %s)
-			""",
-			(item_code, warehouse, batch_no, voucher_no, voucher_type),
+	# Get batch-wise rate only from SLEs before current transaction.
+	if (
+		warehouse
+		and batch_no
+		and posting_date
+		and posting_time
+		and frappe.db.get_value("Batch", batch_no, "use_batchwise_valuation")
+	):
+		last_valuation_rate = get_batch_incoming_rate(
+			item_code=item_code,
+			warehouse=warehouse,
+			batch_no=batch_no,
+			posting_date=posting_date,
+			posting_time=posting_time,
+			creation=creation,
 		)
+		if last_valuation_rate is not None:
+			return flt(last_valuation_rate)
 
 	# Get valuation rate from last sle for the same item and warehouse
 	if not last_valuation_rate or last_valuation_rate[0][0] is None:
