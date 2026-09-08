@@ -8,4 +8,4 @@ def execute():
 	"""
 
 	batch = frappe.qb.DocType("Batch")
-	frappe.qb.update(batch).set(batch.use_batchwise_valuation, 0).run()
+	frappe.qb.update(batch).set(batch.use_batchwise_valuation, 1).run()
