@@ -361,10 +361,10 @@ def _read_email_inbox(doc_name, company):
 		# AI Routing: detect correct company from email content
 		detected_company = _detect_company_from_email(doc, company)
 
-		# Switch user if company changed — use target company's ai_user
-		if detected_company and detected_company != company:
+		# Always use detected company's AI user before creating invoice
+		if detected_company:
 			target_ai_user = frappe.db.get_value("Company", detected_company, "ai_user")
-			if target_ai_user:
+			if target_ai_user and target_ai_user != frappe.session.user:
 				frappe.set_user(target_ai_user)
 
 		# create email invoice
@@ -412,11 +412,23 @@ def _detect_company_from_email(doc, default_company):
 		)
 	company_list = "\n".join(company_context)
 
-	# Prepare email content (strip HTML for cleaner analysis)
 	from bs4 import BeautifulSoup
 	content_clean = BeautifulSoup(doc.content or "", "html.parser").get_text(separator="\n")
-	# Limit content length to avoid token overflow
 	content_sample = content_clean[:3000] if len(content_clean) > 3000 else content_clean
+	email_text = f"{doc.subject or ''}\n{doc.sender or ''}\n{content_clean}".lower()
+	country_clues = {
+		"Malaysia": (r"\b(?:rm|myr)\b", "malaysia", "kuala lumpur", "selangor", "johor", "penang"),
+		"Singapore": (r"\bsgd\b", "singapore", "sg gst"),
+	}
+	malaysia_clues = country_clues["Malaysia"]
+	if any(re.search(clue, email_text) if clue.startswith("\\b") else clue in email_text for clue in malaysia_clues):
+		matches = [c.name for c in companies if (c.country or "").lower() == "malaysia"]
+		if len(matches) == 1:
+			return matches[0]
+
+	singapore_matches = [c.name for c in companies if (c.country or "").lower() == "singapore"]
+	if len(singapore_matches) == 1:
+		return singapore_matches[0]
 
 	SYSTEM_PROMPT = f"""You are an invoice email routing assistant for a multi-entity company.
 
