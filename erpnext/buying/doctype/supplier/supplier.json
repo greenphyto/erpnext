@@ -477,7 +477,7 @@
    "fieldname": "supplier_code_series",
    "fieldtype": "Select",
    "label": "Supplier Code Series",
-   "options": "S0.####\nS1.####\nS2.####\nS3.####\nS4.####\nS5.####"
+   "options": "S0.####\nS1.####\nS2.####\nS3.####\nMYS0.####\nMYS1.####\nMYS2.####\nMYS3.####"
   },
   {
    "fieldname": "foms_id",
@@ -560,7 +560,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2025-12-10 10:45:26.853034",
+ "modified": "2026-09-09 15:42:23.472541",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",
