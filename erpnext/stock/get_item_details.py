@@ -1678,28 +1678,27 @@ def get_carton_detail(args):
 	res.is_carton = 1
 	res.carton_conversion = res.carton_conversion or 12
 	res.carton_qty = math.ceil(flt(args.qty) / flt(res.carton_conversion)) if res.carton_conversion else 0
-	if not res.packaging_item:
-		res.packaging_item = frappe.get_value(
-			"Packaging List Available",
-			{
-				"parent": args.item_code,
-				"parentfield": "packaging",
-				"packaging": args.uom,
-				"customer": args.customer,
-			},
-			"package_item",
-		)
-	if not res.packaging_item:
-		res.packaging_item = frappe.get_value(
-			"Packaging List Available",
-			{
-				"parent": args.item_code,
-				"parentfield": "packaging",
-				"packaging": args.uom,
-				"default": 1,
-			},
-			"package_item",
-		)
+	customer_packaging = frappe.get_all(
+		"Packaging List Available",
+		filters={
+			"parent": args.item_code,
+			"parentfield": "packaging"
+		},
+		fields=["uom", "package_item", "default", "idx", "packaging", "customer"],
+	)
+	uom_default = ""
+	uom_customer = ""
+	package_item = ""
+	for d in customer_packaging:
+		if d.default:
+			uom_default = d.packaging
+			package_item = d.package_item
+		elif d.customer == args.customer:
+			uom_customer = d.packaging
+			package_item = d.package_item
+
+	res.uom = uom_customer or uom_default
+	res.packaging_item = res.packaging_item or package_item
 	if not res.packaging_item:
 		res.packaging_item = frappe.db.get_single_value("Manufacturing Settings", "default_packaging")
 
