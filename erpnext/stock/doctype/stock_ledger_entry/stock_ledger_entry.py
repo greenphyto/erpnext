@@ -158,6 +158,9 @@ class StockLedgerEntry(Document):
 			):
 				return
 
+			if self.warehouse and cint(frappe.db.get_value("Warehouse", self.warehouse, "allow_expired_product")):
+				return
+
 			if self.voucher_type == "Sales Invoice":
 				company = frappe.db.get_value("Sales Invoice", self.voucher_no, "company")
 				if company and frappe.db.get_value("Consignment Settings", company, "allow_expired_product_on_sales_invoice"):

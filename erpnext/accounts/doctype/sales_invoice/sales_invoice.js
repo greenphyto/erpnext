@@ -10,6 +10,22 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 		this.setup_posting_date_time_check();
 		super.setup(doc);
 	}
+	is_lazada_order() {
+		if (!this.frm.doc.is_lazada_order) return;
+		this.frm.__setting_lazada = true;
+		Promise.all([
+			frappe.db.get_single_value('Lazada Settings', 'default_warehouse'),
+			frappe.db.get_single_value('Lazada Settings', 'lazada_customer')
+		]).then(([warehouse, customer]) => {
+			this.frm.set_value('customer', customer);
+			this.frm.set_value('naming_series', 'LAZ-INV.###./.YYYY');
+			if (warehouse) {
+				this.frm.set_value('set_warehouse', warehouse);
+				(this.frm.doc.items || []).forEach(item => frappe.model.set_value(item.doctype, item.name, 'warehouse', warehouse));
+			}
+		}).finally(() => this.frm.__setting_lazada = false);
+	}
+
 	company() {
 		erpnext.accounts.dimensions.update_dimension(this.frm, this.frm.doctype);
 
@@ -284,6 +300,12 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 					setters: {
 						customer: me.frm.doc.customer || undefined
 					},
+					dialog_fields: [{
+						fieldname: 'group_same_item_uom',
+						label: __('Group same item and UOM'),
+						fieldtype: 'Check',
+						default: me.frm.doc.is_lazada_order ? 1 : 0
+					}],
 					get_query: function() {
 						var filters = {
 							docstatus: 1,
@@ -341,6 +363,13 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 	}
 
 	customer() {
+		if (!this.frm.__setting_lazada) {
+			frappe.db.get_single_value('Lazada Settings', 'lazada_customer').then(customer => {
+				if (customer === this.frm.doc.customer && !this.frm.doc.is_lazada_order) {
+					this.frm.set_value('is_lazada_order', 1);
+				}
+			});
+		}
 		if (this.frm.doc.is_pos){
 			var pos_profile = this.frm.doc.pos_profile;
 		}

@@ -85,6 +85,13 @@ class SalesInvoice(SellingController):
 
 	def validate(self):
 		super(SalesInvoice, self).validate()
+		if self.has_multi_delivery_note_references():
+			self.delivery_note = None
+			for item in self.items:
+				item.sales_order = None
+				item.so_detail = None
+				item.delivery_note = None
+				item.dn_detail = None
 		self.validate_auto_set_posting_time()
 
 		if not self.is_pos:
@@ -151,7 +158,10 @@ class SalesInvoice(SellingController):
 
 		self.set_against_income_account()
 		self.validate_time_sheets_are_submitted()
-		self.validate_multiple_billing("Delivery Note", "dn_detail", "amount", "items")
+		if not self.has_multi_delivery_note_references():
+			self.validate_multiple_billing("Delivery Note", "so_detail", "amount", "items")
+		else:
+			self.validate_multi_reference_billing()
 		if not self.is_return:
 			self.validate_serial_numbers()
 		else:
@@ -178,7 +188,8 @@ class SalesInvoice(SellingController):
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
 		self.set_lazada_warehouse()
 		try:
-			self.set_other_reff()
+			if not self.has_multi_delivery_note_references():
+				self.set_other_reff()
 			self.link_internal_company()
 		except:
 			pass
@@ -187,13 +198,10 @@ class SalesInvoice(SellingController):
 		if not self.update_stock or not self.delivery_note:
 			return
 
-		if frappe.db.get_value("Delivery Note", self.delivery_note, "is_lazada_order"):
-			warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
-			if warehouse:
-				self.set_warehouse = warehouse
-				for item in self.items:
-					item.warehouse = warehouse
-
+		self.naming_series = "LAZ-INV.###./.YYYY"
+		self.set_warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
+		self.update_stock = 1
+		
 	def validate_pledge(self):
 		if self.customer == "Donor":
 			self.is_pledge = 1
@@ -261,7 +269,30 @@ class SalesInvoice(SellingController):
 	def validate_item_price_list(self):
 		from erpnext.stock.get_item_details import get_item_price
 		account = frappe.get_cached_value("Company", self.company, "default_discount_account")
+		lazada_customer = frappe.db.get_single_value("Lazada Settings", "lazada_customer")
+		is_lazada = frappe.db.get_single_value("Lazada Settings", "keep_item_price") and (self.customer == lazada_customer or self.is_lazada_order)
 		for d in self.get("items"):
+			d.discount_account = account
+			if is_lazada:
+				item_price_args = {
+					"item_code": d.item_code,
+					"price_list": "Standard Selling",
+					"customer": self.customer,
+					"uom": d.get("uom"),
+					"transaction_date": self.get("posting_date"),
+					"batch_no": d.get("batch_no"),
+				}
+				item_price = get_item_price(item_price_args, d.item_code)
+				if item_price:
+					d.price_list_rate = item_price[0][1]
+					d.rate = d.price_list_rate
+					d.discount_percentage = d.discount_amount = d.margin_rate_or_amount = 0
+					d.amount = d.qty * d.rate
+				continue
+			if d.get("so_detail") or d.get("quotation_item"):
+				# item mapped from Sales Order / Quotation, price list rate must
+				# stay identical to origin document, do not refetch
+				continue
 			item_price_args = {
 				"item_code": d.item_code,
 				"price_list": "Standard Selling",
@@ -375,6 +406,11 @@ class SalesInvoice(SellingController):
 			self.company
 			and frappe.db.get_value("Consignment Settings", self.company, "allow_expired_product_on_sales_invoice")
 		)
+		allow_expired = allow_expired or any(
+			frappe.db.get_value("Warehouse", d.warehouse or self.set_warehouse, "allow_expired_product")
+			for d in self.get("items")
+			if d.warehouse or self.set_warehouse
+		)
 
 		# Step 1: validate existing batch_no — clear if qty insufficient
 		for d in self.get("items"):
@@ -423,7 +459,7 @@ class SalesInvoice(SellingController):
 						"item_code", "item_name", "description", "warehouse", "target_warehouse",
 						"uom", "stock_uom", "conversion_factor", "rate", "price_list_rate",
 						"cost_center", "income_account", "sales_order", "so_detail",
-						"delivery_note", "dn_detail", "project", "item_tax_rate",
+						"delivery_note", "dn_detail", "custom_delivery_note_references", "project", "item_tax_rate",
 						"allow_zero_valuation_rate", "blanket_order", "blanket_order_detail",
 					]
 					for f in copy_fields:
@@ -446,14 +482,7 @@ class SalesInvoice(SellingController):
 		if new_items:
 			self.calculate_taxes_and_totals()
 
-		if split_info:
-			html = "<b>Items were split into multiple batches:</b><br><br>"
-			for info in split_info:
-				html += f"<b>{info['item']}</b> - Total: {info['total_qty']}<br>"
-				for s in info["splits"]:
-					html += f"&nbsp;&nbsp;&bull; {s['batch']}: {flt(s['qty'], 2)}<br>"
-				html += "<br>"
-			frappe.msgprint(html, title="Batch Split", indicator="green")
+
 
 	def on_submit(self):
 		self.validate_pos_paid_amount()
@@ -470,8 +499,11 @@ class SalesInvoice(SellingController):
 			self.status_updater = []
 
 		self.update_status_updater_args()
-		self.update_prevdoc_status()
-		self.update_billing_status_in_dn()
+		if self.has_multi_delivery_note_references():
+			self.update_multi_delivery_note_status()
+		else:
+			self.update_prevdoc_status()
+			self.update_billing_status_in_dn()
 		self.clear_unallocated_mode_of_payments()
 
 		# Updating stock ledger should always be called after updating prevdoc status,
@@ -572,8 +604,11 @@ class SalesInvoice(SellingController):
 			self.status_updater = []
 
 		self.update_status_updater_args()
-		self.update_prevdoc_status()
-		self.update_billing_status_in_dn()
+		if self.has_multi_delivery_note_references():
+			self.update_multi_delivery_note_status()
+		else:
+			self.update_prevdoc_status()
+			self.update_billing_status_in_dn()
 
 		if not self.is_return:
 			self.update_billing_status_for_zero_amount_refdoc("Delivery Note")
@@ -1009,6 +1044,10 @@ class SalesInvoice(SellingController):
 				frappe.throw(_("Warehouse required for stock Item {0}").format(d.item_code))
 
 	def validate_delivery_note(self):
+		if self.has_multi_delivery_note_references():
+			self.update_stock = 0
+			return
+
 		for d in self.get("items"):
 			if not d.delivery_note:
 				continue
@@ -1609,6 +1648,100 @@ class SalesInvoice(SellingController):
 					item=self,
 				)
 			)
+
+	def has_multi_delivery_note_references(self):
+		return any(
+			len([ref for ref in (item.get("custom_delivery_note_references") or "").split(",") if ref]) > 1
+			for item in self.items
+		)
+
+	def validate_multi_reference_billing(self):
+		quantities = {}
+		seen = set()
+		for item in self.items:
+			for reference in filter(None, (item.custom_delivery_note_references or "").split(",")):
+				parts = reference.split("|")
+				if len(parts) != 5 or not parts[1] or flt(parts[2]) <= 0:
+					frappe.throw(_("Invalid Delivery Note reference: {0}").format(reference))
+				if reference in seen:
+					continue
+				seen.add(reference)
+				quantities[parts[1]] = max(quantities.get(parts[1], 0), flt(parts[2]))
+		for dn_detail, qty in quantities.items():
+			allowed = frappe.db.get_value("Delivery Note Item", dn_detail, "qty")
+			if allowed is None or qty > flt(allowed) + 0.000001:
+				frappe.throw(_("Quantity exceeds Delivery Note Item {0}").format(dn_detail))
+
+	def update_multi_delivery_note_status(self, update_modified=True):
+		updated_delivery_notes = set()
+		updated_sales_orders = set()
+		references = {}
+		for item in self.items:
+			if item.get("so_detail"):
+				updated_sales_orders.add(item.so_detail)
+			if item.get("dn_detail") and not item.get("custom_delivery_note_references"):
+				references[item.dn_detail] = [item.delivery_note, item.dn_detail, item.qty, item.sales_order, item.so_detail]
+			for reference in filter(None, (item.custom_delivery_note_references or "").split(",")):
+				parts = reference.split("|")
+				if len(parts) != 5 or not parts[1] or not parts[2]:
+					frappe.throw(_("Invalid Delivery Note reference: {0}").format(reference))
+				references[parts[1]] = parts
+
+		for delivery_note, dn_detail, qty, sales_order, so_detail in references.values():
+			if dn_detail:
+				billed_amt = frappe.db.sql(
+					"""select sum(amount) from `tabSales Invoice Item`
+					where dn_detail=%s and docstatus=1 and not custom_delivery_note_references""",
+					dn_detail,
+				)[0][0] or 0
+				for source_item in frappe.get_all(
+					"Sales Invoice Item", filters={"docstatus": 1}, fields=["amount", "qty", "custom_delivery_note_references"]
+				):
+					for source_reference in filter(None, (source_item.custom_delivery_note_references or "").split(",")):
+						parts = source_reference.split("|")
+						if len(parts) == 5 and parts[1] == dn_detail:
+							billed_amt += flt(source_item.amount) * flt(parts[2]) / flt(source_item.qty or 1)
+				frappe.db.set_value("Delivery Note Item", dn_detail, "billed_amt", billed_amt, update_modified=update_modified)
+				if self.docstatus == 1:
+					frappe.db.set_value("Delivery Note Item", dn_detail, "against_sales_invoice", self.name, update_modified=False)
+				elif frappe.db.get_value("Delivery Note Item", dn_detail, "against_sales_invoice") == self.name:
+					frappe.db.set_value("Delivery Note Item", dn_detail, "against_sales_invoice", None, update_modified=False)
+				updated_delivery_notes.add(delivery_note)
+			if so_detail:
+				updated_sales_orders.add(so_detail)
+
+		for so_detail in updated_sales_orders:
+			billed_amt = frappe.db.sql(
+				"""select sum(amount) from `tabSales Invoice Item`
+				where so_detail=%s and docstatus=1 and not custom_delivery_note_references""",
+				so_detail,
+			)[0][0] or 0
+			for source_item in frappe.get_all(
+				"Sales Invoice Item", filters={"docstatus": 1}, fields=["amount", "qty", "custom_delivery_note_references"]
+			):
+				for source_reference in filter(None, (source_item.custom_delivery_note_references or "").split(",")):
+					parts = source_reference.split("|")
+					if len(parts) == 5 and parts[4] == so_detail:
+						billed_amt += flt(source_item.amount) * flt(parts[2]) / flt(source_item.qty or 1)
+			frappe.db.set_value("Sales Order Item", so_detail, "billed_amt", billed_amt, update_modified=update_modified)
+			so_name = frappe.db.get_value("Sales Order Item", so_detail, "parent")
+			order_amount = frappe.db.sql(
+				"""select sum(amount) from `tabSales Order Item` where parent=%s""", so_name
+			)[0][0] or 0
+			if so_name and order_amount:
+				billed_total = frappe.db.sql(
+					"""select sum(billed_amt) from `tabSales Order Item` where parent=%s""", so_name
+				)[0][0] or 0
+				per_billed = min(flt(billed_total) / flt(order_amount) * 100, 100)
+				billing_status = "Fully Billed" if per_billed >= 100 else "Partly Billed" if per_billed else "Not Billed"
+				frappe.db.set_value(
+					"Sales Order", so_name,
+					{"per_billed": per_billed, "billing_status": billing_status},
+					update_modified=update_modified,
+				)
+
+		for delivery_note in updated_delivery_notes:
+			frappe.get_doc("Delivery Note", delivery_note).update_billing_percentage(update_modified=update_modified)
 
 	def update_billing_status_in_dn(self, update_modified=True):
 		updated_delivery_notes = []

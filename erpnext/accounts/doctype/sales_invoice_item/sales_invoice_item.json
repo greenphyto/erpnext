@@ -10,6 +10,7 @@
   "barcode",
   "has_item_scanned",
   "item_code",
+  "rnd_item",
   "customer_sku",
   "customer_sku_name",
   "col_break1",
@@ -39,6 +40,7 @@
   "section_break_17",
   "cost_center",
   "price_list_rate",
+  "disable_discount_amount",
   "base_price_list_rate",
   "discount_and_margin",
   "margin_type",
@@ -106,6 +108,7 @@
   "sales_invoice_item",
   "consignment_request",
   "cr_detail",
+  "custom_delivery_note_references",
   "column_break_74",
   "delivery_note",
   "dn_detail",
@@ -139,6 +142,14 @@
    "oldfieldtype": "Link",
    "options": "Item",
    "search_index": 1
+  },
+  {
+   "default": "0",
+   "fetch_from": "item_code.rnd_item",
+   "fieldname": "rnd_item",
+   "fieldtype": "Check",
+   "label": "RND Item",
+   "read_only": 1
   },
   {
    "fieldname": "col_break1",
@@ -341,6 +352,14 @@
    "fieldtype": "Currency",
    "label": "Discount Amount",
    "options": "currency"
+  },
+  {
+   "default": "0",
+   "fetch_from": "item_code.disable_discount_amount",
+   "fieldname": "disable_discount_amount",
+   "fieldtype": "Check",
+   "label": "Disable Discount Amount",
+   "read_only": 1
   },
   {
    "depends_on": "eval:doc.margin_type && doc.price_list_rate && doc.margin_rate_or_amount",
@@ -982,15 +1001,16 @@
    "read_only": 1
   },
   {
-   "fieldname": "carton_section",
-   "fieldtype": "Section Break",
-   "label": "Carton"
+   "fieldname": "custom_delivery_note_references",
+   "fieldtype": "Code",
+   "label": "Delivery Note References",
+   "read_only": 1
   }
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-05-31 12:28:05.382048",
+ "modified": "2026-09-04 15:26:29.656887",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice Item",

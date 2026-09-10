@@ -7,7 +7,9 @@
  "engine": "InnoDB",
  "field_order": [
   "default_warehouse",
-  "lazada_customer"
+  "lazada_customer",
+  "column_break_3",
+  "keep_item_price"
  ],
  "fields": [
   {
@@ -21,12 +23,22 @@
    "fieldtype": "Link",
    "label": "Lazada Customer",
    "options": "Customer"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "keep_item_price",
+   "fieldtype": "Check",
+   "label": "Keep Item Price across Document"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-08-24 12:01:37.073098",
+ "modified": "2026-09-10 11:45:23.434565",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Lazada Settings",

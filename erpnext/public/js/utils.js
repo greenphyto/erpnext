@@ -708,11 +708,12 @@ erpnext.utils.map_current_doc = function(opts) {
 				"method": opts.method,
 				"source_names": opts.source_name,
 				"target_doc": cur_frm.doc,
-				"args": opts.args
+				"args": JSON.stringify(opts.args || {})
 			},
 			callback: function(r) {
 				if(!r.exc) {
 					var doc = frappe.model.sync(r.message);
+					if (opts.postprocess) opts.postprocess(doc, opts.args);
 					cur_frm.dirty();
 					cur_frm.refresh();
 				}
@@ -746,6 +747,7 @@ erpnext.utils.map_current_doc = function(opts) {
 			allow_child_item_selection: opts.allow_child_item_selection,
 			child_fieldname: opts.child_fieldname,
 			child_columns: opts.child_columns,
+			data_fields: opts.dialog_fields,
 			size: opts.size,
 			action: function(selections, args) {
 				let values = selections;
@@ -754,9 +756,9 @@ erpnext.utils.map_current_doc = function(opts) {
 					return;
 				}
 				opts.source_name = values;
+				opts.args = args;
 				if (opts.allow_child_item_selection) {
 					// args contains filtered child docnames
-					opts.args = args;
 				}
 				d.dialog.hide();
 				_map();

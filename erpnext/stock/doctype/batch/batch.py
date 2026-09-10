@@ -297,9 +297,24 @@ def set_batch_nos(doc, warehouse_field, throw=False, child_table="items", allow_
 			if not d.batch_no:
 				if doc.docstatus == 0:
 					throw = False
-				d.batch_no = get_batch_no(d.item_code, warehouse, qty, throw, d.serial_no, allow_expired=allow_expired)
+				d.batch_no = get_batch_no(
+					d.item_code,
+					warehouse,
+					qty,
+					throw,
+					d.serial_no,
+					allow_expired=allow_expired,
+					include_salad_batch=include_salad_batch,
+					posting_date=doc.get("posting_date"),
+					posting_time=doc.get("posting_time"),
+				)
 			else:
-				batch_qty = get_batch_qty(batch_no=d.batch_no, warehouse=warehouse)
+				batch_qty = get_batch_qty(
+					batch_no=d.batch_no,
+					warehouse=warehouse,
+					posting_date=doc.get("posting_date"),
+					posting_time=doc.get("posting_time"),
+				)
 				if doc.docstatus == 1:
 					if flt(batch_qty, d.precision("qty")) < flt(qty, d.precision("qty")):
 						frappe.throw(
@@ -310,7 +325,7 @@ def set_batch_nos(doc, warehouse_field, throw=False, child_table="items", allow_
 
 
 @frappe.whitelist()
-def get_batch_no(item_code, warehouse, qty=1, throw=False, serial_no=None, allow_expired=False):
+def get_batch_no(item_code, warehouse, qty=1, throw=False, serial_no=None, allow_expired=False, include_salad_batch=False, posting_date=None, posting_time=None):
 	"""
 	Get batch number using First Expiring First Out method.
 	:param item_code: `item_code` of Item Document
@@ -320,7 +335,17 @@ def get_batch_no(item_code, warehouse, qty=1, throw=False, serial_no=None, allow
 	"""
 
 	batch_no = None
-	batches = get_batches(item_code, warehouse, qty, throw, serial_no, allow_expired=allow_expired)
+	batches = get_batches(
+		item_code,
+		warehouse,
+		qty,
+		throw,
+		serial_no,
+		allow_expired=allow_expired,
+		include_salad_batch=include_salad_batch,
+		posting_date=posting_date,
+		posting_time=posting_time,
+	)
 
 	for batch in batches:
 		if flt(qty) <= flt(batch.qty):
@@ -339,7 +364,7 @@ def get_batch_no(item_code, warehouse, qty=1, throw=False, serial_no=None, allow
 	return batch_no
 
 
-def get_batches(item_code, warehouse, qty=1, throw=False, serial_no=None, include_salad_batch=False, allow_expired=False):
+def get_batches(item_code, warehouse, qty=1, throw=False, serial_no=None, allow_expired=False, include_salad_batch=False, posting_date=None, posting_time=None):
 	from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
 
 	cond = ""
@@ -358,6 +383,15 @@ def get_batches(item_code, warehouse, qty=1, throw=False, serial_no=None, includ
 			return []
 
 		cond = " and `tabBatch`.name = %s" % (frappe.db.escape(batch[0].batch_no))
+
+	if posting_date and posting_time:
+		cond += " and (`tabStock Ledger Entry`.posting_date < %s or (`tabStock Ledger Entry`.posting_date = %s and `tabStock Ledger Entry`.posting_time <= %s))"
+		query_values = (item_code, warehouse, posting_date, posting_date, posting_time)
+	else:
+		query_values = (item_code, warehouse)
+
+	if not allow_expired:
+		cond += " and (`tabBatch`.expiry_date >= CURRENT_DATE or `tabBatch`.expiry_date IS NULL)"
 
 	if not include_salad_batch:
 		cond += " and ifnull(`tabBatch`.is_salad_batch, 0) = 0"
@@ -379,7 +413,7 @@ def get_batches(item_code, warehouse, qty=1, throw=False, serial_no=None, includ
 	""".format(
 			expiry_cond, cond
 		),
-		(item_code, warehouse),
+		query_values,
 		as_dict=True,
 	)
 
