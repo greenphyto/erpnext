@@ -507,11 +507,30 @@ def _update_stock_receipt(log, api=None):
 
 	is_cancel = doc.docstatus == 2
 
+	if is_cancel:
+		batch_nos = frappe.db.get_all(
+			"Stock Ledger Entry",
+			filters={
+				"voucher_no": doc.name,
+				"voucher_type": doc.doctype,
+				"is_cancelled": 1,
+			},
+			pluck="batch_no",
+		)
+		print(batch_nos)
+		for batch_no in set(filter(None, batch_nos)):
+			batch_data = get_deleted_document("Batch", batch_no)
+			batch_foms_id = cint(batch_data.get("foms_id"))
+			print(batch_foms_id)
+			if batch_foms_id:
+				api.delete_batch_no(batch_foms_id)
+		return
+
 	for d in doc.get("items"):
 		if d.item_group in ITEM_GROUP_NOT_SYNC:
 			continue
 
-		sle = get_ledger_info(doc, d.item_code, d.batch_no, cancel=is_cancel)
+		sle = get_ledger_info(doc, d.item_code, d.batch_no)
 		qty_data = get_batch_qty(sle.batch_no)
 
 		batch_foms_id = cint(sle.foms_id)
@@ -546,8 +565,6 @@ def _update_stock_receipt(log, api=None):
 			if res:
 				frappe.db.set_value("Batch", d.batch_no, "foms_id", res.get('id'))
 				frappe.db.set_value("Batch", d.batch_no, "foms_name", res.get('batchRefNo'))
-		else:
-			api.delete_batch_no(batch_foms_id)
 
 def get_ledger_info(doc, item_code, batch_no=None, cancel=False):
 	# return batch_no, actual_qty, foms_id
