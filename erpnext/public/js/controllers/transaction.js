@@ -2599,6 +2599,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 							uom: item.uom
 						}
 					},
+					freeze:1,
 					callback: (r) => {
 						if (r.exc) return;
 
@@ -2609,6 +2610,9 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 						item.carton_conversion = conversion;
 						item.packaging_item = detail.packaging_item || "";
 						item.carton_uom = detail.carton_uom || "Carton";
+						if (detail.uom) {
+							item.uom = detail.uom;
+						}
 						me.frm.refresh_field("items");
 					}
 				});
