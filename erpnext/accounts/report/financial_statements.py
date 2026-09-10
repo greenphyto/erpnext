@@ -241,7 +241,11 @@ def get_data(
 		recompute_monthly_net(accounts_by_name, gl_entries_by_account, period_list)
 	accumulate_values_into_parents(accounts, accounts_by_name, period_list)
 	out = prepare_data(accounts, balance_must_be, period_list, company_currency)
-	out = filter_out_zero_value_rows(out, parent_children_map)
+	if accounts_to_show:
+		out = filter_out_accounts_except(out, parent_children_map, accounts_to_show)
+	elif filter_zero_value:
+		out = filter_out_zero_value_rows(out, parent_children_map)
+
 
 	#smooth result
 	out = validate_report_result(out, period_list)

@@ -39,6 +39,14 @@ def execute(filters=None):
 		to_month=filters.to_month,
 	)
 
+	filter_zero_value = 1
+	accounts_list = []
+	if filters.get("show_budget_amount"):
+		filter_zero_value = 0
+		if cint(filters.hide_zero_balance) or 1:
+			accounts_list = get_budget_account(filters.get("cost_center"), filters.get("company"))
+
+
 	income = get_data(
 		filters.company,
 		"Income",

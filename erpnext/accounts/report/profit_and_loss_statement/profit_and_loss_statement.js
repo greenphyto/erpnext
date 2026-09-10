@@ -51,6 +51,12 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 			"default": 0,
 			"depends_on": "eval:doc.periodicity == 'Monthly'",
 			"description": __("When enabled, budget amounts are displayed in the report.")
+		},
+		{
+			"fieldname": "hide_zero_balance",
+			"label": __("Hide Zero Balance"),
+			"fieldtype": "Check",
+			"default": 1
 		}
 	);
 
