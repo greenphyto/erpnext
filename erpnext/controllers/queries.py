@@ -526,32 +526,95 @@ def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 			search_cond = " or " + " or ".join([field + " like %(txt)s" for field in searchfields])
 
 		batch_nos = frappe.db.sql(
-			"""select sle.batch_no, round(sum(sle.actual_qty),2), sle.stock_uom, batch.foms_lot_id,
-				concat('<br>MFG-',batch.manufacturing_date), concat('EXP-',batch.expiry_date)
+			"""
+			select
+				sle.batch_no,
+				round(ifnull(current_stock.actual_qty, 0), 2) as actual_qty,
+				sle.stock_uom,
+				batch.foms_lot_id,
+				concat('<br>MFG-', batch.manufacturing_date),
+				concat('EXP-', batch.expiry_date)
 				{search_columns}
+
 			from `tabStock Ledger Entry` sle
-				INNER JOIN `tabBatch` batch on sle.batch_no = batch.name
+
+			inner join `tabBatch` batch
+				on sle.batch_no = batch.name
+
+			left join (
+				select
+					batch_no,
+					item_code,
+					warehouse,
+					sum(actual_qty) as actual_qty
+
+				from `tabStock Ledger Entry`
+
+				where
+					is_cancelled = 0
+					and batch_no is not null
+					and batch_no != ''
+
+				group by
+					batch_no,
+					item_code,
+					warehouse
+
+			) current_stock
+				on current_stock.batch_no = sle.batch_no
+				and current_stock.item_code = sle.item_code
+				and current_stock.warehouse = sle.warehouse
+
 			where
 				batch.disabled = 0
 				and sle.is_cancelled = 0
 				and sle.item_code = %(item_code)s
 				and sle.warehouse = %(warehouse)s
-				and (sle.batch_no like %(txt)s
-				or batch.expiry_date like %(txt)s
-				or batch.manufacturing_date like %(txt)s
-				{search_cond})
+
+				and (
+					sle.batch_no like %(txt)s
+					or batch.expiry_date like %(txt)s
+					or batch.manufacturing_date like %(txt)s
+					{search_cond}
+				)
+
 				and batch.docstatus < 2
+
 				{cond}
+
+				/*
+					IMPORTANT:
+					This condition is only applied to the main SLE query,
+					so it determines whether the batch existed at the
+					given posting datetime.
+
+					It does NOT affect current_stock.actual_qty.
+				*/
 				{posting_datetime_cond_warehouse}
+
 				{match_conditions}
-			group by batch_no {having_clause}
-			order by batch.expiry_date, sle.batch_no desc
-			limit %(page_len)s offset %(start)s""".format(
+
+			group by
+				sle.batch_no,
+				sle.stock_uom,
+				batch.foms_lot_id,
+				batch.manufacturing_date,
+				batch.expiry_date,
+				current_stock.actual_qty
+
+			having
+				round(ifnull(current_stock.actual_qty, 0), 2) > 0
+
+			order by
+				batch.expiry_date,
+				sle.batch_no desc
+
+			limit %(page_len)s offset %(start)s
+			""".format(  # noqa: UP032
 				search_columns=search_columns,
 				cond=cond,
 				posting_datetime_cond_warehouse=posting_datetime_cond_warehouse,
 				match_conditions=get_match_cond(doctype),
-				having_clause=having_clause,
 				search_cond=search_cond,
 			),
 			args,
