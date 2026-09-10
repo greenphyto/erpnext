@@ -507,7 +507,7 @@ class SellingController(StockController):
 					)
 
 				# For internal transfers use incoming rate as the valuation rate
-				if self.is_internal_transfer():
+				if self.is_internal_transfer() and not self.get("is_lazada_order"):
 					if d.doctype == "Packed Item":
 						incoming_rate = flt(
 							flt(d.incoming_rate, d.precision("incoming_rate")) * d.conversion_factor,
@@ -753,6 +753,9 @@ class SellingController(StockController):
 						d.idx, warehouse, warehouse
 					)
 				)
+
+		if self.get("is_lazada_order"):
+			return
 
 		if not self.get("is_internal_customer") and any(d.get("target_warehouse") for d in items):
 			msg = _("Target Warehouse is set for some items but the customer is not an internal customer.")

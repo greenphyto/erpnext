@@ -80,8 +80,12 @@ frappe.ui.form.on("Delivery Note", {
 		frm.set_query('batch_no', 'items', function(doc, cdt, cdn) {
 			var row = locals[cdt][cdn];
 			return {
+				query: "erpnext.controllers.queries.get_batch_no",
 				filters: {
-					'item': row.item_code,
+					'item_code': row.item_code,
+					'posting_date': doc.posting_date || frappe.datetime.nowdate(),
+					'posting_time': doc.posting_time || frappe.datetime.now_time(),
+					'warehouse': row.warehouse,
 					'is_salad_batch': 0
 				}
 			}
@@ -1058,6 +1062,7 @@ erpnext.utils.do_update_child_items = function(opts) {
 				let filters = {
 					'item_code': item.item_code,
 					'posting_date': frm.doc.posting_date || frappe.datetime.nowdate(),
+					'posting_time': frm.doc.posting_time || frappe.datetime.now_time(),
 				}
 	
 				// if (doc.is_return) {
