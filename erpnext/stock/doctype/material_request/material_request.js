@@ -163,7 +163,7 @@ frappe.ui.form.on("Material Request", {
 					);
 				}
 
-				if (frm.doc.material_request_type === "Purchase") {
+				if (in_list(["Purchase", "Services"], frm.doc.material_request_type)) {
 					frm.add_custom_button(
 						__("Purchase Order"),
 						() => frm.events.make_purchase_order(frm),

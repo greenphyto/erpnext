@@ -6,6 +6,12 @@ from erpnext.stock.doctype.material_request.material_request import MaterialRequ
 
 
 class MaterialRequestGP(MaterialRequest):
+    def validate(self):
+        super().validate()
+        self.set_is_low_amount()
+        self.check_attachment()
+        self.set_expense_code()
+
     def set_is_low_amount(self):
         raw_material_totals, general_item_totals = 0, 0
         for d in self.get("items"):
