@@ -118,14 +118,16 @@
     "default": "0",
     "fieldname": "disabled",
     "fieldtype": "Check",
-    "label": "Disabled"
-   }
+     "label": "Disabled",
+     "no_copy": 1,
+     "no_amend_copy": 1
+    }
   ],
   "icon": "fa fa-money",
   "idx": 1,
   "is_tree": 1,
   "links": [],
-  "modified": "2024-01-07 13:22:58.916273",
+  "modified": "2026-09-10 09:55:10.515209",
   "modified_by": "Administrator",
   "module": "Accounts",
   "name": "Cost Center",

@@ -51,6 +51,8 @@
   {
    "default": "0",
    "fieldname": "disabled",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "label": "Disabled"
   },
@@ -67,7 +69,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2020-10-26 07:34:48.601766",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "Loan Management",
  "name": "Loan Security",

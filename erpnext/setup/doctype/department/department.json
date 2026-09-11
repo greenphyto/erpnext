@@ -54,6 +54,8 @@
   {
    "default": "0",
    "fieldname": "disabled",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "label": "Disabled"
   },
@@ -98,7 +100,7 @@
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-08-08 18:01:35.732927",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Department",

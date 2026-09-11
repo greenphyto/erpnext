@@ -46,6 +46,8 @@
   {
    "default": "0",
    "fieldname": "disabled",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "label": "Disabled"
   },
@@ -262,7 +264,7 @@
  "image_field": "image",
  "links": [],
  "max_attachments": 5,
- "modified": "2026-01-20 19:24:57.064454",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Batch",

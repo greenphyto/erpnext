@@ -78,6 +78,8 @@
   {
    "default": "0",
    "fieldname": "disabled",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "label": "Disabled",
    "show_days": 1,
@@ -108,7 +110,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2021-02-03 12:04:58.678402",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounting Dimension Filter",

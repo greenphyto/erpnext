@@ -32,6 +32,8 @@
   {
    "default": "0",
    "fieldname": "disabled",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "in_list_view": 1,
    "label": "Disabled"
@@ -76,7 +78,7 @@
  "icon": "icon-legal",
  "idx": 1,
  "links": [],
- "modified": "2022-06-16 15:07:38.094844",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Terms and Conditions",

@@ -104,6 +104,8 @@
   {
    "default": "0",
    "fieldname": "disable",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "label": "Disable"
   },
@@ -608,7 +610,7 @@
  "icon": "fa fa-gift",
  "idx": 1,
  "links": [],
- "modified": "2022-10-13 19:05:35.056304",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Pricing Rule",

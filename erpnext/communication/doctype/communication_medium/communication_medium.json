@@ -43,6 +43,8 @@
   {
    "default": "0",
    "fieldname": "disabled",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "label": "Disabled"
   },
@@ -65,7 +67,7 @@
   }
  ],
  "links": [],
- "modified": "2020-10-27 16:22:08.068542",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "Communication",
  "name": "Communication Medium",
