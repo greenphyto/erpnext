@@ -1,4 +1,33 @@
 frappe.ui.form.on("Delivery Note", {
+    setup: function(frm) {
+        frm.set_query("uom", "items", function(doc, cdt, cdn) {
+            const row = locals[cdt][cdn];
+            if (!row.item_code) frappe.throw(__("Please select Item"));
+            return erpnext.queries.uom({
+                parent: row.item_code,
+                is_packaging: doc.non_package_item ? 0 : 1,
+            });
+        });
+    },
+
+    onload: function(frm) {
+        set_default_delivery_warehouse(frm);
+        set_outlet_name(frm);
+        set_return_naming_series(frm);
+    },
+
+    refresh: function(frm) {
+        set_return_naming_series(frm);
+    },
+
+    company: function(frm) {
+        set_default_delivery_warehouse(frm);
+    },
+
+    shipping_address_name: function(frm) {
+        set_outlet_name(frm);
+    },
+
     is_donation: function(frm) {
         if (cint(frm.doc.is_donation) == 0) return;
         frm.set_value("naming_series", 'DON-.YYYY.-.###');
@@ -52,9 +81,62 @@ frappe.ui.form.on("Delivery Note", {
     }
 });
 
+frappe.ui.form.on("Delivery Note", {
+    is_donation: (frm) => set_exclusive_logic(frm, "is_donation"),
+    is_giveaway: (frm) => set_exclusive_logic(frm, "is_giveaway"),
+    is_return: (frm) => set_exclusive_logic(frm, "is_return"),
+    is_replacement: (frm) => set_exclusive_logic(frm, "is_replacement"),
+    is_marketing: (frm) => set_exclusive_logic(frm, "is_marketing"),
+    is_production: (frm) => set_exclusive_logic(frm, "is_production"),
+    is_pledge: (frm) => set_exclusive_logic(frm, "is_pledge"),
+});
+
+function set_return_naming_series(frm) {
+    if (frm.doc.is_return && frm.doc.naming_series !== "DO-RET-.YYYY.-.###") {
+        frm.set_value("naming_series", "DO-RET-.YYYY.-.###");
+    }
+}
+
+function set_default_delivery_warehouse(frm) {
+    if (!frm.is_new() || frm.doc.set_warehouse || !frm.doc.company) return;
+    frappe.db.get_value("Company", frm.doc.company, "default_warehouse").then(r => {
+        const warehouse = r.message && (r.message.default_warehouse || frappe.sys_defaults.default_selling_warehouse);
+        if (warehouse && !frm.doc.set_warehouse) frm.set_value("set_warehouse", warehouse);
+    });
+}
+
+function set_outlet_name(frm) {
+    if (!frm.doc.shipping_address_name) {
+        frm.set_value("outlet_name", "");
+        return;
+    }
+    frappe.db.get_value("Address", frm.doc.shipping_address_name, "outlet_name").then(r => {
+        frm.set_value("outlet_name", r.message ? r.message.outlet_name || "" : "");
+    });
+}
+
+function set_exclusive_logic(frm, changed_field) {
+    if (!cint(frm.doc[changed_field])) return;
+
+    [
+        "is_donation",
+        "is_giveaway",
+        "is_return",
+        "is_replacement",
+        "is_marketing",
+        "is_production",
+        "is_pledge",
+    ].forEach(field => {
+        if (field !== changed_field && cint(frm.doc[field])) {
+            frm.set_value(field, 0);
+        }
+    });
+} 
+
 function set_donation_expense(frm, account) {
-    $.each(frm.doc.items, (i, r) => {
-        frappe.model.set_value(r.doctype, r.name, "expense_account", account);
+    if (!account) return;
+    (frm.doc.items || []).forEach(row => {
+        frappe.model.set_value(row.doctype, row.name, "expense_account", account);
     });
     frm.refresh_field("items");
 }

@@ -717,9 +717,13 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 											if(!d[k]) d[k] = v;
 										});
 
-										if (d.has_batch_no && d.has_serial_no) {
-											d.batch_no = undefined;
-										}
+									if (d.has_batch_no && d.has_serial_no) {
+										d.batch_no = undefined;
+									}
+
+									if (me.frm.doc.doctype === "Delivery Note" && d.default_packaging) {
+										d.uom = d.default_packaging;
+									}
 
 										frappe.flags.dialog_set = true;
 										erpnext.show_serial_batch_selector(me.frm, d, (item) => {
@@ -744,7 +748,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 									var company_currency = me.get_company_currency();
 									me.update_item_grid_labels(company_currency);
 								}
-							]);
+							]).then(() => me.get_carton_detail(doc, cdt, cdn));
 						}
 					}
 				});

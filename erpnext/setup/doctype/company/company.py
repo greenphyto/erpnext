@@ -34,10 +34,16 @@ class Company(NestedSet):
 	from typing import TYPE_CHECKING
 
 	if TYPE_CHECKING:
+		from erpnext.foms.doctype.operation_wip_account.operation_wip_account import OperationWIPAccount
+		from erpnext.gp_erp.doctype.account_adjustment_map.account_adjustment_map import AccountAdjustmentMap
 		from frappe.types import DF
 
 		abbr: DF.Data
+		account_for_product_scrap: DF.Link | None
+		account_for_raw_material_scrap: DF.Link | None
 		accumulated_depreciation_account: DF.Link | None
+		admin_user: DF.Link | None
+		ai_user: DF.Link | None
 		allow_account_creation_against_child_company: DF.Check
 		asset_received_but_not_billed: DF.Link | None
 		auto_err_frequency: DF.Literal["Daily", "Weekly", "Monthly"]
@@ -45,10 +51,13 @@ class Company(NestedSet):
 		book_advance_payments_in_separate_party_account: DF.Check
 		capital_work_in_progress_account: DF.Link | None
 		chart_of_accounts: DF.Literal[None]
+		color: DF.Color | None
 		company_description: DF.TextEditor | None
 		company_logo: DF.AttachImage | None
 		company_name: DF.Data
 		cost_center: DF.Link | None
+		cost_center_for_packing: DF.Link | None
+		cost_center_for_production: DF.Link | None
 		country: DF.Link
 		create_chart_of_accounts_based_on: DF.Literal["", "Standard Template", "Existing Company"]
 		credit_limit: DF.Currency
@@ -58,12 +67,15 @@ class Company(NestedSet):
 		default_advance_paid_account: DF.Link | None
 		default_advance_received_account: DF.Link | None
 		default_bank_account: DF.Link | None
+		default_bank_charge_account: DF.Link | None
 		default_buying_terms: DF.Link | None
 		default_cash_account: DF.Link | None
+		default_cost_expense_account: DF.Link | None
 		default_currency: DF.Link
 		default_deferred_expense_account: DF.Link | None
 		default_deferred_revenue_account: DF.Link | None
 		default_discount_account: DF.Link | None
+		default_email_inbox: DF.Link | None
 		default_expense_account: DF.Link | None
 		default_finance_book: DF.Link | None
 		default_holiday_list: DF.Link | None
@@ -76,44 +88,69 @@ class Company(NestedSet):
 		default_provisional_account: DF.Link | None
 		default_receivable_account: DF.Link | None
 		default_sales_contact: DF.Link | None
+		default_salvage_warehouse: DF.Link | None
 		default_selling_terms: DF.Link | None
+		default_stock_scrap_item: DF.Link | None
+		default_warehouse: DF.Link
+		default_warehouse_for_delivery: DF.Link | None
 		default_warehouse_for_sales_return: DF.Link | None
 		depreciation_cost_center: DF.Link | None
 		depreciation_expense_account: DF.Link | None
 		disposal_account: DF.Link | None
 		domain: DF.Data | None
+		donation_account: DF.Link | None
+		donation_customer: DF.Link | None
+		donation_warehouse: DF.Link | None
+		donor_customer: DF.Link | None
+		donor_delivery_account: DF.Link | None
 		email: DF.Data | None
 		enable_perpetual_inventory: DF.Check
 		enable_provisional_accounting_for_non_stock_items: DF.Check
+		enable_supplier_invoice: DF.Check
 		exception_budget_approver_role: DF.Link | None
 		exchange_gain_loss_account: DF.Link | None
 		existing_company: DF.Link | None
+		expenses_included_in_asset_valuation: DF.Link | None
+		expenses_included_in_valuation: DF.Link | None
 		fax: DF.Data | None
+		giveaway_account: DF.Link | None
+		internal_staff_customer: DF.Link | None
 		is_group: DF.Check
 		lft: DF.Int
+		marketing_customer: DF.Link | None
+		marketing_delivery_account: DF.Link | None
 		monthly_sales_target: DF.Currency
 		old_parent: DF.Data | None
+		opening_stock_from_stock_entry: DF.Link | None
+		operation_wip_account: DF.Table[OperationWIPAccount]
 		parent_company: DF.Link | None
 		payment_terms: DF.Link | None
 		phone_no: DF.Data | None
+		production_attrition_expense_account: DF.Link | None
+		production_customer: DF.Link | None
+		production_delivery_account: DF.Link | None
+		production_loss_account: DF.Link | None
 		reconcile_on_advance_payment_date: DF.Check
-		reconciliation_takes_effect_on: DF.Literal[
-			"Advance Payment Date", "Oldest Of Invoice Or Advance", "Reconciliation Date"
-		]
+		reconciliation_takes_effect_on: DF.Literal["Advance Payment Date", "Oldest Of Invoice Or Advance", "Reconciliation Date"]
 		registration_details: DF.Code | None
 		rgt: DF.Int
 		round_off_account: DF.Link | None
 		round_off_cost_center: DF.Link | None
 		round_off_for_opening: DF.Link | None
 		sales_monthly_history: DF.SmallText | None
+		sales_replacement_account: DF.Link | None
+		series_abbr: DF.Data | None
 		series_for_depreciation_entry: DF.Data | None
 		stock_adjustment_account: DF.Link | None
 		stock_received_but_not_billed: DF.Link | None
 		submit_err_jv: DF.Check
 		tax_id: DF.Data | None
+		theme_path: DF.Data | None
+		time_zone: DF.Literal[None]
 		total_monthly_sales: DF.Currency
 		transactions_annual_history: DF.Code | None
 		unrealized_exchange_gain_loss_account: DF.Link | None
+		unrealized_fx_account_map: DF.Table[AccountAdjustmentMap]
 		unrealized_profit_loss_account: DF.Link | None
 		website: DF.Data | None
 		write_off_account: DF.Link | None

@@ -2531,6 +2531,7 @@ def get_account_number_map(company: str):
 	}
 
 
+@frappe.whitelist()
 def get_cost_center_from_account(account, company=""):
 	if not company:
 		company = erpnext.get_default_company()
