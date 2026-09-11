@@ -91,6 +91,11 @@ frappe.ui.form.on("Request", {
 	},
 	delivery_date:function(frm){
 		frm.cscript.calculate_duration_days();
+	},
+	proposed_customer: function(frm) {
+		(frm.doc.items || []).forEach(function(row) {
+			frm.cscript.get_carton_detail(frm.doc, row.doctype, row.name, true);
+		});
 	}
 
 });

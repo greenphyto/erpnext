@@ -90,6 +90,12 @@ class RepostItemValuation(Document):
 		self.gl_reposting_index = 0
 		self.db_update()
 
+	def _recalculate_valuation_rate(self):
+		doc = frappe.get_doc(self.voucher_type, self.voucher_no)
+		doc.update_valuation_rate()
+		for item in doc.items:
+			item.db_set("valuation_rate", item.valuation_rate)
+
 	def deduplicate_similar_repost(self):
 		"""Deduplicate similar reposts based on item-warehouse-posting combination."""
 		if self.based_on != "Item and Warehouse":
@@ -134,6 +140,12 @@ def repost(doc):
 		doc.set_status("In Progress")
 		if not frappe.flags.in_test:
 			frappe.db.commit()
+
+		if (
+			doc.get("recalculate_valuation_rate")
+			and doc.voucher_type in ["Purchase Receipt", "Purchase Invoice", "Stock Entry"]
+		):
+			doc._recalculate_valuation_rate()
 
 		repost_sl_entries(doc)
 		repost_gl_entries(doc)

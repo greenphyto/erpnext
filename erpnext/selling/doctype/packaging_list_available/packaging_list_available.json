@@ -14,9 +14,11 @@
   "uom",
   "default",
   "column_break_6",
-  "material",
-  "weight"
- ],
+   "material",
+   "weight",
+   "customer_section",
+   "customer"
+  ],
  "fields": [
   {
    "columns": 2,
@@ -100,6 +102,19 @@
    "in_list_view": 1,
    "label": "Desc",
    "read_only": 1
+  },
+  {
+   "fieldname": "customer_section",
+   "fieldtype": "Section Break",
+   "label": "Customer"
+  },
+  {
+   "columns": 2,
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Customer",
+   "options": "Customer"
   }
  ],
  "index_web_pages_for_search": 1,

@@ -158,9 +158,7 @@ class Batch(Document):
 			frappe.throw(_("The selected item cannot have Batch"))
 
 	def set_batchwise_valuation(self):
-		from erpnext.stock.stock_ledger import get_valuation_method
-
-		if self.is_new() and get_valuation_method(self.item) != "Moving Average":
+		if self.is_new():
 			self.use_batchwise_valuation = 1
 
 	def before_save(self):
@@ -290,7 +288,7 @@ def split_batch(batch_no, item_code, warehouse, qty, new_batch_id=None):
 	return batch.name
 
 
-def set_batch_nos(doc, warehouse_field, throw=False, child_table="items"):
+def set_batch_nos(doc, warehouse_field, throw=False, child_table="items", allow_expired=False):
 	"""Automatically select `batch_no` for outgoing items in item table"""
 	for d in doc.get(child_table):
 		qty = d.get("stock_qty") or d.get("transfer_qty") or d.get("qty") or 0
@@ -299,7 +297,7 @@ def set_batch_nos(doc, warehouse_field, throw=False, child_table="items"):
 			if not d.batch_no:
 				if doc.docstatus == 0:
 					throw = False
-				d.batch_no = get_batch_no(d.item_code, warehouse, qty, throw, d.serial_no)
+				d.batch_no = get_batch_no(d.item_code, warehouse, qty, throw, d.serial_no, allow_expired=allow_expired)
 			else:
 				batch_qty = get_batch_qty(batch_no=d.batch_no, warehouse=warehouse)
 				if doc.docstatus == 1:
@@ -312,7 +310,7 @@ def set_batch_nos(doc, warehouse_field, throw=False, child_table="items"):
 
 
 @frappe.whitelist()
-def get_batch_no(item_code, warehouse, qty=1, throw=False, serial_no=None):
+def get_batch_no(item_code, warehouse, qty=1, throw=False, serial_no=None, allow_expired=False):
 	"""
 	Get batch number using First Expiring First Out method.
 	:param item_code: `item_code` of Item Document
@@ -322,7 +320,7 @@ def get_batch_no(item_code, warehouse, qty=1, throw=False, serial_no=None):
 	"""
 
 	batch_no = None
-	batches = get_batches(item_code, warehouse, qty, throw, serial_no)
+	batches = get_batches(item_code, warehouse, qty, throw, serial_no, allow_expired=allow_expired)
 
 	for batch in batches:
 		if flt(qty) <= flt(batch.qty):
@@ -341,7 +339,7 @@ def get_batch_no(item_code, warehouse, qty=1, throw=False, serial_no=None):
 	return batch_no
 
 
-def get_batches(item_code, warehouse, qty=1, throw=False, serial_no=None, include_salad_batch=False):
+def get_batches(item_code, warehouse, qty=1, throw=False, serial_no=None, include_salad_batch=False, allow_expired=False):
 	from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
 
 	cond = ""
@@ -363,6 +361,9 @@ def get_batches(item_code, warehouse, qty=1, throw=False, serial_no=None, includ
 
 	if not include_salad_batch:
 		cond += " and ifnull(`tabBatch`.is_salad_batch, 0) = 0"
+	expiry_cond = ""
+	if not allow_expired:
+		expiry_cond = "and (`tabBatch`.expiry_date >= CURRENT_DATE or `tabBatch`.expiry_date IS NULL)"
 
 	return frappe.db.sql(
 		"""
@@ -372,11 +373,11 @@ def get_batches(item_code, warehouse, qty=1, throw=False, serial_no=None, includ
 				on (`tabBatch`.batch_id = `tabStock Ledger Entry`.batch_no )
 		where `tabStock Ledger Entry`.item_code = %s and `tabStock Ledger Entry`.warehouse = %s
 			and `tabStock Ledger Entry`.is_cancelled = 0
-			and (`tabBatch`.expiry_date >= CURRENT_DATE or `tabBatch`.expiry_date IS NULL) {0}
+			{0} {1}
 		group by batch_id
 		order by `tabBatch`.expiry_date ASC, `tabBatch`.creation ASC
 	""".format(
-			cond
+			expiry_cond, cond
 		),
 		(item_code, warehouse),
 		as_dict=True,

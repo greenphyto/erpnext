@@ -215,8 +215,8 @@ frappe.ui.form.on("Sales Order", {
 		if (cint(frm.doc.is_lazada_order)==0) return;
 		frm.set_value("naming_series", "LAZ.###./.YYYY");
 		frappe.db.get_single_value("Lazada Settings", "lazada_customer").then(r=>{
-			if (r) {
-				frm.set_value("customer", r);
+			if (r.message || r) {
+				frm.set_value("customer", r.message || r);
 			}
 		});
 	},
