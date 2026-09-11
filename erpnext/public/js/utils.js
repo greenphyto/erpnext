@@ -4,6 +4,16 @@ frappe.provide("erpnext");
 frappe.provide("erpnext.utils");
 frappe.provide("erpnext.stock.utils");
 
+erpnext.utils.get_cost_center = function (account, company) {
+	return new Promise((resolve) => {
+		frappe.call({
+			method: "erpnext.accounts.utils.get_cost_center_from_account",
+			args: { account, company },
+			callback: (r) => resolve(r.message),
+		});
+	});
+};
+
 $.extend(erpnext, {
 	get_currency: function (company) {
 		if (!company && cur_frm) company = cur_frm.doc.company;
