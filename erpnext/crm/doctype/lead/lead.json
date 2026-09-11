@@ -490,6 +490,8 @@
   {
    "default": "0",
    "fieldname": "disabled",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "label": "Disabled"
   },
@@ -526,7 +528,7 @@
  "idx": 5,
  "image_field": "image",
  "links": [],
- "modified": "2026-04-29 16:08:29.965069",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "CRM",
  "name": "Lead",

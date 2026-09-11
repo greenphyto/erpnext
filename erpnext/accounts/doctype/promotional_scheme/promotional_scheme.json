@@ -63,6 +63,8 @@
   {
    "default": "0",
    "fieldname": "disable",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "label": "Disable"
   },
@@ -278,7 +280,7 @@
   }
  ],
  "links": [],
- "modified": "2021-05-06 16:20:22.039078",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Promotional Scheme",

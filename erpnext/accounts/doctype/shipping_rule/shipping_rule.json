@@ -49,6 +49,8 @@
   {
    "default": "0",
    "fieldname": "disabled",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "label": "Disabled"
   },
@@ -205,7 +207,7 @@
  "icon": "fa fa-truck",
  "idx": 1,
  "links": [],
- "modified": "2026-03-11 16:30:19.947955",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Shipping Rule",

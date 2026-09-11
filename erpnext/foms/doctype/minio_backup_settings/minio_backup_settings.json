@@ -20,6 +20,8 @@
   {
    "default": "0",
    "fieldname": "enable",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "label": "Enable"
   },
@@ -68,7 +70,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-08-07 10:58:07.673542",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "MinIO Backup Settings",

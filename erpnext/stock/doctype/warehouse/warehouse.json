@@ -91,6 +91,8 @@
   {
    "default": "0",
    "fieldname": "disabled",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "in_list_view": 1,
    "label": "Disabled"
@@ -354,7 +356,7 @@
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2026-02-09 16:08:09.901884",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Warehouse",

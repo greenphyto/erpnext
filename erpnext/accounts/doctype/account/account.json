@@ -193,6 +193,8 @@
   {
    "default": "0",
    "fieldname": "disabled",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "label": "Disable"
   },
@@ -217,7 +219,7 @@
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2026-06-04 13:12:12.007168",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Account",

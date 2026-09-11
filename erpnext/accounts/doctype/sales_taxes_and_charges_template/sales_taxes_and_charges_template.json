@@ -38,6 +38,8 @@
   {
    "default": "0",
    "fieldname": "disabled",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "label": "Disabled"
   },
@@ -86,7 +88,7 @@
  "icon": "fa fa-money",
  "idx": 1,
  "links": [],
- "modified": "2024-07-18 18:22:13.853098",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Taxes and Charges Template",

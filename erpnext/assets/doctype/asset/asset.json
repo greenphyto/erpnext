@@ -215,6 +215,8 @@
    "fieldname": "disposal_date",
    "fieldtype": "Date",
    "label": "Disposal Date",
+   "no_amend_copy": 1,
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -571,6 +573,8 @@
    "fieldname": "disabled",
    "fieldtype": "Check",
    "label": "Disabled",
+   "no_amend_copy": 1,
+   "no_copy": 1,
    "read_only": 1
   }
  ],
@@ -594,7 +598,7 @@
    "link_fieldname": "asset"
   }
  ],
- "modified": "2025-06-10 15:04:03.515133",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "Assets",
  "name": "Asset",

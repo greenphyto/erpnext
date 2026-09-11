@@ -197,6 +197,8 @@
    "bold": 1,
    "default": "0",
    "fieldname": "disabled",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "label": "Disabled"
   },
@@ -556,7 +558,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2026-09-09 15:42:23.472541",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",

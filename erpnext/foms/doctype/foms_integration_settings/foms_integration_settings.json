@@ -72,6 +72,8 @@
   {
    "default": "0",
    "fieldname": "enable",
+   "no_copy": 1,
+   "no_amend_copy": 1,
    "fieldtype": "Check",
    "label": "Enable"
   },
@@ -248,7 +250,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-01-07 18:21:39.573200",
+ "modified": "2026-09-10 09:55:10.515209",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "FOMS Integration Settings",
