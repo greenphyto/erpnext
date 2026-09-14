@@ -98,6 +98,9 @@ class Item(Document):
 		if not self.item_name:
 			self.item_name = self.item_code
 
+		if "R&D" in self.item_name:
+			self.rnd_item = 1
+
 		if not strip_html(cstr(self.description)).strip():
 			self.description = self.item_name
 
