@@ -23,6 +23,7 @@ def execute(filters=None):
 	columns = get_columns(filters)
 	item_map = get_item_details(filters)
 	iwb_map = get_item_warehouse_batch_map(filters, float_precision)
+	purchase_receipt_owners = get_purchase_receipt_owners() if filters.get("item_group") == "Raw Material" else {}
 
 	data = []
 	for item in sorted(iwb_map):
@@ -33,24 +34,10 @@ def execute(filters=None):
 				for batch in sorted(iwb_map[item][wh]):
 					qty_dict = iwb_map[item][wh][batch]
 					if qty_dict.opening_qty or qty_dict.in_qty or qty_dict.out_qty or qty_dict.bal_qty:
-						data.append(
-							[
-								item,
-								item_map[item]["item_name"],
-								item_map[item]["description"],
-								wh,
-								batch,
-								qty_dict.foms_lot_id,
-								"Empty" if not qty_dict.bal_qty else "Expiry" if qty_dict.expiry_date and getdate(qty_dict.expiry_date) < getdate(filters.to_date) else "Active",
-								flt(qty_dict.opening_qty, float_precision),
-								flt(qty_dict.in_qty, float_precision),
-								flt(qty_dict.out_qty, float_precision),
-								flt(qty_dict.bal_qty, float_precision),
-								item_map[item]["stock_uom"],
-								qty_dict.expiry_date,
-								flt(qty_dict.stock_value, float_precision),
-							]
-						)
+						row = [item, item_map[item]["item_name"], item_map[item]["description"], wh, batch, qty_dict.foms_lot_id, "Empty" if not qty_dict.bal_qty else "Expiry" if qty_dict.expiry_date and getdate(qty_dict.expiry_date) < getdate(filters.to_date) else "Active", flt(qty_dict.opening_qty, float_precision), flt(qty_dict.in_qty, float_precision), flt(qty_dict.out_qty, float_precision), flt(qty_dict.bal_qty, float_precision), item_map[item]["stock_uom"], qty_dict.expiry_date, flt(qty_dict.stock_value, float_precision)]
+						if filters.get("item_group") == "Raw Material":
+							row.append(purchase_receipt_owners.get(batch, ""))
+						data.append(row)
 
 	return columns, data
 
@@ -74,8 +61,26 @@ def get_columns(filters):
 		+ [_("Expiry Date") + ":Date:110"]
 		+ [_("Stock Value") + ":Currency:120"]
 	)
+	if filters.get("item_group") == "Raw Material":
+		columns += [_("GRN By") + ":Link/User:180"]
 
 	return columns
+
+
+def get_purchase_receipt_owners():
+	return {
+		d.batch_no: d.owner
+		for d in frappe.db.sql(
+			"""
+			select pri.batch_no, pr.owner
+			from `tabPurchase Receipt Item` pri
+			inner join `tabPurchase Receipt` pr on pr.name = pri.parent
+			where pr.docstatus < 2 and pri.batch_no is not null and pri.batch_no != ''
+			order by pr.creation asc
+			""",
+			as_dict=True,
+		)
+	}
 
 
 # get all details
