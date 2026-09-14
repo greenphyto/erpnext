@@ -2,7 +2,9 @@
 # License: GNU General Public License v3. See license.txt
 
 
-import frappe
+from collections import defaultdict
+
+import frappe, erpnext
 from frappe import _
 from frappe.contacts.doctype.address.address import get_company_address
 from frappe.desk.notifications import clear_doctype_notifications
@@ -638,20 +640,21 @@ class DeliveryNote(SellingController):
 			)
 
 	def validate_packed_qty(self):
-		"""
-		Validate that if packed qty exists, it should be equal to qty
-		"""
-		if not any(flt(d.get("packed_qty")) for d in self.get("items")):
-			return
-		has_error = False
+		groups = defaultdict(lambda: {"qty": 0, "packed_qty": 0, "rows": []})
 		for d in self.get("items"):
-			if flt(d.get("qty")) != flt(d.get("packed_qty")):
+			key = (d.item_code, d.uom)
+			groups[key]["qty"] += flt(d.get("qty"))
+			groups[key]["packed_qty"] += flt(d.get("packed_qty"))
+			groups[key]["rows"].append(d.idx)
+
+		for (item_code, uom), values in groups.items():
+			if values["packed_qty"] and values["qty"] != values["packed_qty"]:
 				frappe.msgprint(
-					_("Packed quantity must equal quantity for Item {0} in row {1}").format(d.item_code, d.idx)
+					_("Packed quantity must equal quantity for Item {0} ({1}), rows {2}").format(
+						item_code, uom, ", ".join(map(str, values["rows"]))
+					)
 				)
-				has_error = True
-		if has_error:
-			raise frappe.ValidationError
+				raise frappe.ValidationError
 
 	def check_next_docstatus(self):
 		submit_rv = frappe.db.sql(
