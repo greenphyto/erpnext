@@ -42,6 +42,18 @@ frappe.ui.form.on('Scrap Request', {
 });
 
 frappe.ui.form.on('Scrap Items', {
+	batch: function(frm,cdt,cdn){
+		var row = locals[cdt][cdn];
+		if (row.batch) {
+			frappe.call({
+				method: "erpnext.stock.doctype.scrap_request.scrap_request.get_current_batch_qty",
+				args: {batch: row.batch},
+				callback: function(r) {
+					frappe.model.set_value(cdt, cdn, "cur_qty", r.message || 0);
+				}
+			});
+		}
+	},
 	item_code: function(frm,cdt,cdn){
 		frappe.model.set_value(cdt,cdn, "batch", "");
 		frappe.model.set_value(cdt,cdn, "cur_qty", "");

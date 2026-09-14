@@ -65,8 +65,7 @@
   },
   {
    "columns": 1,
-   "fetch_from": "batch.batch_qty",
-   "fieldname": "cur_qty",
+    "fieldname": "cur_qty",
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Cur. Qty",

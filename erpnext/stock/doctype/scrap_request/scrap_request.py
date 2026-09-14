@@ -4,7 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from frappe.desk.reportview import get_filters_cond, get_match_cond
-from frappe.utils import getdate, add_days, cint
+from frappe.utils import getdate, add_days, cint, flt
 from erpnext.stock.doctype.batch.batch import get_batch_qty
 from erpnext.stock.get_item_details import get_conversion_factor
 from erpnext.controllers.foms import get_wip_warehouse
@@ -13,6 +13,23 @@ class ScrapRequest(Document):
 	def validate(self):
 		if self.docstatus == 0:
 			self.stock_entry = ""
+
+		wip_warehouse = get_wip_warehouse()
+		for row in list(self.items):
+			qty = (
+				sum(
+					flt(d.get("qty"), 7)
+					for d in get_batch_qty(row.batch)
+					if d.get("warehouse") not in wip_warehouse
+				)
+				if row.batch
+				else 0
+			)
+			if qty <= 0:
+				self.remove(row)
+			else:
+				row.cur_qty = qty
+				row.qty = min(flt(row.qty, 7), qty)
 
 		self.set_scrap_account()
 		 
@@ -78,15 +95,16 @@ def create_material_issue(doc, submit=False):
 	for d in doc.get("items"):
 		qty_map = get_batch_qty(d.batch)
 		for dt in qty_map:
-			if dt.get("warehouse") not in wip_warehouse:
+			if dt.get("warehouse") not in wip_warehouse and flt(dt.get("qty"), 7) > 0:
 				row = stock_entry.append("items")
 				row.item_code = d.item_code
-				row.qty = dt.get("qty") or 1
+				row.qty = flt(dt.get("qty"), 7)
 				qty_all += row.qty
-				row.uom = d.uom
+				row.uom = d.uom or frappe.get_cached_value("Item", d.item_code, "stock_uom")
+				row.stock_uom = frappe.get_cached_value("Item", d.item_code, "stock_uom")
 				row.batch_no = d.batch
 				row.is_scrap_item = 1
-				row.conversion_factor = get_conversion_factor(d.item_code, d.uom).get("conversion_factor", 1)
+				row.conversion_factor = get_conversion_factor(d.item_code, row.uom).get("conversion_factor", 1)
 				row.s_warehouse = dt.get("warehouse")
 				row.expense_account = d.expense_account
 
@@ -123,13 +141,22 @@ def get_batch_numbers(doctype, txt, searchfield, start, page_len, filters):
 	query += " order by expiry_date asc"
 	return frappe.db.sql(query, filters)
 
+@frappe.whitelist()
+def get_current_batch_qty(batch):
+	wip_warehouse = get_wip_warehouse()
+	return sum(
+		flt(d.get("qty"), 7)
+		for d in get_batch_qty(batch)
+		if d.get("warehouse") not in wip_warehouse
+	)
+
+
 def collect_expired_items():
 	enable, within_days = frappe.db.get_value("Stock Settings","Stock Settings", ['enable_auto_collect_expired_items', 'expiry_days']) or (0, 0)
 
 	if not cint(enable):
 		return
 	
-	use_date = add_days(getdate(), cint(within_days))
 	wip_warehouse = get_wip_warehouse()
 
 	# get data
@@ -144,65 +171,53 @@ def collect_expired_items():
 					sle.warehouse,
 					sle.company,
 					SUM(sle.actual_qty) AS batch_qty,
-					b.expiry_date
+					b.expiry_date,
+					i.stock_uom AS uom
 			FROM
 				`tabStock Ledger Entry` sle
 			LEFT JOIN `tabBatch` b ON b.name = sle.batch_no
-			left join `tabItem` i on i.name = sle.item_code
+			LEFT JOIN `tabItem` i ON i.name = b.item
 			WHERE
 				sle.is_cancelled = 0
 					AND sle.batch_no IS NOT NULL
 					AND sle.batch_no != ''
 					AND sle.warehouse NOT IN %(wh)s
-					AND b.expiry_date <= %(exp)s
 					AND i.item_group = 'Raw Material'
 			GROUP BY sle.batch_no , sle.warehouse
 			ORDER BY sle.modified ASC) a
 		WHERE
 			a.batch_qty > 0
-	""", {"wh":wip_warehouse, "exp":use_date}, as_dict=1, debug=0)
+			AND a.batch_qty < 1
+	""", {"wh":wip_warehouse}, as_dict=1, debug=0)
 
 	if not data:
 		return
 
 	companys = list(set([d.company for d in data]))
 	result = {}
-	
+
 	for company in companys:
 		switch_to_company_admin(company)
-		sr_name = frappe.get_value("Scrap Request", {
-			"system_generated":1, 
-			"docstatus":0
-		}, debug=0)
-
+		sr_name = frappe.get_value("Scrap Request", {"system_generated": 1, "docstatus": 0}, debug=0)
 		if sr_name:
 			doc = frappe.get_doc("Scrap Request", sr_name)
-			# add tollerance approval on progress not more than 14 days ago
 			if doc.status != "Pending" and getdate(doc.posting_date) > add_days(getdate(), -14):
 				return
 		else:
 			doc = frappe.new_doc("Scrap Request")
 
-		# create scrap request
 		for d in data:
 			if d.company != company:
 				continue
-
-			temp = doc.get("items", {"batch":d.batch})
-			if temp:
-				row = temp[0]
-			else:
-				row = doc.append("items")
+			temp = doc.get("items", {"batch": d.batch})
+			row = temp[0] if temp else doc.append("items")
+			if not temp:
 				row.item_code = d.item
 				row.batch = d.batch
+			row.qty = flt(d.batch_qty, 7)
+			row.uom = d.uom
 
-			row.qty = d.batch_qty
-		
 		rm_account = frappe.db.get_value("Company", company, "account_for_raw_material_scrap")
-		for d in doc.items:
-			if d.item_group == "Raw Material":
-				d.expense_account = rm_account	
-
 		doc.posting_date = getdate()
 		doc.scrap_account = rm_account
 		doc.reason = "Expired item (system)"
@@ -232,8 +247,8 @@ def collect_expired_product(date=""):
 					sle.warehouse,
 					SUM(sle.actual_qty) AS batch_qty,
 					b.expiry_date,
-					sle.company,
-					sle.stock_uom as uom
+						sle.company,
+						sle.stock_uom as uom
 			FROM
 				`tabStock Ledger Entry` sle
 			LEFT JOIN `tabBatch` b ON b.name = sle.batch_no
@@ -273,7 +288,7 @@ def collect_expired_product(date=""):
 				continue
 			row = stock_entry.append("items")
 			row.item_code = d.item
-			row.qty = d.batch_qty
+			row.qty = flt(d.batch_qty, 7)
 			row.uom = d.uom
 			row.batch_no = d.batch
 			row.is_scrap_item = 1
