@@ -8,7 +8,7 @@ def execute():
 		SET rnd_item = 1
 		WHERE item_name LIKE %(pattern)s
 		""",
-		{"pattern": "(R&D)%"},
+		{"pattern": "%R&D%"},
 	)
 
 	for company in frappe.get_all("Company", fields=["name", "abbr"]):
