@@ -4,6 +4,7 @@
 
 import json
 
+import erpnext
 import frappe
 import frappe.defaults
 from frappe import _
@@ -25,6 +26,16 @@ from frappe.utils.nestedset import NestedSet, rebuild_tree
 
 from erpnext.accounts.doctype.account.account import get_account_currency
 from erpnext.setup.setup_wizard.operations.taxes_setup import setup_taxes_and_charges
+
+
+def switch_to_company_admin(company, change_user=True):
+	if erpnext.get_default_company() == company:
+		return frappe.session.user
+
+	user = frappe.get_value("Company", company, "admin_user") or "Administrator"
+	if change_user and user:
+		frappe.set_user(user)
+	return user
 
 
 class Company(NestedSet):

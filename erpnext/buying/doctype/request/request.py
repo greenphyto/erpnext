@@ -5,21 +5,11 @@ import frappe, json, erpnext
 from frappe.model.document import Document
 from frappe.utils import getdate, flt, cstr, add_days, today, cint
 from frappe import _
-# from erpnext.controllers.foms import UOM_MAP
+from erpnext.controllers.foms import UOM_MAP
 from erpnext.stock.get_item_details import get_item_price
 from six import string_types
 import csv
 from io import StringIO
-from datetime import datetime
-
-def _parse_date(date_str):
-	date_str = date_str.strip()
-	for fmt in ("%d/%m/%y", "%d/%m/%Y", "%d-%m-%y", "%d-%m-%Y"):
-		try:
-			return datetime.strptime(date_str, fmt).date()
-		except ValueError:
-			continue
-	return getdate(date_str)
 
 class Request(Document):
 	def validate(self):
@@ -737,7 +727,7 @@ def parse_forecast_upload(csv_content):
 
 		# Validate and normalize delivery date
 		try:
-			delivery_date = str(_parse_date(delivery_date))
+			delivery_date = str(getdate(delivery_date))
 		except Exception:
 			warnings.append({
 				"row": row_num,

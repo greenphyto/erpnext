@@ -1,7 +1,7 @@
 // Copyright (c) 2024, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-erpnext.sales_common.setup_selling_controller();
+{% include 'erpnext/selling/sales_common.js' %}
 
 frappe.ui.form.on("Request", {
 	quantity: function (frm) {
@@ -47,14 +47,6 @@ frappe.ui.form.on("Request", {
 			}
 		})
 
-		frm.set_query("packaging_item", "items", function(doc, cdt, cdn) {
-			return {
-				filters: {
-					material_group: "Other Packaging"
-				}
-			}
-		});
-
 
 
 
@@ -99,6 +91,11 @@ frappe.ui.form.on("Request", {
 	},
 	delivery_date:function(frm){
 		frm.cscript.calculate_duration_days();
+	},
+	proposed_customer: function(frm) {
+		(frm.doc.items || []).forEach(function(row) {
+			frm.cscript.get_carton_detail(frm.doc, row.doctype, row.name, true);
+		});
 	}
 
 });
