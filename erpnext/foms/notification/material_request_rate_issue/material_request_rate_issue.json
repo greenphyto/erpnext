@@ -1,0 +1,32 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "creation": "2026-02-06 12:26:33.746245",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Material Request",
+ "enabled": 1,
+ "event": "Custom",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<h3>Found Material Request rate with more than 100% increase</h3>\n<br>\n<p>Document Details:</p>\n<p>Document No: <b>{{doc.name}}</b></p>\n<p>Request Date: <b>{{doc.transaction_date}}</b></p>\n<p>Project/Department: <b>{{doc.department}}</b></p>\n<a href=\"{{ frappe.utils.get_url_to_form(doc.doctype, doc.name) }}\" class=\"btn\"><h3>View Request</h3></a>\n<br>\n<table>\n    <thead>\n        <tr>\n            <th>Item</th>\n            <th>Cur Rate</th>\n            <th>New Rate</th>\n            <th>Increase</th>\n        </tr>\n    </thead>\n    <tbody>\n    {% for d in doc.get(\"issues\") %}\n        <tr>\n            <td>{{d.item_code}}</td>\n            <td>{{d.current_rate}}</td>\n            <td>{{d.incoming_rate}}</td>\n            <td class=\"warning\">{{d.growth_rate}}%</td>\n        </tr>\n    {% endfor %}\n    </tbody>\n</table>\n<br>\n<p>This request requires your immediate attention before it can be converted to a Purchase Order.</p>\n<br>",
+ "modified": "2026-02-06 15:40:44.149702",
+ "modified_by": "Administrator",
+ "module": "FOMS",
+ "name": "Material Request Rate Issue",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "email": "rizky@greenphyto.com"
+  },
+  {
+   "email": "weiquan@greenphyto.com"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "sender": "ERP",
+ "sender_email": "erp@greenphyto.com",
+ "subject": "\ud83d\udea8 Significant Rate Increase Alert - Material Request {{doc.name}}"
+}

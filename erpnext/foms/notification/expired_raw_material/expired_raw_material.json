@@ -1,0 +1,38 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "doc.system_generated == 1",
+ "creation": "2024-12-19 17:27:12.270911",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Scrap Request",
+ "enabled": 1,
+ "event": "New",
+ "exclude_recipients": "doreen@greenphyto.com",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "{% set today = frappe.utils.format_date(frappe.utils.add_days(frappe.utils.today(), -1)) %}\n<H3>Raw Material is about expired</H3>\n\n<p>Please note that the following raw materials in our inventory are approaching their expiration date within the next 30 days (as of <b>{{ today }}</b>):</p>\n\n<table style=\"border-collapse: collapse; width: 100%;\">\n    <thead>\n        <tr>\n            <th style=\"border: 1px solid #ddd; padding: 8px; text-align: left;\">Product Name</th>\n            <th style=\"border: 1px solid #ddd; padding: 8px; text-align: left;\">Batch Number</th>\n            <th style=\"border: 1px solid #ddd; padding: 8px; text-align: left;\">Qty</th>\n            <th style=\"border: 1px solid #ddd; padding: 8px; text-align: left;\">UOM</th>\n            <th style=\"border: 1px solid #ddd; padding: 8px; text-align: left;\">Expiry Date</th>\n        </tr>\n    </thead>\n    <tbody>\n        {% for d in doc.items %}\n        <tr>\n            <td style=\"border: 1px solid #ddd; padding: 8px;\">{{ d.item_code }}</td>\n            <td style=\"border: 1px solid #ddd; padding: 8px;\">{{ d.batch }}</td>\n            <td style=\"border: 1px solid #ddd; padding: 8px;\">{{ d.cur_qty }}</td>\n            <td style=\"border: 1px solid #ddd; padding: 8px;\">{{ d.uom }}</td>\n            <td style=\"border: 1px solid #ddd; padding: 8px;\">{{ d.expired_date }}</td>\n        </tr>\n        {% endfor %}\n    </tbody>\n</table>\n\n<p>Scrap Request No: {{doc.name}}</p>\n<a href=\"{{frappe.utils.get_url_to_form(doc.doctype, doc.name)}}\">Open Document</a>\n\n<p>Please review these materials and take necessary actions to ensure efficient usage before their expiry.</p>\n<p>Thank you</p>\n",
+ "modified": "2025-01-07 18:18:58.348466",
+ "modified_by": "Administrator",
+ "module": "FOMS",
+ "name": "Expired Raw Material",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_document_field": "",
+   "receiver_by_role": "Stock Manager"
+  },
+  {
+   "receiver_by_role": "Stock Master Manager"
+  },
+  {
+   "receiver_by_role": "CEO"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "sender": "ERP",
+ "sender_email": "erp@greenphyto.com",
+ "subject": "Expired Raw Material {{ frappe.utils.format_date(doc.posting_date) }}"
+}

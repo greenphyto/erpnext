@@ -1,0 +1,104 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:title",
+ "creation": "2026-01-02 16:35:48.601404",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "title",
+  "rates",
+  "account_settings_section",
+  "expense_for_electricity",
+  "expense_for_manpower",
+  "column_break_7",
+  "expense_for_machinery",
+  "expense_for_consumable"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "rates",
+   "fieldtype": "Table",
+   "label": "Rates",
+   "options": "Rate Card Detail",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "account_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Account Settings"
+  },
+  {
+   "fieldname": "expense_for_electricity",
+   "fieldtype": "Link",
+   "label": "Expense for Electricity",
+   "options": "Account"
+  },
+  {
+   "fieldname": "expense_for_manpower",
+   "fieldtype": "Link",
+   "label": "Expense for Manpower",
+   "options": "Account"
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "expense_for_machinery",
+   "fieldtype": "Link",
+   "label": "Expense for Machinery",
+   "options": "Account"
+  },
+  {
+   "fieldname": "expense_for_consumable",
+   "fieldtype": "Link",
+   "label": "Expense for Consumable",
+   "options": "Account"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-27 17:47:15.191332",
+ "modified_by": "Administrator",
+ "module": "FOMS",
+ "name": "Rate Card",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title"
+}

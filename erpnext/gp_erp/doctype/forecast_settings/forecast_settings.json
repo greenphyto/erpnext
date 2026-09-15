@@ -1,0 +1,77 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-06-30 18:19:12.631367",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "enable",
+  "forecast_days",
+  "company_default",
+  "department_default",
+  "items",
+  "customers"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enable",
+   "fieldtype": "Check",
+   "label": "Enable"
+  },
+  {
+   "default": "30",
+   "fieldname": "forecast_days",
+   "fieldtype": "Int",
+   "label": "Forecast Days"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Subtitution Name"
+  },
+  {
+   "fieldname": "customers",
+   "fieldtype": "Table",
+   "label": "Customers",
+   "options": "Subtitution Name"
+  },
+  {
+   "fieldname": "company_default",
+   "fieldtype": "Link",
+   "label": "Company Default",
+   "options": "Company"
+  },
+  {
+   "fieldname": "department_default",
+   "fieldtype": "Link",
+   "label": "Department Default",
+   "options": "Department"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-07-01 13:33:15.749608",
+ "modified_by": "Administrator",
+ "module": "GP ERP",
+ "name": "Forecast Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

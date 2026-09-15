@@ -3,6 +3,7 @@
 
 import copy
 import json
+import re
 
 import frappe
 from frappe import _, bold
@@ -23,6 +24,19 @@ from frappe.utils import (
 )
 from frappe.utils.html_utils import clean_html
 from pypika import Order
+
+
+def parse_material_group_series(material_group):
+	name = frappe.db.exists("Material Group", material_group)
+	if not name:
+		frappe.throw(_(f"Cannot find Material Group {material_group}"))
+
+	settings = frappe.get_value(
+		"Material Group", material_group, ["number_start", "number_end"], as_dict=True
+	)
+	difference = cint(settings.number_end) - cint(settings.number_start)
+	replacer = "." + "#" * len(cstr(difference))
+	return re.sub(f"{difference}$", replacer, cstr(settings.number_end))
 
 import erpnext
 from erpnext.controllers.item_variant import (

@@ -1,7 +1,7 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
 
-erpnext.sales_common.setup_selling_controller();
+{% include 'erpnext/selling/sales_common.js' %}
 
 frappe.ui.form.on("Consignment Request", {
 	setup: function(frm) {

@@ -1,0 +1,32 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "creation": "2025-06-25 11:37:01.156438",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Material Request",
+ "enabled": 1,
+ "event": "Custom",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<p>Dear Purchase Manager,</p>\n\n<p>The following stock items have fallen below their minimum (safety stock) levels:</p>\n\n<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\" style=\"border-collapse: collapse; font-family: Arial, sans-serif;\">\n  <thead style=\"background-color: #f2f2f2;\">\n    <tr>\n      <th>Item Code</th>\n      <th>Safety Stock</th>\n      <th>Current Quantity</th>\n      <th>Warehouse</th>\n    </tr>\n  </thead>\n  <tbody>\n    {% for row in doc.item_list %}\n    <tr>\n      <td>{{ row.item_code }}</td>\n      <td>{{ row.safety_stock }}</td>\n      <td>{{ row.actual_qty }}</td>\n      <td>{{ row.warehouse }}</td>\n    </tr>\n    {% endfor %}\n  </tbody>\n</table>\n\n<p>Please review and consider restocking these items.</p>\n\n",
+ "modified": "2025-06-25 11:37:36.741931",
+ "modified_by": "Administrator",
+ "module": "FOMS",
+ "name": "Low Stock Alert",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_role": "Purchase Manager"
+  },
+  {
+   "receiver_by_role": "Purchase User"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "sender": "ERP",
+ "sender_email": "erp@greenphyto.com",
+ "subject": "Low Stock Alert: Items Below Safety Stock"
+}

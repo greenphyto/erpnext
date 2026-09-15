@@ -1,0 +1,32 @@
+{
+ "custom_fields": [],
+ "custom_perms": [],
+ "doctype": "Consignment Order",
+ "links": [],
+ "property_setters": [
+  {
+   "_assign": null,
+   "_comments": null,
+   "_liked_by": null,
+   "_user_tags": null,
+   "creation": "2026-05-26 11:22:56.019085",
+   "default_value": null,
+   "doc_type": "Consignment Order",
+   "docstatus": 0,
+   "doctype_or_field": "DocType",
+   "field_name": null,
+   "idx": 0,
+   "is_system_generated": 0,
+   "modified": "2026-05-26 11:22:56.019085",
+   "modified_by": "Administrator",
+   "module": null,
+   "name": "Consignment Order-main-default_print_format",
+   "owner": "Administrator",
+   "property": "default_print_format",
+   "property_type": "Data",
+   "row_name": null,
+   "value": "Consignment Order"
+  }
+ ],
+ "sync_on_migrate": 1
+}
