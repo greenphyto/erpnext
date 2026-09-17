@@ -218,10 +218,10 @@
   {
    "default": "0",
    "fieldname": "disabled",
-   "no_copy": 1,
-   "no_amend_copy": 1,
    "fieldtype": "Check",
-   "label": "Disabled"
+   "label": "Disabled",
+   "no_amend_copy": 1,
+   "no_copy": 1
   },
   {
    "default": "0",
@@ -1093,6 +1093,7 @@
    "default": "0",
    "fieldname": "rnd_item",
    "fieldtype": "Check",
+   "in_standard_filter": 1,
    "label": "R&D Item"
   }
  ],
@@ -1102,7 +1103,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2026-09-10 09:55:10.515209",
+ "modified": "2026-09-17 17:25:09.531813",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Item",
