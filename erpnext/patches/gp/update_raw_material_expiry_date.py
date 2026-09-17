@@ -5,7 +5,9 @@ from frappe.utils import add_years
 def execute():
 	update_raw_material_expiry_dates()
 
-
+"""
+bench --site erp-prod execute erpnext.patches.gp.update_raw_material_expiry_date.execute
+"""
 def update_raw_material_expiry_dates():
 	batches = frappe.db.sql(
 		"""
@@ -14,7 +16,6 @@ def update_raw_material_expiry_dates():
 		INNER JOIN `tabItem` i ON i.name = b.item
 		WHERE i.item_group = 'Raw Material'
 			AND b.manufacturing_date IS NOT NULL
-			AND (b.expiry_date IS NULL OR b.expiry_date = '')
 		""",
 		as_dict=True,
 	)

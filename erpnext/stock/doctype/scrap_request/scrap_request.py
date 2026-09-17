@@ -152,7 +152,7 @@ def get_current_batch_qty(batch):
 
 
 def collect_expired_items():
-	enable, within_days = frappe.db.get_value("Stock Settings","Stock Settings", ['enable_auto_collect_expired_items', 'expiry_days']) or (0, 0)
+	enable = frappe.db.get_single_value("Stock Settings", "enable_auto_collect_residual_raw_material")
 
 	if not cint(enable):
 		return
