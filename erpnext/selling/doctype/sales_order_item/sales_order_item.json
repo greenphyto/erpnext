@@ -6,9 +6,10 @@
  "document_type": "Document",
  "editable_grid": 1,
  "engine": "InnoDB",
- "field_order": [
-  "item_code",
-  "customer_item_code",
+  "field_order": [
+   "item_code",
+   "item_name_view",
+   "customer_item_code",
   "ensure_delivery_based_on_produced_serial_no",
   "is_stock_item",
   "reserve_stock",
@@ -109,11 +110,10 @@
   "material_request_item",
   "purchase_order_item",
   "accounting_dimensions_section",
-  "cost_center",
-  "column_break_ihdh",
-  "project",
-  "item_name_view",
-  "marketing_name",
+   "cost_center",
+   "column_break_ihdh",
+   "project",
+   "marketing_name",
   "carton_section",
   "is_carton",
   "carton_qty",
@@ -1080,7 +1080,8 @@
   {
    "fieldname": "item_name_view",
    "fieldtype": "Data",
-   "label": "Item Name View"
+   "label": "Item Name",
+   "depends_on": "eval:doc.non_stock_item"
   },
   {
    "default": "0",

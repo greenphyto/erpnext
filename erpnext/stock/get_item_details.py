@@ -69,6 +69,7 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 
 	if doc:
 		args["transaction_date"] = doc.get("transaction_date") or doc.get("posting_date")
+		args.non_package_item = doc.get("non_package_item")
 
 		if doc.get("doctype") == "Purchase Invoice":
 			args["bill_date"] = doc.get("bill_date")
@@ -419,7 +420,9 @@ def get_basic_details(args, item, overwrite_warehouse=True):
 
 	# Set the UOM to the Default Sales UOM or Default Purchase UOM if configured in the Item Master
 	if not args.get("uom"):
-		if args.get("doctype") in sales_doctypes:
+		if args.get("doctype") in sales_doctypes and args.get("non_package_item") == 0:
+			args.uom = item.default_packaging or item.sales_uom or item.stock_uom
+		elif args.get("doctype") in sales_doctypes:
 			args.uom = item.sales_uom if item.sales_uom else item.stock_uom
 		elif (
 			args.get("doctype")

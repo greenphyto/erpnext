@@ -174,6 +174,14 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends (
 		}
 
 		this.set_default_print_format();
+		this.frm.set_query("uom", "items", function (doc, cdt, cdn) {
+			const row = locals[cdt][cdn];
+			if (!row.item_code) frappe.throw(__("Please select Item"));
+			return erpnext.queries.uom({
+				parent: row.item_code,
+				is_packaging: doc.non_package_item ? 0 : 1,
+			});
+		});
 		if (doc.docstatus == 1 && !doc.inter_company_invoice_reference) {
 			let internal = me.frm.doc.is_internal_customer;
 			if (internal) {
@@ -815,6 +823,11 @@ frappe.ui.form.on("Sales Invoice", {
 	},
 	onload: function (frm) {
 		frm.redemption_conversion_factor = null;
+		if (frm.is_new() && !frm.doc.set_warehouse) {
+			frappe.db.get_value("Company", frm.doc.company, "default_warehouse_for_delivery").then((r) => {
+				frm.set_value("set_warehouse", r.message.default_warehouse_for_delivery || frappe.boot.sysdefaults.default_selling_warehouse);
+			});
+		}
 	},
 
 	update_stock: function (frm, dt, dn) {

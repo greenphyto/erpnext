@@ -1010,10 +1010,11 @@
    "options": "UOM"
   },
   {
-   "allow_on_submit": 1,
-   "fieldname": "item_name_view",
-   "fieldtype": "Data",
-   "label": "Item Name"
+    "allow_on_submit": 1,
+    "depends_on": "eval:doc.non_stock_item",
+    "fieldname": "item_name_view",
+    "fieldtype": "Data",
+    "label": "Item Name"
   },
   {
    "default": "0",

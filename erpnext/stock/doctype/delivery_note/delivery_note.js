@@ -72,6 +72,22 @@ frappe.ui.form.on("Delivery Note", {
 
 		frm.set_df_property("packed_items", "cannot_add_rows", true);
 		frm.set_df_property("packed_items", "cannot_delete_rows", true);
+		frm.set_query("uom", "items", function (doc, cdt, cdn) {
+			const row = locals[cdt][cdn];
+			if (!row.item_code) frappe.throw(__("Please select Item"));
+			return erpnext.queries.uom({
+				parent: row.item_code,
+				is_packaging: doc.non_package_item ? 0 : 1,
+			});
+		});
+	},
+
+	onload: function (frm) {
+		if (frm.is_new() && !frm.doc.set_warehouse) {
+			frappe.db.get_value("Company", frm.doc.company, "default_warehouse_for_delivery").then((r) => {
+				frm.set_value("set_warehouse", r.message.default_warehouse_for_delivery || frappe.boot.sysdefaults.default_selling_warehouse);
+			});
+		}
 	},
 
 	print_without_amount: function (frm) {

@@ -915,9 +915,10 @@
    "read_only": 1
   },
   {
-   "fieldname": "item_name_view",
-   "fieldtype": "Data",
-   "label": "Item Name"
+    "depends_on": "eval:doc.non_stock_item",
+    "fieldname": "item_name_view",
+    "fieldtype": "Data",
+    "label": "Item Name"
   },
   {
    "columns": 2,

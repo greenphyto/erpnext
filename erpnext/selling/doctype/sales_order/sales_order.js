@@ -8,6 +8,17 @@ erpnext.accounts.taxes.setup_tax_validations("Sales Order");
 erpnext.sales_common.setup_selling_controller();
 
 frappe.ui.form.on("Sales Order", {
+	is_pledge(frm) {
+		if (!cint(frm.doc.is_pledge)) return;
+
+		frm.set_value("naming_series", "PLN.###./.YYYY");
+		frm.set_value("po_no", "For Pledge");
+		frm.set_value("po_date", "");
+		frappe.db.get_value("Company", frm.doc.company, "donor_customer").then((r) => {
+			if (r.message?.donor_customer) frm.set_value("customer", r.message.donor_customer);
+		});
+	},
+
 	setup: function (frm) {
 		frm.custom_make_buttons = {
 			"Delivery Note": "Delivery Note",
@@ -150,6 +161,28 @@ frappe.ui.form.on("Sales Order", {
 		if (frm.doc.docstatus > 0) {
 			frm.set_df_property("reserve_stock", "description", null);
 		}
+
+		frm.events.pending_po(frm);
+	},
+
+	pending_po(frm, refresh = false) {
+		if (frm.doc.is_pledge) return;
+
+		if (frm.doc.pending_po) {
+			if (frm.is_dirty() && !(frm.doc.po_no && refresh)) {
+				frm.set_value("po_no", "Pending PO");
+				frm.set_value("po_date", "");
+			}
+			frm.set_df_property("po_no", "hidden", 1);
+			frm.set_df_property("po_date", "hidden", 1);
+		} else {
+			if (frm.is_dirty() && !(frm.doc.po_no && refresh)) {
+				frm.set_value("po_no", "");
+				frm.set_value("po_date", "");
+			}
+			frm.set_df_property("po_no", "hidden", 0);
+			frm.set_df_property("po_date", "hidden", 0);
+		}
 	},
 
 	get_items_from_internal_purchase_order(frm) {
@@ -188,6 +221,9 @@ frappe.ui.form.on("Sales Order", {
 		if (!frm.doc.transaction_date) {
 			frm.set_value("transaction_date", frappe.datetime.get_today());
 		}
+		if (frm.is_new() && !frm.doc.set_warehouse && frappe.boot.sysdefaults.default_selling_warehouse) {
+			frm.set_value("set_warehouse", frappe.boot.sysdefaults.default_selling_warehouse);
+		}
 		erpnext.queries.setup_queries(frm, "Warehouse", function () {
 			return {
 				filters: [
@@ -197,7 +233,15 @@ frappe.ui.form.on("Sales Order", {
 			};
 		});
 
-		frm.set_query("warehouse", "items", function (doc, cdt, cdn) {
+			frm.set_query("uom", "items", function (doc, cdt, cdn) {
+				let row = locals[cdt][cdn];
+				return erpnext.queries.uom({
+					parent: row.item_code,
+					is_packaging: doc.non_package_item ? 0 : 1,
+				});
+			});
+
+			frm.set_query("warehouse", "items", function (doc, cdt, cdn) {
 			let row = locals[cdt][cdn];
 			let query = {
 				filters: [
