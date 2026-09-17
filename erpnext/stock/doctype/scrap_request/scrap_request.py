@@ -41,8 +41,7 @@ class ScrapRequest(Document):
 			if d.get("rnd_item"):
 				if rnd_account is None:
 					rnd_account = frappe.db.get_value("Company", self.company, "account_for_rnd_item_scrap")
-				if rnd_account:
-					d.expense_account = rnd_account
+				d.expense_account = rnd_account or rm_account
 			elif d.item_group == "Raw Material":
 				d.expense_account = rm_account
 			elif d.item_group == "Products":
@@ -172,7 +171,8 @@ def collect_expired_items():
 					sle.company,
 					SUM(sle.actual_qty) AS batch_qty,
 					b.expiry_date,
-					i.stock_uom AS uom
+					i.stock_uom AS uom,
+					MAX(i.rnd_item) AS rnd_item
 			FROM
 				`tabStock Ledger Entry` sle
 			LEFT JOIN `tabBatch` b ON b.name = sle.batch_no
@@ -214,6 +214,7 @@ def collect_expired_items():
 			if not temp:
 				row.item_code = d.item
 				row.batch = d.batch
+				row.rnd_item = d.rnd_item
 			row.qty = flt(d.batch_qty, 7)
 			row.uom = d.uom
 
