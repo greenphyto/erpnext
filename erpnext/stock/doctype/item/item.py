@@ -98,6 +98,15 @@ class Item(Document):
 		if not self.item_name:
 			self.item_name = self.item_code
 
+		if "R&D" in self.item_name:
+			self.rnd_item = 1
+
+		if self.rnd_item:
+			for item_default in self.item_defaults:
+				item_default.expense_account = frappe.db.get_value(
+					"Company", item_default.company, "account_for_rnd_item_scrap"
+				) or item_default.expense_account
+
 		if not strip_html(cstr(self.description)).strip():
 			self.description = self.item_name
 
@@ -155,7 +164,7 @@ class Item(Document):
 
 	def set_rnd_product(self):
 		if "R&D" in (self.item_name or ""):
-			self.rnd_product = 1
+			self.rnd_item = 1
 			for d in self.item_defaults:
 				company = frappe.get_cached_doc("Company", d.company)
 				if company.default_rnd_expense:
