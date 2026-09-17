@@ -36,15 +36,14 @@ class ScrapRequest(Document):
 	def set_scrap_account(self):
 		rm_account = frappe.db.get_single_value("Stock Settings", "account_for_raw_material_scrap")
 		pr_account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
-		rnd_account = None
+		rnd_account = frappe.db.get_value("Company", self.company, "account_for_rnd_item_scrap")
 		for d in self.items:
-			if d.get("rnd_item"):
-				if rnd_account is None:
-					rnd_account = frappe.db.get_value("Company", self.company, "account_for_rnd_item_scrap")
+			item = frappe.db.get_value("Item", d.item_code, ["rnd_item", "item_group"], as_dict=True)
+			if item and item.rnd_item:
 				d.expense_account = rnd_account or rm_account
-			elif d.item_group == "Raw Material":
+			elif item and item.item_group == "Raw Material":
 				d.expense_account = rm_account
-			elif d.item_group == "Products":
+			elif item and item.item_group == "Products":
 				d.expense_account = pr_account
 			
 	def on_submit(self):
@@ -62,13 +61,17 @@ class ScrapRequest(Document):
 				doc.db_set("stock_entry", "")
 
 @frappe.whitelist()
-def get_scrap_account(item_group):
-	account = ""
+def get_scrap_account(item_group, company=None, item_code=None):
+	if item_code and company and frappe.db.get_value("Item", item_code, "rnd_item"):
+		return frappe.db.get_value("Company", company, "account_for_rnd_item_scrap") or frappe.db.get_single_value(
+			"Stock Settings", "account_for_raw_material_scrap"
+		)
+
 	if item_group == "Raw Material":
-		account = frappe.db.get_single_value("Stock Settings", "account_for_raw_material_scrap")
-	elif item_group == "Products":
-		account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
-	return account
+		return frappe.db.get_single_value("Stock Settings", "account_for_raw_material_scrap")
+	if item_group == "Products":
+		return frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
+	return ""
 
 def create_material_issue(doc, submit=False):
 	stock_entry = frappe.new_doc("Stock Entry")
@@ -111,6 +114,16 @@ def create_material_issue(doc, submit=False):
 		return 
 	
 	stock_entry.set_missing_values()
+	rnd_account = frappe.db.get_value("Company", doc.company, "account_for_rnd_item_scrap")
+	product_account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
+	for row in stock_entry.items:
+		item = frappe.db.get_value("Item", row.item_code, ["rnd_item", "item_group"], as_dict=True)
+		if item.rnd_item:
+			row.expense_account = rnd_account or frappe.db.get_single_value(
+				"Stock Settings", "account_for_raw_material_scrap"
+			)
+		elif item.item_group == "Products":
+			row.expense_account = product_account
 	stock_entry.insert(ignore_permissions=1)
 	if submit:
 		stock_entry.submit()

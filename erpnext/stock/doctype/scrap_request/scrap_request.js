@@ -69,7 +69,9 @@ $.extend(cur_frm.cscript, {
 			frappe.call({
 				method:"erpnext.stock.doctype.scrap_request.scrap_request.get_scrap_account",
 				args: {
-					item_group:d.item_group
+					item_group: d.item_group,
+					company: frm.doc.company,
+					item_code: d.item_code
 				},
 				callback: (r)=>{
 					frappe.model.set_value(cdt, cdn, "expense_account", r.message);
