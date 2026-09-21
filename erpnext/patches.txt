@@ -333,3 +333,5 @@ erpnext.patches.gp.set_batch_status
 erpnext.patches.v14_0.add_mixing_operation
 erpnext.patches.gp.create_lazada_customer
 erpnext.patches.gp.set_rnd_item_from_name
+erpnext.patches.gp.set_rnd_item_for_seed_items
+erpnext.patches.gp.set_rnd_raw_material_account
