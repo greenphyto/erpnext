@@ -9,6 +9,7 @@ from erpnext.controllers.stock_controller import StockController
 from erpnext.stock.doctype.delivery_note.delivery_note import DeliveryNote
 from erpnext.stock.get_item_details import get_conversion_factor
 from erpnext.stock.utils import get_incoming_rate
+from erpnext.stock.doctype.batch.batch import get_batches
 
 
 class ConsignmentOrder(DeliveryNote):
@@ -38,6 +39,7 @@ class ConsignmentOrder(DeliveryNote):
 		super(DeliveryNote, self).validate()
 
 		self.apply_target_warehouse_default()
+		self.set_fifo_batch_numbers()
 		self.validate_warehouse()
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
 		self.validate_uom_is_integer("uom", "qty")
@@ -52,6 +54,38 @@ class ConsignmentOrder(DeliveryNote):
 				item.warehouse = default_source
 			if default_target and not item.target_warehouse:
 				item.target_warehouse = default_target
+
+	def set_fifo_batch_numbers(self):
+		for item in list(self.get("items")):
+			if item.batch_no or not item.warehouse or not item.item_code:
+				continue
+			if not frappe.get_cached_value("Item", item.item_code, "has_batch_no"):
+				continue
+
+			conversion_factor = flt(item.conversion_factor) or 1
+			remaining_stock_qty = flt(item.stock_qty or item.qty * conversion_factor)
+			batches = get_batches(item.item_code, item.warehouse, qty=remaining_stock_qty) or []
+			allocated = []
+			for batch in batches:
+				batch_qty = min(flt(batch.qty), remaining_stock_qty)
+				if batch_qty <= 0:
+					continue
+				allocated.append((batch.batch_id, batch_qty))
+				remaining_stock_qty -= batch_qty
+				if remaining_stock_qty <= 0:
+					break
+
+			if remaining_stock_qty > 0:
+				frappe.throw(_("Insufficient batch stock for Item {0}").format(item.item_code))
+
+			item.qty = allocated[0][1] / conversion_factor
+			item.stock_qty = allocated[0][1]
+			item.batch_no = allocated[0][0]
+			for batch_no, batch_qty in allocated[1:]:
+				new_item = self.append("items", item.as_dict())
+				new_item.qty = batch_qty / conversion_factor
+				new_item.stock_qty = batch_qty
+				new_item.batch_no = batch_no
 
 	def validate_warehouse(self):
 		# Keep standard warehouse validations (company/disabled checks).
