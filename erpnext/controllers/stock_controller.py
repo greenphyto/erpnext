@@ -116,7 +116,9 @@ class StockController(AccountsController):
 					continue
 
 				warehouse = d.get("warehouse") or d.get("s_warehouse") or self.get("set_warehouse")
-				if warehouse and cint(frappe.db.get_value("Warehouse", warehouse, "allow_expired_product")):
+				if (warehouse and cint(frappe.db.get_value("Warehouse", warehouse, "allow_expired_product"))) or (
+					self.company and frappe.db.get_value("Company", self.company, "enable_auto_batch")
+				):
 					continue
 
 				if self.doctype == "Sales Invoice" and self.company:
