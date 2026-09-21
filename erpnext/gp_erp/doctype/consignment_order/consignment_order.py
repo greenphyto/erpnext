@@ -69,30 +69,26 @@ class ConsignmentOrder(DeliveryNote):
 				continue
 
 			conversion_factor = flt(item.conversion_factor) or 1
-			remaining_qty = flt(item.stock_qty or item.qty * conversion_factor)
-			batches = get_batches(item.item_code, item.warehouse, qty=remaining_qty) or []
-			allocations = []
+			remaining_stock_qty = flt(item.stock_qty or item.qty * conversion_factor)
+			batches = get_batches(item.item_code, item.warehouse, qty=remaining_stock_qty) or []
+			allocated = []
 			for batch in batches:
-				batch_qty = min(flt(batch.qty), remaining_qty)
+				batch_qty = min(flt(batch.qty), remaining_stock_qty)
 				if batch_qty <= 0:
 					continue
-				allocations.append((batch.batch_id, batch_qty))
-				remaining_qty -= batch_qty
-				if remaining_qty <= 0:
+				allocated.append((batch.batch_id, batch_qty))
+				remaining_stock_qty -= batch_qty
+				if remaining_stock_qty <= 0:
 					break
 
-			if remaining_qty > 0:
-				frappe.msgprint(_("Insufficient batch stock for Item {0}").format(item.item_code))
-				continue
+			if remaining_stock_qty > 0:
+				frappe.throw(_("Insufficient batch stock for Item {0}").format(item.item_code))
 
-			item.qty = allocations[0][1] / conversion_factor
-			item.stock_qty = allocations[0][1]
-			item.batch_no = allocations[0][0]
-			row_data = item.as_dict()
-			for field in ("name", "parent", "parentfield", "parenttype", "idx", "doctype"):
-				row_data.pop(field, None)
-			for batch_no, batch_qty in allocations[1:]:
-				new_item = self.append("items", row_data.copy())
+			item.qty = allocated[0][1] / conversion_factor
+			item.stock_qty = allocated[0][1]
+			item.batch_no = allocated[0][0]
+			for batch_no, batch_qty in allocated[1:]:
+				new_item = self.append("items", item.as_dict())
 				new_item.qty = batch_qty / conversion_factor
 				new_item.stock_qty = batch_qty
 				new_item.batch_no = batch_no
