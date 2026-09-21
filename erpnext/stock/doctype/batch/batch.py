@@ -300,6 +300,55 @@ def split_batch(batch_no, item_code, warehouse, qty, new_batch_id=None):
 	return batch.name
 
 
+def set_auto_batch_rows(doc, warehouse_field, child_table="items"):
+	if not doc.company or not frappe.db.get_value("Company", doc.company, "enable_auto_batch"):
+		return
+
+	for item in list(doc.get(child_table)):
+		if not item.get(warehouse_field) or not item.item_code:
+			continue
+		if not frappe.db.get_value("Item", item.item_code, "has_batch_no"):
+			continue
+
+		conversion_factor = flt(item.conversion_factor) or 1
+		remaining_qty = flt(item.stock_qty or item.qty * conversion_factor)
+		if item.batch_no:
+			expiry_date = frappe.db.get_value("Batch", item.batch_no, "expiry_date")
+			if expiry_date and getdate(expiry_date) < getdate(doc.posting_date):
+				item.batch_no = None
+			else:
+				batch_qty = get_batch_qty(batch_no=item.batch_no, warehouse=item.get(warehouse_field))
+				if flt(batch_qty) >= remaining_qty:
+					continue
+				item.batch_no = None
+
+		batches = get_batches(item.item_code, item.get(warehouse_field), qty=remaining_qty) or []
+		allocations = []
+		for batch in batches:
+			batch_qty = min(flt(batch.qty), remaining_qty)
+			if batch_qty <= 0:
+				continue
+			allocations.append((batch.batch_id, batch_qty))
+			remaining_qty -= batch_qty
+			if remaining_qty <= 0:
+				break
+
+		if not allocations or remaining_qty > 0:
+			continue
+
+		item.qty = allocations[0][1] / conversion_factor
+		item.stock_qty = allocations[0][1]
+		item.batch_no = allocations[0][0]
+		row_data = item.as_dict()
+		for field in ("name", "parent", "parentfield", "parenttype", "idx", "doctype"):
+			row_data.pop(field, None)
+		for batch_no, batch_qty in allocations[1:]:
+			new_item = doc.append(child_table, row_data.copy())
+			new_item.qty = batch_qty / conversion_factor
+			new_item.stock_qty = batch_qty
+			new_item.batch_no = batch_no
+
+
 def set_batch_nos(doc, warehouse_field, throw=False, child_table="items", allow_expired=False, include_salad_batch=False):
 	"""Automatically select `batch_no` for outgoing items in item table"""
 	for d in doc.get(child_table):

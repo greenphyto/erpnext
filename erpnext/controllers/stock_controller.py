@@ -116,6 +116,9 @@ class StockController(AccountsController):
 				if self.doctype == "Delivery Note" and (cint(self.is_marketing) or cint(self.is_donation) or cint(self.is_replacement) or cint(self.is_pledge)):
 					continue
 
+				if self.company and frappe.db.get_value("Company", self.company, "enable_auto_batch"):
+					continue
+
 				if self.doctype == "Sales Invoice" and self.company:
 					if frappe.db.get_value("Consignment Settings", self.company, "allow_expired_product_on_sales_invoice"):
 						continue

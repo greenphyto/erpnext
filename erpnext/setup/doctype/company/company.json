@@ -95,6 +95,7 @@
   "auto_accounting_for_stock_settings",
   "enable_perpetual_inventory",
   "enable_provisional_accounting_for_non_stock_items",
+  "enable_auto_batch",
   "default_inventory_account",
   "stock_adjustment_account",
   "default_warehouse",
@@ -1070,6 +1071,12 @@
    "fieldtype": "Link",
    "label": "Account for R&D Item Scrap",
    "options": "Account"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_auto_batch",
+   "fieldtype": "Check",
+   "label": "Enable Auto Batch"
   }
  ],
  "icon": "fa fa-building",
@@ -1077,7 +1084,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2026-09-04 10:24:06.474897",
+ "modified": "2026-09-21 12:43:22.574570",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",
