@@ -8,11 +8,11 @@ def execute():
 def set_rnd_product():
 	item = frappe.qb.DocType("Item")
 
-	frappe.qb.update(item).set(item.rnd_product, 1).where(
+	frappe.qb.update(item).set(item.rnd_item, 1).where(
 		item.item_name.like("%R&D%")
 	).run()
 
-	items = frappe.get_all("Item", filters={"rnd_product": 1}, fields=["name"])
+	items = frappe.get_all("Item", filters={"rnd_item": 1}, fields=["name"])
 	for row in items:
 		defaults = frappe.get_all("Item Default", filters={"parent": row.name}, fields=["name", "company"])
 		for d in defaults:

@@ -21,8 +21,8 @@ class ScrapRequest(Document):
 		company = self.company if hasattr(self, "company") and self.company else frappe.defaults.get_defaults().get("company")
 		rnd_expense = frappe.db.get_value("Company", company, "default_rnd_expense") if company else None
 		for d in self.items:
-			rnd_product = frappe.db.get_value("Item", d.item_code, "rnd_product") if d.item_code else 0
-			if rnd_product:
+			rnd_item = frappe.db.get_value("Item", d.item_code, "rnd_item") if d.item_code else 0
+			if rnd_item:
 				d.expense_account = rnd_expense or pr_account
 			elif d.item_group == "Raw Material":
 				d.expense_account = rm_account
@@ -68,7 +68,7 @@ def create_material_issue(doc, submit=False):
 	rnd_cost_center = frappe.db.get_value("Company", company, "default_rnd_cost_center") if company else None
 	for d in doc.get("items"):
 		qty_map = get_batch_qty(d.batch)
-		rnd_product = frappe.db.get_value("Item", d.item_code, "rnd_product") if d.item_code else 0
+		rnd_item = frappe.db.get_value("Item", d.item_code, "rnd_item") if d.item_code else 0
 		for dt in qty_map:
 			if dt.get("warehouse") not in wip_warehouse:
 				row = stock_entry.append("items")
@@ -81,7 +81,7 @@ def create_material_issue(doc, submit=False):
 				row.conversion_factor = get_conversion_factor(d.item_code, d.uom).get("conversion_factor", 1)
 				row.s_warehouse = dt.get("warehouse")
 				row.expense_account = d.expense_account
-				if rnd_product and rnd_cost_center:
+				if rnd_item and rnd_cost_center:
 					row.cost_center = rnd_cost_center
 
 	if not qty_all:
@@ -248,7 +248,7 @@ def collect_expired_product(date=""):
 		for d in data:
 			if d.company != company:
 				continue
-			rnd_product = frappe.db.get_value("Item", d.item, "rnd_product")
+			rnd_item = frappe.db.get_value("Item", d.item, "rnd_item")
 			row = stock_entry.append("items")
 			row.item_code = d.item
 			row.qty = d.batch_qty
@@ -257,7 +257,7 @@ def collect_expired_product(date=""):
 			row.is_scrap_item = 1
 			row.conversion_factor = 1
 			row.s_warehouse = d.get("warehouse")
-			if rnd_product:
+			if rnd_item:
 				row.expense_account = rnd_expense or expense_account
 				row.cost_center = rnd_cost_center or cost_center
 			else:

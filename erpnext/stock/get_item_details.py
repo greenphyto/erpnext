@@ -6,6 +6,7 @@ import json, math
 
 import frappe
 from frappe import _, throw
+from six import string_types
 from frappe.model import child_table_fields, default_fields
 from frappe.model.meta import get_field_precision
 from frappe.utils import add_days, add_months, cint, cstr, flt, getdate
@@ -1618,7 +1619,7 @@ def get_carton_detail(args):
 			and cpd.item_code = %(item_code)s
 			and cpd.package = %(package)s
 	""", {"customer": args.customer, "item_code": args.item_code, "package": args.uom}, as_dict=1)
-	res = temp[0] if temp else {}
+	res = frappe._dict(temp[0]) if temp else frappe._dict()
 	res.is_carton = 1
 	res.carton_qty = math.ceil(flt(args.qty) / flt(res.carton_conversion)) if res.carton_conversion else 0
 	customer_packaging = frappe.get_all(
