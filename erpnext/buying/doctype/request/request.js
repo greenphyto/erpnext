@@ -182,7 +182,6 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 		var total_price = 0;
 		var total_weight = 0;
 		$.each(this.frm.doc.items, (i, d)=>{
-			console.log(i, d);
 			var amount = d.rate * flt(d.qty);
 			total_price += amount;
 			total_weight += d.unit_weight;
