@@ -1675,7 +1675,7 @@
     "/erpnext.controllers.erp_api.get_item_order": {
       "get": {
         "summary": "Get Purchase Orders for Item",
-        "description": "Retrieve all in-progress Purchase Orders for a specific item and company. Returns order details including quantities, schedule dates, and status.",
+        "description": "Retrieve all in-progress Purchase Orders for a specific item and company. Returns ordered, received, and outstanding quantities, schedule dates, warehouse, PO status, and receipt status.",
         "operationId": "get_item_order",
         "parameters": [
           {
@@ -1709,11 +1709,15 @@
                   "items": {
                     "type": "object",
                     "properties": {
-                      "name": {
+                      "purchase_order": {
                         "type": "string",
                         "description": "Purchase Order number"
                       },
-                      "status": {
+                      "purchase_order_item": {
+                        "type": "string",
+                        "description": "Purchase Order Item row ID"
+                      },
+                      "po_status": {
                         "type": "string",
                         "description": "Current status of the Purchase Order"
                       },
@@ -1731,35 +1735,47 @@
                         "type": "string",
                         "description": "Item code"
                       },
-                      "stock_qty": {
+                      "ordered_qty": {
                         "type": "number",
-                        "description": "Quantity in stock UOM"
+                        "description": "Ordered quantity in stock UOM"
+                      },
+                      "received_qty": {
+                        "type": "number",
+                        "description": "Received quantity in stock UOM"
+                      },
+                      "outstanding_qty": {
+                        "type": "number",
+                        "description": "Outstanding quantity in stock UOM"
                       },
                       "stock_uom": {
                         "type": "string",
                         "description": "Stock Unit of Measure"
+                      },
+                      "warehouse": {
+                        "type": "string",
+                        "description": "Target warehouse"
+                      },
+                      "receipt_status": {
+                        "type": "string",
+                        "description": "Receipt status: Pending Receipt, Partially Received, or Fully Received"
                       }
                     }
                   }
                 },
                 "example": [
                   {
-                    "name": "PO-2026-00123",
-                    "status": "To Receive and Bill",
+                    "purchase_order": "PO-2026-00123",
+                    "purchase_order_item": "abc123def456",
+                    "po_status": "To Receive and Bill",
                     "transaction_date": "2026-04-15",
                     "required_date": "2026-05-10",
                     "item_code": "RM-NS-NPA",
-                    "stock_qty": 100.0,
-                    "stock_uom": "Kg"
-                  },
-                  {
-                    "name": "PO-2026-00145",
-                    "status": "To Receive",
-                    "transaction_date": "2026-04-20",
-                    "required_date": "2026-05-15",
-                    "item_code": "RM-NS-NPA",
-                    "stock_qty": 50.0,
-                    "stock_uom": "Kg"
+                    "ordered_qty": 100.0,
+                    "received_qty": 40.0,
+                    "outstanding_qty": 60.0,
+                    "stock_uom": "Kg",
+                    "warehouse": "Stores - GPL",
+                    "receipt_status": "Partially Received"
                   }
                 ]
               }

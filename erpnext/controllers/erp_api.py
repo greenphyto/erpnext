@@ -1537,31 +1537,41 @@ def get_item_order(item_code, company):
 	if not item:
 		frappe.throw(_(f"Item {item_code} not found"), frappe.DoesNotExistError)
 	
-	# get all onprogress POs 
-	# and fetch the qty (stock uom), and required date
 	pos = frappe.db.sql("""
-		SELECT 
-			po.name,
-			po.status,
+		SELECT
+			po.name AS purchase_order,
+			poi.name AS purchase_order_item,
+			po.status AS po_status,
 			po.transaction_date,
-			MIN(poi.schedule_date) AS required_date,
+			poi.schedule_date AS required_date,
 			poi.item_code,
-			SUM(poi.stock_qty) AS stock_qty,
-			poi.stock_uom
+			poi.stock_qty AS ordered_qty,
+			poi.received_qty,
+			(poi.stock_qty - poi.received_qty) AS outstanding_qty,
+			poi.stock_uom,
+			poi.warehouse,
+			CASE
+				WHEN poi.received_qty <= 0 THEN 'Pending Receipt'
+				WHEN poi.received_qty < poi.stock_qty THEN 'Partially Received'
+				ELSE 'Fully Received'
+			END AS receipt_status
 		FROM
 			`tabPurchase Order` po
 				JOIN
 			`tabPurchase Order Item` poi ON poi.parent = po.name
 		WHERE
 			po.docstatus = 1
-				AND po.status NOT IN ('Closed' , 'Completed', 'To Bill')
+				AND po.status NOT IN ('Closed', 'Completed', 'To Bill')
 				AND poi.item_code = %s
 				AND po.company = %s
-				AND po.transaction_date >= "2025-01-01"
-		GROUP BY po.name
-		ORDER BY po.schedule_date ASC
-
+				AND po.transaction_date >= '2025-01-01'
+		ORDER BY poi.schedule_date ASC
 	""", (item_code, company), as_dict=1)
+
+	for po in pos:
+		po.ordered_qty = flt(po.ordered_qty)
+		po.received_qty = flt(po.received_qty)
+		po.outstanding_qty = flt(po.outstanding_qty)
 
 	return pos
 
