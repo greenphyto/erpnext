@@ -2057,6 +2057,10 @@ def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=Fals
 
 	doc.sales_order_no = ", ".join(sales_order_no or [])
 	doc.request_no = ", ".join(request_no or [])
+	if doc.request_no:
+		doc.required_items = [item for item in doc.required_items if not item.is_packaging]
+		doc.set_packet_size()
+		doc.get_packaging_from_order()
 	doc.use_multi_level_bom = 0 #if use multi level bom it will use exploed items as raw material, but if not it will use bom items
 	doc.insert()
 

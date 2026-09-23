@@ -2,6 +2,7 @@
 # License: GNU General Public License v3. See license.txt
 
 import json
+from math import ceil
 
 import frappe
 from dateutil.relativedelta import relativedelta
@@ -1133,9 +1134,21 @@ class WorkOrder(Document):
 				data += temp
 		
 		if self.request_no:
-			doc_name = self.request_no.replace(" ","").split(",")
-			temp = frappe.db.sql("select uom, unit_weight as conversion_factor from `tabRequest Items` where parent in %(parent)s and item_code = %(item_code)s", 
-						{"parent":doc_name, "item_code":self.production_item}, as_dict=1)
+			doc_name = self.request_no.replace(" ", "").split(",")
+			temp = frappe.db.sql(
+				"select uom, unit_weight as conversion_factor from `tabRequest Items` where parent in %(parent)s and item_code = %(item_code)s",
+				{"parent": doc_name, "item_code": self.production_item},
+				as_dict=1,
+			)
+			if len({row.uom for row in temp}) > 1:
+				default_size = frappe.db.get_value(
+					"Packaging List Available",
+					{"parent": self.production_item, "parentfield": "packaging", "default": 1},
+					["packaging", "weight"],
+					as_dict=True,
+				)
+				if default_size:
+					temp = [default_size]
 			if temp:
 				data += temp
 
@@ -1182,45 +1195,96 @@ class WorkOrder(Document):
 			self.packet_size = frappe.db.get_value("Item", self.production_item, "stock_uom")
 			self.conversion_factor = 1
 
-		# 26-01-26 dont use Request packaging
-		# for d in data:
-		# 	self.packet_size = d.uom
-		# 	self.conversion_factor = d.conversion_factor
+		if len(data) > 1:
+			default_size = frappe.db.get_value(
+				"Packaging List Available",
+				{"parent": self.production_item, "parentfield": "packaging", "default": 1},
+				["packaging", "weight", "package_item"],
+				as_dict=True,
+			)
+			if default_size:
+				self.packet_size = default_size.packaging
+				self.conversion_factor = default_size.weight
+				self.flags.package_item = default_size.package_item
+		else:
+			for d in data:
+				if d.uom:
+					self.packet_size = d.uom
+					self.conversion_factor = d.conversion_factor
 
 	def get_packaging_from_order(self):
-		total_pcs = 0
-		# from SO
-		if self.sales_order_no:
-			doc_name = self.sales_order_no.replace(" ","").split(",")
-			temp = frappe.db.sql("select sum(qty) as qty from `tabSales Order Item` where parent in %(parent)s and item_code = %(item_code)s", 
-						{"parent":doc_name, "item_code":self.production_item}, as_dict=1)
-			if temp:
-				total_pcs = temp[0].get("qty")
-		
 		if self.request_no:
-			doc_name = self.request_no.replace(" ","").split(",")
-			temp = frappe.db.sql("select sum(qty) as qty from `tabRequest Items` where parent in %(parent)s and item_code = %(item_code)s", 
-						{"parent":doc_name, "item_code":self.production_item}, as_dict=1)
-			if temp:
-				total_pcs = temp[0].get("qty")
+			self.required_items = [item for item in self.required_items if not item.is_packaging]
+			doc_name = self.request_no.replace(" ", "").split(",")
+			request_items = frappe.get_all(
+				"Request Items",
+				filters={"parent": ["in", doc_name], "item_code": self.production_item},
+				fields=["qty", "unit_weight", "uom", "packaging_item"],
+				order_by="idx asc",
+			)
+			default_packaging = frappe.db.get_value(
+				"Packaging List Available",
+				{"parent": self.production_item, "parentfield": "packaging", "default": 1},
+				["packaging", "package_item", "weight"],
+				as_dict=True,
+			)
+			for item in request_items:
+				if not item.packaging_item:
+					item.packaging_item = frappe.db.get_value(
+						"Packaging List Available",
+						{
+							"parent": self.production_item,
+							"parentfield": "packaging",
+							"packaging": item.uom,
+						},
+						"package_item",
+					)
+				if not item.packaging_item and default_packaging:
+					item.packaging_item = default_packaging.package_item
 
-		# get from default
+			request_items = [item for item in request_items if item.unit_weight and item.packaging_item]
+			stock_qty = sum(flt(item.qty) * flt(item.unit_weight) for item in request_items)
+			if stock_qty:
+				packaging = {}
+				for item in request_items:
+					key = (item.packaging_item, item.unit_weight, item.uom)
+					packaging[key] = packaging.get(key, 0) + flt(item.qty) * flt(item.unit_weight)
+
+				for (pack_item, conversion_factor, packet_size), quantity in packaging.items():
+					total_pcs = ceil(self.qty * quantity / stock_qty / flt(conversion_factor))
+					item = frappe.get_doc("Item", pack_item)
+					rate = get_valuation_rate(item.item_code, self.source_warehouse, "", "")
+					self.append(
+						"required_items",
+						{
+							"rate": rate,
+							"amount": rate * total_pcs,
+							"operation": "Harvesting",
+							"item_code": item.item_code,
+							"item_name": item.item_name,
+							"description": f"{item.description or ''} ({packet_size})",
+							"allow_alternative_item": 0,
+							"required_qty": total_pcs,
+							"source_warehouse": self.source_warehouse,
+							"is_packaging": 1,
+						}
+					)
+				return
+
 		if not self.packet_size:
 			self.set_packet_size()
 
 		total_pcs = self.qty / flt(self.conversion_factor or 1)
-		
 		if not total_pcs:
 			return
-		
+
 		default_packaging = frappe.db.get_single_value("Manufacturing Settings", "default_packaging")
 		pack_item = self.flags.package_item or default_packaging
 		if not pack_item or not self.packet_size:
 			return
-		
-		source_warehouse = self.source_warehouse 
+
 		item = frappe.get_doc("Item", pack_item)
-		rate = get_valuation_rate(item.item_code, source_warehouse, "", "")
+		rate = get_valuation_rate(item.item_code, self.source_warehouse, "", "")
 		self.append(
 			"required_items",
 			{
@@ -1232,11 +1296,11 @@ class WorkOrder(Document):
 				"description": item.description,
 				"allow_alternative_item": 0,
 				"required_qty": total_pcs,
-				"source_warehouse": source_warehouse,
+				"source_warehouse": self.source_warehouse,
 				"is_packaging": 1,
 			}
 		)
-			
+
 	def update_transferred_qty_for_required_items(self):
 		ste = frappe.qb.DocType("Stock Entry")
 		ste_child = frappe.qb.DocType("Stock Entry Detail")
