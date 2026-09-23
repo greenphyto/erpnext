@@ -28,7 +28,7 @@ from erpnext.manufacturing.doctype.production_plan.production_plan import (
 from erpnext.selling.doctype.customer.customer import check_credit_limit
 from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.doctype.item.item import get_item_defaults
-from erpnext.stock.get_item_details import get_default_bom
+from erpnext.stock.get_item_details import get_default_bom, get_item_price
 from erpnext.stock.stock_balance import get_reserved_qty, update_bin_qty
 from erpnext.stock.doctype.batch.batch import get_batch_no
 
@@ -45,6 +45,7 @@ class SalesOrder(SellingController):
 
 	def validate(self):
 		super(SalesOrder, self).validate()
+		self.apply_lazada_item_prices()
 		self.validate_delivery_date()
 		self.validate_proj_cust()
 		self.validate_po()
@@ -79,6 +80,17 @@ class SalesOrder(SellingController):
 		self.reset_default_field_value("set_warehouse", "items", "warehouse")
 		# self.validate_salad_lead_time()
 		self.load_bom_items()
+
+	def apply_lazada_item_prices(self):
+		lazada_customer = frappe.db.get_single_value("Lazada Settings", "lazada_customer")
+		if not frappe.db.get_single_value("Lazada Settings", "keep_item_price") or self.customer != lazada_customer:
+			return
+		for item in self.items:
+			prices = get_item_price({"item_code": item.item_code, "price_list": "Standard Selling", "customer": self.customer, "uom": item.uom, "transaction_date": self.transaction_date, "batch_no": item.batch_no}, item.item_code)
+			if prices:
+				item.price_list_rate = item.rate = prices[0][1]
+				item.discount_percentage = item.discount_amount = item.margin_rate_or_amount = 0
+				item.amount = item.qty * item.rate
 
 	def validate_pledge(self):
 		if self.is_pledge and not self.donor_name:
@@ -127,6 +139,11 @@ class SalesOrder(SellingController):
 		self.update_po_no()
 
 	def before_validate(self):
+		lazada_customer = frappe.db.get_single_value("Lazada Settings", "lazada_customer")
+		if self.customer == lazada_customer:
+			self.is_lazada_order = 1
+			self.naming_series = "LAZ.###./.YYYY"
+			self.set_target_warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
 		self.validate_packaging()
 		self.set_lazada_warehouse()
 

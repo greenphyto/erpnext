@@ -404,16 +404,22 @@ erpnext.selling.SellingController = class SellingController extends erpnext.Tran
 	set_batch_number(cdt, cdn) {
 		const doc = frappe.get_doc(cdt, cdn);
 		if (doc && doc.has_batch_no && doc.warehouse) {
-			this._set_batch_number(doc);
+			this._set_batch_number(doc, this.frm.doc);
 		}
 	}
 
-	_set_batch_number(doc) {
+	_set_batch_number(doc, parent_doc) {
 		if (doc.batch_no) {
 			return
 		}
 
-		let args = {'item_code': doc.item_code, 'warehouse': doc.warehouse, 'qty': flt(doc.qty) * flt(doc.conversion_factor)};
+		let args = {
+			'item_code': doc.item_code,
+			'warehouse': doc.warehouse,
+			'qty': flt(doc.qty) * flt(doc.conversion_factor),
+			'posting_date': parent_doc.posting_date,
+			'posting_time': parent_doc.posting_time,
+		};
 		if (doc.has_serial_no && doc.serial_no) {
 			args['serial_no'] = doc.serial_no
 		}

@@ -10,7 +10,7 @@ from frappe.contacts.doctype.address.address import get_company_address
 from frappe.desk.notifications import clear_doctype_notifications
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.utils import get_fetch_values
-from frappe.utils import cint, flt,format_date, get_datetime, get_time, getdate
+from frappe.utils import cint, cstr, flt,format_date, get_datetime, get_time, getdate
 from frappe.utils import safe_abs as abs
 
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
@@ -21,6 +21,7 @@ from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.controllers.selling_controller import SellingController
 from erpnext.stock.doctype.batch.batch import set_batch_nos, get_available_batch_portion
 from erpnext.stock.doctype.serial_no.serial_no import get_delivery_note_serial_no
+from erpnext.stock.get_item_details import get_carton_detail, get_item_price
 from six import string_types
 import json
 
@@ -139,15 +140,37 @@ class DeliveryNote(SellingController):
 			self.naming_series = "DO-RET-.YYYY.-.###"
 
 	def before_validate(self):
+		self.refresh_carton_details()
+		lazada_customer = frappe.db.get_single_value("Lazada Settings", "lazada_customer")
+		if self.customer == lazada_customer:
+			self.is_lazada_order = 1
 		if self.get("is_lazada_order"):
 			self.naming_series = "LAZ-.YYYY.-.#####"
-			self.customer = frappe.db.get_single_value("Lazada Settings", "lazada_customer")
+			self.customer = lazada_customer
 			warehouse = frappe.db.get_single_value("Lazada Settings", "default_warehouse")
 			if warehouse:
 				self.set_target_warehouse = warehouse
 				for item in self.items:
 					item.warehouse = self.set_warehouse
 					item.target_warehouse = warehouse
+
+	def refresh_carton_details(self):
+		customer = self.customer or self.party_name
+		if not customer:
+			return
+
+		for item in self.items:
+			if not item.item_code:
+				continue
+
+			detail = get_carton_detail(frappe._dict({
+			"customer": customer,
+			"item_code": item.item_code,
+			"uom": item.uom,
+			"qty": item.qty,
+		}))
+			item.update(detail)
+			item.is_carton = 1
 
 	def before_print(self, settings=None):
 		def toggle_print_hide(meta, fieldname):
@@ -213,6 +236,7 @@ class DeliveryNote(SellingController):
 		self.validate_non_stock()
 		self.validate_posting_time()
 		super(DeliveryNote, self).validate()
+		self.apply_lazada_item_prices()
 		self.set_status()
 		self.so_required()
 		self.update_reff_order()
@@ -245,6 +269,17 @@ class DeliveryNote(SellingController):
 			self.link_internal_company()
 		except:
 			pass
+
+	def apply_lazada_item_prices(self):
+		lazada_customer = frappe.db.get_single_value("Lazada Settings", "lazada_customer")
+		if not frappe.db.get_single_value("Lazada Settings", "keep_item_price") or self.customer != lazada_customer:
+			return
+		for item in self.items:
+			prices = get_item_price({"item_code": item.item_code, "price_list": "Standard Selling", "customer": self.customer, "uom": item.uom, "transaction_date": self.posting_date, "batch_no": item.batch_no}, item.item_code)
+			if prices:
+				item.price_list_rate = item.rate = prices[0][1]
+				item.discount_percentage = item.discount_amount = item.margin_rate_or_amount = 0
+				item.amount = item.qty * item.rate
 
 	def validate_non_stock(self):
 		if not self.non_stock_item:
@@ -350,7 +385,7 @@ class DeliveryNote(SellingController):
 
 		rnd_account = None
 		for d in self.items:
-			if d.rnd_item:
+			if d.get("rnd_item"):
 				if rnd_account is None:
 					rnd_account = frappe.get_value("Company", self.company, "account_for_rnd_item_scrap")
 				if rnd_account:
@@ -478,7 +513,7 @@ class DeliveryNote(SellingController):
 					d.projected_qty = flt(bin_qty.projected_qty)
 
 	def on_submit(self):
-		self.validate_packed_qty()
+		# self.validate_packed_qty()
 
 		# Check for Approving Authority
 		frappe.get_doc("Authorization Control").validate_approving_authority(
@@ -1129,7 +1164,10 @@ def get_returned_qty_map(delivery_note):
 
 
 @frappe.whitelist()
-def make_sales_invoice(source_name, target_doc=None):
+def make_sales_invoice(source_name, target_doc=None, args=None):
+	if isinstance(args, str):
+		args = frappe.parse_json(args)
+	args = frappe._dict(args or {})
 	doc = frappe.get_doc("Delivery Note", source_name)
 
 	to_make_invoice_qty_map = {}
@@ -1137,6 +1175,34 @@ def make_sales_invoice(source_name, target_doc=None):
 	invoiced_qty_map = get_invoiced_qty_map(source_name)
 
 	def set_missing_values(source, target):
+		if args.get("group_same_item_uom") not in (None, "", 0, "0", False):
+			grouped_items = {}
+			for item in target.items:
+				key = (item.item_code, item.uom, item.conversion_factor, flt(item.rate, 4), item.batch_no)
+				if key not in grouped_items:
+					grouped_items[key] = item
+					continue
+				grouped_item = grouped_items[key]
+				grouped_item.qty += item.qty
+				grouped_item.stock_qty = grouped_item.qty * grouped_item.conversion_factor
+				grouped_item.amount = grouped_item.qty * grouped_item.rate
+				grouped_item.custom_delivery_note_references = ",".join(
+					filter(None, [grouped_item.custom_delivery_note_references, item.custom_delivery_note_references])
+				)
+			target.items = list(grouped_items.values())
+			for item in target.items:
+				item.stock_qty = item.qty * item.conversion_factor
+				item.amount = item.qty * item.rate
+				if len([ref for ref in (item.custom_delivery_note_references or "").split(",") if ref]) > 1:
+					item.sales_order = None
+					item.so_detail = None
+					item.delivery_note = None
+					item.dn_detail = None
+
+		target.items.sort(key=lambda item: (item.item_code or "", item.uom or "", item.batch_no or ""))
+		for idx, item in enumerate(target.items, 1):
+			item.idx = idx
+
 		if target.is_return:
 			target.naming_series = 'CN.###./.YYYY'
 			# without linking for return_against
@@ -1145,6 +1211,8 @@ def make_sales_invoice(source_name, target_doc=None):
 			target.is_lazada_order = 1
 			target.update_stock = 1
 			target.set_warehouse = source.set_target_warehouse
+		elif source.get("set_warehouse"):
+			target.set_warehouse = source.set_warehouse
 
 		target.run_method("set_missing_values")
 		target.run_method("set_po_nos")
@@ -1162,6 +1230,23 @@ def make_sales_invoice(source_name, target_doc=None):
 					item.cost_center = res.get("value")
 
 		target.run_method("calculate_taxes_and_totals")
+		if target.get("is_lazada_order") or target.customer == frappe.db.get_single_value("Lazada Settings", "lazada_customer"):
+			from erpnext.stock.get_item_details import get_item_price
+			for item in target.items:
+				item_price = get_item_price({
+					"item_code": item.item_code,
+					"price_list": "Standard Selling",
+					"customer": target.customer,
+					"uom": item.uom,
+					"transaction_date": target.posting_date,
+					"batch_no": item.batch_no,
+				}, item.item_code)
+				if item_price:
+					item.price_list_rate = item_price[0][1]
+					item.rate = item.price_list_rate
+		for item in target.items:
+			item.stock_qty = flt(item.qty) * flt(item.conversion_factor or 1)
+			item.amount = flt(item.qty) * flt(item.rate or 0)
 
 		# Set cost_center on each item row based on its income_account
 		for d in target.get("items"):
@@ -1179,8 +1264,22 @@ def make_sales_invoice(source_name, target_doc=None):
 
 	def update_item(source_doc, target_doc, source_parent):
 		target_doc.qty = source_doc.qty
+		target_doc.stock_qty = flt(source_doc.qty) * flt(source_doc.conversion_factor or 1)
+		target_doc.amount = flt(source_doc.qty) * flt(target_doc.rate or 0)
+		target_doc.batch_no = source_doc.batch_no
+		target_doc.custom_delivery_note_references = "|".join(
+			[
+				source_parent.name,
+				source_doc.name,
+				cstr(source_doc.qty),
+				source_doc.against_sales_order or "",
+				source_doc.so_detail or "",
+			]
+		)
 		if source_parent.get("is_lazada_order"):
 			target_doc.warehouse = source_parent.set_target_warehouse
+		elif source_parent.get("set_warehouse"):
+			target_doc.warehouse = source_parent.set_warehouse
 
 		if source_doc.serial_no and source_parent.per_billed > 0 and not source_parent.is_return:
 			target_doc.serial_no = get_delivery_note_serial_no(
@@ -1241,6 +1340,12 @@ def make_sales_invoice(source_name, target_doc=None):
 		target_doc,
 		set_missing_values,
 	)
+
+	if args.get("group_same_item_uom") not in (None, "", 0, "0", False):
+		for item in doc.items:
+			item.stock_qty = flt(item.qty) * flt(item.conversion_factor or 1)
+			item.amount = flt(item.qty) * flt(item.rate or 0)
+		doc.run_method("calculate_taxes_and_totals")
 
 	automatically_fetch_payment_terms = cint(
 		frappe.db.get_single_value("Accounts Settings", "automatically_fetch_payment_terms")

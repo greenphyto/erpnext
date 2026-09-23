@@ -11,6 +11,7 @@
   "warehouse_name",
   "foms_id",
   "foms_name",
+  "allow_expired_product",
   "column_break_3",
   "warehouse_type",
   "parent_warehouse",
@@ -350,13 +351,19 @@
    "label": "Customer",
    "options": "Customer",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "allow_expired_product",
+   "fieldtype": "Check",
+   "label": "Allow Expired Product"
   }
  ],
  "icon": "fa fa-building",
  "idx": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2026-09-10 09:55:10.515209",
+ "modified": "2026-09-07 13:17:57.979403",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Warehouse",
