@@ -1546,8 +1546,8 @@ def get_item_order(item_code, company):
 			poi.schedule_date AS required_date,
 			poi.item_code,
 			poi.stock_qty AS ordered_qty,
-			poi.received_qty,
-			(poi.stock_qty - poi.received_qty) AS outstanding_qty,
+			(poi.received_qty * poi.conversion_factor) AS received_qty,
+			(poi.stock_qty - (poi.received_qty * poi.conversion_factor)) AS outstanding_qty,
 			poi.stock_uom,
 			poi.warehouse,
 			CASE
