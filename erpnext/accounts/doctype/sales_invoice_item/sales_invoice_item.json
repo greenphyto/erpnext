@@ -107,9 +107,10 @@
   "so_detail",
   "sales_invoice_item",
   "consignment_request",
-  "cr_detail",
-  "custom_delivery_note_references",
-  "column_break_74",
+   "cr_detail",
+   "custom_delivery_note_references",
+   "custom_sales_order_references",
+   "column_break_74",
   "delivery_note",
   "dn_detail",
   "delivered_qty",
@@ -1004,17 +1005,24 @@
    "label": "Consignment Request Item",
    "read_only": 1
   },
-  {
-   "fieldname": "custom_delivery_note_references",
-   "fieldtype": "Code",
-   "label": "Delivery Note References",
-   "read_only": 1
-  }
+   {
+    "fieldname": "custom_delivery_note_references",
+    "fieldtype": "Code",
+    "label": "Delivery Note References",
+    "read_only": 1
+   },
+   {
+    "fieldname": "custom_sales_order_references",
+    "fieldtype": "Code",
+    "label": "Sales Order References",
+    "read_only": 1
+   }
+
  ],
  "idx": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-09-04 15:26:29.656887",
+ "modified": "2026-09-05 15:26:29.656887",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice Item",

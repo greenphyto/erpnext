@@ -431,7 +431,13 @@ class SalesInvoice(SellingController):
 		for idx, d in enumerate(self.get("items")):
 			qty = d.get("stock_qty") or d.get("qty") or 0
 			warehouse = d.warehouse or self.set_warehouse
-			if not (warehouse and qty > 0 and not d.batch_no and frappe.db.get_value("Item", d.item_code, "has_batch_no")):
+			if not (
+				warehouse
+				and qty > 0
+				and not d.batch_no
+				and not d.get("custom_sales_order_references")
+				and frappe.db.get_value("Item", d.item_code, "has_batch_no")
+			):
 				continue
 
 			batches = get_batches(d.item_code, warehouse, qty, allow_expired=allow_expired) or []
@@ -462,7 +468,7 @@ class SalesInvoice(SellingController):
 						"item_code", "item_name", "description", "warehouse", "target_warehouse",
 						"uom", "stock_uom", "conversion_factor", "rate", "price_list_rate",
 						"cost_center", "income_account", "sales_order", "so_detail",
-						"delivery_note", "dn_detail", "custom_delivery_note_references", "project", "item_tax_rate",
+						"delivery_note", "dn_detail", "custom_delivery_note_references", "custom_sales_order_references", "project", "item_tax_rate",
 						"allow_zero_valuation_rate", "blanket_order", "blanket_order_detail",
 					]
 					for f in copy_fields:
@@ -1682,8 +1688,12 @@ class SalesInvoice(SellingController):
 		updated_sales_orders = set()
 		references = {}
 		for item in self.items:
-			if item.get("so_detail"):
+			if item.get("so_detail") and not item.get("custom_sales_order_references"):
 				updated_sales_orders.add(item.so_detail)
+			for reference in filter(None, (item.get("custom_sales_order_references") or "").split(",")):
+				parts = reference.split("|")
+				if len(parts) >= 3 and parts[1]:
+					updated_sales_orders.add(parts[1])
 			if item.get("dn_detail") and not item.get("custom_delivery_note_references"):
 				references[item.dn_detail] = [item.delivery_note, item.dn_detail, item.qty, item.sales_order, item.so_detail]
 			for reference in filter(None, (item.custom_delivery_note_references or "").split(",")):
@@ -1722,11 +1732,15 @@ class SalesInvoice(SellingController):
 				so_detail,
 			)[0][0] or 0
 			for source_item in frappe.get_all(
-				"Sales Invoice Item", filters={"docstatus": 1}, fields=["amount", "qty", "custom_delivery_note_references"]
+				"Sales Invoice Item", filters={"docstatus": 1}, fields=["amount", "qty", "custom_delivery_note_references", "custom_sales_order_references"]
 			):
 				for source_reference in filter(None, (source_item.custom_delivery_note_references or "").split(",")):
 					parts = source_reference.split("|")
 					if len(parts) == 5 and parts[4] == so_detail:
+						billed_amt += flt(source_item.amount) * flt(parts[2]) / flt(source_item.qty or 1)
+				for source_reference in filter(None, (source_item.custom_sales_order_references or "").split(",")):
+					parts = source_reference.split("|")
+					if len(parts) >= 3 and parts[1] == so_detail:
 						billed_amt += flt(source_item.amount) * flt(parts[2]) / flt(source_item.qty or 1)
 			frappe.db.set_value("Sales Order Item", so_detail, "billed_amt", billed_amt, update_modified=update_modified)
 			so_name = frappe.db.get_value("Sales Order Item", so_detail, "parent")

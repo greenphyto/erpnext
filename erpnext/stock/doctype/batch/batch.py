@@ -364,14 +364,13 @@ def get_batch_no(item_code, warehouse, qty=1, throw=False, serial_no=None, allow
 			batch_no = batch.batch_id
 			break
 
-	if not batch_no:
+	if not batch_no and throw:
 		frappe.msgprint(
 			_(
 				"Please select a Batch for Item {0}. Unable to find a single batch that fulfills this requirement"
 			).format(frappe.bold(item_code))
 		)
-		if throw:
-			raise UnableToSelectBatchError
+		raise UnableToSelectBatchError
 
 	return batch_no
 

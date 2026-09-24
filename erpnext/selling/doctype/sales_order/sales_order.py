@@ -991,9 +991,84 @@ def make_replacement_qty(source_name, target_doc=None):
 	)
 
 @frappe.whitelist()
-def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
+def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False, args=None):
+	if isinstance(args, str):
+		args = frappe.parse_json(args)
+	args = frappe._dict(args or {})
+
 	def postprocess(source, target):
 		set_missing_values(source, target)
+
+		source_item_names = {item.name for item in source.items}
+		mapped_items = {item.so_detail: item for item in target.items if item.so_detail in source_item_names}
+		existing_items = [item for item in target.items if item.so_detail not in source_item_names]
+		target.set("items", existing_items)
+		for source_item in source.items:
+			billed_qty = flt(source_item.billed_amt) / flt(source_item.rate) if source_item.rate else 0
+			pending_qty = flt(source_item.qty) - billed_qty
+			if pending_qty <= 0:
+				continue
+
+			item = mapped_items.get(source_item.name)
+			if not item:
+				continue
+
+			dn_items = frappe.get_all(
+				"Delivery Note Item",
+				filters={"so_detail": source_item.name, "docstatus": 1},
+				fields=["name", "parent", "item_code", "uom", "batch_no", "qty"],
+			)
+			if dn_items:
+				for dn_item in dn_items:
+					qty = min(flt(dn_item.qty), pending_qty)
+					if qty <= 0:
+						continue
+					row = target.append("items", {})
+					row.update({key: value for key, value in item.as_dict().items() if key not in {"name", "parent", "parentfield", "parenttype"}})
+					row.qty = qty
+					row.uom = dn_item.uom or row.uom
+					row.batch_no = dn_item.batch_no
+					row.custom_sales_order_references = "|".join(
+						[source.name, source_item.name, cstr(qty), dn_item.parent, dn_item.name]
+					)
+					pending_qty -= qty
+					if pending_qty <= 0:
+						break
+			if pending_qty > 0:
+				row = target.append("items", {})
+				row.update({key: value for key, value in item.as_dict().items() if key not in {"name", "parent", "parentfield", "parenttype"}})
+				row.qty = pending_qty
+				row.batch_no = None
+				row.custom_sales_order_references = "|".join(
+					[source.name, source_item.name, cstr(pending_qty)]
+				)
+
+		merged_items = {}
+		for item in target.items:
+			key = (item.item_code, item.uom, item.batch_no or "")
+			if key in merged_items:
+				merged_item = merged_items[key]
+				merged_item.qty += item.qty
+				merged_item.custom_sales_order_references = ",".join(
+					filter(None, [merged_item.custom_sales_order_references, item.custom_sales_order_references])
+				)
+			else:
+				merged_items[key] = item
+		target.set("items", list(merged_items.values()))
+		for item in target.items:
+			item.stock_qty = item.qty * (item.conversion_factor or 1)
+			item.amount = item.qty * (item.rate or 0)
+			if len([ref for ref in (item.custom_sales_order_references or "").split(",") if ref]) > 1:
+				item.sales_order = None
+				item.so_detail = None
+				item.delivery_note = None
+				item.dn_detail = None
+
+		target.items.sort(key=lambda item: (item.item_code or "", item.uom or "", item.batch_no or ""))
+		for idx, item in enumerate(target.items, 1):
+			item.idx = idx
+		target.run_method("calculate_taxes_and_totals")
+
 		if source.is_lazada_order:
 			target.is_lazada_order = 1
 			target.update_stock = 1
@@ -1010,8 +1085,9 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 		for d in target.get("items"):
 			d.cost_center = erpnext.get_default_cost_center(target.company, d.income_account) or d.cost_center
 
+		dn_name = None
 		for d in target.get("items"):
-			dn_name = frappe.get_value("Delivery Note Item", {"so_detail":d.so_detail, "docstatus":1}, "parent")
+			dn_name = frappe.get_value("Delivery Note Item", {"so_detail": d.so_detail, "docstatus": 1}, "parent")
 			if dn_name:
 				break
 		target.delivery_note = dn_name

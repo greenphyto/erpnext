@@ -259,6 +259,12 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 					setters: {
 						customer: me.frm.doc.customer || undefined,
 					},
+					dialog_fields: [{
+						fieldname: 'group_same_item_uom',
+						label: __('Group same item and UOM'),
+						fieldtype: 'Check',
+						default: me.frm.doc.is_lazada_order ? 1 : 0
+					}],
 					get_query_filters: {
 						docstatus: 1,
 						status: ["not in", ["Closed", "On Hold"]],
