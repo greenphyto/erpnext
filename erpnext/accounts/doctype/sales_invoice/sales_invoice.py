@@ -597,6 +597,7 @@ class SalesInvoice(SellingController):
 
 	def before_cancel(self):
 		self.check_if_consolidated_invoice()
+		self.ignore_linked_doctypes = ("Delivery Note",)
 
 		super(SalesInvoice, self).before_cancel()
 		self.update_time_sheet(None)
@@ -1662,14 +1663,26 @@ class SalesInvoice(SellingController):
 
 	def has_multi_delivery_note_references(self):
 		return any(
-			len([ref for ref in (item.get("custom_delivery_note_references") or "").split(",") if ref]) > 1
-			for item in self.items
+		ref
+		for item in self.items
+		for field in ("custom_delivery_note_references", "custom_sales_order_references")
+		for ref in (item.get(field) or "").split(",")
+		if ref
 		)
 
 	def validate_multi_reference_billing(self):
 		quantities = {}
+		so_quantities = {}
 		seen = set()
+		so_seen = set()
 		for item in self.items:
+			for reference in filter(None, (item.custom_sales_order_references or "").split(",")):
+				parts = reference.split("|")
+				if len(parts) < 3 or not parts[1] or flt(parts[2]) <= 0:
+					frappe.throw(_("Invalid Sales Order reference: {0}").format(reference))
+				if reference not in so_seen:
+					so_seen.add(reference)
+					so_quantities[parts[1]] = so_quantities.get(parts[1], 0) + flt(parts[2])
 			for reference in filter(None, (item.custom_delivery_note_references or "").split(",")):
 				parts = reference.split("|")
 				if len(parts) != 5 or not parts[1] or flt(parts[2]) <= 0:
@@ -1682,6 +1695,10 @@ class SalesInvoice(SellingController):
 			allowed = frappe.db.get_value("Delivery Note Item", dn_detail, "qty")
 			if allowed is None or qty > flt(allowed) + 0.000001:
 				frappe.throw(_("Quantity exceeds Delivery Note Item {0}").format(dn_detail))
+		for so_detail, qty in so_quantities.items():
+			allowed = frappe.db.get_value("Sales Order Item", so_detail, "qty")
+			if allowed is None or qty > flt(allowed) + 0.000001:
+				frappe.throw(_("Quantity exceeds Sales Order Item {0}").format(so_detail))
 
 	def update_multi_delivery_note_status(self, update_modified=True):
 		updated_delivery_notes = set()
@@ -1694,6 +1711,8 @@ class SalesInvoice(SellingController):
 				parts = reference.split("|")
 				if len(parts) >= 3 and parts[1]:
 					updated_sales_orders.add(parts[1])
+				if len(parts) == 5 and parts[4]:
+					references[parts[4]] = [parts[3], parts[4], parts[2], parts[0], parts[1]]
 			if item.get("dn_detail") and not item.get("custom_delivery_note_references"):
 				references[item.dn_detail] = [item.delivery_note, item.dn_detail, item.qty, item.sales_order, item.so_detail]
 			for reference in filter(None, (item.custom_delivery_note_references or "").split(",")):
@@ -1706,15 +1725,21 @@ class SalesInvoice(SellingController):
 			if dn_detail:
 				billed_amt = frappe.db.sql(
 					"""select sum(amount) from `tabSales Invoice Item`
-					where dn_detail=%s and docstatus=1 and not custom_delivery_note_references""",
+					where dn_detail=%s and docstatus=1
+						and not custom_delivery_note_references
+						and not custom_sales_order_references""",
 					dn_detail,
 				)[0][0] or 0
 				for source_item in frappe.get_all(
-					"Sales Invoice Item", filters={"docstatus": 1}, fields=["amount", "qty", "custom_delivery_note_references"]
+					"Sales Invoice Item", filters={"docstatus": 1}, fields=["amount", "qty", "custom_delivery_note_references", "custom_sales_order_references"]
 				):
 					for source_reference in filter(None, (source_item.custom_delivery_note_references or "").split(",")):
 						parts = source_reference.split("|")
 						if len(parts) == 5 and parts[1] == dn_detail:
+							billed_amt += flt(source_item.amount) * flt(parts[2]) / flt(source_item.qty or 1)
+					for source_reference in filter(None, (source_item.custom_sales_order_references or "").split(",")):
+						parts = source_reference.split("|")
+						if len(parts) == 5 and parts[4] == dn_detail:
 							billed_amt += flt(source_item.amount) * flt(parts[2]) / flt(source_item.qty or 1)
 				frappe.db.set_value("Delivery Note Item", dn_detail, "billed_amt", billed_amt, update_modified=update_modified)
 				if self.docstatus == 1:
@@ -1728,7 +1753,9 @@ class SalesInvoice(SellingController):
 		for so_detail in updated_sales_orders:
 			billed_amt = frappe.db.sql(
 				"""select sum(amount) from `tabSales Invoice Item`
-				where so_detail=%s and docstatus=1 and not custom_delivery_note_references""",
+				where so_detail=%s and docstatus=1
+						and not custom_delivery_note_references
+						and not custom_sales_order_references""",
 				so_detail,
 			)[0][0] or 0
 			for source_item in frappe.get_all(
@@ -1758,6 +1785,7 @@ class SalesInvoice(SellingController):
 					{"per_billed": per_billed, "billing_status": billing_status},
 					update_modified=update_modified,
 				)
+				frappe.get_doc("Sales Order", so_name).set_status(update=True, update_modified=update_modified)
 
 		for delivery_note in updated_delivery_notes:
 			frappe.get_doc("Delivery Note", delivery_note).update_billing_percentage(update_modified=update_modified)

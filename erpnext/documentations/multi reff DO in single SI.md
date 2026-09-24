@@ -1,19 +1,181 @@
-# Multi-reference DO in single SI
+# Multi-reference Delivery Notes and Sales Orders in One Sales Invoice
 
 ## Objective
 
-Support one Sales Invoice (SI) containing combined items from multiple Delivery Notes (DO), with these conditions:
+Support one Sales Invoice containing items from multiple Delivery Notes and Sales Orders while keeping mapping, grouping, batch handling, billing status, and cancellation consistent with ERPNext.
 
-- One DO may be billed to only one SI.
-- One SI may contain multiple DOs.
-- SI rows may be combined by `item_code` and `uom`.
-- Batch is ignored for grouping according to business requirements.
-- DO references are stored as comma-separated values in a custom field according to integration requirements.
-- Standard fields remain populated when they have only one valid value.
+Supported actions:
 
-## Important limitations
+- Get Items From > Delivery Note
+- Get Items From > Sales Order
+- Map multiple source documents into one Sales Invoice
+- Group rows by `item_code`, `uom`, and `batch_no`
+- Preserve every source relationship through custom references
+- Update Sales Order and Delivery Note billing status on submit and cancel
 
-The following standard fields are single-value fields and must not contain comma-separated lists:
+## Source code
+
+Main files:
+
+- `accounts/doctype/sales_invoice/sales_invoice.js`
+- `public/js/utils.js`
+- `stock/doctype/delivery_note/delivery_note.py`
+- `selling/doctype/sales_order/sales_order.py`
+- `accounts/doctype/sales_invoice/sales_invoice.py`
+- `accounts/doctype/sales_invoice_item/sales_invoice_item.json`
+- `hooks.py`
+
+## User flow
+
+1. User opens Sales Invoice.
+2. User selects Sales Orders or Delivery Notes.
+3. Dialog displays `Group same item and UOM`.
+4. Checkbox defaults to checked when `is_lazada_order` is enabled.
+5. JavaScript sends selected source names and dialog values to `frappe.model.mapper.map_docs`.
+6. Backend maps each source document into the same target Sales Invoice.
+7. Backend rebuilds, groups, sorts, and recalculates all item rows.
+8. Client receives the final document and refreshes the form.
+
+JavaScript must not calculate quantities, resolve batches, merge rows, or update billing status.
+
+## Dialog argument handling
+
+The Sales Invoice buttons use the same dialog option as Delivery Note mapping:
+
+```javascript
+dialog_fields: [{
+    fieldname: "group_same_item_uom",
+    label: __("Group same item and UOM"),
+    fieldtype: "Check",
+    default: me.frm.doc.is_lazada_order ? 1 : 0
+}]
+```
+
+`erpnext.utils.map_current_doc` must copy all dialog values into `opts.args` before calling the backend mapper. Do not pass ordinary dialog values only when `allow_child_item_selection` is enabled.
+
+## Sales Order mapping
+
+For every Sales Order Item:
+
+```text
+pending quantity = Sales Order Item.qty - billed quantity
+```
+
+`delivered_qty` is intentionally ignored.
+
+Sales Order Item has no `billed_qty` field. Billed quantity is derived as:
+
+```text
+billed quantity = billed_amt / rate
+```
+
+When `rate` is zero, billed quantity is zero.
+
+### Delivery Note batch resolution
+
+If submitted Delivery Note Items exist for the Sales Order Item:
+
+1. Fetch submitted Delivery Note Items using `so_detail`.
+2. Split quantity by Delivery Note Item quantity.
+3. Copy Delivery Note Item `batch_no` and UOM.
+4. Preserve any remaining quantity as a row with empty `batch_no`.
+
+If no Delivery Note exists, map the Sales Order quantity with empty `batch_no`. Later batch assignment is handled separately.
+
+Rows are grouped by:
+
+```text
+item_code + uom + batch_no
+```
+
+Different batches remain separate. Empty batch values are grouped only with other empty batch values.
+
+### Multiple Sales Orders
+
+`frappe.model.mapper.map_docs` calls the mapper once per selected Sales Order with the same target document. The mapper must:
+
+1. Preserve rows from previously mapped Sales Orders.
+2. Rebuild only rows belonging to the current Sales Order.
+3. Append current rows to preserved rows.
+4. Group all target rows again.
+5. Sort all target rows again.
+6. Recalculate totals.
+
+Never clear all `target.items` on every source call. Otherwise, the last selected Sales Order replaces earlier Sales Orders.
+
+## Delivery Note mapping
+
+Delivery Note grouping follows the existing implementation. The grouping key is:
+
+```text
+item_code + uom + conversion_factor + rate + batch_no
+```
+
+After grouping, recalculate:
+
+- `stock_qty`
+- `amount`
+- row `idx`
+- taxes and totals
+
+## Row ordering
+
+After every mapping and grouping operation:
+
+```python
+target.items.sort(key=lambda item: (item.item_code or "", item.uom or "", item.batch_no or ""))
+for idx, item in enumerate(target.items, 1):
+    item.idx = idx
+```
+
+## Reference fields
+
+`Sales Invoice Item` contains read-only Code fields:
+
+- `custom_delivery_note_references`
+- `custom_sales_order_references`
+
+These fields are authoritative when a grouped row represents multiple source rows. Standard single-value link fields cannot safely represent multiple sources.
+
+### Delivery Note references
+
+Format:
+
+```text
+delivery_note|dn_detail|qty|sales_order|so_detail
+```
+
+Example:
+
+```text
+DN-001|DN-ITEM-001|2|SO-001|SO-ITEM-001,DN-002|DN-ITEM-009|3|SO-002|SO-ITEM-009
+```
+
+### Sales Order references
+
+Without Delivery Note:
+
+```text
+sales_order|so_detail|qty
+```
+
+With Delivery Note:
+
+```text
+sales_order|so_detail|qty|delivery_note|dn_detail
+```
+
+Example:
+
+```text
+SO-001|SO-ITEM-001|5|DN-001|DN-ITEM-001,SO-002|SO-ITEM-009|3|DN-002|DN-ITEM-009
+```
+
+Multiple entries are comma-separated. Each entry represents one source allocation.
+
+## Standard link fields
+
+These fields hold only one value:
 
 - `Sales Invoice.delivery_note`
 - `Sales Invoice Item.delivery_note`
@@ -21,124 +183,218 @@ The following standard fields are single-value fields and must not contain comma
 - `Sales Invoice Item.sales_order`
 - `Sales Invoice Item.so_detail`
 
-ERPNext uses these fields for queries, dashboards, per-billed, billed quantity, returns, cancellation, and links between documents. Comma-separated values are the custom data source; standard fields are only a cache or primary reference when the value is singular.
+If a grouped row contains more than one reference, clear these fields:
 
-## Data model
+- `sales_order`
+- `so_detail`
+- `delivery_note`
+- `dn_detail`
 
-Add a Long Text custom field to `Sales Invoice Item`, for example `custom_delivery_note_references`.
+Do not store comma-separated values in standard link fields. Keep all source data in the custom reference fields.
 
-Minimum comma-separated format:
+## Overbilling validation
+
+Validation must support both custom reference fields.
+
+### Delivery Note validation
+
+1. Parse every `custom_delivery_note_references` entry.
+2. Validate the five-part format.
+3. Aggregate quantity by `dn_detail`.
+4. Confirm each `dn_detail` exists.
+5. Confirm the reference parent matches the Delivery Note Item parent.
+6. Reject quantity greater than the allowed Delivery Note Item quantity.
+
+### Sales Order validation
+
+1. Parse every `custom_sales_order_references` entry.
+2. Validate the three-part or five-part format.
+3. Aggregate quantity by `so_detail`.
+4. Confirm each `so_detail` exists.
+5. Reject quantity greater than the Sales Order Item quantity.
+
+A single custom reference must activate custom validation. Detection must not require multiple comma-separated entries.
+
+## Billing status updates
+
+Billing status must be rebuilt from active submitted Sales Invoices, not incremented from previous values.
+
+### Sales Order
+
+For each referenced Sales Order Item:
+
+1. Calculate billed amount from direct `so_detail` rows that have no custom reference.
+2. Add proportional amount from `custom_sales_order_references`.
+3. Add proportional amount from Delivery Note references containing the same `so_detail`.
+4. Store the result in `Sales Order Item.billed_amt`.
+5. Recalculate Sales Order `per_billed`.
+6. Update `billing_status`.
+7. Call `SalesOrder.set_status(update=True)` to synchronize the main Sales Order status.
+
+Proportional amount:
 
 ```text
-DN-001|DN-ITEM-001|2|SO-001|SO-ITEM-001,DN-002|DN-ITEM-009|3|SO-002|SO-ITEM-009
+reference billed amount = invoice row amount * reference quantity / invoice row quantity
 ```
 
-Order of each entry: `delivery_note|dn_detail|qty|sales_order|so_detail`. Use a delimiter that cannot appear in IDs, escape values if the delimiter may appear, and document one parser for the entire process.
+Direct SQL must exclude rows already represented by either custom reference field. Otherwise, amounts are double-counted.
 
-Data rules:
+### Delivery Note
 
-- One entry represents one `Delivery Note Item`.
-- `dn_detail` must be unique within one SI.
-- `delivery_note` must match the parent of `dn_detail`.
-- `qty` must be positive for a normal invoice and follow return rules for a credit note.
-- References must store `sales_invoice_item` after the SI row is created if reverse updates require it.
-- Add a checksum or version if needed to detect payload changes.
+For each referenced Delivery Note Item:
 
-If metadata must be updated without touching item rows, add a Long Text custom field to the SI parent, for example `custom_delivery_note_references`, using the same format. Avoid duplicating the data source; use the child row as the primary source when both levels are required.
+1. Calculate billed amount from direct `dn_detail` rows without custom references.
+2. Add proportional amount from `custom_delivery_note_references`.
+3. Add proportional amount from `custom_sales_order_references` containing the Delivery Note Item reference.
+4. Update `Delivery Note Item.billed_amt`.
+5. Recalculate Delivery Note billing percentage and status.
 
-## SI creation flow
+## Submit and cancel
 
-1. Fetch the submitted DOs selected by the user.
-2. Validate that each DO has no active SI.
-3. Fetch DO Items with pending quantity.
-4. Group rows by `item_code` and `uom`.
-5. Sum quantity per group.
-6. Ignore batches only during grouping; do not alter the stock ledger or batch transactions.
-7. Create one `Sales Invoice Item` row per group.
-8. Store all source DO Items as comma-separated values in that row's custom field.
-9. Store `sales_invoice_item` in each reference if reverse lookup requires it.
-10. Run standard price, account, tax, payment term, and total calculations.
+On Sales Invoice submit:
 
-## Validation before submit
+- Update Sales Order billing amounts and status.
+- Update Delivery Note billing amounts and status.
+- Create normal stock ledger and accounting entries.
 
-Custom validation is required:
+On Sales Invoice cancel:
 
-- The comma-separated value is valid and each entry has the expected number of fields according to the schema.
-- All linked DOs have submitted status.
-- All `dn_detail` values exist and have the correct parent.
-- No duplicate `dn_detail` exists across active SIs.
-- The total reference quantity does not exceed the DO quantity that has not been billed or returned.
-- A DO is not linked to another SI.
-- Reference `item_code` and `uom` match the grouped SI row.
-- Company, customer, currency, warehouse, and return status are consistent.
-- References cannot change after submit without an amend process.
-- Use a database transaction and locks during validation and updates to prevent double billing.
+- Reverse the Sales Invoice stock ledger entries.
+- Rebuild Sales Order billing values from active invoices.
+- Rebuild Delivery Note billing values from active invoices.
+- Keep Delivery Notes submitted.
+- Recalculate main Sales Order status, not only `per_billed`.
 
-## Updating related documents
+A single custom reference must trigger the custom submit/cancel updater. Otherwise cancellation can fall back to the standard updater and leave SO or DN status as `To Bill`.
 
-When the SI is submitted:
+## Linked-document cancellation
 
-- Update the custom billed state and billed quantity on each DO Item.
-- Populate `Delivery Note Item.si_detail` only when the standard relationship can still represent one SI Item; do not write JSON to this field.
-- Populate `Delivery Note Item.against_sales_invoice` with the target SI.
-- Set `Delivery Note.per_billed` and billed status through custom aggregation.
-- Update standard SI fields only as a cache when their values are unambiguous.
+Only Delivery Note is exempt from automatic linked-document cancellation.
 
-When the SI is cancelled:
+`SalesInvoice.before_cancel()` must set:
 
-- Reverse all updates based on the JSON snapshot.
-- Reduce the billed quantity of each DO Item.
-- Remove or cancel the SI relationship on DO Items.
-- Rebuild `per_billed` and the DO status from all active SIs, not from previous values.
+```python
+self.ignore_linked_doctypes = ("Delivery Note",)
+```
 
-When the SI is amended or returned:
+`hooks.py` must include:
 
-- Treat it as a new operation after the original document is cancelled according to ERPNext rules.
-- Revalidate quantity and duplicate references.
-- A return must not reduce DO quantity below the quantity previously billed.
+```python
+auto_cancel_exempted_doctypes = [
+    "Payment Entry",
+    "Delivery Note",
+]
+```
 
-## Dashboard and links
+Do not ignore these doctypes:
 
-Standard dashboards that read `delivery_note` or `dn_detail` will not find all DOs. Add:
+- `Repost Item Valuation`
+- `GL Entry`
+- `Stock Ledger Entry`
+- `Payment Ledger Entry`
 
-- A custom dashboard link/query from SI to all DOs from JSON.
-- A custom query report from DO to SI.
-- A link formatter or server method that parses the JSON and fetches the related documents.
-- A billed-status indicator based on custom aggregation.
+They must retain standard ERPNext behavior.
 
-Do not rely on comma-separated fields for filtering, joins, or referential integrity.
+## Save and batch behavior
 
-## Planned code changes
+Sales Invoice validation can automatically assign and split batches for stock items with empty `batch_no`.
 
-1. Add a comma-separated custom field to SI Item through a fixture/customization.
-2. Add a custom multi-DO mapper, separate from the standard `make_sales_invoice()`.
-3. Add a centralized parser and schema validator.
-4. Add `before_submit` and `before_cancel` validation.
-5. Add a service to update/rebuild the DO billed state.
-6. Add locking and transaction boundaries.
-7. Add a custom dashboard/query.
-8. Add permission validation for all referenced DOs.
+For Sales Order mapped rows containing `custom_sales_order_references`, automatic batch splitting must be skipped. This preserves the intended behavior:
 
-## Minimum tests
+- SO without DN: batch remains empty until later selection.
+- SO with DN: batch comes from DN.
 
-- Two DOs with the same item and UOM become one SI Item.
-- The same item with different UOMs remains in separate rows.
-- A comma-separated reference containing 100 items is valid.
-- Duplicate `dn_detail` is rejected.
-- A DO that has already been billed is rejected.
-- Partial quantity is calculated correctly.
-- Submit updates billed quantity and `per_billed`.
-- Cancel restores billed quantity and status.
-- Amend and return do not cause double billing.
-- Concurrent submit cannot use the same DO Item.
-- The custom dashboard displays all DOs.
-- Invalid comma-separated value, missing DN, mismatched parent, company, customer, or UOM is rejected.
+Without this guard, an invoice can grow from 18 rows to 33 rows during save because an empty-batch row is split across available batches.
 
-## Decisions requiring confirmation
+## Stock ledger and cancellation errors
 
-- Custom field name and whether the payload belongs in SI Item, the SI parent, or both.
-- Whether batches may truly be ignored for stock items.
-- Whether one DO may be distributed across multiple SI Items due to grouping.
-- Whether the standard SI `delivery_note` field is used as a cache or cleared for multi-DO.
-- Official definition of billed quantity and `per_billed` after grouping.
-- Return format and quantity allocation among references.
+A cancellation can raise `NegativeStockError` when a later transaction would become negative after the invoice reversal. This is a stock-ledger sequence problem, not permission to bypass validation.
+
+Inspect Stock Ledger Entries by:
+
+- item code;
+- warehouse;
+- batch number;
+- posting date and time;
+- voucher type and voucher number;
+- actual quantity;
+- quantity after transaction.
+
+Do not cancel Delivery Notes to bypass a Sales Invoice cancellation. Resolve later stock transactions or repair inconsistent stock history first.
+
+## Troubleshooting
+
+### Only the last Sales Order appears
+
+Cause: mapper clears `target.items` for every selected source.
+
+Fix: preserve rows from earlier source documents and rebuild only current-source rows.
+
+### Checkbox is always ignored
+
+Check that:
+
+1. Sales Invoice JS defines `dialog_fields`.
+2. `map_current_doc` copies all dialog values to `opts.args`.
+3. Backend mapper accepts `args`.
+4. Backend reads `args.get("group_same_item_uom")`.
+
+### Same item, UOM, and batch are not grouped
+
+Check that grouping runs after all selected sources are mapped and uses `batch_no` in the key.
+
+### Row count increases during save
+
+Cause: automatic batch assignment splits empty-batch stock rows.
+
+Check whether the row has `custom_sales_order_references`. Such rows must skip automatic batch splitting.
+
+### SO shows `To Bill` while `per_billed` is 100
+
+Call `SalesOrder.set_status(update=True)` after updating `per_billed` and `billing_status`.
+
+### DN shows `To Bill` after SI cancel
+
+Check that `custom_sales_order_references` entries containing the fifth field (`dn_detail`) are parsed by the Delivery Note status updater.
+
+### Cancel dialog includes Delivery Note
+
+Check both controls:
+
+- `SalesInvoice.before_cancel()` ignores only `Delivery Note`.
+- `auto_cancel_exempted_doctypes` includes `Delivery Note`.
+
+## Verification checklist
+
+1. Map one SO without DN and confirm empty batch.
+2. Map one SO with DN and confirm DN batch.
+3. Map multiple SOs and confirm earlier SO rows remain.
+4. Tick Group same item and UOM.
+5. Confirm same item/UOM/batch rows merge.
+6. Confirm different batches remain separate.
+7. Confirm empty batch groups only with empty batch.
+8. Save and confirm row count does not unexpectedly increase.
+9. Submit and verify SO and DN billing status.
+10. Cancel and verify SO and DN statuses reverse.
+11. Confirm Delivery Notes remain submitted.
+12. Confirm Repost Item Valuation and ledger doctypes keep normal behavior.
+13. Inspect stock ledger if cancellation reports negative stock.
+
+## Validation commands
+
+From the ERPNext app directory:
+
+```bash
+python -m py_compile erpnext/accounts/doctype/sales_invoice/sales_invoice.py
+python -m py_compile erpnext/accounts/doctype/sales_invoice_item/sales_invoice_item.json
+python -m py_compile erpnext/selling/doctype/sales_order/sales_order.py
+python -m py_compile erpnext/stock/doctype/delivery_note/delivery_note.py
+python -m py_compile erpnext/hooks.py
+git diff --check
+```
+
+`python -m py_compile` is not valid for JSON files; validate JSON separately:
+
+```bash
+python -m json.tool erpnext/accounts/doctype/sales_invoice_item/sales_invoice_item.json >/dev/null
+```
