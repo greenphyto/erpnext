@@ -39,7 +39,9 @@
   "make_serial_no_batch_from_work_order",
   "enable_create_sample_delivery",
   "packaging_section",
-  "default_packaging"
+  "default_packaging",
+  "item_change_section",
+  "item_change"
  ],
  "fields": [
   {
@@ -245,13 +247,24 @@
    "fieldname": "enable_attrition_qty",
    "fieldtype": "Check",
    "label": "Enable Attrition Qty"
+  },
+  {
+   "fieldname": "item_change_section",
+   "fieldtype": "Section Break",
+   "label": "Item Change"
+  },
+  {
+   "fieldname": "item_change",
+   "fieldtype": "Table",
+   "label": "Item Change",
+   "options": "Item finish goods change"
   }
  ],
  "icon": "icon-wrench",
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-12-23 11:10:34.677228",
+ "modified": "2026-09-24 17:06:14.679179",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Manufacturing Settings",

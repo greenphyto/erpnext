@@ -2290,6 +2290,72 @@ def cancel_repack_se(doc, method=""):
 	frappe.db.set_value("Request Items", {"stock_entry":doc.name}, "stock_entry", "")
 	frappe.db.set_value("Sales Order Item", {"stock_entry":doc.name}, "stock_entry", "")
 
+
+def create_item_change_repack(doc, method=""):
+	if doc.docstatus != 1 or doc.purpose != "Manufacture" or doc.get("auto_repack"):
+		return
+
+	settings = frappe.get_single("Manufacturing Settings")
+	mappings = {(row.from_item, row.warehouse): row for row in settings.get("item_change", [])}
+	items = [item for item in doc.items if (item.item_code, item.t_warehouse) in mappings]
+	if not items:
+		return
+
+	if frappe.db.exists("Stock Entry", {"auto_repack_source": doc.name, "docstatus": ["!=", 2]}):
+		return
+
+	repack = frappe.new_doc("Stock Entry")
+	repack.stock_entry_type = "Repack"
+	repack.stock_entry_type_view = "Repack"
+	repack.purpose = "Repack"
+	repack.naming_series = frappe.db.get_value("Stock Entry Type", "Repack", "series") or "MAT-STE-.YYYY.-"
+	repack.company = doc.company
+	repack.posting_date = doc.posting_date
+	repack.posting_time = doc.posting_time
+	repack.remarks = "Auto Repack: Manufacture {0}".format(doc.name)
+	repack.flags.ignore_validate_update_after_submit = True
+
+	for item in items:
+		mapping = mappings[(item.item_code, item.t_warehouse)]
+		sample_qty = 0
+		if doc.work_order and frappe.db.exists(
+			"Delivery Note", {"work_order": doc.work_order, "is_production": 1, "docstatus": 1}
+		):
+			sample_qty = frappe.db.get_value(
+				"Delivery Note Item",
+				{"parent": ["in", frappe.get_all("Delivery Note", filters={"work_order": doc.work_order, "is_production": 1, "docstatus": 1}, pluck="name")], "item_code": item.item_code},
+				"stock_qty",
+			) or 0
+
+		qty = item.qty - sample_qty
+		if qty <= 0:
+			continue
+		common = {
+			"qty": qty,
+			"uom": item.uom,
+			"conversion_factor": item.conversion_factor,
+			"basic_rate": item.basic_rate,
+		}
+		repack.append("items", {**common, "item_code": mapping.from_item, "s_warehouse": mapping.warehouse})
+		repack.append("items", {**common, "item_code": mapping.to_item, "t_warehouse": mapping.warehouse, "is_finished_item": 1})
+
+	repack.insert(ignore_permissions=True)
+	repack.submit()
+	frappe.db.set_value("Stock Entry", doc.name, "auto_repack", repack.name)
+
+
+def cancel_item_change_repack(doc, method=""):
+	if doc.purpose != "Manufacture" or not doc.get("auto_repack"):
+		return
+
+	doc.flags.ignore_links = True
+	doc.ignore_linked_doctypes = ("Stock Entry",)
+	repack = frappe.get_doc("Stock Entry", doc.auto_repack)
+	if repack.docstatus == 1:
+		repack.flags.ignore_links = True
+		repack.ignore_linked_doctypes = ("Stock Entry",)
+		repack.cancel()
+
 def detect_salad_items(doc, method=""):
 	if not doc.stock_entry_type == "Manufacture" or not doc.work_order:
 		return

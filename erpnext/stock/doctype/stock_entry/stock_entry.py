@@ -235,6 +235,8 @@ class StockEntry(StockEntryAsset, StockController):
 		self.set_close_materials()
 
 	def on_cancel(self):
+		if self.purpose == "Manufacture" and self.get("auto_repack"):
+			self.ignore_linked_doctypes = ("Stock Entry",)
 		self.validate_scrap_entry_from_work_order()
 		self.update_subcontract_order_supplied_items()
 		self.update_subcontracting_order_status()
