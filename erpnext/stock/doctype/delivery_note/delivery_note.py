@@ -19,7 +19,7 @@ from erpnext.accounts.general_ledger import make_gl_entries
 from erpnext.accounts.utils import get_price_list_with
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.controllers.selling_controller import SellingController
-from erpnext.stock.doctype.batch.batch import set_batch_nos, get_available_batch_portion
+from erpnext.stock.doctype.batch.batch import get_available_batch_portion, set_auto_batch_rows, set_batch_nos
 from erpnext.stock.doctype.serial_no.serial_no import get_delivery_note_serial_no
 from erpnext.stock.get_item_details import get_carton_detail, get_item_price
 from six import string_types
@@ -235,6 +235,7 @@ class DeliveryNote(SellingController):
 	def validate(self):
 		self.validate_non_stock()
 		self.validate_posting_time()
+		set_auto_batch_rows(self, "warehouse")
 		super(DeliveryNote, self).validate()
 		self.apply_lazada_item_prices()
 		self.set_status()
@@ -257,6 +258,7 @@ class DeliveryNote(SellingController):
 		make_packing_list(self)
 
 		if not self.is_return:
+			set_auto_batch_rows(self, "warehouse")
 			set_batch_nos(self, "warehouse", throw=True)
 			set_batch_nos(self, "warehouse", throw=True, child_table="packed_items")
 

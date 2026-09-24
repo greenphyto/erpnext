@@ -9,6 +9,7 @@ from erpnext.controllers.stock_controller import StockController
 from erpnext.stock.doctype.delivery_note.delivery_note import DeliveryNote
 from erpnext.stock.get_item_details import get_conversion_factor
 from erpnext.stock.utils import get_incoming_rate
+from erpnext.stock.doctype.batch.batch import get_batches
 
 
 class ConsignmentOrder(DeliveryNote):
@@ -40,10 +41,11 @@ class ConsignmentOrder(DeliveryNote):
 
 	def validate(self):
 		self.validate_posting_time()
+		self.apply_target_warehouse_default()
+		self.set_fifo_batch_numbers()
 		# Run generic selling/stock/accounting validations.
 		super(DeliveryNote, self).validate()
 
-		self.apply_target_warehouse_default()
 		self.validate_warehouse()
 		self.validate_uom_is_integer("stock_uom", "stock_qty")
 		self.validate_uom_is_integer("uom", "qty")
@@ -58,6 +60,48 @@ class ConsignmentOrder(DeliveryNote):
 				item.warehouse = default_source
 			if default_target and not item.target_warehouse:
 				item.target_warehouse = default_target
+
+	def set_fifo_batch_numbers(self):
+		for item in list(self.get("items")):
+			if item.batch_no:
+				expiry_date = frappe.db.get_value("Batch", item.batch_no, "expiry_date")
+				if expiry_date and expiry_date < frappe.utils.getdate():
+					item.batch_no = None
+				else:
+					continue
+			if not item.warehouse or not item.item_code:
+				continue
+			if not frappe.get_cached_value("Item", item.item_code, "has_batch_no"):
+				continue
+
+			conversion_factor = flt(item.conversion_factor) or 1
+			remaining_qty = flt(item.stock_qty or item.qty * conversion_factor)
+			batches = get_batches(item.item_code, item.warehouse, qty=remaining_qty) or []
+			allocations = []
+			for batch in batches:
+				batch_qty = min(flt(batch.qty), remaining_qty)
+				if batch_qty <= 0:
+					continue
+				allocations.append((batch.batch_id, batch_qty))
+				remaining_qty -= batch_qty
+				if remaining_qty <= 0:
+					break
+
+			if remaining_qty > 0:
+				frappe.msgprint(_("Insufficient batch stock for Item {0}").format(item.item_code))
+				continue
+
+			item.qty = allocations[0][1] / conversion_factor
+			item.stock_qty = allocations[0][1]
+			item.batch_no = allocations[0][0]
+			row_data = item.as_dict()
+			for field in ("name", "parent", "parentfield", "parenttype", "idx", "doctype"):
+				row_data.pop(field, None)
+			for batch_no, batch_qty in allocations[1:]:
+				new_item = self.append("items", row_data.copy())
+				new_item.qty = batch_qty / conversion_factor
+				new_item.stock_qty = batch_qty
+				new_item.batch_no = batch_no
 
 	def validate_warehouse(self):
 		# Keep standard warehouse validations (company/disabled checks).
