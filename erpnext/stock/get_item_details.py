@@ -1697,7 +1697,7 @@ def get_carton_detail(args):
 			uom_customer = d.packaging
 			package_item = d.package_item
 
-	res.uom = uom_customer or uom_default
+	res.carton_uom = res.carton_uom or frappe.db.get_value("UOM", {"is_carton": 1}, "name")
 	res.packaging_item = res.packaging_item or package_item
 	if not res.packaging_item:
 		res.packaging_item = frappe.db.get_single_value("Manufacturing Settings", "default_packaging")

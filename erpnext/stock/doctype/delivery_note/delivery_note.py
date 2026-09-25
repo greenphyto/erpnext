@@ -164,13 +164,15 @@ class DeliveryNote(SellingController):
 				continue
 
 			detail = get_carton_detail(frappe._dict({
-			"customer": customer,
-			"item_code": item.item_code,
-			"uom": item.uom,
-			"qty": item.qty,
-		}))
-			item.update(detail)
-			item.is_carton = 1
+				"customer": customer,
+				"item_code": item.item_code,
+				"uom": item.uom,
+				"qty": item.qty,
+			}))
+			item.carton_uom = detail.carton_uom if self.is_carton_order else None
+			item.carton_conversion = detail.carton_conversion if self.is_carton_order else 0
+			item.carton_qty = detail.carton_qty if self.is_carton_order else 0
+			item.is_carton = self.is_carton_order
 
 	def before_print(self, settings=None):
 		def toggle_print_hide(meta, fieldname):
@@ -1825,3 +1827,7 @@ def get_dn_salad_items_with_availability(delivery_note):
 				"lead_time_days": cint(frappe.db.get_value("Item", item.item_code, "lead_time_days"))
 			})
 	return result
+
+def check_uom(lines, self):
+	for d in self.items:
+		print(lines, d.item_code, d.qty, d.uom, d.stock_uom)
