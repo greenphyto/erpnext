@@ -591,7 +591,8 @@ scheduler_events = {
 		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_items",
 		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_product",
         "erpnext.ai_agent.doctype.email_invoice.email_invoice.pull_erp_po",
-        "erpnext.controllers.foms.daily_update_batch_status"
+        "erpnext.controllers.foms.daily_update_batch_status",
+        "erpnext.controllers.foms.notify_late_sync_foms_and_work_order"
 	],
 	"weekly": [
 		"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_weekly",

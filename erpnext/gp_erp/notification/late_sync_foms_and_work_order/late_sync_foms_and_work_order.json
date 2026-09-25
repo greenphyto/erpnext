@@ -1,0 +1,35 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "creation": "2026-09-25 16:03:33.502451",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Work Order",
+ "enabled": 1,
+ "event": "Custom",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "FOMS and ERP status mismatch found in Work Orders:\n<table border=\"1\" cellpadding=\"5\" cellspacing=\"0\">\n\t<tr>\n\t\t<th>Work Order</th>\n\t\t<th>FOMS Lot</th>\n\t\t<th>Operation</th>\n\t\t<th>FOMS Status</th>\n\t\t<th>ERP Status</th>\n\t</tr>\n\n\t{% for row in doc.get('foms_mismatches') %}\n\t<tr>\n\t\t<td>{{ row.work_order }}</td>\n\t\t<td>{{ row.lot }}</td>\n\t\t<td>{{ row.operation }}</td>\n\t\t<td>{{ row.foms_status }}</td>\n\t\t<td>{{ row.erp_status }}</td>\n\t</tr>\n\t{% endfor %}\n</table>",
+ "modified": "2026-09-25 17:58:09.307236",
+ "modified_by": "Administrator",
+ "module": "GP ERP",
+ "name": "Late Sync FOMS and Work Order",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "email": "rizky@greenphyto.com"
+  },
+  {
+   "email": "weiquan@greenphyto.com"
+  },
+  {
+   "email": "jingkai@greenphyto.com"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "sender": "ERP",
+ "sender_email": "erp@greenphyto.com",
+ "subject": "[Warning] Late syncing Work Order and FOMS"
+}

@@ -263,6 +263,50 @@ def sync_controller(doctype, controller):
 		i+=1
 	show_progress(i, count)
 
+def notify_late_sync_foms_and_work_order():
+	"""Notify about Work Orders with mismatched FOMS and ERP operation status."""
+	if not is_enable_integration():
+		return
+
+	from erpnext.manufacturing.doctype.work_order.work_order import get_foms_task_status
+
+	work_orders = frappe.get_all(
+		"Work Order",
+		filters={"docstatus": 1, "foms_work_order": ["is", "set"], "status":"In Process"},
+		fields=["name", "production_item", "foms_work_order", "foms_lot_name"],
+	)
+	mismatches = []
+	for work_order in work_orders:
+		for task in get_foms_task_status(
+			work_order.name, work_order.production_item, work_order.foms_work_order
+		):
+			if task.foms_status == task.erp_status:
+				continue
+			mismatches.append(
+				{
+					"work_order": work_order.name,
+					"lot": work_order.foms_lot_name or "",
+					"operation": task.operation,
+					"foms_status": "Complete" if task.foms_status else "Incomplete",
+					"erp_status": "Issued" if task.erp_status else "Not Found",
+				}
+			)
+			if len(mismatches) >= 5:
+				break
+		if len(mismatches) >= 5:
+			break
+
+	if not mismatches:
+		return
+
+	doc = frappe._dict(
+		doctype="Work Order",
+		name=mismatches[0]["work_order"],
+	)
+	doc.foms_mismatches = mismatches
+	frappe.get_doc("Notification", "Late Sync FOMS and Work Order").send(doc)
+
+
 def notify_unsynced_requests():
 	"""Notify about submitted Requests that have not received a FOMS ID."""
 	requests = frappe.get_all(
