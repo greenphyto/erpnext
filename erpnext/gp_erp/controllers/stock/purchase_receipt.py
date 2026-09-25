@@ -6,6 +6,18 @@ from erpnext.stock.doctype.purchase_receipt.purchase_receipt import PurchaseRece
 
 
 class PurchaseReceiptGP(PurchaseReceipt):
+    def validate(self):
+        super().validate()
+        try:
+            self.link_internal_company()
+        except Exception:
+            pass
+        self.validate_delivery_note_internal_sent()
+
+    def on_submit(self):
+        super().on_submit()
+        self.update_bom_rate()
+
     def link_internal_company(self):
         if not self.is_internal_supplier:
             return
