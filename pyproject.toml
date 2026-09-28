@@ -20,6 +20,7 @@ dependencies = [
     "plaid-python~=7.2.1",
     "python-youtube~=0.8.0",
     "minio",
+    "xmltodict",
 
     # Not used directly - required by PyQRCode for PNG generation
     "pypng~=0.20220715.0",
