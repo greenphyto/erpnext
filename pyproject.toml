@@ -21,6 +21,17 @@ dependencies = [
     "python-youtube~=0.8.0",
     "minio",
     "xmltodict",
+    "pandas",
+
+    # GP custom dependencies
+    "beautifulsoup4",
+    "google-cloud-vision",
+    "pymupdf",
+    "pypdf",
+    "reportlab",
+    "openpyxl",
+    "iso3166",
+    "email-reply-parser",
 
     # Not used directly - required by PyQRCode for PNG generation
     "pypng~=0.20220715.0",

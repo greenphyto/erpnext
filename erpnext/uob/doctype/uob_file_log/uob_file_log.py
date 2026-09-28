@@ -1,11 +1,12 @@
 # Copyright (c) 2025, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
+from __future__ import annotations
+
 import frappe
 from frappe.model.document import Document
 import xmltodict
 import base64
-import pandas as pd
 import io, re
 from typing import Tuple, Optional, Union
 from erpnext.accounts.doctype.payment_entry.payment_entry import get_payment_entry
@@ -53,6 +54,7 @@ class UOBFileLog(Document):
 			base64_file_str: Optional[str] = None,
 			file_path: Optional[Union[str, io.TextIOWrapper]] = None
 		) -> Tuple[pd.DataFrame, pd.DataFrame]:
+		import pandas as pd
 		df_acc = pd.DataFrame()
 		df_tx = pd.DataFrame()
 		# Decode base64 ke string teks
@@ -199,6 +201,7 @@ class UOBFileLog(Document):
 		doc.update_payment_status(ProcessID, transactions, file_date=file_date, error_message=error_message)
 
 	def sync_payment_entry2(self, file, filename="", raw=False):
+		import pandas as pd
 		if "ES3_" not in filename:
 			return
 		
@@ -884,6 +887,7 @@ def get_payment_mode(company, bank_account):
 
 def clean_amount(value) -> float:
 	"""Remove commas and Excel formula artifacts, convert to float."""
+	import pandas as pd
 	if pd.isna(value):
 		return 0.0
 	value = re.sub(r'^="?(.*?)"?$', r'\1', str(value).strip())
