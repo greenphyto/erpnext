@@ -191,12 +191,12 @@ frappe.ui.form.on("Work Order", {
 		} else {
 			frm.trigger("show_progress_for_items");
 			frm.trigger("show_progress_for_operations");
+			frm.trigger("show_foms_status");
 		}
 
 		if (frm.doc.status != "Closed") {
 			if (
 				frm.doc.docstatus === 1 &&
-				frm.doc.status !== "Completed" &&
 				frm.doc.operations &&
 				frm.doc.operations.length
 			) {
@@ -217,7 +217,7 @@ frappe.ui.form.on("Work Order", {
 		if (frm.doc.status == "Completed") {
 			if (frm.doc.__onload.backflush_raw_materials_based_on == "Material Transferred for Manufacture") {
 				frm.add_custom_button(
-					__("BOM"),
+					__("Create BOM"),
 					() => {
 						frm.trigger("make_bom");
 					},
@@ -251,17 +251,17 @@ frappe.ui.form.on("Work Order", {
 				return flt(d.consumed_qty) < flt(d.transferred_qty - d.returned_qty);
 			});
 
-			if (non_consumed_items && non_consumed_items.length) {
-				frm.add_custom_button(__("Return Components"), function () {
+			if (non_consumed_items && non_consumed_items.length && cint(frm.doc.material_returned) === 0) {
+				frm.add_custom_button(__("Scrap Components"), function () {
 					frm.trigger("create_stock_return_entry");
-				});
+				}).addClass("btn-primary");
 			}
 		}
 	},
 
 	create_stock_return_entry: function (frm) {
 		frappe.call({
-			method: "erpnext.manufacturing.doctype.work_order.work_order.make_stock_return_entry",
+			method: "erpnext.manufacturing.doctype.work_order.work_order.make_scrap_materials",
 			args: {
 				work_order: frm.doc.name,
 			},
@@ -270,6 +270,62 @@ frappe.ui.form.on("Work Order", {
 					let doc = frappe.model.sync(r.message);
 					frappe.set_route("Form", doc[0].doctype, doc[0].name);
 				}
+			},
+		});
+	},
+
+	show_foms_status: function (frm) {
+		if (!frm.doc.foms_work_order) return;
+		frappe.call({
+			method: "erpnext.manufacturing.doctype.work_order.work_order.get_foms_task_status",
+			args: {
+				work_order: frm.doc.name,
+				item_code: frm.doc.production_item,
+				foms_work_order: frm.doc.foms_work_order,
+			},
+			callback: function (r) {
+				if (!r.message) return;
+
+				const tasks = r.message;
+				const fomsTasksUrl = `https://foms.greenphyto.com/user/operations/overall-tasks?isYourTask=false&lotId=${frm.doc.foms_lot_name}&page=1`;
+				const checkIcon = '<span style="color:green;font-weight:bold;">&#10003;</span>';
+				const emptyBox = '<span style="color:#aaa;">&#9744;</span>';
+
+				let taskHtml = tasks
+					.map((t) => {
+						const icon = t.foms_status ? checkIcon : emptyBox;
+						return `<span style="margin-right:12px;">${__(t.operation)} ${icon}</span>`;
+					})
+					.join("");
+
+				const warnings = tasks
+					.filter((t) => cint(t.pending))
+					.map(
+						(t) =>
+							`<div class="alert alert-warning" style="margin:4px 0;padding:6px 10px;">
+								<strong>${__("Warning!")}</strong> ${__(t.operation)} ${__("is not syncing yet to ERP!")}
+							</div>`
+					)
+					.join("");
+
+				const hasWarning = tasks.some((t) => cint(t.pending));
+				const warningLink = hasWarning
+					? `<div style="margin-top: 10px;margin-left: 10px;font-size: 0.94em;">
+							<a href="${fomsTasksUrl}" target="_blank" rel="noopener noreferrer"><u>${__("Open tasks to FOMS")}</u></a>
+						</div>`
+					: "";
+
+				const html = `
+					<div style="padding:8px 0;">
+						<div style="margin-bottom:6px;">
+							<strong>${__("FOMS Task")}:</strong>&nbsp;${taskHtml}
+						</div>
+						${warnings}
+						${warningLink}
+					</div>`;
+
+				let section = frm.dashboard.add_section(html, __("Foms Status"));
+				frm.dashboard.progress_area.wrapper.after(section.parent());
 			},
 		});
 	},

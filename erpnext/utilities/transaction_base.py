@@ -278,14 +278,4 @@ def validate_uom_is_integer(doc, uom_field, qty_fields, child_dt=None):
 				if qty:
 					precision = d.precision(f)
 					if abs(cint(qty) - flt(qty, precision)) > 0.0000001:
-						frappe.throw(
-							_(
-								"Row {1}: Quantity ({0}) cannot be a fraction. To allow this, disable '{2}' in UOM {3}."
-							).format(
-								flt(qty, precision),
-								d.idx,
-								frappe.bold(_("Must be Whole Number")),
-								frappe.bold(d.get(uom_field)),
-							),
-							UOMMustBeIntegerError,
-						)
+						d.set(f, cint(qty))

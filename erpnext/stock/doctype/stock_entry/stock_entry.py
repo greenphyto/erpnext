@@ -52,6 +52,7 @@ from erpnext.stock.serial_batch_bundle import (
 	get_empty_batches_based_work_order,
 	get_serial_or_batch_items,
 )
+from erpnext.stock import get_warehouse_account_map, get_item_account
 from erpnext.stock.stock_ledger import NegativeStockError, get_previous_sle, get_valuation_rate
 from erpnext.stock.utils import get_bin, get_incoming_rate
 
@@ -394,6 +395,8 @@ class StockEntry(StockController):
 			self.bom_no = data.bom_no
 
 	def validate_job_card_item(self):
+		return
+
 		if not self.job_card:
 			return
 
@@ -632,12 +635,7 @@ class StockEntry(StockController):
 				)
 
 			if acc_details.account_type == "Stock":
-				frappe.throw(
-					_(
-						"At row #{0}: the Difference Account must not be a Stock type account, please change the Account Type for the account {1} or select a different account"
-					).format(d.idx, get_link_to_form("Account", d.expense_account)),
-					title=_("Difference Account in Items Table"),
-				)
+				pass
 
 			if self.purpose != "Material Issue" and acc_details.account_type == "Cost of Goods Sold":
 				frappe.msgprint(
@@ -752,14 +750,13 @@ class StockEntry(StockController):
 			frappe.db.get_single_value("Manufacturing Settings", "overproduction_percentage_for_work_order")
 		)
 
+		if not allowance_percentage:
+			return
+
 		for d in prod_order.get("operations"):
 			total_completed_qty = flt(self.fg_completed_qty) + flt(prod_order.produced_qty)
-			completed_qty = (
-				d.completed_qty + d.process_loss_qty + (allowance_percentage / 100 * d.completed_qty)
-			)
-			if flt(total_completed_qty, self.precision("fg_completed_qty")) > flt(
-				completed_qty, self.precision("fg_completed_qty")
-			):
+			completed_qty = d.completed_qty + (allowance_percentage / 100 * d.completed_qty)
+			if total_completed_qty > flt(completed_qty):
 				job_card = frappe.db.get_value("Job Card", {"operation_id": d.name}, "name")
 				if not job_card:
 					frappe.throw(
@@ -1528,6 +1525,10 @@ class StockEntry(StockController):
 					"Manufacturing Settings", "overproduction_percentage_for_work_order"
 				)
 			)
+
+			if not allowance_percentage:
+				return
+
 			allowed_qty = wo_qty + ((allowance_percentage / 100) * wo_qty)
 
 			# No work order could mean independent Manufacture entry, if so skip validation
@@ -1782,6 +1783,7 @@ class StockEntry(StockController):
 				pro_doc.run_method("update_work_order_qty")
 				if self.purpose == "Manufacture":
 					pro_doc.run_method("update_planned_qty")
+					pro_doc.update_batch_produced_qty(self)
 
 			pro_doc.run_method("update_status")
 			if not pro_doc.operations:
@@ -2497,13 +2499,17 @@ class StockEntry(StockController):
 		)
 
 		precision = frappe.get_precision("Stock Entry Detail", "qty")
+		single_complete = frappe.db.get_single_value(
+			"Manufacturing Settings", "allow_single_completed_work_order"
+		)
+
 		for _key, row in available_materials.items():
 			remaining_qty_to_produce = flt(wo_data.trans_qty) - flt(wo_data.produced_qty)
 			if remaining_qty_to_produce <= 0 and not self.is_return:
 				continue
 
 			qty = flt(row.qty)
-			if not self.is_return:
+			if not self.is_return and not single_complete:
 				qty = (flt(row.qty) * flt(self.fg_completed_qty)) / remaining_qty_to_produce
 
 			item = row.item_details
@@ -2554,14 +2560,26 @@ class StockEntry(StockController):
 
 		use_serial_batch_fields = frappe.db.get_single_value("Stock Settings", "use_serial_batch_fields")
 
+		bundle_name = (
+			create_serial_and_batch_bundle(self, row, item, "Outward")
+			if not use_serial_batch_fields
+			else ""
+		)
+
+		# If available batch qty is less than required qty,
+		# consume only the available qty to keep bundle qty in sync
+		if bundle_name and row.batches_to_be_consume:
+			precision = frappe.get_precision("Stock Entry Detail", "qty")
+			bundle_qty = sum(abs(flt(qty, precision)) for qty in row.batches_to_be_consume.values())
+			if bundle_qty and flt(qty, precision) > bundle_qty:
+				qty = bundle_qty
+
 		ste_item_details = {
 			"from_warehouse": item.warehouse,
 			"to_warehouse": "",
 			"qty": qty,
 			"item_name": item.item_name,
-			"serial_and_batch_bundle": create_serial_and_batch_bundle(self, row, item, "Outward")
-			if not use_serial_batch_fields
-			else "",
+			"serial_and_batch_bundle": bundle_name,
 			"description": item.description,
 			"stock_uom": item.stock_uom,
 			"expense_account": item.expense_account,
@@ -3036,6 +3054,83 @@ class StockEntry(StockController):
 		self.set_actual_qty()
 		self.calculate_rate_and_amount()
 
+	def get_previous_rate(self):
+		from erpnext.controllers.foms import OPERATION_MAP_NAME
+
+		items = get_available_materials(self.work_order)
+
+		# compute avg basic rate per item key
+		total = 0
+		rate_map_keys = {}
+		for key, row in items.items():
+			qty = flt(row.get("qty"))
+			amount = flt(row.get("basic_amount"))
+			if qty <= 0:
+				qty = abs(qty) or 1
+			row.basic_rate = amount / qty if amount else 0
+			rate_map_keys[key] = row
+			total += flt(row.basic_rate) * abs(flt(row.get("qty")))
+
+		# find previous amount, harvesting
+		total_debit = 0
+		for opr_no in [3, 2, 1]:
+			operation = OPERATION_MAP_NAME[opr_no]
+			total_debit = frappe.db.sql(
+				"""
+					SELECT SUM(gl.debit)
+					FROM `tabGL Entry` gl
+					INNER JOIN `tabStock Entry` se ON gl.voucher_no = se.name
+					WHERE gl.voucher_type = 'Stock Entry'
+					AND gl.docstatus = 1
+					AND se.docstatus = 1
+					AND se.purpose = 'Material Transfer for Manufacture'
+					AND se.work_order = %s
+					AND se.operation = %s
+				""",
+				(self.work_order, operation),
+			)[0][0] or 0.0
+			if total_debit:
+				break
+
+		adj_value = total_debit / total if total else 0
+		rate_map = {}
+		for key, row in items.items():
+			new_rate = row.basic_rate * adj_value
+			rate_map[key[1]] = new_rate
+
+		return rate_map
+
+	def set_expense_account(self):
+		warehouse_account = get_warehouse_account_map(self.company)
+		rnd_account = None
+		for d in self.get("items"):
+			if self.purpose in ["Material Transfer", "Material Transfer for Manufacture", "Manufacture"]:
+				# keep balance sheet
+				operation = self.operation
+				if self.purpose == "Manufacture":
+					operation = "Harvesting"
+				d.expense_account = get_item_account(
+					warehouse_account,
+					d.s_warehouse or d.t_warehouse,
+					d.item_code,
+					get_default=1,
+					operation=operation,
+				)
+			if self.purpose == "Material Issue":
+				if d.get("rnd_item"):
+					if not rnd_account:
+						rnd_account = frappe.db.get_value("Company", self.company, "account_for_rnd_item_scrap")
+					if rnd_account:
+						d.expense_account = rnd_account
+						continue
+				item_group_defaults = get_item_group_defaults(d.item_code, self.company)
+				item = frappe.get_cached_doc("Item", d.item_code)
+				d.expense_account = (
+					item.get("expense_account")
+					or item_group_defaults.get("expense_account")
+					or frappe.get_cached_value("Company", self.company, "default_expense_account")
+				)
+
 
 @frappe.whitelist()
 def move_sample_to_retention_warehouse(company, items):
@@ -3484,6 +3579,8 @@ def get_stock_entry_data(work_order, stock_entry_doc=None):
 			stock_entry_detail.original_item,
 			stock_entry_detail.item_code,
 			stock_entry_detail.qty,
+			stock_entry_detail.basic_rate,
+			stock_entry_detail.basic_amount,
 			(stock_entry_detail.t_warehouse).as_("warehouse"),
 			(stock_entry_detail.s_warehouse).as_("s_warehouse"),
 			stock_entry_detail.description,

@@ -1175,13 +1175,15 @@ def create_sample_after_work_order(doc, method=""):
 def cancel_sample_on_work_order(doc, method=''):
 	if doc.purpose != "Manufacture":
 		return
-	
+
 	# Ensure Work Order linked
 	if not doc.work_order:
 		return
-	
+
 	# Check duplication: avoid multiple DN
-	exists = frappe.db.exists("Delivery Note", {"work_order": doc.work_order, "is_production":1})
+	exists = frappe.db.exists(
+		"Delivery Note", {"work_order": doc.work_order, "is_production": 1, "docstatus": 1}
+	)
 	if not exists:
 		return
 
@@ -1190,7 +1192,7 @@ def cancel_sample_on_work_order(doc, method=''):
 		dn.cancel()
 	elif dn.docstatus == 0:
 		frappe.delete_doc(dn.doctype, dn.name)
-	
+
 	for d in dn.get('items'):
 		d.db_set("batch_no", "")
 

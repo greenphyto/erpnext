@@ -388,8 +388,7 @@
    "label": "Items",
    "oldfieldname": "mtn_details",
    "oldfieldtype": "Table",
-   "options": "Stock Entry Detail",
-   "reqd": 1
+   "options": "Stock Entry Detail"
   },
   {
    "fieldname": "get_stock_and_rate",

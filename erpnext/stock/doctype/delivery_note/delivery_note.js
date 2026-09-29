@@ -141,6 +141,131 @@ frappe.ui.form.on("Delivery Note", {
 	},
 });
 
+frappe.ui.form.on("Delivery Note", {
+	is_donation: function (frm) {
+		if (!cint(frm.doc.is_donation)) return;
+		set_dn_exclusive_flag(frm, "is_donation");
+		frm.set_value("naming_series", "DON-.YYYY.-.###");
+		frappe.db
+			.get_value(frm.doc.company ? "Company" : null, frm.doc.company, [
+				"donation_customer",
+				"donation_account",
+				"donation_warehouse",
+			])
+			.then((r) => {
+				if (r && r.message) {
+					if (r.message.donation_customer) frm.set_value("customer", r.message.donation_customer);
+					if (r.message.donation_warehouse) frm.set_value("set_warehouse", r.message.donation_warehouse);
+					set_dn_expense_account(frm, r.message.donation_account);
+				}
+			});
+	},
+
+	is_giveaway: function (frm) {
+		if (!cint(frm.doc.is_giveaway)) return;
+		set_dn_exclusive_flag(frm, "is_giveaway");
+		frm.set_value("naming_series", "GPO-.YYYY.-.###");
+		frappe.db
+			.get_value(frm.doc.company ? "Company" : null, frm.doc.company, [
+				"internal_staff_customer",
+				"giveaway_account",
+			])
+			.then((r) => {
+				if (r && r.message) {
+					if (r.message.internal_staff_customer)
+						frm.set_value("customer", r.message.internal_staff_customer);
+					set_dn_expense_account(frm, r.message.giveaway_account);
+				}
+			});
+	},
+
+	is_replacement: function (frm) {
+		if (!cint(frm.doc.is_replacement)) return;
+		set_dn_exclusive_flag(frm, "is_replacement");
+		frm.set_value("naming_series", "DO-RPL-.YYYY.-.#####");
+		frappe.db
+			.get_value(frm.doc.company ? "Company" : null, frm.doc.company, ["sales_replacement_account"])
+			.then((r) => {
+				if (r && r.message) set_dn_expense_account(frm, r.message.sales_replacement_account);
+			});
+	},
+
+	is_marketing: function (frm) {
+		if (!cint(frm.doc.is_marketing)) return;
+		set_dn_exclusive_flag(frm, "is_marketing");
+		frm.set_value("naming_series", "GPM-.YYYY.-.#####");
+		frappe.db
+			.get_value(frm.doc.company ? "Company" : null, frm.doc.company, [
+				"marketing_customer",
+				"marketing_delivery_account",
+			])
+			.then((r) => {
+				if (r && r.message) {
+					if (r.message.marketing_customer) frm.set_value("customer", r.message.marketing_customer);
+					set_dn_expense_account(frm, r.message.marketing_delivery_account);
+				}
+			});
+	},
+
+	is_production: function (frm) {
+		if (!cint(frm.doc.is_production)) return;
+		set_dn_exclusive_flag(frm, "is_production");
+		frm.set_value("naming_series", "GPP-.YYYY.-.#####");
+		frappe.db
+			.get_value(frm.doc.company ? "Company" : null, frm.doc.company, [
+				"production_customer",
+				"production_delivery_account",
+			])
+			.then((r) => {
+				if (r && r.message) {
+					if (r.message.production_customer) frm.set_value("customer", r.message.production_customer);
+					set_dn_expense_account(frm, r.message.production_delivery_account);
+				}
+			});
+	},
+
+	is_pledge: function (frm) {
+		if (!cint(frm.doc.is_pledge)) return;
+		set_dn_exclusive_flag(frm, "is_pledge");
+		frm.set_value("naming_series", "PON-.YYYY.-.#####");
+		frappe.db
+			.get_value(frm.doc.company ? "Company" : null, frm.doc.company, [
+				"donor_customer",
+				"donor_delivery_account",
+			])
+			.then((r) => {
+				if (r && r.message) {
+					if (r.message.donor_customer) frm.set_value("customer", r.message.donor_customer);
+					set_dn_expense_account(frm, r.message.donor_delivery_account);
+				}
+			});
+	},
+});
+
+function set_dn_exclusive_flag(frm, active_field) {
+	const flag_fields = [
+		"is_donation",
+		"is_giveaway",
+		"is_replacement",
+		"is_marketing",
+		"is_production",
+		"is_pledge",
+	];
+	flag_fields.forEach((field) => {
+		if (field !== active_field && cint(frm.doc[field])) {
+			frm.set_value(field, 0);
+		}
+	});
+}
+
+function set_dn_expense_account(frm, account) {
+	if (!account || !frm.doc.items || !frm.doc.items.length) return;
+	(frm.doc.items || []).forEach((row) => {
+		frappe.model.set_value(row.doctype, row.name, "expense_account", account);
+	});
+	frm.refresh_field("items");
+}
+
 frappe.ui.form.on("Delivery Note Item", {
 	expense_account: function (frm, dt, dn) {
 		var d = locals[dt][dn];

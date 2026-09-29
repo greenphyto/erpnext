@@ -1,18 +1,27 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>ERPNext API Documentation</title>
-    <meta charset="utf-8"/>
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@3/swagger-ui.css">
-</head>
-<body>
-    <div id="swagger-ui"></div>
-    <script src="https://unpkg.com/swagger-ui-dist@3/swagger-ui-bundle.js"></script>
-    <script>
-        SwaggerUIBundle({
-            url: "./api.json",
-            dom_id: '#swagger-ui',
-        });
-    </script>
-</body>
-</html>
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _("API Documentation") }}{% endblock %}
+
+{% block content %}
+<section class="section section-padding-top section-padding-bottom">
+	<div class="container">
+		<div class="hero-content">
+			<h1 class="hero-title">{{ _("ERPNext API Documentation") }}</h1>
+		</div>
+		<div id="swagger-ui"></div>
+	</div>
+</section>
+{% endblock %}
+
+{% block script %}
+<link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@3/swagger-ui.css">
+<script src="https://unpkg.com/swagger-ui-dist@3/swagger-ui-bundle.js"></script>
+<script>
+	frappe.ready(() => {
+		SwaggerUIBundle({
+			url: "/assets/erpnext/swagger/api.json",
+			dom_id: '#swagger-ui',
+		});
+	});
+</script>
+{% endblock %}
