@@ -1663,13 +1663,12 @@ class SalesInvoice(SellingController):
 			)
 
 	def has_multi_delivery_note_references(self):
-		return any(
-		ref
-		for item in self.items
-		for field in ("custom_delivery_note_references", "custom_sales_order_references")
-		for ref in (item.get(field) or "").split(",")
-		if ref
-		)
+		for item in self.items:
+			for field in ("custom_delivery_note_references", "custom_sales_order_references"):
+				refs = [ref for ref in (item.get(field) or "").split(",") if ref]
+				if len(refs) > 1:
+					return True
+		return False
 
 	def validate_multi_reference_billing(self):
 		quantities = {}
