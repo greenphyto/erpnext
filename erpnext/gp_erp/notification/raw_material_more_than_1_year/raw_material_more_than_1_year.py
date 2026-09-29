@@ -16,6 +16,8 @@ def notify_raw_material_more_than_1_year():
 			"batch_qty": [">", 0],
 			"manufacturing_date": ["<=", one_year_ago],
 			"disabled": 0,
+			# batch with expiry_date is considered already curated by user, skip it
+			"expiry_date": ["is", "not set"],
 		},
 		fields=["name", "item", "item_name", "item_group", "manufacturing_date", "batch_qty", "stock_uom"],
 		order_by="manufacturing_date asc",
