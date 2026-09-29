@@ -28,3 +28,5 @@ superpowers/
 .superpowers/
 erpnext/patches/docs/*
 node_modules
+*.rdb
+*.sql.gz
