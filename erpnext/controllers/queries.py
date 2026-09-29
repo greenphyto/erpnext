@@ -486,12 +486,8 @@ def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 		cond = "and (batch.expiry_date is null or batch.expiry_date >= %(posting_date)s)"
 
 	posting_datetime_cond_warehouse = ""
-	if filters.get("posting_date") and filters.get("posting_time"):
-		posting_datetime_cond_warehouse = (
-			"and (sle.posting_date < %(posting_date)s "
-			"or (sle.posting_date = %(posting_date)s "
-			"and sle.posting_time <= %(posting_time)s))"
-		)
+	if filters.get("posting_date"):
+		posting_datetime_cond_warehouse = "and sle.posting_date <= %(posting_date)s"
 
 
 	batch_nos = None
@@ -499,7 +495,6 @@ def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 		"item_code": filters.get("item_code"),
 		"warehouse": filters.get("warehouse"),
 		"posting_date": filters.get("posting_date"),
-		"posting_time": filters.get("posting_time"),
 		"txt": "%{0}%".format(txt),
 		"start": start,
 		"page_len": page_len,
@@ -580,17 +575,18 @@ def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 
 				and batch.docstatus < 2
 
-				{cond}
+			{cond}
 
-				/*
-					IMPORTANT:
-					This condition is only applied to the main SLE query,
-					so it determines whether the batch existed at the
-					given posting datetime.
+			/*
+				IMPORTANT:
+				This condition is only applied to the main SLE query,
+				so it determines whether the batch existed at the
+				given posting date.
 
-					It does NOT affect current_stock.actual_qty.
-				*/
-				{posting_datetime_cond_warehouse}
+				It does NOT affect current_stock.actual_qty.
+			*/
+			{posting_datetime_cond_warehouse}
+
 
 				{match_conditions}
 
