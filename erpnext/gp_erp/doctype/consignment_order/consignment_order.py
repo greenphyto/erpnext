@@ -62,23 +62,68 @@ class ConsignmentOrder(DeliveryNote):
 				item.target_warehouse = default_target
 
 	def set_fifo_batch_numbers(self):
+		from erpnext.stock.doctype.batch.batch import get_batch_qty
+
+		allow_expired = bool(
+			self.company and frappe.db.get_value("Company", self.company, "enable_auto_batch")
+		)
 		for item in list(self.get("items")):
+			partial_batch = None
 			if item.batch_no:
 				expiry_date = frappe.db.get_value("Batch", item.batch_no, "expiry_date")
-				if expiry_date and expiry_date < frappe.utils.getdate():
+				if expiry_date and expiry_date < frappe.utils.getdate() and not allow_expired:
 					item.batch_no = None
-				else:
+				elif not allow_expired:
 					continue
+				else:
+					conversion_factor = flt(item.conversion_factor) or 1
+					remaining_qty = flt(item.stock_qty or item.qty * conversion_factor)
+					batch_qty = get_batch_qty(batch_no=item.batch_no, warehouse=item.warehouse)
+					if flt(batch_qty) >= remaining_qty:
+						continue
+					if flt(batch_qty) > 0:
+						# Partial: keep selected batch for available qty, split remainder to other batches
+						partial_batch = (item.batch_no, flt(batch_qty), remaining_qty)
+						frappe.msgprint(
+							_("Batch {0} has only {1} qty for Item {2}. Splitting remaining qty to other batches.").format(
+								frappe.bold(item.batch_no), flt(batch_qty), item.item_code
+							),
+							indicator="orange",
+							alert=True,
+						)
+					else:
+						frappe.msgprint(
+							_("Batch {0} has insufficient qty for Item {1}. Re-allocating batch.").format(
+								frappe.bold(item.batch_no), item.item_code
+							),
+							indicator="orange",
+							alert=True,
+						)
+						item.batch_no = None
 			if not item.warehouse or not item.item_code:
 				continue
 			if not frappe.get_cached_value("Item", item.item_code, "has_batch_no"):
 				continue
 
 			conversion_factor = flt(item.conversion_factor) or 1
-			remaining_qty = flt(item.stock_qty or item.qty * conversion_factor)
-			batches = get_batches(item.item_code, item.warehouse, qty=remaining_qty) or []
+			if partial_batch:
+				item.qty = partial_batch[1] / conversion_factor
+				item.stock_qty = partial_batch[1]
+				item.batch_no = partial_batch[0]
+				row_data = item.as_dict()
+				for field in ("name", "parent", "parentfield", "parenttype", "idx", "doctype"):
+					row_data.pop(field, None)
+				remaining_qty = partial_batch[2] - partial_batch[1]
+			else:
+				remaining_qty = flt(item.stock_qty or item.qty * conversion_factor)
+			batches = (
+				get_batches(item.item_code, item.warehouse, qty=remaining_qty, allow_expired=allow_expired)
+				or []
+			)
 			allocations = []
 			for batch in batches:
+				if partial_batch and batch.batch_id == partial_batch[0]:
+					continue
 				batch_qty = min(flt(batch.qty), remaining_qty)
 				if batch_qty <= 0:
 					continue
@@ -91,13 +136,16 @@ class ConsignmentOrder(DeliveryNote):
 				frappe.msgprint(_("Insufficient batch stock for Item {0}").format(item.item_code))
 				continue
 
-			item.qty = allocations[0][1] / conversion_factor
-			item.stock_qty = allocations[0][1]
-			item.batch_no = allocations[0][0]
-			row_data = item.as_dict()
-			for field in ("name", "parent", "parentfield", "parenttype", "idx", "doctype"):
-				row_data.pop(field, None)
-			for batch_no, batch_qty in allocations[1:]:
+			if not partial_batch:
+				item.qty = allocations[0][1] / conversion_factor
+				item.stock_qty = allocations[0][1]
+				item.batch_no = allocations[0][0]
+				row_data = item.as_dict()
+				for field in ("name", "parent", "parentfield", "parenttype", "idx", "doctype"):
+					row_data.pop(field, None)
+				allocations = allocations[1:]
+
+			for batch_no, batch_qty in allocations:
 				new_item = self.append("items", row_data.copy())
 				new_item.qty = batch_qty / conversion_factor
 				new_item.stock_qty = batch_qty
