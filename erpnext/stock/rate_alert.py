@@ -1,6 +1,8 @@
 import frappe
 from frappe.utils import flt
 
+from erpnext.stock.stock_ledger import get_batch_incoming_rate
+
 
 RATE_THRESHOLD = 0.25
 MIN_PREV_RATE = 0.01
@@ -12,11 +14,11 @@ def check_rate_anomaly(doc, method):
 		return
 
 	anomalies = []
-	for item_code, warehouse, current_rate in items_to_check:
+	for item_code, warehouse, current_rate, batch_no in items_to_check:
 		if not current_rate:
 			continue
 
-		prev_rate = _get_last_valuation_rate(item_code, warehouse, doc.doctype, doc.name)
+		prev_rate = _get_prev_rate(doc, item_code, warehouse, batch_no)
 		if not prev_rate or prev_rate < MIN_PREV_RATE:
 			continue
 
@@ -25,6 +27,7 @@ def check_rate_anomaly(doc, method):
 			anomalies.append({
 				"item_code": item_code,
 				"warehouse": warehouse,
+				"batch_no": batch_no or "",
 				"prev_rate": flt(prev_rate, 4),
 				"current_rate": flt(current_rate, 4),
 				"diff_pct": flt(diff_pct * 100, 1),
@@ -41,27 +44,66 @@ def _get_stock_items(doc):
 			if not _is_product_item(d.item_code):
 				continue
 			if doc.get("is_return"):
-				results.append((d.item_code, d.warehouse, flt(d.incoming_rate)))
+				results.append((d.item_code, d.warehouse, flt(d.incoming_rate), d.get("batch_no")))
 			else:
 				sle_rate = _get_current_voucher_valuation_rate(
-					d.item_code, d.warehouse, doc.doctype, doc.name
+					d.item_code, d.warehouse, doc.doctype, doc.name, d.get("batch_no")
 				)
 				if sle_rate:
-					results.append((d.item_code, d.warehouse, flt(sle_rate)))
+					results.append((d.item_code, d.warehouse, flt(sle_rate), d.get("batch_no")))
 	elif doc.doctype == "Stock Entry":
 		for d in doc.get("items") or []:
 			if not _is_product_item(d.item_code):
 				continue
+			batch_no = _get_batch_no(doc, d)
 			if d.s_warehouse and not d.t_warehouse:
-				results.append((d.item_code, d.s_warehouse, flt(d.basic_rate)))
+				results.append((d.item_code, d.s_warehouse, flt(d.basic_rate), batch_no))
 			elif d.t_warehouse and not d.s_warehouse:
-				results.append((d.item_code, d.t_warehouse, flt(d.basic_rate)))
+				results.append((d.item_code, d.t_warehouse, flt(d.basic_rate), batch_no))
 	return results
+
+
+def _get_batch_no(doc, row):
+	if doc.doctype == "Stock Entry":
+		if not frappe.db.exists("DocType", "Serial and Batch Bundle"):
+			return row.get("batch_no") if hasattr(row, "get") else None
+		bundles = row.get("batches") or row.get("batch_no") or row.get("serial_and_batch_bundle")
+		if isinstance(batches, str) and batches:
+			bundles = frappe.get_all(
+				"Serial and Batch Bundle",
+				filters={"name": batches},
+				pluck="name",
+			)
+			if bundles:
+				return frappe.get_all(
+					"Serial and Batch Entry",
+					filters={"parent": bundles[0]},
+					pluck="batch_no",
+					order_by="idx",
+				)[0] or None
+			if not bundles:
+				return batches
+	return None
 
 
 def _is_product_item(item_code):
 	item_group = frappe.get_cached_value("Item", item_code, "item_group")
 	return item_group == "Products"
+
+
+def _get_prev_rate(doc, item_code, warehouse, batch_no):
+	if batch_no:
+		return flt(
+			get_batch_incoming_rate(
+				item_code=item_code,
+				warehouse=warehouse,
+				batch_no=batch_no,
+				posting_date=doc.posting_date,
+				posting_time=doc.posting_time,
+				creation=doc.creation,
+			)
+		)
+	return _get_last_valuation_rate(item_code, warehouse, doc.doctype, doc.name)
 
 
 def _get_last_valuation_rate(item_code, warehouse, voucher_type=None, voucher_no=None):
@@ -82,16 +124,22 @@ def _get_last_valuation_rate(item_code, warehouse, voucher_type=None, voucher_no
 	return flt(rate)
 
 
-def _get_current_voucher_valuation_rate(item_code, warehouse, voucher_type, voucher_no):
+def _get_current_voucher_valuation_rate(item_code, warehouse, voucher_type, voucher_no, batch_no=None):
+	filters = {
+		"item_code": item_code,
+		"warehouse": warehouse,
+		"is_cancelled": 0,
+		"voucher_type": voucher_type,
+		"voucher_no": voucher_no,
+	}
+	if batch_no:
+		if not frappe.get_meta("Stock Ledger Entry").has_field("batch_no"):
+			return 0
+		filters["batch_no"] = batch_no
+
 	rate = frappe.db.get_value(
 		"Stock Ledger Entry",
-		{
-			"item_code": item_code,
-			"warehouse": warehouse,
-			"is_cancelled": 0,
-			"voucher_type": voucher_type,
-			"voucher_no": voucher_no,
-		},
+		filters,
 		"valuation_rate",
 		order_by="posting_date desc, posting_time desc, creation desc",
 	)
@@ -124,8 +172,9 @@ def _build_message(doc, anomalies):
 	lines = [f"Rate anomaly detected in {doc_link}:"]
 	for a in anomalies:
 		direction = "higher" if a["diff_pct"] > 0 else "lower"
+		batch = f", batch {a['batch_no']})" if a["batch_no"] else ")"
 		lines.append(
-			f"- {a['item_code']} ({a['warehouse']}): "
+			f"- {a['item_code']} ({a['warehouse']}{batch}: "
 			f"rate {a['current_rate']} is {abs(a['diff_pct'])}% {direction} "
 			f"than previous rate {a['prev_rate']}"
 		)
