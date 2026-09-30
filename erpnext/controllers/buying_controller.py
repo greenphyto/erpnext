@@ -107,7 +107,15 @@ class BuyingController(SubcontractingController):
 				)
 			)
 
+		self.set_default_accepted_warehouse()
+
 		self.set_missing_item_details(for_validate)
+
+	def set_default_accepted_warehouse(self):
+		if self.meta.get_field("set_warehouse") and self.company and not self.get("set_warehouse"):
+			warehouse = frappe.db.get_value("Company", self.company, "default_accepted_warehouse")
+			if warehouse:
+				self.set_warehouse = warehouse
 
 	def set_supplier_from_item_default(self):
 		if self.meta.get_field("supplier") and not self.supplier:

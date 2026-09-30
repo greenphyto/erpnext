@@ -115,6 +115,15 @@ def _get_party_details(
 			"Company", company, "default_warehouse_for_delivery"
 		)
 
+	if party_type == "Supplier" and company and doctype in (
+		"Purchase Order",
+		"Purchase Receipt",
+		"Purchase Invoice",
+	):
+		party_details["set_warehouse"] = frappe.db.get_value(
+			"Company", company, "default_accepted_warehouse"
+		)
+
 	party_address, shipping_address = set_address_details(
 		party_details,
 		party,
