@@ -2,7 +2,6 @@
 # License: GNU General Public License v3. See license.txt
 
 import json
-from math import ceil
 
 import frappe
 from dateutil.relativedelta import relativedelta
@@ -1219,7 +1218,7 @@ class WorkOrder(Document):
 			request_items = frappe.get_all(
 				"Request Items",
 				filters={"parent": ["in", doc_name], "item_code": self.production_item},
-				fields=["qty", "unit_weight", "uom", "packaging_item"],
+				fields=["parent", "qty", "unit_weight", "uom", "packaging_item"],
 				order_by="idx asc",
 			)
 			default_packaging = frappe.db.get_value(
@@ -1228,19 +1227,40 @@ class WorkOrder(Document):
 				["packaging", "package_item", "weight"],
 				as_dict=True,
 			)
+			packaging_list = frappe.get_all(
+				"Packaging List Available",
+				filters={"parent": self.production_item, "parentfield": "packaging"},
+				fields=["packaging", "package_item", "weight", "customer", "idx"],
+				order_by="idx asc",
+			)
+			request_customers = {
+				d.name: d.proposed_customer
+				for d in frappe.get_all(
+					"Request", filters={"name": ["in", doc_name]}, fields=["name", "proposed_customer"]
+				)
+			}
 			for item in request_items:
 				if not item.packaging_item:
-					item.packaging_item = frappe.db.get_value(
-						"Packaging List Available",
-						{
-							"parent": self.production_item,
-							"parentfield": "packaging",
-							"packaging": item.uom,
-						},
-						"package_item",
-					)
+					customer = request_customers.get(item.parent)
+					matching = [
+						p for p in packaging_list if p.packaging == item.uom and p.customer == customer
+					]
+					if not matching:
+						matching = [
+							p
+							for p in packaging_list
+							if p.packaging == item.uom and not p.customer and not customer
+						]
+					if not matching:
+						matching = [p for p in packaging_list if p.packaging == item.uom and not p.customer]
+					if matching:
+						item.packaging_item = matching[0].package_item
 				if not item.packaging_item and default_packaging:
 					item.packaging_item = default_packaging.package_item
+			if not item.packaging_item:
+				item.packaging_item = frappe.db.get_single_value(
+					"Manufacturing Settings", "default_packaging"
+				)
 
 			request_items = [item for item in request_items if item.unit_weight and item.packaging_item]
 			stock_qty = sum(flt(item.qty) * flt(item.unit_weight) for item in request_items)
@@ -1251,7 +1271,7 @@ class WorkOrder(Document):
 					packaging[key] = packaging.get(key, 0) + flt(item.qty) * flt(item.unit_weight)
 
 				for (pack_item, conversion_factor, packet_size), quantity in packaging.items():
-					total_pcs = ceil(self.qty * quantity / stock_qty / flt(conversion_factor))
+					total_pcs = frappe.utils.ceil(self.qty * quantity / stock_qty / flt(conversion_factor))
 					item = frappe.get_doc("Item", pack_item)
 					rate = get_valuation_rate(item.item_code, self.source_warehouse, "", "")
 					self.append(
