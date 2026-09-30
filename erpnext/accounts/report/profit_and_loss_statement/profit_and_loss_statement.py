@@ -12,7 +12,7 @@ try:
 except Exception:
 	openpyxl = None
 from frappe import _
-from frappe.utils import flt, now_datetime, get_datetime, now, cint
+from frappe.utils import flt, now_datetime, get_datetime, now, cint, getdate, today
 
 from erpnext.accounts.report.financial_statements import (
 	get_columns,
@@ -37,6 +37,18 @@ def execute(filters=None):
 		month=filters.month,
 		to_month=filters.to_month,
 	)
+
+	# YTD: limit periods up to current date
+	if filters.get("ytd"):
+		current_date = getdate(today())
+		ytd_period_list = []
+		for period in period_list:
+			if getdate(period.from_date) > current_date:
+				continue
+			if getdate(period.to_date) > current_date:
+				period.to_date = current_date
+			ytd_period_list.append(period)
+		period_list = ytd_period_list
 
 	filter_zero_value = 1
 	accounts_list = []
@@ -79,7 +91,6 @@ def execute(filters=None):
 	budget_map = get_budget_data(filters)
 	
 	# Get current date for YTD limit
-	from frappe.utils import today, getdate, add_months
 	current_date = getdate(today())
 	
 	# Add budget to income rows
@@ -503,11 +514,16 @@ def add_budget_to_rows(rows, budget_map, period_list, current_date, filters):
 			period_to_date = getdate(period.to_date) if period.to_date else None
 			
 			if filters.periodicity == "Yearly":
-				# For yearly budget, sum all 12 months from budget_map
+				# For yearly budget, sum budget months from budget_map
 				# budget_map is now always monthly: account -> month_number -> budget_amount
 				if account in budget_map:
-					for month_num in range(1, 13):
-						budget_value += flt(budget_map.get(account, {}).get(month_num, 0))
+					if filters.get("ytd"):
+						# YTD: only months up to current date
+						for month_num in range(1, current_date.month + 1):
+							budget_value += flt(budget_map.get(account, {}).get(month_num, 0))
+					else:
+						for month_num in range(1, 13):
+							budget_value += flt(budget_map.get(account, {}).get(month_num, 0))
 			else:
 				# Monthly budget
 				if account in budget_map and period_to_date:

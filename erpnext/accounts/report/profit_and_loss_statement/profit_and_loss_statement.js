@@ -16,6 +16,15 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 		"default": 1
 	});
 
+	// Add YTD toggle
+	frappe.query_reports["Profit and Loss Statement"]["filters"].push({
+		"fieldname": "ytd",
+		"label": __("YTD"),
+		"fieldtype": "Check",
+		"default": 0,
+		"description": __("When checked, periods are limited up to the current date (Yearly: up to today, Monthly: up to current month).")
+	});
+
 	frappe.query_reports["Profit and Loss Statement"]["filters"].push(
 		{
 			"fieldname": "project",
