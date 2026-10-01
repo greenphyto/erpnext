@@ -25,7 +25,8 @@
   "sales_update_frequency",
   "column_break_5",
   "allow_multiple_items",
-  "allow_against_multiple_purchase_orders",
+"allow_against_multiple_purchase_orders",
+  "update_sibling_po_no",
   "hide_tax_id",
   "enable_discount_accounting"
  ],
@@ -102,12 +103,18 @@
    "fieldtype": "Check",
    "label": "Allow Item to be Added Multiple Times in a Transaction"
   },
-  {
-   "default": "0",
-   "fieldname": "allow_against_multiple_purchase_orders",
-   "fieldtype": "Check",
-   "label": "Allow Multiple Sales Orders Against a Customer's Purchase Order"
-  },
+   {
+    "default": "0",
+    "fieldname": "allow_against_multiple_purchase_orders",
+    "fieldtype": "Check",
+    "label": "Allow Multiple Sales Orders Against a Customer's Purchase Order"
+   },
+   {
+    "default": "0",
+    "fieldname": "update_sibling_po_no",
+    "fieldtype": "Check",
+    "label": "Update PO No on Sibling Delivery Note/Sales Invoice if Empty"
+   },
   {
    "default": "0",
    "fieldname": "validate_selling_price",

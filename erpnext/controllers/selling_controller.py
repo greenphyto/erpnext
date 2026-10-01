@@ -638,13 +638,141 @@ class SellingController(StockController):
 
 	def set_po_nos(self, for_validate=False):
 		if self.doctype == "Sales Invoice" and hasattr(self, "items"):
-			if for_validate and self.po_no:
-				return
-			self.set_pos_for_sales_invoice()
+			if not (for_validate and self.po_no):
+				self.set_pos_for_sales_invoice()
 		if self.doctype == "Delivery Note" and hasattr(self, "items"):
-			if for_validate and self.po_no:
+			if not (for_validate and self.po_no):
+				self.set_pos_for_delivery_note()
+		self.set_item_references_from_po_no()
+		self.set_po_no_from_matching_docs()
+		self.update_sibling_po_no()
+
+	def set_po_no_from_matching_docs(self):
+		"""Fill own po_no from SO/DN of same customer with matching items, only if empty."""
+		if self.doctype not in ("Sales Invoice", "Delivery Note"):
+			return
+		if self.po_no or not cint(frappe.db.get_single_value("Selling Settings", "update_sibling_po_no")):
+			return
+		if not self.customer:
+			return
+
+		item_codes = list(set(d.item_code for d in self.items if d.item_code))
+		if not item_codes:
+			return
+
+		for ref_doctype in ("Sales Order", "Delivery Note"):
+			if ref_doctype == self.doctype:
+				continue
+			ref_items = frappe.get_all(
+				"Delivery Note Item"
+				if ref_doctype == "Delivery Note"
+				else "Sales Order Item",
+				filters={"item_code": ("in", item_codes), "docstatus": ("<", 2)},
+				fields=["parent"],
+				group_by="parent",
+				order_by="parent desc",
+			)
+			for r in ref_items:
+				po_no, customer, docstatus = frappe.db.get_value(
+					ref_doctype, r.parent, ("po_no", "customer", "docstatus")
+				)
+				if not po_no or customer != self.customer or docstatus >= 2:
+					continue
+				self.po_no = po_no
+				frappe.msgprint(
+					_("Set po_no {0} from {1} {2}").format(po_no, _(ref_doctype), r.parent),
+					indicator="green",
+					alert=True,
+				)
 				return
-			self.set_pos_for_delivery_note()
+		return
+
+	def set_item_references_from_po_no(self):
+		"""Fill missing item-level SO/DN references from sibling docs with same po_no and customer."""
+		if not self.po_no or not self.customer:
+			return
+
+		po_nos = [x.strip() for x in self.po_no.split(",") if x.strip()]
+		if not po_nos:
+			return
+
+		for d in self.items:
+			if self.doctype == "Sales Invoice":
+				if not d.get("sales_order") or not d.get("so_detail"):
+					match = frappe.db.sql(
+						"""select soi.parent, soi.name
+						from `tabSales Order Item` soi, `tabSales Order` so
+						where so.name = soi.parent and so.docstatus < 2
+						and so.po_no in %s and so.customer = %s and soi.item_code = %s
+						order by soi.creation desc limit 1""",
+						(po_nos, self.customer, d.item_code),
+					)
+					if match:
+						d.sales_order, d.so_detail = match[0][0], match[0][1]
+
+				if not d.get("delivery_note") or not d.get("dn_detail"):
+					match = frappe.db.sql(
+						"""select dni.parent, dni.name
+						from `tabDelivery Note Item` dni, `tabDelivery Note` dn
+						where dn.name = dni.parent and dn.docstatus < 2
+						and dn.po_no in %s and dn.customer = %s and dni.item_code = %s
+						order by dni.creation desc limit 1""",
+						(po_nos, self.customer, d.item_code),
+					)
+					if match:
+						d.delivery_note, d.dn_detail = match[0][0], match[0][1]
+
+			elif self.doctype == "Delivery Note":
+				if not d.get("against_sales_order"):
+					match = frappe.db.sql(
+						"""select soi.parent, soi.name
+						from `tabSales Order Item` soi, `tabSales Order` so
+						where so.name = soi.parent and so.docstatus < 2
+						and so.po_no in %s and so.customer = %s and soi.item_code = %s
+						order by soi.creation desc limit 1""",
+						(po_nos, self.customer, d.item_code),
+					)
+					if match:
+						d.against_sales_order, d.so_detail = match[0][0], match[0][1]
+
+	def update_sibling_po_no(self):
+		"""Fill po_no on sibling SI/DN sharing the same Sales Order, only if empty."""
+		if self.doctype not in ("Sales Invoice", "Delivery Note"):
+			return
+		if not self.po_no or not cint(frappe.db.get_single_value("Selling Settings", "update_sibling_po_no")):
+			return
+
+		so_names = list(set(d.get("sales_order") or d.get("against_sales_order") for d in self.items))
+		so_names = [d for d in so_names if d]
+		if not so_names:
+			return
+
+		target_doctype = "Delivery Note" if self.doctype == "Sales Invoice" else "Sales Invoice"
+
+		if target_doctype == "Sales Invoice":
+			siblings = frappe.get_all(
+				"Sales Invoice Item",
+				fields=["distinct parent as name"],
+				filters={"docstatus": 0, "sales_order": ("in", so_names)},
+			)
+		else:
+			siblings = frappe.get_all(
+				"Delivery Note Item",
+				fields=["distinct parent as name"],
+				filters={"docstatus": 0, "against_sales_order": ("in", so_names)},
+			)
+
+		for s in siblings:
+			if s.name == self.name:
+				continue
+			if frappe.db.get_value(target_doctype, s.name, "po_no"):
+				continue
+			frappe.db.set_value(target_doctype, s.name, "po_no", self.po_no, update_modified=False)
+			frappe.msgprint(
+				_("Updated po_no {0} on {1} {2}").format(self.po_no, _(target_doctype), s.name),
+				indicator="green",
+				alert=True,
+			)
 
 	def set_pos_for_sales_invoice(self):
 		po_nos = []
