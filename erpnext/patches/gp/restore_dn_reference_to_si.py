@@ -5,7 +5,7 @@ DRY_RUN_SAMPLE_LIMIT = 10
 
 
 """
-bench --site test6 execute erpnext.patches.gp.restore_dn_reference_to_si.execute
+bench --site erp-prod execute erpnext.patches.gp.restore_dn_reference_to_si.execute
 """
 def execute(dry_run=0):
 	"""Restore custom_delivery_note_references on older Sales Invoice Items.
@@ -59,11 +59,12 @@ def _set_parent_delivery_note(si_parents, dry_run):
 		existing = frappe.db.get_value("Sales Invoice", si_name, "delivery_note")
 		if existing:
 			continue
-		if dry_run and updated < DRY_RUN_SAMPLE_LIMIT:
-			print("  sample parent {0} -> delivery_note: {1}".format(si_name, ",".join(dn_list)))
+		if len(dn_list) > 1:
+			print("  {0}: {1} DN refs deduped -> {2}".format(si_name, len(si_parents[si_name]), ",".join(dn_list)))
+		print("  parent {0} -> delivery_note: {1}".format(si_name, ",".join(dn_list)))
 		if not dry_run:
 			frappe.db.set_value(
-				"Sales Invoice", si_name, "delivery_note", ",".join(dn_list), update_modified=False
+				"Sales Invoice", si_name, "delivery_note", ",".join(dn_list), update_modified=True
 			)
 		updated += 1
 
@@ -104,8 +105,7 @@ def restore_from_dn_detail(dry_run=False):
 				d.so_detail or "",
 			]
 		)
-		if dry_run and updated < DRY_RUN_SAMPLE_LIMIT:
-			print("  sample {0} -> {1}".format(d.name, ref))
+		print("  {0} (SI {1}) -> {2}".format(d.name, d.parent, ref))
 		_apply(d.name, ref, dry_run)
 		if d.delivery_note:
 			si_parents.setdefault(d.parent, []).append(d.delivery_note)
@@ -166,13 +166,12 @@ def restore_from_custom_so_references(dry_run=False):
 		if not refs:
 			print("  skip {0}: no DN found for SO refs".format(d.name))
 			continue
-		if dry_run and updated < DRY_RUN_SAMPLE_LIMIT:
-			print("  sample {0} -> {1}".format(d.name, ",".join(refs)))
+		print("  {0} (SI {1}) -> {2}".format(d.name, d.parent, ",".join(refs)))
 		_apply(d.name, ",".join(refs), dry_run)
 		for r in refs:
 			si_parents.setdefault(d.parent, []).append(r.split("|")[0])
 		updated += 1
-
+		# break
 	if not dry_run:
 		frappe.db.commit()
 	print("Group B updated: {0}".format(updated))
@@ -216,13 +215,13 @@ def restore_from_dn_reverse_link(dry_run=False):
 			refs.append(
 				"|".join([r.dn, r.dn_detail, cstr(flt(r.dn_qty)), r.sales_order or "", r.so_detail or ""])
 			)
-		if dry_run and updated < DRY_RUN_SAMPLE_LIMIT:
-			print("  sample {0} -> {1}".format(si_item, ",".join(refs)))
+		print("  {0} (SI {1}) -> {2}".format(si_item, rows[0].si_parent, ",".join(refs)))
 		_apply(si_item, ",".join(refs), dry_run)
 		for r in rows:
 			si_parents.setdefault(r.si_parent, []).append(r.dn)
 		updated += 1
-
+		# break
+	
 	if not dry_run:
 		frappe.db.commit()
 	print("Group C updated: {0}".format(updated))
