@@ -49,6 +49,10 @@ class EmailInvoice(Document):
 		"""Store aggregated reasons and set short selectable reason."""
 		reasons = getattr(self, "_reasons", [])
 		if not reasons:
+			# successful run: clear stale reason data from earlier failures
+			self.error_trace = ""
+			self.system_reason = ""
+			self.reason = ""
 			return
 		# Store JSON to unknown_reason for detail
 		try:
@@ -161,6 +165,10 @@ class EmailInvoice(Document):
 
 	@frappe.whitelist()
 	def sync_from_ui(self):
+		# fresh run: clear stale reasons and results from previous attempts
+		self._init_reasons()
+		self.results = []
+
 		try:
 			payload = json.loads(self.data_result)
 		except:
@@ -170,7 +178,8 @@ class EmailInvoice(Document):
 			self.create_invoice_result(payload)
 		else:
 			self.process_email()
-		
+
+		self._finalize_reasons()
 		self.save()
 
 	def process_email(self, doc={}):
@@ -333,7 +342,7 @@ class EmailInvoice(Document):
 					)
 
 			# Attempt to create Non-stock PI from this extracted data
-			r, name = self.create_invoice_result(payload)
+			r, name = self.create_invoice_result(payload, com_doc=doc)
 			if not r:
 				self.add_reason(
 					category="pi",
@@ -344,14 +353,7 @@ class EmailInvoice(Document):
 				continue
 
 			try:
-				if doc:
-					# Link communication to created PI and remember
-					row = self.append("results")
-					row.filename = fn.file_name
-					row.po_no = self.flags.po_no
-					row.invoice_no = name
-					row.insert()
-					
+				if doc and name:
 					# copy attachment
 					self.add_attachment_copy(fn, "Purchase Invoice", name )
 				if not self.invoice_no:

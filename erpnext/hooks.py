@@ -540,6 +540,13 @@ scheduler_events = {
 		],
 		# Daily but offset by 45 minutes
 		"45 0 * * *": [],
+		# AI Agent invoice email reader
+		"*/5 * * * *": [
+			"erpnext.controllers.erp.read_email_inbox",
+		],
+		"0 */4 * * *": [
+			"erpnext.controllers.erp.read_email_inbox",
+		],
 	},
 	"hourly": [
 		"erpnext.projects.doctype.project.project.hourly_reminder",
@@ -555,6 +562,7 @@ scheduler_events = {
 	],
 	"daily": [
 		"erpnext.stock.reorder_item.reorder_item",
+		"erpnext.ai_agent.doctype.email_invoice.email_invoice.pull_erp_po",
 	],
 	"daily_long": [],
 	"daily_maintenance": [

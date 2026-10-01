@@ -21,4 +21,5 @@ Subcontracting
 EDI
 FOMS
 GP ERP
+AI Agent
 UOB
