@@ -1577,6 +1577,58 @@ def get_item_order(item_code, company):
 
 
 @frappe.whitelist()
+def get_item_purchase_history(item_code=None, supplier_code=None, company=None, item_name=None):
+	# validate
+	if not company:
+		frappe.throw(_("Company is required"))
+
+	conditions = ""
+	params = [company]
+
+	if item_code:
+		conditions += " AND poi.item_code = %s"
+		params.append(item_code)
+	if supplier_code:
+		conditions += " AND po.supplier = %s"
+		params.append(supplier_code)
+	if item_name:
+		conditions += " AND poi.item_name LIKE %s"
+		params.append(f"%{item_name}%")
+
+	history = frappe.db.sql("""
+		SELECT
+			MAX(poi.item_code) AS item_code,
+			IF(it.is_stock_item = 1, it.item_name, poi.item_name) AS item_name,
+			po.supplier AS supplier_id,
+			po.company,
+			SUM(poi.stock_qty) AS total_ordered_qty,
+			poi.stock_uom,
+			MAX(po.transaction_date) AS last_purchase_date,
+			it.is_stock_item = 0 AS is_non_stock
+		FROM
+			`tabPurchase Order` po
+				JOIN
+			`tabPurchase Order Item` poi ON poi.parent = po.name
+				JOIN
+			`tabItem` it ON it.name = poi.item_code
+		WHERE
+			po.docstatus = 1
+				AND po.company = %s
+				{conditions}
+		GROUP BY
+			po.supplier, IF(it.is_stock_item = 1, poi.item_code, poi.item_name)
+		ORDER BY
+			MAX(po.transaction_date) DESC
+	""".format(conditions=conditions), tuple(params), as_dict=1)
+
+	for row in history:
+		row.total_ordered_qty = flt(row.total_ordered_qty)
+		row.is_non_stock = cint(row.is_non_stock)
+
+	return history
+
+
+@frappe.whitelist()
 def receive_forecast(data):
 	"""
 	Receive forecast data from external server.

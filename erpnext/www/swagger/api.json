@@ -1787,6 +1787,120 @@
         }
       }
     },
+    "/erpnext.controllers.erp_api.get_item_purchase_history": {
+      "get": {
+        "summary": "Get Item Purchase History",
+        "description": "Retrieve purchase history of items grouped by supplier. Returns total ordered quantity per vendor, last purchase date, item name, and non-stock flag. Supports optional filters: item_code, supplier_code, and fuzzy item_name search.",
+        "operationId": "get_item_purchase_history",
+        "parameters": [
+          {
+            "name": "company",
+            "in": "query",
+            "description": "The company name to filter Purchase Orders",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Greenphyto Pte Ltd"
+          },
+          {
+            "name": "item_code",
+            "in": "query",
+            "description": "Optional. Filter by exact item code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "RM-NS-NPA"
+          },
+          {
+            "name": "supplier_code",
+            "in": "query",
+            "description": "Optional. Filter by exact supplier code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "SUP-0001"
+          },
+          {
+            "name": "item_name",
+            "in": "query",
+            "description": "Optional. Fuzzy search on item name (LIKE %value%)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "natural"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "item_code": {
+                        "type": "string",
+                        "description": "Item code"
+                      },
+                      "item_name": {
+                        "type": "string",
+                        "description": "Item name"
+                      },
+                      "supplier_code": {
+                        "type": "string",
+                        "description": "Supplier ID"
+                      },
+                      "company": {
+                        "type": "string",
+                        "description": "Company name"
+                      },
+                      "total_ordered_qty": {
+                        "type": "number",
+                        "description": "Total ordered quantity from this supplier in stock UOM"
+                      },
+                      "stock_uom": {
+                        "type": "string",
+                        "description": "Stock Unit of Measure"
+                      },
+                      "last_purchase_date": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Date of the most recent Purchase Order for this item from this supplier"
+                      },
+                      "is_non_stock": {
+                        "type": "integer",
+                        "description": "1 if item is a non-stock item, 0 otherwise"
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "item_code": "RM-NS-NPA",
+                    "item_name": "Natural Preservative",
+                    "supplier_code": "SUP-0001",
+                    "company": "Greenphyto Pte Ltd",
+                    "total_ordered_qty": 350.0,
+                    "stock_uom": "Kg",
+                    "last_purchase_date": "2026-03-20",
+                    "is_non_stock": 1
+                  }
+                ]
+              }
+            }
+          },
+          "412": {
+            "description": "Company parameter is required"
+          }
+        }
+      }
+    },
     "/erpnext.controllers.erp_api.receive_forecast": {
       "post": {
         "summary": "Receive Forecast Data",
