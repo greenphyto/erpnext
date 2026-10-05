@@ -404,3 +404,19 @@ def get_opening_row(party_type, party, from_date, company):
 			& (gle.is_cancelled == 0)
 		)
 	).run(as_dict=True)
+
+
+def convert_wrap_report_data(column, data, precision=0):
+	field = ['Currency', 'Float', 'Int']
+	currency_cols = []
+
+	for d in column:
+		if d.get("fieldtype") in field:
+			currency_cols.append(d.get("fieldname"))
+
+	for d in data:
+		for field, val in d.items():
+			if flt(val) and field in currency_cols and val < 0:
+				d[field] = f"({ flt(abs(val), precision) })"
+
+	return data

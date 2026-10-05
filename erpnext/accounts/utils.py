@@ -2531,6 +2531,16 @@ def get_account_number_map(company: str):
 	}
 
 
+def remove_account_number(account_name):
+	part = account_name.split(" - ")
+	if len(part) >= 2:
+		if flt(part[0]):
+			return part[1]
+		else:
+			return part[0]
+	return account_name
+
+
 @frappe.whitelist()
 def get_cost_center_from_account(account, company=""):
 	if not company:

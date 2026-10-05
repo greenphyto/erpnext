@@ -136,7 +136,7 @@ def execute(filters=None):
 		period_list,
 		filters.accumulated_values,
 		filters.company,
-		True,
+		cash_flow=True,
 	)
 
 	chart = get_chart_data(columns, data, company_currency)

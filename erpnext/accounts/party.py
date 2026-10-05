@@ -952,8 +952,35 @@ def get_party_shipping_address(doctype: str, name: str) -> str | None:
 
 
 def get_partywise_advanced_payment_amount(
-	party_type, posting_date=None, future_payment=0, company=None, party=None
+	party_type, posting_date=None, future_payment=0, company=None, reporttype="", party=None
 ):
+	if reporttype == "Trade":
+		# Trade-related parties only: exclude Journal Entry vouchers (v14 behaviour)
+		cond = "1=1"
+		if posting_date:
+			if future_payment:
+				cond = "posting_date <= '{0}' OR DATE(creation) <= '{0}' ".format(posting_date)
+			else:
+				cond = "posting_date <= '{0}'".format(posting_date)
+
+		if company:
+			cond += " and company = {0}".format(frappe.db.escape(company))
+
+		data = frappe.db.sql(
+			""" SELECT party, sum({0}) as amount
+			FROM `tabGL Entry`
+			WHERE
+				party_type = %s and against_voucher is null
+				and is_cancelled = 0 and voucher_type <> 'Journal Entry'
+				and {1} GROUP BY party""".format(
+				("credit") if party_type == "Customer" else "debit", cond
+			),
+			party_type,
+		)
+		if data:
+			return frappe._dict(data)
+		return frappe._dict({})
+
 	account_type = frappe.get_cached_value("Party Type", party_type, "account_type")
 
 	ple = frappe.qb.DocType("Payment Ledger Entry")

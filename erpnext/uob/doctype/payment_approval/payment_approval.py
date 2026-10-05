@@ -80,7 +80,7 @@ class PaymentApproval(Document):
 		bank_num = frappe.get_doc("Bank Number", self.supplier_bank_no)
 		account_no, account_name, currency = bank_num.bank_account_no, bank_num.bank_account_name, bank_num.currency
 		if self.payment_method == "PayNow" and not bank_num.proxy_number:
-			frappe.throw(_("Row {}, Bank number <u>{}</u> not have PayNow number".format(d.idx, d.supplier_bank_no)))
+			frappe.throw(_("Bank number <u>{}</u> not have PayNow number".format(self.supplier_bank_no)))
 		if not account_no or not account_name:
 			links = get_link_to_form("Bank Account", self.bank_account)
 			frappe.throw(_(f"Please update the <b>Bank Account No</b> and <b>Bank Account Name</b> for {links}"))
@@ -665,7 +665,7 @@ def get_company_code(company):
 	return (code or "SG").upper()
 
 def get_bank_number_country(bank_number):
-	country = frappe.db.get_value("Bank Number", bank_number)
+	country = frappe.db.get_value("Bank Number", bank_number, "country")
 	code = frappe.db.get_value("Country", country, "code")
 	return (code or "SG").upper()
 
