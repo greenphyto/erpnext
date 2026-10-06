@@ -862,7 +862,7 @@ class StockEntry(StockEntryAsset, StockController):
 		for d in self.get("items"):
 			if d.s_warehouse:
 				if reset_outgoing_rate and not d.set_basic_rate_manually:
-					if self.purpose == "Material Issue":
+					if self.purpose == "Material Issue" and not d.batch_no:
 						rate = self.get_valuation_rate_from_previous_sle(d)
 					else:
 						args = self.get_args_for_incoming_rate(d)
