@@ -145,7 +145,12 @@ class SalesInvoice(SellingController):
 				self.company
 				and frappe.db.get_value("Consignment Settings", self.company, "allow_expired_product_on_sales_invoice")
 			)
-			set_auto_batch_rows(self, "warehouse")
+			if self.is_lazada_order and cint(
+				frappe.db.get_single_value("Lazada Settings", "enable_auto_batch")
+			):
+				set_auto_batch_rows(self, "warehouse", enabled=1)
+			else:
+				set_auto_batch_rows(self, "warehouse")
 			set_batch_nos(self, "warehouse", True, allow_expired=allow_expired)
 
 		if self.redeem_loyalty_points:

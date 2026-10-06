@@ -9,7 +9,8 @@
   "default_warehouse",
   "lazada_customer",
   "column_break_3",
-  "keep_item_price"
+  "keep_item_price",
+  "enable_auto_batch"
  ],
  "fields": [
   {
@@ -33,12 +34,18 @@
    "fieldname": "keep_item_price",
    "fieldtype": "Check",
    "label": "Keep Item Price across Document"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_auto_batch",
+   "fieldtype": "Check",
+   "label": "Enable Auto Batch"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-09-10 11:45:23.434565",
+ "modified": "2026-10-06 17:53:55.018842",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Lazada Settings",

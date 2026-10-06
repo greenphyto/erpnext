@@ -300,8 +300,11 @@ def split_batch(batch_no, item_code, warehouse, qty, new_batch_id=None):
 	return batch.name
 
 
-def set_auto_batch_rows(doc, warehouse_field, child_table="items"):
-	if not doc.company or not frappe.db.get_value("Company", doc.company, "enable_auto_batch"):
+def set_auto_batch_rows(doc, warehouse_field, child_table="items", enabled=None):
+	if enabled is None:
+		if not doc.company or not frappe.db.get_value("Company", doc.company, "enable_auto_batch"):
+			return
+	elif not enabled:
 		return
 
 	for item in list(doc.get(child_table)):
