@@ -689,7 +689,7 @@ class SellingController(StockController):
 
 	def set_item_references_from_po_no(self):
 		"""Fill missing item-level SO/DN references from sibling docs with same po_no and customer."""
-		if not self.po_no or not self.customer:
+		if not self.get("po_no") or not self.customer:
 			return
 
 		po_nos = [x.strip() for x in self.po_no.split(",") if x.strip()]
