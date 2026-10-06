@@ -121,6 +121,11 @@ class StockController(AccountsController):
 				):
 					continue
 
+				if getattr(self, "is_lazada_order", None) and frappe.db.get_single_value(
+					"Lazada Settings", "enable_auto_batch"
+				):
+					continue
+
 				if self.doctype == "Sales Invoice" and self.company:
 					if frappe.db.get_value("Consignment Settings", self.company, "allow_expired_product_on_sales_invoice"):
 						continue
