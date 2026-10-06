@@ -1001,3 +1001,49 @@ def get_item_uom_query(doctype, txt, searchfield, start, page_len, filters):
 
 
 uom = get_item_uom_query
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def filter_purchase_user(doctype, txt, searchfield, start, page_len, filters):
+	query = """
+			SELECT
+				parent, u.full_name
+			FROM
+				`tabHas Role`
+					LEFT JOIN
+				`tabUser` u ON u.name = parent
+			WHERE
+				parentfield = 'roles'
+					AND u.enabled = 1
+					AND parenttype = 'User'
+					AND role = 'Purchase User'
+					AND parent NOT IN ('Guest' , 'Administrator')
+					and u.full_name like {txt}""".format(
+		txt=frappe.db.escape("%{0}%".format(txt))
+	)
+
+	return frappe.db.sql(query)
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def filter_purchase_manager(doctype, txt, searchfield, start, page_len, filters):
+	query = """
+			SELECT
+				parent, u.full_name
+			FROM
+				`tabHas Role`
+					LEFT JOIN
+				`tabUser` u ON u.name = parent
+			WHERE
+				parentfield = 'roles'
+					AND u.enabled = 1
+					AND parenttype = 'User'
+					AND role = 'Purchase Manager'
+					AND parent NOT IN ('Guest' , 'Administrator')
+					and u.full_name like {txt}""".format(
+		txt=frappe.db.escape("%{0}%".format(txt))
+	)
+
+	return frappe.db.sql(query)

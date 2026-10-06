@@ -463,6 +463,7 @@ doc_events = {
 	"Delivery Note": {
 		"on_submit": [
 			"erpnext.controllers.foms.sync_log",
+			"erpnext.stock.rate_alert.check_rate_anomaly",
 		],
 		"on_cancel": [
 			"erpnext.controllers.foms.sync_log",
@@ -475,6 +476,9 @@ doc_events = {
 		"on_submit": "erpnext.controllers.foms.sync_log",
 		"on_cancel": "erpnext.controllers.foms.sync_log",
 	},
+	"Batch": {
+		"on_update": "erpnext.controllers.foms.sync_log",
+	},
 	"Stock Entry": {
 		"on_submit": [
 			"erpnext.controllers.foms.sync_log",
@@ -486,6 +490,7 @@ doc_events = {
 			"erpnext.controllers.foms.create_prod_variance_entry",
 			"erpnext.gp_erp.doctype.consignment_request.consignment_request.stock_entry_controller",
 			"erpnext.controllers.foms.create_item_change_repack",
+			"erpnext.stock.rate_alert.check_rate_anomaly",
 		],
 		"before_cancel": [
 			"erpnext.controllers.foms.detect_salad_items",
@@ -533,8 +538,10 @@ auto_cancel_exempted_doctypes = [
 
 scheduler_events = {
 	"cron": {
-		"0/15 * * * *": [
+		"*/5 * * * *": [
 			"erpnext.manufacturing.doctype.bom_update_log.bom_update_log.resume_bom_cost_update_jobs",
+			"erpnext.controllers.erp_api.run_pending_harvesting_transfer",
+			"erpnext.controllers.erp_api.run_pending_harvesting",
 		],
 		"0/30 * * * *": [
 			"erpnext.controllers.uob.sync_uob_file",
@@ -544,19 +551,36 @@ scheduler_events = {
 			"erpnext.accounts.doctype.gl_entry.gl_entry.rename_gle_sle_docs",
 		],
 		# Daily but offset by 45 minutes
-		"45 0 * * *": [],
-		# AI Agent invoice email reader
-		"*/5 * * * *": [
-			"erpnext.controllers.erp.read_email_inbox",
+		"45 0 * * *": [
+			"erpnext.stock.reorder_item.reorder_item",
 		],
+		"0 5 * * *": [
+			"erpnext.foms.doctype.minio_backup_settings.minio_backup_settings.upload_backup",
+		],
+		"40 20 * * *": [
+			"erpnext.foms.doctype.minio_backup_settings.minio_backup_settings.upload_backup2",
+		],
+		"0 23 * * *": [
+			"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_last_day",
+		],
+		"0 6 * * *": [
+			"erpnext.controllers.erp.reminder_submit_invoice",
+			"erpnext.controllers.erp.reminder_submit_purchase_invoice",
+		],
+		# AI Agent invoice email reader
 		"0 */4 * * *": [
 			"erpnext.controllers.erp.read_email_inbox",
+			"erpnext.controllers.foms.notify_unsynced_requests",
 		],
 	},
 	"hourly": [
 		"erpnext.projects.doctype.project.project.hourly_reminder",
+		"erpnext.controllers.foms.update_stock_receipt",
 	],
-	"hourly_long": [],
+	"hourly_long": [
+		"erpnext.stock.doctype.repost_item_valuation.repost_item_valuation.repost_entries",
+		"erpnext.bulk_transaction.doctype.bulk_transaction_log.bulk_transaction_log.retry_failing_transaction",
+	],
 	"hourly_maintenance": [
 		"erpnext.stock.doctype.repost_item_valuation.repost_item_valuation.repost_entries",
 		"erpnext.utilities.bulk_transaction.retry",
@@ -568,8 +592,24 @@ scheduler_events = {
 	"daily": [
 		"erpnext.stock.reorder_item.reorder_item",
 		"erpnext.ai_agent.doctype.email_invoice.email_invoice.pull_erp_po",
+		"erpnext.controllers.foms.update_foms_supplier",
+		"erpnext.controllers.foms.update_foms_customer",
+		"erpnext.controllers.foms.update_foms_sales_order",
+		"erpnext.controllers.foms.get_raw_material",
+		"erpnext.controllers.foms.get_products",
+		"erpnext.controllers.foms.get_recipe",
+		"erpnext.controllers.foms.get_packaging",
+		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_items",
+		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_product",
+		"erpnext.controllers.foms.daily_update_batch_status",
+		"erpnext.controllers.foms.notify_late_sync_foms_and_work_order",
 	],
-	"daily_long": [],
+	"daily_long": [
+		"erpnext.accounts.doctype.subscription.subscription.process_all",
+		"erpnext.setup.doctype.email_digest.email_digest.send",
+		"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.auto_update_latest_price_in_all_boms",
+		"erpnext.crm.utils.open_leads_opportunities_based_on_todays_event",
+	],
 	"daily_maintenance": [
 		"erpnext.support.doctype.issue.issue.auto_close_tickets",
 		"erpnext.crm.doctype.opportunity.opportunity.auto_close_opportunity",
@@ -603,6 +643,7 @@ scheduler_events = {
 	],
 	"weekly": [
 		"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_weekly",
+		"erpnext.gp_erp.notification.raw_material_more_than_1_year.raw_material_more_than_1_year.notify_raw_material_more_than_1_year",
 	],
 	"monthly_long": [
 		"erpnext.accounts.deferred_revenue.process_deferred_accounting",
@@ -610,6 +651,8 @@ scheduler_events = {
 	],
 	"monthly": [
 		"erpnext.assets.doctype.asset.depreciation.post_depreciation_entries",
+		"erpnext.controllers.erp.trial_balance_different_issue",
+		"erpnext.setup.doctype.currency_exchange.currency_exchange.fetch_month_rate",
 	],
 }
 
@@ -803,7 +846,21 @@ export_python_type_annotations = True
 
 fields_for_group_similar_items = ["qty", "amount"]
 
-bypass_workflow_permission = "erpnext.controllers.erp.control_bypass_workflow"
+bypass_workflow_permission = {
+	"Material Request": "erpnext.controllers.erp.control_bypass_workflow",
+}
+
+permission_query_conditions = {
+	"Material Request": "erpnext.stock.doctype.material_request.material_request.get_permission_query_conditions",
+}
+
+validate_workflow = {
+	"Material Request": "erpnext.stock.doctype.material_request.material_request.validate_purchase_request"
+}
+
+confirm_workflow_action_page = {
+	"Material Request": "erpnext.stock.doctype.material_request.material_request.confirm_workflow_action_page"
+}
 
 sync_log_method = {
     1: "erpnext.controllers.foms._update_foms_supplier",

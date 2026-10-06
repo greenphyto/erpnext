@@ -1489,3 +1489,37 @@ def get_child_warehouses(warehouse):
 	from erpnext.stock.doctype.warehouse.warehouse import get_child_warehouses
 
 	return get_child_warehouses(warehouse)
+
+
+def update_item_pic(doc, method=None):
+
+	def update_data_mapping(item, pic):
+		frappe.db.set_value("Item Reorder", {"parent":item}, "pic", pic)
+
+		
+	if doc.doctype == "Item":
+		# update from Item
+		for d in doc.get("reorder_levels"):
+			frappe.db.set_value("Part Number Details", {"code":doc.name}, "pic", d.pic)
+	else:
+		# from part number settings
+		doc_old = doc.get_doc_before_save()
+		if not doc_old:
+			pass
+
+		for d in doc.get("data_mapping"):
+			row_old = None
+			if doc_old:
+				row_old = doc_old.get("data_mapping", {"name":d.name})
+			
+			if row_old:
+				row_old = row_old[0]
+				if row_old.pic != d.pic:
+					update_data_mapping(d.code, d.pic)
+			else:
+				if d.pic:
+					update_data_mapping(d.code, d.pic)
+
+@frappe.whitelist()
+def get_default_pic(code):
+	return frappe.db.get_value("Part Number Details", {"code":code}, "pic")

@@ -16,12 +16,15 @@ from frappe.query_builder.functions import Count, Max, Sum
 from frappe.query_builder.utils import DocType
 from frappe.utils import (
 	add_days,
+	add_months,
 	cint,
 	create_batch,
 	cstr,
 	flt,
 	formatdate,
 	get_datetime,
+	get_first_day,
+	get_last_day,
 	get_number_format_info,
 	getdate,
 	now,
@@ -1815,6 +1818,28 @@ def auto_create_exchange_rate_revaluation_monthly() -> None:
 	_auto_create_exchange_rate_revaluation_for("Monthly")
 
 
+
+
+
+def auto_create_exchange_rate_revaluation_last_day(force=False) -> None:
+	# for monthly but only last month date
+	# find last on previous month exists
+	previous_date_start = get_first_day(add_months(getdate(), -1))
+	previous_date_end = get_last_day(add_months(getdate(), -1))
+	data = frappe.db.sql("select name from `tabExchange Rate Revaluation` where docstatus=1 and posting_date between %s and %s ", (previous_date_start, previous_date_end), as_dict=1)
+	use_date = ""
+	if not data:
+		use_date = previous_date_end
+
+	today = getdate()
+	if get_last_day(today) == today or force or use_date:
+		use_date = use_date or today
+		companies = frappe.db.get_all(
+			"Company",
+			filters={"auto_exchange_rate_revaluation": 1, "auto_err_frequency": "Monthly"},
+			fields=["name", "submit_err_jv"],
+		)
+		return create_err_and_its_journals(companies, use_date=use_date)
 def get_payment_ledger_entries(gl_entries, cancel=0):
 	ple_map = []
 	if gl_entries:

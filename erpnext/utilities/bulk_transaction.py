@@ -219,3 +219,68 @@ def show_job_status(fail_count, deserialized_data_count, to_doctype):
 			title="Failed",
 			indicator="red",
 		)
+
+
+def check_logger_doc_exists(log_date):
+	return frappe.db.exists("Bulk Transaction Log", log_date)
+
+
+def get_logger_doc(log_date):
+	return frappe.get_doc("Bulk Transaction Log", log_date)
+
+
+def create_logger_doc():
+	log_doc = frappe.new_doc("Bulk Transaction Log")
+	log_doc.set_new_name(set_name=str(date.today()))
+	log_doc.log_date = date.today()
+
+	return log_doc
+
+
+def append_data_to_logger(log_doc, doc_name, error, from_doctype, to_doctype, status, restarted):
+	row = log_doc.append("logger_data", {})
+	row.transaction_name = doc_name
+	row.date = date.today()
+	now = datetime.now()
+	row.time = now.strftime("%H:%M:%S")
+	row.transaction_status = status
+	row.error_description = str(error)
+	row.from_doctype = from_doctype
+	row.to_doctype = to_doctype
+	row.retried = restarted
+
+
+def record_exists(log_doc, doc_name, status):
+	record = mark_retrired_transaction(log_doc, doc_name)
+	if record and status == "Failed":
+		return False
+	elif record and status == "Success":
+		return True
+	else:
+		return True
+
+
+def update_logger(doc_name, e, from_doctype, to_doctype, status, log_date=None, restarted=0):
+	if not check_logger_doc_exists(log_date):
+		log_doc = create_logger_doc()
+		append_data_to_logger(log_doc, doc_name, e, from_doctype, to_doctype, status, restarted)
+		log_doc.insert()
+	else:
+		log_doc = get_logger_doc(log_date)
+		if record_exists(log_doc, doc_name, status):
+			append_data_to_logger(log_doc, doc_name, e, from_doctype, to_doctype, status, restarted)
+			log_doc.save()
+
+
+def mark_retrired_transaction(log_doc, doc_name):
+	record = 0
+	for d in log_doc.get("logger_data"):
+		if d.transaction_name == doc_name and d.transaction_status == "Failed":
+			d.retried = 1
+			record = record + 1
+
+	log_doc.save()
+
+	return record
+
+

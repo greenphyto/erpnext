@@ -6,6 +6,7 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe.utils import cint
 
 
 class BuyingSettings(Document):
@@ -65,6 +66,40 @@ class BuyingSettings(Document):
 
 	def before_save(self):
 		self.check_maintain_same_rate()
+
+	@frappe.whitelist()
+	def update_supplier_account(self, series_filter=None, mode="Only if not set"):
+		for d in self.get("default_supplier_account"):
+			series = d.code.replace("...", "")
+			if series_filter and series not in series_filter:
+				continue
+			suppliers = frappe.db.get_all("Supplier", {"supplier_code": ["like", series + "%"]})
+			for sup in suppliers:
+				doc = frappe.get_doc("Supplier", sup.name)
+				has_company = False
+				for row in doc.get("accounts"):
+					if row.company == d.company:
+						has_company = True
+						if mode == "Replace all":
+							row.account = d.account
+						break
+
+				if not has_company:
+					row = doc.append("accounts")
+					row.account = d.account
+					row.company = d.company
+
+				doc.save()
+
+
+def get_series_pr_required(series):
+	res = frappe.get_value(
+		"Series PO required PR",
+		{"series": series, "parent": "Buying Settings", "parentfield": "series_required_pr"},
+		"require_pr",
+	)
+
+	return cint(res)
 
 	def check_maintain_same_rate(self):
 		if self.maintain_same_rate:
