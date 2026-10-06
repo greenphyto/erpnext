@@ -485,11 +485,13 @@ doc_events = {
 			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
 			"erpnext.controllers.foms.create_prod_variance_entry",
 			"erpnext.gp_erp.doctype.consignment_request.consignment_request.stock_entry_controller",
+			"erpnext.controllers.foms.create_item_change_repack",
 		],
 		"before_cancel": [
 			"erpnext.controllers.foms.detect_salad_items",
 			"erpnext.controllers.foms.cancel_repack_se",
 			"erpnext.controllers.erp.cancel_sample_on_work_order",
+			"erpnext.controllers.foms.cancel_item_change_repack",
 		],
 		"on_cancel": [
 			"erpnext.stock.doctype.material_request.material_request.update_completed_and_requested_qty",
@@ -526,6 +528,7 @@ naming_series_variables = {
 # if payment entry not in auto cancel exempted doctypes it will cancel payment entry.
 auto_cancel_exempted_doctypes = [
 	"Payment Entry",
+	"Delivery Note",
 ]
 
 scheduler_events = {

@@ -349,6 +349,8 @@ class StockEntry(StockController):
 			self.set_material_request_transfer_status("Completed")
 
 	def on_cancel(self):
+		if self.purpose == "Manufacture" and self.get("auto_repack"):
+			self.ignore_linked_doctypes = ("Stock Entry",)
 		self.delink_asset_repair_sabb()
 		self.validate_closed_subcontracting_order()
 		self.update_subcontract_order_supplied_items()

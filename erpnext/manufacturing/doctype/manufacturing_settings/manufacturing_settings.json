@@ -46,7 +46,9 @@
   "enable_attrition_qty",
   "enable_create_sample_delivery",
   "packaging_section",
-  "default_packaging"
+  "default_packaging",
+  "item_change_section",
+  "item_change"
  ],
  "fields": [
   {
@@ -281,6 +283,17 @@
    "fieldtype": "Link",
    "label": "Default Packaging",
    "options": "Item"
+  },
+  {
+   "fieldname": "item_change_section",
+   "fieldtype": "Section Break",
+   "label": "Item Change"
+  },
+  {
+   "fieldname": "item_change",
+   "fieldtype": "Table",
+   "label": "Item Change",
+   "options": "Item finish goods change"
   },
   {
    "default": "0",
