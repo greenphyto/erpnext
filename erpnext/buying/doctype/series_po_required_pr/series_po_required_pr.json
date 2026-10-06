@@ -1,0 +1,42 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2023-10-12 14:10:32.401873",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "series",
+  "require_pr"
+ ],
+ "fields": [
+  {
+   "fieldname": "series",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Series",
+   "options": "PO0.#####./.YYYY\nPO1.#####./.YYYY"
+  },
+  {
+   "columns": 2,
+   "default": "0",
+   "fieldname": "require_pr",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Require Purchase Receipt"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-10-12 14:14:47.815012",
+ "modified_by": "Administrator",
+ "module": "Buying",
+ "name": "Series PO required PR",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

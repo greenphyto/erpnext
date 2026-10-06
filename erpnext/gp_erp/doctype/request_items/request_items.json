@@ -1,0 +1,247 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2024-06-26 15:22:56.868281",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_name",
+  "lead_time_days",
+  "carton_section",
+  "is_carton",
+  "carton_qty",
+  "carton_conversion",
+  "carton_uom",
+  "uom",
+  "packaging_item",
+  "column_break_6",
+  "qty",
+  "rate",
+  "amount",
+  "unit_weight",
+  "weight",
+  "tray_cache_section",
+  "plant_per_tray",
+  "max_packets_per_tray",
+  "weight_per_plant_kg",
+  "foms_id",
+  "salad_product_section",
+  "is_salad_product",
+  "salad_recipe",
+  "batch_no",
+  "column_break_14",
+  "progress",
+  "stock_entry"
+ ],
+ "fields": [
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "default": "1",
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Qty",
+   "reqd": 1
+  },
+  {
+   "fieldname": "carton_section",
+   "fieldtype": "Section Break",
+   "label": "Carton"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_carton",
+   "fieldtype": "Check",
+   "label": "Is Carton"
+  },
+  {
+   "columns": 2,
+   "fieldname": "carton_qty",
+   "fieldtype": "Int",
+   "label": "Carton Qty"
+  },
+  {
+   "columns": 2,
+   "fieldname": "carton_conversion",
+   "fieldtype": "Int",
+   "label": "Carton Conversion"
+  },
+  {
+   "columns": 2,
+   "depends_on": "eval:doc.is_carton",
+   "fieldname": "carton_uom",
+   "fieldtype": "Link",
+   "label": "Carton UOM",
+   "options": "UOM"
+  },
+  {
+   "columns": 2,
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Package Size",
+   "options": "UOM",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "packaging.total_weight",
+   "fieldname": "unit_weight",
+   "fieldtype": "Float",
+   "label": "Unit Weight",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "default": "1",
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "label": "Rate"
+  },
+  {
+   "columns": 1,
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "weight",
+   "fieldtype": "Float",
+   "label": "Weight",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tray_cache_section",
+   "fieldtype": "Section Break",
+   "label": "Tray Cache",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "plant_per_tray",
+   "fieldtype": "Int",
+   "label": "Plant/Tray",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "max_packets_per_tray",
+   "fieldtype": "Int",
+   "label": "Max Packets/Tray",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "weight_per_plant_kg",
+   "fieldtype": "Float",
+   "label": "Weight/Plant (Kg)",
+   "precision": "3",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 2,
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "foms_id",
+   "fieldtype": "Data",
+   "label": "FOMS ID",
+   "no_amend_copy": 1,
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.is_salad_product",
+   "fieldname": "salad_product_section",
+   "fieldtype": "Section Break",
+   "label": "Salad Product"
+  },
+  {
+   "default": "0",
+   "fetch_from": "item_code.salad_product",
+   "fieldname": "is_salad_product",
+   "fieldtype": "Check",
+   "label": "Is Salad Product",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.default_bom",
+   "fieldname": "salad_recipe",
+   "fieldtype": "Link",
+   "label": "Salad Recipe",
+   "options": "BOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stock_entry",
+   "fieldtype": "Data",
+   "label": "Stock Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "progress",
+   "fieldtype": "Percent",
+   "label": "Progress",
+   "read_only": 1
+  },
+  {
+   "fieldname": "batch_no",
+   "fieldtype": "Link",
+   "label": "Batch No",
+   "options": "Batch",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fetch_from": "item_code.lead_time_days",
+   "fieldname": "lead_time_days",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Lead Time (days)",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "packaging_item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Packaging",
+   "options": "Item"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-06-26 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "GP ERP",
+ "name": "Request Items",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
