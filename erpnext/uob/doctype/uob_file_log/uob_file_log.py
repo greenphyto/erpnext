@@ -786,7 +786,7 @@ def convert_inv_no(inv_txt):
 		return base.replace("PAY", "PAY-")
 	elif inv_txt:
 		if "-" in inv_txt:
-			part, yymm = inv_txt.split("-")
+			part, yymm = inv_txt.rsplit("-", 1)
 		else:
 			part, yymm = inv_txt[:-4], inv_txt[-4:]
 		year = "20" + yymm[:2]
