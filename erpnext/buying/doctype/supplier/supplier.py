@@ -245,3 +245,11 @@ def get_supplier_primary(doctype, txt, searchfield, start, page_len, filters):
 		query = query.select(type_doctype.email_id)
 
 	return query.run()
+
+
+def has_permission(doc, user):
+	if user == "Administrator":
+		return True
+
+	if doc.is_internal_supplier:
+		return True

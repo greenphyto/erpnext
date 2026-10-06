@@ -850,6 +850,18 @@ bypass_workflow_permission = {
 	"Material Request": "erpnext.controllers.erp.control_bypass_workflow",
 }
 
+has_permission = {
+	"Supplier": "erpnext.buying.doctype.supplier.supplier.has_permission",
+	"Customer": "erpnext.selling.doctype.customer.customer.has_permission",
+}
+
+standard_queries = {
+	"Customer": "erpnext.selling.doctype.customer.customer.get_customer_list",
+	"Supplier": "erpnext.controllers.queries.supplier_query",
+}
+
+get_email_default = "erpnext.controllers.email.get_last_email_default"
+
 permission_query_conditions = {
 	"Material Request": "erpnext.stock.doctype.material_request.material_request.get_permission_query_conditions",
 }
