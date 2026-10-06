@@ -1,7 +1,6 @@
 import frappe
+from frappe.query_builder.functions import CombineDatetime, Sum
 from frappe.utils import flt
-
-from erpnext.stock.stock_ledger import get_batch_incoming_rate
 
 
 RATE_THRESHOLD = 0.25
@@ -65,24 +64,7 @@ def _get_stock_items(doc):
 
 def _get_batch_no(doc, row):
 	if doc.doctype == "Stock Entry":
-		if not frappe.db.exists("DocType", "Serial and Batch Bundle"):
-			return row.get("batch_no") if hasattr(row, "get") else None
-		bundles = row.get("batches") or row.get("batch_no") or row.get("serial_and_batch_bundle")
-		if isinstance(batches, str) and batches:
-			bundles = frappe.get_all(
-				"Serial and Batch Bundle",
-				filters={"name": batches},
-				pluck="name",
-			)
-			if bundles:
-				return frappe.get_all(
-					"Serial and Batch Entry",
-					filters={"parent": bundles[0]},
-					pluck="batch_no",
-					order_by="idx",
-				)[0] or None
-			if not bundles:
-				return batches
+		return row.get("batch_no") or None
 	return None
 
 
@@ -93,16 +75,31 @@ def _is_product_item(item_code):
 
 def _get_prev_rate(doc, item_code, warehouse, batch_no):
 	if batch_no:
-		return flt(
-			get_batch_incoming_rate(
-				item_code=item_code,
-				warehouse=warehouse,
-				batch_no=batch_no,
-				posting_date=doc.posting_date,
-				posting_time=doc.posting_time,
-				creation=doc.creation,
-			)
+		sle = frappe.qb.DocType("Stock Ledger Entry")
+		timestamp_condition = CombineDatetime(sle.posting_date, sle.posting_time) < CombineDatetime(
+			doc.posting_date, doc.posting_time
 		)
+		if doc.creation:
+			timestamp_condition |= (
+				CombineDatetime(sle.posting_date, sle.posting_time)
+				== CombineDatetime(doc.posting_date, doc.posting_time)
+			) & (sle.creation < doc.creation)
+
+		batch_details = (
+			frappe.qb.from_(sle)
+			.select(Sum(sle.stock_value_difference).as_("batch_value"), Sum(sle.actual_qty).as_("batch_qty"))
+			.where(
+				(sle.item_code == item_code)
+				& (sle.warehouse == warehouse)
+				& (sle.batch_no == batch_no)
+				& (sle.is_cancelled == 0)
+				& (sle.actual_qty > 0)
+			)
+			.where(timestamp_condition)
+		).run(as_dict=True)
+
+		if batch_details and batch_details[0].batch_qty:
+			return flt(batch_details[0].batch_value / batch_details[0].batch_qty)
 	return _get_last_valuation_rate(item_code, warehouse, doc.doctype, doc.name)
 
 
