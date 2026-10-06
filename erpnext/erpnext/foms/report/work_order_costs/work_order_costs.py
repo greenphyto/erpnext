@@ -12,16 +12,6 @@ class Report():
 
 	def setup_condition(self):
 		self.cond = ""
-		if self.filters.get("from_date"):
-			self.cond += " and wo.creation >= %(from_date)s "
-		if self.filters.get("to_date"):
-			self.cond += " and wo.creation <= %(to_date)s "
-		if self.filters.get("status"):
-			self.cond += " and wo.status = %(status)s "
-		if self.filters.get("item_code"):
-			self.cond += " and wo.production_item = %(item_code)s "
-		if self.filters.get("work_order"):
-			self.cond += " and wo.name = %(work_order)s "
 
 	def setup_column(self):
 		self.columns = [
@@ -39,8 +29,7 @@ class Report():
 	
 	def get_data(self):
 		self.raw_data = frappe.db.sql("""
-			select * from `tabWork Order` wo
-			where wo.docstatus < 2 {}
+			select * from `tabWork Order`
 		""".format(self.cond), self.filters, as_dict=1)
 	
 	def process_data(self):

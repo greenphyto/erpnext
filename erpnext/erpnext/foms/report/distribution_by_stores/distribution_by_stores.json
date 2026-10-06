@@ -1,0 +1,45 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2025-04-16 10:35:08.502567",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "letter_head": "Greenphyto",
+ "modified": "2025-04-16 11:34:07.292095",
+ "modified_by": "Administrator",
+ "module": "FOMS",
+ "name": "Distribution by Stores",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Delivery Note",
+ "report_name": "Distribution by Stores",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "Stock Manager"
+  },
+  {
+   "role": "Accounts (View Only)"
+  },
+  {
+   "role": "Stock (View Only)"
+  },
+  {
+   "role": "Report Manager"
+  }
+ ]
+}

@@ -11,8 +11,8 @@ def execute(filters=None):
 	return Report(filters).execute()
 
 
-def get_month_labels(year):
-	return [f"{calendar.month_abbr[i]}-{str(year)[-2:]}" for i in range(1, 13)]
+def get_month_labels(year=2025):
+    return [f"{calendar.month_abbr[i]}-{str(year)[-2:]}" for i in range(1, 13)]
 
 class Report():
 	def __init__(self, filters):
@@ -20,11 +20,9 @@ class Report():
 
 	def setup_condition(self):
 		self.cond = ""
-		self.year = None
 		if self.filters.get("year"):
 			date = frappe.get_value("Fiscal Year", self.filters.year, "year_start_date")
 			self.filters.year = getdate(date).strftime("%Y")
-			self.year = int(self.filters.year)
 			self.cond += " and YEAR(si.posting_date) = %(year)s "
 
 		if self.filters.get("customer"):
@@ -38,18 +36,20 @@ class Report():
 			{"label": "Item", "fieldname": "item_code", "fieldtype": "Link", "width": 100, "options":"Item"},
 			{"label": "Item Name", "fieldname": "item_name", "fieldtype": "Data", "width": 180}
 		]
-
-		for m in get_month_labels(self.year or datetime.now().year):
+		
+		# Tambah kolom per bulan
+		for m in get_month_labels():
 			columns.append({
 				"label": m, "fieldname": m.lower().replace('-', '_'), "fieldtype": "Float", "width": 90
 			})
 
+		# Tambah kolom total
 		columns.append({
 			"label": "Total", "fieldname": "total", "fieldtype": "Float", "width": 100
 		})
-
+		
 		self.columns = columns
-
+	
 	def get_data(self):
 		raw = frappe.db.sql("""
 			SELECT
@@ -70,6 +70,7 @@ class Report():
 				{}
 		""".format(self.cond), self.filters, as_dict=1)
 
+		# key = (customer, item)
 		item_map = {}
 
 		for row in raw:
@@ -83,19 +84,22 @@ class Report():
 					"item_name": row.item_name,
 					"item_code": row.item_code,
 					"total": 0,
-					**{m.lower().replace('-', '_'): 0 for m in get_month_labels(self.year or row.posting_date.year)}
+					**{m.lower().replace('-', '_'): 0 for m in get_month_labels()}
 				}
 
-			if field_key not in item_map[key]:
-				continue
 			item_map[key][field_key] += row.qty
 			item_map[key]["total"] += row.qty
 
 		self.data = sorted(item_map.values(), key=lambda x: (x["customer"], x["item_name"]))
+		# self.data = list(item_map.values())
+	
+	# def process_data(self):
+	# 	self.data = self.raw_data
 
 	def execute(self):
 		self.setup_condition()
 		self.setup_column()
 		self.get_data()
+		# self.process_data()
 
 		return self.columns, self.data
