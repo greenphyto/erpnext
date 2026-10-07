@@ -36,24 +36,24 @@
    "in_list_view": 1,
    "label": "Manpower"
   },
-  {
-   "fieldname": "electricity",
-   "fieldtype": "Currency",
-   "in_list_view": 1,
-   "label": "Electricity"
-  },
-  {
-   "fieldname": "machinery",
-   "fieldtype": "Currency",
-   "in_list_view": 1,
-   "label": "Machinery"
-  },
-  {
-   "fieldname": "consumable",
-   "fieldtype": "Currency",
-   "in_list_view": 1,
-   "label": "Consumable"
-  },
+   {
+    "fieldname": "utilities",
+    "fieldtype": "Currency",
+    "in_list_view": 1,
+    "label": "Utilities"
+   },
+   {
+    "fieldname": "machinery",
+    "fieldtype": "Currency",
+    "hidden": 1,
+    "label": "Machinery"
+   },
+   {
+    "fieldname": "consumable",
+    "fieldtype": "Currency",
+    "hidden": 1,
+    "label": "Consumable"
+   },
   {
    "fieldname": "column_break_5",
    "fieldtype": "Column Break"
