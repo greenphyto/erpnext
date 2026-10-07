@@ -46,12 +46,12 @@
    "fieldtype": "Section Break",
    "label": "Account Settings"
   },
-  {
-   "fieldname": "expense_for_electricity",
-   "fieldtype": "Link",
-   "label": "Expense for Electricity",
-   "options": "Account"
-  },
+   {
+    "fieldname": "expense_for_electricity",
+    "fieldtype": "Link",
+    "label": "Expense for Utilities",
+    "options": "Account"
+   },
   {
    "fieldname": "expense_for_manpower",
    "fieldtype": "Link",
@@ -62,18 +62,20 @@
    "fieldname": "column_break_7",
    "fieldtype": "Column Break"
   },
-  {
-   "fieldname": "expense_for_machinery",
-   "fieldtype": "Link",
-   "label": "Expense for Machinery",
-   "options": "Account"
-  },
-  {
-   "fieldname": "expense_for_consumable",
-   "fieldtype": "Link",
-   "label": "Expense for Consumable",
-   "options": "Account"
-  }
+   {
+    "fieldname": "expense_for_machinery",
+    "fieldtype": "Link",
+    "hidden": 1,
+    "label": "Expense for Machinery",
+    "options": "Account"
+   },
+   {
+    "fieldname": "expense_for_consumable",
+    "fieldtype": "Link",
+    "hidden": 1,
+    "label": "Expense for Consumable",
+    "options": "Account"
+   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
