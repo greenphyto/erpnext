@@ -186,10 +186,10 @@ def get_data(filters):
 
 	# union of periods from GL and work orders
 	periods = set()
-	for p, _ in actual:
-		periods.add(p)
-	for p, _ in absorbed:
-		periods.add(p)
+	for period_key, _account in actual:
+		periods.add(period_key)
+	for period_key, _component in absorbed:
+		periods.add(period_key)
 
 	account_by_component = {c: a for a, c in accounts.items()}
 	data = []

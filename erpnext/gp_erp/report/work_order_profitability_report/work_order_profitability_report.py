@@ -42,8 +42,9 @@ def get_conditions(filters):
 	conditions = ["wo.docstatus = 1"]
 	if filters.get("company"):
 		conditions.append("wo.company = %(company)s")
+	# attribute each work order to its completion month (when FG and cost land)
 	if filters.get("from_date"):
-		conditions.append("wo.actual_start_date >= %(from_date)s")
+		conditions.append("wo.actual_end_date >= %(from_date)s")
 	if filters.get("to_date"):
 		conditions.append("wo.actual_end_date <= %(to_date)s")
 	if filters.get("work_order"):
