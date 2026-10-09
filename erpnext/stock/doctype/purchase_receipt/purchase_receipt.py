@@ -1003,7 +1003,7 @@ def update_billing_percentage(pr_doc, update_modified=True):
 
 
 @frappe.whitelist()
-def make_purchase_invoice(source_name, target_doc=None):
+def make_purchase_invoice(source_name, target_doc=None, args=None):
 	from erpnext.accounts.party import get_payment_terms_template
 
 	doc = frappe.get_doc("Purchase Receipt", source_name)

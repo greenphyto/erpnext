@@ -563,7 +563,7 @@ def make_purchase_receipt(source_name, target_doc=None):
 
 
 @frappe.whitelist()
-def make_purchase_invoice(source_name, target_doc=None):
+def make_purchase_invoice(source_name, target_doc=None, args=None):
 	# validate series
 	series = frappe.get_value("Purchase Order", source_name, "naming_series")
 	if get_series_pr_required(series):
