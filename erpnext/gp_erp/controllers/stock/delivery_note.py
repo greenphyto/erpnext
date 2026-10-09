@@ -4,7 +4,7 @@ from frappe.utils import cint, flt, getdate, get_datetime, get_time
 
 import erpnext
 from erpnext.stock.doctype.delivery_note.delivery_note import DeliveryNote
-from erpnext.stock.doctype.batch.batch import set_batch_nos
+from erpnext.gp_erp.controllers.stock.batch import set_batch_nos
 
 
 class DeliveryNoteGP(DeliveryNote):
@@ -51,7 +51,9 @@ class DeliveryNoteGP(DeliveryNote):
             )
 
     def before_insert(self):
-        super(DeliveryNoteGP, self).before_insert()
+        parent_before_insert = getattr(super(DeliveryNoteGP, self), "before_insert", None)
+        if callable(parent_before_insert):
+            parent_before_insert()
         if self.is_return:
             self.naming_series = "DO-RET-.YYYY.-.###"
 
@@ -70,6 +72,28 @@ class DeliveryNoteGP(DeliveryNote):
             self.link_internal_company()
         except Exception:
             pass
+
+    def validate_packed_qty(self):
+        """Validate that if packed qty exists, it should be equal to qty"""
+
+        has_packing_slip = self.name and frappe.db.exists(
+            "Packing Slip", {"docstatus": 1, "delivery_note": self.name}
+        )
+        items_to_check = self.items
+        if has_packing_slip:
+            product_bundle_list = self.get_product_bundle_list()
+            items_to_check = [
+                i for i in (self.items + self.packed_items) if i.item_code not in product_bundle_list
+            ]
+
+        for item in items_to_check:
+            if flt(item.packed_qty) and flt(item.packed_qty) != flt(item.qty):
+                frappe.throw(
+                    _("Row {0}: Packed Qty must be equal to {1} Qty.").format(
+                        item.idx, frappe.bold(item.doctype)
+                    ),
+                    frappe.ValidationError,
+                )
 
     def on_submit(self):
         super(DeliveryNoteGP, self).on_submit()

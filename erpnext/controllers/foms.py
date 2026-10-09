@@ -1,5 +1,5 @@
 import frappe, erpnext
-from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
+from erpnext.gp_erp.doctype.foms_integration_settings.foms_integration_settings import FomsAPI,is_enable_integration, get_farm_id
 from frappe.core.doctype.sync_log.sync_log import get_pending_log
 from frappe.utils import cint, flt, cstr, get_time, getdate,add_days, get_datetime, now, get_link_to_form
 from erpnext.accounts.party import get_party_details
@@ -2347,7 +2347,8 @@ def make_salad_product(name,doctype, item_code="", parent_item="", wo_name="", c
 	return se_name
 
 def create_repack_entry(bom_name, qty,expiry_date, submit=False):
-	from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
+	from erpnext.stock.doctype.batch.batch import get_batch_no
+	from erpnext.gp_erp.controllers.stock.batch import get_available_batch
 	se = frappe.new_doc("Stock Entry")
 	se.stock_entry_type_view = "Repack"
 	se.naming_series = frappe.get_value("Stock Entry Type", se.stock_entry_type_view, "series")
@@ -2394,7 +2395,8 @@ def create_repack_entry(bom_name, qty,expiry_date, submit=False):
 
 
 from erpnext.manufacturing.doctype.bom.bom import get_bom_items_as_dict
-from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
+from erpnext.stock.doctype.batch.batch import get_batch_no
+from erpnext.gp_erp.controllers.stock.batch import get_available_batch
 
 def get_data_dummy_work_order(item='', qty=10, work_order="", lot_id='', reff=[], operation_no=None):
 	"""

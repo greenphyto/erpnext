@@ -8,6 +8,9 @@ COMPLETE_OPERATION = "Harvesting"
 
 
 class JobCardGP(JobCard):
+    def validate_job_card_qty(self):
+        pass
+
     def on_submit(self):
         self.update_work_order()
         self.set_transferred_qty()

@@ -122,7 +122,7 @@ class ConsignmentRequest(SellingController):
 			self.indicator_title = _("Paid")
 
 	def create_customer_warehouse(self):
-		from erpnext.stock.doctype.warehouse.warehouse import create_warehouse
+		from erpnext.gp_erp.controllers.stock.warehouse import create_warehouse
 
 		# create parent warehouse if not exists
 		parent_name = "Consignment Warehouse"

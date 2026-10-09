@@ -3,7 +3,7 @@ import frappe
 import unittest
 from frappe.utils import flt, nowdate
 
-from erpnext.buying.doctype.request.request import (
+from erpnext.gp_erp.doctype.request.request import (
 	_resolve_item,
 	_resolve_customer,
 	_get_existing_request,

@@ -4,7 +4,7 @@ import unittest
 from frappe.utils import nowdate, flt
 import json
 
-from erpnext.buying.doctype.request.request import get_events, get_request_items
+from erpnext.gp_erp.doctype.request.request import get_events, get_request_items
 
 SITE_NAME = os.environ.get("FRAPPE_SITE", "test5-15")
 SITES_PATH = "/workspace/development/gp-frappe-bench/sites"
@@ -49,7 +49,7 @@ class TestGetEventColor(unittest.TestCase):
 		self.assertTrue(True)
 
 	def test_color_logic_pr_av(self):
-		from erpnext.buying.doctype.request.request import get_events
+		from erpnext.gp_erp.doctype.request.request import get_events
 		events = get_events("2020-01-01", "2099-12-31")
 		pr_av_events = [e for e in events if e.get("item_code", "").startswith("PR-AV")]
 		if pr_av_events:

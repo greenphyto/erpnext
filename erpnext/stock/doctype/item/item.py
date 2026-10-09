@@ -3,7 +3,6 @@
 
 import copy
 import json
-import re
 
 import frappe
 from frappe import _, bold
@@ -24,19 +23,6 @@ from frappe.utils import (
 )
 from frappe.utils.html_utils import clean_html
 from pypika import Order
-
-
-def parse_material_group_series(material_group):
-	name = frappe.db.exists("Material Group", material_group)
-	if not name:
-		frappe.throw(_(f"Cannot find Material Group {material_group}"))
-
-	settings = frappe.get_value(
-		"Material Group", material_group, ["number_start", "number_end"], as_dict=True
-	)
-	difference = cint(settings.number_end) - cint(settings.number_start)
-	replacer = "." + "#" * len(cstr(difference))
-	return re.sub(f"{difference}$", replacer, cstr(settings.number_end))
 
 import erpnext
 from erpnext.controllers.item_variant import (
@@ -192,7 +178,7 @@ class Item(Document):
 			for default in self.item_defaults or [frappe._dict()]:
 				self.add_price(default.default_price_list)
 
-		if self.opening_stock and not frappe.flags.in_test:
+		if self.opening_stock:
 			self.set_opening_stock()
 
 	def validate(self):
@@ -1098,39 +1084,6 @@ class Item(Document):
 					indicator="orange",
 				)
 
-	def get_item_material_group(self, set_data=False):
-		material_group_map = [
-			(["RM-SD"], "Seeds"),
-			(["RM-NS"], "Nutrition"),
-			(["PDLED"], "LED"),
-			(["ZGW"], "Gateway"),
-			(["DMC"], "Dimmer Controller"),
-			(["POC"], "Power Connector"),
-			(["ZMS"], "FG - Systems"),
-			(["PD-"], "Trays & Boards"),
-			(["TOM"], "Tooling & Moulding"),
-			(["ACC"], "Accessories"),
-			(["PR-LV"], "Vegetables (Lettuce)"),
-			(["PR-AV"], "Vegetables (Asian Vegetables)"),
-			(["ZOT"], "Other Packaging"),
-		]
-
-		item_code = self.item_code or ""
-		result = ""
-
-		for prefixes, group in material_group_map:
-			for prefix in prefixes:
-				if item_code.startswith(prefix):
-					result = group
-					break
-			if result:
-				break
-
-		if set_data:
-			self.material_group = result
-
-		return result
-
 
 def convert_erpnext_to_barcodenumber(erpnext_number, barcode):
 	if erpnext_number == "EAN":
@@ -1489,37 +1442,3 @@ def get_child_warehouses(warehouse):
 	from erpnext.stock.doctype.warehouse.warehouse import get_child_warehouses
 
 	return get_child_warehouses(warehouse)
-
-
-def update_item_pic(doc, method=None):
-
-	def update_data_mapping(item, pic):
-		frappe.db.set_value("Item Reorder", {"parent":item}, "pic", pic)
-
-		
-	if doc.doctype == "Item":
-		# update from Item
-		for d in doc.get("reorder_levels"):
-			frappe.db.set_value("Part Number Details", {"code":doc.name}, "pic", d.pic)
-	else:
-		# from part number settings
-		doc_old = doc.get_doc_before_save()
-		if not doc_old:
-			pass
-
-		for d in doc.get("data_mapping"):
-			row_old = None
-			if doc_old:
-				row_old = doc_old.get("data_mapping", {"name":d.name})
-			
-			if row_old:
-				row_old = row_old[0]
-				if row_old.pic != d.pic:
-					update_data_mapping(d.code, d.pic)
-			else:
-				if d.pic:
-					update_data_mapping(d.code, d.pic)
-
-@frappe.whitelist()
-def get_default_pic(code):
-	return frappe.db.get_value("Part Number Details", {"code":code}, "pic")

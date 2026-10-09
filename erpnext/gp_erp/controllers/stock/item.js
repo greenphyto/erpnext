@@ -54,7 +54,7 @@ frappe.ui.form.on("Item", {
 frappe.ui.form.on('Item Reorder', {
 	pic: function(frm, cdt, cdn) {
 		frappe.call({
-			method: "erpnext.stock.doctype.item.item.get_default_pic",
+			method: "erpnext.gp_erp.controllers.stock.item.get_default_pic",
 			args: {
 				"code": frm.doc.name
 			},

@@ -2277,7 +2277,7 @@ def make_scrap_materials(work_order):
 @frappe.whitelist()
 def get_foms_task_status(work_order, item_code, foms_work_order):
 	from erpnext.controllers.foms import OPERATION_MAP_NAME, get_operation_no
-	from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI
+	from erpnext.gp_erp.doctype.foms_integration_settings.foms_integration_settings import FomsAPI
 
 	api = FomsAPI()
 	prodict_id = frappe.get_value("Item", item_code, "foms_product_id")

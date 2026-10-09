@@ -3,7 +3,7 @@ import frappe
 import unittest
 from frappe.utils import flt, getdate, nowdate, get_last_day, add_months
 
-from erpnext.assets.doctype.asset.depreciation import (
+from erpnext.gp_erp.controllers.assets.depreciation import (
 	get_month_year,
 	get_depreciable_assets,
 	check_future_posted_depreciation,

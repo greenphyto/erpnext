@@ -33,7 +33,7 @@ class TestScrapRequestDoctype(unittest.TestCase):
 
 	def test_has_collect_expired_items(self):
 		try:
-			from erpnext.stock.doctype.scrap_request.scrap_request import collect_expired_items
+			from erpnext.gp_erp.doctype.scrap_request.scrap_request import collect_expired_items
 			self.assertTrue(callable(collect_expired_items))
 		except (ImportError, AttributeError):
 			self.skipTest("collect_expired_items not found")

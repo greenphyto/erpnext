@@ -2,8 +2,8 @@ import frappe
 import unittest
 from frappe.utils import flt, getdate, nowdate, add_days
 
-from erpnext.stock.doctype.batch.batch import (
-	get_batch_status,
+from erpnext.gp_erp.controllers.stock.batch import (
+	_get_batch_status as get_batch_status,
 	get_item_shelf_life_in_days,
 	get_available_batch_portion,
 )
@@ -110,7 +110,7 @@ class TestGetAvailableBatchPortion(unittest.TestCase):
 
 class TestPickBatches(unittest.TestCase):
 	def test_pick_batches_returns_list(self):
-		from erpnext.stock.doctype.batch.batch import pick_batches
+		from erpnext.gp_erp.controllers.stock.batch import pick_batches
 
 		item = frappe.db.get_value("Item", {"has_batch_no": 1, "disabled": 0}, "name")
 		if not item:

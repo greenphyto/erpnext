@@ -15,7 +15,7 @@ frappe.ui.form.on('Asset', {
 
 	make_sales_invoice: function(frm) {
 		frappe.call({
-			method: "erpnext.assets.doctype.asset.depreciation.check_unposted_depr_before_disposal",
+			method: "erpnext.gp_erp.controllers.assets.depreciation.check_unposted_depr_before_disposal",
 			args: {
 				asset_name: frm.doc.name
 			},
@@ -159,7 +159,7 @@ erpnext.asset.scrap_asset = function(frm) {
 	function check_disposal_date(disposal_date) {
 		if (!disposal_date) return;
 		frappe.call({
-			method: "erpnext.assets.doctype.asset.depreciation.check_unposted_depr_before_disposal",
+			method: "erpnext.gp_erp.controllers.assets.depreciation.check_unposted_depr_before_disposal",
 			args: {
 				asset_name: frm.doc.name,
 				disposal_date: disposal_date

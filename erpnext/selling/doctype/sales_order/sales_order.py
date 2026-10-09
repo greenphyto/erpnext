@@ -249,16 +249,6 @@ class SalesOrder(SellingController):
 
 	def validate_po(self):
 		# validate p.o date v/s delivery date
-		if self.pending_po:
-			self.po_no = "Pending PO"
-			self.po_date = ""
-			return
-
-		if self.is_pledge:
-			self.po_no = "For Pledge"
-			self.po_date = ""
-			return
-
 		if self.po_date and not self.skip_delivery_note:
 			for d in self.get("items"):
 				if d.delivery_date and getdate(self.po_date) > getdate(d.delivery_date):
@@ -427,23 +417,6 @@ class SalesOrder(SellingController):
 		for d in self.get("items"):
 			if d.delivered_by_supplier and not d.supplier:
 				frappe.throw(_("Row #{0}: Set Supplier for item {1}").format(d.idx, d.item_code))
-
-	def update_work_order_reference(self, wo_no, item):
-		for d in self.get("items"):
-			if d.item_code == item:
-				d.lot_id = wo_no
-				d.db_update()
-		self.on_progress = 1
-
-	def update_work_progress(self, item, qty):
-		per_working = 0
-		for d in self.get("items"):
-			if d.item_code == item:
-				per_working += 1
-				d.work_order_qty = qty
-				d.db_update()
-
-		self.per_working = per_working / len(self.items) * 100
 
 	def on_submit(self):
 		self.check_credit_limit()

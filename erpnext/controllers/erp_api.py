@@ -24,16 +24,17 @@ from erpnext.manufacturing.doctype.job_card.job_card import make_stock_entry as 
 from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry as make_stock_entry_wo, create_job_card
 from erpnext.stock.doctype.purchase_receipt.purchase_receipt import make_purchase_return
 from frappe.model.workflow import apply_workflow
-from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
+from erpnext.stock.doctype.batch.batch import get_batch_no
+from erpnext.gp_erp.controllers.stock.batch import get_available_batch
 from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 from frappe.utils.file_manager import save_file, save_url
 from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result, make_in_progress
 from datetime import datetime, timedelta
 from erpnext.stock.utils import get_default_warehouse
 from erpnext.stock.stock_ledger import get_valuation_rate
-from erpnext.setup.doctype.company.company import switch_to_company_admin
+from erpnext.gp_erp.controllers.setup.company import switch_to_company_admin
 from erpnext.stock.doctype.batch.batch import get_batch_qty, make_batch
-from erpnext.buying.doctype.request.request import (
+from erpnext.gp_erp.doctype.request.request import (
 	_get_forecast_settings,
 	_resolve_item,
 	_resolve_customer,
@@ -1343,7 +1344,7 @@ def create_material_consume(data):
 		"StockEntryNo":result
 	}
 
-from erpnext.buying.doctype.request.request import create_request_form as _create_request_form, update_request
+from erpnext.gp_erp.doctype.request.request import create_request_form as _create_request_form, update_request
 @frappe.whitelist()
 def create_request_form(data):
 	# logger

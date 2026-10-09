@@ -8,6 +8,15 @@ from erpnext.buying.doctype.supplier.supplier import Supplier
 
 
 class SupplierGP(Supplier):
+    def validate_internal_supplier(self):
+        if not self.is_internal_supplier:
+            self.represents_company = ""
+
+        if not self.represents_company:
+            return
+
+        super(SupplierGP, self).validate_internal_supplier()
+
     def set_code(self, force=False):
         comp_abbr = cstr(frappe.get_value("Company", self.company, "series_abbr"))
         series = self.supplier_code_series or "S0.####"
@@ -86,6 +95,14 @@ class SupplierGP(Supplier):
             for d in old_doc.get("item_supplier"):
                 if d.item_code not in cur_list:
                     _process(d.item_code, "Delete")
+
+
+def has_permission(doc, user):
+    if user == "Administrator":
+        return True
+
+    if doc.is_internal_supplier:
+        return True
 
 
 def _get_exists_series(series):

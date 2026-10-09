@@ -47,7 +47,7 @@ class TestReorderItemScheduler(unittest.TestCase):
 class TestFetchMonthRate(unittest.TestCase):
 	def test_function_importable(self):
 		try:
-			from erpnext.setup.doctype.currency_exchange.currency_exchange import fetch_month_rate
+			from erpnext.gp_erp.controllers.setup.currency_exchange import fetch_month_rate
 			self.assertTrue(callable(fetch_month_rate))
 		except ImportError:
 			self.skipTest("fetch_month_rate not importable")

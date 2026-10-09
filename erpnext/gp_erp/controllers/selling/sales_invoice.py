@@ -18,7 +18,9 @@ class SalesInvoiceGP(SalesInvoice):
             pass
 
     def before_insert(self):
-        super(SalesInvoiceGP, self).before_insert()
+        parent_before_insert = getattr(super(SalesInvoiceGP, self), "before_insert", None)
+        if callable(parent_before_insert):
+            parent_before_insert()
         if self.is_return:
             self.naming_series = "CN.###./.YYYY"
 

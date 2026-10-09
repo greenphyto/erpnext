@@ -40,6 +40,44 @@ class ItemGP(Item):
         if not self.is_new():
             self.old_item_group = frappe.db.get_value(self.doctype, self.name, "item_group")
 
+    def set_opening_stock(self):
+        if frappe.flags.in_test:
+            return
+        super(ItemGP, self).set_opening_stock()
+
+    def get_item_material_group(self, set_data=False):
+        material_group_map = [
+            (["RM-SD"], "Seeds"),
+            (["RM-NS"], "Nutrition"),
+            (["PDLED"], "LED"),
+            (["ZGW"], "Gateway"),
+            (["DMC"], "Dimmer Controller"),
+            (["POC"], "Power Connector"),
+            (["ZMS"], "FG - Systems"),
+            (["PD-"], "Trays & Boards"),
+            (["TOM"], "Tooling & Moulding"),
+            (["ACC"], "Accessories"),
+            (["PR-LV"], "Vegetables (Lettuce)"),
+            (["PR-AV"], "Vegetables (Asian Vegetables)"),
+            (["ZOT"], "Other Packaging"),
+        ]
+
+        item_code = self.item_code or ""
+        result = ""
+
+        for prefixes, group in material_group_map:
+            for prefix in prefixes:
+                if item_code.startswith(prefix):
+                    result = group
+                    break
+            if result:
+                break
+
+        if set_data:
+            self.material_group = result
+
+        return result
+
     def on_trash(self):
         self.validate_foms_item()
 
@@ -230,3 +268,35 @@ def parse_material_group_series(material_group):
         replacer += "#"
     series = re.sub(f'{diff}$', replacer, cstr(temp.number_end))
     return series
+
+
+def update_item_pic(doc, method=None):
+
+    def update_data_mapping(item, pic):
+        frappe.db.set_value("Item Reorder", {"parent": item}, "pic", pic)
+
+    if doc.doctype == "Item":
+        for d in doc.get("reorder_levels"):
+            frappe.db.set_value("Part Number Details", {"code": doc.name}, "pic", d.pic)
+    else:
+        doc_old = doc.get_doc_before_save()
+        if not doc_old:
+            pass
+
+        for d in doc.get("data_mapping"):
+            row_old = None
+            if doc_old:
+                row_old = doc_old.get("data_mapping", {"name": d.name})
+
+            if row_old:
+                row_old = row_old[0]
+                if row_old.pic != d.pic:
+                    update_data_mapping(d.code, d.pic)
+            else:
+                if d.pic:
+                    update_data_mapping(d.code, d.pic)
+
+
+@frappe.whitelist()
+def get_default_pic(code):
+    return frappe.db.get_value("Part Number Details", {"code": code}, "pic")

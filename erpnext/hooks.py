@@ -115,6 +115,7 @@ override_doctype_class = {
     "Workstation Type": "erpnext.gp_erp.controllers.manufacturing.workstation_type.WorkstationTypeGP",
     "Pick List": "erpnext.gp_erp.controllers.stock.pick_list.PickListGP",
     "Invoice Discounting": "erpnext.gp_erp.controllers.accounts.invoice_discounting.InvoiceDiscountingGP",
+    "Packing Slip": "erpnext.gp_erp.controllers.stock.packing_slip.PackingSlipGP",
 }
 
 override_whitelisted_methods = {"frappe.www.contact.send_message": "erpnext.templates.utils.send_message"}
@@ -520,12 +521,12 @@ doc_events = {
 	},
 	"Item": {
 		"validate": [
-			"erpnext.stock.doctype.item.item.update_item_pic",
+			"erpnext.gp_erp.controllers.stock.item.update_item_pic",
 			"erpnext.foms.doctype.rate_card.rate_card.update_bom_item",
 		],
 	},
 	"Part Number Settings": {
-		"validate": "erpnext.stock.doctype.item.item.update_item_pic",
+		"validate": "erpnext.gp_erp.controllers.stock.item.update_item_pic",
 	},
 	"Scrap Request": {
 		"on_submit": "erpnext.controllers.foms.sync_log",
@@ -650,7 +651,7 @@ scheduler_events = {
 	],
 	"hourly_long": [
 		"erpnext.stock.doctype.repost_item_valuation.repost_item_valuation.repost_entries",
-		"erpnext.bulk_transaction.doctype.bulk_transaction_log.bulk_transaction_log.retry_failing_transaction",
+		"erpnext.gp_erp.controllers.bulk_transaction.bulk_transaction_log.retry_failing_transaction",
 	],
 	"hourly_maintenance": [
 		"erpnext.stock.doctype.repost_item_valuation.repost_item_valuation.repost_entries",
@@ -670,8 +671,8 @@ scheduler_events = {
 		"erpnext.controllers.foms.get_products",
 		"erpnext.controllers.foms.get_recipe",
 		"erpnext.controllers.foms.get_packaging",
-		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_items",
-		"erpnext.stock.doctype.scrap_request.scrap_request.collect_expired_product",
+		"erpnext.gp_erp.doctype.scrap_request.scrap_request.collect_expired_items",
+		"erpnext.gp_erp.doctype.scrap_request.scrap_request.collect_expired_product",
 		"erpnext.controllers.foms.daily_update_batch_status",
 		"erpnext.controllers.foms.notify_late_sync_foms_and_work_order",
 	],
@@ -723,7 +724,7 @@ scheduler_events = {
 	"monthly": [
 		"erpnext.assets.doctype.asset.depreciation.post_depreciation_entries",
 		"erpnext.controllers.erp.trial_balance_different_issue",
-		"erpnext.setup.doctype.currency_exchange.currency_exchange.fetch_month_rate",
+		"erpnext.gp_erp.controllers.setup.currency_exchange.fetch_month_rate",
 	],
 }
 
@@ -922,27 +923,27 @@ bypass_workflow_permission = {
 }
 
 has_permission = {
-	"Supplier": "erpnext.buying.doctype.supplier.supplier.has_permission",
-	"Customer": "erpnext.selling.doctype.customer.customer.has_permission",
+	"Supplier": "erpnext.gp_erp.controllers.buying.supplier.has_permission",
+	"Customer": "erpnext.gp_erp.controllers.selling.customer.has_permission",
 }
 
 standard_queries = {
-	"Customer": "erpnext.selling.doctype.customer.customer.get_customer_list",
+	"Customer": "erpnext.gp_erp.controllers.selling.customer.get_customer_list",
 	"Supplier": "erpnext.controllers.queries.supplier_query",
 }
 
 get_email_default = "erpnext.controllers.email.get_last_email_default"
 
 permission_query_conditions = {
-	"Material Request": "erpnext.stock.doctype.material_request.material_request.get_permission_query_conditions",
+	"Material Request": "erpnext.gp_erp.controllers.stock.material_request.get_permission_query_conditions",
 }
 
 validate_workflow = {
-	"Material Request": "erpnext.stock.doctype.material_request.material_request.validate_purchase_request"
+	"Material Request": "erpnext.gp_erp.controllers.stock.material_request.validate_purchase_request"
 }
 
 confirm_workflow_action_page = {
-	"Material Request": "erpnext.stock.doctype.material_request.material_request.confirm_workflow_action_page"
+	"Material Request": "erpnext.gp_erp.controllers.stock.material_request.confirm_workflow_action_page"
 }
 
 sync_log_method = {

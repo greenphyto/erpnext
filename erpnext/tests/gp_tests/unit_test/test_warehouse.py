@@ -50,7 +50,7 @@ class TestGetWipWarehouse(unittest.TestCase):
 
 class TestWarehouseCreation(unittest.TestCase):
 	def test_create_warehouse_function(self):
-		from erpnext.stock.doctype.warehouse.warehouse import create_warehouse
+		from erpnext.gp_erp.controllers.stock.warehouse import create_warehouse
 		self.assertTrue(callable(create_warehouse))
 
 

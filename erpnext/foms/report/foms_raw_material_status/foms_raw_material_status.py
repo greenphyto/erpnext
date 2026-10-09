@@ -5,7 +5,7 @@ import frappe
 import json
 from datetime import datetime
 from frappe.utils.file_manager import save_file
-from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings import FomsAPI, get_farm_id
+from erpnext.gp_erp.doctype.foms_integration_settings.foms_integration_settings import FomsAPI, get_farm_id
 from frappe.utils import cint, flt, get_datetime
 """
 https://foms-api.greenphyto.com/api/userportal/RawMaterialUP/SearchRawMaterialReservedOrIssued?keyword=RM-SD-DRE&status=Reserved&rowsPerTable=10&page=0&farmId=15&skipCount=0&maxResultCount=10

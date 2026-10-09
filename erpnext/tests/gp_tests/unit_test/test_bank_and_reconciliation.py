@@ -19,7 +19,7 @@ def tearDownModule():
 class TestBankNumberValidation(unittest.TestCase):
 	def test_hsbc_short_number_throws(self):
 		try:
-			from erpnext.accounts.doctype.bank_number.bank_number import check_branch_code_mandatory
+			from erpnext.gp_erp.doctype.bank_number.bank_number import check_branch_code_mandatory
 		except ImportError:
 			self.skipTest("bank_number module not available")
 
@@ -28,7 +28,7 @@ class TestBankNumberValidation(unittest.TestCase):
 
 	def test_hsbc_long_number_passes(self):
 		try:
-			from erpnext.accounts.doctype.bank_number.bank_number import check_branch_code_mandatory
+			from erpnext.gp_erp.doctype.bank_number.bank_number import check_branch_code_mandatory
 		except ImportError:
 			self.skipTest("bank_number module not available")
 
@@ -37,7 +37,7 @@ class TestBankNumberValidation(unittest.TestCase):
 
 	def test_non_restricted_bank_passes(self):
 		try:
-			from erpnext.accounts.doctype.bank_number.bank_number import check_branch_code_mandatory
+			from erpnext.gp_erp.doctype.bank_number.bank_number import check_branch_code_mandatory
 		except ImportError:
 			self.skipTest("bank_number module not available")
 

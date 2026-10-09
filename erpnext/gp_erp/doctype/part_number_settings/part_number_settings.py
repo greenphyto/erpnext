@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import cint, cstr
 from erpnext.accounts.utils import get_balance_on, get_account_number_map
-from erpnext.stock.doctype.item.item import parse_material_group_series
+from erpnext.gp_erp.controllers.stock.item import parse_material_group_series
 
 class PartNumberSettings(Document):
 	@frappe.whitelist()

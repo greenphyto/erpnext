@@ -235,7 +235,7 @@ class TestAllowCostCenterMissing(unittest.TestCase):
 		self.company = frappe.db.get_single_value("Global Defaults", "default_company")
 
 	def test_old_posting_date_allows_missing(self):
-		from erpnext.accounts.doctype.gl_entry.gl_entry import allow_cost_center_missing
+		from erpnext.gp_erp.controllers.accounts.gl_entry import allow_cost_center_missing
 
 		gl = frappe.new_doc("GL Entry")
 		gl.posting_date = "2020-01-01"
@@ -243,7 +243,7 @@ class TestAllowCostCenterMissing(unittest.TestCase):
 		self.assertTrue(result)
 
 	def test_current_date_does_not_allow_missing(self):
-		from erpnext.accounts.doctype.gl_entry.gl_entry import allow_cost_center_missing
+		from erpnext.gp_erp.controllers.accounts.gl_entry import allow_cost_center_missing
 
 		gl = frappe.new_doc("GL Entry")
 		gl.posting_date = nowdate()
