@@ -56,9 +56,8 @@ class SerialandBatchBundle(Document):
 	from typing import TYPE_CHECKING
 
 	if TYPE_CHECKING:
-		from frappe.types import DF
-
 		from erpnext.stock.doctype.serial_and_batch_entry.serial_and_batch_entry import SerialandBatchEntry
+		from frappe.types import DF
 
 		amended_from: DF.Link | None
 		avg_rate: DF.Float
