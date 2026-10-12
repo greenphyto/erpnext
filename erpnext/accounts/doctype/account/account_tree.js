@@ -2,6 +2,7 @@ frappe.provide("frappe.treeview_settings");
 
 frappe.treeview_settings["Account"] = {
 	breadcrumb: "Accounts",
+	disable_quick_entry: 1,
 	title: __("Chart of Accounts"),
 	get_tree_root: false,
 	filters: [

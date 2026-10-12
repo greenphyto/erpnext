@@ -1,5 +1,6 @@
 frappe.treeview_settings["BOM"] = {
 	get_tree_nodes: "erpnext.manufacturing.doctype.bom.bom.get_children",
+	disable_quick_entry: 1,
 	filters: [
 		{
 			fieldname: "bom",
