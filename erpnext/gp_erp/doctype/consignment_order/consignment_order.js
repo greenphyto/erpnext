@@ -139,6 +139,10 @@ frappe.ui.form.on("Consignment Order", {
 		erpnext.stock.consignment_order.sync_target_warehouse(frm, true);
 	},
 
+	get_batch(frm) {
+		erpnext.stock.consignment_order.fetch_batches(frm);
+	},
+
 	company(frm) {
 		erpnext.accounts.dimensions.update_dimension(frm, frm.doctype);
 		if (frm.doc.company && frm.doc.tc_name == null) {
@@ -189,6 +193,38 @@ erpnext.stock.consignment_order.sync_target_warehouse = function (frm, force_upd
 			frappe.model.set_value(row.doctype, row.name, "warehouse", "");
 		}
 	});
+};
+
+erpnext.stock.consignment_order.fetch_batches = function (frm) {
+	if (frm.doc.docstatus !== 0) {
+		frappe.msgprint(__("Batches can only be fetched for a draft Consignment Order."));
+		return;
+	}
+
+	if (!(frm.doc.items || []).length) {
+		frappe.msgprint(__("Please add items before fetching batches."));
+		return;
+	}
+
+	frappe.dom.freeze(__("Fetching batches..."));
+	frm.call({
+		doc: frm.doc,
+		method: "fetch_batches",
+	})
+		.then((r) => {
+			if (r && r.message) {
+				frm.doc.items = r.message.items || [];
+				frm.refresh_field("items");
+				frm.dirty();
+				frappe.show_alert({
+					message: __("Batches fetched. Review and save to apply."),
+					indicator: "green",
+				});
+			}
+		})
+		.always(() => {
+			frappe.dom.unfreeze();
+		});
 };
 
 erpnext.stock.consignment_order.hide_unused_fields = function (frm) {

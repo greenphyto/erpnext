@@ -40,6 +40,7 @@
   "is_marketing",
   "is_production",
   "is_pledge",
+  "is_lazada_order",
   "non_stock_item",
   "replacement_reason_section",
   "replacement_reason",
@@ -61,6 +62,7 @@
   "price_list_currency",
   "plc_conversion_rate",
   "ignore_pricing_rule",
+  "get_batch",
   "items_section",
   "scan_barcode",
   "pick_list",
@@ -1745,13 +1747,24 @@
    "label": "Consignment Request",
    "options": "Consignment Request",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_lazada_order",
+   "fieldtype": "Check",
+   "label": "Is Lazada Order"
+  },
+  {
+   "fieldname": "get_batch",
+   "fieldtype": "Button",
+   "label": "Get Batch"
   }
  ],
  "icon": "fa fa-truck",
  "idx": 146,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-29 16:54:13.271736",
+ "modified": "2026-10-12 18:11:33.434114",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Order",

@@ -52,6 +52,15 @@ class ConsignmentOrder(DeliveryNote):
 		self.update_current_stock()
 		self.set_status()
 
+	@frappe.whitelist()
+	def fetch_batches(self):
+		# Triggered by the "Get Batch" button. Runs FIFO batch allocation on the
+		# in-memory doc (not saved) so the user can preview/fetch batches even
+		# when the Company auto batch setting is disabled.
+		self.apply_target_warehouse_default()
+		self.set_fifo_batch_numbers(force=True)
+		return self.as_dict()
+
 	def apply_target_warehouse_default(self):
 		default_source = self.get("set_warehouse")
 		default_target = self.get("set_target_warehouse")
@@ -61,95 +70,154 @@ class ConsignmentOrder(DeliveryNote):
 			if default_target and not item.target_warehouse:
 				item.target_warehouse = default_target
 
-	def set_fifo_batch_numbers(self):
-		from erpnext.stock.doctype.batch.batch import get_batch_qty
-
-		allow_expired = bool(
+	def set_fifo_batch_numbers(self, force=False):
+		# `force` is set when the user clicks the "Get Batch" button so the
+		# allocation runs on demand even when the Company auto batch setting is
+		# disabled. During normal validate(), it only runs if enabled.
+		auto_batch_enabled = bool(
 			self.company and frappe.db.get_value("Company", self.company, "enable_auto_batch")
 		)
+		if not auto_batch_enabled and not force:
+			return
+
+		allow_expired = auto_batch_enabled
+
+		# Group rows that originate from the same Consignment Request line so that
+		# re-running auto batch always references the ORIGINAL qty from the CR
+		# (via cr_detail), not the per-row qty of an already split allocation.
+		# This keeps the result stable when a line was previously split into 2-3
+		# rows and later needs to shrink back (e.g. 3 rows -> 2 rows -> 1 row).
+		groups = {}
+		group_order = []
 		for item in list(self.get("items")):
-			partial_batch = None
-			if item.batch_no:
-				expiry_date = frappe.db.get_value("Batch", item.batch_no, "expiry_date")
-				if expiry_date and expiry_date < frappe.utils.getdate() and not allow_expired:
-					item.batch_no = None
-				elif not allow_expired:
-					continue
-				else:
-					conversion_factor = flt(item.conversion_factor) or 1
-					remaining_qty = flt(item.stock_qty or item.qty * conversion_factor)
-					batch_qty = get_batch_qty(batch_no=item.batch_no, warehouse=item.warehouse)
-					if flt(batch_qty) >= remaining_qty:
-						continue
-					if flt(batch_qty) > 0:
-						# Partial: keep selected batch for available qty, split remainder to other batches
-						partial_batch = (item.batch_no, flt(batch_qty), remaining_qty)
-						frappe.msgprint(
-							_("Batch {0} has only {1} qty for Item {2}. Splitting remaining qty to other batches.").format(
-								frappe.bold(item.batch_no), flt(batch_qty), item.item_code
-							),
-							indicator="orange",
-							alert=True,
-						)
-					else:
-						frappe.msgprint(
-							_("Batch {0} has insufficient qty for Item {1}. Re-allocating batch.").format(
-								frappe.bold(item.batch_no), item.item_code
-							),
-							indicator="orange",
-							alert=True,
-						)
-						item.batch_no = None
-			if not item.warehouse or not item.item_code:
-				continue
-			if not frappe.get_cached_value("Item", item.item_code, "has_batch_no"):
-				continue
+			key = item.cr_detail or f"__row__{item.name or id(item)}"
+			if key not in groups:
+				groups[key] = []
+				group_order.append(key)
+			groups[key].append(item)
 
-			conversion_factor = flt(item.conversion_factor) or 1
-			if partial_batch:
-				item.qty = partial_batch[1] / conversion_factor
-				item.stock_qty = partial_batch[1]
-				item.batch_no = partial_batch[0]
-				row_data = item.as_dict()
-				for field in ("name", "parent", "parentfield", "parenttype", "idx", "doctype"):
-					row_data.pop(field, None)
-				remaining_qty = partial_batch[2] - partial_batch[1]
-			else:
-				remaining_qty = flt(item.stock_qty or item.qty * conversion_factor)
-			batches = (
-				get_batches(item.item_code, item.warehouse, qty=remaining_qty, allow_expired=allow_expired)
-				or []
+		for key in group_order:
+			rows = groups[key]
+			anchor = rows[0]
+			self._apply_fifo_for_group(anchor, rows, allow_expired, force=force)
+
+	def _apply_fifo_for_group(self, anchor, rows, allow_expired, force=False):
+		from erpnext.stock.doctype.batch.batch import get_batch_qty
+
+		if not anchor.warehouse or not anchor.item_code:
+			return
+		if not frappe.get_cached_value("Item", anchor.item_code, "has_batch_no"):
+			return
+
+		conversion_factor = flt(anchor.conversion_factor) or 1
+
+		# Always derive the required qty from the referenced Consignment Request
+		# line when available; fall back to the summed row qty otherwise.
+		required_qty = self._get_reference_stock_qty(anchor, conversion_factor)
+		if required_qty is None:
+			required_qty = sum(
+				flt(r.stock_qty or flt(r.qty) * (flt(r.conversion_factor) or 1)) for r in rows
 			)
-			allocations = []
-			for batch in batches:
-				if partial_batch and batch.batch_id == partial_batch[0]:
-					continue
-				batch_qty = min(flt(batch.qty), remaining_qty)
-				if batch_qty <= 0:
-					continue
-				allocations.append((batch.batch_id, batch_qty))
-				remaining_qty -= batch_qty
-				if remaining_qty <= 0:
-					break
+		if flt(required_qty) <= 0:
+			return
 
-			if remaining_qty > 0:
-				frappe.msgprint(_("Insufficient batch stock for Item {0}").format(item.item_code))
+		# Build the full allocation plan WITHOUT mutating any row yet.
+		partial_batch = None
+		if anchor.batch_no:
+			expiry_date = frappe.db.get_value("Batch", anchor.batch_no, "expiry_date")
+			if expiry_date and expiry_date < frappe.utils.getdate() and not allow_expired:
+				partial_batch = None
+			elif not allow_expired and not force:
+				# Auto batch disabled and not a manual trigger: keep user selection.
+				return
+			else:
+				selected_qty = flt(get_batch_qty(batch_no=anchor.batch_no, warehouse=anchor.warehouse))
+				if selected_qty >= required_qty:
+					# Collapse any previous split back into the anchor row.
+					self._apply_allocations(anchor, rows, [(anchor.batch_no, required_qty)], conversion_factor)
+					return
+				if selected_qty > 0:
+					partial_batch = (anchor.batch_no, selected_qty, required_qty)
+
+		remaining_qty = flt(required_qty)
+		allocations = []
+		if partial_batch:
+			allocations.append((partial_batch[0], partial_batch[1]))
+			remaining_qty -= partial_batch[1]
+
+		batches = (
+			get_batches(anchor.item_code, anchor.warehouse, qty=remaining_qty, allow_expired=allow_expired)
+			or []
+		)
+		for batch in batches:
+			if partial_batch and batch.batch_id == partial_batch[0]:
 				continue
+			batch_qty = min(flt(batch.qty), remaining_qty)
+			if batch_qty <= 0:
+				continue
+			allocations.append((batch.batch_id, batch_qty))
+			remaining_qty -= batch_qty
+			if remaining_qty <= 0:
+				break
 
-			if not partial_batch:
-				item.qty = allocations[0][1] / conversion_factor
-				item.stock_qty = allocations[0][1]
-				item.batch_no = allocations[0][0]
-				row_data = item.as_dict()
-				for field in ("name", "parent", "parentfield", "parenttype", "idx", "doctype"):
-					row_data.pop(field, None)
-				allocations = allocations[1:]
+		# No candidate batches cover the required qty: show a non-blocking alert
+		# (toast) only, change nothing.
+		if flt(remaining_qty) > 0 or not allocations:
+			frappe.msgprint(
+				_("Insufficient batch stock for Item {0}. Required {1}, available {2}. No changes made.").format(
+					anchor.item_code,
+					flt(required_qty),
+					flt(required_qty) - flt(remaining_qty),
+				),
+				indicator="orange",
+				alert=True,
+			)
+			return
 
-			for batch_no, batch_qty in allocations:
-				new_item = self.append("items", row_data.copy())
-				new_item.qty = batch_qty / conversion_factor
-				new_item.stock_qty = batch_qty
-				new_item.batch_no = batch_no
+		if partial_batch:
+			frappe.msgprint(
+				_("Batch {0} has only {1} qty for Item {2}. Splitting remaining qty to other batches.").format(
+					frappe.bold(partial_batch[0]), partial_batch[1], anchor.item_code
+				),
+				indicator="orange",
+				alert=True,
+			)
+
+		self._apply_allocations(anchor, rows, allocations, conversion_factor)
+
+	def _get_reference_stock_qty(self, item, conversion_factor):
+		if not item.cr_detail:
+			return None
+		cr_item = frappe.db.get_value(
+			"Consignment Request Item",
+			item.cr_detail,
+			["qty", "conversion_factor", "stock_qty"],
+			as_dict=True,
+		)
+		if not cr_item:
+			return None
+		cr_cf = flt(cr_item.conversion_factor) or conversion_factor or 1
+		return flt(cr_item.stock_qty) or flt(cr_item.qty) * cr_cf
+
+	def _apply_allocations(self, anchor, rows, allocations, conversion_factor):
+		# Reuse the anchor row for the first allocation and drop any extra split
+		# rows from a previous run so the result can grow or shrink cleanly.
+		anchor.qty = allocations[0][1] / conversion_factor
+		anchor.stock_qty = allocations[0][1]
+		anchor.batch_no = allocations[0][0]
+
+		row_data = anchor.as_dict()
+		for field in ("name", "parent", "parentfield", "parenttype", "idx", "doctype"):
+			row_data.pop(field, None)
+
+		for extra in rows[1:]:
+			self.remove(extra)
+
+		for batch_no, batch_qty in allocations[1:]:
+			new_item = self.append("items", row_data.copy())
+			new_item.qty = batch_qty / conversion_factor
+			new_item.stock_qty = batch_qty
+			new_item.batch_no = batch_no
 
 	def validate_warehouse(self):
 		# Keep standard warehouse validations (company/disabled checks).
