@@ -234,10 +234,43 @@ class DeliveryNote(SellingController):
 		if not self.delivery_date and delivery_date:
 			self.delivery_date = min(delivery_date)
 
+	def validate_rate_against_so(self):
+		"""Realign item rate with its Sales Order Item.
+
+		When a DN item is split from a single SO line, one of the split rows can
+		end up with rate=0, understating the DN net_total and tripping the
+		over-billing check on downstream Sales Invoices. If a row's rate does not
+		match the linked Sales Order Item rate, reset it from the SO so amounts and
+		totals are recomputed by the standard validate() that follows.
+		"""
+		if self.is_return:
+			return
+
+		so_item_rate = {}
+		for d in self.get("items"):
+			if not d.so_detail:
+				continue
+			if d.so_detail not in so_item_rate:
+				so_item_rate[d.so_detail] = flt(
+					frappe.db.get_value("Sales Order Item", d.so_detail, "rate")
+				)
+			so_rate = so_item_rate[d.so_detail]
+			if not so_rate:
+				continue
+			if flt(d.rate) != so_rate:
+				d.rate = so_rate
+				d.price_list_rate = d.price_list_rate or so_rate
+				d.margin_type = ""
+				d.margin_rate_or_amount = 0
+				d.rate_with_margin = 0
+				d.discount_percentage = 0
+				d.discount_amount = 0
+
 	def validate(self):
 		self.validate_non_stock()
 		self.validate_posting_time()
 		set_auto_batch_rows(self, "warehouse")
+		self.validate_rate_against_so()
 		super(DeliveryNote, self).validate()
 		self.apply_lazada_item_prices()
 		self.set_status()
