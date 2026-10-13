@@ -53,7 +53,7 @@ def update_bom_item(doc, method=""):
 					op.workstation = d.workstation
 					op.calculation_type = "Per KG"
 					op.wages_cost = d.manpower
-					op.electricity_cost = d.electricity
+					op.electrical_cost = d.electricity
 					op.machinery_cost = d.machinery
 					op.consumable_cost = d.consumable
 					
