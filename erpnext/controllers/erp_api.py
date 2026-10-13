@@ -465,6 +465,7 @@ def make_stock_entry_with_materials(wo_doc, job_card_name, materials, wip_wareho
 	# add_operation_additional_costs() called from _submit_work_order_finish_goods.
 	se.additional_costs = []
 
+	se.set_rate_for_outgoing_items()
 	se.set_expense_account()
 	return se
 
