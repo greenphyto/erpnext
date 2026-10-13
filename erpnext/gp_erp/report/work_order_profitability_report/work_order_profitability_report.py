@@ -15,26 +15,27 @@ def execute(filters=None):
 
 def get_columns():
 	return [
-		{"fieldname": "work_order", "label": _("Work Order"), "fieldtype": "Link", "options": "Work Order", "width": 130},
-		{"fieldname": "posting_date", "label": _("Completed On"), "fieldtype": "Date", "width": 100},
-		{"fieldname": "item_code", "label": _("Crop"), "fieldtype": "Link", "options": "Item", "width": 130},
+		{"fieldname": "work_order", "label": _("Work Order"), "fieldtype": "Link", "options": "Work Order", "width": 140},
+		{"fieldname": "posting_date", "label": _("Completed On"), "fieldtype": "Date", "width": 140},
+		{"fieldname": "item_code", "label": _("Crop"), "fieldtype": "Link", "options": "Item", "width": 140},
 		{"fieldname": "item_name", "label": _("Crop Name"), "fieldtype": "Data", "width": 150},
-		{"fieldname": "status", "label": _("Status"), "fieldtype": "Data", "width": 90},
-		{"fieldname": "gross_qty", "label": _("Gross Qty (kg)"), "fieldtype": "Float", "width": 110},
-		{"fieldname": "saleable_qty", "label": _("Saleable Qty (kg)"), "fieldtype": "Float", "width": 120},
-		{"fieldname": "loss_qty", "label": _("Loss Qty (kg)"), "fieldtype": "Float", "width": 100},
-		{"fieldname": "loss_pct", "label": _("Loss %"), "fieldtype": "Percent", "width": 80},
-		{"fieldname": "material_cost", "label": _("Material Cost"), "fieldtype": "Currency", "width": 120},
-		{"fieldname": "manpower_rate", "label": _("Manpower Rate/kg"), "fieldtype": "Currency", "width": 120},
-		{"fieldname": "manpower_cost", "label": _("Manpower Cost"), "fieldtype": "Currency", "width": 110},
-		{"fieldname": "utilities_rate", "label": _("Utilities Rate/kg"), "fieldtype": "Currency", "width": 120},
-		{"fieldname": "utilities_cost", "label": _("Utilities Cost"), "fieldtype": "Currency", "width": 110},
-		{"fieldname": "total_cost", "label": _("Total Cost"), "fieldtype": "Currency", "width": 120},
-		{"fieldname": "cost_per_kg", "label": _("Cost per kg"), "fieldtype": "Currency", "width": 100},
-		{"fieldname": "selling_price", "label": _("Selling Price/kg"), "fieldtype": "Currency", "width": 110},
-		{"fieldname": "sales_value", "label": _("Sales Value"), "fieldtype": "Currency", "width": 110},
-		{"fieldname": "profit", "label": _("Profit/(Loss)"), "fieldtype": "Currency", "width": 120},
-		{"fieldname": "profit_pct", "label": _("Profit %"), "fieldtype": "Percent", "width": 90},
+		{"fieldname": "status", "label": _("Status"), "fieldtype": "Data", "width": 140},
+		{"fieldname": "gross_qty", "label": _("Gross Qty (kg)"), "fieldtype": "Float", "width": 140},
+		{"fieldname": "saleable_qty", "label": _("Saleable Qty (kg)"), "fieldtype": "Float", "width": 140},
+		{"fieldname": "loss_qty", "label": _("Loss Qty (kg)"), "fieldtype": "Float", "width": 140},
+		{"fieldname": "loss_pct", "label": _("Loss %"), "fieldtype": "Percent", "width": 140},
+		{"fieldname": "material_cost", "label": _("Material Cost"), "fieldtype": "Currency", "width": 140},
+		{"fieldname": "manpower_rate", "label": _("Manpower Rate/kg"), "fieldtype": "Currency", "width": 140},
+		{"fieldname": "manpower_cost", "label": _("Manpower Cost"), "fieldtype": "Currency", "width": 140},
+		{"fieldname": "utilities_rate", "label": _("Utilities Rate/kg"), "fieldtype": "Currency", "width": 140},
+		{"fieldname": "utilities_cost", "label": _("Utilities Cost"), "fieldtype": "Currency", "width": 140},
+		{"fieldname": "total_additional_cost", "label": _("Total Additional Cost"), "fieldtype": "Currency", "width": 140},
+		{"fieldname": "total_cost", "label": _("Total Cost"), "fieldtype": "Currency", "width": 140},
+		{"fieldname": "cost_per_kg", "label": _("Cost per kg"), "fieldtype": "Currency", "width": 140},
+		{"fieldname": "selling_price", "label": _("Selling Price/kg"), "fieldtype": "Currency", "width": 140},
+		{"fieldname": "sales_value", "label": _("Sales Value"), "fieldtype": "Currency", "width": 140},
+		{"fieldname": "profit", "label": _("Profit/(Loss)"), "fieldtype": "Currency", "width": 140},
+		{"fieldname": "profit_pct", "label": _("Profit %"), "fieldtype": "Percent", "width": 140},
 	]
 
 
@@ -91,19 +92,44 @@ def get_data(filters):
 
 	wo_names = [d.work_order for d in wos]
 
-	# actual material cost: outgoing value of the Manufacture stock entry only
-	# (Material Transfer entries feed WIP and would double count)
+	# actual material cost: value of raw materials consumed in the Manufacture
+	# stock entry only. Exclude the finished-good row and any scrap row
+	# (scrap goes to a scrap warehouse and is not a material input).
+	# Material Transfer entries feed WIP and would double count.
 	se_costs = frappe.db.sql(
 		"""
-		SELECT work_order, SUM(total_outgoing_value) AS material_cost
-		FROM `tabStock Entry`
-		WHERE docstatus = 1 AND purpose = 'Manufacture' AND work_order IN %(wo_names)s
-		GROUP BY work_order
+		SELECT se.work_order, SUM(sed.basic_amount) AS material_cost
+		FROM `tabStock Entry` se
+			INNER JOIN `tabStock Entry Detail` sed ON sed.parent = se.name
+		WHERE se.docstatus = 1
+			AND se.purpose = 'Manufacture'
+			AND se.work_order IN %(wo_names)s
+			AND sed.s_warehouse IS NOT NULL
+			AND sed.s_warehouse != ''
+			AND IFNULL(sed.is_finished_item, 0) = 0
+			AND IFNULL(sed.is_scrap_item, 0) = 0
+		GROUP BY se.work_order
 		""",
 		{"wo_names": wo_names},
 		as_dict=1,
 	)
 	material_map = {d.work_order: flt(d.material_cost) for d in se_costs}
+
+	# actual additional cost (operating cost: manpower/utilities/etc) booked on
+	# the Manufacture stock entry at finish time, based on saleable qty
+	addl_costs = frappe.db.sql(
+		"""
+		SELECT se.work_order, SUM(se.total_additional_costs) AS additional_cost
+		FROM `tabStock Entry` se
+		WHERE se.docstatus = 1
+			AND se.purpose = 'Manufacture'
+			AND se.work_order IN %(wo_names)s
+		GROUP BY se.work_order
+		""",
+		{"wo_names": wo_names},
+		as_dict=1,
+	)
+	additional_map = {d.work_order: flt(d.additional_cost) for d in addl_costs}
 
 	# last selling price per kg from latest submitted Sales Invoice
 	# SI rate is per sales UOM; convert to item stock uom (kg) via conversion_factor
@@ -133,7 +159,10 @@ def get_data(filters):
 		material_cost = material_map.get(d.work_order, 0)
 		manpower_cost = flt(saleable_qty) * flt(d.manpower_rate)
 		utilities_cost = flt(saleable_qty) * flt(d.utilities_rate)
-		total_cost = material_cost + manpower_cost + utilities_cost
+		# actual additional cost booked on the finish entry (operating cost);
+		# fall back to the rate-card breakdown if nothing was booked
+		total_additional_cost = additional_map.get(d.work_order, 0) or (manpower_cost + utilities_cost)
+		total_cost = material_cost + total_additional_cost
 		selling_price = price_map.get(d.item_code, 0)
 		sales_value = flt(saleable_qty) * selling_price
 		profit = sales_value - total_cost
@@ -153,6 +182,7 @@ def get_data(filters):
 			"manpower_cost": manpower_cost,
 			"utilities_rate": flt(d.utilities_rate),
 			"utilities_cost": utilities_cost,
+			"total_additional_cost": total_additional_cost,
 			"total_cost": total_cost,
 			"cost_per_kg": (total_cost / saleable_qty) if saleable_qty else 0,
 			"selling_price": selling_price,
