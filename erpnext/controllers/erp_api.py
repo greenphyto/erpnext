@@ -459,31 +459,11 @@ def make_stock_entry_with_materials(wo_doc, job_card_name, materials, wip_wareho
 	if missing_warehouses:
 		frappe.throw(f"Warehouse not found: {', '.join(set(missing_warehouses))}")
 
-	# Add additional cost (electricity, wages, etc.)
+	# NOTE: operating cost (electrical/consumable/machinery/wages/rent) is no
+	# longer booked here per operation on gross_weight. Per Finance, the cost
+	# is booked once at the end of the process on the saleable qty, see
+	# add_operation_additional_costs() called from _submit_work_order_finish_goods.
 	se.additional_costs = []
-	expense_account = get_default_expense_production_account(company)
-	cost_fields = ['electrical_cost', 'consumable_cost', 'machinery_cost', 'wages_cost', 'rent_cost']
-	descriptions = {
-		'electrical_cost': "Electrical Cost",
-		'consumable_cost': "Consumable Cost",
-		'machinery_cost': "Machinery Cost",
-		'wages_cost': "Wages Cost",
-		'rent_cost': "Rent Cost"
-	}
-
-	operation_costs = wo_doc.get("operations", {"operation": operation_name})
-	if operation_costs:
-		op_cost = operation_costs[0]
-		gross_weight = flt(wo_doc.gross_weight)
-
-		for field in cost_fields:
-			amount = op_cost.get(field)
-			if amount:
-				cost_row = se.append("additional_costs")
-				cost_row.expense_account = expense_account
-				cost_row.amount = amount * gross_weight
-				cost_row.cost_center = frappe.get_value("Company", company, "cost_center_for_packing")
-				cost_row.description = descriptions[field]
 
 	se.set_expense_account()
 	return se
@@ -776,7 +756,135 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 			"message":"Scheduled"
 		}
 
-def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate="", draft=False):
+def get_saleable_qty(se_doc):
+	"""Net saleable qty = sum of finished-good rows going into a stock
+	warehouse (is_finished_item, has t_warehouse). Excludes process-loss /
+	scrap rows (is_process_loss / is_scrap_item)."""
+	qty = 0
+	for d in se_doc.get("items"):
+		if (
+			d.is_finished_item
+			and d.t_warehouse
+			and not d.get("is_process_loss")
+			and not d.get("is_scrap_item")
+		):
+			qty += flt(d.qty)
+	return qty
+
+
+def add_operation_additional_costs(se_doc, wo_doc, company=""):
+	"""Book operating cost (electrical/consumable/machinery/wages/rent) from
+	the BOM operations as additional costs on the finish Manufacture entry.
+
+	This replaces the per-operation booking that used gross_weight; per
+	Finance the cost is applied once at the end of the process on the net
+	saleable qty (the finished-good rows going into the FG warehouse).
+
+	Reuses the comprehensive cost-field mechanism of the official rate-card
+	path (all BOM operations, all cost fields), only changing WHEN and on
+	WHICH qty it is booked.
+	"""
+	company = company or se_doc.company
+
+	saleable_qty = get_saleable_qty(se_doc)
+	if saleable_qty <= 0:
+		return
+
+	expense_account = get_default_expense_production_account(company)
+	cost_center = frappe.get_value("Company", company, "cost_center_for_packing")
+
+	cost_fields = ["electrical_cost", "consumable_cost", "machinery_cost", "wages_cost", "rent_cost"]
+	descriptions = {
+		"electrical_cost": "Electrical Cost",
+		"consumable_cost": "Consumable Cost",
+		"machinery_cost": "Machinery Cost",
+		"wages_cost": "Wages Cost",
+		"rent_cost": "Rent Cost",
+	}
+
+	# aggregate per-kg rates across all operations of the BOM
+	totals = {f: 0.0 for f in cost_fields}
+	for op in wo_doc.get("operations") or []:
+		for field in cost_fields:
+			totals[field] += flt(op.get(field))
+
+	for field in cost_fields:
+		rate = totals[field]
+		amount = rate * saleable_qty
+		if amount <= 0:
+			continue
+		row = se_doc.append("additional_costs")
+		row.expense_account = expense_account
+		row.amount = amount
+		row.cost_center = cost_center
+		row.description = descriptions[field]
+
+
+def add_rate_card_additional_costs(se_doc, wo_doc, qty):
+	"""Append manpower + utilities (electricity) from the production item's
+	Rate Card (Harvesting operation) as additional costs on the finish
+	Manufacture entry, so the cost is capitalised into the finished-good
+	valuation and posted to GL instead of only shown in reports.
+
+	Rate Card rates are per kg; amount = produced qty * rate.
+	Expense accounts come from the Rate Card (expense_for_manpower /
+	expense_for_electricity). Rows with a missing account or zero amount are
+	skipped.
+
+	NOTE: superseded by add_operation_additional_costs (comprehensive, all
+	cost fields, saleable-qty based). Kept for reference.
+	"""
+	rate_card = frappe.db.get_value("Item", wo_doc.production_item, "rate_card")
+	if not rate_card:
+		return
+
+	rc = frappe.get_doc("Rate Card", rate_card)
+	detail = None
+	for d in rc.rates:
+		if d.operation == "Harvesting":
+			detail = d
+			break
+	if not detail:
+		return
+
+	produced_qty = flt(qty) or flt(wo_doc.qty)
+	cost_center = frappe.get_value("Company", se_doc.company, "cost_center_for_production")
+
+	# the additional-cost GL legs are posted against the finished-good item
+	# row's cost center (see stock_entry.get_gl_entries), so make sure the FG
+	# rows carry one for the P&L expense accounts
+	if cost_center:
+		for d in se_doc.get("items"):
+			if d.t_warehouse and not d.cost_center:
+				d.cost_center = cost_center
+
+	cost_rows = [
+		(flt(detail.manpower), rc.expense_for_manpower, "Manpower (Rate Card)"),
+		(flt(detail.electricity), rc.expense_for_electricity, "Utilities (Rate Card)"),
+	]
+
+	for rate, account, description in cost_rows:
+		amount = flt(rate) * produced_qty
+		if amount <= 0:
+			continue
+		if not account:
+			frappe.msgprint(
+				_("Rate Card {0}: missing expense account for {1}, skipping additional cost").format(
+					rc.name, description
+				)
+			)
+			continue
+
+		row = se_doc.append("additional_costs")
+		row.expense_account = account
+		row.description = description
+		row.amount = amount
+		if cost_center:
+			row.cost_center = cost_center
+
+
+from erpnext.controllers.erp import detect_work_order_different
+def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate="", draft=False, log_name=None):
 	ERPWorkOrderID = erpWorkOrderID
 	data_name = f"Finish Work Order {ERPWorkOrderID}"
 
@@ -852,6 +960,13 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 		child.expense_account = se_doc.expense_loss_account
 
 	se_doc.set_expense_account()
+
+	# Book operating cost (electrical/consumable/machinery/wages/rent) from the
+	# BOM operations once here, on the net saleable qty (finished-good rows).
+	# Replaces the per-operation gross_weight booking in
+	# make_stock_entry_with_materials.
+	add_operation_additional_costs(se_doc, wo_doc, company=se_doc.company)
+
 	se_doc.flags.ignore_double_entries = 1
 
 	if not draft:
