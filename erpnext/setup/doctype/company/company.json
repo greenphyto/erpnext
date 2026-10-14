@@ -106,6 +106,8 @@
   "default_salvage_warehouse",
   "account_for_product_scrap",
   "account_for_raw_material_scrap",
+  "account_for_rnd_item_scrap",
+  "expiry_days_product",
   "column_break_32",
   "stock_received_but_not_billed",
   "default_provisional_account",
@@ -1099,6 +1101,17 @@
    "fieldname": "enable_auto_batch",
    "fieldtype": "Check",
    "label": "Enable Auto Batch"
+  },
+  {
+   "fieldname": "default_accepted_warehouse",
+   "fieldtype": "Link",
+   "label": "Default Accepted Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "expiry_days_product",
+   "fieldtype": "Int",
+   "label": "Expiry Days Product"
   }
  ],
  "icon": "fa fa-building",
@@ -1106,7 +1119,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2026-09-21 12:43:22.574570",
+ "modified": "2026-10-14 10:48:17.784936",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

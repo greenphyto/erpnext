@@ -16,10 +16,9 @@ class ScrapRequest(Document):
 		self.set_scrap_account()
 		 
 	def set_scrap_account(self):
-		rm_account = frappe.db.get_single_value("Stock Settings", "account_for_raw_material_scrap")
-		pr_account = frappe.db.get_single_value("Stock Settings", "account_for_product_scrap")
-		company = self.company if hasattr(self, "company") and self.company else frappe.defaults.get_defaults().get("company")
-		rnd_expense = frappe.db.get_value("Company", company, "default_rnd_expense") if company else None
+		rm_account = frappe.db.get_value("Company", self.company, "account_for_raw_material_scrap")
+		pr_account = frappe.db.get_value("Company", self.company, "account_for_product_scrap")
+		rnd_account = frappe.db.get_value("Company", self.company, "account_for_rnd_item_scrap")
 		for d in self.items:
 			rnd_item = frappe.db.get_value("Item", d.item_code, "rnd_item") if d.item_code else 0
 			if rnd_item:
@@ -42,6 +41,19 @@ class ScrapRequest(Document):
 			elif doc.docstatus == 0:
 				frappe.delete_doc("Stock Entry", doc.stock_entry)
 				doc.db_set("stock_entry", "")
+
+@frappe.whitelist()
+def get_scrap_account(item_group, company=None, item_code=None):
+	if item_code and company and frappe.db.get_value("Item", item_code, "rnd_item"):
+		return frappe.db.get_value("Company", company, "account_for_rnd_item_scrap") or frappe.db.get_value(
+			"Company", company, "account_for_raw_material_scrap"
+		)
+
+	if item_group == "Raw Material":
+		return frappe.db.get_value("Company", company, "account_for_raw_material_scrap")
+	if item_group == "Products":
+		return frappe.db.get_value("Company", company, "account_for_product_scrap")
+	return ""
 
 def create_material_issue(doc, submit=False):
 	stock_entry = frappe.new_doc("Stock Entry")
@@ -88,6 +100,16 @@ def create_material_issue(doc, submit=False):
 		return 
 	
 	stock_entry.set_missing_values()
+	rnd_account = frappe.db.get_value("Company", doc.company, "account_for_rnd_item_scrap")
+	product_account = frappe.db.get_value("Company", doc.company, "account_for_product_scrap")
+	for row in stock_entry.items:
+		item = frappe.db.get_value("Item", row.item_code, ["rnd_item", "item_group"], as_dict=True)
+		if item.rnd_item:
+			row.expense_account = rnd_account or frappe.db.get_value(
+				"Company", doc.company, "account_for_raw_material_scrap"
+			)
+		elif item.item_group == "Products":
+			row.expense_account = product_account
 	stock_entry.insert(ignore_permissions=1)
 	if submit:
 		stock_entry.submit()
@@ -189,13 +211,45 @@ def collect_expired_items():
 
 
 def collect_expired_product(date=""):
-	enable, within_days = frappe.db.get_value("Stock Settings","Stock Settings", ['enable_auto_collect_expired_products', 'expiry_days_product']) or (0,0)
+	enable, default_within_days = frappe.db.get_value("Stock Settings","Stock Settings", ['enable_auto_collect_expired_products', 'expiry_days_product']) or (0,0)
 
 	if not cint(enable):
 		return
-	
-	use_date = add_days(getdate(date), cint(within_days))
+
+	base_date = getdate(date)
+	default_within_days = cint(default_within_days)
 	wip_warehouse = get_wip_warehouse()
+
+	company_gap_cache = {}
+
+	def get_company_gap(company):
+		if company not in company_gap_cache:
+			value = frappe.db.get_value("Company", company, "expiry_days_product")
+			company_gap_cache[company] = cint(value) if value not in (None, "") else default_within_days
+		return company_gap_cache[company]
+
+	warehouse_gap_cache = {}
+
+	def get_warehouse_gap(warehouse, company):
+		if warehouse not in warehouse_gap_cache:
+			value = frappe.db.get_value("Warehouse", warehouse, "expiry_days_product")
+			if value not in (None, ""):
+				warehouse_gap_cache[warehouse] = cint(value)
+			else:
+				warehouse_gap_cache[warehouse] = get_company_gap(company)
+		return warehouse_gap_cache[warehouse]
+
+	# compute the widest cutoff so no candidate batch is missed by the query;
+	# the effective (per-warehouse) gap is applied afterwards in Python
+	gap_values = [default_within_days]
+	gap_values += [cint(v) for v in frappe.db.sql_list(
+		"select expiry_days_product from `tabCompany` where expiry_days_product is not null"
+	)]
+	gap_values += [cint(v) for v in frappe.db.sql_list(
+		"select expiry_days_product from `tabWarehouse` where expiry_days_product is not null"
+	)]
+	max_gap = max(gap_values) if gap_values else default_within_days
+	cutoff_date = add_days(base_date, max_gap)
 
 	# get data
 	# only get expired batch on batch qty non WIP warehouse
@@ -224,7 +278,13 @@ def collect_expired_product(date=""):
 			ORDER BY sle.company, b.expiry_date ASC) a
 		WHERE
 			a.batch_qty > 0
-	""", {"wh":wip_warehouse, "exp":use_date}, as_dict=1, debug=0)
+	""", {"wh":wip_warehouse, "exp":cutoff_date}, as_dict=1, debug=0)
+
+	# apply warehouse-based effective gap (warehouse > company > stock settings)
+	data = [
+		d for d in data
+		if getdate(d.expiry_date) <= add_days(base_date, get_warehouse_gap(d.warehouse, d.company))
+	]
 
 	if not data:
 		return
