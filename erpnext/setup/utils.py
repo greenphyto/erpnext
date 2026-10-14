@@ -11,7 +11,14 @@ import calendar
 from erpnext import get_default_company
 
 
+PRODUCTION_SITES = {"erp-prod", "erp.greenphyto.com"}
+
+
 def before_tests():
+	if frappe.local.site in PRODUCTION_SITES:
+		print(f"Refusing to run tests on production site '{frappe.local.site}'")
+		return
+
 	frappe.clear_cache()
 	# complete setup if missing
 	from frappe.desk.page.setup_wizard.setup_wizard import setup_complete
