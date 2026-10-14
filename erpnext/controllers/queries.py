@@ -8,7 +8,7 @@ from collections import defaultdict
 import frappe
 from frappe import scrub
 from frappe.desk.reportview import get_filters_cond, get_match_cond
-from frappe.utils import nowdate, unique
+from frappe.utils import cint, nowdate, unique
 
 import erpnext
 from erpnext.stock.get_item_details import _get_item_tax_template
@@ -482,7 +482,12 @@ def get_delivery_notes_to_be_billed(doctype, txt, searchfield, start, page_len, 
 def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 	doctype = "Batch"
 	cond = ""
-	if filters.get("posting_date") and not filters.get("allow_expired"):
+	allow_expired = filters.get("allow_expired")
+	if not allow_expired and filters.get("warehouse") and cint(
+		frappe.db.get_value("Warehouse", filters.get("warehouse"), "allow_expired_product")
+	):
+		allow_expired = True
+	if filters.get("posting_date") and not allow_expired:
 		cond = "and (batch.expiry_date is null or batch.expiry_date >= %(posting_date)s)"
 
 	posting_datetime_cond_warehouse = ""

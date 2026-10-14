@@ -453,6 +453,9 @@ def get_batches(item_code, warehouse, qty=1, throw=False, serial_no=None, allow_
 	else:
 		query_values = (item_code, warehouse)
 
+	if not allow_expired and warehouse and cint(frappe.db.get_value("Warehouse", warehouse, "allow_expired_product")):
+		allow_expired = True
+
 	if not allow_expired:
 		cond += " and (`tabBatch`.expiry_date >= CURRENT_DATE or `tabBatch`.expiry_date IS NULL)"
 
