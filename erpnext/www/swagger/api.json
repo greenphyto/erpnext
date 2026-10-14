@@ -1353,7 +1353,30 @@
                 "type": "object",
                 "properties": {
                   "data": {
-                    "type": "object"
+                    "type": "object",
+                    "required": ["salad_item_code", "lot_id", "qty", "children"],
+                    "properties": {
+                      "salad_item_code": {"type": "string"},
+                      "lot_id": {"type": "string"},
+                      "qty": {"type": "number"},
+                      "expiry_date": {"type": "string", "format": "date"},
+                      "warehouse": {"type": "string"},
+                      "children": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": ["item_code", "qty"],
+                          "properties": {
+                            "item_code": {"type": "string"},
+                            "lot_id": {"type": "string"},
+                            "batch_no": {"type": "string"},
+                            "qty": {"type": "number"},
+                            "uom": {"type": "string"},
+                            "warehouse": {"type": "string"}
+                          }
+                        }
+                      }
+                    }
                   }
                 },
                 "examples": {
@@ -1405,6 +1428,16 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "object",
+                      "properties": {
+                        "stock_entry": {"type": "string"},
+                        "batch": {"type": "string"}
+                      }
+                    }
+                  },
                   "example": {
                     "message": {"stock_entry": "RE-00003/2026", "batch": "PR-MX-MES-BN00001"}
                   }
