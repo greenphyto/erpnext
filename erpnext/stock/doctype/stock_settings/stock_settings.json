@@ -61,11 +61,9 @@
   "scrap_tab",
   "scrap_settings_section",
   "enable_auto_collect_residual_raw_material",
-  "account_for_raw_material_scrap",
   "column_break_58",
   "enable_auto_collect_expired_products",
-  "expiry_days_product",
-  "account_for_product_scrap"
+  "expiry_days_product"
  ],
  "fields": [
   {
@@ -375,18 +373,6 @@
    "label": "Block Batch Splitting Transaction"
   },
   {
-   "fieldname": "account_for_raw_material_scrap",
-   "fieldtype": "Link",
-   "label": "Account for Raw Material Scrap",
-   "options": "Account"
-  },
-  {
-   "fieldname": "account_for_product_scrap",
-   "fieldtype": "Link",
-   "label": "Account for Product Scrap",
-   "options": "Account"
-  },
-  {
    "default": "0",
    "fieldname": "enable_auto_collect_expired_products",
    "fieldtype": "Check",
@@ -420,7 +406,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-09-17 15:10:52.621105",
+ "modified": "2026-10-14 10:58:58.379901",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Stock Settings",
