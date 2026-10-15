@@ -3001,11 +3001,6 @@ def submit_salad_finished_goods(data):
 	map_doc.doc_name = se.name
 	map_doc.save()
 
-	for item in se.items:
-		if not item.is_finished_item and item.batch_no:
-			if frappe.db.exists("Batch", item.batch_no):
-				frappe.db.set_value("Batch", item.batch_no, "is_salad_batch", 1)
-
 	frappe.db.commit()
 
 	return {"stock_entry": se.name, "batch": finished_row.batch_no}
