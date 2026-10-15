@@ -302,8 +302,6 @@ def collect_expired_product(date=""):
 			filtered.append(d)
 	data = filtered
 
-	print(data)
-	return
 
 	if not data:
 		return
