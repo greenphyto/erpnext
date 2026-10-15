@@ -74,7 +74,7 @@ def get_data(filters):
 			wo.actual_start_date,
 			wo.actual_end_date,
 			rcd.manpower AS manpower_rate,
-			rcd.electricity AS utilities_rate
+			rcd.utilities AS utilities_rate
 		FROM `tabWork Order` wo
 			INNER JOIN `tabItem` i ON i.name = wo.production_item
 			LEFT JOIN `tabRate Card` rc ON rc.name = i.rate_card

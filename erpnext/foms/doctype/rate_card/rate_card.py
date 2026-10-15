@@ -17,7 +17,7 @@ class RateCard(Document):
 					"workstation_name": workstation_name,
 					"operation": d.operation,
 					"calculation_type": "Per KG",
-					"per_qty_rate_electricity": d.electricity,	
+					"per_qty_rate_electricity": d.utilities,	
 					"per_qty_rate_wages": d.manpower,
 					"per_qty_rate_machinery": d.machinery,
 					"per_qty_rate_consumable": d.consumable,
@@ -27,7 +27,7 @@ class RateCard(Document):
 			else:
 				# update existsing workstation rates
 				ws = frappe.get_doc("Workstation", d.workstation)
-				ws.per_qty_rate_electricity = d.electricity
+				ws.per_qty_rate_electricity = d.utilities
 				ws.per_qty_rate_wages = d.manpower
 				ws.per_qty_rate_machinery = d.machinery
 				ws.per_qty_rate_consumable = d.consumable
@@ -53,7 +53,7 @@ def update_bom_item(doc, method=""):
 					op.workstation = d.workstation
 					op.calculation_type = "Per KG"
 					op.wages_cost = d.manpower
-					op.electrical_cost = d.electricity
+					op.electrical_cost = d.utilities
 					op.machinery_cost = d.machinery
 					op.consumable_cost = d.consumable
 					
