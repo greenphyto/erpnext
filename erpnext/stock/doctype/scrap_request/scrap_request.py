@@ -220,12 +220,17 @@ def collect_expired_product(date=""):
 	default_within_days = cint(default_within_days)
 	wip_warehouse = get_wip_warehouse()
 
+	# a gap is considered "unset" when it is None, blank or 0 (Int fields
+	# default to 0 in the db), in which case it falls back to the next level
+	def is_set(value):
+		return value not in (None, "") and cint(value) != 0
+
 	company_gap_cache = {}
 
 	def get_company_gap(company):
 		if company not in company_gap_cache:
 			value = frappe.db.get_value("Company", company, "expiry_days_product")
-			company_gap_cache[company] = cint(value) if value not in (None, "") else default_within_days
+			company_gap_cache[company] = cint(value) if is_set(value) else default_within_days
 		return company_gap_cache[company]
 
 	warehouse_gap_cache = {}
@@ -233,20 +238,21 @@ def collect_expired_product(date=""):
 	def get_warehouse_gap(warehouse, company):
 		if warehouse not in warehouse_gap_cache:
 			value = frappe.db.get_value("Warehouse", warehouse, "expiry_days_product")
-			if value not in (None, ""):
+			if is_set(value):
 				warehouse_gap_cache[warehouse] = cint(value)
 			else:
 				warehouse_gap_cache[warehouse] = get_company_gap(company)
 		return warehouse_gap_cache[warehouse]
 
 	# compute the widest cutoff so no candidate batch is missed by the query;
-	# the effective (per-warehouse) gap is applied afterwards in Python
+	# the effective (per-warehouse) gap is applied afterwards in Python.
+	# only non-zero values count as an explicit gap (0 means "unset")
 	gap_values = [default_within_days]
 	gap_values += [cint(v) for v in frappe.db.sql_list(
-		"select expiry_days_product from `tabCompany` where expiry_days_product is not null"
+		"select expiry_days_product from `tabCompany` where ifnull(expiry_days_product, 0) != 0"
 	)]
 	gap_values += [cint(v) for v in frappe.db.sql_list(
-		"select expiry_days_product from `tabWarehouse` where expiry_days_product is not null"
+		"select expiry_days_product from `tabWarehouse` where ifnull(expiry_days_product, 0) != 0"
 	)]
 	max_gap = max(gap_values) if gap_values else default_within_days
 	cutoff_date = add_days(base_date, max_gap)
