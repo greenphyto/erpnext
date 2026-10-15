@@ -248,45 +248,12 @@ def collect_expired_product(date=""):
 		return
 
 	base_date = getdate(date)
-	default_within_days = cint(default_within_days)
+	default_within_days = flt(default_within_days)
 	wip_warehouse = get_wip_warehouse()
 
-	# a gap is considered "unset" when it is None, blank or 0 (Int fields
-	# default to 0 in the db), in which case it falls back to the next level
-	def is_set(value):
-		return value not in (None, "") and cint(value) != 0
-
-	company_gap_cache = {}
-
-	def get_company_gap(company):
-		if company not in company_gap_cache:
-			value = frappe.db.get_value("Company", company, "expiry_days_product")
-			company_gap_cache[company] = cint(value) if is_set(value) else default_within_days
-		return company_gap_cache[company]
-
-	warehouse_gap_cache = {}
-
-	def get_warehouse_gap(warehouse, company):
-		if warehouse not in warehouse_gap_cache:
-			value = frappe.db.get_value("Warehouse", warehouse, "expiry_days_product")
-			if is_set(value):
-				warehouse_gap_cache[warehouse] = cint(value)
-			else:
-				warehouse_gap_cache[warehouse] = get_company_gap(company)
-		return warehouse_gap_cache[warehouse]
-
-	# compute the widest cutoff so no candidate batch is missed by the query;
-	# the effective (per-warehouse) gap is applied afterwards in Python.
-	# only non-zero values count as an explicit gap (0 means "unset")
-	gap_values = [default_within_days]
-	gap_values += [cint(v) for v in frappe.db.sql_list(
-		"select expiry_days_product from `tabCompany` where ifnull(expiry_days_product, 0) != 0"
-	)]
-	gap_values += [cint(v) for v in frappe.db.sql_list(
-		"select expiry_days_product from `tabWarehouse` where ifnull(expiry_days_product, 0) != 0"
-	)]
-	max_gap = max(gap_values) if gap_values else default_within_days
-	cutoff_date = add_days(base_date, max_gap)
+	# get all batches already expired as of today; the per-warehouse gap is
+	# applied per row below to decide which ones are actually collected
+	cutoff_date = base_date
 
 	# get data
 	# only get expired batch on batch qty non WIP warehouse
@@ -317,11 +284,26 @@ def collect_expired_product(date=""):
 			a.batch_qty > 0
 	""", {"wh":wip_warehouse, "exp":cutoff_date}, as_dict=1, debug=0)
 
-	# apply warehouse-based effective gap (warehouse > company > stock settings)
-	data = [
-		d for d in data
-		if getdate(d.expiry_date) <= add_days(base_date, get_warehouse_gap(d.warehouse, d.company))
-	]
+	# cache gaps so we don't hit the db for every row
+	warehouse_gaps = {}
+	company_gaps = {}
+
+	# apply effective gap per row: warehouse -> company -> stock settings
+	# (0 is falsy so it falls back to the next level)
+	filtered = []
+	for d in data:
+		if d.warehouse not in warehouse_gaps:
+			warehouse_gaps[d.warehouse] = flt(frappe.db.get_value("Warehouse", d.warehouse, "expiry_days_product"))
+		if d.company not in company_gaps:
+			company_gaps[d.company] = flt(frappe.db.get_value("Company", d.company, "expiry_days_product"))
+
+		gap_value = warehouse_gaps[d.warehouse] or company_gaps[d.company] or default_within_days
+		if getdate(d.expiry_date) <= add_days(base_date, gap_value):
+			filtered.append(d)
+	data = filtered
+
+	print(data)
+	return
 
 	if not data:
 		return
