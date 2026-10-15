@@ -2670,3 +2670,273 @@ def get_cost_account(item_code, company):
 		data['Consumable Cost'] = res.expense_for_consumable
 	
 	return frappe._dict(data)
+
+def check_missing_wo_rate(doc, method=""):	
+	zero_rate = False
+	for d in doc.required_items:
+		if d.rate == 0:
+			zero_rate = True
+			break
+
+	if zero_rate:
+		notif = frappe.get_doc("Notification", "Missing Work Order Rate")
+		notif.send(doc)
+
+def check_missing_se_rate(doc, method=""):	
+	zero_rate = False
+	for d in doc.items:
+		if d.basic_rate == 0:
+			zero_rate = True
+			break
+
+	if zero_rate:
+		notif = frappe.get_doc("Notification", "Missing rate Stock Entry")
+		notif.send(doc)
+
+def extract_variant(item_code):
+	# extract variant from item code, example: ["ZOT12", "RM-NS-NPA", "PD-001"] => variant is 12, NPA, 001
+	parts = item_code.split("-")
+	if len(parts) > 1:
+		return parts[-1]
+
+	match = re.search(r"(\d+)$", item_code or "")
+	if match:
+		return match.group(1)
+
+	# Temporary
+
+	return item_code
+
+@frappe.whitelist()
+def create_new_foms_item(item_code):
+	"""
+		Create new item when receive new item from FOMS, to avoid issue with existing item that already link with other data in ERP
+	"""
+	api = FomsAPI()
+	farm_id = get_farm_id()
+	item = frappe.get_doc("Item", item_code)
+	# if item.foms_raw_id:
+	# 	return "Already Exists"
+	
+	allowed_groups = [
+		"Miscellaneous",
+		"Accessories",
+		"Tooling & Moulding",
+		"Trays & Boards",
+		"Power Connector",
+		"Dimmer Controller",
+		"Gataway",
+		"LED",
+		"Other Packaging",
+		"Nutrition",
+		"Seeds",
+		"Herbs"
+	]
+	# check item group
+	if item.material_group not in allowed_groups:
+		return "Not Allowed Group"
+	exist_group = api.get_item_category(farm_id, item.material_group)
+	if not exist_group:
+		# create
+		shortform = frappe.get_value("Material Group", item.material_group, "shortform")
+		temp = api.create_item_category(farm_id, item.material_group, shortform)
+		frappe.db.set_value("Material Group", item.material_group, "foms_id", temp.get("id"))
+		exist_group = api.get_item_category(farm_id, item.material_group)
+
+	exist_material = []
+	foms_category_id = 0
+	foms_variant_id = 0
+	item_variant_code = extract_variant(item.item_code)
+	for d in exist_group:
+		foms_category_id = d.get("id")
+		for x in d.get("rawMaterialVariantTypes"):
+			exist_material.append(x.get("variantTypeShortForm"))
+			if x.get("variantTypeShortForm") == item_variant_code:
+				foms_variant_id = x.get("id")
+	
+	# check product variance
+	if item_variant_code and item_variant_code not in exist_material:
+		temp = api.create_product_variant(item.foms_variant_id, foms_category_id, item.item_name, item_variant_code)
+		item.db_set("foms_variant_id", temp.get("id") or item.foms_variant_id)
+		foms_variant_id = temp.get("id")
+	else:
+		if not item.foms_variant_id:
+			item.db_set("foms_variant_id", foms_variant_id)
+
+	# check product
+	default_safety_level = 1000
+	default_min_level = 100
+	foms_uom = UOM_MAP_REV.get(item.stock_uom) or "unit"
+	data = {
+		"isDraft": False,
+		"isSeed": False,
+		"isNutrient": False,
+		"rawMaterialMapping": {},
+		"maximumLevel": 99999,
+		"minimumOrderQuantity": item.min_order_qty or default_min_level,
+		"batches": [],
+		"rawMaterialRefNo": item.item_code,
+		"rawMaterialName": item.item_name,
+		"rawMaterialDescription": strip_html_tags(item.description),
+		"rawMaterialTypeId": foms_category_id,
+		"rawMaterialVariantTypeId": item.foms_variant_id,
+		"unitOfMeasurement": foms_uom,
+		"safetyLevel": item.safety_stock or default_safety_level,
+		"requestLeadTime": item.lead_time_days or 21,
+		"FarmId": farm_id
+	}
+
+	if item.foms_raw_id:
+		data["id"] = item.foms_raw_id
+
+	temp = api.create_raw_material_on_foms(data)
+	if temp:
+		item.db_set("foms_raw_id", temp.get("id"))
+		item.foms_raw_id = temp.get("id")
+
+	if item.foms_raw_id:
+		batches = get_available_batch(item.item_code, 0, True, company="Greenphyto Pte Ltd")
+		for d in batches:
+			create_foms_batch(d.batch_id, d.warehouse, d.qty)
+
+	return item.name
+
+@frappe.whitelist()
+def submit_salad_finished_goods(data):
+	if isinstance(data, str):
+		data = json.loads(data)
+
+	data = frappe._dict(data)
+	salad_item_code = data.get("salad_item_code")
+	salad_lot_id = data.get("lot_id")
+	qty = flt(data.get("qty"))
+	expiry_date = data.get("expiry_date")
+	warehouse = data.get("warehouse")
+	children = data.get("children") or []
+
+	if not salad_item_code:
+		frappe.throw(_("Missing salad_item_code"), frappe.ValidationError)
+	if not salad_lot_id:
+		frappe.throw(_("Missing lot_id"), frappe.ValidationError)
+	if not qty:
+		frappe.throw(_("Missing qty"), frappe.ValidationError)
+	if not children:
+		frappe.throw(_("Missing children materials"), frappe.ValidationError)
+
+	item_data = frappe.get_value("Item", salad_item_code, ["name", "salad_product", "default_bom", "default_packaging", "has_batch_no"], as_dict=True)
+	if not item_data:
+		frappe.throw(_(f"Item {salad_item_code} not found"), frappe.DoesNotExistError)
+	if not cint(item_data.salad_product):
+		frappe.throw(_(f"Item {salad_item_code} is not a salad product"), frappe.ValidationError)
+
+	if not cint(item_data.has_batch_no):
+		frappe.db.set_value("Item", salad_item_code, "has_batch_no", 1)
+
+	fg_warehouse = warehouse or frappe.db.get_single_value("Manufacturing Settings", "default_fg_warehouse")
+
+	se = frappe.new_doc("Stock Entry")
+	se.stock_entry_type_view = "Repack"
+	se.naming_series = frappe.get_value("Stock Entry Type", "Repack", "series") or "STE-RPK-.YYYY.-"
+	se.purpose = "Repack"
+	se.bom_no = item_data.default_bom
+	se.from_bom = 1
+	se.fg_completed_qty = qty
+	se.to_warehouse = fg_warehouse
+	se.fom_lot__id = salad_lot_id
+
+	packaging = frappe.db.get_value(
+		"Packaging List Available",
+		{"parent": salad_item_code, "parentfield": "packaging", "default": 1},
+		["packaging", "package_item"],
+		as_dict=True,
+	)
+	pack_item = (packaging and packaging.package_item) or frappe.db.get_single_value(
+		"Manufacturing Settings", "default_packaging"
+	)
+	packaging_uom = item_data.default_packaging
+	packaging_size = frappe.db.get_value(
+		"UOM Conversion Detail",
+		{"parent": salad_item_code, "uom": packaging_uom},
+		"conversion_factor",
+	)
+	if pack_item and packaging_uom and flt(packaging_size):
+		pack_qty = flt(qty) * 1000 / flt(packaging_size)
+		pack_batch = get_available_batch(pack_item, pack_qty)
+		if pack_batch:
+			pack_row = se.append("items")
+			pack_row.item_code = pack_item
+			pack_row.qty = pack_qty
+			pack_row.uom = frappe.get_value("Item", pack_item, "stock_uom")
+			pack_row.s_warehouse = pack_batch[0].get("warehouse")
+			pack_row.batch_no = pack_batch[0].get("batch_id")
+
+	for child in children:
+		child = frappe._dict(child)
+		batch_no = child.get("batch_no")
+		lot_id = child.get("lot_id")
+
+		if not batch_no and lot_id:
+			batch_no = get_batch_from_lot_id(lot_id)
+			if not batch_no:
+				frappe.throw(_(f"No finished goods batch found for lot_id {lot_id}"), frappe.ValidationError)
+
+		if not batch_no:
+			frappe.throw(_(f"Missing batch_no or lot_id for child item {child.get('item_code')}"), frappe.ValidationError)
+
+		if not frappe.db.exists("Batch", batch_no):
+			frappe.throw(_(f"Batch {batch_no} does not exist"), frappe.DoesNotExistError)
+
+		child_warehouse = child.get("warehouse") or fg_warehouse
+		row = se.append("items")
+		row.item_code = child.item_code
+		row.qty = flt(child.qty)
+		row.uom = get_uom(child.get("uom") or "kg")
+		row.s_warehouse = child_warehouse
+		row.batch_no = batch_no
+
+	finished_row = se.append("items")
+	finished_row.item_code = salad_item_code
+	finished_row.qty = qty
+	finished_row.uom = frappe.get_value("Item", salad_item_code, "stock_uom") or "Kg"
+	finished_row.t_warehouse = fg_warehouse
+	finished_row.is_finished_item = 1
+
+	if not cint(frappe.get_value("Item", salad_item_code, "create_new_batch")):
+		frappe.db.set_value("Item", salad_item_code, "create_new_batch", 1)
+
+	batch_doc = frappe.new_doc("Batch")
+	batch_doc.item = salad_item_code
+	batch_doc.qty_to_produce = qty
+	batch_doc.reference_doctype = "Stock Entry"
+	batch_doc.expiry_date = expiry_date
+	batch_doc.foms_lot_id = salad_lot_id
+	batch_doc.flags.ignore_permissions = 1
+	batch_doc.insert()
+	finished_row.batch_no = batch_doc.name
+
+	se.flags.ignore_permissions = 1
+	se.save()
+	se.submit()
+
+	map_doc = create_foms_data(
+		"Stock Entry",
+		se.name,
+		data,
+		endpoint="submit_salad_finished_goods",
+	)
+	map_doc.doc_type = "Stock Entry"
+	map_doc.doc_name = se.name
+	map_doc.save()
+
+	for item in se.items:
+		if not item.is_finished_item and item.batch_no:
+			if frappe.db.exists("Batch", item.batch_no):
+				frappe.db.set_value("Batch", item.batch_no, "is_salad_batch", 1)
+
+	frappe.db.commit()
+
+	return {"stock_entry": se.name, "batch": finished_row.batch_no}
+
+
+def get_batch_from_lot_id(lot_id):
+	return frappe.db.get_value("Batch", {"foms_lot_id": lot_id}, "name")
