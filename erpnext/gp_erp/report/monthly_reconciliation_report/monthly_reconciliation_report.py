@@ -78,15 +78,15 @@ def get_component_account_map(company):
 	rows = frappe.get_all(
 		"Rate Card",
 		filters={"company": company},
-		fields=["expense_for_manpower", "expense_for_electricity"],
+		fields=["expense_for_manpower", "expense_for_utilities"],
 	)
 
 	accounts = {}
 	for d in rows:
 		if d.expense_for_manpower:
 			accounts.setdefault("Manpower", d.expense_for_manpower)
-		if d.expense_for_electricity:
-			accounts.setdefault("Utilities", d.expense_for_electricity)
+		if d.expense_for_utilities:
+			accounts.setdefault("Utilities", d.expense_for_utilities)
 
 	if not accounts:
 		default_account = frappe.db.get_value("Company", company, "default_cost_expense_account")
@@ -106,7 +106,7 @@ def get_wo_absorption(filters):
 			DATE_FORMAT(wo.actual_end_date, '%%Y-%%m') AS period,
 			SUM(wo.produced_qty) AS produced_qty,
 			SUM(wo.produced_qty * rcd.manpower) AS manpower_amount,
-			SUM(wo.produced_qty * rcd.electricity) AS utilities_amount
+			SUM(wo.produced_qty * rcd.utilities) AS utilities_amount
 		FROM `tabWork Order` wo
 			INNER JOIN `tabItem` i ON i.name = wo.production_item
 			INNER JOIN `tabRate Card` rc ON rc.name = i.rate_card

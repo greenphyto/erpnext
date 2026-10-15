@@ -11,7 +11,7 @@
   "title",
   "rates",
   "account_settings_section",
-  "expense_for_electricity",
+  "expense_for_utilities",
   "expense_for_manpower",
   "column_break_7",
   "expense_for_machinery",
@@ -47,7 +47,7 @@
    "label": "Account Settings"
   },
    {
-    "fieldname": "expense_for_electricity",
+    "fieldname": "expense_for_utilities",
     "fieldtype": "Link",
     "label": "Expense for Utilities",
     "options": "Account"
@@ -79,7 +79,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-27 17:47:15.191332",
+ "modified": "2026-01-27 17:47:16.191332",
  "modified_by": "Administrator",
  "module": "FOMS",
  "name": "Rate Card",

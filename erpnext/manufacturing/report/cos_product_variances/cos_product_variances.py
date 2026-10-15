@@ -11,7 +11,7 @@ def execute(filters=None):
 class Report():
 	def __init__(self, filters):
 		self.filters = filters
-		self.cost_type = ["Electrical", "Consumable", "Machinery", "Wages"]
+		self.cost_type = ["Utilities", "Consumable", "Machinery", "Wages"]
 
 	def setup_condition(self):
 		self.cond = ""

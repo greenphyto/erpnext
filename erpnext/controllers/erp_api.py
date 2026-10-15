@@ -817,7 +817,7 @@ def add_operation_additional_costs(se_doc, wo_doc, company=""):
 
 	cost_fields = ["electrical_cost", "consumable_cost", "machinery_cost", "wages_cost", "rent_cost"]
 	descriptions = {
-		"electrical_cost": "Electrical Cost",
+		"electrical_cost": "Utilities Cost",
 		"consumable_cost": "Consumable Cost",
 		"machinery_cost": "Machinery Cost",
 		"wages_cost": "Wages Cost",
@@ -850,7 +850,7 @@ def add_rate_card_additional_costs(se_doc, wo_doc, qty):
 
 	Rate Card rates are per kg; amount = produced qty * rate.
 	Expense accounts come from the Rate Card (expense_for_manpower /
-	expense_for_electricity). Rows with a missing account or zero amount are
+	expense_for_utilities). Rows with a missing account or zero amount are
 	skipped.
 
 	NOTE: superseded by add_operation_additional_costs (comprehensive, all
@@ -882,7 +882,7 @@ def add_rate_card_additional_costs(se_doc, wo_doc, qty):
 
 	cost_rows = [
 		(flt(detail.manpower), rc.expense_for_manpower, "Manpower (Rate Card)"),
-		(flt(detail.electricity), rc.expense_for_electricity, "Utilities (Rate Card)"),
+		(flt(detail.utilities), rc.expense_for_utilities, "Utilities (Rate Card)"),
 	]
 
 	for rate, account, description in cost_rows:

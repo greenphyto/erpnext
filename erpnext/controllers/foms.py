@@ -2724,7 +2724,7 @@ def get_cost_account(item_code, company):
 	res = frappe.db.sql("""
 		SELECT 
 			i.item_code,
-			r.expense_for_electricity,
+			r.expense_for_utilities,
 			r.expense_for_manpower,
 			r.expense_for_machinery,
 			r.expense_for_consumable
@@ -2737,7 +2737,7 @@ def get_cost_account(item_code, company):
 			""", (item_code), as_dict=1)
 	if res:		 
 		res = res[0]
-		data['Electrical Cost'] = res.expense_for_electricity
+		data['Utilities Cost'] = res.expense_for_utilities
 		data['Wages Cost'] = res.expense_for_manpower
 		data['Machinery Cost'] = res.expense_for_machinery
 		data['Consumable Cost'] = res.expense_for_consumable
