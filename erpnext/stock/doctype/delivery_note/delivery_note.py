@@ -565,8 +565,6 @@ class DeliveryNote(SellingController):
 			self.check_credit_limit()
 		elif self.issue_credit_note:
 			self.make_return_invoice()
-		self.validate_salad_stock_availability()
-		self.create_salad_repack_entries()
 		# Updating stock ledger should always be called after updating prevdoc status,
 		# because updating reserved qty in bin depends upon updated delivered qty in SO
 		self.update_stock_ledger()
@@ -581,57 +579,6 @@ class DeliveryNote(SellingController):
 	def clear_foms_id(self):
 		if self.foms_id:
 			self.foms_id = None
-
-	def validate_salad_stock_availability(self):
-		from erpnext.stock.doctype.batch.batch import get_available_batch
-		from frappe.utils import nowdate
-
-		errors = []
-		for d in self.get("items"):
-			is_salad, bom_name = frappe.get_value("Item", d.item_code, ["salad_product", "default_bom"]) or (0, None)
-			if not is_salad or not bom_name:
-				continue
-
-			bom = frappe.get_doc("BOM", bom_name)
-			for item in bom.get("items"):
-				conversion = flt(item.conversion_factor) or (flt(item.stock_qty) / flt(item.qty) if flt(item.qty) else 1)
-				required_qty = flt(item.stock_qty * d.qty, 2)
-				batches = get_available_batch(item.item_code, 0, skip_wip_warehouse=True, company=self.company, date=nowdate())
-				available_qty = flt(sum(flt(b.qty) for b in batches), 2)
-				if available_qty < required_qty:
-					shortage = flt(required_qty - available_qty, 2)
-					errors.append(
-						_("Row #{0}: Salad item {1} requires {2} {3} of {4}, but only {5} available (shortage: {6})").format(
-							d.idx, d.item_code, required_qty, item.stock_uom, item.item_code, available_qty, shortage
-						)
-					)
-
-		if errors:
-			frappe.throw("<br>".join(errors), title=_("Insufficient Stock for Salad Items"))
-
-	def create_salad_repack_entries(self):
-		from erpnext.controllers.foms import create_repack_entry
-		from frappe.utils import nowdate, add_days, getdate
-
-		for d in self.get("items"):
-			is_salad, bom_name = frappe.get_value("Item", d.item_code, ["salad_product", "default_bom"]) or (0, None)
-			if not is_salad or not bom_name:
-				continue
-
-			bom = frappe.get_doc("BOM", bom_name)
-			storage_duration = cint(bom.storage_duration) or 14
-			expiry_date = add_days(getdate(nowdate()), storage_duration)
-
-			se_name = create_repack_entry(bom_name, d.qty, expiry_date, submit=True, warehouse=d.warehouse)
-			if se_name:
-				frappe.db.set_value("Stock Entry", se_name, "delivery_note_no", self.name)
-				d.db_set("stock_entry_repack", se_name)
-				frappe.msgprint(
-					_("Repack Stock Entry {0} created for salad item {1}").format(
-						frappe.utils.get_link_to_form("Stock Entry", se_name), d.item_code
-					),
-					alert=True
-				)
 
 	def set_other_reff(self):
 		invoice = False
