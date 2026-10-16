@@ -14,7 +14,7 @@ DATA = {
 	"PR-LV-LI": {"utilities": 1.6806, "manpower": 2.27},  # Mambo
 	"PR-LV-CO": {"utilities": 1.7522, "manpower": 2.27},  # Coco
 	"PR-LV-CR": {"utilities": 1.6211, "manpower": 2.27},  # Crystal
-	"PR-AV-KL": {"utilities": 2.2573, "manpower": 2.27},  # Kailan
+	"PR-AV-KL": {"utilities": 2.2788, "manpower": 2.27},  # Kailan
 	"PR-AV-KOM": {"utilities": 1.6716, "manpower": 2.27},  # Koma
 	"JTO": {"utilities": 3.7474, "manpower": 3.41},  # JTO (item_code belum ada)
 	"PR-AV-NB": {"utilities": 2.0311, "manpower": 2.27},  # Nai Bai
