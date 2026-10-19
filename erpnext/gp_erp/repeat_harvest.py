@@ -69,6 +69,7 @@ def generate_repeat_harvest_work_orders(doc, method=""):
 				"production_item": rhi_data.item,
 				"bom_no": bom,
 				"qty": doc.qty,
+				"gross_weight": doc.gross_weight or doc.qty,
 				"company": doc.company,
 				"fg_warehouse": doc.fg_warehouse,
 				"wip_warehouse": doc.wip_warehouse,
