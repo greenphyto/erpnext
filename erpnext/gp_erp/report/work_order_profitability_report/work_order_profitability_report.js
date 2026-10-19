@@ -43,5 +43,11 @@ frappe.query_reports["Work Order Profitability Report"] = {
 			fieldtype: "Check",
 			default: 0,
 		},
+		{
+			fieldname: "hide_no_cost",
+			label: __("Hide Work Orders Without Cost"),
+			fieldtype: "Check",
+			default: 1,
+		},
 	],
 };

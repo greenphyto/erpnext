@@ -115,22 +115,6 @@ def get_data(filters):
 	)
 	material_map = {d.work_order: flt(d.material_cost) for d in se_costs}
 
-	# actual additional cost (operating cost: manpower/utilities/etc) booked on
-	# the Manufacture stock entry at finish time, based on saleable qty
-	addl_costs = frappe.db.sql(
-		"""
-		SELECT se.work_order, SUM(se.total_additional_costs) AS additional_cost
-		FROM `tabStock Entry` se
-		WHERE se.docstatus = 1
-			AND se.purpose = 'Manufacture'
-			AND se.work_order IN %(wo_names)s
-		GROUP BY se.work_order
-		""",
-		{"wo_names": wo_names},
-		as_dict=1,
-	)
-	additional_map = {d.work_order: flt(d.additional_cost) for d in addl_costs}
-
 	# last selling price per kg from latest submitted Sales Invoice
 	# SI rate is per sales UOM; convert to item stock uom (kg) via conversion_factor
 	item_prices = frappe.db.sql(
@@ -159,13 +143,16 @@ def get_data(filters):
 		material_cost = material_map.get(d.work_order, 0)
 		manpower_cost = flt(saleable_qty) * flt(d.manpower_rate)
 		utilities_cost = flt(saleable_qty) * flt(d.utilities_rate)
-		# actual additional cost booked on the finish entry (operating cost);
-		# fall back to the rate-card breakdown if nothing was booked
-		total_additional_cost = additional_map.get(d.work_order, 0) or (manpower_cost + utilities_cost)
+		# additional cost (operating cost) is derived from the latest rate card
+		# rates (manpower/utilities) applied to the saleable qty
+		total_additional_cost = manpower_cost + utilities_cost
 		total_cost = material_cost + total_additional_cost
 		selling_price = price_map.get(d.item_code, 0)
 		sales_value = flt(saleable_qty) * selling_price
 		profit = sales_value - total_cost
+
+		if filters.get("hide_no_cost") and not flt(d.manpower_rate) and not flt(d.utilities_rate):
+			continue
 
 		data.append({
 			"work_order": d.work_order,
