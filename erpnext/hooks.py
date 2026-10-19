@@ -478,6 +478,22 @@ doc_events = {
 	},
     ("Purchase Order","Purchase Receipt","Purchase Invoice"):{
         "on_submit":"erpnext.controllers.erp.auto_create_selling_from_internal"
+	},
+    "Material Request":{
+        "validate": "erpnext.controllers.erp.detection_incoming_rate_not_logic"
+	},
+    "Work Order":{
+        "on_submit":"erpnext.controllers.foms.check_missing_wo_rate"
+	},
+    "Batch":{
+        "on_update":"erpnext.controllers.foms.sync_log",
+        "on_submit":[
+            "erpnext.controllers.foms.check_missing_wo_rate",
+            "erpnext.gp_erp.repeat_harvest.generate_repeat_harvest_work_orders"
+        ],
+        "on_cancel":[
+            "erpnext.gp_erp.repeat_harvest.handle_wo_cancellation"
+        ]
 	}
 }
 
