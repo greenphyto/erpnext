@@ -165,15 +165,21 @@ def update_item_safety_stock(item_code: str, safety_stock, company):
 	return result
 
 def save_log(doctype, data_name, raw_data, reopen=False, now=False, endpoint=""):
+	if frappe.conf.testing_site or frappe.conf.testing_sites:
+		now = 1
+		
 	return frappe.enqueue("erpnext.foms.doctype.foms_data_mapping.foms_data_mapping.create_foms_data",
+		now=now,
 		data_type=doctype, 
 		data_name=data_name,
 		raw=raw_data,
 		reopen=reopen,
-		now=now,
+		endpoint=endpoint
 	)
 
-def update_log(doctype, data_name, result_doctype, result, now=False):
+def update_log(doctype, data_name, result_doctype, result, now=False, name_id=None):
+	if frappe.conf.testing_site or frappe.conf.testing_sites:
+		now = 1
 	if now:
 		update_data_result(
 			data_type=doctype, 

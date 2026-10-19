@@ -7,8 +7,12 @@ def generate_repeat_harvest_work_orders(doc, method=""):
 	Checks if production_item has an active Repeat Harvest Group,
 	then generates child Work Orders for each configured harvest item."""
 
+	# Skip if the Repeat Harvest feature is not installed on this site
+	if not frappe.db.exists("DocType", "Repeat Harvest Group"):
+		return
+
 	# Skip if this WO is itself a child of a repeat harvest
-	if doc.repeat_harvest_group:
+	if doc.get("repeat_harvest_group"):
 		return
 
 	# Find active Repeat Harvest Group for this item
