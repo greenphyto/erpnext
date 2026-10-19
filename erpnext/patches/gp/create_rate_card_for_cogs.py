@@ -3,22 +3,15 @@ from frappe.utils import flt
 
 # item_code disesuaikan dengan item Products yang sesuai
 DATA = {
-	"PR-LV-MSH": {"utilities": 1.6077, "manpower": 2.27},  # Oak (Shepard) ?
-	"PR-LV-MNA": {"utilities": 1.8073, "manpower": 2.27},  # Romaine (Napa) ?
-	"PR-LV-MEX": {"utilities": 2.1702, "manpower": 2.27},  # Incised (Exmond) 
-	"PR-LV-MBE": {"utilities": 1.9546, "manpower": 2.27},  # Butterhead (Bernoulli)
-	"PR-LV-TCC": {"utilities": 1.8811, "manpower": 3.41},  # Teen Red Coco
-	"PR-AV-SP": {"utilities": 3.4256, "manpower": 4.55},  # Baby Pak Choy
-	"PR-LV-BAN": {"utilities": 5.8304, "manpower": 4.55},  # Spinach
-	"PR-LV-BAR": {"utilities": 5.2595, "manpower": 4.55},  # Arugula
-	"PR-LV-LI": {"utilities": 1.6806, "manpower": 2.27},  # Mambo
-	"PR-LV-CO": {"utilities": 1.7522, "manpower": 2.27},  # Coco
-	"PR-LV-CR": {"utilities": 1.6211, "manpower": 2.27},  # Crystal
-	"PR-AV-KL": {"utilities": 2.2788, "manpower": 2.27},  # Kailan
-	"PR-AV-KOM": {"utilities": 1.6716, "manpower": 2.27},  # Koma
-	"JTO": {"utilities": 3.7474, "manpower": 3.41},  # JTO (item_code belum ada)
-	"PR-AV-NB": {"utilities": 2.0311, "manpower": 2.27},  # Nai Bai
-	"PR-AV-PC": {"utilities": 2.2841, "manpower": 2.27},  # Red Summer Pak Choy
+	"PR-AV-BRE": {"utilities": 3.4256, "manpower": 4.55},  # (R&D Baby) F1 Pak Choy- Red Summer / Baby Pak Coy
+	"PR-AV-BRS": {"utilities": 3.4256, "manpower": 4.55},  # (Baby) F1 Pak Choy- Red Summer / Baby Pak Coy
+	"PR-AV-DRE": {"utilities": 1.6899, "manpower": 2.27},  # Komatsuna Dream / Koma
+	"PR-AV-KL": {"utilities": 2.2788, "manpower": 2.27},  # F1 Hybrid Kailan / Kailan
+	"PR-AV-TA": {"utilities": 3.7474, "manpower": 3.41},  # Japanese Tang Oh / JTO
+	"PR-AV-TN": {"utilities": 3.7474, "manpower": 3.41},  # (R&D) Japanese Tang Oh 2 / JTO
+	"PR-LV-TNA": {"utilities": 1.8073, "manpower": 2.27},  # (Teen) Romaine Lettuce (Napa RZ) / Romaine
+	"PR-LV-TSH": {"utilities": 1.6077, "manpower": 2.27},  # (Teen) Salanova Oak Leaf Lettuce (Shepard RZ Knox) / Oak
+	"PR-LV-VOL": {"utilities": 1.9546, "manpower": 2.27},  # (R&D) Butterhead Lettuce (Volare) / Butterhead
 }
 
 # expense accounts (by account_number) used to book manpower/utilities as
@@ -49,7 +42,7 @@ def _ensure_default_cost_center(account, cost_center):
 
 
 """
-bench --site erp-candidate execute erpnext.patches.gp.create_rate_card_for_cogs.execute
+bench --site test7 execute erpnext.patches.gp.create_rate_card_for_cogs.execute
 """
 def execute():
 	company = frappe.defaults.get_global_default("company")
@@ -120,6 +113,18 @@ def execute():
 		# rate-card rates into the BOM operations (official cost path)
 		item = frappe.get_doc("Item", item_code)
 		item.rate_card = rate_card_name
+		item.save(ignore_permissions=True)
+
+	# items not listed in DATA should have no rate card: clear it via
+	# Item.save so the update_bom_item hook also resets the BOM operations
+	other_items = frappe.get_all(
+		"Item",
+		filters={"rate_card": ["is", "set"], "name": ["not in", list(DATA.keys())]},
+		pluck="name",
+	)
+	for item_code in other_items:
+		item = frappe.get_doc("Item", item_code)
+		item.rate_card = None
 		item.save(ignore_permissions=True)
 
 	frappe.db.commit()
