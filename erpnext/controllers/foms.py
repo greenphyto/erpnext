@@ -2108,11 +2108,15 @@ def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=Fals
 		doc.get_packaging_from_order()
 	doc.use_multi_level_bom = 0 #if use multi level bom it will use exploed items as raw material, but if not it will use bom items
 
-	# Repeat harvest trace fields
+	# Repeat harvest trace fields.
+	# A Work Order is flagged as repeat harvest when a child product is provided.
+	# The Work Order stays named after the parent (production_item); the child
+	# product and related fields are kept as reference information only.
+	if childProductID:
+		doc.is_repeat_harvest = 1
+		doc.child_product_id = childProductID
 	if repeatHarvestGroupID:
 		doc.repeat_harvest_group_id = repeatHarvestGroupID
-	if childProductID:
-		doc.child_product_id = childProductID
 	if harvestSequence is not None:
 		doc.harvest_sequence = harvestSequence
 	if harvestDate:

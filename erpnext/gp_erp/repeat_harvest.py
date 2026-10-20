@@ -26,6 +26,9 @@ def generate_repeat_harvest_work_orders(doc, method=""):
 
 	rhg = frappe.get_doc("Repeat Harvest Group", rhg_name)
 
+	# Auto-generate Repeat Harvest Items from the group template if missing
+	ensure_repeat_harvest_items(rhg)
+
 	# Get Repeat Harvest Items for this group
 	rhi_items = frappe.get_all(
 		"Repeat Harvest Item",
@@ -98,6 +101,40 @@ def generate_repeat_harvest_work_orders(doc, method=""):
 				"status": "Planned",
 			},
 		)
+
+
+def ensure_repeat_harvest_items(rhg):
+	"""Create Repeat Harvest Items from the group's harvest_items template
+	for any child item that does not yet have a Repeat Harvest Item in the group.
+	Existing Repeat Harvest Items are left untouched."""
+	template_rows = rhg.get("harvest_items", [])
+	if not template_rows:
+		return
+
+	existing_items = set(
+		frappe.get_all(
+			"Repeat Harvest Item",
+			filters={"repeat_harvest_group": rhg.name},
+			pluck="item",
+		)
+	)
+
+	for row in template_rows:
+		if row.item in existing_items:
+			continue
+
+		rhi = frappe.new_doc("Repeat Harvest Item")
+		rhi.update(
+			{
+				"repeat_harvest_group": rhg.name,
+				"item": row.item,
+				"sequence": row.sequence,
+				"harvest_date_offset": row.harvest_date_offset,
+				"status": "Draft",
+			}
+		)
+		rhi.insert(ignore_permissions=True)
+		existing_items.add(row.item)
 
 
 def handle_wo_cancellation(doc, method=""):
