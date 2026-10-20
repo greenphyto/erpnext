@@ -12,7 +12,8 @@
   "parent_item",
   "is_active",
   "different_harvest_dates",
-  "harvest_gap_in_days"
+  "harvest_gap_in_days",
+  "harvest_items"
  ],
  "fields": [
   {
@@ -54,6 +55,13 @@
    "fieldname": "harvest_gap_in_days",
    "fieldtype": "Int",
    "label": "Harvest Gap (Days)"
+  },
+  {
+   "description": "Template of child harvest products. Used to auto-generate Repeat Harvest Items when a parent Work Order is created.",
+   "fieldname": "harvest_items",
+   "fieldtype": "Table",
+   "label": "Harvest Items Template",
+   "options": "Repeat Harvest Group Item"
   }
  ],
  "index_web_pages_for_search": 1,

@@ -269,9 +269,9 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 	doc = _create_work_order(log, item_code, bom_no, qty, gross_weight, submit, return_doc=1, args={
 		"use_rate_from_bom":0
 	}, company=company,
-		repeatHarvestGroupID=int(repeatHarvestGroupID) if repeatHarvestGroupID else None,
-		childProductID=int(childProductID) if childProductID else None,
-		harvestSequence=int(harvestSequence) if harvestSequence else None,
+		repeatHarvestGroupID=cint(repeatHarvestGroupID) if repeatHarvestGroupID else None,
+		childProductID=cint(childProductID) if childProductID else None,
+		harvestSequence=cint(harvestSequence) if harvestSequence is not None else None,
 		harvestDate=harvestDate
 	)
 	# seeding_jc = frappe.get_value("Job Card", {"work_order":doc.name, "status":"Open", "operation":OPERATION_MAP_NAME.get(1)})

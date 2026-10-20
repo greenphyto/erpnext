@@ -31,6 +31,18 @@ def fix_raw_material_name():
         if data.get('rawMaterialName') and item_name != data['rawMaterialName']:
             print("rename", log['doc_name'], "to", data['rawMaterialName'])
             frappe.db.set_value("Item", log['doc_name'], "item_name", data['rawMaterialName'])
+            item_name = data['rawMaterialName']
+
+        # sync Part Number Details title to match item_name
+        if item_name:
+            rows = frappe.db.get_all(
+                "Part Number Details",
+                filters={"code": log.doc_name, "title": ["!=", item_name]},
+                fields=["name", "title"],
+            )
+            for row in rows:
+                print("update title", row.name, row.title, "to", item_name)
+                frappe.db.set_value("Part Number Details", row.name, "title", item_name)
 
 """
 bench --site test3 execute erpnext.patches.v14_0.foms_fixing.refetch_item_name
