@@ -655,21 +655,22 @@
   },
   {
    "collapsible": 1,
+   "depends_on": "doc.repeat_harvest_group_id!=0",
    "fieldname": "repeat_harvest_trace_section",
    "fieldtype": "Section Break",
    "label": "Repeat Harvest Trace Info"
   },
   {
+   "description": "Reference ID from Repeat Harvest Group in FOMS",
    "fieldname": "repeat_harvest_group_id",
    "fieldtype": "Int",
-   "label": "Repeat Harvest Group ID",
-   "description": "Reference ID from Repeat Harvest Group in FOMS"
+   "label": "Repeat Harvest Group ID"
   },
   {
+   "description": "FOMS Product ID of the child product",
    "fieldname": "child_product_id",
    "fieldtype": "Int",
-   "label": "Child Product ID",
-   "description": "FOMS Product ID of the child product"
+   "label": "Child Product ID"
   },
   {
    "fieldname": "column_break_rh_trace",
@@ -691,7 +692,6 @@
    "label": "Lot ID (FOMS)"
   },
   {
-   "default": "",
    "fieldname": "erp_sync_status",
    "fieldtype": "Select",
    "label": "ERP Sync Status",
@@ -754,7 +754,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-12-17 12:00:13.328318",
+ "modified": "2026-10-20 17:46:47.985352",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order",
