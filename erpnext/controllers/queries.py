@@ -1049,6 +1049,8 @@ def filter_purchase_manager(doctype, txt, searchfield, start, page_len, filters)
 	return frappe.db.sql(query)
 
 
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
 def supplier_query(doctype, txt, searchfield, start, page_len, filters, as_dict=False):
 	filters = filters or {}
 	doctype = "Supplier"
