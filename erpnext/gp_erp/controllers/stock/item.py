@@ -14,6 +14,9 @@ def set_item_tax_from_hsn_code(item):
 
 class ItemGP(Item):
     def validate(self):
+        if not self.item_name:
+            self.item_name = self.item_code
+
         if "R&D" in (self.item_name or ""):
             self.rnd_item = 1
 
@@ -25,13 +28,28 @@ class ItemGP(Item):
 
         if not strip_html(cstr(self.description)).strip():
             self.description = self.item_name
+
         self.force_to_non_stock()
         self.validate_uom()
         self.validate_description()
         self.add_default_uom_in_conversion_factor_table()
+        self.validate_conversion_factor()
         self.set_opening_stock()
         self.validate_item_type()
         self.validate_naming_series()
+        self.check_for_active_boms()
+        self.fill_customer_code()
+        self.check_item_tax()
+        self.validate_barcode()
+        self.validate_warehouse_for_reorder()
+        self.update_bom_item_desc()
+
+        self.validate_has_variants()
+        self.validate_attributes_in_variants()
+        self.validate_stock_exists_for_template_item()
+        self.validate_attributes()
+        self.validate_variant_attributes()
+        self.validate_variant_based_on_change()
         self.validate_fixed_asset()
         self.clear_retain_sample()
         self.validate_retain_sample()
@@ -39,7 +57,7 @@ class ItemGP(Item):
         self.validate_uom_conversion_factor()
         self.validate_customer_provided_part()
         self.update_defaults_from_item_group()
-        self.validate_end_of_life()
+        self.validate_item_defaults()
         self.validate_auto_reorder_enabled_in_stock_settings()
         self.cant_change()
         self.validate_item_tax_net_rate_range()
