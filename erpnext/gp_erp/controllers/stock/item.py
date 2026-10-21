@@ -1,4 +1,5 @@
 import frappe
+import erpnext
 from frappe import _
 from frappe.utils import cint, cstr, flt, strip_html
 import re
@@ -7,8 +8,21 @@ from erpnext.stock.doctype.item.item import Item
 from erpnext.stock.get_item_details import get_uom_conv_factor
 
 
+def set_item_tax_from_hsn_code(item):
+    pass
+
+
 class ItemGP(Item):
     def validate(self):
+        if "R&D" in (self.item_name or ""):
+            self.rnd_item = 1
+
+        if self.rnd_item:
+            for item_default in self.item_defaults:
+                item_default.expense_account = frappe.db.get_value(
+                    "Company", item_default.company, "account_for_rnd_item_scrap"
+                ) or item_default.expense_account
+
         if not strip_html(cstr(self.description)).strip():
             self.description = self.item_name
         self.force_to_non_stock()
@@ -16,7 +30,6 @@ class ItemGP(Item):
         self.validate_description()
         self.add_default_uom_in_conversion_factor_table()
         self.set_opening_stock()
-        self.set_item_default()
         self.validate_item_type()
         self.validate_naming_series()
         self.validate_fixed_asset()
@@ -32,6 +45,7 @@ class ItemGP(Item):
         self.validate_item_tax_net_rate_range()
         self.insert_department()
         self.set_material_number()
+        self.validate_batch_number_for_part_number()
         self.validate_debit_note_item()
         self.set_asset_category()
         self.update_uom_global_description()
@@ -244,6 +258,17 @@ class ItemGP(Item):
                         d.idx, d.uom, d.to_uom, self.stock_uom
                     )
                 )
+
+    def validate_batch_number_for_part_number(self):
+        if not self.is_stock_item or self.has_batch_no or not self.get("material_group"):
+            return
+
+        if frappe.db.exists("Part Number Details", {"material_group": self.material_group}):
+            frappe.throw(
+                _("Item in Material Group {0} must have a batch number").format(
+                    frappe.bold(self.material_group)
+                )
+            )
 
     def set_material_number(self):
         if self.disabled:
