@@ -325,6 +325,9 @@ def get_item_code(barcode=None, serial_no=None):
 
 def validate_item_details(args, item):
 	if not args.company:
+		args.company = frappe.defaults.get_user_default("Company")
+
+	if not args.company:
 		throw(_("Please specify Company"))
 
 	from erpnext.stock.doctype.item.item import validate_end_of_life
