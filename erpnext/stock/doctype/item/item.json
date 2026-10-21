@@ -1103,13 +1103,20 @@
    "read_only": 1
   },
   {
-   "description": "This will overide default Shelf Life for specific company",
-   "fieldname": "shelf_life_companies",
-   "fieldtype": "Table",
-   "label": "Shelf Life Companies",
-   "options": "Shell Life Companies"
-  }
- ],
+    "description": "This will overide default Shelf Life for specific company",
+    "fieldname": "shelf_life_companies",
+    "fieldtype": "Table",
+    "label": "Shelf Life Companies",
+    "options": "Shell Life Companies"
+   },
+   {
+    "default": "0",
+    "fieldname": "rnd_item",
+    "fieldtype": "Check",
+    "in_standard_filter": 1,
+    "label": "R&D Item"
+   }
+  ],
  "icon": "fa fa-tag",
  "idx": 2,
  "image_field": "image",
