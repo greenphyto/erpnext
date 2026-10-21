@@ -69,7 +69,7 @@ def validate_purchase_request(doc, workflow=None, transition=None, user=None):
         res = validate_purchase_request_based_user(doc, user)
         condition.append(res)
 
-    elif transition.state == "To Amend":
+    elif transition.state in ("Draft", "To Amend"):
         if doc.owner == user:
             condition.append(True)
         else:
