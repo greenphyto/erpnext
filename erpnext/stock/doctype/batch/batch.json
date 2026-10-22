@@ -32,6 +32,8 @@
   "column_break_9",
   "reference_doctype",
   "reference_name",
+  "batch_distribution_section",
+  "batch_distribution",
   "section_break_7",
   "description",
   "manufacturing_section",
@@ -279,6 +281,17 @@
   {
    "fieldname": "data_37",
    "fieldtype": "Data"
+  },
+  {
+   "fieldname": "batch_distribution_section",
+   "fieldtype": "Section Break",
+   "label": "Batch distribution"
+  },
+  {
+   "fieldname": "batch_distribution",
+   "fieldtype": "Table",
+   "label": "Batch Distribution",
+   "options": "Batch Distribution Mapping"
   }
  ],
  "icon": "fa fa-archive",
@@ -286,7 +299,7 @@
  "image_field": "image",
  "links": [],
  "max_attachments": 5,
- "modified": "2026-10-14 15:50:30.045242",
+ "modified": "2026-10-22 12:32:24.806054",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Batch",

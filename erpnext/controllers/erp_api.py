@@ -1953,3 +1953,74 @@ def get_item_uom(item_code):
 		"default_packaging": item.default_packaging or "",
 		"uoms": uoms,
 	}
+
+@frappe.whitelist()
+def update_batch_distribution(erpWorkOrderID, breakdown):
+	if not erpWorkOrderID:
+		frappe.throw(_("erpWorkOrderID is required"))
+
+	breakdown = get_data(breakdown)
+	if not isinstance(breakdown, (list, tuple)):
+		frappe.throw(_("breakdown must be a list"))
+
+	# register tracing log so failed sync leaves a trace
+	data_name = f"Batch Distribution {erpWorkOrderID}"
+	log_data = {
+		"erpWorkOrderID": erpWorkOrderID,
+		"breakdown": breakdown,
+	}
+	log = create_foms_data(
+		data_type="Batch",
+		data_name=data_name,
+		raw=log_data,
+		reopen=1,
+		endpoint="update_batch_distribution",
+	)
+	make_in_progress(log.name)
+
+	try:
+		batch_id = frappe.db.sql("""
+			SELECT DISTINCT sed.batch_no
+			FROM `tabStock Entry` se
+			INNER JOIN `tabStock Entry Detail` sed ON sed.parent = se.name
+			WHERE se.work_order = %(work_order)s
+				AND se.purpose = 'Manufacture'
+				AND se.docstatus = 1
+				AND sed.is_finished_item = 1
+				AND IFNULL(sed.batch_no, '') != ''
+			LIMIT 1
+		""", {"work_order": erpWorkOrderID}, pluck=True)
+
+		if not batch_id:
+			frappe.throw(_(f"No Batch found for Work Order {erpWorkOrderID}"), frappe.DoesNotExistError)
+
+		batch_id = batch_id[0]
+		batch = frappe.get_doc("Batch", batch_id)
+		batch.set("batch_distribution", [])
+		for row in breakdown:
+			row = get_data(row)
+			batch.append("batch_distribution", {
+				"packaging": row.get("packaging") or None,
+				"qty": row.get("qty"),
+				"uom": row.get("uom"),
+			})
+		batch.save(ignore_permissions=True)
+	except Exception:
+		# keep log as not-Mapped (Unknown) and store traceback for later inspection
+		make_in_progress(log.name, inprogress=False)
+		frappe.log_error(
+			message=f"{data_name}\n{json.dumps(log_data, default=str)}\n\n{frappe.get_traceback()}",
+			title="Failed update_batch_distribution",
+		)
+		raise
+
+	# mark log as Mapped to the resulting Batch
+	update_data_result(
+		data_type="Batch",
+		data_name=data_name,
+		result_name=batch_id,
+		result_doctype="Batch",
+		name_id=log.name,
+	)
+
+	return {"result": True, "batch": batch_id}

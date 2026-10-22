@@ -2539,6 +2539,99 @@
           }
         }
       }
+    },
+    "/erpnext.controllers.erp_api.update_batch_distribution": {
+      "post": {
+        "summary": "Update Batch Distribution",
+        "description": "Update the batch distribution breakdown (packaging, qty, uom) for all batches linked to the given Work Order. Stored in Batch.batch_distribution child table.",
+        "operationId": "update batch distribution",
+        "requestBody": {
+          "description": "Batch distribution breakdown for a Work Order",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "erpWorkOrderID": {
+                    "type": "string"
+                  },
+                  "breakdown": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "packaging": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "qty": {
+                          "type": "number"
+                        },
+                        "uom": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "erpWorkOrderID": "26-1234-001",
+                  "breakdown": [
+                    {
+                      "packaging": "Package (140g) - GP Type A",
+                      "qty": 14,
+                      "uom": "kg"
+                    },
+                    {
+                      "packaging": "Package (110g) - GP Type A",
+                      "qty": 5.5,
+                      "uom": "kg"
+                    },
+                    {
+                      "packaging": null,
+                      "qty": 0.5,
+                      "uom": "kg"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "result": true,
+                      "batch": "PR-LV-CO-BN00133"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No batch found for Work Order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": {
+                      "result": false,
+                      "error": "No Batch found for Work Order 26-1234-001"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
