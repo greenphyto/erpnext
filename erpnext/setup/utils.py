@@ -3,7 +3,7 @@
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, cstr, flt, formatdate, get_datetime, get_datetime_str, get_first_day, nowdate
+from frappe.utils import add_days, cint, cstr, flt, formatdate, get_datetime, get_datetime_str, get_first_day, nowdate
 from frappe.utils.data import getdate, now_datetime
 from frappe.utils.nestedset import get_root_of
 
@@ -284,6 +284,42 @@ def save_currency_exchange(from_currency, to_currency, date="", rate=0, fetch_on
 	doc.insert(ignore_if_duplicate=1)
 
 	return doc.name
+
+
+def get_exchange_rate_from_api(from_currency, to_currency, transaction_date, settingscheck=None, from_scheduler=0):
+	if settingscheck is None:
+		settingscheck = frappe.get_cached_doc("Currency Exchange Settings")
+
+	temp = {}
+	if settingscheck.service_provider == "mas.gov.sg":
+		temp = get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, settingscheck)
+	elif settingscheck.service_provider == "frankfurter":
+		temp = get_exchange_rate_from_api2(from_currency, to_currency, transaction_date, settingscheck)
+
+	value = temp.get("rate")
+
+	if not value:
+		frappe.log_error("Unable to fetch exchange rate")
+		frappe.msgprint(
+			_(
+				"Unable to find exchange rate for {0} to {1} for key date {2}. Please create a Currency Exchange record manually"
+			).format(from_currency, to_currency, transaction_date)
+		)
+		return 0.0
+
+	fetch_on = get_datetime(temp.get("fetch_on"))
+	bank_date = getdate(temp.get("bank_date"))
+	save_currency_exchange(
+		from_currency,
+		to_currency,
+		transaction_date,
+		value,
+		fetch_on=fetch_on,
+		bank_date=bank_date,
+		from_scheduler=from_scheduler,
+	)
+
+	return value
 
 
 def get_exchange_rate_from_api1(from_currency, to_currency, transaction_date, settingscheck=None, dummy={}):
