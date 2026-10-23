@@ -34,7 +34,7 @@ def execute(filters=None):
 				for batch in sorted(iwb_map[item][wh]):
 					qty_dict = iwb_map[item][wh][batch]
 					if qty_dict.opening_qty or qty_dict.in_qty or qty_dict.out_qty or qty_dict.bal_qty:
-						row = [item, item_map[item]["item_name"], item_map[item]["description"], wh, batch, qty_dict.foms_lot_id, "Empty" if not qty_dict.bal_qty else "Expiry" if qty_dict.expiry_date and getdate(qty_dict.expiry_date) < getdate(filters.to_date) else "Active", flt(qty_dict.opening_qty, float_precision), flt(qty_dict.in_qty, float_precision), flt(qty_dict.out_qty, float_precision), flt(qty_dict.bal_qty, float_precision), item_map[item]["stock_uom"], qty_dict.expiry_date, flt(qty_dict.stock_value, float_precision)]
+						row = [item, item_map[item]["item_name"], item_map[item]["description"], wh, batch, qty_dict.foms_lot_id, "Empty" if not qty_dict.bal_qty else "Expiry" if qty_dict.expiry_date and getdate(qty_dict.expiry_date) < getdate(filters.to_date) else "Active", flt(qty_dict.opening_qty, float_precision), flt(qty_dict.in_qty, float_precision), flt(qty_dict.out_qty, float_precision), flt(qty_dict.bal_qty, float_precision), item_map[item]["stock_uom"], qty_dict.expiry_date, qty_dict.closing_time, flt(qty_dict.stock_value, float_precision)]
 						if filters.get("item_group") == "Raw Material":
 							row.append(purchase_receipt_owners.get(batch, ""))
 						data.append(row)
@@ -59,6 +59,7 @@ def get_columns(filters):
 		+ [_("Balance Qty") + ":Float:90"]
 		+ [_("UOM") + "::90"]
 		+ [_("Expiry Date") + ":Date:110"]
+		+ [_("Closing Time") + ":Datetime:150"]
 		+ [_("Stock Value") + ":Currency:120"]
 	)
 	if filters.get("item_group") == "Raw Material":
@@ -103,6 +104,7 @@ def get_stock_ledger_entries(filters):
 			batch.foms_lot_id,
 			batch.expiry_date,
 			sle.posting_date,
+			fn.Max(fn.Concat(sle.posting_date, " ", sle.posting_time)).as_("closing_time"),
 			fn.Sum(sle.actual_qty).as_("actual_qty"),
 			fn.Sum(sle.stock_value_difference).as_("stock_value"),
 		)
@@ -134,9 +136,11 @@ def get_item_warehouse_batch_map(filters, float_precision):
 
 	for d in sle:
 		iwb_map.setdefault(d.item_code, {}).setdefault(d.warehouse, {}).setdefault(
-			d.batch_no, frappe._dict({"foms_lot_id": d.foms_lot_id or "", "expiry_date": d.expiry_date, "stock_value": 0.0, "opening_qty": 0.0, "in_qty": 0.0, "out_qty": 0.0, "bal_qty": 0.0})
+			d.batch_no, frappe._dict({"foms_lot_id": d.foms_lot_id or "", "expiry_date": d.expiry_date, "closing_time": None, "stock_value": 0.0, "opening_qty": 0.0, "in_qty": 0.0, "out_qty": 0.0, "bal_qty": 0.0})
 		)
 		qty_dict = iwb_map[d.item_code][d.warehouse][d.batch_no]
+		if d.closing_time and (not qty_dict.closing_time or d.closing_time > qty_dict.closing_time):
+			qty_dict.closing_time = d.closing_time
 		if d.posting_date < from_date:
 			qty_dict.opening_qty = flt(qty_dict.opening_qty, float_precision) + flt(
 				d.actual_qty, float_precision
