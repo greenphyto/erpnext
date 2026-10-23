@@ -135,6 +135,17 @@ def get_permission_query_conditions(user=None):
     if user == "Administrator":
         return ""
 
+    if "Purchase Master Manager" in frappe.get_roles(user):
+        master_states = [
+            "Pending Approval by Purchasing Master Manager",
+            "Approved",
+            "To Amend",
+        ]
+        states = ", ".join([frappe.db.escape(s) for s in master_states])
+        return """ (`tabMaterial Request`.`workflow_state` in ({0}) or `tabMaterial Request`.`owner`={1})""".format(
+            states, frappe.db.escape(user)
+        )
+
     company = frappe.db.get_value("User", user, "company_selected")
 
     object_user = (
