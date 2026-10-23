@@ -1,7 +1,7 @@
 import frappe
 from frappe.utils import flt
 
-# item_code disesuaikan dengan item Products yang sesuai
+
 DATA = {
 	"PR-AV-BRE": {"utilities": 3.4256, "manpower": 4.55},  # (R&D Baby) F1 Pak Choy- Red Summer / Baby Pak Coy
 	"PR-AV-BRS": {"utilities": 3.4256, "manpower": 4.55},  # (Baby) F1 Pak Choy- Red Summer / Baby Pak Coy
@@ -12,6 +12,19 @@ DATA = {
 	"PR-LV-TNA": {"utilities": 1.8073, "manpower": 2.27},  # (Teen) Romaine Lettuce (Napa RZ) / Romaine
 	"PR-LV-TSH": {"utilities": 1.6077, "manpower": 2.27},  # (Teen) Salanova Oak Leaf Lettuce (Shepard RZ Knox) / Oak
 	"PR-LV-VOL": {"utilities": 1.9546, "manpower": 2.27},  # (R&D) Butterhead Lettuce (Volare) / Butterhead
+	"PR-LV-BLI": {"utilities": 5.8304, "manpower": 4.55},  # (Baby) Spinach (Lizard RZ F1)
+	"PR-LV-BLJ": {"utilities": 5.8304, "manpower": 4.55},  # (Baby) Spinach (Lizard RZ F1) 3
+	"PR-LV-BAR": {"utilities": 5.2595, "manpower": 4.55},  # (Baby) Arugula Runway Rocket
+	"PR-LV-BRU": {"utilities": 5.2595, "manpower": 4.55},  # (Baby) Arugula Runway Rocket 2
+
+	"PR-AV-NB": {"utilities": 2.0311, "manpower": 2.27}, # F1 Nai Bai
+	"PR-AV-NBB": {"utilities": 2.0311, "manpower": 2.27}, # (R&D) Nai Bai
+	"PR-AV-PC": {"utilities": 2.2841, "manpower": 2.27}, # F1 Pak Choy Red Summer
+	"PR-LV-CO": {"utilities": 1.7522, "manpower": 2.27}, # Red Salanova Gem Lettuce (Coconino RZ Knox)
+	"PR-LV-CR": {"utilities": 1.6211, "manpower": 2.27}, # Crystal Lettuce
+	"PR-LV-LI": {"utilities": 1.6806, "manpower": 2.27}, # Leaf Lettuce (Limambo RZ)
+	"PR-LV-TBE": {"utilities": 1.9546, "manpower": 2.27}, # (Teen) Salanova Butterhead Lettuce (Bernoulli RZ)
+	"PR-LV-TEX": {"utilities": 2.1702, "manpower": 2.27} # (Teen) Salanova Incised Leaf Lettuce (Exmond RZ Knox)
 }
 
 # expense accounts (by account_number) used to book manpower/utilities as
@@ -42,7 +55,7 @@ def _ensure_default_cost_center(account, cost_center):
 
 
 """
-bench --site test7 execute erpnext.patches.gp.create_rate_card_for_cogs.execute
+bench --site erp-prod execute erpnext.patches.gp.create_rate_card_for_cogs.execute
 """
 def execute():
 	company = frappe.defaults.get_global_default("company")
@@ -62,7 +75,12 @@ def execute():
 			)
 			continue
 
-		existing = frappe.db.get_value("Item", item_code, "rate_card")
+		title = "Rate Card - {0}".format(item_code)
+		# reuse a Rate Card linked to the item, or an orphaned one with the
+		# same title from a previous run, so we never insert a duplicate
+		existing = frappe.db.get_value("Item", item_code, "rate_card") or frappe.db.get_value(
+			"Rate Card", {"title": title}, "name"
+		)
 		if existing:
 			# backfill expense accounts and the Harvesting rate on an
 			# already-created Rate Card, then save so the workstation/BOM
@@ -93,7 +111,7 @@ def execute():
 				{
 					"doctype": "Rate Card",
 					"company": company,
-					"title": "Rate Card - {0}".format(item_code),
+					"title": title,
 					"expense_for_manpower": manpower_account,
 					"expense_for_utilities": utilities_account,
 					"rates": [
