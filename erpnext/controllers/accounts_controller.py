@@ -814,6 +814,18 @@ class AccountsController(TransactionBase):
 		gl_dict.update(dimension_dict)
 		gl_dict.update(args)
 
+		if gl_dict.account and self.doctype in [
+			"Journal Entry",
+			"Purchase Invoice",
+			"Purchase Receipt",
+			"Sales Invoice",
+			"Stock Entry",
+			"Stock Reconciliation",
+		]:
+			gl_dict.cost_center = self.resolve_cost_center_from_settings(
+				gl_dict.account, gl_dict.get("cost_center")
+			)
+
 		if not account_currency:
 			account_currency = get_account_currency(gl_dict.account)
 
@@ -837,6 +849,26 @@ class AccountsController(TransactionBase):
 			)
 
 		return gl_dict
+
+	def resolve_cost_center_from_settings(self, account, cost_center):
+		"""Resolve cost center from Cost Center Settings mapping.
+
+		If the incoming cost center is empty or equals the company's default
+		cost center, it is treated as unset and the account mapping from
+		Cost Center Settings (via Cost Center Mapping) is used instead.
+		"""
+		company_default_cc = frappe.get_cached_value("Company", self.company, "cost_center")
+
+		if cost_center and cost_center != company_default_cc:
+			return cost_center
+
+		mapped_cc = frappe.get_value(
+			"Cost Center Mapping",
+			{"company": self.company, "account": account},
+			"cost_center",
+		)
+
+		return mapped_cc or cost_center
 
 	def validate_qty_is_not_zero(self):
 		if self.doctype != "Purchase Receipt":
