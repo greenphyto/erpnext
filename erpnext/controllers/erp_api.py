@@ -258,7 +258,21 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 	bom_no = get_bom_for_work_order(item_code)
 	if not bom_no:
 		frappe.throw(_(f"Missing BOM for {item_code}"), frappe.DoesNotExistError)
-		
+
+	# Repeat harvest: when a child product is given, produce the parent item
+	# (item_code) using the child's recipe via a bridge BOM.
+	if childProductID:
+		child_item = frappe.get_value("Item", {"foms_product_id": childProductID})
+		if not child_item:
+			frappe.throw(_(f"Missing Item with Child Product ID {childProductID}"), frappe.DoesNotExistError)
+
+		child_bom = get_bom_for_work_order(child_item)
+		if not child_bom:
+			frappe.throw(_(f"Missing BOM for child item {child_item}"), frappe.DoesNotExistError)
+
+		from erpnext.gp_erp.repeat_harvest import get_or_create_bridge_bom
+		bom_no = get_or_create_bridge_bom(item_code, child_item, child_bom)
+
 	qty = flt(qty) or 1
 	log = frappe._dict({
 		"workOrderNo":fomsWorkOrderID,
