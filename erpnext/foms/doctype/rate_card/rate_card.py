@@ -10,11 +10,33 @@ class RateCard(Document):
 
 	def create_workstation(self):
 		for d in self.rates:
-			if not frappe.db.exists("Workstation", d.workstation):
-				workstation_name = f"{self.title}-{d.operation}"
+			base_name = f"{self.title}-{d.operation}"
+			# reuse the linked workstation, an exact match, or a previously
+			# autoname-suffixed one (e.g. "...-Harvesting-001") so re-runs
+			# update instead of trying to insert a duplicate
+			workstation_name = d.workstation
+			if not workstation_name:
+				if frappe.db.exists("Workstation", base_name):
+					workstation_name = base_name
+				else:
+					workstation_name = frappe.db.get_value(
+						"Workstation",
+						{"workstation_name": ["like", f"{base_name}-%"]},
+						"name",
+					)
+			if workstation_name and frappe.db.exists("Workstation", workstation_name):
+				# update existing workstation rates
+				ws = frappe.get_doc("Workstation", workstation_name)
+				ws.per_qty_rate_electricity = d.utilities
+				ws.per_qty_rate_wages = d.manpower
+				ws.per_qty_rate_machinery = d.machinery
+				ws.per_qty_rate_consumable = d.consumable
+				ws.save()
+				d.workstation = ws.name
+			else:
 				ws = frappe.new_doc("Workstation")
 				ws.update({
-					"workstation_name": workstation_name,
+					"workstation_name": base_name,
 					"operation": d.operation,
 					"calculation_type": "Per KG",
 					"per_qty_rate_electricity": d.utilities,	
@@ -24,14 +46,6 @@ class RateCard(Document):
 				})
 				ws.insert()
 				d.workstation = ws.name
-			else:
-				# update existsing workstation rates
-				ws = frappe.get_doc("Workstation", d.workstation)
-				ws.per_qty_rate_electricity = d.utilities
-				ws.per_qty_rate_wages = d.manpower
-				ws.per_qty_rate_machinery = d.machinery
-				ws.per_qty_rate_consumable = d.consumable
-				ws.save()	
 			
 
 def update_bom_item(doc, method=""):
