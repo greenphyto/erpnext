@@ -6,6 +6,10 @@ from frappe.utils.user import is_website_user
 
 __version__ = "15.95.2"
 
+from erpnext import naming_overrides
+
+naming_overrides.apply()
+
 
 def get_default_company(user=None):
 	"""Get default company for user"""
