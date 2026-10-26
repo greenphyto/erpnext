@@ -3,7 +3,7 @@
  "allow_auto_repeat": 1,
  "allow_import": 1,
  "autoname": "naming_series:",
- "creation": "2013-05-24 19:29:08",
+ "creation": "2026-10-23 20:33:21.656817",
  "doctype": "DocType",
  "document_type": "Document",
  "editable_grid": 1,
@@ -134,7 +134,7 @@
   "opportunity",
   "supplier_quotation",
   "enq_det",
-  "connections_tab",
+  "customer_lead_info_tab",
   "new_customer",
   "is_existing_customer",
   "non_stock_item",
@@ -151,7 +151,8 @@
   "manual_tlp",
   "manual_mobile_no",
   "manual_email",
-  "manual_fax"
+  "manual_fax",
+  "connections_tab"
  ],
  "fields": [
   {
@@ -1021,6 +1022,11 @@
    "show_dashboard": 1
   },
   {
+   "fieldname": "customer_lead_info_tab",
+   "fieldtype": "Tab Break",
+   "label": "Customer / Lead Info"
+  },
+  {
    "fieldname": "column_break_7",
    "fieldtype": "Column Break"
   },
@@ -1215,7 +1221,7 @@
  "idx": 82,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-07-29 08:46:06.575197",
+ "modified": "2026-10-26 15:01:41.474214",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Quotation",

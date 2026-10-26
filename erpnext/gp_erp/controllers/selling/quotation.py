@@ -116,6 +116,7 @@ class QuotationGP(Quotation):
 
         contact.insert()
 
+    @frappe.whitelist()
     def get_existing_lead_from_new_customer(self):
         if not self.new_customer:
             return {"clear": 1}
