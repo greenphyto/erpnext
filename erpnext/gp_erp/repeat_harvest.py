@@ -53,23 +53,26 @@ def generate_repeat_harvest_work_orders(doc, method=""):
 		else:
 			planned_date = add_days(base_date, rhg.harvest_gap_in_days * rhi_data.sequence)
 
-		# Get default BOM for child item
-		bom = frappe.db.get_value(
+		# Get default BOM for the child item (source recipe)
+		child_bom = frappe.db.get_value(
 			"BOM", {"item": rhi_data.item, "is_active": 1, "is_default": 1}, "name"
 		)
 
-		if not bom:
+		if not child_bom:
 			frappe.log_error(
 				message=f"No default BOM found for item {rhi_data.item}",
 				title="Repeat Harvest WO Generation",
 			)
 			continue
 
-		# Create child Work Order
+		# Build a bridge BOM that produces the parent item using the child's recipe
+		bom = get_or_create_bridge_bom(doc.production_item, rhi_data.item, child_bom)
+
+		# Create the sequence Work Order: output = parent, raw material = child's recipe
 		child_wo = frappe.new_doc("Work Order")
 		child_wo.update(
 			{
-				"production_item": rhi_data.item,
+				"production_item": doc.production_item,
 				"bom_no": bom,
 				"qty": doc.qty,
 				"gross_weight": doc.gross_weight or doc.qty,
@@ -101,6 +104,40 @@ def generate_repeat_harvest_work_orders(doc, method=""):
 				"status": "Planned",
 			},
 		)
+
+
+def get_or_create_bridge_bom(parent_item, child_item, child_bom_name):
+	"""Return a BOM that produces `parent_item` using `child_item`'s recipe.
+
+	The bridge BOM is a copy of the child's default BOM with the output item
+	switched to the parent. It is reused across Work Orders (get-or-create),
+	is never marked as default, and leaves the parent's own default BOM untouched.
+	Costs are recalculated by ERPNext from the copied items/operations."""
+
+	existing = frappe.db.get_value(
+		"BOM",
+		{
+			"item": parent_item,
+			"copy_from": child_item,
+			"is_active": 1,
+			"docstatus": 1,
+		},
+		"name",
+	)
+	if existing:
+		return existing
+
+	bridge = frappe.copy_doc(frappe.get_doc("BOM", child_bom_name))
+	bridge.item = parent_item
+	bridge.is_default = 0
+	bridge.is_active = 1
+	bridge.copy_from = child_item
+	# Avoid colliding with the child's FOMS recipe version / default-naming logic
+	if bridge.meta.has_field("foms_recipe_version"):
+		bridge.foms_recipe_version = None
+	bridge.insert(ignore_permissions=True)
+	bridge.submit()
+	return bridge.name
 
 
 def ensure_repeat_harvest_items(rhg):

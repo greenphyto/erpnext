@@ -11,6 +11,8 @@ TYPE_MAP = {
 	"No Pack": "no_pack",
 }
 
+MY_CUSTOMER = "Greenphyto Tech Sdn Bhd"
+
 
 def execute(filters=None):
 	filters = frappe._dict(filters or {})
@@ -73,9 +75,11 @@ def get_data(filters):
 		return []
 
 	batch_names = [b.batch_no for b in batches]
+	item_codes = list({b.item_code for b in batches if b.item_code})
 
 	in_map = get_in_qty(batch_names, filters)
 	draft_map, out_map = get_delivery_qty(batch_names, filters)
+	distribution_map = get_distribution_qty(batch_names, item_codes)
 
 	active_rows = []
 	expired_rows = []
@@ -99,10 +103,21 @@ def get_data(filters):
 			"left_default": 0, "left_my": 0, "left_no_pack": 0,
 			"h_days": get_h_days(b.manufacturing_date),
 		}
-		row["in_" + suffix] = in_qty
-		row["draft_" + suffix] = draft_qty
-		row["out_" + suffix] = out_qty
-		row["left_" + suffix] = left_qty
+
+		distribution = distribution_map.get(b.batch_no)
+		if distribution:
+			for dist_suffix, dist_qty in distribution.items():
+				row["in_" + dist_suffix] = flt(dist_qty)
+			row["draft_" + suffix] = draft_qty
+			row["out_" + suffix] = out_qty
+		else:
+			row["in_" + suffix] = in_qty
+			row["draft_" + suffix] = draft_qty
+			row["out_" + suffix] = out_qty
+
+		row["left_default"] = row["in_default"] - row["draft_default"] - row["out_default"]
+		row["left_my"] = row["in_my"] - row["draft_my"] - row["out_my"]
+		row["left_no_pack"] = row["in_no_pack"] - row["draft_no_pack"] - row["out_no_pack"]
 
 		if b.status == "Expired":
 			expired_rows.append(row)
@@ -116,6 +131,62 @@ def get_data(filters):
 	data.extend(expired_rows)
 
 	return data
+
+
+def get_distribution_qty(batch_names, item_codes):
+	rows = frappe.db.sql(
+		"""
+		SELECT bdm.parent AS batch_no, bdm.packaging, bdm.qty
+		FROM `tabBatch Distribution Mapping` bdm
+		WHERE bdm.parenttype = 'Batch'
+			AND bdm.parent IN %(batch_names)s
+		""",
+		{"batch_names": batch_names},
+		as_dict=1,
+	)
+	if not rows:
+		return {}
+
+	packaging_customer = get_packaging_customer_map(item_codes)
+
+	batch_item = {b: None for b in batch_names}
+	dist_map = {}
+	for d in rows:
+		suffix = classify_packaging(d.packaging, packaging_customer)
+		bucket = dist_map.setdefault(d.batch_no, {})
+		bucket[suffix] = bucket.get(suffix, 0) + flt(d.qty)
+	return dist_map
+
+
+def get_packaging_customer_map(item_codes):
+	if not item_codes:
+		return {}
+
+	rows = frappe.db.sql(
+		"""
+		SELECT pla.packaging, pla.customer
+		FROM `tabPackaging List Available` pla
+		WHERE pla.parenttype = 'Item'
+			AND pla.parent IN %(item_codes)s
+			AND pla.packaging IS NOT NULL
+		""",
+		{"item_codes": item_codes},
+		as_dict=1,
+	)
+
+	mapping = {}
+	for d in rows:
+		mapping.setdefault(d.packaging, set()).add(d.customer)
+	return mapping
+
+
+def classify_packaging(packaging, packaging_customer):
+	if not packaging:
+		return "no_pack"
+	customers = packaging_customer.get(packaging) or set()
+	if MY_CUSTOMER in customers:
+		return "my"
+	return "default"
 
 
 def get_in_qty(batch_names, filters):
