@@ -10,7 +10,7 @@
  "idx": 0,
  "is_standard": "Yes",
  "letter_head": "Greenphyto",
- "modified": "2024-01-26 12:02:51.875413",
+ "modified": "2026-10-27 14:43:51.639857",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Cash Flow Greenphyto",
@@ -21,13 +21,7 @@
  "report_type": "Script Report",
  "roles": [
   {
-   "role": "Accounts User"
-  },
-  {
    "role": "Accounts Manager"
-  },
-  {
-   "role": "Auditor"
   }
  ]
 }

@@ -10,14 +10,18 @@
  "idx": 0,
  "is_standard": "Yes",
  "letter_head": "Greenphyto",
- "modified": "2025-10-29 11:15:09.836287",
+ "modified": "2026-10-27 14:43:58.720178",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "GST Return Summary Report",
  "owner": "Administrator",
- "prepared_report": 1,
+ "prepared_report": 0,
  "ref_doctype": "GL Entry",
  "report_name": "GST Return Summary Report",
  "report_type": "Script Report",
- "roles": []
+ "roles": [
+  {
+   "role": "Accounts Manager"
+  }
+ ]
 }

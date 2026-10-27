@@ -9,24 +9,18 @@
  "filters": [],
  "idx": 2,
  "is_standard": "Yes",
- "modified": "2026-04-24 19:51:46.407861",
+ "modified": "2026-10-27 14:44:07.629627",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Profit and Loss Statement",
  "owner": "Administrator",
- "prepared_report": 1,
+ "prepared_report": 0,
  "ref_doctype": "GL Entry",
  "report_name": "Profit and Loss Statement",
  "report_type": "Script Report",
  "roles": [
   {
-   "role": "Accounts User"
-  },
-  {
    "role": "Accounts Manager"
-  },
-  {
-   "role": "Auditor"
   }
  ]
 }

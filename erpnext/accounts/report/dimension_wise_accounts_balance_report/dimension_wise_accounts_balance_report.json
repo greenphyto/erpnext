@@ -9,7 +9,7 @@
  "filters": [],
  "idx": 0,
  "is_standard": "Yes",
- "modified": "2021-04-09 16:48:59.548018",
+ "modified": "2026-10-27 14:43:55.605813",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Dimension-wise Accounts Balance Report",
@@ -18,5 +18,9 @@
  "ref_doctype": "GL Entry",
  "report_name": "Dimension-wise Accounts Balance Report",
  "report_type": "Script Report",
- "roles": []
+ "roles": [
+  {
+   "role": "Accounts Manager"
+  }
+ ]
 }

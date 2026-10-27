@@ -9,7 +9,7 @@
  "filters": [],
  "idx": 3,
  "is_standard": "Yes",
- "modified": "2026-04-24 11:21:49.276197",
+ "modified": "2026-10-27 14:43:49.982582",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Budget Variance Report",
@@ -21,18 +21,6 @@
  "roles": [
   {
    "role": "Accounts Manager"
-  },
-  {
-   "role": "Auditor"
-  },
-  {
-   "role": "Accounts User"
-  },
-  {
-   "role": "Sales User"
-  },
-  {
-   "role": "Purchase User"
   }
  ]
 }
