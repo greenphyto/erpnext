@@ -1499,6 +1499,116 @@
         }
       }
     },
+    "/erpnext.controllers.erp_api.submit_salad_finished_goods": {
+      "post": {
+        "summary": "Submit salad finished goods (Repack)",
+        "description": "FOMS sends the salad product lot_id and its child material lot_ids/batch_nos. ERP creates a Repack Stock Entry with auto-generated batch (following Item naming convention), stores lot_id in foms_id field on both Stock Entry and Batch, marks child batches as is_salad_batch=1. Children can use either 'lot_id' (recommended) or 'batch_no'.",
+        "operationId": "submit salad finished goods",
+        "requestBody": {
+          "description": "Salad finished goods with child material batches",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "required": ["salad_item_code", "lot_id", "qty", "children"],
+                    "properties": {
+                      "salad_item_code": {"type": "string"},
+                      "lot_id": {"type": "string"},
+                      "qty": {"type": "number"},
+                      "expiry_date": {"type": "string", "format": "date"},
+                      "warehouse": {"type": "string"},
+                      "children": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": ["item_code", "qty"],
+                          "properties": {
+                            "item_code": {"type": "string"},
+                            "lot_id": {"type": "string"},
+                            "batch_no": {"type": "string"},
+                            "qty": {"type": "number"},
+                            "uom": {"type": "string"},
+                            "warehouse": {"type": "string"}
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "using_lot_id": {
+                    "summary": "Using lot_id for children (recommended)",
+                    "description": "FOMS sends lot_id for salad and each child. ERP auto-generates batch name and resolves child batches from Work Orders.",
+                    "value": {
+                      "data": {
+                        "salad_item_code": "PR-MX-MES",
+                        "lot_id": "26-0501",
+                        "qty": 1,
+                        "expiry_date": "2026-09-01",
+                        "warehouse": "",
+                        "children": [
+                          {"item_code": "PR-AV-KL", "lot_id": "26-0101", "qty": 0.5, "uom": "kg", "warehouse": ""},
+                          {"item_code": "PR-AV-DRE", "lot_id": "26-0102", "qty": 0.3, "uom": "kg", "warehouse": ""},
+                          {"item_code": "PR-AV-CS", "lot_id": "26-0103", "qty": 0.2, "uom": "kg", "warehouse": ""}
+                        ]
+                      }
+                    }
+                  },
+                  "using_batch_no": {
+                    "summary": "Using batch_no for children (direct)",
+                    "description": "FOMS sends batch_no directly for children if already known.",
+                    "value": {
+                      "data": {
+                        "salad_item_code": "PR-MX-MES",
+                        "lot_id": "26-0501",
+                        "qty": 1,
+                        "expiry_date": "2026-09-01",
+                        "warehouse": "",
+                        "children": [
+                          {"item_code": "PR-AV-KL", "batch_no": "PR-AV-KL-BN00359", "qty": 0.5, "uom": "kg", "warehouse": ""},
+                          {"item_code": "PR-AV-DRE", "batch_no": "PR-AV-DRE-BN00313", "qty": 0.3, "uom": "kg", "warehouse": ""},
+                          {"item_code": "PR-AV-CS", "batch_no": "PR-AV-CS-BN00001", "qty": 0.2, "uom": "kg", "warehouse": ""}
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "object",
+                      "properties": {
+                        "stock_entry": {"type": "string"},
+                        "batch": {"type": "string"}
+                      }
+                    }
+                  },
+                  "example": {
+                    "message": {"stock_entry": "RE-00003/2026", "batch": "PR-MX-MES-BN00001"}
+                  }
+                }
+              }
+            }
+          },
+          "404": {"description": "Item, Batch, or Work Order not found"},
+          "417": {"description": "Validation error"}
+        }
+      }
+    },
     "/erpnext.controllers.erp_api.update_item_safety_stock": {
       "post": {
         "summary": "Update item safety stock + reorder",
