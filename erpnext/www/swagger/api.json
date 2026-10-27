@@ -1439,7 +1439,7 @@
         }
       }
     },
-    "/erpnext.controllers.foms.submit_salad_finished_goods": {
+    "/erpnext.controllers.erp_api.submit_salad_finished_goods": {
       "post": {
         "summary": "Submit salad finished goods (Repack)",
         "description": "FOMS sends the salad product lot_id and its child material lot_ids/batch_nos. ERP creates a Repack Stock Entry with auto-generated batch (following Item naming convention), stores lot_id in foms_id field on both Stock Entry and Batch, marks child batches as is_salad_batch=1. Children can use either 'lot_id' (recommended) or 'batch_no'.",
