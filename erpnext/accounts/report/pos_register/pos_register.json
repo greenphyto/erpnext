@@ -10,7 +10,7 @@
  "idx": 0,
  "is_standard": "Yes",
  "json": "{}",
- "modified": "2020-09-10 19:25:15.851331",
+ "modified": "2026-10-27 14:44:05.234418",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "POS Register",
@@ -22,9 +22,6 @@
  "roles": [
   {
    "role": "Accounts Manager"
-  },
-  {
-   "role": "Accounts User"
   }
  ]
 }

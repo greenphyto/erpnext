@@ -9,7 +9,7 @@
  "filters": [],
  "idx": 0,
  "is_standard": "Yes",
- "modified": "2021-02-19 16:44:21.175113",
+ "modified": "2026-10-27 14:44:18.531819",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Tax Detail",
@@ -20,13 +20,7 @@
  "report_type": "Script Report",
  "roles": [
   {
-   "role": "Accounts User"
-  },
-  {
    "role": "Accounts Manager"
-  },
-  {
-   "role": "Auditor"
   }
  ]
 }

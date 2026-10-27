@@ -9,7 +9,7 @@
  "filters": [],
  "idx": 0,
  "is_standard": "Yes",
- "modified": "2021-09-20 17:43:39.518851",
+ "modified": "2026-10-27 14:44:19.309020",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "TDS Computation Summary",
@@ -20,16 +20,7 @@
  "report_type": "Script Report",
  "roles": [
   {
-   "role": "Purchase User"
-  },
-  {
    "role": "Accounts Manager"
-  },
-  {
-   "role": "Accounts User"
-  },
-  {
-   "role": "Auditor"
   }
  ]
 }
