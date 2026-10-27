@@ -2127,4 +2127,14 @@ def update_batch_distribution(erpWorkOrderID, breakdown):
 		name_id=log.name,
 	)
 
+
+@frappe.whitelist()
+def submit_salad_finished_goods(data=None, **kwargs):
+	from erpnext.controllers.foms import submit_salad_finished_goods as _submit_salad_finished_goods
+
+	if data is None:
+		data = kwargs
+
+	return _submit_salad_finished_goods(data)
+
 	return {"result": True, "batch": batch_id}
