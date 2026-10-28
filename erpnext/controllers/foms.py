@@ -2396,8 +2396,23 @@ def create_item_change_repack(doc, method=""):
 			"conversion_factor": item.conversion_factor,
 			"basic_rate": item.basic_rate,
 		}
-		repack.append("items", {**common, "item_code": mapping.from_item, "s_warehouse": mapping.warehouse})
-		repack.append("items", {**common, "item_code": mapping.to_item, "t_warehouse": mapping.warehouse, "is_finished_item": 1})
+
+		source_batch = item.batch_no
+		foms_lot_id = frappe.db.get_value("Batch", source_batch, "foms_lot_id")
+
+		repack.append("items", {**common, "item_code": mapping.from_item, "s_warehouse": mapping.warehouse, "batch_no": source_batch})
+
+		new_batch = frappe.get_doc({
+			"doctype": "Batch",
+			"item": mapping.to_item,
+			"qty_to_produce": qty,
+			"reference_doctype": "Stock Entry",
+			"foms_lot_id": foms_lot_id,
+		})
+		new_batch.flags.ignore_permissions = 1
+		new_batch.insert()
+
+		repack.append("items", {**common, "item_code": mapping.to_item, "t_warehouse": mapping.warehouse, "is_finished_item": 1, "batch_no": new_batch.name})
 
 	repack.insert(ignore_permissions=True)
 	repack.submit()
@@ -2896,6 +2911,104 @@ def submit_salad_finished_goods(data):
 		data = json.loads(data)
 
 	data = frappe._dict(data)
+	salad_lot_id = data.get("lot_id")
+
+	if not salad_lot_id:
+		frappe.throw(_("Missing lot_id"), frappe.ValidationError)
+
+	data_name = f"Mix Product {salad_lot_id}"
+
+	# only a single repack is allowed per lot_id
+	existing_se = get_existing_mix_stock_entry(salad_lot_id)
+	if existing_se:
+		# make sure the log is marked complete (Mapped) to the produced repack
+		if frappe.db.exists("FOMS Data Mapping", {"data_type": "Stock Entry", "data_name": data_name}):
+			update_data_result(
+				data_type="Stock Entry",
+				data_name=data_name,
+				result_name=existing_se,
+				result_doctype="Stock Entry",
+			)
+			frappe.db.commit()
+		return {
+			"result": True,
+			"message": "Already complete",
+			"stock_entry": existing_se,
+		}
+
+	# if there is already a pending (not yet executed) job for this lot, report it
+	existing_log = frappe.db.get_value(
+		"FOMS Data Mapping",
+		{"data_type": "Stock Entry", "data_name": data_name},
+		["name", "status"],
+		as_dict=True,
+	)
+	if existing_log and existing_log.status == "In Progress":
+		return {
+			"result": True,
+			"message": "In Progress",
+		}
+
+	# register the pending job, the scheduler will execute it once the
+	# child batches are fully available
+	create_foms_data(
+		data_type="Stock Entry",
+		data_name=data_name,
+		raw=data,
+		reopen=1,
+		endpoint="submit_salad_finished_goods",
+	)
+	frappe.db.commit()
+
+	return {
+		"result": True,
+		"message": "Scheduled",
+	}
+
+
+def get_existing_mix_stock_entry(salad_lot_id):
+	"""Return the submitted Repack Stock Entry already produced for this lot, if any."""
+	return frappe.db.get_value(
+		"Stock Entry",
+		{"fom_lot_id": salad_lot_id, "purpose": "Repack", "docstatus": 1},
+		"name",
+	)
+
+
+def mix_children_ready(children):
+	"""Check every child material already has an existing batch with available stock.
+
+	Child batches are produced by other work orders, so the mix can only run once
+	all of them are complete (batch exists AND has stock qty)."""
+	for child in children or []:
+		child = frappe._dict(child)
+		batch_no = child.get("batch_no")
+		lot_id = child.get("lot_id")
+
+		if not batch_no and lot_id:
+			batch_no = get_batch_from_lot_id(lot_id)
+
+		if not batch_no or not frappe.db.exists("Batch", batch_no):
+			return False
+
+		warehouse = child.get("warehouse")
+		available = get_batch_qty(batch_no=batch_no, warehouse=warehouse)
+		if warehouse:
+			total = flt(available)
+		else:
+			# no warehouse: get_batch_qty returns a list of {warehouse, qty}
+			total = sum(flt(row.get("qty")) for row in (available or []))
+		if total <= 0:
+			return False
+
+	return True
+
+
+def _submit_salad_finished_goods_now(data):
+	if isinstance(data, str):
+		data = json.loads(data)
+
+	data = frappe._dict(data)
 	salad_item_code = data.get("salad_item_code")
 	salad_lot_id = data.get("lot_id")
 	qty = flt(data.get("qty"))
@@ -2904,6 +3017,15 @@ def submit_salad_finished_goods(data):
 	children = data.get("children") or []
 	if isinstance(children, str):
 		children = json.loads(children or "[]")
+
+	# guard against double submit for the same lot
+	existing_se = get_existing_mix_stock_entry(salad_lot_id)
+	if existing_se:
+		return {
+			"result": True,
+			"message": "Already complete",
+			"stock_entry": existing_se,
+		}
 
 	data_name = f"Mix Product {salad_lot_id}"
 	log = create_foms_data(
