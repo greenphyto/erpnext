@@ -1050,6 +1050,74 @@ def run_pending_harvesting():
 		err_msg = "\n".join([f"{e['data_name']}:\n{e['error']}\n{e['traceback']}" for e in errors])
 		frappe.throw(_(f"Errors occurred during scheduled harvesting finish:\n{err_msg}"))
 
+def run_pending_mix_product():
+	from erpnext.controllers.foms import (
+		_submit_salad_finished_goods_now,
+		get_existing_mix_stock_entry,
+		mix_children_ready,
+	)
+
+	now_time = get_datetime()
+	old_range = now_time - timedelta(days=10)
+
+	errors = []
+
+	data_list = frappe.db.sql(
+		"""
+		select name, raw_data, data_name
+		from `tabFOMS Data Mapping`
+		where status in ('Unknown', 'In Progress')
+			and data_type = 'Stock Entry'
+			and endpoint = 'submit_salad_finished_goods'
+			and created_on between %s and %s
+		""",
+		(old_range, now_time),
+		as_dict=1,
+	)
+	for d in data_list:
+		data = json.loads(d.raw_data)
+		salad_lot_id = data.get("lot_id")
+		if not salad_lot_id:
+			continue
+
+		# lot already produced a repack: mark the log as complete (Mapped) like a
+		# finished process and move on
+		existing_se = get_existing_mix_stock_entry(salad_lot_id)
+		if existing_se:
+			update_data_result(
+				data_type="Stock Entry",
+				data_name=d.data_name,
+				result_name=existing_se,
+				result_doctype="Stock Entry",
+				name_id=d.name,
+			)
+			frappe.db.commit()
+			continue
+
+		children = data.get("children") or []
+		if isinstance(children, str):
+			children = json.loads(children or "[]")
+
+		# wait until every child batch (from other work orders) exists and has stock
+		if not mix_children_ready(children):
+			continue
+
+		try:
+			_submit_salad_finished_goods_now(data)
+			frappe.db.commit()
+		except Exception as e:
+			frappe.db.rollback()
+			errors.append({
+				"data_name": d.data_name,
+				"error": str(e),
+				"traceback": frappe.get_traceback()
+			})
+
+	if errors:
+		frappe.log_error(message=json.dumps(errors), title="Error in scheduled mix product")
+		err_msg = "\n".join([f"{e['data_name']}:\n{e['error']}\n{e['traceback']}" for e in errors])
+		frappe.throw(_(f"Errors occurred during scheduled mix product:\n{err_msg}"))
+
 def add_wip_additional_cost(stock_entry, work_order):
 	# get all additional from transfer material
 	data = frappe.db.sql("""
