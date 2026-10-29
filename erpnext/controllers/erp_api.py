@@ -2104,7 +2104,12 @@ def update_batch_distribution(erpWorkOrderID, breakdown):
 		result_doctype="Batch",
 	)
 
-	return {"result": True, "batch": batch_id}
+	return {
+		"status": "success",
+		"erpWorkOrderID": erpWorkOrderID,
+		"batch": batch_id,
+		"rows": len(breakdown),
+	}
 
 
 @frappe.whitelist()
