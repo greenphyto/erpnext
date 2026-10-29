@@ -2195,6 +2195,13 @@ def update_batch_distribution(erpWorkOrderID, breakdown):
 		name_id=log.name,
 	)
 
+	return {
+		"status": "success",
+		"erpWorkOrderID": erpWorkOrderID,
+		"batch": batch_id,
+		"rows": len(breakdown),
+	}
+
 
 @frappe.whitelist()
 def submit_salad_finished_goods(data=None, **kwargs):
