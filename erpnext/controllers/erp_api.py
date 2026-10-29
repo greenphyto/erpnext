@@ -1973,7 +1973,8 @@ def update_batch_distribution(erpWorkOrderID, breakdown):
 	if not erpWorkOrderID:
 		frappe.throw(_("erpWorkOrderID is required"))
 
-	breakdown = get_data(breakdown)
+	if isinstance(breakdown, string_types):
+		breakdown = json.loads(breakdown)
 	if not isinstance(breakdown, (list, tuple)):
 		frappe.throw(_("breakdown must be a list"))
 
@@ -1988,7 +1989,6 @@ def update_batch_distribution(erpWorkOrderID, breakdown):
 		data_name=data_name,
 		raw=log_data,
 		reopen=1,
-		endpoint="update_batch_distribution",
 	)
 	make_in_progress(log.name)
 
@@ -2034,7 +2034,6 @@ def update_batch_distribution(erpWorkOrderID, breakdown):
 		data_name=data_name,
 		result_name=batch_id,
 		result_doctype="Batch",
-		name_id=log.name,
 	)
 
 	return {"result": True, "batch": batch_id}
