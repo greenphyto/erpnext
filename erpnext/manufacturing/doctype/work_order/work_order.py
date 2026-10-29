@@ -521,6 +521,65 @@ class WorkOrder(Document):
 			"update_produced_pending_qty", produced_qty, self.production_plan_item
 		)
 
+	def after_insert(self):
+		self.notify_missing_packaging_uom()
+
+	def notify_missing_packaging_uom(self):
+		if not self.packet_size or not self.production_item:
+			print(10000)
+			return
+
+		existing_uoms = frappe.get_all(
+			"UOM Conversion Detail",
+			filters={
+				"parent": self.production_item,
+				"parenttype": "Item",
+				"uom": self.packet_size,
+			},
+			limit=1,
+		)
+		if existing_uoms:
+			print(222222)
+			return
+
+		recipients = frappe.local.conf.email_support
+		if isinstance(recipients, str):
+			try:
+				recipients = json.loads(recipients)
+			except (ValueError, TypeError):
+				recipients = [recipients]
+		if isinstance(recipients, str):
+			recipients = [recipients]
+		if not recipients:
+			print(444444)
+			return
+
+		subject = _("New Work Order {0} uses undefined packaging size {1}").format(
+			self.name, self.packet_size
+		)
+		message = (
+			_("Hi,")
+			+ "<br><br>"
+			+ _(
+				"A new Work Order {0} was created using packaging size {1}, "
+				"but this UOM is not present in the UOM Conversion Detail of Item {2}."
+			).format(
+				get_link_to_form(self.doctype, self.name),
+				frappe.bold(self.packet_size),
+				get_link_to_form("Item", self.production_item),
+			)
+			+ "<br><br>"
+			+ _("Please add the packaging UOM to the item's UOM conversion table.")
+		)
+		frappe.sendmail(
+			recipients=recipients,
+			subject=subject,
+			message=message,
+			reference_doctype=self.doctype,
+			reference_name=self.name,
+			now=False,
+		)
+
 	def before_submit(self):
 		self.create_serial_no_batch_no()
 
