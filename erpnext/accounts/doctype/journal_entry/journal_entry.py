@@ -1504,6 +1504,12 @@ def make_reverse_journal_entry(source_name, target_doc=None):
 
 	def post_process(source, target):
 		target.reversal_of = source.name
+		target.user_remark = source.user_remark
+		target.remark = source.remark
+		target.cheque_no = source.cheque_no
+		target.cheque_date = source.cheque_date
+		target.bill_no = source.bill_no
+		target.pay_to_recd_from = source.pay_to_recd_from
 
 	doclist = get_mapped_doc(
 		"Journal Entry",
@@ -1519,6 +1525,8 @@ def make_reverse_journal_entry(source_name, target_doc=None):
 					"debit": "credit",
 					"credit_in_account_currency": "debit_in_account_currency",
 					"credit": "debit",
+					"user_remark": "user_remark",
+					"bank_account": "bank_account",
 				},
 			},
 		},
