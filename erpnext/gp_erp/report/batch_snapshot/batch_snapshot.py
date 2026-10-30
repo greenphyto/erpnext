@@ -12,6 +12,7 @@ TYPE_MAP = {
 }
 
 MY_CUSTOMER = "Greenphyto Tech Sdn Bhd"
+KG_UOM = "Kg"
 
 
 def execute(filters=None):
@@ -77,8 +78,9 @@ def get_data(filters):
 	batch_names = [b.batch_no for b in batches]
 	item_codes = list({b.item_code for b in batches if b.item_code})
 
-	in_map = get_in_qty(batch_names, filters)
-	draft_map, out_map = get_delivery_qty(batch_names, filters)
+	manufacture_in_map, other_in_map = get_in_qty(batch_names, filters)
+	draft_map = get_draft_qty(batch_names, filters)
+	out_map = get_out_qty(batch_names, filters)
 	distribution_map = get_distribution_qty(batch_names, item_codes)
 
 	active_rows = []
@@ -87,10 +89,10 @@ def get_data(filters):
 	for b in batches:
 		suffix = TYPE_MAP.get(b.batch_type or "Default", "default")
 
-		in_qty = flt(in_map.get(b.batch_no))
-		draft_qty = flt(draft_map.get(b.batch_no))
-		out_qty = flt(out_map.get(b.batch_no))
-		left_qty = in_qty - draft_qty - out_qty
+		manufacture_in = flt(manufacture_in_map.get(b.batch_no))
+		other_in = flt(other_in_map.get(b.batch_no))
+		draft_by_suffix = draft_map.get(b.batch_no) or {}
+		out_by_suffix = out_map.get(b.batch_no) or {}
 
 		row = {
 			"item_name": b.item_name,
@@ -107,13 +109,16 @@ def get_data(filters):
 		distribution = distribution_map.get(b.batch_no)
 		if distribution:
 			for dist_suffix, dist_qty in distribution.items():
-				row["in_" + dist_suffix] = flt(dist_qty)
-			row["draft_" + suffix] = draft_qty
-			row["out_" + suffix] = out_qty
+				row["in_" + dist_suffix] += flt(dist_qty)
 		else:
-			row["in_" + suffix] = in_qty
-			row["draft_" + suffix] = draft_qty
-			row["out_" + suffix] = out_qty
+			row["in_" + suffix] += manufacture_in
+
+		row["in_default"] += other_in
+
+		for dsuffix, dqty in draft_by_suffix.items():
+			row["draft_" + dsuffix] = flt(dqty)
+		for osuffix, oqty in out_by_suffix.items():
+			row["out_" + osuffix] = flt(oqty)
 
 		row["left_default"] = row["in_default"] - row["draft_default"] - row["out_default"]
 		row["left_my"] = row["in_my"] - row["draft_my"] - row["out_my"]
@@ -192,32 +197,45 @@ def classify_packaging(packaging, packaging_customer):
 def get_in_qty(batch_names, filters):
 	conditions = ""
 	if filters.get("company"):
-		conditions += " AND se.company = %(company)s"
+		conditions += " AND sle.company = %(company)s"
 	if filters.get("warehouse"):
-		conditions += " AND sed.t_warehouse = %(warehouse)s"
+		conditions += " AND sle.warehouse = %(warehouse)s"
 
 	params = dict(filters)
 	params["batch_names"] = batch_names
 
 	rows = frappe.db.sql(
 		"""
-		SELECT sed.batch_no, SUM(sed.qty) AS qty
-		FROM `tabStock Entry` se
-			INNER JOIN `tabStock Entry Detail` sed ON sed.parent = se.name
-		WHERE se.docstatus = 1
-			AND se.purpose = 'Manufacture'
-			AND IFNULL(sed.is_finished_item, 0) = 1
-			AND sed.batch_no IN %(batch_names)s
+		SELECT
+			sle.batch_no,
+			CASE
+				WHEN sle.voucher_type = 'Stock Entry' AND se.purpose = 'Manufacture'
+				THEN 1 ELSE 0
+			END AS is_manufacture,
+			SUM(sle.actual_qty) AS qty
+		FROM `tabStock Ledger Entry` sle
+			LEFT JOIN `tabStock Entry` se
+				ON sle.voucher_type = 'Stock Entry'
+				AND se.name = sle.voucher_no
+		WHERE IFNULL(sle.is_cancelled, 0) = 0
+			AND sle.actual_qty > 0
+			AND sle.batch_no IN %(batch_names)s
 			{conditions}
-		GROUP BY sed.batch_no
+		GROUP BY sle.batch_no, is_manufacture
 		""".format(conditions=conditions),
 		params,
 		as_dict=1,
 	)
-	return {d.batch_no: flt(d.qty) for d in rows}
+
+	manufacture_map = {}
+	other_map = {}
+	for d in rows:
+		target = manufacture_map if d.is_manufacture else other_map
+		target[d.batch_no] = target.get(d.batch_no, 0) + flt(d.qty)
+	return manufacture_map, other_map
 
 
-def get_delivery_qty(batch_names, filters):
+def get_draft_qty(batch_names, filters):
 	conditions = ""
 	if filters.get("company"):
 		conditions += " AND dn.company = %(company)s"
@@ -229,26 +247,82 @@ def get_delivery_qty(batch_names, filters):
 
 	rows = frappe.db.sql(
 		"""
-		SELECT dni.batch_no, dn.docstatus AS docstatus, SUM(dni.stock_qty) AS qty
+		SELECT
+			dni.batch_no,
+			dn.customer AS customer,
+			dni.uom AS uom,
+			SUM(dni.stock_qty) AS qty
 		FROM `tabDelivery Note` dn
 			INNER JOIN `tabDelivery Note Item` dni ON dni.parent = dn.name
-		WHERE dn.docstatus < 2
+		WHERE dn.docstatus = 0
 			AND dni.batch_no IN %(batch_names)s
 			{conditions}
-		GROUP BY dni.batch_no, dn.docstatus
+		GROUP BY dni.batch_no, dn.customer, dni.uom
 		""".format(conditions=conditions),
 		params,
 		as_dict=1,
 	)
 
 	draft_map = {}
+	for d in rows:
+		suffix = classify_delivery(d.uom, d.customer)
+		bucket = draft_map.setdefault(d.batch_no, {})
+		bucket[suffix] = bucket.get(suffix, 0) + flt(d.qty)
+	return draft_map
+
+
+def get_out_qty(batch_names, filters):
+	conditions = ""
+	if filters.get("company"):
+		conditions += " AND sle.company = %(company)s"
+	if filters.get("warehouse"):
+		conditions += " AND sle.warehouse = %(warehouse)s"
+
+	params = dict(filters)
+	params["batch_names"] = batch_names
+
+	rows = frappe.db.sql(
+		"""
+		SELECT
+			sle.batch_no,
+			sle.voucher_type AS voucher_type,
+			dn.customer AS customer,
+			dni.uom AS uom,
+			SUM(-sle.actual_qty) AS qty
+		FROM `tabStock Ledger Entry` sle
+			LEFT JOIN `tabDelivery Note Item` dni
+				ON sle.voucher_type = 'Delivery Note'
+				AND dni.name = sle.voucher_detail_no
+			LEFT JOIN `tabDelivery Note` dn
+				ON sle.voucher_type = 'Delivery Note'
+				AND dn.name = sle.voucher_no
+		WHERE IFNULL(sle.is_cancelled, 0) = 0
+			AND sle.actual_qty < 0
+			AND sle.batch_no IN %(batch_names)s
+			{conditions}
+		GROUP BY sle.batch_no, sle.voucher_type, dn.customer, dni.uom
+		""".format(conditions=conditions),
+		params,
+		as_dict=1,
+	)
+
 	out_map = {}
 	for d in rows:
-		if d.docstatus == 0:
-			draft_map[d.batch_no] = draft_map.get(d.batch_no, 0) + flt(d.qty)
-		elif d.docstatus == 1:
-			out_map[d.batch_no] = out_map.get(d.batch_no, 0) + flt(d.qty)
-	return draft_map, out_map
+		if d.voucher_type == "Delivery Note":
+			suffix = classify_delivery(d.uom, d.customer)
+		else:
+			suffix = "default"
+		bucket = out_map.setdefault(d.batch_no, {})
+		bucket[suffix] = bucket.get(suffix, 0) + flt(d.qty)
+	return out_map
+
+
+def classify_delivery(uom, customer):
+	if uom == KG_UOM:
+		return "no_pack"
+	if customer == MY_CUSTOMER:
+		return "my"
+	return "default"
 
 
 def get_h_days(manufacturing_date):
