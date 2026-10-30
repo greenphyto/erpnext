@@ -1709,10 +1709,10 @@ def get_delivery_by_lotid(lotid=None, delivery_date=""):
 	return data
 
 @frappe.whitelist()
-def update_package_size(lotID, newSize):
-	existing_work_order = frappe.db.get_value("Work Order", {"foms_lot_name": lotID})
+def update_package_size(lotId, newSize):
+	existing_work_order = frappe.db.get_value("Work Order", {"foms_lot_name": lotId})
 	if not existing_work_order:
-		frappe.throw(_(f"No Work Order found for Lot ID {lotID}"), frappe.DoesNotExistError)
+		frappe.throw(_(f"No Work Order found for Lot ID {lotId}"), frappe.DoesNotExistError)
 
 	# find packaging size name
 	packname = frappe.get_value("Packaging", {"quantity": newSize, "uom":"Gram"}, "name") or frappe.throw(_(f"Packaging Size {newSize} Gram not found"), frappe.DoesNotExistError)
@@ -2127,18 +2127,18 @@ def get_item_uom(item_code):
 	}
 
 @frappe.whitelist()
-def update_batch_distribution(erpWorkOrderID, breakdown):
-	if not erpWorkOrderID:
-		frappe.throw(_("erpWorkOrderID is required"))
+def update_batch_distribution(lotId, breakdown):
+	if not lotId:
+		frappe.throw(_("lotId is required"))
 
 	breakdown = get_data(breakdown)
 	if not isinstance(breakdown, (list, tuple)):
 		frappe.throw(_("breakdown must be a list"))
 
 	# register tracing log so failed sync leaves a trace
-	data_name = f"Batch Distribution {erpWorkOrderID}"
+	data_name = f"Batch Distribution {lotId}"
 	log_data = {
-		"erpWorkOrderID": erpWorkOrderID,
+		"lotId": lotId,
 		"breakdown": breakdown,
 	}
 	log = create_foms_data(
@@ -2151,22 +2151,11 @@ def update_batch_distribution(erpWorkOrderID, breakdown):
 	make_in_progress(log.name)
 
 	try:
-		batch_id = frappe.db.sql("""
-			SELECT DISTINCT sed.batch_no
-			FROM `tabStock Entry` se
-			INNER JOIN `tabStock Entry Detail` sed ON sed.parent = se.name
-			WHERE se.work_order = %(work_order)s
-				AND se.purpose = 'Manufacture'
-				AND se.docstatus = 1
-				AND sed.is_finished_item = 1
-				AND IFNULL(sed.batch_no, '') != ''
-			LIMIT 1
-		""", {"work_order": erpWorkOrderID}, pluck=True)
+		batch_id = frappe.db.get_value("Batch", {"foms_lot_id": lotId}, "name")
 
 		if not batch_id:
-			frappe.throw(_(f"No Batch found for Work Order {erpWorkOrderID}"), frappe.DoesNotExistError)
+			frappe.throw(_(f"No Batch found for lot_id {lotId}"), frappe.DoesNotExistError)
 
-		batch_id = batch_id[0]
 		batch = frappe.get_doc("Batch", batch_id)
 		batch.set("batch_distribution", [])
 		for row in breakdown:
@@ -2197,7 +2186,7 @@ def update_batch_distribution(erpWorkOrderID, breakdown):
 
 	return {
 		"status": "success",
-		"erpWorkOrderID": erpWorkOrderID,
+		"lotId": lotId,
 		"batch": batch_id,
 		"rows": len(breakdown),
 	}
