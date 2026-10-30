@@ -1520,6 +1520,11 @@
                       "qty": {"type": "number"},
                       "expiry_date": {"type": "string", "format": "date"},
                       "warehouse": {"type": "string"},
+                      "requestNo": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of Request numbers referenced for this finished goods. Stored as CSV in Stock Entry.request_no."
+                      },
                       "children": {
                         "type": "array",
                         "items": {
@@ -1549,6 +1554,7 @@
                         "qty": 1,
                         "expiry_date": "2026-09-01",
                         "warehouse": "",
+                        "requestNo": ["REQ-0001", "REQ-0002"],
                         "children": [
                           {"item_code": "PR-AV-KL", "lot_id": "26-0101", "qty": 0.5, "uom": "kg", "warehouse": ""},
                           {"item_code": "PR-AV-DRE", "lot_id": "26-0102", "qty": 0.3, "uom": "kg", "warehouse": ""},
@@ -1567,6 +1573,7 @@
                         "qty": 1,
                         "expiry_date": "2026-09-01",
                         "warehouse": "",
+                        "requestNo": ["REQ-0001", "REQ-0002"],
                         "children": [
                           {"item_code": "PR-AV-KL", "batch_no": "PR-AV-KL-BN00359", "qty": 0.5, "uom": "kg", "warehouse": ""},
                           {"item_code": "PR-AV-DRE", "batch_no": "PR-AV-DRE-BN00313", "qty": 0.3, "uom": "kg", "warehouse": ""},
@@ -2653,16 +2660,16 @@
     "/erpnext.controllers.erp_api.update_batch_distribution": {
       "post": {
         "summary": "Update Batch Distribution",
-        "description": "Update the batch distribution breakdown (packaging, qty, uom) for all batches linked to the given Work Order. Stored in Batch.batch_distribution child table.",
+        "description": "Update the batch distribution breakdown (packaging, qty, uom) for the batch matching the given lot ID (Batch.foms_lot_id). Stored in Batch.batch_distribution child table.",
         "operationId": "update batch distribution",
         "requestBody": {
-          "description": "Batch distribution breakdown for a Work Order",
+          "description": "Batch distribution breakdown for a lot ID",
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "erpWorkOrderID": {
+                  "lotId": {
                     "type": "string"
                   },
                   "breakdown": {
@@ -2685,7 +2692,7 @@
                   }
                 },
                 "example": {
-                  "erpWorkOrderID": "26-1234-001",
+                  "lotId": "26-1234",
                   "breakdown": [
                     {
                       "packaging": "Package (140g) - GP Type A",
@@ -2726,14 +2733,14 @@
             }
           },
           "404": {
-            "description": "No batch found for Work Order",
+            "description": "No batch found for lot ID",
             "content": {
               "application/json": {
                 "schema": {
                   "example": {
                     "message": {
                       "result": false,
-                      "error": "No Batch found for Work Order 26-1234-001"
+                      "error": "No Batch found for lot_id 26-1234-001"
                     }
                   }
                 }

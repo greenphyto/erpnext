@@ -2858,6 +2858,9 @@ def _submit_salad_finished_goods_now(data):
 	children = data.get("children") or []
 	if isinstance(children, str):
 		children = json.loads(children or "[]")
+	request_no = data.get("requestNo") or []
+	if isinstance(request_no, str):
+		request_no = json.loads(request_no or "[]")
 
 	# guard against double submit for the same lot
 	existing_se = get_existing_mix_stock_entry(salad_lot_id)
@@ -2911,6 +2914,7 @@ def _submit_salad_finished_goods_now(data):
 		se.fg_completed_qty = qty
 		se.to_warehouse = fg_warehouse
 		se.fom_lot_id = salad_lot_id
+		se.request_no = ",".join(str(r) for r in request_no) if request_no else None
 
 		packaging = frappe.db.get_value(
 			"Packaging List Available",
