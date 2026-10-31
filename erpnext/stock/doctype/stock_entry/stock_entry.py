@@ -1374,7 +1374,7 @@ class StockEntry(StockEntryAsset, StockController):
 
 				item_account_wise_additional_cost.setdefault((d.item_code, d.name), {})
 				item_account_wise_additional_cost[(d.item_code, d.name)].setdefault(
-					t.expense_account, {"amount": 0.0, "base_amount": 0.0}
+					t.expense_account, {"amount": 0.0, "base_amount": 0.0, "cost_center": None}
 				)
 
 				multiply_based_on = d.basic_amount if total_basic_amount else d.qty
@@ -1386,6 +1386,14 @@ class StockEntry(StockEntryAsset, StockController):
 				item_account_wise_additional_cost[(d.item_code, d.name)][t.expense_account]["base_amount"] += (
 					flt(t.base_amount * multiply_based_on) / divide_based_on
 				)
+
+				# remember the additional-cost row's own cost center so the P&L
+				# leg can use it when the finished-good row has none (balance
+				# sheet stock accounts force an empty cost center)
+				if t.get("cost_center"):
+					item_account_wise_additional_cost[(d.item_code, d.name)][t.expense_account]["cost_center"] = (
+						t.cost_center
+					)
 			
 			# if item not set so do additional cost only
 			if not item_account_wise_additional_cost:
@@ -1423,12 +1431,17 @@ class StockEntry(StockEntryAsset, StockController):
 					if not amount:
 						continue
 
+					# the finished-good (incoming) row carries a balance-sheet
+					# stock account whose cost center is forced empty; fall back
+					# to the additional-cost row's cost center for the P&L leg
+					additional_cost_center = amount.get("cost_center") or d.cost_center
+
 					gl_entries.append(
 						self.get_gl_dict(
 							{
 								"account": account,
 								"against": d.expense_account,
-								"cost_center": d.cost_center,
+								"cost_center": additional_cost_center,
 								"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
 								"credit_in_account_currency": flt(amount["amount"]),
 								"credit": flt(amount["base_amount"]),
@@ -1490,7 +1503,11 @@ class StockEntry(StockEntryAsset, StockController):
 								else:
 									total_amount -= gl.debit
 
-						debit_amount = prev_wip.amount - flt(total_amount, 2)
+						# additional costs (e.g. Rate Card manpower/utilities) are
+						# already posted to their own expense accounts and capitalised
+						# into the finished-good value; exclude them from the WIP rate
+						# variance so they are not double-booked to the variance account
+						debit_amount = prev_wip.amount - flt(total_amount, 2) + flt(self.total_additional_costs, 2)
 					
 					if debit_amount:
 						row = self.get_gl_dict(

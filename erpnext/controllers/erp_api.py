@@ -15,7 +15,7 @@ from erpnext.controllers.foms import (
 	get_operation_map_name,
 	create_finish_goods_stock as _create_finish_goods_stock,
 	create_packaging, update_so_working, create_do_based_on_work_order,
-	get_cost_center, get_default_expense_production_account, 
+	get_cost_center,
 	get_previous_operation
 )
 from erpnext.stock.stock_ledger import get_valuation_rate
@@ -482,10 +482,11 @@ def make_stock_entry_with_materials(wo_doc, job_card_name, materials, wip_wareho
 	if missing_warehouses:
 		frappe.throw(f"Warehouse not found: {', '.join(set(missing_warehouses))}")
 
-	# NOTE: operating cost (electrical/consumable/machinery/wages/rent) is no
-	# longer booked here per operation on gross_weight. Per Finance, the cost
-	# is booked once at the end of the process on the saleable qty, see
-	# add_operation_additional_costs() called from _submit_work_order_finish_goods.
+	# NOTE: manpower/utilities cost is no longer booked here per operation on
+	# gross_weight. Per Finance (Option 2), the cost is booked once at the end
+	# of the process on the saleable qty from the production item's Rate Card,
+	# see add_rate_card_additional_costs() called from
+	# _submit_work_order_finish_goods.
 	se.additional_costs = []
 
 	se.set_rate_for_outgoing_items()
@@ -865,67 +866,16 @@ def get_saleable_qty(se_doc):
 	return qty
 
 
-def add_operation_additional_costs(se_doc, wo_doc, company=""):
-	"""Book operating cost (electrical/consumable/machinery/wages/rent) from
-	the BOM operations as additional costs on the finish Manufacture entry.
-
-	This replaces the per-operation booking that used gross_weight; per
-	Finance the cost is applied once at the end of the process on the net
-	saleable qty (the finished-good rows going into the FG warehouse).
-
-	Reuses the comprehensive cost-field mechanism of the official rate-card
-	path (all BOM operations, all cost fields), only changing WHEN and on
-	WHICH qty it is booked.
-	"""
-	company = company or se_doc.company
-
-	saleable_qty = get_saleable_qty(se_doc)
-	if saleable_qty <= 0:
-		return
-
-	expense_account = get_default_expense_production_account(company)
-	cost_center = frappe.get_value("Company", company, "cost_center_for_packing")
-
-	cost_fields = ["electrical_cost", "consumable_cost", "machinery_cost", "wages_cost", "rent_cost"]
-	descriptions = {
-		"electrical_cost": "Utilities Cost",
-		"consumable_cost": "Consumable Cost",
-		"machinery_cost": "Machinery Cost",
-		"wages_cost": "Wages Cost",
-		"rent_cost": "Rent Cost",
-	}
-
-	# aggregate per-kg rates across all operations of the BOM
-	totals = {f: 0.0 for f in cost_fields}
-	for op in wo_doc.get("operations") or []:
-		for field in cost_fields:
-			totals[field] += flt(op.get(field))
-
-	for field in cost_fields:
-		rate = totals[field]
-		amount = rate * saleable_qty
-		if amount <= 0:
-			continue
-		row = se_doc.append("additional_costs")
-		row.expense_account = expense_account
-		row.amount = amount
-		row.cost_center = cost_center
-		row.description = descriptions[field]
-
-
 def add_rate_card_additional_costs(se_doc, wo_doc, qty):
 	"""Append manpower + utilities (electricity) from the production item's
 	Rate Card (Harvesting operation) as additional costs on the finish
 	Manufacture entry, so the cost is capitalised into the finished-good
 	valuation and posted to GL instead of only shown in reports.
 
-	Rate Card rates are per kg; amount = produced qty * rate.
+	Rate Card rates are per kg; amount = saleable qty * rate.
 	Expense accounts come from the Rate Card (expense_for_manpower /
 	expense_for_utilities). Rows with a missing account or zero amount are
 	skipped.
-
-	NOTE: superseded by add_operation_additional_costs (comprehensive, all
-	cost fields, saleable-qty based). Kept for reference.
 	"""
 	rate_card = frappe.db.get_value("Item", wo_doc.production_item, "rate_card")
 	if not rate_card:
@@ -940,15 +890,29 @@ def add_rate_card_additional_costs(se_doc, wo_doc, qty):
 	if not detail:
 		return
 
-	produced_qty = flt(qty) or flt(wo_doc.qty)
-	cost_center = frappe.get_value("Company", se_doc.company, "cost_center_for_production")
+	# qty is the net saleable qty (finished-good rows); do not fall back to
+	# wo_doc.qty which is the gross/initiated qty
+	produced_qty = flt(qty)
+	if produced_qty <= 0:
+		return
+	# manpower/utilities are production costs; prefer the production cost
+	# center, then fall back to packing / company default so the P&L expense
+	# GL legs always have a cost center
+	cost_center = (
+		frappe.get_value("Company", se_doc.company, "cost_center_for_production")
+		or frappe.get_value("Company", se_doc.company, "cost_center_for_packing")
+		or frappe.get_value("Company", se_doc.company, "cost_center")
+	)
 
 	# the additional-cost GL legs are posted against the finished-good item
-	# row's cost center (see stock_entry.get_gl_entries), so make sure the FG
-	# rows carry one for the P&L expense accounts
+	# row's cost center (see stock_entry.get_gl_entries), so make sure every
+	# incoming (t_warehouse) row carries one for the P&L expense accounts.
+	# Assign unconditionally: validate_cost_center() during save only
+	# overwrites from the account default when that account has one, otherwise
+	# it keeps this value.
 	if cost_center:
 		for d in se_doc.get("items"):
-			if d.t_warehouse and not d.cost_center:
+			if d.t_warehouse:
 				d.cost_center = cost_center
 
 	cost_rows = [
@@ -1054,11 +1018,11 @@ def _submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate
 
 	se_doc.set_expense_account()
 
-	# Book operating cost (electrical/consumable/machinery/wages/rent) from the
-	# BOM operations once here, on the net saleable qty (finished-good rows).
-	# Replaces the per-operation gross_weight booking in
-	# make_stock_entry_with_materials.
-	add_operation_additional_costs(se_doc, wo_doc, company=se_doc.company)
+	# Book manpower + utilities from the production item's Rate Card once here,
+	# on the net saleable qty (finished-good rows), using the Rate Card expense
+	# accounts. Per Finance (Option 2): standard cost = saleable qty x rate/kg,
+	# capitalised into finished-good valuation, scrap not charged.
+	add_rate_card_additional_costs(se_doc, wo_doc, get_saleable_qty(se_doc))
 
 	se_doc.flags.ignore_double_entries = 1
 
