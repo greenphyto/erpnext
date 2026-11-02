@@ -190,6 +190,7 @@ class AccountsController(TransactionBase):
 			if cint(self.allocate_advances_automatically) and not cint(self.get(pos_check_field)):
 				self.set_advances()
 
+			self.clear_missing_advance_reference_rows()
 			self.set_advance_gain_or_loss()
 
 			if self.is_return:
@@ -968,6 +969,30 @@ class AccountsController(TransactionBase):
 			}
 
 			self.append("advances", advance_row)
+
+	def clear_missing_advance_reference_rows(self):
+		"""If an advance row refers to a `reference_row` (child row of the source
+		voucher) that no longer exists, keep the parent reference and clear the
+		`reference_row` so that saving does not fail."""
+		row_doctype_map = {
+			"Journal Entry": "Journal Entry Account",
+			"Payment Entry": "Payment Entry Reference",
+		}
+
+		for d in self.get("advances"):
+			if not d.reference_row:
+				continue
+
+			child_doctype = row_doctype_map.get(d.reference_type)
+			if not child_doctype:
+				continue
+
+			exists = frappe.db.exists(
+				child_doctype,
+				{"name": d.reference_row, "parent": d.reference_name, "parenttype": d.reference_type},
+			)
+			if not exists:
+				d.reference_row = None
 
 	def get_advance_entries(self, include_unallocated=True):
 		if self.doctype == "Sales Invoice":
