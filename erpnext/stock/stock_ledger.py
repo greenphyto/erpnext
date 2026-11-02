@@ -613,9 +613,18 @@ class update_entries_after(object):
 		sle.stock_queue = json.dumps(self.wh_data.stock_queue)
 		sle.stock_value_difference = stock_value_difference
 		sle.doctype = "Stock Ledger Entry"
-		sle.outgoing_rate = (
-			abs(flt(sle.stock_value_difference)) / abs(sle.actual_qty) if sle.actual_qty else 0
-		)
+		if flt(sle.actual_qty) < 0:
+			# outgoing movement: recompute outgoing_rate, clear stale incoming_rate
+			sle.outgoing_rate = (
+				abs(flt(sle.stock_value_difference)) / abs(sle.actual_qty) if sle.actual_qty else 0
+			)
+			sle.incoming_rate = 0.0
+		else:
+			# incoming movement: incoming_rate is the valuation of the stock added
+			sle.incoming_rate = (
+				flt(sle.stock_value_difference) / flt(sle.actual_qty) if sle.actual_qty else 0
+			)
+			sle.outgoing_rate = 0.0
 
 		frappe.get_doc(sle).db_update()
 
