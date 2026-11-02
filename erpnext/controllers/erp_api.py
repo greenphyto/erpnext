@@ -277,7 +277,7 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 			frappe.throw(_(f"Missing BOM for child item {child_item}"), frappe.DoesNotExistError)
 
 		from erpnext.gp_erp.repeat_harvest import get_or_create_bridge_bom
-		bom_no = get_or_create_bridge_bom(item_code, child_item, child_bom)
+		bom_no = get_or_create_bridge_bom(item_code, child_bom)
 
 	qty = flt(qty) or 1
 	log = frappe._dict({
