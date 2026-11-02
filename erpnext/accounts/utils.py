@@ -1262,7 +1262,7 @@ def get_voucherwise_gl_entries(future_stock_vouchers, posting_date):
 
 	gles = frappe.db.sql(
 		"""
-		select name, account, credit, debit, cost_center, project, voucher_type, voucher_no
+		select name, account, credit, debit, cost_center, project, voucher_type, voucher_no, remarks
 			from `tabGL Entry`
 		where
 			posting_date >= %s and voucher_no in (%s)"""
