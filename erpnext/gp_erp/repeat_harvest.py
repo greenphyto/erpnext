@@ -66,7 +66,7 @@ def generate_repeat_harvest_work_orders(doc, method=""):
 			continue
 
 		# Build a bridge BOM that produces the parent item using the child's recipe
-		bom = get_or_create_bridge_bom(doc.production_item, rhi_data.item, child_bom)
+		bom = get_or_create_bridge_bom(doc.production_item, child_bom)
 
 		# Create the sequence Work Order: output = parent, raw material = child's recipe
 		child_wo = frappe.new_doc("Work Order")
@@ -106,19 +106,22 @@ def generate_repeat_harvest_work_orders(doc, method=""):
 		)
 
 
-def get_or_create_bridge_bom(parent_item, child_item, child_bom_name):
-	"""Return a BOM that produces `parent_item` using `child_item`'s recipe.
+def get_or_create_bridge_bom(parent_item, child_bom_name):
+	"""Return a BOM that produces `parent_item` using the child's recipe.
 
-	The bridge BOM is a copy of the child's default BOM with the output item
-	switched to the parent. It is reused across Work Orders (get-or-create),
-	is never marked as default, and leaves the parent's own default BOM untouched.
-	Costs are recalculated by ERPNext from the copied items/operations."""
+	The bridge BOM is a copy of the child's current default BOM
+	(`child_bom_name`) with the output item switched to the parent. It is
+	reused across Work Orders (get-or-create) keyed on the exact source BOM,
+	so when the child's default BOM changes to a newer version a fresh bridge
+	BOM is created from it. The bridge is never marked as default and leaves
+	the parent's own default BOM untouched. Costs are recalculated by ERPNext
+	from the copied items/operations."""
 
 	existing = frappe.db.get_value(
 		"BOM",
 		{
 			"item": parent_item,
-			"copy_from": child_item,
+			"copy_from": child_bom_name,
 			"is_active": 1,
 			"docstatus": 1,
 		},
@@ -131,10 +134,19 @@ def get_or_create_bridge_bom(parent_item, child_item, child_bom_name):
 	bridge.item = parent_item
 	bridge.is_default = 0
 	bridge.is_active = 1
-	bridge.copy_from = child_item
+	bridge.copy_from = child_bom_name
 	# Avoid colliding with the child's FOMS recipe version / default-naming logic
 	if bridge.meta.has_field("foms_recipe_version"):
 		bridge.foms_recipe_version = None
+
+	# Repeat harvest only re-runs Transplanting and Harvesting (no Seeding).
+	# Keep operations and the operation-linked raw materials for those stages only.
+	allowed_operations = ("Transplanting", "Harvesting")
+	bridge.operations = [op for op in bridge.operations if op.operation in allowed_operations]
+	bridge.items = [
+		it for it in bridge.items if not it.operation or it.operation in allowed_operations
+	]
+
 	bridge.insert(ignore_permissions=True)
 	bridge.submit()
 	return bridge.name

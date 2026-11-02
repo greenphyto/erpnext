@@ -151,12 +151,12 @@
     "oldfieldtype": "Check"
    },
    {
-    "description": "Child Item whose BOM this is copied from, for Repeat Harvest parent-recipe Work Orders",
+    "description": "Source BOM this is copied from, for Repeat Harvest parent-recipe Work Orders",
     "fieldname": "copy_from",
     "fieldtype": "Link",
-    "label": "Copy From (Repeat Harvest Child)",
+    "label": "Copy From (Repeat Harvest Source BOM)",
     "no_copy": 1,
-    "options": "Item",
+    "options": "BOM",
     "read_only": 1
    },
   {
