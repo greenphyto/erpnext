@@ -536,14 +536,16 @@ class SellingController(StockController):
 		self.make_sl_entries(sl_entries)
 
 	def get_sle_for_source_warehouse(self, item_row):
-		sle = self.get_sl_entries(
-			item_row,
-			{
-				"actual_qty": -1 * flt(item_row.qty),
-				"incoming_rate": item_row.incoming_rate,
-				"recalculate_rate": cint(self.is_return),
-			},
-		)
+		sle_args = {
+			"actual_qty": -1 * flt(item_row.qty),
+			"recalculate_rate": cint(self.is_return),
+		}
+		# For a return, the source warehouse receives stock back (incoming movement),
+		# so incoming_rate is relevant. For a normal delivery it is an outgoing movement
+		# and incoming_rate must stay 0 to avoid carrying a stale valuation.
+		if cint(self.is_return):
+			sle_args["incoming_rate"] = item_row.incoming_rate
+		sle = self.get_sl_entries(item_row, sle_args)
 		if item_row.target_warehouse and not cint(self.is_return):
 			sle.dependant_sle_voucher_detail_no = item_row.name
 

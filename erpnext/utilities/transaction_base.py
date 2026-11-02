@@ -55,6 +55,9 @@ class TransactionBase(StatusUpdater):
 				ref_dn = d.get(val["ref_dn_field"])
 				if ref_dn:
 					if is_child:
+						if not frappe.db.exists(key, ref_dn):
+							d.set(val["ref_dn_field"], None)
+							continue
 						self.compare_values({key: [ref_dn]}, val["compare_fields"], d)
 						if ref_dn not in item_ref_dn:
 							item_ref_dn.append(ref_dn)
