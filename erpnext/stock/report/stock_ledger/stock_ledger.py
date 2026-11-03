@@ -236,14 +236,14 @@ def get_columns(filters):
 				"fieldname": "voucher_no",
 				"fieldtype": "Dynamic Link",
 				"options": "voucher_type",
-				"width": 100,
+				"width": 180,
 			},
 			{
 				"label": _("Batch"),
 				"fieldname": "batch_no",
 				"fieldtype": "Link",
 				"options": "Batch",
-				"width": 100,
+				"width": 180,
 			},
 			{
 				"label": _("Serial No"),
