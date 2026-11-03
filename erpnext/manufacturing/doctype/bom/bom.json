@@ -17,7 +17,6 @@
   "cb0",
    "is_active",
    "is_default",
-   "copy_from",
    "allow_alternative_item",
   "set_rate_of_sub_assembly_item_based_on_bom",
   "project",
@@ -150,15 +149,6 @@
     "no_copy": 1,
     "oldfieldname": "is_default",
     "oldfieldtype": "Check"
-   },
-   {
-    "description": "Source BOM this is copied from, for Repeat Harvest parent-recipe Work Orders",
-    "fieldname": "copy_from",
-    "fieldtype": "Link",
-    "label": "Copy From (Repeat Harvest Source BOM)",
-    "no_copy": 1,
-    "options": "BOM",
-    "read_only": 1
    },
   {
    "default": "0",

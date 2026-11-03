@@ -233,7 +233,7 @@ def create_bom(data):
 
 @frappe.whitelist()
 def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, gross_weight, uom, submit=False, company="",
-					  repeatHarvestGroupID=None, childProductID=None, harvestSequence=None, harvestDate=None):
+					  repeatHarvestGroupID=None, parentProductID=None, harvestSequence=None, harvestDate=None):
 	if not company:
 		company = erpnext.get_default_company()
 
@@ -251,7 +251,7 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 		"submit":submit,
 		"company":company,
 		"repeatHarvestGroupID":repeatHarvestGroupID,
-		"childProductID":childProductID,
+		"parentProductID":parentProductID,
 		"harvestSequence":harvestSequence,
 		"harvestDate":harvestDate
 	}, endpoint="create_work_order")
@@ -265,20 +265,6 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 	if not bom_no:
 		frappe.throw(_(f"Missing BOM for {item_code}"), frappe.DoesNotExistError)
 
-	# Repeat harvest: when a child product is given, produce the parent item
-	# (item_code) using the child's recipe via a bridge BOM.
-	if childProductID:
-		child_item = frappe.get_value("Item", {"foms_product_id": childProductID})
-		if not child_item:
-			frappe.throw(_(f"Missing Item with Child Product ID {childProductID}"), frappe.DoesNotExistError)
-
-		child_bom = get_bom_for_work_order(child_item)
-		if not child_bom:
-			frappe.throw(_(f"Missing BOM for child item {child_item}"), frappe.DoesNotExistError)
-
-		from erpnext.gp_erp.repeat_harvest import get_or_create_bridge_bom
-		bom_no = get_or_create_bridge_bom(item_code, child_bom)
-
 	qty = flt(qty) or 1
 	log = frappe._dict({
 		"workOrderNo":fomsWorkOrderID,
@@ -290,7 +276,7 @@ def create_work_order(fomsWorkOrderID, fomsLotID, productID, salesOrderNo, qty, 
 		"use_rate_from_bom":0
 	}, company=company,
 		repeatHarvestGroupID=cint(repeatHarvestGroupID) if repeatHarvestGroupID else None,
-		childProductID=cint(childProductID) if childProductID else None,
+		parentProductID=cint(parentProductID) if parentProductID else None,
 		harvestSequence=cint(harvestSequence) if harvestSequence is not None else None,
 		harvestDate=harvestDate
 	)

@@ -178,7 +178,7 @@
     "/erpnext.controllers.erp_api.create_work_order": {
       "post": {
         "summary": "Create new Work Order in ERP",
-        "description": "Create a new Work Order in ERP. Supports optional repeat harvest trace fields for tracking child product harvests in FOMS.",
+        "description": "Create a new Work Order in ERP. Supports optional repeat harvest reference/trace fields.",
         "operationId": "create new Work Order",
         "requestBody": {
           "required": true,
@@ -229,27 +229,27 @@
                   },
                   "repeatHarvestGroupID": {
                     "type": "integer",
-                    "description": "Repeat Harvest Group ID from FOMS. Use when creating a child Work Order for repeat harvest."
+                    "description": "Repeat Harvest Group ID from FOMS. Reference/trace info for a repeat harvest Work Order."
                   },
-                  "childProductID": {
+                  "parentProductID": {
                     "type": "integer",
-                    "description": "Child Product ID from FOMS. Use when creating a child Work Order for repeat harvest."
+                    "description": "Parent Product ID from FOMS. Reference/trace info; the Work Order is still created for productID (the child) using the child's BOM."
                   },
                   "harvestSequence": {
                     "type": "integer",
-                    "description": "Harvest sequence number (1, 2, 3...). Use when creating a child Work Order for repeat harvest."
+                    "description": "Harvest sequence number (1, 2, 3...). Reference/trace info for a repeat harvest Work Order."
                   },
                   "harvestDate": {
                     "type": "string",
                     "format": "date",
-                    "description": "Planned harvest date (YYYY-MM-DD). Use when creating a child Work Order for repeat harvest."
+                    "description": "Planned harvest date (YYYY-MM-DD). Reference/trace info for a repeat harvest Work Order."
                   }
                 }
               },
               "examples": {
                 "normal_work_order": {
                   "summary": "Normal Work Order",
-                  "description": "Create a standard Work Order without repeat harvest fields",
+                  "description": "Create a standard Work Order without repeat harvest reference fields",
                   "value": {
                     "fomsWorkOrderID": "FOMS-001",
                     "fomsLotID": "LOT12",
@@ -263,12 +263,12 @@
                   }
                 },
                 "repeat_harvest_child": {
-                  "summary": "Repeat Harvest Child Work Order",
-                  "description": "Create a child Work Order for repeat harvest with trace fields. This is typically called after parent harvest completes, to track the child product harvest in FOMS.",
+                  "summary": "Repeat Harvest Work Order",
+                  "description": "Create a Work Order for a repeat harvest child product (productID) using the child's BOM. The parent product and other repeat harvest fields are stored as reference/trace info only.",
                   "value": {
                     "fomsWorkOrderID": "FOMS-002",
                     "fomsLotID": "LOT13",
-                    "productID": 38,
+                    "productID": 42,
                     "salesOrderNo": ["SO056/2024"],
                     "submit": true,
                     "qty": 2,
@@ -276,7 +276,7 @@
                     "uom": "Kg",
                     "company": "Greenphyto Pte Ltd",
                     "repeatHarvestGroupID": 1,
-                    "childProductID": 42,
+                    "parentProductID": 38,
                     "harvestSequence": 2,
                     "harvestDate": "2026-08-15"
                   }

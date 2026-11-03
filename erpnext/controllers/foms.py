@@ -2072,7 +2072,7 @@ def get_work_order(show_progress=False, work_order=""):
 	).run()
 
 def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=False, return_doc=False, args={}, company="",
-					  repeatHarvestGroupID=None, childProductID=None, harvestSequence=None, harvestDate=None):
+					  repeatHarvestGroupID=None, parentProductID=None, harvestSequence=None, harvestDate=None):
 	doc = make_work_order(bom_no, item_code, qty, gross_weight, args=args)
 	validate_operation(doc)
 	doc.foms_work_order = log.workOrderNo
@@ -2109,12 +2109,13 @@ def create_work_order(log, item_code, bom_no, qty=1, gross_weight=1, submit=Fals
 	doc.use_multi_level_bom = 0 #if use multi level bom it will use exploed items as raw material, but if not it will use bom items
 
 	# Repeat harvest trace fields.
-	# A Work Order is flagged as repeat harvest when a child product is provided.
-	# The Work Order stays named after the parent (production_item); the child
-	# product and related fields are kept as reference information only.
-	if childProductID:
+	# A Work Order is flagged as repeat harvest when a parent product is provided.
+	# The Work Order is named after the child (production_item) and uses the
+	# child's BOM; the parent product is kept as reference information only.
+	if parentProductID:
 		doc.is_repeat_harvest = 1
-		doc.child_product_id = childProductID
+		doc.parent_product_id = parentProductID
+		doc.parent_product_item = frappe.get_value("Item", {"foms_product_id": parentProductID})
 	if repeatHarvestGroupID:
 		doc.repeat_harvest_group_id = repeatHarvestGroupID
 	if harvestSequence is not None:

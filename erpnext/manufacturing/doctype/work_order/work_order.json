@@ -38,7 +38,8 @@
   "repeat_harvest_trace_section",
   "is_repeat_harvest",
   "repeat_harvest_group_id",
-  "child_product_id",
+  "parent_product_id",
+  "parent_product_item",
   "column_break_rh_trace",
   "harvest_sequence",
   "harvest_date",
@@ -678,10 +679,18 @@
    "label": "Repeat Harvest Group ID"
   },
   {
-   "description": "FOMS Product ID of the child product",
-   "fieldname": "child_product_id",
+   "description": "FOMS Product ID of the parent product",
+   "fieldname": "parent_product_id",
    "fieldtype": "Int",
-   "label": "Child Product ID"
+   "label": "Parent Product ID"
+  },
+  {
+   "description": "Parent product Item matching Parent Product ID",
+   "fieldname": "parent_product_item",
+   "fieldtype": "Link",
+   "label": "Parent Product Item",
+   "options": "Item",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_rh_trace",

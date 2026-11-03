@@ -488,13 +488,7 @@ doc_events = {
         "validate": "erpnext.controllers.erp.detection_incoming_rate_not_logic"
 	},
     "Work Order":{
-        "on_submit":[
-            "erpnext.controllers.foms.check_missing_wo_rate",
-            "erpnext.gp_erp.repeat_harvest.generate_repeat_harvest_work_orders"
-        ],
-        "on_cancel":[
-            "erpnext.gp_erp.repeat_harvest.handle_wo_cancellation"
-        ]
+        "on_submit":"erpnext.controllers.foms.check_missing_wo_rate"
 	},
     "Batch":{
         "on_update":"erpnext.controllers.foms.sync_log"

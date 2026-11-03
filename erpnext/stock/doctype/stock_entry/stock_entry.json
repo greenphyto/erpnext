@@ -104,7 +104,7 @@
   "customer_order_no",
   "repeat_harvest_trace_section",
   "repeat_harvest_group_id",
-  "child_product_id",
+  "parent_product_id",
   "column_break_rh_se",
   "harvest_sequence",
   "harvest_date",
@@ -737,10 +737,10 @@
    "description": "Reference ID from Repeat Harvest Group in FOMS"
   },
   {
-   "fieldname": "child_product_id",
+   "fieldname": "parent_product_id",
    "fieldtype": "Int",
-   "label": "Child Product ID",
-   "description": "FOMS Product ID of the child product"
+   "label": "Parent Product ID",
+   "description": "FOMS Product ID of the parent product"
   },
   {
    "fieldname": "column_break_rh_se",
