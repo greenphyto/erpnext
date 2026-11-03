@@ -326,7 +326,8 @@ doc_events = {
 			"erpnext.regional.italy.utils.sales_invoice_on_submit",
 			"erpnext.regional.saudi_arabia.utils.create_qr_code",
 			"erpnext.erpnext_integrations.taxjar_integration.create_transaction",
-            "erpnext.gp_erp.doctype.consignment_request.consignment_request.billing_consignment_controller"
+            "erpnext.gp_erp.doctype.consignment_request.consignment_request.billing_consignment_controller",
+            "erpnext.stock.rate_alert.notify_negative_sle_rate"
 		],
 		"on_cancel": [
 			"erpnext.regional.italy.utils.sales_invoice_on_cancel",
@@ -436,11 +437,12 @@ doc_events = {
         "on_submit":[
         	"erpnext.controllers.foms.sync_log",
             "erpnext.stock.rate_alert.check_rate_anomaly",
+            "erpnext.stock.rate_alert.notify_negative_sle_rate",
 		],
         "on_cancel":[
             "erpnext.controllers.foms.sync_log",
 		],
-	},
+    },
     "Department": {
         "validate":"erpnext.controllers.foms.sync_log",
 	},
@@ -459,6 +461,7 @@ doc_events = {
 			"erpnext.controllers.foms.create_prod_variance_entry",
             "erpnext.gp_erp.doctype.consignment_request.consignment_request.stock_entry_controller",
             "erpnext.stock.rate_alert.check_rate_anomaly",
+            "erpnext.stock.rate_alert.notify_negative_sle_rate",
             "erpnext.controllers.foms.create_item_change_repack",
 		],
         "before_cancel":[
@@ -597,7 +600,6 @@ scheduler_events = {
 	],
 	"weekly": [
 		"erpnext.accounts.utils.auto_create_exchange_rate_revaluation_weekly",
-        "erpnext.gp_erp.notification.raw_material_more_than_1_year.raw_material_more_than_1_year.notify_raw_material_more_than_1_year",
 	],
 	"daily_long": [
 		"erpnext.accounts.doctype.subscription.subscription.process_all",
@@ -613,7 +615,8 @@ scheduler_events = {
 	],
     "monthly": [
 		"erpnext.assets.doctype.asset.depreciation.post_depreciation_entries",
-        "erpnext.controllers.erp.trial_balance_different_issue"
+        "erpnext.controllers.erp.trial_balance_different_issue",
+        "erpnext.gp_erp.notification.raw_material_more_than_1_year.raw_material_more_than_1_year.notify_raw_material_more_than_1_year",
 	]
 }
 

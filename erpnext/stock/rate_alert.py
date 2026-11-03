@@ -1,6 +1,9 @@
+import json
+
 import frappe
+from frappe import _
 from frappe.query_builder.functions import CombineDatetime, Sum
-from frappe.utils import flt
+from frappe.utils import flt, get_link_to_form
 
 
 RATE_THRESHOLD = 0.25
@@ -175,4 +178,75 @@ def _build_message(doc, anomalies):
 			f"rate {a['current_rate']} is {abs(a['diff_pct'])}% {direction} "
 			f"than previous rate {a['prev_rate']}"
 		)
+	return "<br>".join(lines)
+
+
+def notify_negative_sle_rate(doc, method=None):
+	"""Email the support list when this voucher produced any Stock Ledger Entry
+	with a negative valuation rate or negative stock value.
+
+	Wired to on_submit of Delivery Note, Sales Invoice and Stock Entry.
+	"""
+	negatives = _get_negative_sle(doc)
+	if not negatives:
+		return
+
+	recipients = _get_support_recipients()
+	if not recipients:
+		return
+
+	subject = _("Negative stock valuation detected in {0} {1}").format(doc.doctype, doc.name)
+	message = _build_negative_sle_message(doc, negatives)
+	frappe.sendmail(recipients=recipients, subject=subject, message=message)
+
+
+def _get_support_recipients():
+	email_candidate = frappe.local.conf.email_support
+	if not email_candidate:
+		return []
+	if isinstance(email_candidate, str):
+		try:
+			return json.loads(email_candidate)
+		except (ValueError, TypeError):
+			return [email_candidate]
+	return email_candidate
+
+
+def _get_negative_sle(doc):
+	rows = frappe.db.sql(
+		"""
+		select item_code, warehouse, batch_no, valuation_rate,
+			qty_after_transaction, stock_value
+		from `tabStock Ledger Entry`
+		where voucher_type = %(voucher_type)s
+			and voucher_no = %(voucher_no)s
+			and is_cancelled = 0
+			and (valuation_rate < 0 or stock_value < 0)
+		order by posting_date, posting_time, creation
+		""",
+		{"voucher_type": doc.doctype, "voucher_no": doc.name},
+		as_dict=True,
+	)
+	return rows
+
+
+def _build_negative_sle_message(doc, negatives):
+	doc_link = get_link_to_form(doc.doctype, doc.name)
+	lines = [
+		_("Hi,"),
+		"<br>",
+		_("Negative stock valuation was detected after submitting {0}.").format(doc_link),
+		"<br>",
+		_("Affected Stock Ledger Entries:"),
+	]
+	for n in negatives:
+		batch = f", batch {n.batch_no}" if n.get("batch_no") else ""
+		lines.append(
+			f"- {n.item_code} ({n.warehouse}{batch}): "
+			f"valuation rate {flt(n.valuation_rate, 4)}, "
+			f"stock value {flt(n.stock_value, 2)}, "
+			f"qty after transaction {flt(n.qty_after_transaction, 2)}"
+		)
+	lines.append("<br>")
+	lines.append(_("Please review the valuation and reconcile if required."))
 	return "<br>".join(lines)
