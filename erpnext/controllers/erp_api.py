@@ -469,8 +469,12 @@ def make_stock_entry_with_materials(wo_doc, job_card_name, materials, wip_wareho
 			pack_row.batch_no = batch_info[0].get("batch_id")
 			pack_row.t_warehouse = wip_warehouse
 			pack_row.cost_center = packaging_cost_center
-			pack_row.qty = cint(d.required_qty * global_percent/100)
-			pack_row.uom = d.uom
+			raw_pack_qty = flt(d.required_qty) * flt(global_percent)/100
+			pack_qty = cint(round(raw_pack_qty))
+			if not pack_qty and raw_pack_qty > 0:
+				pack_qty = 1
+			pack_row.qty = pack_qty
+			pack_row.uom = d.uom or frappe.get_cached_value("Item", d.item_code, "stock_uom")
 			pack_row.basic_rate = d.rate
 			pack_row.set_basic_rate_manually = 1
 
@@ -2121,7 +2125,7 @@ def update_batch_distribution(lotId, breakdown):
 	if not isinstance(breakdown, (list, tuple)):
 		frappe.throw(_("breakdown must be a list"))
 
-	# register tracing log so failed sync leaves a trace
+	# register tracing log so a missing/failed batch leaves a trace to retry later
 	data_name = f"Batch Distribution {lotId}"
 	log_data = {
 		"lotId": lotId,
@@ -2136,22 +2140,20 @@ def update_batch_distribution(lotId, breakdown):
 	)
 	make_in_progress(log.name)
 
+	batch_id = frappe.db.get_value("Batch", {"foms_lot_id": lotId}, "name")
+
+	# Batch not created yet: keep the log pending (Unknown) so it is retried
+	# when a new Batch arrives or by the scheduler fallback.
+	if not batch_id:
+		make_in_progress(log.name, inprogress=False)
+		return {
+			"status": "pending",
+			"lotId": lotId,
+			"message": f"No Batch found for lot_id {lotId} yet, queued for retry",
+		}
+
 	try:
-		batch_id = frappe.db.get_value("Batch", {"foms_lot_id": lotId}, "name")
-
-		if not batch_id:
-			frappe.throw(_(f"No Batch found for lot_id {lotId}"), frappe.DoesNotExistError)
-
-		batch = frappe.get_doc("Batch", batch_id)
-		batch.set("batch_distribution", [])
-		for row in breakdown:
-			row = get_data(row)
-			batch.append("batch_distribution", {
-				"packaging": row.get("packaging") or None,
-				"qty": row.get("qty"),
-				"uom": row.get("uom"),
-			})
-		batch.save(ignore_permissions=True)
+		_apply_batch_distribution(batch_id, breakdown)
 	except Exception:
 		# keep log as not-Mapped (Unknown) and store traceback for later inspection
 		make_in_progress(log.name, inprogress=False)
@@ -2176,6 +2178,101 @@ def update_batch_distribution(lotId, breakdown):
 		"batch": batch_id,
 		"rows": len(breakdown),
 	}
+
+
+def _apply_batch_distribution(batch_id, breakdown):
+	batch = frappe.get_doc("Batch", batch_id)
+	batch.set("batch_distribution", [])
+	for row in breakdown:
+		row = get_data(row)
+		batch.append("batch_distribution", {
+			"packaging": row.get("packaging") or None,
+			"qty": row.get("qty"),
+			"uom": row.get("uom"),
+		})
+	batch.save(ignore_permissions=True)
+
+
+def retry_batch_distribution_on_new_batch(doc, method=None):
+	"""Batch.after_insert hook: a new batch may satisfy a pending distribution."""
+	lot_id = getattr(doc, "foms_lot_id", None)
+	if not lot_id:
+		return
+	run_pending_batch_distribution(lot_id=lot_id)
+
+
+def run_pending_batch_distribution(lot_id=None):
+	"""Retry pending Batch Distribution logs whose target Batch now exists.
+
+	Called from Batch.after_insert (scoped to the new batch's lot_id) and from
+	the scheduler as a fallback for any still-unmapped logs.
+	"""
+	now_time = get_datetime()
+	old_range = now_time - timedelta(days=10)
+
+	conditions = """
+		status in ('Unknown', 'In Progress')
+		and data_type = 'Batch'
+		and endpoint = 'update_batch_distribution'
+		and created_on between %(old_range)s and %(now_time)s
+	"""
+	params = {"old_range": old_range, "now_time": now_time}
+
+	if lot_id:
+		conditions += " and data_name = %(data_name)s"
+		params["data_name"] = f"Batch Distribution {lot_id}"
+
+	data_list = frappe.db.sql(
+		f"""
+		select name, raw_data, data_name
+		from `tabFOMS Data Mapping`
+		where {conditions}
+		""",
+		params,
+		as_dict=1,
+	)
+
+	errors = []
+	for d in data_list:
+		data = json.loads(d.raw_data)
+		pending_lot = data.get("lotId")
+		breakdown = data.get("breakdown") or []
+		if isinstance(breakdown, str):
+			breakdown = json.loads(breakdown or "[]")
+
+		if not pending_lot:
+			continue
+
+		batch_id = frappe.db.get_value("Batch", {"foms_lot_id": pending_lot}, "name")
+		if not batch_id:
+			# batch still not available, leave the log pending
+			continue
+
+		make_in_progress(d.name)
+		try:
+			_apply_batch_distribution(batch_id, breakdown)
+			update_data_result(
+				data_type="Batch",
+				data_name=d.data_name,
+				result_name=batch_id,
+				result_doctype="Batch",
+				name_id=d.name,
+			)
+			frappe.db.commit()
+		except Exception as e:
+			frappe.db.rollback()
+			make_in_progress(d.name, inprogress=False)
+			errors.append({
+				"data_name": d.data_name,
+				"error": str(e),
+				"traceback": frappe.get_traceback(),
+			})
+
+	if errors:
+		frappe.log_error(
+			message=json.dumps(errors),
+			title="Error in run_pending_batch_distribution",
+		)
 
 
 @frappe.whitelist()

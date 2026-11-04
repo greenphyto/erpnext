@@ -494,7 +494,8 @@ doc_events = {
         "on_submit":"erpnext.controllers.foms.check_missing_wo_rate"
 	},
     "Batch":{
-        "on_update":"erpnext.controllers.foms.sync_log"
+        "on_update":"erpnext.controllers.foms.sync_log",
+        "after_insert":"erpnext.controllers.erp_api.retry_batch_distribution_on_new_batch"
 	}
 }
 
@@ -513,6 +514,7 @@ scheduler_events = {
             "erpnext.controllers.erp_api.run_pending_harvesting_transfer",
             "erpnext.controllers.erp_api.run_pending_harvesting",
             "erpnext.controllers.erp_api.run_pending_mix_product",
+            "erpnext.controllers.erp_api.run_pending_batch_distribution",
             "erpnext.controllers.erp.read_email_inbox"
 		],
 		"0/30 * * * *": [
