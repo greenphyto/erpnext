@@ -38,6 +38,7 @@
   "column_break_23",
   "make_serial_no_batch_from_work_order",
   "enable_create_sample_delivery",
+  "create_auto_cost_reconciliation",
   "packaging_section",
   "default_packaging",
   "item_change_section",
@@ -258,13 +259,20 @@
    "fieldtype": "Table",
    "label": "Item Change",
    "options": "Item finish goods change"
+  },
+  {
+   "default": "0",
+   "description": "It will auto create costs reconsiliation journal in the first day of the month",
+   "fieldname": "create_auto_cost_reconciliation",
+   "fieldtype": "Check",
+   "label": "Create Auto Cost Reconciliation"
   }
  ],
  "icon": "icon-wrench",
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-09-24 17:06:14.679179",
+ "modified": "2026-11-03 15:41:22.889726",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Manufacturing Settings",
