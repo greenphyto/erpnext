@@ -57,7 +57,10 @@ def make_sl_entries(sl_entries, allow_negative_stock=False, via_landed_cost_vouc
 		qty_map = {}
 		if not cancel and not allow_negative_stock:
 			for sle in sl_entries:
-				if not sle.batch_no:
+				if not sle.batch_no or flt(sle.get("actual_qty")) >= 0:
+					continue
+
+				if is_negative_stock_allowed(item_code=sle.item_code):
 					continue
 
 				key = (sle.batch_no, sle.warehouse)
