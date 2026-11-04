@@ -11,7 +11,20 @@ def execute(filters=None):
 class Report():
 	def __init__(self, filters):
 		self.filters = filters
-		self.cost_type = ["Utilities", "Consumable", "Machinery", "Wages"]
+		# (column label, column fieldname, [accepted additional-cost descriptions])
+		# descriptions follow what is posted to Landed Cost Taxes and Charges by
+		# the different cost paths:
+		#   - erp_api.add_operation_additional_costs: "<Keyword> Cost"
+		#   - erp_api.add_rate_card_additional_costs: "<Keyword> (Rate Card)"
+		#   - legacy entries before the rate-card rename: "Electrical Cost"
+		# electricity is tracked under the "Utilities"/"Electrical" keywords and
+		# wages under "Wages"/"Manpower"
+		self.cost_type = [
+			("Electricity", "utilities", ["Utilities Cost", "Electrical Cost", "Utilities (Rate Card)"]),
+			("Consumable", "consumable", ["Consumable Cost", "Consumable (Rate Card)"]),
+			("Machinery", "machinery", ["Machinery Cost", "Machinery (Rate Card)"]),
+			("Wages", "wages", ["Wages Cost", "Manpower (Rate Card)"]),
+		]
 
 	def setup_condition(self):
 		self.cond = ""
@@ -48,13 +61,17 @@ class Report():
 			{"fieldname": "raw_material", 		"label": "Raw Material",	"fieldtype": "Currency", 	"width":110, "options":""},
 			{"fieldname": "costs", 				"label": "Total Costs",	"fieldtype": "Currency", 	"width":110, "options":""}
 		]
-		for c in self.cost_type:
+		# consumable & machinery are not used, keep the columns hidden
+		hidden_fields = {"consumable", "machinery"}
+		for label, field, _descriptions in self.cost_type:
 			col = {
-				"fieldname": self.get_cost_column_field(c), 			
-				"label": c, 		
+				"fieldname": field, 			
+				"label": label, 		
 				"fieldtype": "Currency",    
 				"width":90, 
 			}
+			if field in hidden_fields:
+				col["hidden"] = 1
 			self.columns.append(col)
 	
 	def get_data(self):
@@ -66,15 +83,25 @@ class Report():
 					s.posting_date,
 					s.name AS stock_entry,
 					s.work_order,
-					s.operation,
+					-- rate-card costs are posted on the Manufacture entry which
+					-- carries no operation; treat them as Harvesting costs
+					CASE
+						WHEN s.purpose = 'Manufacture' THEN 'Harvesting'
+						ELSE s.operation
+					END AS operation,
 					si.expense_account,
 					si.description,
 					w.production_item AS product,
 					si.amount,
 					si.cost_center,
 					s.total_additional_costs,
-					s.total_outgoing_value,
-					s.total_outgoing_value - s.total_additional_costs AS raw_mat
+					-- only the transfer entries represent material flow; the
+					-- Manufacture entry must not overwrite Harvesting raw_mat
+					CASE WHEN s.purpose = 'Manufacture' THEN NULL ELSE s.total_outgoing_value END AS total_outgoing_value,
+					CASE
+						WHEN s.purpose = 'Manufacture' THEN NULL
+						ELSE s.total_outgoing_value - s.total_additional_costs
+					END AS raw_mat
 				FROM
 					`tabWork Order` w
 						LEFT JOIN
@@ -83,8 +110,10 @@ class Report():
 					`tabLanded Cost Taxes and Charges` si ON si.parent = s.name
 				WHERE
 					s.docstatus = 1
-						AND s.purpose = 'Material Transfer for Manufacture'
-						AND s.operation IS NOT NULL
+						AND (
+							(s.purpose = 'Material Transfer for Manufacture' AND s.operation IS NOT NULL)
+							OR s.purpose = 'Manufacture'
+						)
 						AND w.planned_start_date between %(from_date)s and %(to_date)s
 						{}
 				ORDER BY s.work_order desc, s.creation asc
@@ -126,14 +155,15 @@ class Report():
 				}
 			
 			row = d
-			data_mapping[d.work_order][d.operation]["rawmat"] = d.raw_mat
+			# only the transfer entries carry material value; Manufacture
+			# (rate-card) rows have raw_mat = None and must not clobber it
+			if d.raw_mat is not None:
+				data_mapping[d.work_order][d.operation]["rawmat"] = d.raw_mat
 			if not data_mapping[d.work_order][d.operation]['row']:
 				data_mapping[d.work_order][d.operation]['row'] = d
 
-			for c in self.cost_type:
-				cost_name = f"{c} Cost"
-				if cost_name == d.description:
-					field = self.get_cost_column_field(c)
+			for label, field, descriptions in self.cost_type:
+				if d.description in descriptions:
 					amount = flt(data_mapping[d.work_order][d.operation]['row'].get(field)) + flt(d.amount)
 					data_mapping[d.work_order][d.operation]['row'][field] = amount
 					data_mapping[d.work_order][d.operation]["costs"] += amount
@@ -201,17 +231,17 @@ class Report():
 
 
 TEST_DATA = [
-{'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Electrical Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
+{'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Utilities Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
 {'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Machinery Cost', 	'amount': 2, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
 {'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Consumable Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
 {'posting_date': datetime.date(2024, 10, 23), 'stock_entry': 'SE-00009/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Seeding', 		'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Wages Cost', 		'amount': 2, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 4, 'total_outgoing_value': 10, 'raw_mat': 6},
-{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Electrical Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Utilities Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
 {'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Wages Cost', 		'amount': 1, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
 {'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Consumable Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
 {'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'TR-00005/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Transplanting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Machinery Cost', 	'amount': 1, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 2, 'total_outgoing_value': 6, 'raw_mat': 4},
 {'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Consumable Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1},
 {'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Machinery Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1},
-{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Electrical Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1},
+{'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Utilities Cost', 	'amount': 0, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1},
 {'posting_date': datetime.date(2024, 10, 25), 'stock_entry': 'HR-00008/2024', 'work_order': '24-014156-004',"product":"PR-AV-SPC", 'operation': 'Harvesting', 	'expense_account': '540000 - COS Prod Variance - GPL', 'description': 'Wages Cost', 		'amount': 1, 'cost_center': '4020 - Packing - GPL', 'total_additional_costs': 1, 'total_outgoing_value': 2, 'raw_mat': 1}
 ]
 

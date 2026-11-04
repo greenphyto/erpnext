@@ -38,6 +38,7 @@
   "column_break_23",
   "make_serial_no_batch_from_work_order",
   "enable_create_sample_delivery",
+  "create_auto_cost_reconciliation",
   "packaging_section",
   "default_packaging",
   "request_settings_tab",
