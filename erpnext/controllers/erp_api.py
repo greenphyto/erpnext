@@ -26,7 +26,7 @@ from frappe.model.workflow import apply_workflow
 from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
 from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 from frappe.utils.file_manager import save_file, save_url
-from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result, make_in_progress
+from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result, make_in_progress, enqueue_foms_job, mark_failed, is_in_progress
 from datetime import datetime, timedelta
 # from erpnext.stock.utils import get_default_warehouse
 from erpnext.stock.stock_ledger import get_valuation_rate
@@ -555,13 +555,28 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 			"message": "Already updated (se)"
 		}
 
-	if cint(operationNo) == 3 and not now:
-		return {
-			"result":True,
-			"message":"Scheduled"
-		}
-	else:
+	# Process asynchronously: accept the request immediately and let a worker
+	# run the operation. On failure the log stays Unknown and the scheduler
+	# (run_pending_harvesting_transfer) retries it later.
+	if cint(now):
 		return _update_work_order_operation_status(log_res.name, ERPWorkOrderID, operationNo, percentage, rawMaterials)
+
+	enqueue_foms_job(
+		method="erpnext.controllers.erp_api._update_work_order_operation_status",
+		log_name=log_res.name,
+		handler_kwargs={
+			"log_name": log_res.name,
+			"ERPWorkOrderID": ERPWorkOrderID,
+			"operationNo": operationNo,
+			"percentage": percentage,
+			"rawMaterials": rawMaterials,
+		},
+	)
+	return {
+		"result": True,
+		"percentage": percentage,
+		"message": "Queued",
+	}
 
 from erpnext.manufacturing.doctype.work_order.work_order import close_work_order, make_scrap_materials
 def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, percentage, rawMaterials):
@@ -713,7 +728,7 @@ def run_pending_harvesting_transfer():
 	# save traceback and print after end of looping
 	errors = []
 
-	data = frappe.db.sql("select name,data_name, raw_data from `tabFOMS Data Mapping` where status in ('Unknown', 'In Progress') and data_type = 'Work Order' and created_on between %s and %s ", (old_month, end_range), as_dict=1)
+	data = frappe.db.sql("select name,data_name, raw_data from `tabFOMS Data Mapping` where status in ('Unknown', 'Failed') and data_type = 'Work Order' and created_on between %s and %s ", (old_month, end_range), as_dict=1)
 	for d in data:
 		data = json.loads(d.raw_data)
 
@@ -731,6 +746,8 @@ def run_pending_harvesting_transfer():
 				)
 				frappe.db.commit()
 			except Exception as e:
+				frappe.db.rollback()
+				mark_failed(d.name, error_message=str(e), commit=True)
 				errors.append({
 					"data_name": d.data_name,
 					"error": str(e),
@@ -755,13 +772,27 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 		"qty": qty,
 		"packets": packets,
 		"expiryDate": expiryDate,
-		"draft":draft
+		"draft":cint(draft),
+		"now":cint(now),
 	}
 
-	if now:
-		log_data['now'] = now
+	# a worker is already processing this request: ignore the duplicate call
+	if is_in_progress("Work Order", data_name):
+		return {
+			"result": True,
+			"message": "In Progress",
+		}
 
-	save_log("Work Order", data_name, log_data, reopen=1)
+	# register the tracing log synchronously so we have its name to enqueue /
+	# retry against
+	log = create_foms_data(
+		data_type="Work Order",
+		data_name=data_name,
+		raw=log_data,
+		reopen=1,
+		endpoint="submit_work_order_finish_goods",
+	)
+	frappe.db.commit()
 
 	if cint(now):
 		return _submit_work_order_finish_goods(
@@ -769,13 +800,28 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 			packets = packets, 
 			qty = qty, 
 			expiryDate = expiryDate, 
-			draft = draft
+			draft = draft,
+			log_name = log.name,
 		)
-	else:
-		return {
-			"result": True,
-			"message":"Scheduled"
-		}
+
+	# Process asynchronously; on failure the log stays Unknown and the
+	# scheduler (run_pending_harvesting) retries it later.
+	enqueue_foms_job(
+		method="erpnext.controllers.erp_api._submit_work_order_finish_goods",
+		log_name=log.name,
+		handler_kwargs={
+			"erpWorkOrderID": erpWorkOrderID,
+			"packets": packets,
+			"qty": qty,
+			"expiryDate": expiryDate,
+			"draft": draft,
+			"log_name": log.name,
+		},
+	)
+	return {
+		"result": True,
+		"message": "Queued",
+	}
 
 def get_saleable_qty(se_doc):
 	"""Net saleable qty = sum of finished-good rows going into a stock
@@ -1018,7 +1064,7 @@ def run_pending_harvesting():
 
 	errors = []
 
-	data_list = frappe.db.sql("select name, raw_data, data_name from `tabFOMS Data Mapping` where status = 'Unknown' and created_on between  %s and %s ", (old_month, end_range), as_dict=1)
+	data_list = frappe.db.sql("select name, raw_data, data_name from `tabFOMS Data Mapping` where status in ('Unknown', 'Failed') and created_on between  %s and %s ", (old_month, end_range), as_dict=1)
 	for d in data_list:
 		data = json.loads(d.raw_data)
 		if "ERPWorkOrderID" in data:
@@ -1040,6 +1086,8 @@ def run_pending_harvesting():
 				)
 				frappe.db.commit()
 			except Exception as e:
+				frappe.db.rollback()
+				mark_failed(d.name, error_message=str(e), commit=True)
 				errors.append({
 					"data_name": d.data_name,
 					"error": str(e),
@@ -1066,7 +1114,7 @@ def run_pending_mix_product():
 		"""
 		select name, raw_data, data_name
 		from `tabFOMS Data Mapping`
-		where status in ('Unknown', 'In Progress')
+		where status in ('Unknown', 'Failed')
 			and data_type = 'Stock Entry'
 			and endpoint = 'submit_salad_finished_goods'
 			and created_on between %s and %s
@@ -1107,6 +1155,7 @@ def run_pending_mix_product():
 			frappe.db.commit()
 		except Exception as e:
 			frappe.db.rollback()
+			mark_failed(d.name, error_message=str(e), commit=True)
 			errors.append({
 				"data_name": d.data_name,
 				"error": str(e),
@@ -2048,6 +2097,15 @@ def update_batch_distribution(lotId, breakdown):
 
 	# register tracing log so failed sync leaves a trace
 	data_name = f"Batch Distribution {lotId}"
+
+	# a worker is already processing this lot: ignore the duplicate call
+	if is_in_progress("Batch", data_name):
+		return {
+			"status": "in_progress",
+			"lotId": lotId,
+			"message": f"Batch Distribution for lot_id {lotId} is already in progress",
+		}
+
 	log_data = {
 		"lotId": lotId,
 		"breakdown": breakdown,
@@ -2058,47 +2116,150 @@ def update_batch_distribution(lotId, breakdown):
 		raw=log_data,
 		reopen=1,
 	)
-	make_in_progress(log.name)
+	frappe.db.commit()
 
-	try:
-		batch_id = frappe.db.get_value("Batch", {"foms_lot_id": lotId}, "name")
+	batch_id = frappe.db.get_value("Batch", {"foms_lot_id": lotId}, "name")
 
-		if not batch_id:
-			frappe.throw(_(f"No Batch found for lot_id {lotId}"), frappe.DoesNotExistError)
+	# Batch not created yet: keep the log pending (Unknown) so it is retried
+	# when a new Batch arrives or by the scheduler fallback.
+	if not batch_id:
+		return {
+			"status": "pending",
+			"lotId": lotId,
+			"message": f"No Batch found for lot_id {lotId} yet, queued for retry",
+		}
 
-		batch = frappe.get_doc("Batch", batch_id)
-		batch.set("batch_distribution", [])
-		for row in breakdown:
-			row = get_data(row)
-			batch.append("batch_distribution", {
-				"packaging": row.get("packaging") or None,
-				"qty": row.get("qty"),
-				"uom": row.get("uom"),
-			})
-		batch.save(ignore_permissions=True)
-	except Exception:
-		# keep log as not-Mapped (Unknown) and store traceback for later inspection
-		make_in_progress(log.name, inprogress=False)
-		frappe.log_error(
-			message=f"{data_name}\n{json.dumps(log_data, default=str)}\n\n{frappe.get_traceback()}",
-			title="Failed update_batch_distribution",
-		)
-		raise
+	# Process asynchronously; on failure the log stays Unknown and the
+	# scheduler (run_pending_batch_distribution) retries it later.
+	enqueue_foms_job(
+		method="erpnext.controllers.erp_api._run_batch_distribution",
+		log_name=log.name,
+		handler_kwargs={
+			"log_name": log.name,
+			"data_name": data_name,
+			"batch_id": batch_id,
+			"breakdown": breakdown,
+		},
+	)
+	return {
+		"status": "queued",
+		"lotId": lotId,
+		"batch": batch_id,
+		"rows": len(breakdown),
+	}
 
+
+def _run_batch_distribution(log_name, data_name, batch_id, breakdown):
+	_apply_batch_distribution(batch_id, breakdown)
 	# mark log as Mapped to the resulting Batch
 	update_data_result(
 		data_type="Batch",
 		data_name=data_name,
 		result_name=batch_id,
 		result_doctype="Batch",
+		name_id=log_name,
 	)
 
 	return {
 		"status": "success",
-		"lotId": lotId,
 		"batch": batch_id,
 		"rows": len(breakdown),
 	}
+
+
+def _apply_batch_distribution(batch_id, breakdown):
+	batch = frappe.get_doc("Batch", batch_id)
+	batch.set("batch_distribution", [])
+	for row in breakdown:
+		row = get_data(row)
+		batch.append("batch_distribution", {
+			"packaging": row.get("packaging") or None,
+			"qty": row.get("qty"),
+			"uom": row.get("uom"),
+		})
+	batch.save(ignore_permissions=True)
+
+
+def retry_batch_distribution_on_new_batch(doc, method=None):
+	"""Batch.after_insert hook: a new batch may satisfy a pending distribution."""
+	lot_id = getattr(doc, "foms_lot_id", None)
+	if not lot_id:
+		return
+	run_pending_batch_distribution(lot_id=lot_id)
+
+
+def run_pending_batch_distribution(lot_id=None):
+	"""Retry pending Batch Distribution logs whose target Batch now exists.
+
+	Called from Batch.after_insert (scoped to the new batch's lot_id) and from
+	the scheduler as a fallback for any still-unmapped logs.
+	"""
+	now_time = get_datetime()
+	old_range = now_time - timedelta(days=10)
+
+	conditions = """
+		status in ('Unknown', 'Failed')
+		and data_type = 'Batch'
+		and endpoint = 'update_batch_distribution'
+		and created_on between %(old_range)s and %(now_time)s
+	"""
+	params = {"old_range": old_range, "now_time": now_time}
+
+	if lot_id:
+		conditions += " and data_name = %(data_name)s"
+		params["data_name"] = f"Batch Distribution {lot_id}"
+
+	data_list = frappe.db.sql(
+		f"""
+		select name, raw_data, data_name
+		from `tabFOMS Data Mapping`
+		where {conditions}
+		""",
+		params,
+		as_dict=1,
+	)
+
+	errors = []
+	for d in data_list:
+		data = json.loads(d.raw_data)
+		pending_lot = data.get("lotId")
+		breakdown = data.get("breakdown") or []
+		if isinstance(breakdown, str):
+			breakdown = json.loads(breakdown or "[]")
+
+		if not pending_lot:
+			continue
+
+		batch_id = frappe.db.get_value("Batch", {"foms_lot_id": pending_lot}, "name")
+		if not batch_id:
+			# batch still not available, leave the log pending
+			continue
+
+		make_in_progress(d.name)
+		try:
+			_apply_batch_distribution(batch_id, breakdown)
+			update_data_result(
+				data_type="Batch",
+				data_name=d.data_name,
+				result_name=batch_id,
+				result_doctype="Batch",
+				name_id=d.name,
+			)
+			frappe.db.commit()
+		except Exception as e:
+			frappe.db.rollback()
+			mark_failed(d.name, error_message=str(e), commit=True)
+			errors.append({
+				"data_name": d.data_name,
+				"error": str(e),
+				"traceback": frappe.get_traceback(),
+			})
+
+	if errors:
+		frappe.log_error(
+			message=json.dumps(errors),
+			title="Error in run_pending_batch_distribution",
+		)
 
 
 @frappe.whitelist()

@@ -3,7 +3,7 @@ from erpnext.foms.doctype.foms_integration_settings.foms_integration_settings im
 from frappe.core.doctype.sync_log.sync_log import get_pending_log
 from frappe.utils import cint, flt, cstr, get_time, getdate,add_days, get_datetime, now, get_link_to_form
 from erpnext.accounts.party import get_party_details
-from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, make_in_progress, update_data_result
+from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, make_in_progress, update_data_result, enqueue_foms_job
 from erpnext.manufacturing.doctype.work_order.work_order import make_work_order
 from frappe import _
 from frappe.core.doctype.sync_log.sync_log import update_success, create_log, delete_log
@@ -2790,9 +2790,8 @@ def submit_salad_finished_goods(data):
 			"message": "In Progress",
 		}
 
-	# register the pending job, the scheduler will execute it once the
-	# child batches are fully available
-	create_foms_data(
+	# register the pending job
+	log = create_foms_data(
 		data_type="Stock Entry",
 		data_name=data_name,
 		raw=data,
@@ -2800,6 +2799,24 @@ def submit_salad_finished_goods(data):
 		endpoint="submit_salad_finished_goods",
 	)
 	frappe.db.commit()
+
+	# if the child batches are already available, process it asynchronously
+	# right away; otherwise leave it pending (Unknown) for run_pending_mix_product
+	# to execute once the children are ready.
+	children = data.get("children") or []
+	if isinstance(children, str):
+		children = json.loads(children or "[]")
+
+	if mix_children_ready(children):
+		enqueue_foms_job(
+			method="erpnext.controllers.foms._submit_salad_finished_goods_now",
+			log_name=log.name,
+			handler_kwargs={"data": data},
+		)
+		return {
+			"result": True,
+			"message": "Queued",
+		}
 
 	return {
 		"result": True,
