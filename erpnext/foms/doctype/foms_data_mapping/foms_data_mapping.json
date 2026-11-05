@@ -15,10 +15,11 @@
   "destination",
   "doc_type",
   "doc_name",
-  "section_break_8",
-  "status",
-  "last_sync",
-  "created_on",
+   "section_break_8",
+   "status",
+   "error_message",
+   "last_sync",
+   "created_on",
   "raw_data_section",
   "endpoint",
   "raw_data",
@@ -74,7 +75,14 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Unknown\nIn Progress\nMapped"
+   "options": "Unknown\nIn Progress\nMapped\nFailed"
+  },
+  {
+   "depends_on": "eval:doc.status=='Failed'",
+   "fieldname": "error_message",
+   "fieldtype": "Small Text",
+   "label": "Error Message",
+   "read_only": 1
   },
   {
    "fieldname": "reference",
