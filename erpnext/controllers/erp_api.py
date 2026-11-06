@@ -512,7 +512,9 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 		"now":now
 	}, now=1)
 
-	if log_res.status != "Unknown":
+	if cint(now) and log_res.status == "In Progress":
+		make_in_progress(log_res.name, inprogress=False, commit=True)
+	elif log_res.status != "Unknown":
 		return
 	
 	if cint(get_foms_settings("disable_woirk_order_operation_update")):
@@ -559,7 +561,12 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	# run the operation. On failure the log stays Unknown and the scheduler
 	# (run_pending_harvesting_transfer) retries it later.
 	if cint(now):
-		return _update_work_order_operation_status(log_res.name, ERPWorkOrderID, operationNo, percentage, rawMaterials)
+		try:
+			return _update_work_order_operation_status(log_res.name, ERPWorkOrderID, operationNo, percentage, rawMaterials)
+		except Exception as e:
+			frappe.db.rollback()
+			mark_failed(log_res.name, error_message=str(e), commit=True)
+			raise
 
 	enqueue_foms_job(
 		method="erpnext.controllers.erp_api._update_work_order_operation_status",
@@ -777,7 +784,7 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 	}
 
 	# a worker is already processing this request: ignore the duplicate call
-	if is_in_progress("Work Order", data_name):
+	if not cint(now) and is_in_progress("Work Order", data_name):
 		return {
 			"result": True,
 			"message": "In Progress",
@@ -795,14 +802,19 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 	frappe.db.commit()
 
 	if cint(now):
-		return _submit_work_order_finish_goods(
-			erpWorkOrderID = erpWorkOrderID, 
-			packets = packets, 
-			qty = qty, 
-			expiryDate = expiryDate, 
-			draft = draft,
-			log_name = log.name,
-		)
+		try:
+			return _submit_work_order_finish_goods(
+				erpWorkOrderID = erpWorkOrderID, 
+				packets = packets, 
+				qty = qty, 
+				expiryDate = expiryDate, 
+				draft = draft,
+				log_name = log.name,
+			)
+		except Exception as e:
+			frappe.db.rollback()
+			mark_failed(log.name, error_message=str(e), commit=True)
+			raise
 
 	# Process asynchronously; on failure the log stays Unknown and the
 	# scheduler (run_pending_harvesting) retries it later.

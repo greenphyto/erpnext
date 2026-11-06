@@ -21,6 +21,7 @@
    "last_sync",
    "created_on",
   "raw_data_section",
+  "endpoint",
   "raw_data",
   "section_break_15",
   "view_in_console"
@@ -126,6 +127,13 @@
   {
    "fieldname": "section_break_15",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "endpoint",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Endpoint",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
