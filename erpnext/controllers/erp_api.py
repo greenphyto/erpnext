@@ -27,7 +27,7 @@ from frappe.model.workflow import apply_workflow
 from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
 from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 from frappe.utils.file_manager import save_file, save_url
-from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result, make_in_progress, enqueue_foms_job, mark_failed, is_in_progress
+from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result, make_in_progress, enqueue_foms_job, mark_failed, is_in_progress, should_run_now
 from datetime import datetime, timedelta
 from erpnext.stock.utils import get_default_warehouse
 from erpnext.stock.stock_ledger import get_valuation_rate
@@ -563,7 +563,7 @@ def update_work_order_operation_status(operationNo, percentage=0, rawMaterials=[
 	# Process asynchronously: accept the request immediately and let a worker
 	# run the operation. On failure the log stays Unknown and the scheduler
 	# (run_pending_harvesting_transfer) retries it later.
-	if cint(now):
+	if should_run_now(now):
 		return _update_work_order_operation_status(log_res.name, ERPWorkOrderID, operationNo, percentage, rawMaterials)
 
 	enqueue_foms_job(
@@ -810,7 +810,7 @@ def submit_work_order_finish_goods(erpWorkOrderID, packets=0, qty=0, expiryDate=
 	)
 	frappe.db.commit()
 
-	if cint(now):
+	if should_run_now(now):
 		return _submit_work_order_finish_goods(
 			erpWorkOrderID = erpWorkOrderID, 
 			packets = packets, 
@@ -2207,6 +2207,14 @@ def update_batch_distribution(lotId, breakdown):
 			"lotId": lotId,
 			"message": f"No Batch found for lot_id {lotId} yet, queued for retry",
 		}
+
+	if should_run_now():
+		return _run_batch_distribution(
+			log_name=log.name,
+			data_name=data_name,
+			batch_id=batch_id,
+			breakdown=breakdown,
+		)
 
 	# Process asynchronously; on failure the log stays Unknown and the
 	# scheduler (run_pending_batch_distribution) retries it later.

@@ -29,6 +29,7 @@
   "overproduction_percentage_for_work_order",
   "job_card_section",
   "add_corrective_operation_cost_in_finished_good_valuation",
+  "disable_enqueue_on_job_card",
   "column_break_24",
   "job_card_excess_transfer",
   "other_settings_section",
@@ -266,13 +267,19 @@
    "fieldname": "create_auto_cost_reconciliation",
    "fieldtype": "Check",
    "label": "Create Auto Cost Reconciliation"
+  },
+  {
+   "default": "0",
+   "fieldname": "disable_enqueue_on_job_card",
+   "fieldtype": "Check",
+   "label": "Disable enqueue on job card"
   }
  ],
  "icon": "icon-wrench",
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-11-03 15:41:22.889726",
+ "modified": "2026-11-06 11:26:15.564043",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Manufacturing Settings",
