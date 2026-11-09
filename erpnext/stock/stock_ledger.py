@@ -560,6 +560,8 @@ class update_entries_after(object):
 		):
 			sle.outgoing_rate = get_incoming_rate_for_inter_company_transfer(sle)
 
+		used_batchwise_valuation = False
+
 		if get_serial_nos(sle.serial_no):
 			self.get_serialized_values(sle)
 			self.wh_data.qty_after_transaction += flt(sle.actual_qty)
@@ -572,6 +574,7 @@ class update_entries_after(object):
 		elif sle.batch_no and frappe.db.get_value(
 			"Batch", sle.batch_no, "use_batchwise_valuation", cache=True
 		):
+			used_batchwise_valuation = True
 			self.update_batched_values(sle)
 		else:
 			if sle.voucher_type == "Stock Reconciliation" and not sle.batch_no:
@@ -603,7 +606,13 @@ class update_entries_after(object):
 		self.wh_data.stock_value = flt(self.wh_data.stock_value, self.currency_precision)
 		if not self.wh_data.qty_after_transaction:
 			self.wh_data.stock_value = 0.0
-		stock_value_difference = self.wh_data.stock_value - self.wh_data.prev_stock_value
+		if used_batchwise_valuation:
+			# For batchwise valuation the per-batch moving average already yields the
+			# correct value delta. Using the aggregate warehouse pool here would mix in
+			# other batches' values and produce a wrong (often negative) incoming_rate.
+			stock_value_difference = self.wh_data.batch_stock_value_difference
+		else:
+			stock_value_difference = self.wh_data.stock_value - self.wh_data.prev_stock_value
 		self.wh_data.prev_stock_value = self.wh_data.stock_value
 
 		# update current sle
@@ -990,6 +999,7 @@ class update_entries_after(object):
 		self.wh_data.stock_value = round_off_if_near_zero(
 			self.wh_data.stock_value + stock_value_difference
 		)
+		self.wh_data.batch_stock_value_difference = stock_value_difference
 		if self.wh_data.qty_after_transaction:
 			self.wh_data.valuation_rate = self.wh_data.stock_value / self.wh_data.qty_after_transaction
 
