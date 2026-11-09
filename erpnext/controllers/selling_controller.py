@@ -5,6 +5,7 @@
 import frappe
 from frappe import _, bold, throw
 from frappe.contacts.doctype.address.address import get_address_display
+from frappe.query_builder.functions import CombineDatetime, Sum
 from frappe.utils import cint, cstr, flt, get_link_to_form, nowtime
 from frappe.utils import safe_abs as abs
 
@@ -488,6 +489,8 @@ class SellingController(StockController):
 
 				if self.get("is_return") and d.get("dn_detail"):
 					d.incoming_rate = self._get_return_rate_from_dn_detail(d)
+				elif self.get("is_return") and d.get("batch_no"):
+					d.incoming_rate = self._get_return_rate_from_batch_history(d)
 				elif not (self.get("is_return") and d.incoming_rate):
 					d.incoming_rate = get_incoming_rate(
 						{
@@ -554,6 +557,55 @@ class SellingController(StockController):
 					"abs(stock_value_difference / actual_qty)",
 				)
 			)
+
+		if not rate:
+			rate = get_incoming_rate(
+				{
+					"item_code": item.item_code,
+					"warehouse": item.warehouse,
+					"posting_date": self.get("posting_date") or self.get("transaction_date"),
+					"posting_time": self.get("posting_time") or nowtime(),
+					"qty": flt(item.get("stock_qty") or item.get("actual_qty")),
+					"serial_no": item.get("serial_no"),
+					"batch_no": item.get("batch_no"),
+					"company": self.company,
+					"voucher_type": self.doctype,
+					"voucher_no": self.name,
+					"allow_zero_valuation": item.get("allow_zero_valuation"),
+				},
+				raise_error_if_no_rate=False,
+			)
+
+		return rate
+
+	def _get_return_rate_from_batch_history(self, item):
+		rate = 0
+		if item.get("batch_no") and item.get("warehouse"):
+			sle = frappe.qb.DocType("Stock Ledger Entry")
+			timestamp_condition = CombineDatetime(sle.posting_date, sle.posting_time) <= CombineDatetime(
+				self.get("posting_date") or self.get("transaction_date"),
+				self.get("posting_time") or nowtime(),
+			)
+
+			batch_details = (
+				frappe.qb.from_(sle)
+				.select(
+					Sum(sle.stock_value_difference).as_("batch_value"),
+					Sum(sle.actual_qty).as_("batch_qty"),
+				)
+				.where(
+					(sle.item_code == item.item_code)
+					& (sle.warehouse == item.warehouse)
+					& (sle.batch_no == item.batch_no)
+					& (sle.company == self.company)
+					& (sle.is_cancelled == 0)
+					& (sle.actual_qty > 0)
+				)
+				.where(timestamp_condition)
+			).run(as_dict=True)
+
+			if batch_details and batch_details[0].batch_qty:
+				rate = flt(batch_details[0].batch_value / batch_details[0].batch_qty)
 
 		if not rate:
 			rate = get_incoming_rate(
