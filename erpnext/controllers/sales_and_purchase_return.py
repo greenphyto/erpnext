@@ -5,7 +5,7 @@
 import frappe
 from frappe import _
 from frappe.model.meta import get_field_precision
-from frappe.utils import flt, format_datetime, get_datetime
+from frappe.utils import cint, flt, format_datetime, get_datetime
 from frappe.utils import safe_abs as abs
 
 import erpnext
@@ -560,6 +560,13 @@ def get_rate_for_return(
 
 	rate = flt(frappe.db.get_value("Stock Ledger Entry", filters, select_field))
 	if not (rate and return_against) and voucher_type in ["Sales Invoice", "Delivery Note"]:
+		if sle and sle.get("batch_no"):
+			batch_cogs = get_batch_cogs_for_return(
+				sle.item_code, sle.warehouse, sle.get("batch_no")
+			)
+			if batch_cogs:
+				return abs(flt(batch_cogs))
+
 		rate = frappe.db.get_value(f"{voucher_type} Item", voucher_detail_no, "incoming_rate")
 
 		if not rate and sle:
@@ -580,6 +587,39 @@ def get_rate_for_return(
 			)
 
 	return rate
+
+
+def get_batch_cogs_for_return(item_code, warehouse, batch_no):
+	"""Return the COGS (cost) of an existing batch for a sales return.
+
+	A sales return brings back an existing (old) batch, so it must be valued at
+	the batch's original cost, not at the selling rate or a stored incoming_rate
+	that may have been corrupted by earlier returns. We read the incoming_rate of
+	the earliest genuine inbound (actual_qty > 0, non-return) stock ledger entry of
+	the batch in the selected warehouse. This is immune to poisoned return SLEs
+	that share the same posting timestamp.
+	"""
+	rows = frappe.db.sql(
+		"""
+		select sle.incoming_rate, sle.voucher_type, sle.voucher_no
+		from `tabStock Ledger Entry` sle
+		where sle.item_code = %(item_code)s
+			and sle.warehouse = %(warehouse)s
+			and sle.batch_no = %(batch_no)s
+			and sle.actual_qty > 0
+			and sle.is_cancelled = 0
+			and sle.incoming_rate > 0
+		order by sle.posting_date asc, sle.posting_time asc, sle.creation asc
+		""",
+		{"item_code": item_code, "warehouse": warehouse, "batch_no": batch_no},
+		as_dict=True,
+	)
+
+	for row in rows:
+		if not cint(frappe.get_cached_value(row.voucher_type, row.voucher_no, "is_return")):
+			return flt(row.incoming_rate)
+
+	return 0.0
 
 
 def get_return_against_item_fields(voucher_type):

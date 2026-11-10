@@ -160,12 +160,6 @@ def _send_alert(doc, anomalies):
 	except Exception:
 		pass
 
-	frappe.msgprint(
-		message,
-		title="Rate Increase Alert",
-		indicator="orange",
-	)
-
 
 def _build_message(doc, anomalies):
 	doc_link = frappe.utils.get_link_to_form(doc.doctype, doc.name)
