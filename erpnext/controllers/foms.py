@@ -3008,6 +3008,8 @@ def _submit_salad_finished_goods_now(data):
 		batch_doc.reference_doctype = "Stock Entry"
 		batch_doc.expiry_date = expiry_date
 		batch_doc.foms_lot_id = salad_lot_id
+		# all repack batches add "R" at the end of batch no, same as make_batches()
+		batch_doc.flags.add_last_symbol = "R"
 		batch_doc.flags.ignore_permissions = 1
 		batch_doc.insert()
 		finished_row.batch_no = batch_doc.name
