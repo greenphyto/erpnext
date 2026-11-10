@@ -449,6 +449,9 @@ class FIFOSlots:
 		if self.filters.get("brand"):
 			item = item.where(item_table.brand == self.filters.get("brand"))
 
+		if self.filters.get("item_group"):
+			item = item.where(item_table.item_group == self.filters.get("item_group"))
+
 		return item
 
 	def __get_warehouse_conditions(self, sle, sle_query) -> str:

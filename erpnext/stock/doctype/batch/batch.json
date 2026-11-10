@@ -27,6 +27,11 @@
   "manufacturing_date",
   "column_break_16",
   "expiry_date",
+  "audit_section_section",
+  "is_audited",
+  "col_break_24",
+  "last_audited",
+  "audited_by",
   "source",
   "supplier",
   "column_break_9",
@@ -292,6 +297,34 @@
    "fieldtype": "Table",
    "label": "Batch Distribution",
    "options": "Batch Distribution Mapping"
+  },
+  {
+   "fieldname": "audit_section_section",
+   "fieldtype": "Section Break",
+   "label": "Audit"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_audited",
+   "fieldtype": "Check",
+   "label": "Is Audited"
+  },
+  {
+   "fieldname": "last_audited",
+   "fieldtype": "Datetime",
+   "label": "Last Audited",
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_break_24",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "audited_by",
+   "fieldtype": "Link",
+   "label": "Audited By",
+   "options": "User",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-archive",
@@ -299,7 +332,7 @@
  "image_field": "image",
  "links": [],
  "max_attachments": 5,
- "modified": "2026-10-22 12:32:24.806054",
+ "modified": "2026-11-10 14:36:23.427770",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Batch",
