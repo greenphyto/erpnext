@@ -3,7 +3,7 @@
 
 import frappe, json
 from frappe.model.document import Document
-from frappe.utils import now
+from frappe.utils import now, cint
 
 class FOMSDataMapping(Document):
 	def validate(self):
@@ -117,6 +117,14 @@ def update_data_result(data_type, data_name, result_name, result_doctype="", nam
 		log.doc_name = result_name
 		log.doc_type = result_doctype or log.data_type
 		log.save()
+
+
+def should_run_now(now=False):
+	"""True if the request must be executed synchronously: either the caller
+	asked for it (now=1) or Manufacturing Settings disables enqueueing."""
+	if cint(now):
+		return True
+	return bool(cint(frappe.db.get_single_value("Manufacturing Settings", "disable_enqueue_on_job_card")))
 
 
 def is_in_progress(data_type, data_name):
