@@ -1237,12 +1237,38 @@ class Item(Document):
 		
 		from frappe.model.naming import parse_naming_series
 		if self.get("material_group"):
-			series = parse_material_group_series(self.material_group)
-			if not self.get("material_number") and not self.disabled:
-				self.material_number = parse_naming_series(series)
+			if not self.get("material_number"):
+				part_number = self.get_part_number_from_settings()
+				if part_number:
+					self.material_number = part_number
+					sync_material_group_series(self.material_group, part_number)
+				else:
+					series = parse_material_group_series(self.material_group)
+					self.material_number = parse_naming_series(series)
 		else:
 			self.material_number = ""
 	
+	def get_part_number_from_settings(self):
+		code = cstr(self.get("item_code") or self.name).strip()
+		if not code:
+			return None
+
+		group = frappe.db.get_value(
+			"Material Group", self.material_group, ["number_start", "number_end"], as_dict=1
+		)
+		if not group:
+			return None
+
+		return frappe.db.get_value(
+			"Part Number Details",
+			{
+				"material_group": self.material_group,
+				"code": code,
+				"part_number": ["between", [cint(group.number_start), cint(group.number_end)]],
+			},
+			"part_number",
+		)
+
 	def get_item_material_group(self, set_data=False):
 		group_name = ""
 		if "RM-SD" in self.item_code:
@@ -1289,6 +1315,21 @@ def parse_material_group_series(material_group):
 		replacer += "#"
 	series = re.sub(f'{diff}$', replacer, cstr(temp.number_end))
 	return series
+
+def sync_material_group_series(material_group, part_number):
+	series = parse_material_group_series(material_group)
+	prefix = series.split(".", 1)[0]
+	digits = len(series.split(".", 1)[1]) if "." in series else 0
+	if not digits:
+		return
+
+	counter = cint(part_number) % (10**digits)
+	current = frappe.db.sql("select current from `tabSeries` where name = %s", (prefix,), as_dict=True)
+	if not current:
+		frappe.db.sql("insert into `tabSeries` (name, current) values (%s, %s)", (prefix, counter))
+	elif cint(current[0].current) < counter:
+		frappe.db.sql("update `tabSeries` set current = %s where name = %s", (counter, prefix))
+
 
 def get_part_number_index(material_group):
 	name = frappe.db.exists('Material Group', material_group)
