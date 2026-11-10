@@ -22,7 +22,41 @@ frappe.ui.form.on('Batch', {
 				frappe.set_route("query-report", "Stock Ledger");
 			});
 			frm.trigger('make_dashboard');
+			frm.trigger('setup_mark_audited');
 		}
+	},
+	setup_mark_audited: (frm) => {
+		if (frm.doc.item_group !== 'Raw Material') {
+			return;
+		}
+
+		const btn = frm.add_custom_button(__('Mark Audited'), () => {
+			frappe.confirm(
+				__('Mark this batch as audited?'),
+				() => {
+					const now = frappe.datetime.now_datetime();
+					frm.set_value('is_audited', 1);
+					frm.set_value('last_audited', now);
+					frm.set_value('audited_by', frappe.session.user);
+					frm.save().then(() => {
+						const content = __('Last audited by {0} at {1}', [
+							frappe.session.user,
+							frappe.datetime.str_to_user(now)
+						]);
+						frappe.xcall('frappe.desk.form.utils.add_comment', {
+							reference_doctype: frm.doctype,
+							reference_name: frm.docname,
+							content: content,
+							comment_email: frappe.session.user,
+							comment_by: frappe.session.user_fullname
+						}).then(() => {
+							frm.reload_doc();
+						});
+					});
+				}
+			);
+		});
+		btn.removeClass('btn-default').addClass('btn-success');
 	},
 	item: (frm) => {
 		// frappe.db.get_value('Item', {name: frm.doc.item}, 'has_expiry_date', (r) => {
