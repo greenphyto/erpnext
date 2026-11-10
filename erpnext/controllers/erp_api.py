@@ -27,7 +27,7 @@ from frappe.model.workflow import apply_workflow
 from erpnext.stock.doctype.batch.batch import get_batch_no, get_available_batch
 from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
 from frappe.utils.file_manager import save_file, save_url
-from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result, make_in_progress, enqueue_foms_job, mark_failed, is_in_progress, should_run_now
+from erpnext.foms.doctype.foms_data_mapping.foms_data_mapping import create_foms_data, update_data_result, make_in_progress, enqueue_foms_job, mark_failed, is_in_progress, should_run_now, reclaim_stale_in_progress
 from datetime import datetime, timedelta
 from erpnext.stock.utils import get_default_warehouse
 from erpnext.stock.stock_ledger import get_valuation_rate
@@ -740,6 +740,9 @@ def run_pending_harvesting_transfer():
 	now_time = get_datetime()
 	end_range = now_time - timedelta(minutes=5)
 	old_month = now_time - timedelta(days=30)
+
+	# release logs stuck In Progress (worker crash / lost job) so they get retried
+	reclaim_stale_in_progress(stale_minutes=30)
 
 	# save traceback and print after end of looping
 	errors = []

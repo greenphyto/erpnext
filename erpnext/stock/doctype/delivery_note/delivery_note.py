@@ -19,7 +19,13 @@ from erpnext.accounts.general_ledger import make_gl_entries
 from erpnext.accounts.utils import get_price_list_with
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.controllers.selling_controller import SellingController
-from erpnext.stock.doctype.batch.batch import get_available_batch_portion, set_auto_batch_rows, set_batch_nos
+from erpnext.stock.doctype.batch.batch import (
+	get_available_batch_portion,
+	get_batch_qty,
+	set_auto_batch_rows,
+	set_batch_nos,
+)
+from erpnext.stock.utils import get_stock_balance
 from erpnext.stock.doctype.serial_no.serial_no import get_delivery_note_serial_no
 from erpnext.stock.get_item_details import get_carton_detail, get_item_price
 from six import string_types
@@ -534,9 +540,25 @@ class DeliveryNote(SellingController):
 	def update_current_stock(self):
 		if self.get("_action") and self._action != "update_after_submit":
 			for d in self.get("items"):
-				d.actual_qty = frappe.db.get_value(
-					"Bin", {"item_code": d.item_code, "warehouse": d.warehouse}, "actual_qty"
-				)
+				if d.item_code and d.warehouse and self.posting_date:
+					d.actual_qty = flt(
+						get_stock_balance(
+							d.item_code, d.warehouse, self.posting_date, self.posting_time or "23:59:59"
+						)
+					)
+				else:
+					d.actual_qty = frappe.db.get_value(
+						"Bin", {"item_code": d.item_code, "warehouse": d.warehouse}, "actual_qty"
+					)
+				if d.get("batch_no") and d.warehouse:
+					d.actual_batch_qty = flt(
+						get_batch_qty(
+							batch_no=d.batch_no,
+							warehouse=d.warehouse,
+							posting_date=self.posting_date,
+							posting_time=self.posting_time or "23:59:59",
+						)
+					)
 
 			for d in self.get("packed_items"):
 				bin_qty = frappe.db.get_value(

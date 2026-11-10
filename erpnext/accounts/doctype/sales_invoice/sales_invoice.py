@@ -35,7 +35,8 @@ from erpnext.controllers.accounts_controller import validate_account_head
 from erpnext.controllers.selling_controller import SellingController
 from erpnext.projects.doctype.timesheet.timesheet import get_projectwise_timesheet_data
 from erpnext.setup.doctype.company.company import update_company_current_month_sales
-from erpnext.stock.doctype.batch.batch import set_batch_nos, set_auto_batch_rows
+from erpnext.stock.utils import get_stock_balance
+from erpnext.stock.doctype.batch.batch import get_batch_qty, set_batch_nos, set_auto_batch_rows
 from erpnext.stock.doctype.delivery_note.delivery_note import update_billed_amount_based_on_so
 from erpnext.stock.doctype.serial_no.serial_no import (
 	get_delivery_note_serial_no,
@@ -1097,12 +1098,29 @@ class SalesInvoice(SellingController):
 	def update_current_stock(self):
 		for d in self.get("items"):
 			if d.item_code and d.warehouse:
-				bin = frappe.db.sql(
-					"select actual_qty from `tabBin` where item_code = %s and warehouse = %s",
-					(d.item_code, d.warehouse),
-					as_dict=1,
-				)
-				d.actual_qty = bin and flt(bin[0]["actual_qty"]) or 0
+				if self.posting_date:
+					d.actual_qty = flt(
+						get_stock_balance(
+							d.item_code, d.warehouse, self.posting_date, self.posting_time or "23:59:59"
+						)
+					)
+				else:
+					bin = frappe.db.sql(
+						"select actual_qty from `tabBin` where item_code = %s and warehouse = %s",
+						(d.item_code, d.warehouse),
+						as_dict=1,
+					)
+					d.actual_qty = bin and flt(bin[0]["actual_qty"]) or 0
+
+				if d.batch_no:
+					d.actual_batch_qty = flt(
+						get_batch_qty(
+							batch_no=d.batch_no,
+							warehouse=d.warehouse,
+							posting_date=self.posting_date,
+							posting_time=self.posting_time or "23:59:59",
+						)
+					)
 
 		for d in self.get("packed_items"):
 			bin = frappe.db.sql(

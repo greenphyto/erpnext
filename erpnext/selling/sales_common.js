@@ -229,6 +229,8 @@ erpnext.selling.SellingController = class SellingController extends erpnext.Tran
 						has_batch_no: has_batch_no || 0,
 						stock_qty: item.stock_qty,
 						serial_no: item.serial_no || "",
+						posting_date: doc.posting_date,
+						posting_time: doc.posting_time,
 					},
 					callback:function(r){
 						if (in_list(['Delivery Note', 'Sales Invoice'], doc.doctype)) {
@@ -325,7 +327,9 @@ erpnext.selling.SellingController = class SellingController extends erpnext.Tran
 						"stock_qty": item.stock_qty || item.qty, //if stock_qty field is not available fetch qty (in case of Packed Items table)
 						"warehouse": item.warehouse,
 						"item_code": item.item_code,
-						"has_serial_no": has_serial_no
+						"has_serial_no": has_serial_no,
+						"posting_date": this.frm.doc.posting_date,
+						"posting_time": this.frm.doc.posting_time
 					},
 					"fieldname": "actual_batch_qty"
 				});
