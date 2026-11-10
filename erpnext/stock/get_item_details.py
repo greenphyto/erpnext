@@ -108,6 +108,13 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 		if doc and doc.get("doctype") == "Purchase Order":
 			# calculate company_total_stock only for po
 			bin_details = get_bin_details(args.item_code, out.warehouse, args.company)
+		elif args.get("doctype") in ("Delivery Note", "Sales Invoice") and args.get("posting_date"):
+			bin_details = get_bin_details(
+				args.item_code,
+				out.warehouse,
+				posting_date=args.get("posting_date"),
+				posting_time=args.get("posting_time"),
+			)
 		else:
 			bin_details = get_bin_details(args.item_code, out.warehouse)
 
@@ -177,7 +184,13 @@ def update_stock(args, out):
 
 		if out.has_batch_no and not args.get("batch_no"):
 			out.batch_no = get_batch_no(out.item_code, out.warehouse, out.qty)
-			actual_batch_qty = get_batch_qty(out.batch_no, out.warehouse, out.item_code)
+			actual_batch_qty = get_batch_qty(
+				out.batch_no,
+				out.warehouse,
+				out.item_code,
+				args.get("posting_date"),
+				args.get("posting_time"),
+			)
 			if actual_batch_qty:
 				out.update(actual_batch_qty)
 
@@ -1256,7 +1269,7 @@ def get_projected_qty(item_code, warehouse):
 
 
 @frappe.whitelist()
-def get_bin_details(item_code, warehouse, company=None):
+def get_bin_details(item_code, warehouse, company=None, posting_date=None, posting_time=None):
 	bin_details = frappe.db.get_value(
 		"Bin",
 		{"item_code": item_code, "warehouse": warehouse},
@@ -1264,6 +1277,13 @@ def get_bin_details(item_code, warehouse, company=None):
 		as_dict=True,
 		cache=True,
 	) or {"projected_qty": 0, "actual_qty": 0, "reserved_qty": 0}
+	if posting_date:
+		from erpnext.stock.utils import get_stock_balance
+
+		bin_details = frappe._dict(bin_details)
+		bin_details["actual_qty"] = flt(
+			get_stock_balance(item_code, warehouse, posting_date, posting_time or "23:59:59")
+		)
 	if company:
 		bin_details["company_total_stock"] = get_company_total_stock(item_code, company)
 	return bin_details
@@ -1289,10 +1309,18 @@ def get_serial_no_details(item_code, warehouse, stock_qty, serial_no):
 
 @frappe.whitelist()
 def get_bin_details_and_serial_nos(
-	item_code, warehouse, has_batch_no=None, stock_qty=None, serial_no=None
+	item_code,
+	warehouse,
+	has_batch_no=None,
+	stock_qty=None,
+	serial_no=None,
+	posting_date=None,
+	posting_time=None,
 ):
 	bin_details_and_serial_nos = {}
-	bin_details_and_serial_nos.update(get_bin_details(item_code, warehouse))
+	bin_details_and_serial_nos.update(
+		get_bin_details(item_code, warehouse, posting_date=posting_date, posting_time=posting_time)
+	)
 	if flt(stock_qty) > 0:
 		if has_batch_no:
 			args = frappe._dict({"item_code": item_code, "warehouse": warehouse, "stock_qty": stock_qty})
@@ -1307,9 +1335,13 @@ def get_bin_details_and_serial_nos(
 
 
 @frappe.whitelist()
-def get_batch_qty_and_serial_no(batch_no, stock_qty, warehouse, item_code, has_serial_no):
+def get_batch_qty_and_serial_no(
+	batch_no, stock_qty, warehouse, item_code, has_serial_no, posting_date=None, posting_time=None
+):
 	batch_qty_and_serial_no = {}
-	batch_qty_and_serial_no.update(get_batch_qty(batch_no, warehouse, item_code))
+	batch_qty_and_serial_no.update(
+		get_batch_qty(batch_no, warehouse, item_code, posting_date, posting_time)
+	)
 
 	if (flt(batch_qty_and_serial_no.get("actual_batch_qty")) >= flt(stock_qty)) and has_serial_no:
 		args = frappe._dict(
@@ -1321,11 +1353,18 @@ def get_batch_qty_and_serial_no(batch_no, stock_qty, warehouse, item_code, has_s
 
 
 @frappe.whitelist()
-def get_batch_qty(batch_no, warehouse, item_code):
+def get_batch_qty(batch_no, warehouse, item_code, posting_date=None, posting_time=None):
 	from erpnext.stock.doctype.batch import batch
 
 	if batch_no:
-		return {"actual_batch_qty": batch.get_batch_qty(batch_no, warehouse)}
+		return {
+			"actual_batch_qty": batch.get_batch_qty(
+				batch_no,
+				warehouse,
+				posting_date=posting_date,
+				posting_time=posting_time or ("23:59:59" if posting_date else None),
+			)
+		}
 
 
 @frappe.whitelist()
