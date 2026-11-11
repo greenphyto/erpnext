@@ -288,12 +288,29 @@ def split_batch(batch_no, item_code, warehouse, qty, new_batch_id=None):
 	return batch.name
 
 
-def set_auto_batch_rows(doc, warehouse_field, child_table="items", enabled=None):
+def set_auto_batch_rows(
+	doc, warehouse_field, child_table="items", enabled=None, allow_expired=False, priority_warehouses=None
+):
 	if enabled is None:
 		if not doc.company or not frappe.db.get_value("Company", doc.company, "enable_auto_batch"):
 			return
 	elif not enabled:
 		return
+
+	priority_warehouses = priority_warehouses or []
+
+	# Track qty already allocated to earlier rows per (item, warehouse, batch) so
+	# that multiple rows of the same item do not double-count the same batch
+	# stock. Without this, two rows that each fit in one batch keep that batch
+	# even when their combined qty exceeds the available batch stock.
+	consumed = {}
+
+	def available(item_code, warehouse, batch_no, batch_qty):
+		return flt(batch_qty) - consumed.get((item_code, warehouse, batch_no), 0.0)
+
+	def consume(item_code, warehouse, batch_no, batch_qty):
+		key = (item_code, warehouse, batch_no)
+		consumed[key] = consumed.get(key, 0.0) + flt(batch_qty)
 
 	for item in list(doc.get(child_table)):
 		if not item.get(warehouse_field) or not item.item_code:
@@ -301,43 +318,101 @@ def set_auto_batch_rows(doc, warehouse_field, child_table="items", enabled=None)
 		if not frappe.db.get_value("Item", item.item_code, "has_batch_no"):
 			continue
 
+		item_warehouse = item.get(warehouse_field)
 		conversion_factor = flt(item.conversion_factor) or 1
-		remaining_qty = flt(item.stock_qty or item.qty * conversion_factor)
-		if item.batch_no:
-			expiry_date = frappe.db.get_value("Batch", item.batch_no, "expiry_date")
-			if expiry_date and getdate(expiry_date) < getdate(doc.posting_date):
-				item.batch_no = None
-			else:
-				batch_qty = get_batch_qty(batch_no=item.batch_no, warehouse=item.get(warehouse_field))
-				if flt(batch_qty) >= remaining_qty:
-					continue
-				item.batch_no = None
-
-		batches = get_batches(item.item_code, item.get(warehouse_field), qty=remaining_qty) or []
-		allocations = []
-		for batch in batches:
-			batch_qty = min(flt(batch.qty), remaining_qty)
-			if batch_qty <= 0:
-				continue
-			allocations.append((batch.batch_id, batch_qty))
-			remaining_qty -= batch_qty
-			if remaining_qty <= 0:
-				break
-
-		if not allocations or remaining_qty > 0:
+		required_qty = flt(item.stock_qty or item.qty * conversion_factor)
+		if required_qty <= 0:
 			continue
 
-		item.qty = allocations[0][1] / conversion_factor
-		item.stock_qty = allocations[0][1]
-		item.batch_no = allocations[0][0]
+		# Exhaust the row's own warehouse first, then fall back to the
+		# consignment priority warehouses in order.
+		ordered_warehouses = []
+		for wh in [item_warehouse] + list(priority_warehouses):
+			if wh and wh not in ordered_warehouses:
+				ordered_warehouses.append(wh)
+
+		remaining_qty = required_qty
+		# Each allocation is a (warehouse, batch_no, qty) tuple so split rows can
+		# point to the correct warehouse.
+		allocations = []
+
+		if item.batch_no:
+			expiry_date = frappe.db.get_value("Batch", item.batch_no, "expiry_date")
+			if expiry_date and getdate(expiry_date) < getdate(doc.posting_date) and not allow_expired:
+				item.batch_no = None
+			else:
+				selected_qty = available(
+					item.item_code,
+					item_warehouse,
+					item.batch_no,
+					get_batch_qty(batch_no=item.batch_no, warehouse=item_warehouse),
+				)
+				if selected_qty >= required_qty:
+					consume(item.item_code, item_warehouse, item.batch_no, required_qty)
+					continue
+				if selected_qty > 0:
+					allocations.append((item_warehouse, item.batch_no, selected_qty))
+					remaining_qty -= selected_qty
+				item.batch_no = None
+
+		for warehouse in ordered_warehouses:
+			if remaining_qty <= 0:
+				break
+			partial_batch_no = (
+				allocations[0][1]
+				if allocations and allocations[0][0] == warehouse
+				else None
+			)
+			batches = (
+				get_batches(
+					item.item_code,
+					warehouse,
+					qty=remaining_qty,
+					allow_expired=allow_expired,
+				)
+				or []
+			)
+			for batch in batches:
+				if partial_batch_no and batch.batch_id == partial_batch_no:
+					continue
+				batch_qty = min(
+					available(item.item_code, warehouse, batch.batch_id, batch.qty), remaining_qty
+				)
+				if batch_qty <= 0:
+					continue
+				allocations.append((warehouse, batch.batch_id, batch_qty))
+				remaining_qty -= batch_qty
+				if remaining_qty <= 0:
+					break
+
+		if not allocations or remaining_qty > 0:
+			frappe.msgprint(
+				_("Insufficient batch stock for Item {0}. Required {1}, available {2}. No changes made.").format(
+					item.item_code,
+					required_qty,
+					required_qty - flt(remaining_qty),
+				),
+				indicator="orange",
+				alert=True,
+			)
+			continue
+
+		for warehouse, batch_no, batch_qty in allocations:
+			consume(item.item_code, warehouse, batch_no, batch_qty)
+
+		item.set(warehouse_field, allocations[0][0])
+		item.batch_no = allocations[0][1]
+		item.qty = allocations[0][2] / conversion_factor
+		item.stock_qty = allocations[0][2]
 		row_data = item.as_dict()
 		for field in ("name", "parent", "parentfield", "parenttype", "idx", "doctype"):
 			row_data.pop(field, None)
-		for batch_no, batch_qty in allocations[1:]:
+		for warehouse, batch_no, batch_qty in allocations[1:]:
 			new_item = doc.append(child_table, row_data.copy())
+			new_item.set(warehouse_field, warehouse)
+			new_item.batch_no = batch_no
 			new_item.qty = batch_qty / conversion_factor
 			new_item.stock_qty = batch_qty
-			new_item.batch_no = batch_no
 
 
 def set_batch_nos(doc, warehouse_field, throw=False, child_table="items", allow_expired=False, include_salad_batch=False):

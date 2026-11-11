@@ -9,7 +9,9 @@
  "field_order": [
   "company",
   "default_update_stock_on_sales_invoice",
-  "allow_expired_product_on_sales_invoice"
+  "allow_expired_product_on_sales_invoice",
+  "warehouse_enable_section",
+  "warehouse_enable"
  ],
  "fields": [
   {
@@ -30,11 +32,22 @@
    "fieldname": "allow_expired_product_on_sales_invoice",
    "fieldtype": "Check",
    "label": "Allow Expired product on Sales Invoice"
+  },
+  {
+   "fieldname": "warehouse_enable_section",
+   "fieldtype": "Section Break",
+   "label": "Warehouse Enable"
+  },
+  {
+   "fieldname": "warehouse_enable",
+   "fieldtype": "Table",
+   "label": "Warehouse Enable",
+   "options": "Warehouse Enable"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-08-26 12:11:27.079943",
+ "modified": "2026-11-11 16:08:48.065893",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Consignment Settings",

@@ -84,6 +84,20 @@ class SalesInvoice(SellingController):
 			self.indicator_color = "green"
 			self.indicator_title = _("Paid")
 
+	def get_consignment_priority_warehouses(self):
+		if not self.company or not self.customer:
+			return []
+		settings = frappe.db.get_value("Consignment Settings", self.company, "name")
+		if not settings:
+			return []
+		rows = frappe.get_all(
+			"Warehouse Enable",
+			filters={"parent": settings, "parenttype": "Consignment Settings", "customer": self.customer},
+			fields=["warehouse", "priority"],
+		)
+		rows.sort(key=lambda r: cint(r.priority))
+		return [r.warehouse for r in rows if r.warehouse]
+
 	def validate(self):
 		super(SalesInvoice, self).validate()
 		if self.has_multi_delivery_note_references():
@@ -144,12 +158,19 @@ class SalesInvoice(SellingController):
 				self.company
 				and frappe.db.get_value("Consignment Settings", self.company, "allow_expired_product_on_sales_invoice")
 			)
+			priority_warehouses = self.get_consignment_priority_warehouses()
 			if self.is_lazada_order and cint(
 				frappe.db.get_single_value("Lazada Settings", "enable_auto_batch")
 			):
-				set_auto_batch_rows(self, "warehouse", enabled=1)
+				set_auto_batch_rows(
+					self, "warehouse", enabled=1, allow_expired=allow_expired,
+					priority_warehouses=priority_warehouses,
+				)
 			else:
-				set_auto_batch_rows(self, "warehouse")
+				set_auto_batch_rows(
+					self, "warehouse", allow_expired=allow_expired,
+					priority_warehouses=priority_warehouses,
+				)
 			set_batch_nos(self, "warehouse", True, allow_expired=allow_expired)
 
 		if self.redeem_loyalty_points:
