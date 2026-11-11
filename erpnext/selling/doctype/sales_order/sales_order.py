@@ -1064,7 +1064,6 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False, a
 				item.delivery_note = None
 				item.dn_detail = None
 
-		target.items.sort(key=lambda item: (item.item_code or "", item.uom or "", item.batch_no or ""))
 		for idx, item in enumerate(target.items, 1):
 			item.idx = idx
 		target.run_method("calculate_taxes_and_totals")
