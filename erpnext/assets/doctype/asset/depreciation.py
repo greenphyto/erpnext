@@ -90,6 +90,31 @@ def get_depreciable_assets(date, asset_category=[]):
 # company (asset)
 # finance_book (sch)
 
+def depreciation_entry_exists(asset_name, schedule_date):
+	return frappe.db.exists(
+		"Journal Entry Account",
+		{
+			"reference_type": "Asset",
+			"reference_name": asset_name,
+			"parenttype": "Journal Entry",
+			"docstatus": ["<", 2],
+			"parent": [
+				"in",
+				frappe.get_all(
+					"Journal Entry",
+					filters={
+						"voucher_type": "Depreciation Entry",
+						"posting_date": getdate(schedule_date),
+						"docstatus": ["<", 2],
+					},
+					pluck="name",
+				)
+				or [""],
+			],
+		},
+	)
+
+
 @frappe.whitelist()
 def make_depreciation_entry(assets, date=None):
 	frappe.has_permission("Journal Entry", throw=True)
@@ -128,6 +153,8 @@ def make_depreciation_entry(assets, date=None):
 		for d in asset.get("schedules"):
 			if 	not d.journal_entry and \
 				get_month_year(d.schedule_date) == get_month_year(date):
+				if depreciation_entry_exists(asset.name, d.schedule_date):
+					continue
 				data_map[d.name] = {
 					"asset":asset,
 					"schedule":d
