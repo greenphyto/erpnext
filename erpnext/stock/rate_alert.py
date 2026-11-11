@@ -194,6 +194,70 @@ def notify_negative_sle_rate(doc, method=None):
 	frappe.sendmail(recipients=recipients, subject=subject, message=message)
 
 
+def notify_missing_part_number(doc, method=None):
+	"""Email the support list when a Work Order's production item is not listed
+	in Part Number Settings, or is listed without an account.
+
+	Wired to on_submit of Work Order.
+	"""
+	item_code = doc.get("production_item")
+	if not item_code:
+		return
+
+	status = _get_part_number_status(item_code, doc.get("company"))
+	if status == "ok":
+		return
+
+	recipients = _get_support_recipients()
+	if not recipients:
+		return
+
+	subject = _("[Alert] Production item missing from Part Number Settings in {0} {1}").format(
+		doc.doctype, doc.name
+	)
+	message = _build_missing_part_number_message(doc, item_code, status)
+	frappe.sendmail(recipients=recipients, subject=subject, message=message)
+
+
+def _get_part_number_status(item_code, company=None):
+	filters = {"parenttype": "Part Number Settings", "code": item_code}
+	if company:
+		filters["parent"] = company
+	rows = frappe.db.get_all(
+		"Part Number Details",
+		filters=filters,
+		fields=["account_code"],
+	)
+	if not rows:
+		return "not_listed"
+	if not any(r.account_code for r in rows):
+		return "no_account"
+	return "ok"
+
+
+def _build_missing_part_number_message(doc, item_code, status):
+	doc_link = get_link_to_form(doc.doctype, doc.name)
+	item_link = get_link_to_form("Item", item_code)
+	company = doc.get("company")
+	if company:
+		settings_link = get_link_to_form("Part Number Settings", company)
+	else:
+		settings_link = get_link_to_form("Part Number Settings", "", "Part Number Settings")
+	if status == "not_listed":
+		reason = _("Production item {0} is not listed in Part Number Settings.").format(item_link)
+	else:
+		reason = _("Production item {0} is listed in Part Number Settings but has no account.").format(
+			item_link
+		)
+	lines = [
+		_("Hi,"),
+		_("Work Order {0} was submitted.").format(doc_link),
+		reason,
+		_("Please update the {0}.").format(settings_link),
+	]
+	return "<br>".join(lines)
+
+
 def _get_support_recipients():
 	email_candidate = frappe.local.conf.email_support
 	if not email_candidate:

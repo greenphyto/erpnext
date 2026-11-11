@@ -490,7 +490,10 @@ doc_events = {
         "validate": "erpnext.controllers.erp.detection_incoming_rate_not_logic"
 	},
     "Work Order":{
-        "on_submit":"erpnext.controllers.foms.check_missing_wo_rate"
+        "on_submit":[
+            "erpnext.controllers.foms.check_missing_wo_rate",
+            "erpnext.stock.rate_alert.notify_missing_part_number",
+		]
 	},
     "Batch":{
         "on_update":"erpnext.controllers.foms.sync_log",
