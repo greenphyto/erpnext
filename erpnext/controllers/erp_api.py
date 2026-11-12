@@ -2272,13 +2272,66 @@ def _run_batch_distribution(log_name, data_name, batch_id, breakdown):
 
 def _apply_batch_distribution(batch_id, breakdown):
 	batch = frappe.get_doc("Batch", batch_id)
+	item_code = batch.item
+	stock_uom = frappe.db.get_value("Item", item_code, "stock_uom")
+
+	def _norm(s):
+		# tolerate spacing differences, e.g. "Package(200g)" vs "Package (200g)"
+		return "".join((s or "").split()).lower()
+
+	# resolve the real packaging / UOM name once (payload may send it without the
+	# space, e.g. "Package(200g)" instead of the stored "Package (200g)")
+	def _resolve_packaging(name):
+		if not name:
+			return None
+		if frappe.db.exists("Packaging", name):
+			return name
+		target = _norm(name)
+		for p in frappe.get_all("Packaging", pluck="name"):
+			if _norm(p) == target:
+				return p
+		return name
+
 	batch.set("batch_distribution", [])
 	for row in breakdown:
 		row = get_data(row)
+		packaging = _resolve_packaging(row.get("packaging") or None)
+		payload_qty = flt(row.get("qty"))
+		payload_uom = row.get("uom") or ""
+
+		# conversion_factor = stock-uom per 1 packaging unit (from the item's UOM
+		# Conversion Detail, keyed by the packaging name).
+		conversion_factor = 1.0
+		if packaging:
+			conversion_factor = flt(
+				frappe.db.get_value(
+					"UOM Conversion Detail",
+					{"parent": item_code, "uom": packaging},
+					"conversion_factor",
+				)
+			) or 1.0
+
+		# interpret payload qty based on its uom:
+		#  - uom == packaging  -> qty is already in packaging units
+		#  - otherwise (stock uom, e.g. "kg") -> qty is in stock uom, convert down
+		if packaging and _norm(payload_uom) == _norm(packaging):
+			qty = payload_qty
+			stock_qty = payload_qty * conversion_factor
+		else:
+			stock_qty = payload_qty
+			qty = payload_qty / conversion_factor if conversion_factor else payload_qty
+
+		# qty (in packaging units) rounded to 2 decimals
+		qty = round(flt(qty), 2)
+
 		batch.append("batch_distribution", {
-			"packaging": row.get("packaging") or None,
-			"qty": row.get("qty"),
-			"uom": row.get("uom"),
+			"packaging": packaging,
+			"qty": qty,
+			# UOM of this line = the packaging (the conversion key on the item)
+			"uom": packaging,
+			"conversion_factor": conversion_factor,
+			"stock_uom": stock_uom,
+			"stock_qty": stock_qty,
 		})
 	batch.save(ignore_permissions=True)
 
