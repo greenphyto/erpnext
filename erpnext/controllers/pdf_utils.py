@@ -11,10 +11,10 @@ def add_page_numbers(pdf_bytes: bytes,
     Tambahkan nomor halaman di bottom-center PDF.
     """
     reader = PdfReader(io.BytesIO(pdf_bytes))
-    writer = PdfWriter()
-    total = len(reader.pages)
+    writer = PdfWriter(clone_from=reader)
+    total = len(writer.pages)
 
-    for i, page in enumerate(reader.pages, start=1):
+    for i, page in enumerate(writer.pages, start=1):
         w = float(page.mediabox.width)
         h = float(page.mediabox.height)
 
@@ -35,7 +35,6 @@ def add_page_numbers(pdf_bytes: bytes,
 
         overlay = PdfReader(packet).pages[0]
         page.merge_page(overlay)
-        writer.add_page(page)
 
     out = io.BytesIO()
     writer.write(out)
