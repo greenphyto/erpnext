@@ -3066,7 +3066,6 @@ def _submit_salad_finished_goods_now(data):
 		endpoint="submit_salad_finished_goods",
 	)
 	make_in_progress(log.name)
-	frappe.db.commit()
 
 	if not salad_item_code:
 		frappe.throw(_("Missing salad_item_code"), frappe.ValidationError)
@@ -3178,7 +3177,8 @@ def _submit_salad_finished_goods_now(data):
 		se.save()
 		se.submit()
 	except Exception:
-		make_in_progress(log.name, inprogress=False)
+		# do not commit/rollback here; the outer job owner (run_foms_job) rolls
+		# back and marks the log Failed. Just surface the error.
 		frappe.log_error(
 			message=f"{data_name}\n{json.dumps(data, default=str)}\n\n{frappe.get_traceback()}",
 			title="Failed submit_salad_finished_goods",
@@ -3192,8 +3192,6 @@ def _submit_salad_finished_goods_now(data):
 		result_doctype="Stock Entry",
 		name_id=log.name,
 	)
-
-	frappe.db.commit()
 
 	return {"stock_entry": se.name, "batch": finished_row.batch_no}
 

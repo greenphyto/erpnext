@@ -625,7 +625,7 @@ def _update_work_order_operation_status(log_name, ERPWorkOrderID, operationNo, p
 	if log.status == "Mapped":
 		return
 
-	make_in_progress(log.name, commit=1)
+	make_in_progress(log.name)
 
 	# Handle full cancellation (100% scrap)
 	if percentage == 0:
@@ -755,6 +755,10 @@ def run_pending_harvesting_transfer():
 			continue
 
 		if "Operation 3" in d.data_name:
+			# isolate each item with a SAVEPOINT: a failure rolls back only that
+			# item, never the whole job or other items already processed.
+			savepoint = f"pending_htransfer_{d.name}"
+			frappe.db.savepoint(savepoint)
 			try:
 				_update_work_order_operation_status(
 					log_name=d.name,
@@ -763,15 +767,18 @@ def run_pending_harvesting_transfer():
 					percentage=flt(data.get('percentage')), 
 					rawMaterials=data.get('rawMaterials'),
 				)
-				frappe.db.commit()
 			except Exception as e:
-				frappe.db.rollback()
-				mark_failed(d.name, error_message=str(e), commit=True)
+				frappe.db.rollback(save_point=savepoint)
+				mark_failed(d.name, error_message=str(e))
 				errors.append({
 					"data_name": d.data_name,
 					"error": str(e),
 					"traceback": frappe.get_traceback()
 				})
+
+	# single commit at the job boundary (scheduler/worker owns the transaction)
+	frappe.db.commit()
+
 	if errors:
 		frappe.log_error(message=json.dumps(errors), title="Error in scheduled harvesting transfer")
 		err_msg = "\n".join([f"{e['data_name']}:\n{e['error']}\n{e['traceback']}" for e in errors])
@@ -1095,6 +1102,8 @@ def run_pending_harvesting():
 			continue
 		
 		if "Finish Work Order" in d.data_name:
+			savepoint = f"pending_hfinish_{d.name}"
+			frappe.db.savepoint(savepoint)
 			try:
 				_submit_work_order_finish_goods(
 					erpWorkOrderID=data.get('erpWorkOrderID'), 
@@ -1104,15 +1113,17 @@ def run_pending_harvesting():
 					draft=cint(data.get('draft')),
 					log_name=d.name
 				)
-				frappe.db.commit()
 			except Exception as e:
-				frappe.db.rollback()
-				mark_failed(d.name, error_message=str(e), commit=True)
+				frappe.db.rollback(save_point=savepoint)
+				mark_failed(d.name, error_message=str(e))
 				errors.append({
 					"data_name": d.data_name,
 					"error": str(e),
 					"traceback": frappe.get_traceback()
 				})
+
+	frappe.db.commit()
+
 	if errors:
 		frappe.log_error(message=json.dumps(errors), title="Error in scheduled harvesting finish")
 		err_msg = "\n".join([f"{e['data_name']}:\n{e['error']}\n{e['traceback']}" for e in errors])
@@ -1159,7 +1170,6 @@ def run_pending_mix_product():
 				result_doctype="Stock Entry",
 				name_id=d.name,
 			)
-			frappe.db.commit()
 			continue
 
 		children = data.get("children") or []
@@ -1170,17 +1180,20 @@ def run_pending_mix_product():
 		if not mix_children_ready(children):
 			continue
 
+		savepoint = f"pending_mix_{d.name}"
+		frappe.db.savepoint(savepoint)
 		try:
 			_submit_salad_finished_goods_now(data)
-			frappe.db.commit()
 		except Exception as e:
-			frappe.db.rollback()
-			mark_failed(d.name, error_message=str(e), commit=True)
+			frappe.db.rollback(save_point=savepoint)
+			mark_failed(d.name, error_message=str(e))
 			errors.append({
 				"data_name": d.data_name,
 				"error": str(e),
 				"traceback": frappe.get_traceback()
 			})
+
+	frappe.db.commit()
 
 	if errors:
 		frappe.log_error(message=json.dumps(errors), title="Error in scheduled mix product")
@@ -2271,18 +2284,37 @@ def _apply_batch_distribution(batch_id, breakdown):
 
 
 def retry_batch_distribution_on_new_batch(doc, method=None):
-	"""Batch.after_insert hook: a new batch may satisfy a pending distribution."""
+	"""Batch.after_insert hook: a new batch may satisfy a pending distribution.
+
+	IMPORTANT: this runs inside the transaction of whatever created the Batch
+	(e.g. a finished-goods Stock Entry submit). run_pending_batch_distribution
+	commits/rolls back, which would corrupt that outer transaction (a failed
+	distribution would roll back the just-inserted Batch and break the caller).
+	So we enqueue the retry to run AFTER the current transaction commits, in its
+	own job, fully isolated from the caller.
+	"""
 	lot_id = getattr(doc, "foms_lot_id", None)
 	if not lot_id:
 		return
-	run_pending_batch_distribution(lot_id=lot_id)
+
+	# Never run inline here (would be inside the caller's transaction). Defer to
+	# after the current transaction commits. On sites without a worker the
+	# scheduler fallback (cron) still retries pending distributions.
+	frappe.enqueue(
+		"erpnext.controllers.erp_api.run_pending_batch_distribution",
+		queue="default",
+		enqueue_after_commit=True,
+		lot_id=lot_id,
+	)
 
 
-def run_pending_batch_distribution(lot_id=None):
+def run_pending_batch_distribution(lot_id=None, auto_commit=True):
 	"""Retry pending Batch Distribution logs whose target Batch now exists.
 
-	Called from Batch.after_insert (scoped to the new batch's lot_id) and from
-	the scheduler as a fallback for any still-unmapped logs.
+	Runs as its own job (enqueued from Batch.after_insert after commit) or from
+	the scheduler. Each item is wrapped in a SAVEPOINT so a failure never
+	corrupts the surrounding transaction. `auto_commit` persists results at the
+	end; pass False when running inside another transaction that will commit.
 	"""
 	now_time = get_datetime()
 	old_range = now_time - timedelta(days=10)
@@ -2326,6 +2358,11 @@ def run_pending_batch_distribution(lot_id=None):
 			continue
 
 		make_in_progress(d.name)
+		# Use a SAVEPOINT instead of a global commit/rollback so this retry never
+		# corrupts the caller's transaction (e.g. a finished-goods Stock Entry
+		# submit that just inserted the Batch and triggered this via after_insert).
+		savepoint = f"batch_dist_{d.name}"
+		frappe.db.savepoint(savepoint)
 		try:
 			_apply_batch_distribution(batch_id, breakdown)
 			update_data_result(
@@ -2335,15 +2372,18 @@ def run_pending_batch_distribution(lot_id=None):
 				result_doctype="Batch",
 				name_id=d.name,
 			)
-			frappe.db.commit()
 		except Exception as e:
-			frappe.db.rollback()
-			mark_failed(d.name, error_message=str(e), commit=True)
+			# roll back only this item's changes, keep the caller's work intact
+			frappe.db.rollback(save_point=savepoint)
+			mark_failed(d.name, error_message=str(e))
 			errors.append({
 				"data_name": d.data_name,
 				"error": str(e),
 				"traceback": frappe.get_traceback(),
 			})
+
+	if auto_commit:
+		frappe.db.commit()
 
 	if errors:
 		frappe.log_error(
