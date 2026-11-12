@@ -424,7 +424,14 @@ class SalesInvoice(SellingController):
 			if con_warehouse and not self.set_warehouse:
 				self.set_warehouse = con_warehouse
 
-		if self.update_stock and self.set_warehouse:
+		# Auto batch assignment:
+		# - Consignment customers (listed in Consignment Settings > Warehouse Enable)
+		#   are handled by set_auto_batch_rows() during validate(), which supports
+		#   priority warehouses, cross-row consumed tally and allow_expired.
+		# - General customers (no priority warehouses) use the legacy
+		#   _auto_set_batch_no() here, which assigns/splits batches within a single
+		#   warehouse.
+		if self.update_stock and self.set_warehouse and not self.get_consignment_priority_warehouses():
 			self._auto_set_batch_no()
 
 	def before_save(self):
