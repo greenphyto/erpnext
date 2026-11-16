@@ -16,6 +16,7 @@
   "carton_uom",
   "uom",
   "packaging_item",
+  "part_number_group",
   "column_break_6",
   "qty",
   "rate",
@@ -203,12 +204,19 @@
    "in_list_view": 1,
    "label": "Packaging",
    "options": "Item"
+  },
+  {
+   "fieldname": "part_number_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Part Number Group",
+   "options": "Part Number Group"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-05-20 15:46:09.105261",
+ "modified": "2026-11-16 16:47:08.701364",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Request Items",

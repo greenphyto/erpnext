@@ -539,7 +539,6 @@ class WorkOrder(Document):
 			limit=1,
 		)
 		if existing_uoms:
-			print(222222)
 			return
 
 		recipients = frappe.local.conf.email_support
@@ -1213,7 +1212,7 @@ class WorkOrder(Document):
 					"customer": customer,
 					"packaging": self.packet_size,
 				},
-				["packaging", "weight", "package_item"],
+				["packaging", "weight", "package_item", "part_number_group"],
 				as_dict=True,
 			)
 
@@ -1221,7 +1220,7 @@ class WorkOrder(Document):
 			res = frappe.db.get_value(
 				"Packaging List Available",
 				{"parent": self.production_item, "parentfield": "packaging", "packaging": self.packet_size},
-				["packaging", "weight", "package_item"],
+				["packaging", "weight", "package_item", "part_number_group"],
 				as_dict=True,
 			)
 
@@ -1229,7 +1228,7 @@ class WorkOrder(Document):
 			res = frappe.db.get_value(
 				"Packaging List Available",
 				{"parent": self.production_item, "parentfield": "packaging", "default": 1},
-				["packaging", "weight", "package_item"],
+				["packaging", "weight", "package_item", "part_number_group"],
 				as_dict=True,
 			)
 
@@ -1237,13 +1236,28 @@ class WorkOrder(Document):
 			self.packet_size = res.packaging
 			self.conversion_factor = res.weight
 			self.flags.package_item = res.package_item
+			self.flags.part_number_group = res.part_number_group
 		else:
 			self.packet_size = frappe.db.get_value("Item", self.production_item, "stock_uom")
 			self.conversion_factor = 1
 
-		for d in data:
-			self.packet_size = d.uom
-			self.conversion_factor = d.conversion_factor
+		if len(data) > 1:
+			default_size = frappe.db.get_value(
+				"Packaging List Available",
+				{"parent": self.production_item, "parentfield": "packaging", "default": 1},
+				["packaging", "weight", "package_item", "part_number_group"],
+				as_dict=True,
+			)
+			if default_size:
+				self.packet_size = default_size.packaging
+				self.conversion_factor = default_size.weight
+				self.flags.package_item = default_size.package_item
+				self.flags.part_number_group = default_size.part_number_group
+		else:
+			for d in data:
+				if d.uom:
+					self.packet_size = d.uom
+					self.conversion_factor = d.conversion_factor
 
 	def get_packaging_from_order(self):
 		total_pcs = 0
@@ -1256,11 +1270,95 @@ class WorkOrder(Document):
 				total_pcs = temp[0].get("qty")
 		
 		if self.request_no:
-			doc_name = self.request_no.replace(" ","").split(",")
-			temp = frappe.db.sql("select sum(qty) as qty from `tabRequest Items` where parent in %(parent)s and item_code = %(item_code)s", 
-						{"parent":doc_name, "item_code":self.production_item}, as_dict=1)
-			if temp:
-				total_pcs = temp[0].get("qty")
+			self.required_items = [item for item in self.required_items if not item.is_packaging]
+			doc_name = self.request_no.replace(" ", "").split(",")
+			request_items = frappe.get_all(
+				"Request Items",
+				filters={"parent": ["in", doc_name], "item_code": self.production_item},
+				fields=["parent", "qty", "unit_weight", "uom", "packaging_item", "part_number_group"],
+				order_by="idx asc",
+			)
+			default_packaging = frappe.db.get_value(
+				"Packaging List Available",
+				{"parent": self.production_item, "parentfield": "packaging", "default": 1},
+				["packaging", "package_item", "weight", "part_number_group"],
+				as_dict=True,
+			)
+			packaging_list = frappe.get_all(
+				"Packaging List Available",
+				filters={"parent": self.production_item, "parentfield": "packaging"},
+				fields=["packaging", "package_item", "weight", "customer", "idx", "part_number_group"],
+				order_by="idx asc",
+			)
+			request_customers = {
+				d.name: d.proposed_customer
+				for d in frappe.get_all(
+					"Request", filters={"name": ["in", doc_name]}, fields=["name", "proposed_customer"]
+				)
+			}
+			for item in request_items:
+				customer = request_customers.get(item.parent)
+				matching = [
+					p for p in packaging_list if p.packaging == item.uom and p.customer == customer
+				]
+				if not matching:
+					matching = [
+						p
+						for p in packaging_list
+						if p.packaging == item.uom and not p.customer and not customer
+					]
+				if not matching:
+					matching = [p for p in packaging_list if p.packaging == item.uom and not p.customer]
+				matched_row = matching[0] if matching else None
+				if not item.packaging_item and matched_row:
+					item.packaging_item = matched_row.package_item
+				if not item.part_number_group:
+					if matched_row:
+						item.part_number_group = matched_row.part_number_group
+					elif default_packaging:
+						item.part_number_group = default_packaging.part_number_group
+				if not item.packaging_item and default_packaging:
+					item.packaging_item = default_packaging.package_item
+			if not item.packaging_item:
+				item.packaging_item = frappe.db.get_single_value(
+					"Manufacturing Settings", "default_packaging"
+				)
+
+			request_items = [
+				item
+				for item in request_items
+				if item.unit_weight and (item.packaging_item or item.part_number_group)
+			]
+			stock_qty = sum(flt(item.qty) * flt(item.unit_weight) for item in request_items)
+			if stock_qty:
+				packaging = {}
+				for item in request_items:
+					key = (item.part_number_group, item.packaging_item, item.unit_weight, item.uom)
+					packaging[key] = packaging.get(key, 0) + flt(item.qty) * flt(item.unit_weight)
+
+				for (part_number_group, pack_item, conversion_factor, packet_size), quantity in packaging.items():
+					total_pcs = frappe.utils.ceil(self.qty * quantity / stock_qty / flt(conversion_factor))
+					if part_number_group:
+						self.append_part_number_group(part_number_group, total_pcs, packet_size)
+						continue
+					item = frappe.get_doc("Item", pack_item)
+					rate = get_valuation_rate(item.item_code, self.source_warehouse, "", "")
+					self.append(
+						"required_items",
+						{
+							"rate": rate,
+							"amount": rate * total_pcs,
+							"operation": "Harvesting",
+							"item_code": item.item_code,
+							"item_name": item.item_name,
+							"description": f"{item.description or ''} ({packet_size})",
+							"allow_alternative_item": 0,
+							"required_qty": total_pcs,
+							"source_warehouse": self.source_warehouse,
+							"is_packaging": 1,
+						}
+					)
+				return
 
 		# get from default
 		if not self.packet_size:
@@ -1270,7 +1368,11 @@ class WorkOrder(Document):
 		
 		if not total_pcs:
 			return
-		
+
+		if self.flags.part_number_group:
+			self.append_part_number_group(self.flags.part_number_group, total_pcs, self.packet_size)
+			return
+
 		default_packaging = frappe.db.get_single_value("Manufacturing Settings", "default_packaging")
 		pack_item = self.flags.package_item or default_packaging
 		if not pack_item or not self.packet_size:
@@ -1294,7 +1396,37 @@ class WorkOrder(Document):
 				"is_packaging": 1,
 			}
 		)
-			
+
+	def append_part_number_group(self, part_number_group, pack_qty, packet_size=None):
+		group = frappe.get_cached_doc("Part Number Group", part_number_group)
+		if group.disabled:
+			return
+		for row in group.group_list:
+			credit_factor = cint(row.credit_factor) or 1
+			required_qty = frappe.utils.ceil(flt(pack_qty) / credit_factor)
+			if not required_qty:
+				continue
+			item = frappe.get_doc("Item", row.item_code)
+			rate = get_valuation_rate(item.item_code, self.source_warehouse, "", "")
+			description = item.description or ""
+			if packet_size:
+				description = f"{description} ({packet_size})"
+			self.append(
+				"required_items",
+				{
+					"rate": rate,
+					"amount": rate * required_qty,
+					"operation": "Harvesting",
+					"item_code": item.item_code,
+					"item_name": item.item_name,
+					"description": description,
+					"allow_alternative_item": 0,
+					"required_qty": required_qty,
+					"source_warehouse": self.source_warehouse,
+					"is_packaging": 1,
+				}
+			)
+
 	def update_transferred_qty_for_required_items(self):
 		ste = frappe.qb.DocType("Stock Entry")
 		ste_child = frappe.qb.DocType("Stock Entry Detail")
