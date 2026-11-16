@@ -2327,8 +2327,9 @@ def _apply_batch_distribution(batch_id, breakdown):
 		batch.append("batch_distribution", {
 			"packaging": packaging,
 			"qty": qty,
-			# UOM of this line = the packaging (the conversion key on the item)
-			"uom": packaging,
+			# UOM of this line = the packaging (the conversion key on the item);
+			# when no packaging, fall back to the item's stock uom
+			"uom": packaging or stock_uom,
 			"conversion_factor": conversion_factor,
 			"stock_uom": stock_uom,
 			"stock_qty": stock_qty,
