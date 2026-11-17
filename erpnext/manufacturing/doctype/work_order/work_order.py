@@ -1270,25 +1270,26 @@ class WorkOrder(Document):
 					self.packet_size = d.uom
 					self.conversion_factor = d.conversion_factor
 
-	def get_packaging_from_order(self):
+	def get_packaging_from_order(self, packaging_item_code=None):
+		packaging_item_code = packaging_item_code or self.get("parent_product_item") or self.production_item
 		if self.request_no:
 			self.required_items = [item for item in self.required_items if not item.is_packaging]
 			doc_name = self.request_no.replace(" ", "").split(",")
 			request_items = frappe.get_all(
 				"Request Items",
-				filters={"parent": ["in", doc_name], "item_code": self.production_item},
+				filters={"parent": ["in", doc_name], "item_code": packaging_item_code},
 				fields=["parent", "qty", "unit_weight", "uom", "packaging_item"],
 				order_by="idx asc",
 			)
 			default_packaging = frappe.db.get_value(
 				"Packaging List Available",
-				{"parent": self.production_item, "parentfield": "packaging", "default": 1},
+				{"parent": packaging_item_code, "parentfield": "packaging", "default": 1},
 				["packaging", "package_item", "weight"],
 				as_dict=True,
 			)
 			packaging_list = frappe.get_all(
 				"Packaging List Available",
-				filters={"parent": self.production_item, "parentfield": "packaging"},
+				filters={"parent": packaging_item_code, "parentfield": "packaging"},
 				fields=["packaging", "package_item", "weight", "customer", "idx"],
 				order_by="idx asc",
 			)
@@ -1316,10 +1317,10 @@ class WorkOrder(Document):
 						item.packaging_item = matching[0].package_item
 				if not item.packaging_item and default_packaging:
 					item.packaging_item = default_packaging.package_item
-			if not item.packaging_item:
-				item.packaging_item = frappe.db.get_single_value(
-					"Manufacturing Settings", "default_packaging"
-				)
+				if not item.packaging_item:
+					item.packaging_item = frappe.db.get_single_value(
+						"Manufacturing Settings", "default_packaging"
+					)
 
 			request_items = [item for item in request_items if item.unit_weight and item.packaging_item]
 			stock_qty = sum(flt(item.qty) * flt(item.unit_weight) for item in request_items)
