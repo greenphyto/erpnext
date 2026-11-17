@@ -10,6 +10,7 @@
   "barcode",
   "has_item_scanned",
   "item_code",
+  "rnd_item",
   "item_name",
   "item_name_view",
   "marketing_name",
@@ -134,12 +135,19 @@
    "options": "Item",
    "print_width": "150px",
    "reqd": 1,
-   "search_index": 1,
-   "width": "150px"
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "item_name",
+    "search_index": 1,
+    "width": "150px"
+   },
+   {
+    "fetch_from": "item_code.rnd_item",
+    "fieldname": "rnd_item",
+    "fieldtype": "Check",
+    "label": "RND Item",
+    "read_only": 1
+   },
+   {
+    "allow_on_submit": 1,
+    "fieldname": "item_name",
    "fieldtype": "Data",
    "in_global_search": 1,
    "label": "Item Name",

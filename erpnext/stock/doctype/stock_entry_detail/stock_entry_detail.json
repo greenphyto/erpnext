@@ -14,9 +14,10 @@
   "col_break1",
   "t_warehouse",
   "sec_break1",
-  "item_code",
-  "item_name",
-  "col_break2",
+   "item_code",
+   "rnd_item",
+   "item_name",
+   "col_break2",
   "is_finished_item",
   "is_scrap_item",
   "quality_inspection",
@@ -131,13 +132,20 @@
    "oldfieldname": "item_code",
    "oldfieldtype": "Link",
    "options": "Item",
-   "reqd": 1,
-   "search_index": 1
-  },
-  {
-   "fieldname": "col_break2",
-   "fieldtype": "Column Break"
-  },
+    "reqd": 1,
+    "search_index": 1
+   },
+   {
+    "fetch_from": "item_code.rnd_item",
+    "fieldname": "rnd_item",
+    "fieldtype": "Check",
+    "label": "RND Item",
+    "read_only": 1
+   },
+   {
+    "fieldname": "col_break2",
+    "fieldtype": "Column Break"
+   },
   {
    "fieldname": "item_name",
    "fieldtype": "Data",
