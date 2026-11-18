@@ -68,8 +68,11 @@ def execute():
 	_ensure_default_cost_center(manpower_account, production_cc)
 	_ensure_default_cost_center(utilities_account, production_cc)
 
-	for item_code, rates in DATA.items():
+	total = len(DATA)
+	for i, (item_code, rates) in enumerate(DATA.items(), start=1):
+		print("[{0}/{1}] Rate Card: {2}".format(i, total, item_code), flush=True)
 		if not frappe.db.exists("Item", item_code):
+			print("    skip: item not found", flush=True)
 			frappe.logger("rate_card_patch").warning(
 				"Rate Card patch: item not found {0}".format(item_code)
 			)
@@ -132,6 +135,7 @@ def execute():
 		item = frappe.get_doc("Item", item_code)
 		item.rate_card = rate_card_name
 		item.save(ignore_permissions=True)
+		print("    linked rate card: {0}".format(rate_card_name), flush=True)
 
 	# items not listed in DATA should have no rate card: clear it via
 	# Item.save so the update_bom_item hook also resets the BOM operations
@@ -140,9 +144,12 @@ def execute():
 		filters={"rate_card": ["is", "set"], "name": ["not in", list(DATA.keys())]},
 		pluck="name",
 	)
-	for item_code in other_items:
+	print("Clearing rate card from {0} other item(s)".format(len(other_items)), flush=True)
+	for j, item_code in enumerate(other_items, start=1):
+		print("  [{0}/{1}] clear {2}".format(j, len(other_items), item_code), flush=True)
 		item = frappe.get_doc("Item", item_code)
 		item.rate_card = None
 		item.save(ignore_permissions=True)
 
 	frappe.db.commit()
+	print("DONE", flush=True)
