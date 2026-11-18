@@ -62,6 +62,8 @@ def get_data(filters):
 			b.item_name AS item_name,
 			b.foms_lot_id AS foms_id,
 			b.batch_type AS batch_type,
+			b.reference_doctype AS reference_doctype,
+			b.reference_name AS reference_name,
 			b.status AS status,
 			COALESCE(b.manufacturing_date, DATE(b.creation)) AS manufacturing_date
 		FROM `tabBatch` b
@@ -76,12 +78,11 @@ def get_data(filters):
 		return []
 
 	batch_names = [b.batch_no for b in batches]
-	item_codes = list({b.item_code for b in batches if b.item_code})
 
 	manufacture_in_map, other_in_map = get_in_qty(batch_names, filters)
 	draft_map = get_draft_qty(batch_names, filters)
 	out_map = get_out_qty(batch_names, filters)
-	distribution_map = get_distribution_qty(batch_names, item_codes)
+	ratio_map = get_request_ratio_map(batches)
 
 	active_rows = []
 	expired_rows = []
@@ -106,10 +107,10 @@ def get_data(filters):
 			"h_days": get_h_days(b.manufacturing_date),
 		}
 
-		distribution = distribution_map.get(b.batch_no)
-		if distribution:
-			for dist_suffix, dist_qty in distribution.items():
-				row["in_" + dist_suffix] += flt(dist_qty)
+		ratio = ratio_map.get(b.batch_no)
+		if ratio:
+			for ratio_suffix, ratio_value in ratio.items():
+				row["in_" + ratio_suffix] += manufacture_in * ratio_value
 		else:
 			row["in_" + suffix] += manufacture_in
 
@@ -138,60 +139,83 @@ def get_data(filters):
 	return data
 
 
-def get_distribution_qty(batch_names, item_codes):
-	rows = frappe.db.sql(
-		"""
-		SELECT bdm.parent AS batch_no, bdm.packaging, bdm.qty
-		FROM `tabBatch Distribution Mapping` bdm
-		WHERE bdm.parenttype = 'Batch'
-			AND bdm.parent IN %(batch_names)s
-		""",
-		{"batch_names": batch_names},
-		as_dict=1,
-	)
-	if not rows:
+def get_request_ratio_map(batches):
+	stock_entries = {
+		b.batch_no: b.reference_name
+		for b in batches
+		if b.reference_doctype == "Stock Entry" and b.reference_name
+	}
+	if not stock_entries:
 		return {}
 
-	packaging_customer = get_packaging_customer_map(item_codes)
-
-	batch_item = {b: None for b in batch_names}
-	dist_map = {}
-	for d in rows:
-		suffix = classify_packaging(d.packaging, packaging_customer)
-		bucket = dist_map.setdefault(d.batch_no, {})
-		bucket[suffix] = bucket.get(suffix, 0) + flt(d.qty)
-	return dist_map
-
-
-def get_packaging_customer_map(item_codes):
-	if not item_codes:
+	se_wo = dict(
+		frappe.db.sql(
+			"""
+			SELECT name, work_order FROM `tabStock Entry`
+			WHERE name IN %(names)s AND IFNULL(work_order, '') != ''
+			""",
+			{"names": list(set(stock_entries.values()))},
+		)
+	)
+	wo_names = list(set(se_wo.values()))
+	if not wo_names:
 		return {}
 
-	rows = frappe.db.sql(
-		"""
-		SELECT pla.packaging, pla.customer
-		FROM `tabPackaging List Available` pla
-		WHERE pla.parenttype = 'Item'
-			AND pla.parent IN %(item_codes)s
-			AND pla.packaging IS NOT NULL
-		""",
-		{"item_codes": item_codes},
-		as_dict=1,
+	wo_request = dict(
+		frappe.db.sql(
+			"""
+			SELECT name, request_no FROM `tabWork Order`
+			WHERE name IN %(names)s AND IFNULL(request_no, '') != ''
+			""",
+			{"names": wo_names},
+		)
 	)
 
-	mapping = {}
-	for d in rows:
-		mapping.setdefault(d.packaging, set()).add(d.customer)
-	return mapping
+	all_requests = set()
+	wo_requests = {}
+	for wo, request_no in wo_request.items():
+		names = [r.strip() for r in request_no.split(",") if r.strip()]
+		wo_requests[wo] = names
+		all_requests.update(names)
+	if not all_requests:
+		return {}
 
+	item_by_batch = {b.batch_no: b.item_code for b in batches}
 
-def classify_packaging(packaging, packaging_customer):
-	if not packaging:
-		return "no_pack"
-	customers = packaging_customer.get(packaging) or set()
-	if MY_CUSTOMER in customers:
-		return "my"
-	return "default"
+	request_rows = frappe.db.sql(
+		"""
+		SELECT
+			req.name AS request,
+			ri.item_code,
+			SUM(IFNULL(ri.qty, 0) * IF(IFNULL(ri.unit_weight, 0) > 0, ri.unit_weight, 1)) AS weight,
+			IF(cust.represents_company = %(company)s, 1, 0) AS is_my
+		FROM `tabRequest` req
+			INNER JOIN `tabRequest Items` ri ON ri.parent = req.name
+			LEFT JOIN `tabCustomer` cust ON cust.name = req.proposed_customer
+		WHERE req.name IN %(requests)s
+		GROUP BY req.name, ri.item_code, is_my
+		""",
+		{"requests": list(all_requests), "company": MY_CUSTOMER},
+		as_dict=1,
+	)
+	weights = {}
+	for r in request_rows:
+		weights.setdefault((r.request, r.item_code), (flt(r.weight), r.is_my))
+
+	ratio_map = {}
+	for batch_no, se in stock_entries.items():
+		wo = se_wo.get(se)
+		if not wo:
+			continue
+		totals = {"my": 0, "default": 0}
+		for req in wo_requests.get(wo, []):
+			weight, is_my = weights.get((req, item_by_batch.get(batch_no)), (0, 0))
+			totals["my" if is_my else "default"] += weight
+		grand = totals["my"] + totals["default"]
+		if grand <= 0:
+			continue
+		ratio_map[batch_no] = {k: v / grand for k, v in totals.items() if v}
+	return ratio_map
 
 
 def get_in_qty(batch_names, filters):
