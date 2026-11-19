@@ -33,6 +33,25 @@ from erpnext.assets.utils import create_asset_qrcode
 from frappe.model.naming import parse_naming_series
 
 class Asset(AccountsController):
+	def onload(self):
+		if self.is_new():
+			return
+		self.set_onload("schedules_count", len(self.get("schedules") or []))
+		self.set("schedules", [])
+
+	def before_validate(self):
+		if self.is_new() or self.get("schedules"):
+			return
+		if self.flags.get("ignore_schedules_restore"):
+			return
+		existing = frappe.get_all(
+			"Depreciation Schedule", filters={"parent": self.name, "parenttype": "Asset"}, pluck="name"
+		)
+		if existing:
+			old = frappe.get_doc("Asset", self.name)
+			for row in old.get("schedules"):
+				self.append("schedules", row.as_dict(no_nulls=False))
+
 	def validate(self):
 		self.validate_asset_values()
 		self.validate_asset_and_reference()
@@ -928,6 +947,19 @@ def get_asset_naming_series():
 		series.append(d.series)
 	
 	return "\n".join(series)
+
+@frappe.whitelist()
+def get_depreciation_schedules(asset):
+	frappe.has_permission("Asset", "read", asset, throw=True)
+	# import time
+	# time.sleep(5)
+	return frappe.get_all(
+		"Depreciation Schedule",
+		filters={"parent": asset, "parenttype": "Asset", "parentfield": "schedules"},
+		fields=["*"],
+		order_by="idx asc",
+	)
+
 
 def get_asset_naming_series_mapping(asset_code):
 	series = {}

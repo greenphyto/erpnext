@@ -87,6 +87,7 @@ frappe.ui.form.on('Asset', {
 		frappe.ui.form.trigger("Asset", "is_existing_asset");
 		frm.toggle_display("next_depreciation_date", frm.doc.docstatus < 1);
 		frm.events.make_schedules_editable(frm);
+		frm.events.load_schedules(frm);
 
 		if (frm.doc.docstatus==1) {
 			if (in_list(["Submitted", "Partially Depreciated", "Fully Depreciated"], frm.doc.status)) {
@@ -145,8 +146,6 @@ frappe.ui.form.on('Asset', {
 					frappe.set_route("query-report", "General Ledger");
 				}, __("Manage"));
 			}
-
-			frm.trigger("setup_chart");
 		}
 
 		frm.trigger("toggle_reference_doc");
@@ -210,6 +209,63 @@ frappe.ui.form.on('Asset', {
 				}
 			}
 		})
+	},
+
+	before_save: function(frm) {
+		if (frm.events.schedules_pending(frm)) {
+			frappe.msgprint(__("Depreciation Schedule is still loading. Please try again."));
+			frappe.validated = false;
+		}
+	},
+
+	schedules_pending: function(frm) {
+		return !frm.is_new()
+			&& !(frm.doc.schedules || []).length
+			&& cint(frm.doc.__onload && frm.doc.__onload.schedules_count) > 0;
+	},
+
+	load_schedules: function(frm) {
+		if (frm.is_new() || frm.loading_schedules) return;
+		if (!frm.events.schedules_pending(frm)) {
+			if (frm.doc.docstatus == 1) frm.trigger("setup_chart");
+			return;
+		}
+		frm.loading_schedules = true;
+
+		const doc = frm.doc;
+		const $wrapper = frm.fields_dict.schedules.$wrapper;
+		$wrapper.find(".schedules-loading").remove();
+		const $loading = $(`<div class="schedules-loading text-muted" style="padding: 15px 0;">
+			${__("Loading depreciation schedule...")}</div>`).prependTo($wrapper);
+		$wrapper.find(".form-grid-container, .grid-field").hide();
+
+		frappe.call({
+			method: "erpnext.assets.doctype.asset.asset.get_depreciation_schedules",
+			args: { asset: doc.name },
+			callback: function(r) {
+				frm.loading_schedules = false;
+				$loading.remove();
+				$wrapper.find(".form-grid-container, .grid-field").show();
+				if (frm.doc.name !== doc.name) return;
+
+				const rows = r.message || [];
+				rows.forEach(row => {
+					row.doctype = "Depreciation Schedule";
+					row.parenttype = "Asset";
+					row.parentfield = "schedules";
+					row.parent = doc.name;
+					frappe.model.add_to_locals(row);
+				});
+				frm.doc.schedules = rows;
+				frm.refresh_field("schedules");
+				frm.events.make_schedules_editable(frm);
+				if (frm.doc.docstatus == 1) frm.trigger("setup_chart");
+			},
+			error: function() {
+				frm.loading_schedules = false;
+				$loading.text(__("Failed to load depreciation schedule."));
+			}
+		});
 	},
 
 	setup_chart: function(frm) {
