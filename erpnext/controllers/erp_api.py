@@ -867,13 +867,14 @@ def get_saleable_qty(se_doc):
 
 
 def add_rate_card_additional_costs(se_doc, wo_doc, qty):
-	"""Append manpower + utilities (electricity) from the production item's
-	Rate Card (Harvesting operation) as additional costs on the finish
+	"""Append manpower + utilities as additional costs on the finish
 	Manufacture entry, so the cost is capitalised into the finished-good
-	valuation and posted to GL instead of only shown in reports.
+	valuation and posted to GL.
 
-	Rate Card rates are per kg; amount = saleable qty * rate.
-	Expense accounts come from the Rate Card (expense_for_manpower /
+	Rates come from the Harvesting row of the Work Order operations table
+	(wages_cost -> manpower, electrical_cost -> utilities), per kg;
+	amount = saleable qty * rate. No Harvesting row means no additional cost.
+	Expense accounts come from the item's Rate Card (expense_for_manpower /
 	expense_for_utilities). Rows with a missing account or zero amount are
 	skipped.
 	"""
@@ -883,7 +884,7 @@ def add_rate_card_additional_costs(se_doc, wo_doc, qty):
 
 	rc = frappe.get_doc("Rate Card", rate_card)
 	detail = None
-	for d in rc.rates:
+	for d in wo_doc.get("operations"):
 		if d.operation == "Harvesting":
 			detail = d
 			break
@@ -916,8 +917,8 @@ def add_rate_card_additional_costs(se_doc, wo_doc, qty):
 				d.cost_center = cost_center
 
 	cost_rows = [
-		(flt(detail.manpower), rc.expense_for_manpower, "Manpower (Rate Card)"),
-		(flt(detail.utilities), rc.expense_for_utilities, "Utilities (Rate Card)"),
+		(flt(detail.wages_cost), rc.expense_for_manpower, "Manpower (Rate Card)"),
+		(flt(detail.electrical_cost), rc.expense_for_utilities, "Utilities (Rate Card)"),
 	]
 
 	for rate, account, description in cost_rows:
