@@ -1,3 +1,4 @@
+import math
 import frappe, json, erpnext
 from six import string_types
 from frappe.utils import flt, now_datetime, cint, getdate, cstr, get_datetime, add_days, nowtime, today
@@ -2235,9 +2236,93 @@ def _run_batch_distribution(log_name, data_name, batch_id, breakdown):
 	}
 
 
+def _get_packaging_customers(batch):
+	work_orders = set()
+	if batch.reference_doctype == "Stock Entry" and batch.reference_name:
+		work_order = frappe.db.get_value("Stock Entry", batch.reference_name, "work_order")
+		if work_order:
+			work_orders.add(work_order)
+
+	lot_id = batch.get("foms_lot_id")
+	if lot_id:
+		work_orders.update(frappe.get_all(
+			"Work Order",
+			filters={"foms_lot_id": lot_id, "docstatus": ["!=", 2]},
+			pluck="name",
+		))
+
+	if not work_orders:
+		return {}
+
+	request_nos = frappe.get_all(
+		"Work Order",
+		filters={"name": ["in", list(work_orders)], "docstatus": ["!=", 2]},
+		pluck="request_no",
+	)
+	requests = []
+	for request_no in request_nos:
+		requests += [r.strip() for r in (request_no or "").split(",") if r.strip()]
+	if not requests:
+		return {}
+
+	customers = {
+		d.name: d.proposed_customer
+		for d in frappe.get_all(
+			"Request",
+			filters={"name": ["in", requests]},
+			fields=["name", "proposed_customer"],
+		)
+	}
+	request_items = frappe.get_all(
+		"Request Items",
+		filters={"parent": ["in", requests], "item_code": batch.item},
+		fields=["parent", "uom", "weight", "unit_weight", "qty"],
+	)
+
+	found = {}
+	for ri in request_items:
+		customer = customers.get(ri.parent)
+		if not customer:
+			continue
+		weight = flt(ri.weight) or flt(ri.unit_weight) * flt(ri.qty) or flt(ri.qty)
+		by_customer = found.setdefault(ri.uom, {})
+		by_customer[customer] = by_customer.get(customer, 0) + weight
+
+	return {uom: list(by_customer.items()) for uom, by_customer in found.items()}
+
+
+def _split_by_customer(shares, qty, stock_qty):
+	shares = shares or []
+	total = sum(w for _c, w in shares)
+	if not shares or total <= 0:
+		return [(None, qty, stock_qty)]
+	if len(shares) == 1:
+		return [(shares[0][0], qty, stock_qty)]
+
+	if abs(qty - round(qty)) < 1e-6:
+		qty = int(round(qty))
+
+	result = []
+	used_qty = 0
+	used_stock = 0.0
+	for i, (customer, weight) in enumerate(shares):
+		if i == len(shares) - 1:
+			part_qty = qty - used_qty
+			part_stock = stock_qty - used_stock
+		else:
+			part_qty = int(math.floor(qty * weight / total + 0.5))
+			part_stock = stock_qty * part_qty / qty if qty else 0
+			used_qty += part_qty
+			used_stock += part_stock
+		result.append((customer, part_qty, part_stock))
+	non_zero = [r for r in result if r[1] > 0]
+	return non_zero or result
+
+
 def _apply_batch_distribution(batch_id, breakdown):
 	batch = frappe.get_doc("Batch", batch_id)
 	item_code = batch.item
+	packaging_customers = _get_packaging_customers(batch)
 	stock_uom = frappe.db.get_value("Item", item_code, "stock_uom")
 
 	def _norm(s):
@@ -2247,7 +2332,8 @@ def _apply_batch_distribution(batch_id, breakdown):
 	# resolve the real packaging / UOM name once (payload may send it without the
 	# space, e.g. "Package(200g)" instead of the stored "Package (200g)")
 	def _resolve_packaging(name):
-		if not name:
+		name = cstr(name).strip()
+		if not name or name.lower() in ("null", "none", "undefined"):
 			return None
 		if frappe.db.exists("Packaging", name):
 			return name
@@ -2260,7 +2346,7 @@ def _apply_batch_distribution(batch_id, breakdown):
 	batch.set("batch_distribution", [])
 	for row in breakdown:
 		row = get_data(row)
-		packaging = _resolve_packaging(row.get("packaging") or None)
+		packaging = _resolve_packaging(row.get("packaging"))
 		payload_qty = flt(row.get("qty"))
 		payload_uom = row.get("uom") or ""
 
@@ -2289,16 +2375,29 @@ def _apply_batch_distribution(batch_id, breakdown):
 		# qty (in packaging units) rounded to 2 decimals
 		qty = round(flt(qty), 2)
 
-		batch.append("batch_distribution", {
-			"packaging": packaging,
-			"qty": qty,
-			# UOM of this line = the packaging (the conversion key on the item);
-			# when no packaging, fall back to the item's stock uom
-			"uom": packaging or stock_uom,
-			"conversion_factor": conversion_factor,
-			"stock_uom": stock_uom,
-			"stock_qty": stock_qty,
-		})
+		shares = packaging_customers.get(packaging) if packaging else None
+		for customer, part_qty, part_stock_qty in _split_by_customer(shares, qty, stock_qty):
+			if not packaging and not customer:
+				existing = next(
+					(d for d in batch.get("batch_distribution") if not d.packaging and not d.customer),
+					None,
+				)
+				if existing:
+					existing.qty = round(flt(existing.qty) + flt(part_qty), 2)
+					existing.stock_qty = flt(existing.stock_qty) + flt(part_stock_qty)
+					continue
+
+			batch.append("batch_distribution", {
+				"packaging": packaging,
+				"qty": part_qty,
+				# UOM of this line = the packaging (the conversion key on the item);
+				# when no packaging, fall back to the item's stock uom
+				"uom": packaging or stock_uom,
+				"conversion_factor": conversion_factor,
+				"stock_uom": stock_uom,
+				"stock_qty": part_stock_qty,
+				"customer": customer,
+			})
 	batch.save(ignore_permissions=True)
 
 
