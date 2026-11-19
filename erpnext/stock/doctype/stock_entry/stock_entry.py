@@ -1424,6 +1424,12 @@ class StockEntry(StockEntryAsset, StockController):
 				)
 
 		if item_account_wise_additional_cost:
+			additional_cost_offset_account = None
+			if self.purpose == "Manufacture":
+				additional_cost_offset_account = frappe.get_cached_value(
+					"Company", self.company, "default_cost_expense_account"
+				)
+
 			for d in self.get("items"):
 				for account, amount in item_account_wise_additional_cost.get(
 					(d.item_code, d.name), {}
@@ -1440,7 +1446,7 @@ class StockEntry(StockEntryAsset, StockController):
 						self.get_gl_dict(
 							{
 								"account": account,
-								"against": d.expense_account,
+								"against": additional_cost_offset_account or d.expense_account,
 								"cost_center": additional_cost_center,
 								"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
 								"credit_in_account_currency": flt(amount["amount"]),
@@ -1453,7 +1459,7 @@ class StockEntry(StockEntryAsset, StockController):
 					gl_entries.append(
 						self.get_gl_dict(
 							{
-								"account": d.expense_account,
+								"account": additional_cost_offset_account or d.expense_account,
 								"against": account,
 								"cost_center": d.cost_center,
 								"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
@@ -1503,11 +1509,7 @@ class StockEntry(StockEntryAsset, StockController):
 								else:
 									total_amount -= gl.debit
 
-						# additional costs (e.g. Rate Card manpower/utilities) are
-						# already posted to their own expense accounts and capitalised
-						# into the finished-good value; exclude them from the WIP rate
-						# variance so they are not double-booked to the variance account
-						debit_amount = prev_wip.amount - flt(total_amount, 2) + flt(self.total_additional_costs, 2)
+						debit_amount = prev_wip.amount - flt(total_amount, 2)
 					
 					if debit_amount:
 						row = self.get_gl_dict(
