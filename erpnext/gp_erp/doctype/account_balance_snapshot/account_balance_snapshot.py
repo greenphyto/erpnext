@@ -177,35 +177,21 @@ def get_balances_from_snapshot(accounts, company, always_account_currency=False)
 	return accounts
 
 
-def get_account_balance_from_snapshot(
-	account, company=None, in_account_currency=True, ignore_account_permission=False
-):
-	"""Single account bridge for get_balance_on. Returns None to signal fallback to the original."""
-	account_doc = frappe.db.get_value(
-		"Account", account, ["company", "account_currency", "is_group"], as_dict=True
-	)
-	if not account_doc or (company and company != account_doc.company):
-		return None
 
-	if not (frappe.flags.ignore_account_permission or ignore_account_permission):
-		if not frappe.has_permission("Account", "read", account):
-			return None
+@frappe.whitelist()
+def get_account_balances(accounts, company):
+	from json import loads
 
-	company = account_doc.company
-	company_currency = frappe.get_cached_value("Company", company, "default_currency")
+	from erpnext.accounts.utils import get_account_balances as get_account_balances_original
 
-	if account_doc.is_group and account_doc.account_currency == company_currency:
-		in_account_currency = False
+	if isinstance(accounts, str):
+		accounts = loads(accounts)
 
-	result = get_balances_from_snapshot(
-		[{"value": account, "account_currency": account_doc.account_currency}],
-		company,
-		always_account_currency=True,
-	)
-	if result is None or "balance" not in result[0]:
-		return None
+	if not accounts:
+		return []
 
-	entry = result[0]
-	if in_account_currency and "balance_in_account_currency" in entry:
-		return entry["balance_in_account_currency"]
-	return entry["balance"]
+	snapshot_balances = get_balances_from_snapshot(accounts, company)
+	if snapshot_balances is not None:
+		return snapshot_balances
+
+	return get_account_balances_original(accounts, company)

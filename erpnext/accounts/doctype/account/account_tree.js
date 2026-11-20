@@ -57,7 +57,7 @@ frappe.treeview_settings["Account"] = {
 		}
 
 		const get_balances = frappe.call({
-			method: 'erpnext.accounts.utils.get_account_balances',
+			method: 'erpnext.gp_erp.doctype.account_balance_snapshot.account_balance_snapshot.get_account_balances',
 			args: {
 				accounts: accounts,
 				company: cur_tree.args.company
