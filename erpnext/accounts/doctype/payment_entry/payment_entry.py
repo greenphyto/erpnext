@@ -1777,6 +1777,22 @@ def get_payment_entry(
 
 	if party_account and bank:
 		pe.set_exchange_rate(ref_doc=reference_doc)
+		if (
+			not bank_amount
+			and pe.paid_from_account_currency != pe.paid_to_account_currency
+			and flt(pe.source_exchange_rate)
+			and flt(pe.target_exchange_rate)
+		):
+			if payment_type == "Receive":
+				pe.received_amount = flt(
+					flt(pe.paid_amount) * flt(pe.source_exchange_rate) / flt(pe.target_exchange_rate),
+					pe.precision("received_amount"),
+				)
+			elif payment_type == "Pay":
+				pe.paid_amount = flt(
+					flt(pe.received_amount) * flt(pe.target_exchange_rate) / flt(pe.source_exchange_rate),
+					pe.precision("paid_amount"),
+				)
 		pe.set_amounts()
 		if discount_amount:
 			pe.set_gain_or_loss(

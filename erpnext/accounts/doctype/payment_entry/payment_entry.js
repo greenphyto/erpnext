@@ -541,8 +541,8 @@ frappe.ui.form.on('Payment Entry', {
 			frm.set_value("base_paid_amount", flt(frm.doc.paid_amount) * flt(frm.doc.source_exchange_rate));
 			// target exchange rate should always be same as source if both account currencies is same
 			if(frm.doc.paid_from_account_currency == frm.doc.paid_to_account_currency) {
-				frm.set_value("target_exchange_rate", frm.doc.source_exchange_rate);
-				frm.set_value("base_received_amount", frm.doc.base_paid_amount);
+				set_if_changed(frm, "target_exchange_rate", frm.doc.source_exchange_rate);
+				set_if_changed(frm, "base_received_amount", frm.doc.base_paid_amount);
 			}
 
 			frm.events.set_unallocated_amount(frm);
@@ -556,15 +556,15 @@ frappe.ui.form.on('Payment Entry', {
 		frm.set_paid_amount_based_on_received_amount = true;
 
 		if (frm.doc.received_amount) {
-			frm.set_value("paid_amount",
+			frm.set_value("base_received_amount",
 				flt(frm.doc.received_amount) * flt(frm.doc.target_exchange_rate));
-			// frm.set_value("base_received_amount",
-			// 	flt(frm.doc.received_amount) * flt(frm.doc.target_exchange_rate));
+			sync_amount(frm, "paid_amount", frm.doc.received_amount, frm.doc.target_exchange_rate,
+				frm.doc.source_exchange_rate);
 
 			if(!frm.doc.source_exchange_rate &&
 					(frm.doc.paid_from_account_currency == frm.doc.paid_to_account_currency)) {
-				frm.set_value("source_exchange_rate", frm.doc.target_exchange_rate);
-				frm.set_value("paid_amount", frm.doc.base_received_amount);
+				set_if_changed(frm, "source_exchange_rate", frm.doc.target_exchange_rate);
+				set_if_changed(frm, "base_paid_amount", frm.doc.base_received_amount);
 			}
 
 			frm.events.set_unallocated_amount(frm);
@@ -585,18 +585,18 @@ frappe.ui.form.on('Payment Entry', {
 		frm.set_paid_amount_based_on_received_amount = true;
 
 		if(!frm.doc.paid_amount && frm.doc.paid_from_account_currency == frm.doc.paid_to_account_currency) {
-			frm.set_value("paid_amount", frm.doc.received_amount);
+			set_if_changed(frm, "paid_amount", frm.doc.received_amount);
 
 			if(frm.doc.target_exchange_rate) {
-				frm.set_value("source_exchange_rate", frm.doc.target_exchange_rate);
+				set_if_changed(frm, "source_exchange_rate", frm.doc.target_exchange_rate);
 			}
-			frm.set_value("base_paid_amount", frm.doc.base_received_amount);
+			set_if_changed(frm, "base_paid_amount", frm.doc.base_received_amount);
 		}
 
-		frm.set_value("base_received_amount",
+		set_if_changed(frm, "base_received_amount",
 			flt(frm.doc.received_amount) * flt(frm.doc.target_exchange_rate));
-		frm.set_value("paid_amount",
-			flt(frm.doc.received_amount) * flt(frm.doc.target_exchange_rate));
+		sync_amount(frm, "paid_amount", frm.doc.received_amount, frm.doc.target_exchange_rate,
+			frm.doc.source_exchange_rate);
 
 		if(frm.doc.payment_type == "Pay")
 			frm.events.allocate_party_amount_against_ref_docs(frm, frm.doc.received_amount, 1);
@@ -611,12 +611,15 @@ frappe.ui.form.on('Payment Entry', {
 		if(!frm.set_paid_amount_based_on_received_amount &&
 				(frm.doc.paid_from_account_currency == frm.doc.paid_to_account_currency)) {
 
-			frm.set_value("received_amount", frm.doc.paid_amount);
+			set_if_changed(frm, "received_amount", frm.doc.paid_amount);
 
 			if(frm.doc.source_exchange_rate) {
-				frm.set_value("target_exchange_rate", frm.doc.source_exchange_rate);
+				set_if_changed(frm, "target_exchange_rate", frm.doc.source_exchange_rate);
 			}
-			frm.set_value("base_received_amount", frm.doc.base_paid_amount);
+			set_if_changed(frm, "base_received_amount", frm.doc.base_paid_amount);
+		} else if(!frm.set_paid_amount_based_on_received_amount) {
+			sync_amount(frm, "received_amount", frm.doc.paid_amount, frm.doc.source_exchange_rate,
+				frm.doc.target_exchange_rate);
 		}
 
 		if(frm.doc.payment_type == "Receive")
@@ -1429,6 +1432,29 @@ frappe.ui.form.on('Payment Entry', {
 		}
 	},
 })
+
+function sync_amount(frm, target_field, amount, from_rate, to_rate) {
+	if (frm._syncing_amount || !flt(from_rate) || !flt(to_rate)) return;
+	if (frm.doc.paid_from_account_currency == frm.doc.paid_to_account_currency) return;
+
+	frm._syncing_amount = true;
+	const df = frm.get_field(target_field);
+	const precision = df && df.get_precision ? df.get_precision() : 9;
+	const value = flt(flt(amount) * flt(from_rate) / flt(to_rate), precision);
+
+	return Promise.resolve(set_if_changed(frm, target_field, value)).finally(() => {
+		frm._syncing_amount = false;
+	});
+}
+
+function set_if_changed(frm, fieldname, value) {
+	const df = frm.get_field(fieldname);
+	const field_precision = df && df.get_precision ? df.get_precision() : 9;
+	const is_rate = fieldname.endsWith("exchange_rate");
+	const precision = is_rate ? field_precision : 3;
+	if (flt(frm.doc[fieldname], precision) === flt(value, precision)) return;
+	return frm.set_value(fieldname, value);
+}
 
 function set_cost_center(frm, account="", field=""){
 	return new Promise((resolve, reject) => {
