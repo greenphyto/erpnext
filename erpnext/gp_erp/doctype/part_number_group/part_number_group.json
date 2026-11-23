@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "disabled",
+  "item_default",
   "group_list"
  ],
  "fields": [
@@ -23,11 +24,19 @@
    "label": "Group list",
    "options": "Part Number Table List",
    "reqd": 1
+  },
+  {
+   "fieldname": "item_default",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "label": "Item Default",
+   "options": "Item"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-11-16 15:42:32.560192",
+ "modified": "2026-11-23 14:42:35.586543",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Part Number Group",

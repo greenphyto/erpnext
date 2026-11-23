@@ -258,6 +258,8 @@
    "fetch_from": "item.item_group",
    "fieldname": "item_group",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Item Group",
    "options": "Item Group",
    "read_only": 1
@@ -265,8 +267,9 @@
   {
    "fieldname": "foms_lot_id",
    "fieldtype": "Data",
-   "label": "FOMS Lot ID",
-   "read_only": 1
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "FOMS Lot ID"
   },
   {
    "fieldname": "status",
@@ -332,7 +335,7 @@
  "image_field": "image",
  "links": [],
  "max_attachments": 5,
- "modified": "2026-11-10 14:36:23.427770",
+ "modified": "2026-11-23 14:42:54.694936",
  "modified_by": "Administrator",
  "module": "Stock",
  "name": "Batch",
@@ -349,7 +352,21 @@
    "read": 1,
    "report": 1,
    "role": "Item Manager",
+   "select": 1,
    "set_user_permissions": 1,
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Manager",
+   "select": 1,
    "share": 1,
    "write": 1
   }
