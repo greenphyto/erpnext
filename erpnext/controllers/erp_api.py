@@ -2054,16 +2054,21 @@ def get_item_price(item_code, is_selling=1, customer=None, transaction_date=None
 
 
 @frappe.whitelist()
-def get_item_uom(item_code):
+def get_item_uom(item_code=None):
 	"""
-	Get UOM details for an item.
+	Get UOM details for an item, or for all enabled items when item_code is empty.
 
 	Args:
-		item_code: Item code or custom name from Forecast Settings (mandatory)
+		item_code: Item code or custom name from Forecast Settings (optional)
 
 	Returns:
-		dict with item_code, stock_uom, and uoms list with conversion factors
+		Always a list of dicts with item_code, stock_uom, default_packaging and
+		uoms list with conversion factors. One element when item_code is given,
+		all enabled items when item_code is not given.
 	"""
+	if not item_code:
+		return _get_all_item_uom()
+
 	# Resolve custom name from Forecast Settings
 	resolved_item = None
 	if item_code:
@@ -2094,12 +2099,88 @@ def get_item_uom(item_code):
 			"conversion_factor": flt(uom.conversion_factor),
 		})
 
-	return {
+	return [{
 		"item_code": final_item,
 		"stock_uom": item.stock_uom,
 		"default_packaging": item.default_packaging or "",
 		"uoms": uoms,
-	}
+	}]
+
+def _get_all_item_uom():
+	items = frappe.get_all(
+		"Item",
+		filters={"disabled": 0},
+		fields=["name", "stock_uom", "default_packaging"],
+		order_by="name asc",
+		limit_page_length=0,
+	)
+
+	uom_map = {}
+	rows = frappe.get_all(
+		"UOM Conversion Detail",
+		filters={"parenttype": "Item"},
+		fields=["parent", "uom", "conversion_factor"],
+		order_by="parent asc, idx asc",
+		limit_page_length=0,
+	)
+	for r in rows:
+		uom_map.setdefault(r.parent, []).append({
+			"uom": r.uom,
+			"conversion_factor": flt(r.conversion_factor),
+		})
+
+	return [
+		{
+			"item_code": d.name,
+			"stock_uom": d.stock_uom,
+			"default_packaging": d.default_packaging or "",
+			"uoms": uom_map.get(d.name, []),
+		}
+		for d in items
+	]
+
+@frappe.whitelist()
+def get_item_material(item_code=None, item_group=None):
+	conditions = ["i.disabled = 0"]
+	values = {}
+	if item_code:
+		conditions.append("i.name = %(item_code)s")
+		values["item_code"] = item_code
+	elif item_group:
+		grp = frappe.db.get_value("Item Group", item_group, ["lft", "rgt"], as_dict=1)
+		if not grp:
+			frappe.throw(_("Item Group {0} not found").format(item_group), frappe.DoesNotExistError)
+		groups = frappe.get_all(
+			"Item Group",
+			filters={"lft": [">=", grp.lft], "rgt": ["<=", grp.rgt]},
+			pluck="name",
+		)
+		conditions.append("i.item_group IN %(item_groups)s")
+		values["item_groups"] = groups
+
+	rows = frappe.db.sql("""
+		SELECT
+			i.name AS item_code,
+			i.item_name,
+			i.material_number,
+			mg.material_type
+		FROM
+			`tabItem` i
+				LEFT JOIN
+			`tabMaterial Group` mg ON mg.name = i.material_group
+		WHERE
+			{conditions}
+		ORDER BY i.name
+	""".format(conditions=" AND ".join(conditions)), values, as_dict=1)
+
+	for d in rows:
+		d.material_number = d.material_number or ""
+		d.material_type = d.material_type or ""
+
+	if item_code and not rows:
+		frappe.throw(_("Item {0} not found or disabled").format(item_code), frappe.DoesNotExistError)
+
+	return rows
 
 @frappe.whitelist()
 def get_stock_snapshot(warehouse, date=None):

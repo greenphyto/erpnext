@@ -2369,7 +2369,7 @@
     "/erpnext.controllers.erp_api.get_item_uom": {
       "post": {
         "summary": "Get Item UOM Details",
-        "description": "Get stock UOM and all available UOMs with conversion factors for an item. Supports custom names from Forecast Settings (e.g. 'Kai Lan' maps to 'PR-AV-KL').",
+        "description": "Get stock UOM and all available UOMs with conversion factors for an item. Supports custom names from Forecast Settings (e.g. 'Kai Lan' maps to 'PR-AV-KL'). Always returns a list. If item_code is given, the list holds that single item. If empty, returns all enabled items.",
         "operationId": "get item uom",
         "requestBody": {
           "description": "Item UOM request",
@@ -2380,51 +2380,51 @@
                 "properties": {
                   "item_code": {
                     "type": "string",
-                    "description": "Item code or custom name from Forecast Settings (mandatory)"
+                    "description": "Item code or custom name from Forecast Settings (optional). Empty returns all enabled items"
                   }
                 },
-                "required": [
-                  "item_code"
-                ],
                 "example": {
                   "item_code": "Kai Lan"
                 }
               }
             }
           },
-          "required": true
+          "required": false
         },
         "responses": {
           "200": {
-            "description": "Successful operation",
+            "description": "Successful operation. Always an array, one element when item_code is given",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "item_code": {
-                      "type": "string",
-                      "description": "Resolved item code"
-                    },
-                    "stock_uom": {
-                      "type": "string",
-                      "description": "Base stock UOM of the item"
-                    },
-                    "default_packaging": {
-                      "type": "string",
-                      "description": "Default packaging UOM for the item"
-                    },
-                    "uoms": {
-                      "type": "array",
-                      "description": "List of available UOMs with conversion factors",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "uom": {
-                            "type": "string"
-                          },
-                          "conversion_factor": {
-                            "type": "number"
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "item_code": {
+                        "type": "string",
+                        "description": "Resolved item code"
+                      },
+                      "stock_uom": {
+                        "type": "string",
+                        "description": "Base stock UOM of the item"
+                      },
+                      "default_packaging": {
+                        "type": "string",
+                        "description": "Default packaging UOM for the item"
+                      },
+                      "uoms": {
+                        "type": "array",
+                        "description": "List of available UOMs with conversion factors",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "uom": {
+                              "type": "string"
+                            },
+                            "conversion_factor": {
+                              "type": "number"
+                            }
                           }
                         }
                       }
@@ -2432,27 +2432,100 @@
                   }
                 },
                 "example": {
-                  "message": {
-                    "item_code": "PR-AV-KL",
-                    "stock_uom": "Kg",
-                    "default_packaging": "Package (200g) - GP Type A",
-                    "uoms": [
-                      {
-                        "uom": "Kg",
-                        "conversion_factor": 1.0
-                      },
-                      {
-                        "uom": "Package (200g) - GP Type A",
-                        "conversion_factor": 0.2
-                      }
-                    ]
-                  }
+                  "message": [
+                    {
+                      "item_code": "PR-AV-KL",
+                      "stock_uom": "Kg",
+                      "default_packaging": "Package (200g) - GP Type A",
+                      "uoms": [
+                        {
+                          "uom": "Kg",
+                          "conversion_factor": 1.0
+                        },
+                        {
+                          "uom": "Package (200g) - GP Type A",
+                          "conversion_factor": 0.2
+                        }
+                      ]
+                    }
+                  ]
                 }
               }
             }
           },
           "400": {
             "description": "Invalid input or item not found"
+          }
+        }
+      }
+    },
+    "/erpnext.controllers.erp_api.get_item_material": {
+      "get": {
+        "summary": "Get Item Material Number and Material Type",
+        "description": "Return material_number and material_type (from the item's Material Group) of enabled (disabled = 0) items. Always returns a list. If item_code is given, the list holds that single item. If empty, all enabled items, optionally filtered by item_group (child groups included). item_group is ignored when item_code is given.",
+        "operationId": "get_item_material",
+        "parameters": [
+          {
+            "name": "item_code",
+            "in": "query",
+            "description": "Item code (optional). Empty returns all enabled items",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "PR-AV-KL"
+          },
+          {
+            "name": "item_group",
+            "in": "query",
+            "description": "Item Group filter (optional, child groups included). Used only when item_code is empty",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Products"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation. Always an array, one element when item_code is given",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "item_code": {
+                        "type": "string"
+                      },
+                      "item_name": {
+                        "type": "string"
+                      },
+                      "material_number": {
+                        "type": "string"
+                      },
+                      "material_type": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "message": [
+                    {
+                      "item_code": "PR-AV-KL",
+                      "item_name": "Kai Lan",
+                      "material_number": "MAT-0001",
+                      "material_type": "Finished Goods"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Item (not found or disabled) or Item Group not found"
           }
         }
       }
