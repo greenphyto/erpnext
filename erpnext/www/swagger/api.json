@@ -2804,8 +2804,8 @@
     "/erpnext.controllers.erp_api.get_item_material": {
       "get": {
         "tags": ["GET"],
-        "summary": "Get Item Material Number and Material Type",
-        "description": "Return material_number and material_type (from the item's Material Group) of enabled (disabled = 0) items. Always returns a list. If item_code is given, the list holds that single item. If empty, all enabled items, optionally filtered by item_group (child groups included). item_group is ignored when item_code is given.",
+        "summary": "Get Item Material Number, Material Group and Material Type",
+        "description": "Return item_name (title), material_number, material_group, material_type (from the item's Material Group) and description of enabled (disabled = 0) items. Always returns a list. If item_code is given, the list holds that single item. If empty, all enabled items, optionally filtered by item_group (child groups included). item_group is ignored when item_code is given.",
         "operationId": "get_item_material",
         "parameters": [
           {
@@ -2848,7 +2848,13 @@
                       "material_number": {
                         "type": "string"
                       },
+                      "material_group": {
+                        "type": "string"
+                      },
                       "material_type": {
+                        "type": "string"
+                      },
+                      "description": {
                         "type": "string"
                       }
                     }
@@ -2860,7 +2866,9 @@
                       "item_code": "PR-AV-KL",
                       "item_name": "Kai Lan",
                       "material_number": "MAT-0001",
-                      "material_type": "Finished Goods"
+                      "material_group": "Vegetables",
+                      "material_type": "Finished Goods",
+                      "description": "Kai Lan, fresh"
                     }
                   ]
                 }

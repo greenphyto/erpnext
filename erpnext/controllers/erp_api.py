@@ -2163,7 +2163,9 @@ def get_item_material(item_code=None, item_group=None):
 			i.name AS item_code,
 			i.item_name,
 			i.material_number,
-			mg.material_type
+			i.material_group,
+			mg.material_type,
+			i.description
 		FROM
 			`tabItem` i
 				LEFT JOIN
@@ -2175,7 +2177,9 @@ def get_item_material(item_code=None, item_group=None):
 
 	for d in rows:
 		d.material_number = d.material_number or ""
+		d.material_group = d.material_group or ""
 		d.material_type = d.material_type or ""
+		d.description = d.description or ""
 
 	if item_code and not rows:
 		frappe.throw(_("Item {0} not found or disabled").format(item_code), frappe.DoesNotExistError)
