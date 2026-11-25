@@ -2102,6 +2102,76 @@ def get_item_uom(item_code):
 	}
 
 @frappe.whitelist()
+def get_stock_snapshot(warehouse, date=None):
+	if not warehouse:
+		frappe.throw(_("warehouse is required"))
+
+	wh = frappe.db.get_value("Warehouse", warehouse, ["name", "is_group", "lft", "rgt"], as_dict=1)
+	if not wh:
+		frappe.throw(_("Warehouse {0} not found").format(warehouse), frappe.DoesNotExistError)
+
+	snapshot_date = getdate(date) if date else getdate(today())
+
+	if wh.is_group:
+		warehouses = frappe.get_all(
+			"Warehouse",
+			filters={"lft": [">=", wh.lft], "rgt": ["<=", wh.rgt], "is_group": 0},
+			pluck="name",
+		)
+	else:
+		warehouses = [wh.name]
+
+	if not warehouses:
+		return {"warehouse": wh.name, "date": cstr(snapshot_date), "items": []}
+
+	items = frappe.db.sql("""
+		SELECT
+			t.item_code,
+			i.item_name,
+			i.material_number AS part_number,
+			i.stock_uom,
+			t.warehouse,
+			t.qty_after_transaction AS qty,
+			t.valuation_rate,
+			t.stock_value
+		FROM (
+			SELECT
+				sle.item_code,
+				sle.warehouse,
+				sle.qty_after_transaction,
+				sle.valuation_rate,
+				sle.stock_value,
+				ROW_NUMBER() OVER (
+					PARTITION BY sle.item_code, sle.warehouse
+					ORDER BY sle.posting_date DESC, sle.posting_time DESC, sle.creation DESC
+				) AS rn
+			FROM
+				`tabStock Ledger Entry` sle
+			WHERE
+				sle.is_cancelled = 0
+				AND sle.posting_date <= %(date)s
+				AND sle.warehouse IN %(warehouses)s
+		) t
+			JOIN
+		`tabItem` i ON i.name = t.item_code
+		WHERE
+			t.rn = 1
+			AND t.qty_after_transaction != 0
+		ORDER BY t.item_code, t.warehouse
+	""", {"date": snapshot_date, "warehouses": warehouses}, as_dict=1)
+
+	for d in items:
+		d.qty = flt(d.qty)
+		d.valuation_rate = flt(d.valuation_rate)
+		d.stock_value = flt(d.stock_value)
+
+	return {
+		"warehouse": wh.name,
+		"date": cstr(snapshot_date),
+		"items": items,
+	}
+
+@frappe.whitelist()
 def update_batch_distribution(lotId, breakdown):
 	if not lotId:
 		frappe.throw(_("lotId is required"))

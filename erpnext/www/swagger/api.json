@@ -2657,6 +2657,112 @@
         }
       }
     },
+    "/erpnext.controllers.erp_api.get_stock_snapshot": {
+      "get": {
+        "summary": "Get Stock Snapshot by Warehouse",
+        "description": "Last stock ledger balance of every item in a warehouse as of a date (end of day). Reads the last Stock Ledger Entry per item and warehouse, no transaction range calculation. Group warehouse includes all child warehouses. Items with zero balance are skipped. Date defaults to today.",
+        "operationId": "get_stock_snapshot",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "query",
+            "description": "Warehouse name (group allowed)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Stores - GPL"
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Snapshot date (YYYY-MM-DD). Default today",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "example": "2026-11-25"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "warehouse": {
+                      "type": "string"
+                    },
+                    "date": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "item_code": {
+                            "type": "string"
+                          },
+                          "item_name": {
+                            "type": "string"
+                          },
+                          "part_number": {
+                            "type": "string",
+                            "description": "Item material number"
+                          },
+                          "stock_uom": {
+                            "type": "string"
+                          },
+                          "warehouse": {
+                            "type": "string"
+                          },
+                          "qty": {
+                            "type": "number",
+                            "description": "Balance qty in stock UOM"
+                          },
+                          "valuation_rate": {
+                            "type": "number"
+                          },
+                          "stock_value": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "message": {
+                    "warehouse": "Stores - GPL",
+                    "date": "2026-11-25",
+                    "items": [
+                      {
+                        "item_code": "PR-AV-KL",
+                        "item_name": "Kai Lan",
+                        "part_number": "MAT-0001",
+                        "stock_uom": "Kg",
+                        "warehouse": "Stores - GPL",
+                        "qty": 120.5,
+                        "valuation_rate": 10.0,
+                        "stock_value": 1205.0
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Warehouse not found"
+          }
+        }
+      }
+    },
     "/erpnext.controllers.erp_api.update_batch_distribution": {
       "post": {
         "summary": "Update Batch Distribution",
