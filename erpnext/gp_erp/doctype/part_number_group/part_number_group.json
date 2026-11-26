@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "RM-PNG-.###",
+ "autoname": "500.###",
  "creation": "2026-11-16 15:32:20.319465",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -10,6 +10,9 @@
   "disabled",
   "pack_type",
   "item_default",
+  "column_break_4",
+  "description",
+  "section_break_6",
   "group_list"
  ],
  "fields": [
@@ -42,11 +45,24 @@
    "in_standard_filter": 1,
    "label": "Pack Type",
    "options": "Pack Type"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-11-24 18:45:48.657002",
+ "modified": "2026-11-26 16:42:47.622865",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Part Number Group",
