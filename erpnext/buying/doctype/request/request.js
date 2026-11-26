@@ -141,10 +141,27 @@ erpnext.selling.RequestController = class RequestController extends erpnext.sell
 
 	item_code(doc,cdt,cdn){
 		this.add_uom_default(doc,cdt,cdn)
+		this.fetch_part_number_group(cdt,cdn);
 	}
 	
 	uom(doc,cdt,cdn){
 		this.fetch_weight(cdt,cdn);
+		this.fetch_part_number_group(cdt,cdn);
+	}
+
+	fetch_part_number_group(cdt,cdn){
+		var d = locals[cdt][cdn];
+		frappe.call({
+			method: "erpnext.buying.doctype.request.request.get_part_number_group",
+			args: {
+				item_code: d.item_code,
+				uom: d.uom,
+				customer: this.frm.doc.proposed_customer
+			},
+			callback: (r) => {
+				frappe.model.set_value(cdt, cdn, "part_number_group", r.message || "");
+			}
+		});
 	}
 
 	fetch_weight(cdt,cdn){

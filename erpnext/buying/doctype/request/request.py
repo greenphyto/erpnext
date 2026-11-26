@@ -16,8 +16,13 @@ class Request(Document):
 		self.calculate_price()
 		self.calculate_weight()
 		self.validate_date()
+		self.set_part_number_group()
 		self.export_salad_items()
 		self.validate_repeat_harvest_items()
+
+	def set_part_number_group(self):
+		for d in self.get("items"):
+			d.part_number_group = get_part_number_group(d.item_code, d.uom, self.proposed_customer)
 
 	def on_cancel(self):
 		self.set_status()
@@ -152,6 +157,33 @@ class Request(Document):
 				
 				d.progress = sum(progress)/len(progress)
 
+
+
+@frappe.whitelist()
+def get_part_number_group(item_code, uom=None, customer=None):
+	if not item_code:
+		return None
+
+	rows = frappe.get_all(
+		"Packaging List Available",
+		filters={"parent": item_code, "parentfield": "packaging"},
+		fields=["packaging", "customer", "default", "part_number_group"],
+		order_by="idx asc",
+	)
+
+	if uom:
+		for match in (
+			lambda r: r.customer and r.customer == customer,
+			lambda r: not r.customer,
+		):
+			for r in rows:
+				if r.packaging == uom and match(r) and r.part_number_group:
+					return r.part_number_group
+
+	for r in rows:
+		if r.default and r.part_number_group:
+			return r.part_number_group
+	return None
 
 
 def _get_forecast_settings():
