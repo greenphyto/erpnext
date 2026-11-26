@@ -2805,7 +2805,7 @@
       "get": {
         "tags": ["GET"],
         "summary": "Get Item Material Number, Material Group and Material Type",
-        "description": "Return item_name (title), material_number, material_group, material_type (from the item's Material Group) and description of enabled (disabled = 0) items. Always returns a list. If item_code is given, the list holds that single item. If empty, all enabled items, optionally filtered by item_group (child groups included). item_group is ignored when item_code is given.",
+        "description": "Return item_name (title), material_number, material_group, material_type (from the item's Material Group), description and current valuation_rate of enabled (disabled = 0) items. Always returns a list. If item_code is given, the list holds that single item. If empty, all enabled items, optionally filtered by item_group (child groups included). item_group is ignored when item_code is given.",
         "operationId": "get_item_material",
         "parameters": [
           {
@@ -2856,6 +2856,10 @@
                       },
                       "description": {
                         "type": "string"
+                      },
+                      "valuation_rate": {
+                        "type": "number",
+                        "description": "Current valuation rate (as of request time). Weighted average of stock_value / actual_qty across all warehouses with stock. Falls back to Item.valuation_rate when the item has no stock"
                       }
                     }
                   }
@@ -2868,7 +2872,8 @@
                       "material_number": "MAT-0001",
                       "material_group": "Vegetables",
                       "material_type": "Finished Goods",
-                      "description": "Kai Lan, fresh"
+                      "description": "Kai Lan, fresh",
+                      "valuation_rate": 10.0
                     }
                   ]
                 }

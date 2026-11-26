@@ -2165,11 +2165,27 @@ def get_item_material(item_code=None, item_group=None):
 			i.material_number,
 			i.material_group,
 			mg.material_type,
-			i.description
+			i.description,
+			CASE
+				WHEN IFNULL(b.total_qty, 0) > 0 THEN b.total_value / b.total_qty
+				ELSE i.valuation_rate
+			END AS valuation_rate
 		FROM
 			`tabItem` i
 				LEFT JOIN
 			`tabMaterial Group` mg ON mg.name = i.material_group
+				LEFT JOIN
+			(
+				SELECT
+					item_code,
+					SUM(actual_qty) AS total_qty,
+					SUM(stock_value) AS total_value
+				FROM
+					`tabBin`
+				WHERE
+					actual_qty > 0
+				GROUP BY item_code
+			) b ON b.item_code = i.name
 		WHERE
 			{conditions}
 		ORDER BY i.name
@@ -2180,6 +2196,7 @@ def get_item_material(item_code=None, item_group=None):
 		d.material_group = d.material_group or ""
 		d.material_type = d.material_type or ""
 		d.description = d.description or ""
+		d.valuation_rate = flt(d.valuation_rate)
 
 	if item_code and not rows:
 		frappe.throw(_("Item {0} not found or disabled").format(item_code), frappe.DoesNotExistError)
