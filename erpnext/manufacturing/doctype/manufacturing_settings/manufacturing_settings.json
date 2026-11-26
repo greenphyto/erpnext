@@ -42,7 +42,8 @@
   "packaging_section",
   "default_packaging",
   "request_settings_tab",
-  "core_vegetables"
+  "core_vegetables",
+  "enable_part_number_group_packaging"
  ],
  "fields": [
   {
@@ -260,13 +261,19 @@
    "fieldtype": "Table",
    "label": "Vegetables with Restrictions",
    "options": "Core Vegetables"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_part_number_group_packaging",
+   "fieldtype": "Check",
+   "label": "Enable Part Number Group Packaging"
   }
  ],
  "icon": "icon-wrench",
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-08-12 09:59:55.772644",
+ "modified": "2026-11-26 15:59:58.288104",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Manufacturing Settings",

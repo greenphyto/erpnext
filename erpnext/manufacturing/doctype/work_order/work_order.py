@@ -1259,16 +1259,11 @@ class WorkOrder(Document):
 					self.packet_size = d.uom
 					self.conversion_factor = d.conversion_factor
 
-	def get_packaging_from_order(self):
-		total_pcs = 0
-		# from SO
-		if self.sales_order_no:
-			doc_name = self.sales_order_no.replace(" ","").split(",")
-			temp = frappe.db.sql("select sum(qty) as qty from `tabSales Order Item` where parent in %(parent)s and item_code = %(item_code)s", 
-						{"parent":doc_name, "item_code":self.production_item}, as_dict=1)
-			if temp:
-				total_pcs = temp[0].get("qty")
-		
+	def get_packaging_from_order(self, packaging_item_code=None):
+		packaging_item_code = packaging_item_code or self.get("parent_product_item") or self.production_item
+		use_png = cint(
+			frappe.db.get_single_value("Manufacturing Settings", "enable_part_number_group_packaging")
+		)
 		if self.request_no:
 			self.required_items = [item for item in self.required_items if not item.is_packaging]
 			doc_name = self.request_no.replace(" ", "").split(",")
@@ -1324,6 +1319,10 @@ class WorkOrder(Document):
 					"Manufacturing Settings", "default_packaging"
 				)
 
+			if not use_png:
+				for item in request_items:
+					item.part_number_group = None
+
 			request_items = [
 				item
 				for item in request_items
@@ -1369,7 +1368,7 @@ class WorkOrder(Document):
 		if not total_pcs:
 			return
 
-		if self.flags.part_number_group:
+		if use_png and self.flags.part_number_group:
 			self.append_part_number_group(self.flags.part_number_group, total_pcs, self.packet_size)
 			return
 
