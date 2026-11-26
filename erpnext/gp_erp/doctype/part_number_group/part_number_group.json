@@ -51,6 +51,8 @@
    "fieldtype": "Column Break"
   },
   {
+   "fetch_from": "item_default.item_name",
+   "fetch_if_empty": 1,
    "fieldname": "description",
    "fieldtype": "Small Text",
    "label": "Description"
@@ -62,7 +64,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-11-26 16:42:47.622865",
+ "modified": "2026-11-26 18:50:19.539967",
  "modified_by": "Administrator",
  "module": "GP ERP",
  "name": "Part Number Group",
