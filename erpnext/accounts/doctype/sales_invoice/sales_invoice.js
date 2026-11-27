@@ -10,19 +10,37 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 		this.setup_posting_date_time_check();
 		super.setup(doc);
 	}
+	get_lazada_info() {
+		const onload = this.frm.doc.__onload || {};
+		if (onload.lazada_customer !== undefined) {
+			return Promise.resolve({customer: onload.lazada_customer, warehouse: onload.lazada_warehouse});
+		}
+		if (!erpnext.accounts.__lazada_info) {
+			erpnext.accounts.__lazada_info = Promise.all([
+				frappe.db.get_single_value('Lazada Settings', 'lazada_customer'),
+				frappe.db.get_single_value('Lazada Settings', 'default_warehouse')
+			]).then(([customer, warehouse]) => ({customer, warehouse}));
+		}
+		return erpnext.accounts.__lazada_info;
+	}
+
 	is_lazada_order() {
+		this.add_update_rates_button();
 		if (!this.frm.doc.is_lazada_order) return;
 		this.frm.__setting_lazada = true;
-		Promise.all([
-			frappe.db.get_single_value('Lazada Settings', 'default_warehouse'),
-			frappe.db.get_single_value('Lazada Settings', 'lazada_customer')
-		]).then(([warehouse, customer]) => {
-			this.frm.set_value('customer', customer);
-			this.frm.set_value('naming_series', 'LAZ-INV.###./.YYYY');
-			if (warehouse) {
-				this.frm.set_value('set_warehouse', warehouse);
-				(this.frm.doc.items || []).forEach(item => frappe.model.set_value(item.doctype, item.name, 'warehouse', warehouse));
+		this.get_lazada_info().then(({customer, warehouse}) => {
+			const tasks = [];
+			if (customer && this.frm.doc.customer !== customer) {
+				tasks.push(this.frm.set_value('customer', customer));
 			}
+			tasks.push(this.frm.set_value('naming_series', 'LAZ-INV.###./.YYYY'));
+			if (warehouse) {
+				tasks.push(this.frm.set_value('set_warehouse', warehouse));
+				(this.frm.doc.items || []).forEach(item => {
+					tasks.push(frappe.model.set_value(item.doctype, item.name, 'warehouse', warehouse));
+				});
+			}
+			return Promise.all(tasks);
 		}).finally(() => this.frm.__setting_lazada = false);
 	}
 
@@ -91,6 +109,7 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 		const me = this;
 		super.refresh();
 		this.add_back_consignment_button();
+		this.add_update_rates_button();
 		if(cur_frm.msgbox && cur_frm.msgbox.$wrapper.is(":visible")) {
 			// hide new msgbox
 			cur_frm.msgbox.hide();
@@ -326,6 +345,60 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 		this.get_terms();
 	}
 
+	add_update_rates_button() {
+		const frm = this.frm;
+		frm.remove_custom_button(__("Update Rates"));
+
+		if (!frm.doc.is_lazada_order || frm.doc.docstatus !== 0) return;
+
+		frm.add_custom_button(__("Update Rates"), () => {
+			const item_codes = [...new Set((frm.doc.items || []).map((d) => d.item_code).filter(Boolean))];
+			if (!item_codes.length) {
+				frappe.msgprint(__("No items in table."));
+				return;
+			}
+
+			const dialog = new frappe.ui.Dialog({
+				title: __("Update Rates"),
+				fields: [
+					{
+						fieldname: "item_code",
+						fieldtype: "Autocomplete",
+						label: __("Item Code"),
+						options: item_codes,
+						reqd: 1,
+					},
+					{
+						fieldname: "rate",
+						fieldtype: "Currency",
+						label: __("Rate"),
+						reqd: 1,
+					},
+				],
+				primary_action_label: __("Update"),
+				primary_action: (values) => {
+					let count = 0;
+					(frm.doc.items || []).forEach((d) => {
+						if (d.item_code === values.item_code) {
+							frappe.model.set_value(d.doctype, d.name, "rate", flt(values.rate));
+							count++;
+						}
+					});
+					dialog.hide();
+					if (!count) {
+						frappe.msgprint(__("Item {0} not found in table.", [values.item_code]));
+						return;
+					}
+					frappe.show_alert({
+						message: __("Rate updated on {0} row(s)", [count]),
+						indicator: "green",
+					});
+				},
+			});
+			dialog.show();
+		});
+	}
+
 	add_back_consignment_button() {
 		this.frm.remove_custom_button(__("Back to Consignment"));
 
@@ -363,9 +436,9 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 	}
 
 	customer() {
-		if (!this.frm.__setting_lazada) {
-			frappe.db.get_single_value('Lazada Settings', 'lazada_customer').then(customer => {
-				if (customer === this.frm.doc.customer && !this.frm.doc.is_lazada_order) {
+		if (!this.frm.__setting_lazada && this.frm.doc.customer && !this.frm.doc.is_lazada_order) {
+			this.get_lazada_info().then(({customer}) => {
+				if (customer && customer === this.frm.doc.customer && !this.frm.doc.is_lazada_order) {
 					this.frm.set_value('is_lazada_order', 1);
 				}
 			});

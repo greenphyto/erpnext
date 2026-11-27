@@ -98,6 +98,12 @@ class SalesInvoice(SellingController):
 		rows.sort(key=lambda r: cint(r.priority))
 		return [r.warehouse for r in rows if r.warehouse]
 
+	def onload(self):
+		super(SalesInvoice, self).onload()
+		settings = frappe.db.get_singles_dict("Lazada Settings")
+		self.set_onload("lazada_customer", settings.get("lazada_customer"))
+		self.set_onload("lazada_warehouse", settings.get("default_warehouse"))
+
 	def validate(self):
 		super(SalesInvoice, self).validate()
 		if self.has_multi_delivery_note_references():
