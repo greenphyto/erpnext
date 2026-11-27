@@ -670,8 +670,15 @@ class update_entries_after(object):
 
 	def get_incoming_outgoing_rate_from_transaction(self, sle):
 		rate = 0
+		if sle.voucher_type == "Stock Reconciliation":
+			if flt(sle.actual_qty) > 0:
+				rate = frappe.db.get_value(
+					"Stock Reconciliation Item", sle.voucher_detail_no, "valuation_rate"
+				)
+			else:
+				rate = sle.outgoing_rate
 		# Material Transfer, Repack, Manufacturing
-		if sle.voucher_type == "Stock Entry":
+		elif sle.voucher_type == "Stock Entry":
 			self.recalculate_amounts_in_stock_entry(sle.voucher_no)
 			rate = frappe.db.get_value("Stock Entry Detail", sle.voucher_detail_no, "valuation_rate")
 		# Sales and Purchase Return
@@ -680,6 +687,7 @@ class update_entries_after(object):
 			"Purchase Invoice",
 			"Delivery Note",
 			"Sales Invoice",
+			"Consignment Order",
 			"Subcontracting Receipt",
 		):
 			if frappe.get_cached_value(sle.voucher_type, sle.voucher_no, "is_return"):
@@ -717,7 +725,7 @@ class update_entries_after(object):
 				if item_code == sle.item_code:
 					rate = incoming_rate
 				else:
-					if sle.voucher_type in ("Delivery Note", "Sales Invoice"):
+					if sle.voucher_type in ("Delivery Note", "Sales Invoice", "Consignment Order"):
 						ref_doctype = "Packed Item"
 					elif sle == "Subcontracting Receipt":
 						ref_doctype = "Subcontracting Receipt Supplied Item"
@@ -742,7 +750,7 @@ class update_entries_after(object):
 
 			if flt(sle.actual_qty) < 0 and sle.voucher_type == "Stock Entry":
 				self.update_rate_on_stock_entry(sle, outgoing_rate)
-			elif sle.voucher_type in ("Delivery Note", "Sales Invoice"):
+			elif sle.voucher_type in ("Delivery Note", "Sales Invoice", "Consignment Order"):
 				self.update_rate_on_delivery_and_sales_return(sle, outgoing_rate)
 			elif flt(sle.actual_qty) < 0 and sle.voucher_type in ("Purchase Receipt", "Purchase Invoice"):
 				self.update_rate_on_purchase_receipt(sle, outgoing_rate)
@@ -973,6 +981,12 @@ class update_entries_after(object):
 		incoming_rate = flt(sle.incoming_rate)
 		actual_qty = flt(sle.actual_qty)
 
+		if sle.voucher_type == "Stock Reconciliation" and actual_qty > 0 and sle.voucher_detail_no:
+			incoming_rate = flt(
+				frappe.db.get_value("Stock Reconciliation Item", sle.voucher_detail_no, "valuation_rate")
+			)
+			sle.incoming_rate = incoming_rate
+
 		self.wh_data.qty_after_transaction = round_off_if_near_zero(
 			self.wh_data.qty_after_transaction + actual_qty
 		)
@@ -987,6 +1001,7 @@ class update_entries_after(object):
 				posting_date=sle.posting_date,
 				posting_time=sle.posting_time,
 				creation=sle.creation,
+				use_first_inflow=sle.voucher_type != "Stock Reconciliation",
 			)
 			if outgoing_rate is None:
 				# This can *only* happen if qty available for the batch is zero.
@@ -1227,19 +1242,17 @@ def get_sle_by_voucher_detail_no(voucher_detail_no, excluded_sle=None):
 
 
 def get_batch_incoming_rate(
-	item_code, warehouse, batch_no, posting_date, posting_time, creation=None
+	item_code, warehouse, batch_no, posting_date, posting_time, creation=None, use_first_inflow=True
 ):
+	if use_first_inflow:
+		first_inflow_rate = get_batch_first_inflow_rate(
+			item_code, warehouse, batch_no, posting_date, posting_time, creation
+		)
+		if first_inflow_rate:
+			return first_inflow_rate
 
 	sle = frappe.qb.DocType("Stock Ledger Entry")
-
-	timestamp_condition = CombineDatetime(sle.posting_date, sle.posting_time) < CombineDatetime(
-		posting_date, posting_time
-	)
-	if creation:
-		timestamp_condition |= (
-			CombineDatetime(sle.posting_date, sle.posting_time)
-			== CombineDatetime(posting_date, posting_time)
-		) & (sle.creation < creation)
+	timestamp_condition = get_batch_timestamp_condition(sle, posting_date, posting_time, creation)
 
 	batch_details = (
 		frappe.qb.from_(sle)
@@ -1255,6 +1268,93 @@ def get_batch_incoming_rate(
 
 	if batch_details and batch_details[0].batch_qty:
 		return batch_details[0].batch_value / batch_details[0].batch_qty
+
+
+def get_batch_timestamp_condition(sle, posting_date, posting_time, creation=None):
+	timestamp_condition = CombineDatetime(sle.posting_date, sle.posting_time) < CombineDatetime(
+		posting_date, posting_time
+	)
+	if creation:
+		timestamp_condition |= (
+			CombineDatetime(sle.posting_date, sle.posting_time)
+			== CombineDatetime(posting_date, posting_time)
+		) & (sle.creation < creation)
+
+	return timestamp_condition
+
+
+def get_batch_first_inflow_rate(
+	item_code, warehouse, batch_no, posting_date, posting_time, creation=None
+):
+	sle = frappe.qb.DocType("Stock Ledger Entry")
+	timestamp_condition = get_batch_timestamp_condition(sle, posting_date, posting_time, creation)
+
+	inflows = (
+		frappe.qb.from_(sle)
+		.select(
+			sle.voucher_type,
+			sle.voucher_no,
+			sle.voucher_detail_no,
+			sle.actual_qty,
+			sle.incoming_rate,
+			sle.stock_value_difference,
+		)
+		.where(
+			(sle.item_code == item_code)
+			& (sle.warehouse == warehouse)
+			& (sle.batch_no == batch_no)
+			& (sle.is_cancelled == 0)
+			& (sle.actual_qty > 0)
+		)
+		.where(timestamp_condition)
+		.orderby(sle.posting_date)
+		.orderby(sle.posting_time)
+		.orderby(sle.creation)
+	).run(as_dict=True)
+
+	last_reco = max(
+		(i for i, inflow in enumerate(inflows) if inflow.voucher_type == "Stock Reconciliation"),
+		default=0,
+	)
+
+	for inflow in inflows[last_reco:] + inflows[:last_reco]:
+		if inflow.voucher_type == "Stock Reconciliation":
+			rate = flt(
+				frappe.db.get_value(
+					"Stock Reconciliation Item", inflow.voucher_detail_no, "valuation_rate"
+				)
+			)
+		else:
+			rate = flt(inflow.incoming_rate)
+			if not rate and flt(inflow.stock_value_difference):
+				rate = flt(inflow.stock_value_difference) / flt(inflow.actual_qty)
+			if not rate:
+				rate = get_transfer_source_rate(inflow, item_code, warehouse, batch_no)
+		if rate:
+			return rate
+
+
+def get_transfer_source_rate(inflow, item_code, warehouse, batch_no):
+	sle = frappe.qb.DocType("Stock Ledger Entry")
+	query = (
+		frappe.qb.from_(sle)
+		.select(Sum(sle.stock_value_difference).as_("value"), Sum(sle.actual_qty).as_("qty"))
+		.where(
+			(sle.voucher_type == inflow.voucher_type)
+			& (sle.voucher_no == inflow.voucher_no)
+			& (sle.item_code == item_code)
+			& (sle.batch_no == batch_no)
+			& (sle.warehouse != warehouse)
+			& (sle.actual_qty < 0)
+			& (sle.is_cancelled == 0)
+		)
+	)
+	if inflow.voucher_detail_no:
+		query = query.where(sle.voucher_detail_no == inflow.voucher_detail_no)
+
+	source = query.run(as_dict=True)
+	if source and flt(source[0].qty):
+		return abs(flt(source[0].value) / flt(source[0].qty))
 
 
 def get_valuation_rate(
