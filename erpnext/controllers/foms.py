@@ -2202,7 +2202,6 @@ def create_item_change_repack(doc, method=""):
 			"qty": qty,
 			"uom": item.uom,
 			"conversion_factor": item.conversion_factor,
-			"basic_rate": item.basic_rate,
 		}
 
 		source_batch = item.batch_no
